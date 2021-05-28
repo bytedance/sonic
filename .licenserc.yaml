@@ -1,0 +1,10 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: ByteDance Inc.
+
+  paths:
+    - '**/*.go'
+    - '**/*.s'
+
+  comment: on-failure
