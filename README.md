@@ -1,2 +1,3 @@
-# sonic
-A blazingly fast JSON serializing &amp; deserializing library
+# Sonic
+
+A blazingly fast JSON serializing &amp; deserializing library.
