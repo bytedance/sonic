@@ -25,10 +25,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Lint
-        run: |
-          test -z "$(gofmt -s -l .)"
-          go vet -stdmethods=false $(go list ./...)
-
       - name: Unit Test
         run: go test -v -race -covermode=atomic -coverprofile=coverage.out ./...

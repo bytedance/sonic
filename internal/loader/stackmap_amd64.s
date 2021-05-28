@@ -21,5 +21,5 @@
 TEXT ·no_pointers_stackmap(SB), NOSPLIT, $0 - 8
     NO_LOCAL_POINTERS
     LEAQ runtime·no_pointers_stackmap(SB), AX
-    MOVQ AX, ret<>+0(FP)
+    MOVQ AX, ret+0(FP)
     RET

@@ -6189,7 +6189,7 @@ _P10_TAB:
 
 TEXT ·__f64toa(SB), NOSPLIT, $0 - 24
 	MOVQ  out+0(FP), DI
-	MOVOU val+8(FP), X0
+	MOVSD val+8(FP), X0
 	CALL  ·___asm2asm_compiled_code__DO_NOT_CALL_THIS_SYMBOL___+2953(SB) // _f64toa
 	MOVQ  AX, ret+16(FP)
 	RET
