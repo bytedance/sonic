@@ -1,3 +1,5 @@
+// +build go1.16,!go1.17
+
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -13,8 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// +build go1.16,!go1.17
 
 package loader
 
