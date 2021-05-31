@@ -117,76 +117,42 @@ func TestRandomData(t *testing.T) {
     }
     rand.Seed(time.Now().UnixNano())
     b := make([]byte, 200)
-    var n int
-    var ee error
-    finish := make(chan struct{})
-    timeout := time.After(time.Second*5)
-    go func(){
-        for i := 0; i < 1000000; i++ {
-            n, ee = rand.Read(b[:rand.Int()%len(b)])
-            if ee != nil {
-                finish <- struct{}{}
-                t.Errorf("get random bytes failed: %v,", ee)
-                return
-            }
-            lstr = string(b[:n])
-            _, _ = ast.NewParser(lstr).Parse()
+    for i := 0; i < 1000000; i++ {
+        n, ee := rand.Read(b[:rand.Int()%len(b)])
+        if ee != nil {
+            t.Fatalf("get random bytes failed: %v,", ee)
+            return
         }
-        finish <- struct{}{}
-    }()
-    select {
-    case <-finish:
-        return
-    case <-timeout:
-        fmt.Println(hex.Dump(b[:n]))
-        fmt.Println(string(b[:n]))
-        t.FailNow()
+        lstr = string(b[:n])
+        //fmt.Printf("i: %d, lstr: \n%v \n", i, hex.Dump(b[:n]))
+        ast.NewParser(lstr).Parse()
     }
 }
 
 func TestRandomValidStrings(t *testing.T) {
     rand.Seed(time.Now().UnixNano())
     b := make([]byte, 200)
-    var n int
-    var err error
-    finish := make(chan struct{})
-    timeout := time.After(time.Second*10)
-    go func(){
-        for i := 0; i < 100000; i++ {
-            n, err = rand.Read(b[:rand.Int()%len(b)])
-            if err != nil {
-                t.Error("get random data failed:", err)
-                return
-            }
-            sm, err := json.Marshal(string(b[:n]))
-            if err != nil {
-                t.Error("marshal data failed:",err)
-                return
-            }
-            var su string
-            if err := json.Unmarshal(sm, &su); err != nil {
-                t.Error("unmarshal data failed:",err)
-                return
-            }
-
-            token, err := GetFromString(`{"str":`+string(sm)+`}`, "str")
-            if err != nil {
-                t.Error("search data failed:",err)
-                return
-            }
-            if token.Interface().(string) != su {
-                t.Errorf("string mismatch, exp: %v, got: %v", su, token.Interface())
-                return
-            }
+    for i := 0; i < 1000; i++ {
+        n, err := rand.Read(b[:rand.Int()%len(b)])
+        if err != nil {
+            t.Fatal("get random data failed:", err)
         }
-        finish <- struct{}{}
-    }()
-    select {
-    case <-finish:
-        return
-    case <-timeout:
-        fmt.Println(hex.Dump(b[:n]))
-        t.FailNow()
+        sm, err := json.Marshal(string(b[:n]))
+        if err != nil {
+            t.Fatal("marshal data failed:",err)
+        }
+        var su string
+        if err := json.Unmarshal([]byte(sm), &su); err != nil {
+            t.Fatal("unmarshal data failed:",err)
+        }
+        //fmt.Printf("i: %d, su: %v, lstr: \n%v \n", i, su, hex.Dump(b[:n]))
+        token, err := GetFromString(`{"str":`+string(sm)+`}`, "str")
+        if err != nil {
+            t.Fatal("search data failed:",err)
+        }
+        if token.Interface().(string) != su {
+            t.Fatalf("string mismatch, exp: %v, got: %v", su, token.Interface())
+        }
     }
 }
 
@@ -266,7 +232,7 @@ func TestParseAny(t *testing.T) {
     assertCond(e != nil)
 }
 
-func TestIssue6(t *testing.T) {
+func TestTime(t *testing.T) {
     data := []byte(`{
       "code": 0,
       "msg": "",
@@ -486,7 +452,7 @@ func testManyAny(t *testing.T, json string, paths, expected []string) {
     }
 }
 
-func TestIssue20(t *testing.T) {
+func TestNested(t *testing.T) {
     data := `{ "name": "FirstName", "name1": "FirstName1", ` +
         `"address": "address1", "addressDetails": "address2", }`
     paths := []string{"name", "name1", "address", "addressDetails"}
@@ -523,7 +489,7 @@ func TestRandomMany(t *testing.T) {
     }()
     rand.Seed(time.Now().UnixNano())
     b := make([]byte, 512)
-    for i := 0; i < 50000; i++ {
+    for i := 0; i < 5000; i++ {
         n, err := rand.Read(b[:rand.Int()%len(b)])
         if err != nil {
             t.Fatal(err)
@@ -548,7 +514,7 @@ func TestRandomMany(t *testing.T) {
     }
 }
 
-func TestGetMany47(t *testing.T) {
+func TestGetMany(t *testing.T) {
     data := `{"bar": {"id": 99, "mybar": "my mybar" }, "foo": ` +
         `{"myfoo": [605]}}`
     paths := []string{"foo.myfoo", "bar.id", "bar.mybar", "bar.mybarx"}
@@ -565,7 +531,7 @@ func TestGetMany47(t *testing.T) {
     }
 }
 
-func TestGetMany48(t *testing.T) {
+func TestGetMany2(t *testing.T) {
     data := `{"bar": {"id": 99, "xyz": "my xyz"}, "foo": {"myfoo": [605]}}`
     paths := []string{"foo.myfoo", "bar.id", "bar.xyz", "bar.abc"}
     expected := []string{"[605]", "99", "my xyz", ""}
@@ -600,7 +566,7 @@ func TestNullArray(t *testing.T) {
     }
 }
 
-func TestIssue54(t *testing.T) {
+func TestGetMany3(t *testing.T) {
     var r []string
     data := `{"MarketName":null,"Nounce":6115}`
     r = GetMany(data, "Nounce", "Buys", "Sells", "Fills")
@@ -620,7 +586,7 @@ func TestIssue54(t *testing.T) {
     }
 }
 
-func TestIssue55(t *testing.T) {
+func TestGetMany4(t *testing.T) {
     data := `{"one": {"two": 2, "three": 3}, "four": 4, "five": 5}`
     results := GetMany(data, "four", "five", "one.two", "one.six")
     expected := []string{"4", "5", "2", ""}
