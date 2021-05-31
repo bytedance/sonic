@@ -132,7 +132,7 @@ func TestRandomData(t *testing.T) {
 func TestRandomValidStrings(t *testing.T) {
     rand.Seed(time.Now().UnixNano())
     b := make([]byte, 200)
-    for i := 0; i < 10000; i++ {
+    for i := 0; i < 1000; i++ {
         n, err := rand.Read(b[:rand.Int()%len(b)])
         if err != nil {
             t.Fatal("get random data failed:", err)
@@ -232,7 +232,7 @@ func TestParseAny(t *testing.T) {
     assertCond(e != nil)
 }
 
-func TestIssue6(t *testing.T) {
+func TestTime(t *testing.T) {
     data := []byte(`{
       "code": 0,
       "msg": "",
@@ -452,7 +452,7 @@ func testManyAny(t *testing.T, json string, paths, expected []string) {
     }
 }
 
-func TestIssue20(t *testing.T) {
+func TestNested(t *testing.T) {
     data := `{ "name": "FirstName", "name1": "FirstName1", ` +
         `"address": "address1", "addressDetails": "address2", }`
     paths := []string{"name", "name1", "address", "addressDetails"}
@@ -514,7 +514,7 @@ func TestRandomMany(t *testing.T) {
     }
 }
 
-func TestGetMany47(t *testing.T) {
+func TestGetMany(t *testing.T) {
     data := `{"bar": {"id": 99, "mybar": "my mybar" }, "foo": ` +
         `{"myfoo": [605]}}`
     paths := []string{"foo.myfoo", "bar.id", "bar.mybar", "bar.mybarx"}
@@ -531,7 +531,7 @@ func TestGetMany47(t *testing.T) {
     }
 }
 
-func TestGetMany48(t *testing.T) {
+func TestGetMany2(t *testing.T) {
     data := `{"bar": {"id": 99, "xyz": "my xyz"}, "foo": {"myfoo": [605]}}`
     paths := []string{"foo.myfoo", "bar.id", "bar.xyz", "bar.abc"}
     expected := []string{"[605]", "99", "my xyz", ""}
@@ -566,7 +566,7 @@ func TestNullArray(t *testing.T) {
     }
 }
 
-func TestIssue54(t *testing.T) {
+func TestGetMany3(t *testing.T) {
     var r []string
     data := `{"MarketName":null,"Nounce":6115}`
     r = GetMany(data, "Nounce", "Buys", "Sells", "Fills")
@@ -586,7 +586,7 @@ func TestIssue54(t *testing.T) {
     }
 }
 
-func TestIssue55(t *testing.T) {
+func TestGetMany4(t *testing.T) {
     data := `{"one": {"two": 2, "three": 3}, "four": 4, "five": 5}`
     results := GetMany(data, "four", "five", "one.two", "one.six")
     expected := []string{"4", "5", "2", ""}
