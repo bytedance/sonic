@@ -27,7 +27,7 @@ import (
 )
 
 const (
-    _MAP_THRESHHOLD    = 5
+    _MAP_THRESHOLD     = 5
     _CAP_BITS          = 32
     _LEN_MASK          = 1<<_CAP_BITS - 1
     _APPEND_EXTRA_SIZE = 5
@@ -394,7 +394,7 @@ func (self *Node) mapped() bool {
     if self.m != nil && len(self.m) == self.Len() {
         return true
     }
-    if self.Len() > _MAP_THRESHHOLD {
+    if self.Len() > _MAP_THRESHOLD {
         self.appendMap()
         return true
     }

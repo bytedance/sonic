@@ -97,9 +97,10 @@ func (self *FieldMeta) optimize() {
 
     /* last offset value */
     if v != 0 {
-        self.Path[n].Type    = nil
-        self.Path[n].Size, v = v, 0
-        self.Path[n].Kind, n = F_offset, n + 1
+        self.Path[n].Size = v
+        self.Path[n].Type = nil
+        self.Path[n].Kind = F_offset
+        n++
     }
 
     /* must be at least 1 offset */
@@ -187,7 +188,7 @@ func ResolveStruct(vt reflect.Type) []FieldMeta {
     var ok bool
     var fm []FieldMeta
 
-    /* attemt to read from cache */
+    /* attempt to read from cache */
     fieldLock.RLock()
     fm, ok = fieldCache[vt]
     fieldLock.RUnlock()

@@ -76,7 +76,7 @@ const (
 const (
     _IM_null = 0x6c6c756e   // 'null'
     _IM_true = 0x65757274   // 'true'
-    _IM_alse = 0x65736c61   // 'fals' ('false' without the 'f')
+    _IM_alse = 0x65736c61   // 'alse' ('false' without the 'f')
 )
 
 const (
