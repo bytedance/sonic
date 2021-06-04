@@ -96,8 +96,8 @@ const (
 )
 
 const (
-    _MAX_STACK = 10         // cutoff at 10 levels of nesting types
-    _MAX_ILBUF = 250000     // cutoff at 250k of IL instructions
+    _MAX_STACK = 5          // cutoff at 5 levels of nesting types
+    _MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
 )
 
 var _OpNames = [256]string {
