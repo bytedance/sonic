@@ -463,7 +463,7 @@ func TestNested(t *testing.T) {
     })
 }
 
-func TestIssue21(t *testing.T) {
+func TestMultiLevelFields(t *testing.T) {
     data := `{ "Level1Field1":3, 
                "Level1Field4":4, 
                "Level1Field2":{ "Level2Field1":[ "value1", "value2" ], 

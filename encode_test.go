@@ -30,7 +30,6 @@ import (
 	`unsafe`
 
 	`github.com/bytedance/sonic/encoder`
-	`github.com/stretchr/testify/assert`
 )
 
 type Optionals struct {
@@ -705,7 +704,7 @@ func TestDuplicatedFieldDisappears(t *testing.T) {
 	}
 }
 
-func TestIssue10281(t *testing.T) {
+func TestStdLibIssue10281(t *testing.T) {
 	type Foo struct {
 		N json.Number
 	}
@@ -1127,63 +1126,5 @@ func TestMarshalerError(t *testing.T) {
 		if got != tt.want {
 			t.Errorf("MarshalerError test %d, got: %s, want: %s", i, got, tt.want)
 		}
-	}
-}
-
-func TestIssue3_Encode(t *testing.T) {
-	var v HugeStruct6
-	ret, err := Marshal(v)
-	assert.Nil(t, err)
-	assert.Equal(t, []byte(`{}`), ret)
-}
-
-func TestIssue3_Decode(t *testing.T) {
-	var v HugeStruct6
-	err := Unmarshal([]byte(`{}`), &v)
-	assert.Nil(t, err)
-	assert.Equal(t, HugeStruct6{}, v)
-}
-
-func BenchmarkIssue3_Encode_Sonic(b *testing.B) {
-	var v HugeStruct6
-	err := Pretouch(reflect.TypeOf(v))
-	assert.Nil(b, err)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = Marshal(v)
-	}
-}
-
-func BenchmarkIssue3_Encode_StdLib(b *testing.B) {
-	var v HugeStruct6
-	ret, err := json.Marshal(v)
-	assert.Nil(b, err)
-	assert.Equal(b, []byte(`{}`), ret)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = json.Marshal(v)
-	}
-}
-
-func BenchmarkIssue3_Decode_Sonic(b *testing.B) {
-	var v HugeStruct6
-	buf := []byte(`{}`)
-	err := Pretouch(reflect.TypeOf(v))
-	assert.Nil(b, err)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = Unmarshal(buf, &v)
-	}
-}
-
-func BenchmarkIssue3_Decode_StdLib(b *testing.B) {
-	var v HugeStruct6
-	buf := []byte(`{}`)
-	err := json.Unmarshal(buf, &v)
-	assert.Nil(b, err)
-	assert.Equal(b, HugeStruct6{}, v)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = json.Unmarshal(buf, &v)
 	}
 }
