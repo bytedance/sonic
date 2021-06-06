@@ -139,32 +139,8 @@ func Value(s unsafe.Pointer, n int, p int, v *JsonState) int {
     return __value(s, n, p, v)
 }
 
-func Vstring(s *string, p *int, v *JsonState) {
-    __vstring(s, p, v)
-}
-
-func Vnumber(s *string, p *int, v *JsonState) {
-    __vnumber(s, p, v)
-}
-
-func Vsigned(s *string, p *int, v *JsonState) {
-    __vsigned(s, p, v)
-}
-
-func Vunsigned(s *string, p *int, v *JsonState) {
-    __vunsigned(s, p, v)
-}
-
 func SkipOne(s *string, p *int, m *StateMachine) int {
     return __skip_one(s, p, m)
-}
-
-func SkipArray(s *string, p *int, m *StateMachine) int {
-    return __skip_array(s, p, m)
-}
-
-func SkipObject(s *string, p *int, m *StateMachine) int {
-    return __skip_object(s, p, m)
 }
 
 func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int {

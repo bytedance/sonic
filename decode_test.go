@@ -2124,7 +2124,7 @@ func TestPrefilled(t *testing.T) {
 		{
 			in:  `[3]`,
 			ptr: &[...]int{1, 2},
-			out: &[...]int{3, 2},
+			out: &[...]int{3, 0},
 		},
 	}
 

@@ -26,6 +26,12 @@ import (
     `github.com/stretchr/testify/require`
 )
 
+var _BindingValue TwitterStruct
+
+func init() {
+    _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
+}
+
 func decode(s string, v interface{}) (int, error) {
     d := NewDecoder(s)
     err := d.Decode(v)

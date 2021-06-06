@@ -1,10 +1,10 @@
 # How to Contribute
 
 ## Your First Pull Request
-We use github for our codebase. You can start by reading [How To Pull Request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
+We use GitHub for our codebase. You can start by reading [How To Pull Request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
 
 ## Without Semantic Versioning
-We keep the stable code in branch `main` like `golang.org/x`. Development base on branch `develop`. And we promise the **Forward Compatibility** by adding new package directory with suffix `v2/v3` when code has break changes.
+We keep the stable code in branch `main` like `golang.org/x`. Development base on branch `develop`. We promise the **Forward Compatibility** by adding new package directory with suffix `v2/v3` when code has break changes.
 
 ## Branch Organization
 We use [git-flow](https://nvie.com/posts/a-successful-git-branching-model/) as our branch organization, as known as [FDD](https://en.wikipedia.org/wiki/Feature-driven_development)
@@ -15,7 +15,7 @@ We use [git-flow](https://nvie.com/posts/a-successful-git-branching-model/) as o
 We are using [Github Issues](https://github.com/bytedance/sonic/issues) for our public bugs. We keep a close eye on this and try to make it clear when we have an internal fix in progress. Before filing a new task, try to make sure your problem doesn’t already exist.
 
 ### 2. Reporting New Issues
-Providing a reduced test code is a recommended way for reporting issues. Then can placed in:
+Providing a reduced test code is a recommended way for reporting issues. Then can be placed in:
 - Just in issues
 - [Golang Playground](https://play.golang.org/)
 
@@ -37,7 +37,7 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 5. Create your patch, including appropriate test cases.
 6. Follow our [Style Guides](#code-style-guides).
 7. Commit your changes using a descriptive commit message that follows [AngularJS Git Commit Message Conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit).
-   Adherence to these conventions is necessary because release notes are automatically generated from these messages.
+   Adherence to these conventions is necessary because release notes will be automatically generated from these messages.
 8. Push your branch to GitHub:
     ```
     git push origin bugfix/security_bug
@@ -50,7 +50,7 @@ Your pr title and commit message should follow https://www.conventionalcommits.o
 
 ## Contribution Prerequisites
 - Our development environment keeps up with [Go Official](https://golang.org/project/).
-- You need fully checking with lint tools before submit your pull request. [gofmt](https://golang.org/pkg/cmd/gofmt/) and [golangci-lint](https://github.com/golangci/golangci-lint)
+- You need fully checking with lint tools before submit your pull request. [gofmt](https://golang.org/pkg/cmd/gofmt/) & [golangci-lint](https://github.com/golangci/golangci-lint)
 - You are familiar with [Github](https://github.com) 
 - Maybe you need familiar with [Actions](https://github.com/features/actions)(our default workflow tool).
 
