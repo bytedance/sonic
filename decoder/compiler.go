@@ -69,6 +69,8 @@ const (
     _OP_map_key_utext
     _OP_map_key_utext_p
     _OP_array_skip
+    _OP_array_clear
+    _OP_array_clear_p
     _OP_slice_init
     _OP_slice_append
     _OP_object_skip
@@ -331,7 +333,9 @@ func (self _Instr) disassemble() string {
         case _OP_recurse          : return fmt.Sprintf("%-18s%s", self.op(), self.vt())
         case _OP_goto             : fallthrough
         case _OP_is_null          : return fmt.Sprintf("%-18sL_%d", self.op(), self.vi())
-        case _OP_index            : return fmt.Sprintf("%-18s%d", self.op(), self.vi())
+        case _OP_index            : fallthrough
+        case _OP_array_clear      : fallthrough
+        case _OP_array_clear_p    : return fmt.Sprintf("%-18s%d", self.op(), self.vi())
         case _OP_switch           : return fmt.Sprintf("%-18s%s", self.op(), self.formatSwitchLabels())
         case _OP_struct_field     : return fmt.Sprintf("%-18s%s", self.op(), self.formatStructFields())
         case _OP_match_char       : return fmt.Sprintf("%-18s%s", self.op(), strconv.QuoteRune(rune(self.vb())))
@@ -677,7 +681,7 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
 }
 
 func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
-    i := p.pc()
+    x := p.pc()
     p.add(_OP_is_null)
     p.tag(sp)
     p.chr(_OP_match_char, '[')
@@ -687,10 +691,10 @@ func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
     p.chr(_OP_check_char, ']')
 
     /* decode every item */
-    for n := 0; n < vt.Len(); n++ {
-        p.int(_OP_index, n * int(vt.Elem().Size()))
+    for i := 1; i <= vt.Len(); i++ {
         self.compileOne(p, sp + 1, vt.Elem(), self.pv)
         p.add(_OP_load)
+        p.int(_OP_index, i * int(vt.Elem().Size()))
         p.add(_OP_lspace)
         v = append(v, p.pc())
         p.chr(_OP_check_char, ']')
@@ -699,9 +703,21 @@ func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
 
     /* drop rest of the array */
     p.add(_OP_array_skip)
+    w := p.pc()
+    p.add(_OP_goto)
     p.rel(v)
+
+    /* check for pointer data */
+    if rt.UnpackType(vt.Elem()).NoPtr() {
+        p.int(_OP_array_clear, int(vt.Size()))
+    } else {
+        p.int(_OP_array_clear_p, int(vt.Size()))
+    }
+
+    /* restore the stack */
+    p.pin(w)
     p.add(_OP_drop)
-    p.pin(i)
+    p.pin(x)
 }
 
 func (self *_Compiler) compileSlice(p *_Program, sp int, et reflect.Type) {

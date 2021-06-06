@@ -60,6 +60,10 @@ func (self *GoType) Pack() (t reflect.Type) {
     return
 }
 
+func (self *GoType) NoPtr() bool {
+    return self.ptrd == 0
+}
+
 func (self *GoType) Indir() bool {
     return (self.kflags & _DirectIface) == 0
 }

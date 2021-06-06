@@ -54,6 +54,24 @@ func (UjsonValue) UnmarshalJSON(json []byte) error {
     return nil
 }
 
+type UtextStruct struct {
+    V string
+}
+
+func (self *UtextStruct) UnmarshalText(text []byte) error {
+    self.V = string(text)
+    return nil
+}
+
+type UjsonStruct struct {
+    V string
+}
+
+func (self *UjsonStruct) UnmarshalJSON(v []byte) error {
+    self.V = string(v)
+    return nil
+}
+
 const (
 	_OP_dbg_get_sr _Op = 253
 	_OP_dbg_set_sr _Op = 254
@@ -641,6 +659,13 @@ func TestAssembler_OpCode(t *testing.T) {
             testOpCode(t, &tv)
         })
     }
+}
+
+type JsonStruct struct {
+    A int
+    B string
+    C map[string]int
+    D []int
 }
 
 func TestAssembler_DecodeStruct(t *testing.T) {

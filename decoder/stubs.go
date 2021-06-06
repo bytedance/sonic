@@ -109,3 +109,15 @@ func mapassign_fast64ptr(t *rt.GoType, h unsafe.Pointer, k unsafe.Pointer) unsaf
 //go:linkname mapassign_faststr runtime.mapassign_faststr
 //goland:noinspection GoUnusedParameter
 func mapassign_faststr(t *rt.GoType, h unsafe.Pointer, s string) unsafe.Pointer
+
+//go:nosplit
+//go:noescape
+//go:linkname memclrHasPointers runtime.memclrHasPointers
+//goland:noinspection GoUnusedParameter
+func memclrHasPointers(ptr unsafe.Pointer, n uintptr)
+
+//go:nosplit
+//go:noescape
+//go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
+//goland:noinspection GoUnusedParameter
+func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)

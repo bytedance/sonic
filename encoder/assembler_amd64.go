@@ -251,7 +251,7 @@ func (self *_Assembler) instr(v *_Instr) {
     if fn := _OpFuncTab[v.op()]; fn != nil {
         fn(self, v)
     } else {
-        panic(fmt.Sprintf("invalid opcode: 0x%02x", v.op()))
+        panic(fmt.Sprintf("invalid opcode: %d", v.op()))
     }
 }
 

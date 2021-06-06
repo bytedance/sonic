@@ -124,8 +124,7 @@ func TestRandomData(t *testing.T) {
             return
         }
         lstr = string(b[:n])
-        //fmt.Printf("i: %d, lstr: \n%v \n", i, hex.Dump(b[:n]))
-        ast.NewParser(lstr).Parse()
+        _, _ = ast.NewParser(lstr).Parse()
     }
 }
 
@@ -142,10 +141,9 @@ func TestRandomValidStrings(t *testing.T) {
             t.Fatal("marshal data failed:",err)
         }
         var su string
-        if err := json.Unmarshal([]byte(sm), &su); err != nil {
+        if err := json.Unmarshal(sm, &su); err != nil {
             t.Fatal("unmarshal data failed:",err)
         }
-        //fmt.Printf("i: %d, su: %v, lstr: \n%v \n", i, su, hex.Dump(b[:n]))
         token, err := GetFromString(`{"str":`+string(sm)+`}`, "str")
         if err != nil {
             t.Fatal("search data failed:",err)
