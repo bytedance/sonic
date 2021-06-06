@@ -241,6 +241,8 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_map_key_utext    : (*_Assembler)._asm_OP_map_key_utext,
     _OP_map_key_utext_p  : (*_Assembler)._asm_OP_map_key_utext_p,
     _OP_array_skip       : (*_Assembler)._asm_OP_array_skip,
+    _OP_array_clear      : (*_Assembler)._asm_OP_array_clear,
+    _OP_array_clear_p    : (*_Assembler)._asm_OP_array_clear_p,
     _OP_slice_init       : (*_Assembler)._asm_OP_slice_init,
     _OP_slice_append     : (*_Assembler)._asm_OP_slice_append,
     _OP_object_skip      : (*_Assembler)._asm_OP_object_skip,
@@ -266,7 +268,7 @@ func (self *_Assembler) instr(v *_Instr) {
     if fn := _OpFuncTab[v.op()]; fn != nil {
         fn(self, v)
     } else {
-        panic(fmt.Sprintf("invalid opcode: 0x%02x", v.op()))
+        panic(fmt.Sprintf("invalid opcode: %d", v.op()))
     }
 }
 
@@ -672,6 +674,32 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr) {
     self.Sjmp("JS"   , _LB_unquote_error)                           // JS     _unquote_error
     self.Emit("MOVQ" , _AX, n)                                      // MOVQ   AX, ${n}
     self.Link("_noescape_{n}")                                      // _noescape_{n}:
+}
+
+/** Memory Clearing Routines **/
+
+var (
+    _F_memclrHasPointers    = jit.Func(memclrHasPointers)
+    _F_memclrNoHeapPointers = jit.Func(memclrNoHeapPointers)
+)
+
+func (self *_Assembler) mem_clear_fn(ptrfree bool) {
+    if !ptrfree {
+        self.call_go(_F_memclrHasPointers)
+    } else {
+        self.call_go(_F_memclrNoHeapPointers)
+    }
+}
+
+func (self *_Assembler) mem_clear_rem(size int64, ptrfree bool) {
+    self.Emit("MOVQ" , jit.Imm(size), _CX)              // MOVQ    ${size}, CX
+    self.Emit("MOVQ" , jit.Ptr(_ST, 0), _AX)            // MOVQ    (ST), AX
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 0), _AX)    // MOVQ    (ST)(AX), AX
+    self.Emit("SUBQ" , _VP, _AX)                        // SUBQ    VP, AX
+    self.Emit("ADDQ" , _AX, _CX)                        // ADDQ    AX, CX
+    self.Emit("MOVQ" , _VP, jit.Ptr(_SP, 0))            // MOVQ    VP, (SP)
+    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 8))            // MOVQ    CX, 8(SP)
+    self.mem_clear_fn(ptrfree)                          // CALL_GO memclr{Has,NoHeap}Pointers
 }
 
 /** Map Assigning Routines **/
@@ -1138,6 +1166,14 @@ func (self *_Assembler) _asm_OP_array_skip(_ *_Instr) {
     self.call_sf(_F_skip_array)                 // CALL_SF skip_array
     self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
+}
+
+func (self *_Assembler) _asm_OP_array_clear(p *_Instr) {
+    self.mem_clear_rem(p.i64(), true)
+}
+
+func (self *_Assembler) _asm_OP_array_clear_p(p *_Instr) {
+    self.mem_clear_rem(p.i64(), false)
 }
 
 func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
