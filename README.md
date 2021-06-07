@@ -3,15 +3,15 @@
 A blazingly fast JSON serializing &amp; deserializing library.
 
 ## Benchmarks
-In all sizes of json and all scenes of usage, Sonic almost performs best (cpu i9-9880H, goarch amd64).
+For all sizes of json and all scenes of usage, Sonic performs almost best.
 - Small (400B, 11 keys, 3 levels)
-:::image type="icon" source="Json (400B).png" border="false":::
+![small benchmarks](bench-400B.png)
 - Medium (110KB, 300+ keys, 3 levels)
-:::image type="content" source="Json (110KB ).png" alt-text="medium benchmarks":::
+![medium benchmarks](bench-110KB.png)
 - Large (550KB, 10000+ key, 6 levels)
-:::image type="content" source="Json (550KB).png" alt-text="large benchmarks":::
+![large benchmarks](bench-550KB.png)
 
-For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19), Sonic is **1.5x** fast than [json-iterater](https://github.com/json-iterator/go) in decoding, **2.5x** fast in encoding.
+For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19)(cpu i9-9880H, goarch amd64), Sonic is **1.5x** fast than [json-iterater](https://github.com/json-iterator/go) in decoding, **2.5x** fast in encoding.
 
 ```powershell
 BenchmarkDecoder_Generic_Sonic-16                          10000             54309 ns/op         240.01 MB/s       46149 B/op        303 allocs/op
@@ -27,7 +27,7 @@ BenchmarkEncoder_Binding_Sonic-16                          10000              73
 BenchmarkEncoder_Binding_JsonIter-16                       10000             23223 ns/op         561.31 MB/s        9489 B/op          2 allocs/op
 BenchmarkEncoder_Binding_StdLib-16                         10000             19512 ns/op         668.07 MB/s        9477 B/op          1 allocs/op
 ```
-Detail benchmarks see [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go)
+More detail benchmarks see [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go)
 
 ## Usage
 
