@@ -11,7 +11,7 @@ For all sizes of json and all scenes of usage, Sonic performs almost best.
 - Large (550KB, 10000+ key, 6 levels)
 ![large benchmarks](bench-550KB.png)
 
-For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19)(cpu i9-9880H, goarch amd64), Sonic is **1.5x** fast than [json-iterater](https://github.com/json-iterator/go) in decoding, **2.5x** fast in encoding.
+For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19)(cpu i9-9880H, goarch amd64), Sonic is **1.5x** fast than [json-iterator](https://github.com/json-iterator/go) in decoding, **2.5x** fast in encoding.
 
 ```powershell
 BenchmarkDecoder_Generic_Sonic-16                          10000             54309 ns/op         240.01 MB/s       46149 B/op        303 allocs/op
@@ -27,7 +27,7 @@ BenchmarkEncoder_Binding_Sonic-16                          10000              73
 BenchmarkEncoder_Binding_JsonIter-16                       10000             23223 ns/op         561.31 MB/s        9489 B/op          2 allocs/op
 BenchmarkEncoder_Binding_StdLib-16                         10000             19512 ns/op         668.07 MB/s        9477 B/op          1 allocs/op
 ```
-More detail benchmarks see [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go)
+More detail see [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go)
 
 ## Usage
 
@@ -35,7 +35,7 @@ More detail benchmarks see [ast/search_test.go](https://github.com/bytedance/son
 
 The behaviors are mostly consistent with encoding/json, except some uncommon escaping and key sorting (see [issue4](https://github.com/bytedance/sonic/issues/4))
  ```go
-import "https://github.com/bytedance/sonic"
+import "github.com/bytedance/sonic"
 
 // Marshal
 output, err := sonic.Marshal(&data) 
@@ -47,7 +47,7 @@ err := sonic.Unmarshal(input, &data)
 
 Search partial json by given pathes, which must be non-negative integer or string or nil
 ```go
-import "https://github.com/bytedance/sonic"
+import "github.com/bytedance/sonic"
 
 input := []byte(`{"key1":[{},{"key2":{"key3":[1,2,3]}}]}`)
 
@@ -67,7 +67,7 @@ Returned ast.Node supports：
 
 ### Use Number/Use Int64
  ```go
-import "https://github.com/bytedance/sonic/decoder"
+import "github.com/bytedance/sonic/decoder"
 
 input := `1`
 var data interface{}
@@ -92,7 +92,7 @@ Since Sonic uses JIT(just-in-time) compiling for decoder/encoder, huge schema ma
 ```go
 import (
     "reflect"
-    "https://github.com/bytedance/sonic"
+    "github.com/bytedance/sonic"
 )
 
 func init() {
@@ -107,7 +107,7 @@ For alignment to encoding/json, we provide API to pass `[]byte` as arguement, bu
 ### Avoid repeating work
 `Get()` overlapping pathes from the same root may cause repeating parsing. Instead of using `Get()` several times, you can use parser and searcher together like this:
 ```go
-import "https://github.com/bytedance/sonic"
+import "github.com/bytedance/sonic"
 
 root, err := sonic.GetByString(_TwitterJson, "statuses", 3, "user")
 a = root.GetByPath( "entities","description")
@@ -118,7 +118,7 @@ No need to worry about the overlaping or overparsing of a, b and c, because the 
 ### Better performance for `interface{}` (or `map[string]interface{}`)
 In most cases of fully-load generic json, `Unmarshal()` performs better than `ast.Loads()`. But if you only want to search a partial json and convert it into `interface{}` (or `Map()` for `map[string]interface{}`, `Array()` for `[]interface{}`), we advise you to combine these two:
 ```go
-import "https://github.com/bytedance/sonic"
+import "github.com/bytedance/sonic"
 
 node, err := sonic.GetByString(_TwitterJson, "statuses", 3, "user")
 var user interface{}
