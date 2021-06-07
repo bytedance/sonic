@@ -18,39 +18,68 @@
 package sonic
 
 import (
-    `reflect`
+	"encoding/json"
+	"errors"
+	`reflect`
 
-    `github.com/bytedance/sonic/ast`
-    `github.com/bytedance/sonic/decoder`
-    `github.com/bytedance/sonic/encoder`
+	`github.com/klauspost/cpuid`
+
+	`github.com/bytedance/sonic/ast`
+	`github.com/bytedance/sonic/decoder`
+	`github.com/bytedance/sonic/encoder`
 )
+
+var cpuSupported bool
+
+var ErrCPUNotSupported = errors.New("CPU not supported")
+
+func init() {
+	cpuSupported = cpuid.CPU.AVX2() && cpuid.CPU.BMI2() && cpuid.CPU.FMA3() && cpuid.CPU.SSE4() && cpuid.CPU.SSSE3()
+}
+
+// CPUSupported checks if current cpu supports SIMD instructions sonic needs.
+func CPUSupported() bool {
+	return cpuSupported
+}
 
 // Marshal returns the JSON encoding of v.
 func Marshal(val interface{}) ([]byte, error) {
-    return encoder.Encode(val)
+	if CPUSupported() {
+		return encoder.Encode(val)
+	}
+	return json.Marshal(val)
 }
 
 // Unmarshal parses the JSON-encoded data and stores the result in the value
 // pointed to by v.
 func Unmarshal(buf []byte, val interface{}) error {
-    return UnmarshalString(string(buf), val)
+	if CPUSupported() {
+		return UnmarshalString(string(buf), val)
+	}
+	return json.Unmarshal(buf, val)
 }
 
 // UnmarshalString is like Unmarshal, except buf is a string.
 func UnmarshalString(buf string, val interface{}) error {
-    return decoder.NewDecoder(buf).Decode(val)
+	if CPUSupported() {
+		return decoder.NewDecoder(buf).Decode(val)
+	}
+	return json.Unmarshal([]byte(buf), val)
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
 // order to reduce the first-hit latency.
 func Pretouch(vt reflect.Type) error {
-    if err := encoder.Pretouch(vt); err != nil {
-        return err
-    } else if err = decoder.Pretouch(vt); err != nil {
-        return err
-    } else {
-        return nil
-    }
+	if !CPUSupported() {
+		return ErrCPUNotSupported
+	}
+	if err := encoder.Pretouch(vt); err != nil {
+		return err
+	} else if err = decoder.Pretouch(vt); err != nil {
+		return err
+	} else {
+		return nil
+	}
 }
 
 // Get searches the given path json,
@@ -60,11 +89,17 @@ func Pretouch(vt reflect.Type) error {
 //     - Integer means searching current node as array,
 //     - String means searching current node as object
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(string(src), path...)
+	if CPUSupported() {
+		return GetFromString(string(src), path...)
+	}
+	return ast.Node{}, ErrCPUNotSupported
 }
 
 // GetFromString is same with Get except src is string,
 // which can reduce unnecessary memory copy
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
-    return ast.NewSearcher(src).GetByPath(path...)
+	if CPUSupported() {
+		return ast.NewSearcher(src).GetByPath(path...)
+	}
+	return ast.Node{}, ErrCPUNotSupported
 }
