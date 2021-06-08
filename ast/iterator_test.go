@@ -53,6 +53,9 @@ func TestIterator(t *testing.T) {
 		if i < int64(loop) && v.Int64() != i {
 			t.Fatalf("exp:%v, got:%v", i, v)
 		}
+		if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
+			t.Fatal(i)
+		}
 		i++
 	}
 
@@ -69,6 +72,9 @@ func TestIterator(t *testing.T) {
 		}
 		if i < int64(loop) &&( v.Value.Int64() != i ||v.Key != fmt.Sprintf("k%d", i)) {
 			t.Fatalf("exp:%v, got:%v", i, v.Value.Interface())
+		}
+		if i != int64(mi.Pos())-1 || i >= int64(mi.Len()) {
+			t.Fatal(i)
 		}
 		i++
 	}

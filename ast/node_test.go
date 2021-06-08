@@ -17,14 +17,80 @@
 package ast
 
 import (
-    "strconv"
-    "testing"
+	"encoding/json"
+	"strconv"
+	"testing"
 
-    "github.com/bytedance/sonic/internal/native"
-    jsoniter "github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/stretchr/testify/assert"
 )
 
 var parallelism = 4
+
+func TestUseNumber(t *testing.T) {
+    node, err := NewParser("1061346755812312312313").Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    if node.Type() != V_NUMBER {
+        t.Fatalf("wrong type: %v", node.Type())
+    }
+    iv := node.InterfaceUseNumber().(json.Number)
+    if iv.String() != "1061346755812312312313" {
+        t.Fatalf("exp:%#v, got:%#v", "1061346755812312312313", iv.String())
+    }
+    ix := node.Interface().(float64)
+    if ix != float64(1061346755812312312313) {
+        t.Fatalf("exp:%#v, got:%#v", float64(1061346755812312312313), ix)
+    }
+    ij,_ := node.Number().Int64()
+    jj,_ := json.Number("1061346755812312312313").Int64()
+    if ij != jj {
+        t.Fatalf("exp:%#v, got:%#v", jj, ij)
+    }
+}
+
+func TestMap(t *testing.T) {
+    node, err := NewParser(`{"a":-0, "b":1, "c":-1.2, "d":-1.2e-10}`).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    m := node.Map()
+    assert.Equal(t, m, map[string]interface{}{
+        "a": float64(0),    
+        "b": float64(1),    
+        "c": float64(-1.2),    
+        "d": float64(-1.2e-10),    
+    })
+    m1 := node.MapUseNumber()
+    assert.Equal(t, m1, map[string]interface{}{
+        "a": json.Number("-0"),    
+        "b": json.Number("1"),    
+        "c": json.Number("-1.2"),    
+        "d": json.Number("-1.2e-10"),    
+    })
+}
+
+func TestArray(t *testing.T) {
+    node, err := NewParser(`[-0, 1, -1.2, -1.2e-10]`).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    m := node.Array()
+    assert.Equal(t, m, []interface{}{
+        float64(0),    
+        float64(1),    
+        float64(-1.2),    
+        float64(-1.2e-10),    
+    })
+    m1 := node.ArrayUseNumber()
+    assert.Equal(t, m1, []interface{}{
+        json.Number("-0"),    
+        json.Number("1"),    
+        json.Number("-1.2"),    
+        json.Number("-1.2e-10"),    
+    })
+}
 
 func TestNodeRaw(t *testing.T) {
     root, derr := NewSearcher(_TwitterJson).GetByPath("search_metadata")
@@ -145,19 +211,14 @@ func TestNodeSet(t *testing.T) {
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    root.GetByPath("statuses", 3).Set("id_str", Node{
-        v: int64(111),
-        t: native.V_INTEGER,
-    })
+    app,_ := NewParser("111").Parse()
+    root.GetByPath("statuses", 3).Set("id_str", app)
     val := root.GetByPath("statuses", 3, "id_str").Int64()
     if val != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
     for i := root.GetByPath("statuses", 3).Cap(); i >= 0; i-- {
-        root.GetByPath("statuses", 3).Set("id_str"+strconv.Itoa(i), Node{
-            v: int64(111),
-            t: native.V_INTEGER,
-        })
+        root.GetByPath("statuses", 3).Set("id_str"+strconv.Itoa(i), app)
     }
     val = root.GetByPath("statuses", 3, "id_str0").Int64()
     if val != 111 {
@@ -180,10 +241,8 @@ func TestNodeSetByIndex(t *testing.T) {
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    root.GetByPath("statuses").SetByIndex(0, Node{
-        v: int64(111),
-        t: native.V_INTEGER,
-    })
+    app, _ := NewParser("111").Parse()
+    root.GetByPath("statuses").SetByIndex(0, app)
     val := root.GetByPath("statuses", 0).Int64()
     if val != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
@@ -205,12 +264,10 @@ func TestNodeAdd(t *testing.T) {
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
+    app, _ := NewParser("111").Parse()
 
     for i := root.GetByPath("statuses").Cap(); i >= 0; i-- {
-        root.GetByPath("statuses").Add(Node{
-            v: int64(111),
-            t: native.V_INTEGER,
-        })
+        root.GetByPath("statuses").Add(app)
     }
     val := root.GetByPath("statuses", 4).Int64()
     if val != 111 {
@@ -286,11 +343,11 @@ func BenchmarkNodeGet(b *testing.B) {
         b.Fatalf("decode failed: %v", derr.Error())
     }
     node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
-    node.Set("test1", newInt64(1))
-    node.Set("test2", newInt64(2))
-    node.Set("test3", newInt64(3))
-    node.Set("test4", newInt64(4))
-    node.Set("test5", newInt64(5))
+    node.Set("test1", newNumber("1"))
+    node.Set("test2", newNumber("2"))
+    node.Set("test3", newNumber("3"))
+    node.Set("test4", newNumber("4"))
+    node.Set("test5", newNumber("5"))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node.Get("text").Interface()
@@ -303,11 +360,11 @@ func BenchmarkMapGet(b *testing.B) {
         b.Fatalf("decode failed: %v", derr.Error())
     }
     node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
-    node.Set("test1", newInt64(1))
-    node.Set("test2", newInt64(2))
-    node.Set("test3", newInt64(3))
-    node.Set("test4", newInt64(4))
-    node.Set("test5", newInt64(5))
+    node.Set("test1", newNumber("1"))
+    node.Set("test2", newNumber("2"))
+    node.Set("test3", newNumber("3"))
+    node.Set("test4", newNumber("4"))
+    node.Set("test5", newNumber("5"))
     m := node.Map()
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
@@ -324,7 +381,7 @@ func BenchmarkNodeSet(b *testing.B) {
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        node.Set("test1", newInt64(1))
+        node.Set("test1", newNumber("1"))
     }
 }
 
@@ -352,7 +409,7 @@ func BenchmarkNodeAdd(b *testing.B) {
     for i := 0; i < b.N; i++ {
         root, _ := NewParser(data).Parse()
         node := root.Get("statuses")
-        node.Add(newObject([]Pair{{"test", newInt64(1)}}))
+        node.Add(newObject([]Pair{{"test", newNumber("1")}}))
     }
 }
 

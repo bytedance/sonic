@@ -19,7 +19,6 @@ package ast
 import (
     `encoding/json`
     `fmt`
-    `strconv`
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
@@ -29,7 +28,7 @@ import (
 const (
     _MAP_THRESHOLD     = 5
     _CAP_BITS          = 32
-    _LEN_MASK          = 1<<_CAP_BITS - 1
+    _LEN_MASK          = 1 << _CAP_BITS - 1
     _APPEND_EXTRA_SIZE = 5
 
     _NODE_SIZE = unsafe.Sizeof(Node{})
@@ -38,6 +37,7 @@ const (
 
 const (
     V_RAW        native.ValueType = 1 << 4
+    V_NUMBER     native.ValueType = 10
     V_ARRAY_RAW                   = V_RAW | native.V_ARRAY
     V_OBJECT_RAW                  = V_RAW | native.V_OBJECT
     MASK_RAW                      = V_RAW - 1
@@ -85,10 +85,9 @@ func (self *Node) Bool() bool {
 // Int64 as above.
 func (self *Node) Int64() int64 {
     switch self.t {
+        case V_NUMBER         : return numberToInt64(self)
         case native.V_TRUE    : return 1
         case native.V_FALSE   : return 0
-        case native.V_DOUBLE  : return int64(i64tof(self.v))
-        case native.V_INTEGER : return self.v
         case V_RAW : 
             n := self.parseRaw()
             return n.Int64()
@@ -99,11 +98,10 @@ func (self *Node) Int64() int64 {
 // Number as above.
 func (self *Node) Number() json.Number {
     switch self.t {
-        case native.V_DOUBLE  : return json.Number(strconv.FormatFloat(i64tof(self.v), 'g', -1, 64))
-        case native.V_INTEGER : return json.Number(strconv.FormatInt(self.v, 10))
         case V_RAW : 
             n := self.parseRaw()
             return n.Number()
+        case V_NUMBER         : return toNumber(self)
         default               : panic("value cannot be represented as a json.Number")
     }
 }
@@ -111,12 +109,11 @@ func (self *Node) Number() json.Number {
 // String as above.
 func (self *Node) String() string {
     switch self.t {
+        case V_NUMBER         : return toNumber(self).String()
         case native.V_NULL    : return "null"
         case native.V_TRUE    : return "true"
         case native.V_FALSE   : return "false"
         case native.V_STRING  : return addr2str(self.p, self.v)
-        case native.V_DOUBLE  : return strconv.FormatFloat(i64tof(self.v), 'g', -1, 64)
-        case native.V_INTEGER : return strconv.FormatInt(self.v, 10)
         case V_RAW : 
             n := self.parseRaw()
             return n.String()
@@ -127,10 +124,9 @@ func (self *Node) String() string {
 // Float64 as above.
 func (self *Node) Float64() float64 {
     switch self.t {
+        case V_NUMBER         : return numberToFloat64(self)
         case native.V_TRUE    : return 1.0
         case native.V_FALSE   : return 0.0
-        case native.V_DOUBLE  : return i64tof(self.v)
-        case native.V_INTEGER : return float64(self.v)
         case V_RAW : 
             n := self.parseRaw()
             return n.Float64()
@@ -254,12 +250,14 @@ func (self *Node) Index(idx int) *Node {
     return self.loadIndex(idx)
 }
 
+// Values returns iterator for array's children traversal
 func (self *Node) Values() ListIterator {
     self.must(native.V_ARRAY, "an array")
     self.loadAllIndex()
     return ListIterator{Iterator{p: self}}
 }
 
+// Values returns iterator for object's children traversal
 func (self *Node) Properties() ObjectIterator {
     self.must(native.V_OBJECT, "an object")
     self.loadAllKey()
@@ -275,6 +273,13 @@ func (self *Node) Map() map[string]interface{} {
     return self.toGenericObject()
 }
 
+// MapUseNumber loads all keys of an object node, with numeric nodes casted to json.Number
+func (self *Node) MapUseNumber() map[string]interface{} {
+    self.must(native.V_OBJECT, "an object")
+    self.loadAllKey()
+    return self.toGenericObjectUseNumber()
+}
+
 // Array loads all indexes of an array node
 func (self *Node) Array() []interface{} {
     self.must(native.V_ARRAY, "an array")
@@ -282,8 +287,16 @@ func (self *Node) Array() []interface{} {
     return self.toGenericArray()
 }
 
+// Array loads all indexes of an array node, with numeric nodes casted to json.Number
+func (self *Node) ArrayUseNumber() []interface{} {
+    self.must(native.V_ARRAY, "an array")
+    self.loadAllIndex()
+    return self.toGenericArrayUseNumber()
+}
+
 // Interface loads all children under all pathes from this node,
 // and converts itself as generic go type
+// all numberic nodes are casted to float64
 func (self *Node) Interface() interface{} {
     switch self.t {
         case native.V_EOF     : panic("invalid value")
@@ -293,8 +306,8 @@ func (self *Node) Interface() interface{} {
         case native.V_ARRAY   : return self.toGenericArray()
         case native.V_OBJECT  : return self.toGenericObject()
         case native.V_STRING  : return addr2str(self.p, self.v)
-        case native.V_DOUBLE  : return i64tof(self.v)
-        case native.V_INTEGER : return self.v
+        case V_NUMBER         : 
+            return numberToFloat64(self)
         case V_ARRAY_RAW:
             self.loadAllIndex()
             return self.toGenericArray()
@@ -304,6 +317,32 @@ func (self *Node) Interface() interface{} {
         case V_RAW : 
             n := self.parseRaw()
             return n.Interface()
+        default               : panic("not gonna happen")
+    }
+}
+
+// InterfaceUseNumber works same with Interface()
+// except numberic nodes  are casted to json.Number
+func (self *Node) InterfaceUseNumber() interface{} {
+    switch self.t {
+        case native.V_EOF     : panic("invalid value")
+        case native.V_NULL    : return nil
+        case native.V_TRUE    : return true
+        case native.V_FALSE   : return false
+        case native.V_ARRAY   : return self.toGenericArrayUseNumber()
+        case native.V_OBJECT  : return self.toGenericObjectUseNumber()
+        case native.V_STRING  : return addr2str(self.p, self.v)
+        case V_NUMBER         : 
+            return toNumber(self)
+        case V_ARRAY_RAW:
+            self.loadAllIndex()
+            return self.toGenericArrayUseNumber()
+        case V_OBJECT_RAW:
+            self.loadAllKey()
+            return self.toGenericObjectUseNumber()
+        case V_RAW : 
+            n := self.parseRaw()
+            return n.InterfaceUseNumber()
         default               : panic("not gonna happen")
     }
 }
@@ -652,6 +691,25 @@ func (self *Node) toGenericArray() []interface{} {
     return ret
 }
 
+func (self *Node) toGenericArrayUseNumber() []interface{} {
+    nb := self.Len()
+    ret := make([]interface{}, nb)
+    if nb == 0 {
+        return ret
+    }
+
+    /* convert each item */
+    var p = (*Node)(self.p)
+    ret[0] = p.InterfaceUseNumber()
+    for i := 1; i < nb; i++ {
+        p = p.unsafe_next()
+        ret[i] = p.InterfaceUseNumber()
+    }
+
+    /* all done */
+    return ret
+}
+
 func (self *Node) toGenericObject() map[string]interface{} {
     nb := self.Len()
     ret := make(map[string]interface{}, nb)
@@ -671,6 +729,26 @@ func (self *Node) toGenericObject() map[string]interface{} {
     return ret
 }
 
+
+func (self *Node) toGenericObjectUseNumber() map[string]interface{} {
+    nb := self.Len()
+    ret := make(map[string]interface{}, nb)
+    if nb == 0 {
+        return ret
+    }
+
+    /* convert each item */
+    var p = (*Pair)(self.p)
+    ret[p.Key] = p.Value.InterfaceUseNumber()
+    for i := 1; i < nb; i++ {
+        p = p.unsafe_next()
+        ret[p.Key] = p.Value.InterfaceUseNumber()
+    }
+
+    /* all done */
+    return ret
+}
+
 /** Internal Factory Methods **/
 
 var (
@@ -682,11 +760,32 @@ var (
     emptyObjectNode = Node{t: native.V_OBJECT}
 )
 
-func newInt64(v int64) Node {
+func newNumber(v string) Node {
     return Node{
-        v: v,
-        t: native.V_INTEGER,
+        v: int64(len(v)),
+        p: str2ptr(v),
+        t: V_NUMBER,
     }
+}
+
+func toNumber(node *Node) json.Number {
+    return json.Number(addr2str(node.p, node.v))
+}
+
+func numberToFloat64(node *Node) float64 {
+    ret,err := toNumber(node).Float64()
+    if err != nil {
+        panic(err)
+    }
+    return ret
+}
+
+func numberToInt64(node *Node) int64 {
+    ret,err := toNumber(node).Int64()
+    if err != nil {
+        panic(err)
+    }
+    return ret
 }
 
 func newBytes(v []byte) Node {
@@ -702,13 +801,6 @@ func newString(v string) Node {
         t: native.V_STRING,
         p: str2ptr(v),
         v: int64(len(v)),
-    }
-}
-
-func newFloat64(v float64) Node {
-    return Node{
-        t: native.V_DOUBLE,
-        v: f64toi(v),
     }
 }
 
@@ -799,7 +891,7 @@ func newRawNode(str string) Node {
 }
 
 func (self *Node) parseRaw() Node {
-    raw := self.Raw()
+    raw := addr2str(self.p, self.v)
     n, e := NewParser(raw).Parse()
     if e != 0 {
         panic(fmt.Sprintf("%v, raw json: %s", e.Error(), raw))

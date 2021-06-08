@@ -1,17 +1,17 @@
 # Sonic
 
-A blazingly fast JSON serializing &amp; deserializing library.
+A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT(just-in-time compiling) and SIMD(single-instruction-multi-data).
 
 ## Benchmarks
 For all sizes of json and all scenes of usage, Sonic performs almost best.
 - Small (400B, 11 keys, 3 levels)
 ![small benchmarks](bench-400B.png)
-- Medium (110KB, 300+ keys, 3 levels)
+- Medium (110KB, 300+ keys, 3 levels, with many quoted-json values)
 ![medium benchmarks](bench-110KB.png)
 - Large (550KB, 10000+ key, 6 levels)
 ![large benchmarks](bench-550KB.png)
 
-For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19)(cpu i9-9880H, goarch amd64), Sonic is **1.5x** fast than [json-iterator](https://github.com/json-iterator/go) in decoding, **2.5x** fast in encoding.
+For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19)(cpu i9-9880H, goarch amd64), Sonic is **1.5x** faster than [json-iterator](https://github.com/json-iterator/go) in decoding, **2.5x** faster in encoding.
 
 ```powershell
 BenchmarkDecoder_Generic_Sonic-16                          10000             54309 ns/op         240.01 MB/s       46149 B/op        303 allocs/op
@@ -27,7 +27,7 @@ BenchmarkEncoder_Binding_Sonic-16                          10000              73
 BenchmarkEncoder_Binding_JsonIter-16                       10000             23223 ns/op         561.31 MB/s        9489 B/op          2 allocs/op
 BenchmarkEncoder_Binding_StdLib-16                         10000             19512 ns/op         668.07 MB/s        9477 B/op          1 allocs/op
 ```
-More detail see [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go)
+More detail see [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go),
 
 ## Usage
 
@@ -83,6 +83,14 @@ dc.Decode(&data) // data == json.Number("1")
 dc = decoder.NewDecoder(input)
 dc.UseInt64()
 dc.Decode(&data) // data == int64(1)
+
+root, err := sonic.GetFromString(input)
+// Get json.Number
+jn := root.Number()
+jm := root.InterfaceUseNumber().(json.Number) // jn == jm
+// Get float64
+fn := root.Float64()
+fm := root.Interface().(float64) // jn == jm
  ```
 
 ## Tips
@@ -102,7 +110,7 @@ func init() {
 ```
 
 ### Pass string or []byte?
-For alignment to encoding/json, we provide API to pass `[]byte` as arguement, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin json is huge. Therefore, you can use `UnmarshalString`, `GetFromString` to pass string, as long as your origin data is string or **nocopy-case** is safe for your []byte.
+For alignment to encoding/json, we provide API to pass `[]byte` as arguement, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin json is huge. Therefore, you can use `UnmarshalString`, `GetFromString` to pass string, as long as your origin data is string or **nocopy-cast** is safe for your []byte.
 
 ### Avoid repeating work
 `Get()` overlapping pathes from the same root may cause repeating parsing. Instead of using `Get()` several times, you can use parser and searcher together like this:
@@ -115,8 +123,8 @@ b = root.GetByPath( "entities","url")
 c = root.GetByPath( "created_at")
 ```
 No need to worry about the overlaping or overparsing of a, b and c, because the inner parser of their root is lazy-loaded.
-### Better performance for `interface{}` (or `map[string]interface{}`)
-In most cases of fully-load generic json, `Unmarshal()` performs better than `ast.Loads()`. But if you only want to search a partial json and convert it into `interface{}` (or `Map()` for `map[string]interface{}`, `Array()` for `[]interface{}`), we advise you to combine these two:
+### Better performance for generic deserializing
+In most cases of fully-load generic json, `Unmarshal()` performs better than `ast.Loads()`. But if you only want to search a partial json and convert it into `interface{}` (or `map[string]interface{}`, `[]interface{}`), we advise you to combine `Get()` and `Unmarshal()`:
 ```go
 import "github.com/bytedance/sonic"
 
