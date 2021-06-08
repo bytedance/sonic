@@ -100,10 +100,10 @@ func BenchmarkFastInt_IntToString(b *testing.B) {
         test func(*testing.B)
     }{{
         name: "StdLib-Positive",
-        test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { strconv.AppendInt(buf[:], int64(i), 10) }},
+        test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { strconv.AppendInt(buf[:0], int64(i), 10) }},
     }, {
         name: "StdLib-Negative",
-        test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { strconv.AppendInt(buf[:], -int64(i), 10) }},
+        test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { strconv.AppendInt(buf[:0], -int64(i), 10) }},
     }, {
         name: "FastInt-Positive",
         test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { __i64toa(&buf[0], int64(i)) }},
@@ -122,7 +122,7 @@ func BenchmarkFastInt_UintToString(b *testing.B) {
         test func(*testing.B)
     }{{
         name: "StdLib",
-        test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { strconv.AppendUint(buf[:], uint64(i), 10) }},
+        test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { strconv.AppendUint(buf[:0], uint64(i), 10) }},
     }, {
         name: "FastInt",
         test: func(b *testing.B) { var buf [32]byte; for i := 0; i < b.N; i++ { __u64toa(&buf[0], uint64(i)) }},

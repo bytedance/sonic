@@ -22,11 +22,14 @@ import (
     `github.com/bytedance/sonic/internal/native`
 )
 
+// Searcher is used for path searches.
+// It looks for specific key and skip unnecessary parsing
 type Searcher struct {
     parser Parser
     // cache map[string]*Node
 }
 
+// NewSearch creates a Searcher with lazy-load parser by default
 func NewSearcher(str string) *Searcher {
     return &Searcher{
         parser: Parser{
@@ -35,6 +38,7 @@ func NewSearcher(str string) *Searcher {
         },
     }
 }
+
 
 func (self *Parser) printNear(start int) string {
     start -= 10
@@ -48,6 +52,12 @@ func (self *Parser) printNear(start int) string {
     return self.s[start:end]
 }
 
+// GetByPath searches the given path json,
+// and returns its representing ast.Node
+//
+// Each path arg must be integer or string:
+//     - Integer means searching current node as array,
+//     - String means searching current node as object
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     self.parser.p = 0
 

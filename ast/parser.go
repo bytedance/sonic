@@ -246,11 +246,12 @@ func (self *Parser) decodeString(iv int64, ep int) (Node, native.ParsingError) {
 }
 
 /** Parser Interface **/
-
+// Pos returns current position at parsed json
 func (self *Parser) Pos() int {
     return self.p
 }
 
+// Parse loads the inner json with lazy-load mode
 func (self *Parser) Parse() (Node, native.ParsingError) {
     switch val := self.decodeValue(); val.Vt {
         case native.V_EOF     : return Node{}, native.ERR_EOF
@@ -285,8 +286,10 @@ func (self *Parser) skip() (int, native.ParsingError) {
     return start, 0
 }
 
-/** Parser Factory **/
-
+// Loads fully parses given json and returns:
+//  the finally parsed position,
+//  the interface{} representing results,
+//  or ParsingError if any mistake happends
 func Loads(src string) (int, interface{}, native.ParsingError) {
     ps := &Parser{s: src}
     np, err := ps.Parse()
@@ -294,11 +297,39 @@ func Loads(src string) (int, interface{}, native.ParsingError) {
     /* check for errors */
     if err != 0 {
         return 0, nil, err
-    } else {
-        return ps.Pos(), np.Interface(), 0
-    }
+    } 
+    return ps.Pos(), np.Interface(), 0
 }
 
+// LoadUseNumber is almost same with Loads,
+// except returned numbers are json.Number
+func LoadUseNuumber(src string) (int, interface{}, native.ParsingError) {
+    ps := &Parser{s: src}
+    np, err := ps.Parse()
+
+    /* check for errors */
+    if err != 0 {
+        return 0, nil, err
+    } 
+    return ps.Pos(), np.InterfaceUseNumber(), 0
+}
+
+// LoadUseNumber is almost same with Loads,
+// except returned numbers are int64
+func LoadUseInt64(src string) (int, interface{}, native.ParsingError) {
+    ps := &Parser{s: src}
+    np, err := ps.Parse()
+
+    /* check for errors */
+    if err != 0 {
+        return 0, nil, err
+    } 
+    return ps.Pos(), np.InterfaceUseInt64(), 0
+}
+
+
+
+// NewParser.
 func NewParser(src string) *Parser {
     return &Parser{s: src}
 }

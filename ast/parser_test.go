@@ -18,8 +18,6 @@ package ast
 
 import (
     `encoding/json`
-    `fmt`
-    `reflect`
     `testing`
 
     jsoniter `github.com/json-iterator/go`
@@ -30,8 +28,50 @@ import (
 func runDecoderTest(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()
     if err != 0 { panic(err) }
-    fmt.Printf("%s -> %s :: %v\n", src, reflect.TypeOf(vv), vv)
+    //fmt.Printf("%s -> %s :: %v\n", src, reflect.TypeOf(vv), vv)
     assert.Equal(t, expect, vv.Interface())
+}
+
+func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
+    vv, err := NewParser(src).Parse()
+    if err != 0 { panic(err) }
+    //fmt.Printf("%s -> %s :: %v\n", src, reflect.TypeOf(vv), vv)
+    vvv := vv.InterfaceUseNumber()
+    switch vvv.(type) {
+    case json.Number:
+        assert.Equal(t, expect, n2f64(vvv.(json.Number)))
+    case []interface{}:
+        x := vvv.([]interface{})
+        for i, e := range x {
+            if ev,ok := e.(json.Number);ok {
+                x[i] = n2f64(ev)
+            }
+        }
+        assert.Equal(t, expect, x)
+    case map[string]interface{}:
+        x := vvv.(map[string]interface{})
+        for k,v := range x {
+            if ev, ok := v.(json.Number); ok {
+                x[k] = n2f64(ev)
+            }
+        }
+        assert.Equal(t, expect, x)
+    }
+}
+
+func n2f64(i json.Number) float64{ 
+    x, err := i.Float64()
+    if err != nil {
+        panic(err)
+    }
+    return x
+}
+
+func runDecoderTestUseInt64(t *testing.T, src string, expect interface{}) {
+    vv, err := NewParser(src).Parse()
+    if err != 0 { panic(err) }
+    //fmt.Printf("%s -> %s :: %v\n", src, reflect.TypeOf(vv), vv)
+    assert.Equal(t, expect, vv.InterfaceUseInt64())
 }
 
 func TestParser_Basic(t *testing.T) {
@@ -40,10 +80,10 @@ func TestParser_Basic(t *testing.T) {
     runDecoderTest(t, `false`, false)
     runDecoderTest(t, `"hello, world \\ \/ \b \f \n \r \t \u666f 测试中文"`, "hello, world \\ / \b \f \n \r \t \u666f 测试中文")
     runDecoderTest(t, `"\ud83d\ude00"`, "😀")
-    runDecoderTest(t, `0`, int64(0))
-    runDecoderTest(t, `-0`, int64(0))
-    runDecoderTest(t, `123456`, int64(123456))
-    runDecoderTest(t, `-12345`, int64(-12345))
+    runDecoderTest(t, `0`, float64(0))
+    runDecoderTest(t, `-0`, float64(0))
+    runDecoderTest(t, `123456`, float64(123456))
+    runDecoderTest(t, `-12345`, float64(-12345))
     runDecoderTest(t, `0.2`, 0.2)
     runDecoderTest(t, `1.2`, 1.2)
     runDecoderTest(t, `-0.2`, -0.2)
@@ -78,6 +118,91 @@ func TestParser_Basic(t *testing.T) {
     runDecoderTest(t, `{}`, map[string]interface{}{})
     runDecoderTest(t, `["asd", "123", true, false, null, 2.4, 1.2e15]`, []interface{}{"asd", "123", true, false, nil, 2.4, 1.2e15})
     runDecoderTest(t, `{"asdf": "qwer", "zxcv": true}`, map[string]interface{}{"asdf": "qwer", "zxcv": true})
+    runDecoderTest(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a":"123", "b":true, "c":false, "d":nil, "e":float64(2.4), "f":float64(1.2e15), "g":float64(1)})
+
+    runDecoderTestUseNumber(t, `null`, nil)
+    runDecoderTestUseNumber(t, `true`, true)
+    runDecoderTestUseNumber(t, `false`, false)
+    runDecoderTestUseNumber(t, `"hello, world \\ \/ \b \f \n \r \t \u666f 测试中文"`, "hello, world \\ / \b \f \n \r \t \u666f 测试中文")
+    runDecoderTestUseNumber(t, `"\ud83d\ude00"`, "😀")
+    runDecoderTestUseNumber(t, `0`, float64(0))
+    runDecoderTestUseNumber(t, `-0`, float64(0))
+    runDecoderTestUseNumber(t, `123456`, float64(123456))
+    runDecoderTestUseNumber(t, `-12345`, float64(-12345))
+    runDecoderTestUseNumber(t, `0.2`, float64(0.2))
+    runDecoderTestUseNumber(t, `1.2`, float64(1.2))
+    runDecoderTestUseNumber(t, `-0.2`, float64(-0.2))
+    runDecoderTestUseNumber(t, `-1.2`, float64(-1.2))
+    runDecoderTestUseNumber(t, `0e12`, float64(0e12))
+    runDecoderTestUseNumber(t, `0e+12`, float64(0e+12))
+    runDecoderTestUseNumber(t, `0e-12`, float64(0e-12))
+    runDecoderTestUseNumber(t, `-0e12`, float64(-0e12))
+    runDecoderTestUseNumber(t, `-0e+12`, float64(-0e+12))
+    runDecoderTestUseNumber(t, `-0e-12`, float64(-0e-12))
+    runDecoderTestUseNumber(t, `2e12`, float64(2e12))
+    runDecoderTestUseNumber(t, `2E12`, float64(2e12))
+    runDecoderTestUseNumber(t, `2e+12`, float64(2e+12))
+    runDecoderTestUseNumber(t, `2e-12`, float64(2e-12))
+    runDecoderTestUseNumber(t, `-2e12`, float64(-2e12))
+    runDecoderTestUseNumber(t, `-2e+12`, float64(-2e+12))
+    runDecoderTestUseNumber(t, `-2e-12`, float64(-2e-12))
+    runDecoderTestUseNumber(t, `0.2e12`, float64(0.2e12))
+    runDecoderTestUseNumber(t, `0.2e+12`, float64(0.2e+12))
+    runDecoderTestUseNumber(t, `0.2e-12`, float64(0.2e-12))
+    runDecoderTestUseNumber(t, `-0.2e12`, float64(-0.2e12))
+    runDecoderTestUseNumber(t, `-0.2e+12`, float64(-0.2e+12))
+    runDecoderTestUseNumber(t, `-0.2e-12`, float64(-0.2e-12))
+    runDecoderTestUseNumber(t, `1.2e12`, float64(1.2e12))
+    runDecoderTestUseNumber(t, `1.2e+12`, float64(1.2e+12))
+    runDecoderTestUseNumber(t, `1.2e-12`, float64(1.2e-12))
+    runDecoderTestUseNumber(t, `-1.2e12`, float64(-1.2e12))
+    runDecoderTestUseNumber(t, `-1.2e+12`, float64(-1.2e+12))
+    runDecoderTestUseNumber(t, `-1.2e-12`, float64(-1.2e-12))
+    runDecoderTestUseNumber(t, `-1.2E-12`, float64(-1.2e-12))
+    runDecoderTestUseNumber(t, `["asd", "123", true, false, null, 2.4, 1.2e15, 1]`, []interface{}{"asd", "123", true, false, nil, float64(2.4), float64(1.2e15), float64(1)})
+    runDecoderTestUseNumber(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a":"123", "b":true, "c":false, "d":nil, "e":float64(2.4), "f":float64(1.2e15), "g":float64(1)})
+
+    runDecoderTestUseInt64(t, `null`, nil)
+    runDecoderTestUseInt64(t, `true`, true)
+    runDecoderTestUseInt64(t, `false`, false)
+    runDecoderTestUseInt64(t, `"hello, world \\ \/ \b \f \n \r \t \u666f 测试中文"`, "hello, world \\ / \b \f \n \r \t \u666f 测试中文")
+    runDecoderTestUseInt64(t, `"\ud83d\ude00"`, "😀")
+    runDecoderTestUseInt64(t, `0`, int64(0))
+    runDecoderTestUseInt64(t, `-0`, int64(0))
+    runDecoderTestUseInt64(t, `123456`, int64(123456))
+    runDecoderTestUseInt64(t, `-12345`, int64(-12345))
+    runDecoderTestUseInt64(t, `0.2`, float64(0.2))
+    runDecoderTestUseInt64(t, `1.2`, float64(1.2))
+    runDecoderTestUseInt64(t, `-0.2`, float64(-0.2))
+    runDecoderTestUseInt64(t, `-1.2`, float64(-1.2))
+    runDecoderTestUseInt64(t, `0e12`, float64(0e12))
+    runDecoderTestUseInt64(t, `0e+12`, float64(0e+12))
+    runDecoderTestUseInt64(t, `0e-12`, float64(0e-12))
+    runDecoderTestUseInt64(t, `-0e12`, float64(-0e12))
+    runDecoderTestUseInt64(t, `-0e+12`, float64(-0e+12))
+    runDecoderTestUseInt64(t, `-0e-12`, float64(-0e-12))
+    runDecoderTestUseInt64(t, `2e12`, float64(2e12))
+    runDecoderTestUseInt64(t, `2E12`, float64(2e12))
+    runDecoderTestUseInt64(t, `2e+12`, float64(2e+12))
+    runDecoderTestUseInt64(t, `2e-12`, float64(2e-12))
+    runDecoderTestUseInt64(t, `-2e12`, float64(-2e12))
+    runDecoderTestUseInt64(t, `-2e+12`, float64(-2e+12))
+    runDecoderTestUseInt64(t, `-2e-12`, float64(-2e-12))
+    runDecoderTestUseInt64(t, `0.2e12`, float64(0.2e12))
+    runDecoderTestUseInt64(t, `0.2e+12`, float64(0.2e+12))
+    runDecoderTestUseInt64(t, `0.2e-12`, float64(0.2e-12))
+    runDecoderTestUseInt64(t, `-0.2e12`, float64(-0.2e12))
+    runDecoderTestUseInt64(t, `-0.2e+12`, float64(-0.2e+12))
+    runDecoderTestUseInt64(t, `-0.2e-12`, float64(-0.2e-12))
+    runDecoderTestUseInt64(t, `1.2e12`, float64(1.2e12))
+    runDecoderTestUseInt64(t, `1.2e+12`, float64(1.2e+12))
+    runDecoderTestUseInt64(t, `1.2e-12`, float64(1.2e-12))
+    runDecoderTestUseInt64(t, `-1.2e12`, float64(-1.2e12))
+    runDecoderTestUseInt64(t, `-1.2e+12`, float64(-1.2e+12))
+    runDecoderTestUseInt64(t, `-1.2e-12`, float64(-1.2e-12))
+    runDecoderTestUseInt64(t, `-1.2E-12`, float64(-1.2e-12))
+    runDecoderTestUseInt64(t, `["asd", "123", true, false, null, 2.4, 1.2e15, 1]`, []interface{}{"asd", "123", true, false, nil, float64(2.4), float64(1.2e15), int64(1)})
+    runDecoderTestUseInt64(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a":"123", "b":true, "c":false, "d":nil, "e":float64(2.4), "f":float64(1.2e15), "g":int64(1)})
 }
 
 func BenchmarkParser_StdLib(b *testing.B) {

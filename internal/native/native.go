@@ -146,3 +146,13 @@ func SkipOne(s *string, p *int, m *StateMachine) int {
 func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int {
     return __unquote(s, nb, dp, ep, flags)
 }
+
+func I64toa(i int64) []byte {
+    var buf [32]byte
+    return buf[:__i64toa(&buf[0], i)]
+}
+
+func F64toa(i float64) []byte {
+    var buf [64]byte
+    return buf[:__f64toa(&buf[0], i)]
+}

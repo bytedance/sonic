@@ -53,7 +53,7 @@ func BenchmarkFastFloat_Encode(b *testing.B) {
         test func(*testing.B)
     }{{
         name: "StdLib",
-        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:], val, 'g', -1, 64) }},
+        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:0], val, 'g', -1, 64) }},
     }, {
         name: "FastFloat",
         test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f64toa(&buf[0], val) }},

@@ -19,7 +19,6 @@ package ast
 import (
     `encoding/json`
     `fmt`
-    `strconv`
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
@@ -99,8 +98,8 @@ func (self *Node) Int64() int64 {
 // Number as above.
 func (self *Node) Number() json.Number {
     switch self.t {
-        case native.V_DOUBLE  : return json.Number(strconv.FormatFloat(i64tof(self.v), 'g', -1, 64))
-        case native.V_INTEGER : return json.Number(strconv.FormatInt(self.v, 10))
+        case native.V_DOUBLE  : return json.Number(rt.Mem2Str(native.F64toa(i64tof(self.v))))
+        case native.V_INTEGER : return json.Number(rt.Mem2Str(native.I64toa(self.v)))
         case V_RAW : 
             n := self.parseRaw()
             return n.Number()
@@ -115,8 +114,8 @@ func (self *Node) String() string {
         case native.V_TRUE    : return "true"
         case native.V_FALSE   : return "false"
         case native.V_STRING  : return addr2str(self.p, self.v)
-        case native.V_DOUBLE  : return strconv.FormatFloat(i64tof(self.v), 'g', -1, 64)
-        case native.V_INTEGER : return strconv.FormatInt(self.v, 10)
+        case native.V_DOUBLE  : return rt.Mem2Str(native.F64toa(i64tof(self.v)))
+        case native.V_INTEGER : return rt.Mem2Str(native.I64toa(self.v))
         case V_RAW : 
             n := self.parseRaw()
             return n.String()
@@ -254,12 +253,14 @@ func (self *Node) Index(idx int) *Node {
     return self.loadIndex(idx)
 }
 
+// Values gives a iterator for the array node
 func (self *Node) Values() ListIterator {
     self.must(native.V_ARRAY, "an array")
     self.loadAllIndex()
     return ListIterator{Iterator{p: self}}
 }
 
+// Propoerties gives a iterator for the object node
 func (self *Node) Properties() ObjectIterator {
     self.must(native.V_OBJECT, "an object")
     self.loadAllKey()
@@ -268,22 +269,51 @@ func (self *Node) Properties() ObjectIterator {
 
 /** Generic Value Converters **/
 
-// Map loads all keys of an object node
+// Map loads all keys of an object node, with all numbers casted to float64
 func (self *Node) Map() map[string]interface{} {
     self.must(native.V_OBJECT, "an object")
     self.loadAllKey()
     return self.toGenericObject()
 }
 
-// Array loads all indexes of an array node
+// Map loads all keys of an object node, with all numbers casted to json.Number
+func (self *Node) MapUseNumber() map[string]interface{} {
+    self.must(native.V_OBJECT, "an object")
+    self.loadAllKey()
+    return self.toGenericObjectUseNumber()
+}
+
+// Map loads all keys of an object node, with all integers casted to int64
+func (self *Node) MapUseInt64() map[string]interface{} {
+    self.must(native.V_OBJECT, "an object")
+    self.loadAllKey()
+    return self.toGenericObjectUseInt64()
+}
+
+// Array loads all indexes of an array node, with all numbers casted to float64
 func (self *Node) Array() []interface{} {
     self.must(native.V_ARRAY, "an array")
     self.loadAllIndex()
     return self.toGenericArray()
 }
 
+// Array loads all indexes of an array node, with all numbers casted to json.Number
+func (self *Node) ArrayUseNumber() []interface{} {
+    self.must(native.V_ARRAY, "an array")
+    self.loadAllIndex()
+    return self.toGenericArrayUseNumber()
+}
+
+// Array loads all indexes of an array node, with all integers casted to int64
+func (self *Node) ArrayUseInt64() []interface{} {
+    self.must(native.V_ARRAY, "an array")
+    self.loadAllIndex()
+    return self.toGenericArrayUseInt64()
+}
+
+
 // Interface loads all children under all pathes from this node,
-// and converts itself as generic go type
+// and converts itself as generic go type, with all numbers casted to float64
 func (self *Node) Interface() interface{} {
     switch self.t {
         case native.V_EOF     : panic("invalid value")
@@ -294,7 +324,7 @@ func (self *Node) Interface() interface{} {
         case native.V_OBJECT  : return self.toGenericObject()
         case native.V_STRING  : return addr2str(self.p, self.v)
         case native.V_DOUBLE  : return i64tof(self.v)
-        case native.V_INTEGER : return self.v
+        case native.V_INTEGER : return float64(self.v)
         case V_ARRAY_RAW:
             self.loadAllIndex()
             return self.toGenericArray()
@@ -304,6 +334,58 @@ func (self *Node) Interface() interface{} {
         case V_RAW : 
             n := self.parseRaw()
             return n.Interface()
+        default               : panic("not gonna happen")
+    }
+}
+
+// Interface loads all children under all pathes from this node,
+// and converts itself as generic go type, with all numbers casted to json.Number
+func (self *Node) InterfaceUseNumber() interface{} {
+    switch self.t {
+        case native.V_EOF     : panic("invalid value")
+        case native.V_NULL    : return nil
+        case native.V_TRUE    : return true
+        case native.V_FALSE   : return false
+        case native.V_ARRAY   : return self.toGenericArrayUseNumber()
+        case native.V_OBJECT  : return self.toGenericObjectUseNumber()
+        case native.V_STRING  : return addr2str(self.p, self.v)
+        case native.V_DOUBLE  : return json.Number(rt.Mem2Str(native.F64toa(i64tof(self.v))))
+        case native.V_INTEGER : return json.Number(rt.Mem2Str(native.I64toa(self.v)))
+        case V_ARRAY_RAW:
+            self.loadAllIndex()
+            return self.toGenericArrayUseNumber()
+        case V_OBJECT_RAW:
+            self.loadAllKey()
+            return self.toGenericObjectUseNumber()
+        case V_RAW : 
+            n := self.parseRaw()
+            return n.InterfaceUseNumber()
+        default               : panic("not gonna happen")
+    }
+}
+
+// Interface loads all children under all pathes from this node,
+// and converts itself as generic go type, with all integers casted to int64
+func (self *Node) InterfaceUseInt64() interface{} {
+    switch self.t {
+        case native.V_EOF     : panic("invalid value")
+        case native.V_NULL    : return nil
+        case native.V_TRUE    : return true
+        case native.V_FALSE   : return false
+        case native.V_ARRAY   : return self.toGenericArrayUseInt64()
+        case native.V_OBJECT  : return self.toGenericObjectUseInt64()
+        case native.V_STRING  : return addr2str(self.p, self.v)
+        case native.V_DOUBLE  : return i64tof(self.v)
+        case native.V_INTEGER : return self.v
+        case V_ARRAY_RAW:
+            self.loadAllIndex()
+            return self.toGenericArrayUseInt64()
+        case V_OBJECT_RAW:
+            self.loadAllKey()
+            return self.toGenericObjectUseInt64()
+        case V_RAW : 
+            n := self.parseRaw()
+            return n.InterfaceUseInt64()
         default               : panic("not gonna happen")
     }
 }
@@ -652,6 +734,44 @@ func (self *Node) toGenericArray() []interface{} {
     return ret
 }
 
+func (self *Node) toGenericArrayUseNumber() []interface{} {
+    nb := self.Len()
+    ret := make([]interface{}, nb)
+    if nb == 0 {
+        return ret
+    }
+
+    /* convert each item */
+    var p = (*Node)(self.p)
+    ret[0] = p.InterfaceUseNumber()
+    for i := 1; i < nb; i++ {
+        p = p.unsafe_next()
+        ret[i] = p.InterfaceUseNumber()
+    }
+
+    /* all done */
+    return ret
+}
+
+func (self *Node) toGenericArrayUseInt64() []interface{} {
+    nb := self.Len()
+    ret := make([]interface{}, nb)
+    if nb == 0 {
+        return ret
+    }
+
+    /* convert each item */
+    var p = (*Node)(self.p)
+    ret[0] = p.InterfaceUseInt64()
+    for i := 1; i < nb; i++ {
+        p = p.unsafe_next()
+        ret[i] = p.InterfaceUseInt64()
+    }
+
+    /* all done */
+    return ret
+}
+
 func (self *Node) toGenericObject() map[string]interface{} {
     nb := self.Len()
     ret := make(map[string]interface{}, nb)
@@ -665,6 +785,44 @@ func (self *Node) toGenericObject() map[string]interface{} {
     for i := 1; i < nb; i++ {
         p = p.unsafe_next()
         ret[p.Key] = p.Value.Interface()
+    }
+
+    /* all done */
+    return ret
+}
+
+func (self *Node) toGenericObjectUseNumber() map[string]interface{} {
+    nb := self.Len()
+    ret := make(map[string]interface{}, nb)
+    if nb == 0 {
+        return ret
+    }
+
+    /* convert each item */
+    var p = (*Pair)(self.p)
+    ret[p.Key] = p.Value.InterfaceUseNumber()
+    for i := 1; i < nb; i++ {
+        p = p.unsafe_next()
+        ret[p.Key] = p.Value.InterfaceUseNumber()
+    }
+
+    /* all done */
+    return ret
+}
+
+func (self *Node) toGenericObjectUseInt64() map[string]interface{} {
+    nb := self.Len()
+    ret := make(map[string]interface{}, nb)
+    if nb == 0 {
+        return ret
+    }
+
+    /* convert each item */
+    var p = (*Pair)(self.p)
+    ret[p.Key] = p.Value.InterfaceUseInt64()
+    for i := 1; i < nb; i++ {
+        p = p.unsafe_next()
+        ret[p.Key] = p.Value.InterfaceUseInt64()
     }
 
     /* all done */
