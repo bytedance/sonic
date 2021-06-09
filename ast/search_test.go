@@ -20,6 +20,7 @@ import (
     `testing`
 
     jsoniter `github.com/json-iterator/go`
+    `github.com/stretchr/testify/assert`
     `github.com/tidwall/gjson`
 )
 
@@ -83,6 +84,22 @@ func TestSearcher_GetByPathErr(t *testing.T) {
     if e == nil {
         t.Fatalf("node: %v, err: %v", node, e)
     }
+}
+
+func TestLoadIndex(t *testing.T) {
+    node, err := NewSearcher(`{"a":[-0, 1, -1.2, -1.2e-10]}`).GetByPath("a")
+    if err != nil {
+        t.Fatal(err)
+    }
+    a := node.Index(3).Float64()
+    assert.Equal(t, float64(-1.2e-10), a)
+    m := node.Array()
+    assert.Equal(t, m, []interface{}{
+        float64(0),    
+        float64(1),    
+        float64(-1.2),    
+        float64(-1.2e-10),    
+    })
 }
 
 func BenchmarkSearchOne_Gjson(b *testing.B) {

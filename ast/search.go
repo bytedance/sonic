@@ -24,7 +24,6 @@ import (
 
 type Searcher struct {
     parser Parser
-    // cache map[string]*Node
 }
 
 func NewSearcher(str string) *Searcher {

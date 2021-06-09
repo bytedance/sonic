@@ -257,19 +257,19 @@ func (self *Parser) Parse() (Node, native.ParsingError) {
         case native.V_NULL    : return nullNode, 0
         case native.V_TRUE    : return trueNode, 0
         case native.V_FALSE   : return falseNode, 0
-    case native.V_ARRAY:
-        if self.noLazy {
-            return self.decodeArray(make([]Node, 0, _DEFAULT_NODE_CAP))
-        }
-        return newRawArray(self, make([]Node, 0, _DEFAULT_NODE_CAP)), 0
-    case native.V_OBJECT:
-        if self.noLazy {
-            return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP))
-        }
-        return newRawObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
         case native.V_STRING  : return self.decodeString(val.Iv, val.Ep)
-        case native.V_DOUBLE  : return newFloat64(val.Dv), 0
-        case native.V_INTEGER : return newInt64(val.Iv), 0
+        case native.V_ARRAY:
+            if self.noLazy {
+                return self.decodeArray(make([]Node, 0, _DEFAULT_NODE_CAP))
+            }
+            return newRawArray(self, make([]Node, 0, _DEFAULT_NODE_CAP)), 0
+        case native.V_OBJECT:
+            if self.noLazy {
+                return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP))
+            }
+            return newRawObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
+        case native.V_DOUBLE  : return newNumber(self.s[val.Ep:self.p]), 0
+        case native.V_INTEGER : return newNumber(self.s[val.Ep:self.p]), 0
         default               : return Node{}, native.ParsingError(-val.Vt)
     }
 }
@@ -287,6 +287,7 @@ func (self *Parser) skip() (int, native.ParsingError) {
 
 /** Parser Factory **/
 
+// Loads parse all json into interface{}
 func Loads(src string) (int, interface{}, native.ParsingError) {
     ps := &Parser{s: src}
     np, err := ps.Parse()
@@ -296,6 +297,19 @@ func Loads(src string) (int, interface{}, native.ParsingError) {
         return 0, nil, err
     } else {
         return ps.Pos(), np.Interface(), 0
+    }
+}
+
+// Loads parse all json into interface{}, with numeric nodes casted to json.Number
+func LoadsUseNumber(src string) (int, interface{}, native.ParsingError) {
+    ps := &Parser{s: src}
+    np, err := ps.Parse()
+
+    /* check for errors */
+    if err != 0 {
+        return 0, nil, err
+    } else {
+        return ps.Pos(), np.InterfaceUseNumber(), 0
     }
 }
 
