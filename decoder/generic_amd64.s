@@ -39,15 +39,15 @@
 #define ERR_INVALID_CHAR    $-2
 
 #define lspace(to) \
-	MOVQ  PS, DI                                                           \
-	MOVQ  PN, SI                                                           \
-	MOVQ  PI, DX                                                           \
-	MOVQ  github·com∕bytedance∕sonic∕internal∕native·_subr__lspace(SB), AX \
-	CALL  AX                                                               \
-	MOVQ  AX, PI                                                           \
-	TESTQ AX, AX                                                           \
-	JNS   to                                                               \
-	RET                                                                    \
+	MOVQ  PS, DI                                                      \
+	MOVQ  PN, SI                                                      \
+	MOVQ  PI, DX                                                      \
+	MOVQ  github·com∕bytedance∕sonic∕internal∕native·S_lspace(SB), AX \
+	CALL  AX                                                          \
+	MOVQ  AX, PI                                                      \
+	TESTQ AX, AX                                                      \
+	JNS   to                                                          \
+	RET                                                               \
 to:
 
 #define match_eof(to) \
@@ -337,7 +337,7 @@ TEXT decodeObjectKey(SB), NOSPLIT, $120 - 0
 	LEAQ VAR_in, DI
 	LEAQ VAR_in_PI, SI
 	LEAQ VAR_vv, DX
-	MOVQ github·com∕bytedance∕sonic∕internal∕native·_subr__vstring(SB), AX
+	MOVQ github·com∕bytedance∕sonic∕internal∕native·S_vstring(SB), AX
 	CALL AX
 	MOVQ VAR_in_PI, PI
 
@@ -397,7 +397,7 @@ _unquote:
 	BTQ   F_DISABLE_URC, FL
 	SETCC R8
 	SHLQ  B_UNICODE_REPLACE, R8
-	MOVQ  github·com∕bytedance∕sonic∕internal∕native·_subr__unquote(SB), AX
+	MOVQ  github·com∕bytedance∕sonic∕internal∕native·S_unquote(SB), AX
 	CALL  AX
     TESTQ AX, AX
     JS    _escape_error

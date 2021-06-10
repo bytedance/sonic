@@ -24,13 +24,13 @@ import (
     `strconv`
     `strings`
 
-    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
 )
 
 type SyntaxError struct {
     Pos  int
     Src  string
-    Code native.ParsingError
+    Code types.ParsingError
 }
 
 func (self SyntaxError) Error() string {
@@ -86,7 +86,7 @@ func clamp_zero(v int) int {
     }
 }
 
-func error_wrap(src string, pos int, code native.ParsingError) error {
+func error_wrap(src string, pos int, code types.ParsingError) error {
     return SyntaxError {
         Pos  : pos,
         Src  : src,
@@ -111,6 +111,6 @@ func error_value(value string, vtype reflect.Type) error {
 }
 
 //go:nosplit
-func throw_invalid_type(vt native.ValueType) {
+func throw_invalid_type(vt types.ValueType) {
     throw(fmt.Sprintf("invalid value type: %d", vt))
 }

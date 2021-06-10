@@ -176,12 +176,8 @@ func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler) error {
     }
 }
 
-func isZeroMem(p unsafe.Pointer, nb int) bool {
-    return native.Lzero(p, nb) == 0
-}
-
 func isZeroSafe(p unsafe.Pointer, vt *rt.GoType) bool {
-    if isZeroMem(p, vt.Size()) {
+    if native.Lzero(p, vt.Size()) == 0 {
         return true
     } else {
         return isZeroTyped(p, vt)

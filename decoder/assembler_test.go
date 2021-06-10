@@ -25,7 +25,7 @@ import (
 
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
@@ -182,26 +182,26 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_str/error_eof",
         ins: []_Instr{newInsOp(_OP_str)},
         src: `12345`,
-        err: SyntaxError{Src: `12345`, Pos: 5, Code: native.ERR_EOF},
+        err: SyntaxError{Src: `12345`, Pos: 5, Code: types.ERR_EOF},
         val: new(string),
     }, {
         key: "_OP_str/error_invalid_escape",
         ins: []_Instr{newInsOp(_OP_str)},
         src: `12\g345"`,
-        err: SyntaxError{Src: `12\g345"`, Pos: 3, Code: native.ERR_INVALID_ESCAPE},
+        err: SyntaxError{Src: `12\g345"`, Pos: 3, Code: types.ERR_INVALID_ESCAPE},
         val: new(string),
     }, {
         key: "_OP_str/error_invalid_unicode",
         ins: []_Instr{newInsOp(_OP_str)},
         src: `hello\ud800world"`,
         opt: 1 << _F_disable_urc,
-        err: SyntaxError{Src: `hello\ud800world"`, Pos: 7, Code: native.ERR_INVALID_UNICODE},
+        err: SyntaxError{Src: `hello\ud800world"`, Pos: 7, Code: types.ERR_INVALID_UNICODE},
         val: new(string),
     }, {
         key: "_OP_str/error_invalid_char",
         ins: []_Instr{newInsOp(_OP_str)},
         src: `12\u1ggg345"`,
-        err: SyntaxError{Src: `12\u1ggg345"`, Pos: 5, Code: native.ERR_INVALID_CHAR},
+        err: SyntaxError{Src: `12\u1ggg345"`, Pos: 5, Code: types.ERR_INVALID_CHAR},
         val: new(string),
     }, {
         key: "_OP_bin",
@@ -213,7 +213,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_bin/error_eof",
         ins: []_Instr{newInsOp(_OP_bin)},
         src: `aGVsbG8sIHdvcmxk`,
-        err: SyntaxError{Src: `aGVsbG8sIHdvcmxk`, Pos: 16, Code: native.ERR_EOF},
+        err: SyntaxError{Src: `aGVsbG8sIHdvcmxk`, Pos: 16, Code: types.ERR_EOF},
         val: new([]byte),
     }, {
         key: "_OP_bin/error_corrupt_input",
@@ -243,25 +243,25 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_bool/error_eof_1",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "tru",
-        err: SyntaxError{Src: `tru`, Pos: 3, Code: native.ERR_EOF},
+        err: SyntaxError{Src: `tru`, Pos: 3, Code: types.ERR_EOF},
         val: new(bool),
     }, {
         key: "_OP_bool/error_eof_2",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "fals",
-        err: SyntaxError{Src: `fals`, Pos: 4, Code: native.ERR_EOF},
+        err: SyntaxError{Src: `fals`, Pos: 4, Code: types.ERR_EOF},
         val: new(bool),
     }, {
         key: "_OP_bool/error_invalid_char_1",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "falxe",
-        err: SyntaxError{Src: `falxe`, Pos: 3, Code: native.ERR_INVALID_CHAR},
+        err: SyntaxError{Src: `falxe`, Pos: 3, Code: types.ERR_INVALID_CHAR},
         val: new(bool),
     }, {
         key: "_OP_bool/error_invalid_char_2",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "falsx",
-        err: SyntaxError{Src: `falsx`, Pos: 4, Code: native.ERR_INVALID_CHAR},
+        err: SyntaxError{Src: `falsx`, Pos: 4, Code: types.ERR_INVALID_CHAR},
         val: new(bool),
     }, {
         key: "_OP_num/positive",
@@ -279,13 +279,13 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_num/error_eof",
         ins: []_Instr{newInsOp(_OP_num)},
         src: "-",
-        err: SyntaxError{Src: `-`, Pos: 1, Code: native.ERR_EOF},
+        err: SyntaxError{Src: `-`, Pos: 1, Code: types.ERR_EOF},
         val: new(json.Number),
     }, {
         key: "_OP_num/error_invalid_char",
         ins: []_Instr{newInsOp(_OP_num)},
         src: "xxx",
-        err: SyntaxError{Src: `xxx`, Pos: 0, Code: native.ERR_INVALID_CHAR},
+        err: SyntaxError{Src: `xxx`, Pos: 0, Code: types.ERR_INVALID_CHAR},
         val: new(json.Number),
     }, {
         key: "_OP_i8",
@@ -303,7 +303,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_i8/error_wrong_type",
         ins: []_Instr{newInsOp(_OP_i8)},
         src: "12.34",
-        err: SyntaxError{Src: `12.34`, Pos: 2, Code: native.ERR_INVALID_NUMBER_FMT},
+        err: SyntaxError{Src: `12.34`, Pos: 2, Code: types.ERR_INVALID_NUMBER_FMT},
         val: new(int8),
     }, {
         key: "_OP_u8",
@@ -321,13 +321,13 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_u8/error_underflow",
         ins: []_Instr{newInsOp(_OP_u8)},
         src: "-123",
-        err: SyntaxError{Src: `-123`, Pos: 0, Code: native.ERR_INVALID_NUMBER_FMT},
+        err: SyntaxError{Src: `-123`, Pos: 0, Code: types.ERR_INVALID_NUMBER_FMT},
         val: new(uint8),
     }, {
         key: "_OP_u8/error_wrong_type",
         ins: []_Instr{newInsOp(_OP_u8)},
         src: "12.34",
-        err: SyntaxError{Src: `12.34`, Pos: 2, Code: native.ERR_INVALID_NUMBER_FMT},
+        err: SyntaxError{Src: `12.34`, Pos: 2, Code: types.ERR_INVALID_NUMBER_FMT},
         val: new(uint8),
     }, {
         key: "_OP_f32",
@@ -369,7 +369,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_unquote/error_invalid_end",
         ins: []_Instr{newInsOp(_OP_unquote)},
         src: `\"te\\\"st"`,
-        err: SyntaxError{Src: `\"te\\\"st"`, Pos: 8, Code: native.ERR_INVALID_CHAR},
+        err: SyntaxError{Src: `\"te\\\"st"`, Pos: 8, Code: types.ERR_INVALID_CHAR},
         val: new(string),
     }, {
         key: "_OP_nil_1",
@@ -382,7 +382,7 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsOp(_OP_nil_2)},
         src: "",
         exp: error(nil),
-        val: (func() *error { v := new(error); *v = native.ERR_EOF; return v })(),
+        val: (func() *error { v := new(error); *v = types.ERR_EOF; return v })(),
     }, {
         key: "_OP_nil_3",
         ins: []_Instr{newInsOp(_OP_nil_3)},
@@ -623,7 +623,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_lspace/error",
         ins: []_Instr{newInsOp(_OP_lspace)},
         src: "",
-        err: SyntaxError{Src: ``, Pos: 0, Code: native.ERR_EOF},
+        err: SyntaxError{Src: ``, Pos: 0, Code: types.ERR_EOF},
         val: nil,
     }, {
         key: "_OP_match_char/correct",
@@ -635,7 +635,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_match_char/error",
         ins: []_Instr{newInsVb(_OP_match_char, 'b')},
         src: "a",
-        err: SyntaxError{Src: `a`, Pos: 0, Code: native.ERR_INVALID_CHAR},
+        err: SyntaxError{Src: `a`, Pos: 0, Code: types.ERR_INVALID_CHAR},
         val: nil,
     }, {
         key: "_OP_switch",

@@ -19,14 +19,14 @@ package decoder
 import (
     `testing`
 
-    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
 )
 
 func make_err(src string, pos int) SyntaxError {
     return SyntaxError {
         Src  : src,
         Pos  : pos,
-        Code : native.ERR_INVALID_CHAR,
+        Code : types.ERR_INVALID_CHAR,
     }
 }
 

@@ -19,7 +19,7 @@ package ast
 import (
     `fmt`
 
-    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
 )
 
 type Searcher struct {
@@ -50,7 +50,7 @@ func (self *Parser) printNear(start int) string {
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     self.parser.p = 0
 
-    var err native.ParsingError
+    var err types.ParsingError
     for _, p := range path {
         switch p.(type) {
         case int:
@@ -80,7 +80,7 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     return newRawNode(self.parser.s[start:self.parser.p]), nil
 }
 
-func (self *Parser) searchKey(match string) native.ParsingError {
+func (self *Parser) searchKey(match string) types.ParsingError {
     ns := len(self.s)
     if err := self.object(); err != 0 {
         return err
@@ -88,23 +88,23 @@ func (self *Parser) searchKey(match string) native.ParsingError {
 
     /* check for EOF */
     if self.p = self.lspace(self.p); self.p >= ns {
-        return native.ERR_EOF
+        return types.ERR_EOF
     }
 
     /* check for empty object */
     if self.s[self.p] == '}' {
         self.p++
-        return native.ERR_EOF
+        return types.ERR_EOF
     }
 
-    var njs native.JsonState
-    var err native.ParsingError
+    var njs types.JsonState
+    var err types.ParsingError
     /* decode each pair */
     for {
 
         /* decode the key */
-        if njs = self.decodeValue(); njs.Vt != native.V_STRING {
-            return native.ERR_INVALID_CHAR
+        if njs = self.decodeValue(); njs.Vt != types.V_STRING {
+            return types.ERR_INVALID_CHAR
         }
 
         /* extract the key */
@@ -135,7 +135,7 @@ func (self *Parser) searchKey(match string) native.ParsingError {
         /* check for EOF */
         self.p = self.lspace(self.p)
         if self.p >= ns {
-            return native.ERR_EOF
+            return types.ERR_EOF
         }
 
         /* check for the next character */
@@ -144,14 +144,14 @@ func (self *Parser) searchKey(match string) native.ParsingError {
             self.p++
         case '}':
             self.p++
-            return native.ERR_EOF
+            return types.ERR_EOF
         default:
-            return native.ERR_INVALID_CHAR
+            return types.ERR_INVALID_CHAR
         }
     }
 }
 
-func (self *Parser) searchIndex(idx int) native.ParsingError {
+func (self *Parser) searchIndex(idx int) types.ParsingError {
     ns := len(self.s)
     if err := self.array(); err != 0 {
         return err
@@ -159,16 +159,16 @@ func (self *Parser) searchIndex(idx int) native.ParsingError {
 
     /* check for EOF */
     if self.p = self.lspace(self.p); self.p >= ns {
-        return native.ERR_EOF
+        return types.ERR_EOF
     }
 
     /* check for empty array */
     if self.s[self.p] == ']' {
         self.p++
-        return native.ERR_EOF
+        return types.ERR_EOF
     }
 
-    var err native.ParsingError
+    var err types.ParsingError
     /* allocate array space and parse every element */
     for i := 0; i < idx; i++ {
 
@@ -180,7 +180,7 @@ func (self *Parser) searchIndex(idx int) native.ParsingError {
         /* check for EOF */
         self.p = self.lspace(self.p)
         if self.p >= ns {
-            return native.ERR_EOF
+            return types.ERR_EOF
         }
 
         /* check for the next character */
@@ -189,9 +189,9 @@ func (self *Parser) searchIndex(idx int) native.ParsingError {
             self.p++
         case ']':
             self.p++
-            return native.ERR_EOF
+            return types.ERR_EOF
         default:
-            return native.ERR_INVALID_CHAR
+            return types.ERR_INVALID_CHAR
         }
     }
 

@@ -21,7 +21,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
 
@@ -40,7 +40,7 @@ var (
 type _Stack struct {
     sp uintptr
     sb [_MaxStack]unsafe.Pointer
-    mm native.StateMachine
+    mm types.StateMachine
 }
 
 type _Decoder func(

@@ -28,55 +28,60 @@ static const char _UnquoteTab[256] = {
     ['\\'] = '\\',
 };
 
-#define memcchr_p32_avx2()                          \
-    while (n >= 32) {                               \
-        u = _mm256_loadu_si256  ((const void *)s);  \
-        v = _mm256_cmpeq_epi8   (u, b);             \
-            _mm256_storeu_si256 ((void *)p, u);     \
-                                                    \
-        /* check for matches */                     \
-        if ((r = _mm256_movemask_epi8(v)) != 0) {   \
-            return s - q + _mm_tzcnt_64(r);         \
-        }                                           \
-                                                    \
-        /* move to the next 32 bytes */             \
-        s += 32;                                    \
-        p += 32;                                    \
-        n -= 32;                                    \
-    }                                               \
-
-#define memcchr_p32_sse2()                          \
-    if (n >= 16) {                                  \
-        x = _mm_loadu_si128  ((const void *)s);     \
-        y = _mm_cmpeq_epi8   (x, a);                \
-            _mm_storeu_si128 ((void *)p, x);        \
-                                                    \
-        /* check for matches */                     \
-        if ((r = _mm_movemask_epi8(y)) != 0) {      \
-            return s - q + _mm_tzcnt_64(r);         \
-        }                                           \
-                                                    \
-        /* move to the next 16 bytes */             \
-        s += 16;                                    \
-        p += 16;                                    \
-        n -= 16;                                    \
-    }
-
 static inline ssize_t memcchr_p32(const char *s, ssize_t nb, char *p) {
-    int32_t      r;
-    __m128i      x;
-    __m128i      y;
-    __m256i      u;
-    __m256i      v;
-    __m128i      a = _mm_set1_epi8('\\');
-    __m256i      b = _mm256_set1_epi8('\\');
+    int64_t      r;
     ssize_t      n = nb;
     const char * q = s;
 
-    /* scan & copy with SIMD */
-    memcchr_p32_avx2();
+#if USE_AVX2
+    __m256i u;
+    __m256i v;
+    __m256i b = _mm256_set1_epi8('\\');
+
+    /* process every 32 bytes */
+    while (n >= 32) {
+        u = _mm256_loadu_si256  ((const void *)s);
+        v = _mm256_cmpeq_epi8   (u, b);
+            _mm256_storeu_si256 ((void *)p, u);
+
+        /* check for matches */
+        if ((r = _mm256_movemask_epi8(v)) != 0) {
+            return s - q + __builtin_ctzll(r | (1ull << 32));
+        }
+
+        /* move to the next 32 bytes */
+        s += 32;
+        p += 32;
+        n -= 32;
+    }
+#endif
+
+#if USE_AVX2
     _mm256_zeroupper();
-    memcchr_p32_sse2();
+#endif
+
+#if USE_SSE
+    __m128i x;
+    __m128i y;
+    __m128i a = _mm_set1_epi8('\\');
+
+    /* process every 16 bytes */
+    while (n >= 16) {
+        x = _mm_loadu_si128  ((const void *)s);
+        y = _mm_cmpeq_epi8   (x, a);
+            _mm_storeu_si128 ((void *)p, x);
+
+        /* check for matches */
+        if ((r = _mm_movemask_epi8(y)) != 0) {
+            return s - q + __builtin_ctzll(r | (1 << 16));
+        }
+
+        /* move to the next 16 bytes */
+        s += 16;
+        p += 16;
+        n -= 16;
+    }
+#endif
 
     /* remaining bytes, do with scalar code */
     while (n--) {
@@ -90,9 +95,6 @@ static inline ssize_t memcchr_p32(const char *s, ssize_t nb, char *p) {
     /* nothing found, but everything was copied */
     return -1;
 }
-
-#undef memcchr_p32_avx2
-#undef memcchr_p32_sse2
 
 #define ALL_01h     (~0ul / 255)
 #define ALL_7fh     (ALL_01h * 127)
