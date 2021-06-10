@@ -25,6 +25,7 @@ import (
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/twitchyliquid64/golang-asm/obj`
 )
@@ -424,7 +425,7 @@ func (self *_Assembler) base64_error() {
 func (self *_Assembler) parsing_error() {
     self.Link(_LB_eof_error)                                            // _eof_error:
     self.Emit("MOVQ" , _IL, _IC)                                        // MOVQ    IL, IC
-    self.Emit("MOVL" , jit.Imm(int64(native.ERR_EOF)), _EP)             // MOVL    ${native.ERR_EOF}, EP
+    self.Emit("MOVL" , jit.Imm(int64(types.ERR_EOF)), _EP)              // MOVL    ${types.ERR_EOF}, EP
     self.Sjmp("JMP"  , _LB_parsing_error)                               // JMP     _parsing_error
     self.Link(_LB_unquote_error)                                        // _unquote_error:
     self.Emit("SUBQ" , _VAR_sr, _SI)                                    // SUBQ    sr, SI
@@ -457,7 +458,7 @@ func (self *_Assembler) parsing_error() {
     self.Link(_LB_char_1_error)                                         // _char_1_error:
     self.Emit("ADDQ" , jit.Imm(1), _IC)                                 // ADDQ    $1, IC
     self.Link(_LB_char_0_error)                                         // _char_0_error:
-    self.Emit("MOVL" , jit.Imm(int64(native.ERR_INVALID_CHAR)), _EP)    // MOVL    ${native.ERR_INVALID_CHAR}, EP
+    self.Emit("MOVL" , jit.Imm(int64(types.ERR_INVALID_CHAR)), _EP)     // MOVL    ${types.ERR_INVALID_CHAR}, EP
     self.Link(_LB_parsing_error)                                        // _parsing_error:
     self.Emit("MOVOU", _ARG_s, _X0)                                     // MOVOU   s, X0
     self.Emit("MOVOU", _X0, jit.Ptr(_SP, 0))                            // MOVOU   X0, (SP)
@@ -570,15 +571,15 @@ func init() {
 }
 
 func (self *_Assembler) range_single() {
-    self.Emit("VMOVSD"  , _VAR_st_Dv, _X0)              // VMOVSD   st.Dv, X0
+    self.Emit("MOVSD"   , _VAR_st_Dv, _X0)              // MOVSD    st.Dv, X0
     self.Emit("MOVQ"    , _V_max_f32, _AX)              // MOVQ     _max_f32, AX
     self.Emit("MOVQ"    , jit.Gitab(_I_float32), _ET)   // MOVQ     ${itab(float32)}, ET
     self.Emit("MOVQ"    , jit.Gtype(_T_float32), _EP)   // MOVQ     ${type(float32)}, EP
-    self.Emit("VUCOMISD", jit.Ptr(_AX, 0), _X0)         // VUCOMISD (AX), X0
+    self.Emit("UCOMISD" , jit.Ptr(_AX, 0), _X0)         // UCOMISD  (AX), X0
     self.Sjmp("JA"      , _LB_range_error)              // JA       _range_error
     self.Emit("MOVQ"    , _V_min_f32, _AX)              // MOVQ     _min_f32, AX
-    self.Emit("VMOVSD"  , jit.Ptr(_AX, 0), _X1)         // VMOVSD   (AX), X1
-    self.Emit("VUCOMISD", _X0, _X1)                     // VUCOMISD X0, X1
+    self.Emit("MOVSD"   , jit.Ptr(_AX, 0), _X1)         // MOVSD    (AX), X1
+    self.Emit("UCOMISD" , _X0, _X1)                     // UCOMISD  X0, X1
     self.Sjmp("JA"      , _LB_range_error)              // JA       _range_error
     self.Emit("CVTSD2SS", _X0, _X0)                     // CVTSD2SS X0, X0
 }
@@ -634,7 +635,7 @@ func (self *_Assembler) unquote_once(p obj.Addr, n obj.Addr) {
     self.Emit("XORL" , _R8, _R8)                                // XORL   R8, R8
     self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)        // BTQ    ${_F_disable_urc}, fv
     self.Emit("SETCC", _R8)                                     // SETCC  R8
-    self.Emit("SHLQ" , jit.Imm(native.B_UNICODE_REPLACE), _R8)  // SHLQ   ${native.B_UNICODE_REPLACE}, R8
+    self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _R8)   // SHLQ   ${types.B_UNICODE_REPLACE}, R8
     self.call(_F_unquote)                                       // CALL   unquote
     self.Emit("MOVQ" , n, _SI)                                  // MOVQ   ${n}, SI
     self.Emit("ADDQ" , jit.Imm(1), _SI)                         // ADDQ   $1, SI
@@ -661,11 +662,11 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr) {
     self.Emit("MOVQ" , n, _SI)                                      // MOVQ   ${n}, SI
     self.Emit("MOVQ" , _DX, p)                                      // MOVQ   DX, ${p}
     self.Emit("LEAQ" , _VAR_sr, _CX)                                // LEAQ   sr, CX
-    self.Emit("MOVL" , jit.Imm(native.F_DOUBLE_UNQUOTE), _R8)       // MOVL   ${native.F_DOUBLE_UNQUOTE}, R8
+    self.Emit("MOVL" , jit.Imm(types.F_DOUBLE_UNQUOTE), _R8)        // MOVL   ${types.F_DOUBLE_UNQUOTE}, R8
     self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)            // BTQ    ${_F_disable_urc}, AX
     self.Emit("XORL" , _AX, _AX)                                    // XORL   AX, AX
     self.Emit("SETCC", _AX)                                         // SETCC  AX
-    self.Emit("SHLQ" , jit.Imm(native.B_UNICODE_REPLACE), _AX)      // SHLQ   ${native.B_UNICODE_REPLACE}, AX
+    self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _AX)       // SHLQ   ${types.B_UNICODE_REPLACE}, AX
     self.Emit("ORQ"  , _AX, _R8)                                    // ORQ    AX, R8
     self.call(_F_unquote)                                           // CALL   unquote
     self.Emit("MOVQ" , n, _SI)                                      // MOVQ   ${n}, SI
@@ -1013,15 +1014,15 @@ func (self *_Assembler) _asm_OP_u64(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_f32(_ *_Instr) {
-    self.parse_number()                         // PARSE  NUMBER
-    self.range_single()                         // RANGE  float32
-    self.Emit("VMOVSS", _X0, jit.Ptr(_VP, 0))   // VMOVSS X0, (VP)
+    self.parse_number()                         // PARSE NUMBER
+    self.range_single()                         // RANGE float32
+    self.Emit("MOVSS", _X0, jit.Ptr(_VP, 0))    // MOVSS X0, (VP)
 }
 
 func (self *_Assembler) _asm_OP_f64(_ *_Instr) {
-    self.parse_number()                         // PARSE  NUMBER
-    self.Emit("VMOVSD", _VAR_st_Dv, _X0)        // VMOVSD st.Dv, X0
-    self.Emit("VMOVSD", _X0, jit.Ptr(_VP, 0))   // VMOVSD X0, (VP)
+    self.parse_number()                         // PARSE NUMBER
+    self.Emit("MOVSD", _VAR_st_Dv, _X0)         // MOVSD st.Dv, X0
+    self.Emit("MOVSD", _X0, jit.Ptr(_VP, 0))    // MOVSD X0, (VP)
 }
 
 func (self *_Assembler) _asm_OP_unquote(_ *_Instr) {
@@ -1041,13 +1042,13 @@ func (self *_Assembler) _asm_OP_nil_1(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_nil_2(_ *_Instr) {
-    self.Emit("VPXOR", _X0, _X0, _X0)           // VPXOR X0, X0, X0
+    self.Emit("PXOR" , _X0, _X0)                // PXOR  X0, X0
     self.Emit("MOVOU", _X0, jit.Ptr(_VP, 0))    // MOVOU X0, (VP)
 }
 
 func (self *_Assembler) _asm_OP_nil_3(_ *_Instr) {
     self.Emit("XORL" , _AX, _AX)                // XORL  AX, AX
-    self.Emit("VPXOR", _X0, _X0, _X0)           // VPXOR X0, X0, X0
+    self.Emit("PXOR" , _X0, _X0)                // PXOR  X0, X0
     self.Emit("MOVOU", _X0, jit.Ptr(_VP, 0))    // MOVOU X0, (VP)
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 16))   // MOVOU X0, 16(VP)
 }
@@ -1133,7 +1134,7 @@ func (self *_Assembler) _asm_OP_map_key_u64(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_f32(p *_Instr) {
     self.parse_number()                     // PARSE     NUMBER
     self.range_single()                     // RANGE     float32
-    self.Emit("VMOVSS", _X0, _VAR_st_Dv)    // VMOVSS    X0, st.Dv
+    self.Emit("MOVSS", _X0, _VAR_st_Dv)     // MOVSS     X0, st.Dv
     self.mapassign_std(p.vt(), _VAR_st_Dv)  // MAPASSIGN ${p.vt()}, mapassign, st.Dv
 }
 
@@ -1371,7 +1372,7 @@ func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
     self.Emit("SUBQ" , jit.Imm(16), _AX)                // SUBQ  $16, AX
     self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 8), _VP)    // MOVQ  8(ST)(AX), VP
     self.Emit("MOVQ" , _AX, jit.Ptr(_ST, 0))            // MOVQ  AX, (ST)
-    self.Emit("VPXOR", _X0, _X0, _X0)                   // VPXOR X0, X0, X0
+    self.Emit("PXOR" , _X0, _X0)                        // PXOR  X0, X0
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))    // MOVOU X0, 8(ST)(AX)
 }
 

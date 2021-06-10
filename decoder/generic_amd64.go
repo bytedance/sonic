@@ -22,6 +22,7 @@ import (
 
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/twitchyliquid64/golang-asm/obj`
 )
@@ -112,8 +113,8 @@ var (
 )
 
 var (
-    _V_max   = jit.Imm(int64(native.V_MAX))
-    _V_eof   = jit.Imm(int64(native.ERR_EOF))
+    _V_max   = jit.Imm(int64(types.V_MAX))
+    _V_eof   = jit.Imm(int64(types.ERR_EOF))
     _F_value = jit.Imm(int64(native.S_value))
 )
 
@@ -293,7 +294,7 @@ func (self *_ValueDecoder) instrs() {
     self.Emit("XORL" , _R8, _R8)                                // XORL    R8, R8
     self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _VP)            // BTQ     ${_F_disable_urc}, VP
     self.Emit("SETCC", _R8)                                     // SETCC   R8
-    self.Emit("SHLQ" , jit.Imm(native.B_UNICODE_REPLACE), _R8)  // SHLQ    ${native.B_UNICODE_REPLACE}, R8
+    self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _R8)   // SHLQ    ${types.B_UNICODE_REPLACE}, R8
     self.call(_F_unquote)                                       // CALL    unquote
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ   AX, AX
     self.Sjmp("JS"   , _LB_esc_error)                           // JS      _esc_error
@@ -309,14 +310,14 @@ func (self *_ValueDecoder) instrs() {
 
     /* V_DOUBLE */
     self.Link(_SW_case_V_DOUBLE)
-    self.Emit("BTQ"   , jit.Imm(_F_use_number), _VP)    // BTQ     ${_F_use_number}, VP
-    self.Sjmp("JC"    , "_use_number")                  // JC      _use_number
-    self.Emit("VMOVSD", _VAR_vv_Dv, _X0)                // VMOVSD  st.Dv, X0
-    self.Emit("VMOVSD", _X0, jit.Ptr(_SP, 0))           // VMOVSD  X0, (SP)
+    self.Emit("BTQ"  , jit.Imm(_F_use_number), _VP)     // BTQ     ${_F_use_number}, VP
+    self.Sjmp("JC"   , "_use_number")                   // JC      _use_number
+    self.Emit("MOVSD", _VAR_vv_Dv, _X0)                 // MOVSD   st.Dv, X0
+    self.Emit("MOVSD", _X0, jit.Ptr(_SP, 0))            // MOVSD   X0, (SP)
     self.call_go(_F_convT64)                            // CALL_GO convT64
-    self.Emit("MOVQ"  , _T_float64, _RT)                // MOVQ    ${type(float64)}, RT
-    self.Emit("MOVQ"  , jit.Ptr(_SP, 8), _RV)           // MOVQ    8(SP), RV
-    self.Sjmp("JMP"   , _LB_done)                       // JMP     _done
+    self.Emit("MOVQ" , _T_float64, _RT)                 // MOVQ    ${type(float64)}, RT
+    self.Emit("MOVQ" , jit.Ptr(_SP, 8), _RV)            // MOVQ    8(SP), RV
+    self.Sjmp("JMP"  , _LB_done)                        // JMP     _done
 
     /* V_INTEGER */
     self.Link(_SW_case_V_INTEGER)

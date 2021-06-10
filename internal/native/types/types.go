@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package native
+package types
 
 import (
     `fmt`
-    `unsafe`
 )
 
 type ValueType int
@@ -95,54 +94,4 @@ type JsonState struct {
 type StateMachine struct {
     Sp int
     Vt [MAX_RECURSE]int
-}
-
-var (
-    S_f64toa = _subr__f64toa
-    S_i64toa = _subr__i64toa
-    S_lquote = _subr__lquote
-    S_u64toa = _subr__u64toa
-)
-
-var (
-    S_lspace  = _subr__lspace
-    S_unquote = _subr__unquote
-)
-
-var (
-    S_value     = _subr__value
-    S_vstring   = _subr__vstring
-    S_vnumber   = _subr__vnumber
-    S_vsigned   = _subr__vsigned
-    S_vunsigned = _subr__vunsigned
-)
-
-var (
-    S_skip_one    = _subr__skip_one
-    S_skip_array  = _subr__skip_array
-    S_skip_object = _subr__skip_object
-)
-
-func Lzero(p unsafe.Pointer, n int) int {
-    return __lzero(p, n)
-}
-
-func Lquote(buf *string, off int) int {
-    return __lquote(buf, off)
-}
-
-func Lspace(sp unsafe.Pointer, nb int, off int) int {
-    return __lspace(sp, nb, off)
-}
-
-func Value(s unsafe.Pointer, n int, p int, v *JsonState) int {
-    return __value(s, n, p, v)
-}
-
-func SkipOne(s *string, p *int, m *StateMachine) int {
-    return __skip_one(s, p, m)
-}
-
-func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int {
-    return __unquote(s, nb, dp, ep, flags)
 }

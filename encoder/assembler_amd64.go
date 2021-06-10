@@ -22,6 +22,7 @@ import (
     `strconv`
     `unsafe`
 
+    `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/twitchyliquid64/golang-asm/obj`
     `github.com/twitchyliquid64/golang-asm/obj/x86`
@@ -115,10 +116,6 @@ var (
 
 var (
     _X0 = jit.Reg("X0")
-    _X1 = jit.Reg("X1")
-)
-
-var (
     _Y0 = jit.Reg("Y0")
     _Y1 = jit.Reg("Y1")
     _Y2 = jit.Reg("Y2")
@@ -411,16 +408,16 @@ func (self *_Assembler) save_state() {
 }
 
 func (self *_Assembler) drop_state(decr int64) {
-    self.Emit("MOVQ"   , jit.Ptr(_ST, 0), _AX)              // MOVQ    (ST), AX
-    self.Emit("SUBQ"   , jit.Imm(decr), _AX)                // SUBQ    $decr, AX
-    self.Emit("MOVQ"   , _AX, jit.Ptr(_ST, 0))              // MOVQ    AX, (ST)
-    self.Emit("MOVQ"   , jit.Sib(_ST, _AX, 1, 8), _SP_x)    // MOVQ    8(ST)(AX), SP.x
-    self.Emit("MOVQ"   , jit.Sib(_ST, _AX, 1, 16), _SP_f)   // MOVQ    16(ST)(AX), SP.f
-    self.Emit("MOVQ"   , jit.Sib(_ST, _AX, 1, 24), _SP_p)   // MOVQ    24(ST)(AX), SP.p
-    self.Emit("MOVQ"   , jit.Sib(_ST, _AX, 1, 32), _SP_q)   // MOVQ    32(ST)(AX), SP.q
-    self.Emit("VPXOR"  , _Y0, _Y0, _Y0)                     // VPXOR   Y0, Y0, Y0
-    self.Emit("VMOVDQU", _Y0, jit.Sib(_ST, _AX, 1, 8))      // VMOVDQU Y0, 8(ST)(AX)
-    self.Emit("VZEROUPPER")                                 // VZEROUPPER
+    self.Emit("MOVQ" , jit.Ptr(_ST, 0), _AX)                // MOVQ  (ST), AX
+    self.Emit("SUBQ" , jit.Imm(decr), _AX)                  // SUBQ  $decr, AX
+    self.Emit("MOVQ" , _AX, jit.Ptr(_ST, 0))                // MOVQ  AX, (ST)
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 8), _SP_x)      // MOVQ  8(ST)(AX), SP.x
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 16), _SP_f)     // MOVQ  16(ST)(AX), SP.f
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 24), _SP_p)     // MOVQ  24(ST)(AX), SP.p
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 32), _SP_q)     // MOVQ  32(ST)(AX), SP.q
+    self.Emit("PXOR" , _X0, _X0)                            // PXOR  X0, X0
+    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))        // MOVOU X0, 8(ST)(AX)
+    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 24))       // MOVOU X0, 24(ST)(AX)
 }
 
 /** Buffer Helpers **/
@@ -654,6 +651,106 @@ func (self *_Assembler) encode_string(fn obj.Addr, doubleQuote bool) {
     self.close_quote(doubleQuote)                       // QCLOSE  $doubleQuote
 }
 
+/** Zero Value Check Routine **/
+
+func (self *_Assembler) check_zero(nb int, dest int) {
+    i := int64(0)
+    e := int64(nb)
+
+    /* special case: zero-sized value, always empty */
+    if e == 0 {
+        return
+    }
+
+    /* default instructions for AVX2 */
+    vclear := func(v obj.Addr)       { self.Emit("VPXOR"   , v, v, v) }
+    vset1a := func(a, b obj.Addr)    { self.Emit("VPCMPEQB", a, a, b) }
+    vandpb := func(b, a, r obj.Addr) { self.Emit("VPAND"   , b, a, r) }
+    vcmpeq := func(b, a, r obj.Addr) { self.Emit("VPCMPEQB", b, a, r) }
+
+    /* fall-back instructions for AVX */
+    if !cpu.HasAVX2 {
+        vclear = func(v obj.Addr)       { self.Emit("VXORPS", v, v, v) }
+        vset1a = func(a, b obj.Addr)    { self.Emit("VCMPPS", a, a, b, jit.Imm(0x0f)) }
+        vandpb = func(b, a, r obj.Addr) { self.Emit("VANDPS", b, a, r) }
+        vcmpeq = func(b, a, r obj.Addr) { self.Emit("VCMPPS", b, a, r, jit.Imm(0x00)) }
+    }
+
+    /* if n is less than 32 byte, only scalar code will be used;
+     * otherwise AVX is used, so clear Y0, and set Y1 to all 1s */
+    if e >= 32 {
+        vclear(_Y0)         // CLEAR Y0
+        vset1a(_Y0, _Y1)    // SET1A Y0, Y1
+    }
+
+    /* 128-byte tests */
+    for i <= e - 128 {
+        vcmpeq(jit.Ptr(_SP_p, i +  0), _Y0, _Y2)    // CMPEQ  i+0(SP.p), Y0, Y2
+        vcmpeq(jit.Ptr(_SP_p, i + 32), _Y0, _Y3)    // CMPEQ  i+32(SP.p), Y0, Y3
+        vcmpeq(jit.Ptr(_SP_p, i + 64), _Y0, _Y4)    // CMPEQ  i+64(SP.p), Y0, Y4
+        vcmpeq(jit.Ptr(_SP_p, i + 96), _Y0, _Y5)    // CMPEQ  i+96(SP.p), Y0, Y5
+        vandpb(_Y3, _Y2, _Y2)                       // ANDPB  Y3, Y2, Y2
+        vandpb(_Y5, _Y4, _Y3)                       // ANDPB  Y5, Y4, Y3
+        vandpb(_Y2, _Y3, _Y3)                       // ANDPB  Y2, Y3, Y3
+        self.Emit("VPTEST", _Y1, _Y3)               // VPTEST Y1, Y3
+        self.Sjmp("JNC"   , "_not_zero_z_{n}")      // JNC    _not_zero_z_{n}
+        i += 128
+    }
+
+    /* 32-byte tests */
+    for i <= e - 32 {
+        vcmpeq(jit.Ptr(_SP_p, i), _Y0, _Y2)     // CMPEQ  i(SP.p), Y0, Y2
+        self.Emit("VPTEST", _Y1, _Y2)           // VPTEST Y1, Y2
+        self.Sjmp("JNC"   , "_not_zero_z_{n}")  // JNC    _not_zero_z_{n}
+        i += 32
+    }
+
+    /* VZEROUPPER to avoid AVX-SSE transition penalty */
+    if e >= 32 {
+        self.Emit("VZEROUPPER")
+    }
+
+    /* 8-byte tests */
+    for i <= e - 8 {
+        self.Emit("CMPQ", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPQ i(SP.p), $0
+        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
+        i += 8
+    }
+
+    /* 4 byte test */
+    if i <= e - 4 {
+        self.Emit("CMPL", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPL i(SP.p), $0
+        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
+        i += 4
+    }
+
+    /* 2 byte test */
+    if i <= e - 2 {
+        self.Emit("CMPW", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPW i(SP.p), $0
+        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
+        i += 2
+    }
+
+    /* the last byte */
+    if i < e {
+        self.Emit("CMPB", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPB i(SP.p), $0
+        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
+    }
+
+    /* value is not zero */
+    if e < 32 {
+        self.Xjmp("JMP", dest)
+        self.Link("_not_zero_{n}")
+        return
+    }
+
+    /* VZEROUPPER to avoid AVX-SSE transition penalty */
+    self.Xjmp("JMP", dest)
+    self.Link("_not_zero_z_{n}")
+    self.Emit("VZEROUPPER")
+    self.Link("_not_zero_{n}")
+}
+
 /** OpCode Assembler Functions **/
 
 var (
@@ -671,7 +768,7 @@ var (
 
 var (
     _F_memmove       = jit.Func(memmove)
-    _F_isZeroSafe    = jit.Func(isZeroSafe)
+    _F_isZeroTyped   = jit.Func(isZeroTyped)
     _F_mapiternext   = jit.Func(mapiternext)
     _F_mapiterinit   = jit.Func(mapiterinit)
     _F_error_number  = jit.Func(error_number)
@@ -960,103 +1057,15 @@ func (self *_Assembler) _asm_OP_is_zero_map(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_is_zero_mem(p *_Instr) {
-    i := int64(0)
-    e := int64(p.vlen())
-
-    /* increse the offset, and decide what jumps to use */
-    incr_jump := func(np string, op string, d int64, avx2 bool) {
-        if i += d; avx2 && e >= 32 {
-            self.Sjmp(np, "not_zero_z_{n}")
-        } else if i < e || e >= 32 {
-            self.Sjmp(np, "not_zero_{n}")
-        } else {
-            self.Xjmp(op, p.vi())
-        }
-    }
-
-    /* if n is less than 32 byte, only SSE2 will be used;
-     * otherwise AVX2 is used, so clear Y0, and set Y1 to all 0xff */
-    if e < 32 {
-        self.Emit("VPXOR", _X0, _X0, _X0)       // VPXOR X0, X0, X0
-    } else {
-        self.Emit("VPXOR"   , _Y0, _Y0, _Y0)    // VPXOR    Y0, Y0, Y0
-        self.Emit("VPCMPEQB", _Y1, _Y1, _Y1)    // VPCMPEQB Y1, Y1, Y1
-    }
-
-    /* 128-byte tests */
-    for i <= e - 128 {
-        self.Emit("VPCMPEQB", jit.Ptr(_SP_p, i +  0), _Y0, _Y2)     // VPCMPEQB i+0(SP.p), Y0, Y2
-        self.Emit("VPCMPEQB", jit.Ptr(_SP_p, i + 32), _Y0, _Y3)     // VPCMPEQB i+32(SP.p), Y0, Y3
-        self.Emit("VPCMPEQB", jit.Ptr(_SP_p, i + 64), _Y0, _Y4)     // VPCMPEQB i+64(SP.p), Y0, Y4
-        self.Emit("VPCMPEQB", jit.Ptr(_SP_p, i + 96), _Y0, _Y5)     // VPCMPEQB i+96(SP.p), Y0, Y5
-        self.Emit("VPAND"   , _Y2, _Y3, _Y2)                        // VPAND    Y2, Y3, Y2
-        self.Emit("VPAND"   , _Y4, _Y5, _Y3)                        // VPAND    Y4, Y5, Y3
-        self.Emit("VPXOR"   , _Y3, _Y1, _Y3)                        // VPXOR    Y3, Y1, Y3
-        self.Emit("VPTEST"  , _Y2, _Y3)                             // VPTEST   Y2, Y3
-        incr_jump("JNC"     , "JC", 128, true)                      // JNC      not_zero_z_{n}
-    }
-
-    /* 32-byte tests */
-    for i <= e - 32 {
-        self.Emit("VPCMPEQB", jit.Ptr(_SP_p, i), _Y0, _Y2)  // VPCMPEQB i(SP.p), Y0, Y2
-        self.Emit("VPTEST"  , _Y2, _Y1)                     // VPTEST   Y2, Y1
-        incr_jump("JNC"     , "JC", 32, true)               // JNC      not_zero_z_{n}
-    }
-
-    /* VZEROUPPER to avoid AVX-SSE transition penalty */
-    if e >= 32 {
-        self.Emit("VZEROUPPER")
-    }
-
-    /* 16 bytes test */
-    if i <= e - 16 {
-        self.Emit("PCMPEQB" , jit.Ptr(_SP_p, i), _X0, _X1)  // PCMPEQB  i(SP.p), X0, X1
-        self.Emit("PMOVMSKB", _X1, _AX)                     // PMOVMSKB X1, AX
-        self.Emit("CMPQ"    , jit.Imm(-1), _AX)             // CMPQ     $-1, AX
-        incr_jump("JNE"     , "JE", 16, false)              // JNE      not_zero_{n}
-    }
-
-    /* 8-byte tests */
-    if i <= e - 8 {
-        self.Emit("CMPQ", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPQ i(SP.p), $0
-        incr_jump("JNE" , "JE", 8, false)                   // JNE  not_zero_{n}
-    }
-
-    /* 4 byte test */
-    if i <= e - 4 {
-        self.Emit("CMPL", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPL i(SP.p), $0
-        incr_jump("JNE" , "JE", 4, false)                   // JNE   not_zero_{n}
-    }
-
-    /* 2 byte test */
-    if i <= e - 2 {
-        self.Emit("CMPW", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPW i(SP.p), $0
-        incr_jump("JNE" , "JE", 2, false)                   // JNE  not_zero_{n}
-    }
-
-    /* the last byte */
-    if i < e {
-        self.Emit("CMPB", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPB i(SP.p), $0
-        incr_jump("JNE" , "JE", 1, false)                   // JNE  not_zero_{n}
-    }
-
-    /* VZEROUPPER to avoid AVX-SSE transition penalty */
-    if e >= 32 {
-        self.Xjmp("JMP", p.vi())
-        self.Link("not_zero_z_{n}")
-        self.Emit("VZEROUPPER")
-    }
-
-    /* value is not zero */
-    self.Link("not_zero_{n}")
-    self.NOP()
+    self.check_zero(p.vlen(), p.vi())
 }
 
 func (self *_Assembler) _asm_OP_is_zero_safe(p *_Instr) {
+    self.check_zero(p.vlen(), p.vi())                   // CHECKZ  $p.vlen(), p.vi()
     self.Emit("MOVQ", jit.Type(p.vt()), _AX)            // MOVQ    $p.vt(), AX
     self.Emit("MOVQ", _SP_p, jit.Ptr(_SP, 0))           // MOVQ    SP.p, (SP)
     self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))             // MOVQ    AX, 8(SP)
-    self.call_go(_F_isZeroSafe)                         // CALL_GO isZeroSafe
+    self.call_go(_F_isZeroTyped)                        // CALL_GO isZeroTyped
     self.Emit("CMPQ", jit.Ptr(_SP, 16), jit.Imm(0))     // CMPQ    16(SP), $0
     self.Xjmp("JNE" , p.vi())                           // JNE     p.vi()
 }

@@ -20,6 +20,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
 
@@ -50,7 +51,7 @@ func addr2str(p unsafe.Pointer, n int64) (s string) {
     return
 }
 
-func unquoteBytes(s string, m *[]byte) native.ParsingError {
+func unquoteBytes(s string, m *[]byte) types.ParsingError {
     pos := -1
     slv := (*rt.GoSlice)(unsafe.Pointer(m))
     str := (*rt.GoString)(unsafe.Pointer(&s))
@@ -58,7 +59,7 @@ func unquoteBytes(s string, m *[]byte) native.ParsingError {
 
     /* check for errors */
     if ret < 0 {
-        return native.ParsingError(-ret)
+        return types.ParsingError(-ret)
     }
 
     /* update the length */
@@ -66,7 +67,7 @@ func unquoteBytes(s string, m *[]byte) native.ParsingError {
     return 0
 }
 
-func UnquoteString(s string) (ret string, err native.ParsingError) {
+func UnquoteString(s string) (ret string, err types.ParsingError) {
     mm := make([]byte, 0, len(s))
     err = unquoteBytes(s, &mm)
     ret = rt.Mem2Str(mm)

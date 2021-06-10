@@ -21,6 +21,7 @@ import (
 	`unsafe`
 
 	`github.com/bytedance/sonic/internal/native`
+	`github.com/bytedance/sonic/internal/native/types`
 	`github.com/bytedance/sonic/internal/rt`
 )
 
@@ -34,24 +35,24 @@ type Parser struct {
 
 var stackPool = sync.Pool{
     New: func()interface{}{
-        return &native.StateMachine{}
+        return &types.StateMachine{}
     },
 }
 
 /** Parser Private Methods **/
 
-func (self *Parser) delim() native.ParsingError {
+func (self *Parser) delim() types.ParsingError {
     n := len(self.s)
     p := self.lspace(self.p)
 
     /* check for EOF */
     if p >= n {
-        return native.ERR_EOF
+        return types.ERR_EOF
     }
 
     /* check for the delimtier */
     if self.s[p] != ':' {
-        return native.ERR_INVALID_CHAR
+        return types.ERR_INVALID_CHAR
     }
 
     /* update the read pointer */
@@ -59,18 +60,18 @@ func (self *Parser) delim() native.ParsingError {
     return 0
 }
 
-func (self *Parser) object() native.ParsingError {
+func (self *Parser) object() types.ParsingError {
     n := len(self.s)
     p := self.lspace(self.p)
 
     /* check for EOF */
     if p >= n {
-        return native.ERR_EOF
+        return types.ERR_EOF
     }
 
     /* check for the delimtier */
     if self.s[p] != '{' {
-        return native.ERR_INVALID_CHAR
+        return types.ERR_INVALID_CHAR
     }
 
     /* update the read pointer */
@@ -78,18 +79,18 @@ func (self *Parser) object() native.ParsingError {
     return 0
 }
 
-func (self *Parser) array() native.ParsingError {
+func (self *Parser) array() types.ParsingError {
     n := len(self.s)
     p := self.lspace(self.p)
 
     /* check for EOF */
     if p >= n {
-        return native.ERR_EOF
+        return types.ERR_EOF
     }
 
     /* check for the delimtier */
     if self.s[p] != '[' {
-        return native.ERR_INVALID_CHAR
+        return types.ERR_INVALID_CHAR
     }
 
     /* update the read pointer */
@@ -102,19 +103,19 @@ func (self *Parser) lspace(sp int) int {
     return native.Lspace(sv.Ptr, sv.Len, sp)
 }
 
-func (self *Parser) decodeValue() (val native.JsonState) {
+func (self *Parser) decodeValue() (val types.JsonState) {
     sv := (*rt.GoString)(unsafe.Pointer(&self.s))
     self.p = native.Value(sv.Ptr, sv.Len, self.p, &val)
     return
 }
 
-func (self *Parser) decodeArray(ret []Node) (Node, native.ParsingError) {
+func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
     /* check for EOF */
     if self.p = self.lspace(sp); self.p >= ns {
-        return Node{}, native.ERR_EOF
+        return Node{}, types.ERR_EOF
     }
 
     /* check for empty array */
@@ -126,7 +127,7 @@ func (self *Parser) decodeArray(ret []Node) (Node, native.ParsingError) {
     /* allocate array space and parse every element */
     for {
         var val Node
-        var err native.ParsingError
+        var err types.ParsingError
 
         /* decode the value */
         if val, err = self.Parse(); err != 0 {
@@ -139,7 +140,7 @@ func (self *Parser) decodeArray(ret []Node) (Node, native.ParsingError) {
 
         /* check for EOF */
         if self.p >= ns {
-            return Node{}, native.ERR_EOF
+            return Node{}, types.ERR_EOF
         }
 
         /* check for the next character */
@@ -150,18 +151,18 @@ func (self *Parser) decodeArray(ret []Node) (Node, native.ParsingError) {
             if val.IsRaw() {
                 return newRawArray(self, ret), 0
             }
-            return Node{}, native.ERR_INVALID_CHAR
+            return Node{}, types.ERR_INVALID_CHAR
         }
     }
 }
 
-func (self *Parser) decodeObject(ret []Pair) (Node, native.ParsingError) {
+func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
     /* check for EOF */
     if self.p = self.lspace(sp); self.p >= ns {
-        return Node{}, native.ERR_EOF
+        return Node{}, types.ERR_EOF
     }
 
     /* check for empty object */
@@ -173,12 +174,12 @@ func (self *Parser) decodeObject(ret []Pair) (Node, native.ParsingError) {
     /* decode each pair */
     for {
         var val Node
-        var njs native.JsonState
-        var err native.ParsingError
+        var njs types.JsonState
+        var err types.ParsingError
 
         /* decode the key */
-        if njs = self.decodeValue(); njs.Vt != native.V_STRING {
-            return Node{}, native.ERR_INVALID_CHAR
+        if njs = self.decodeValue(); njs.Vt != types.V_STRING {
+            return Node{}, types.ERR_INVALID_CHAR
         }
 
         /* extract the key */
@@ -208,7 +209,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, native.ParsingError) {
 
         /* check for EOF */
         if self.p >= ns {
-            return Node{}, native.ERR_EOF
+            return Node{}, types.ERR_EOF
         }
 
         /* check for the next character */
@@ -219,12 +220,12 @@ func (self *Parser) decodeObject(ret []Pair) (Node, native.ParsingError) {
             if val.IsRaw() {
                 return newRawObject(self, ret), 0
             }
-            return Node{}, native.ERR_INVALID_CHAR
+            return Node{}, types.ERR_INVALID_CHAR
         }
     }
 }
 
-func (self *Parser) decodeString(iv int64, ep int) (Node, native.ParsingError) {
+func (self *Parser) decodeString(iv int64, ep int) (Node, types.ParsingError) {
     p := self.p - 1
     s := self.s[iv:p]
 
@@ -251,36 +252,36 @@ func (self *Parser) Pos() int {
     return self.p
 }
 
-func (self *Parser) Parse() (Node, native.ParsingError) {
+func (self *Parser) Parse() (Node, types.ParsingError) {
     switch val := self.decodeValue(); val.Vt {
-        case native.V_EOF     : return Node{}, native.ERR_EOF
-        case native.V_NULL    : return nullNode, 0
-        case native.V_TRUE    : return trueNode, 0
-        case native.V_FALSE   : return falseNode, 0
-        case native.V_STRING  : return self.decodeString(val.Iv, val.Ep)
-        case native.V_ARRAY:
+        case types.V_EOF     : return Node{}, types.ERR_EOF
+        case types.V_NULL    : return nullNode, 0
+        case types.V_TRUE    : return trueNode, 0
+        case types.V_FALSE   : return falseNode, 0
+        case types.V_STRING  : return self.decodeString(val.Iv, val.Ep)
+        case types.V_ARRAY:
             if self.noLazy {
                 return self.decodeArray(make([]Node, 0, _DEFAULT_NODE_CAP))
             }
             return newRawArray(self, make([]Node, 0, _DEFAULT_NODE_CAP)), 0
-        case native.V_OBJECT:
+        case types.V_OBJECT:
             if self.noLazy {
                 return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP))
             }
             return newRawObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
-        case native.V_DOUBLE  : return newNumber(self.s[val.Ep:self.p]), 0
-        case native.V_INTEGER : return newNumber(self.s[val.Ep:self.p]), 0
-        default               : return Node{}, native.ParsingError(-val.Vt)
+        case types.V_DOUBLE  : return newNumber(self.s[val.Ep:self.p]), 0
+        case types.V_INTEGER : return newNumber(self.s[val.Ep:self.p]), 0
+        default              : return Node{}, types.ParsingError(-val.Vt)
     }
 }
 
-func (self *Parser) skip() (int, native.ParsingError) {
-    fsm := stackPool.Get().(*native.StateMachine)
+func (self *Parser) skip() (int, types.ParsingError) {
+    fsm := stackPool.Get().(*types.StateMachine)
     start := native.SkipOne(&self.s, &self.p, fsm)
     stackPool.Put(fsm)
     
     if start < 0 {
-        return self.p, native.ParsingError(-start)
+        return self.p, types.ParsingError(-start)
     }
     return start, 0
 }
@@ -288,7 +289,7 @@ func (self *Parser) skip() (int, native.ParsingError) {
 /** Parser Factory **/
 
 // Loads parse all json into interface{}
-func Loads(src string) (int, interface{}, native.ParsingError) {
+func Loads(src string) (int, interface{}, types.ParsingError) {
     ps := &Parser{s: src}
     np, err := ps.Parse()
 
@@ -300,8 +301,8 @@ func Loads(src string) (int, interface{}, native.ParsingError) {
     }
 }
 
-// Loads parse all json into interface{}, with numeric nodes casted to json.Number
-func LoadsUseNumber(src string) (int, interface{}, native.ParsingError) {
+// LoadsUseNumber parse all json into interface{}, with numeric nodes casted to json.Number
+func LoadsUseNumber(src string) (int, interface{}, types.ParsingError) {
     ps := &Parser{s: src}
     np, err := ps.Parse()
 

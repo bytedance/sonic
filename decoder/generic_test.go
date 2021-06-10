@@ -23,7 +23,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/ast`
-    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/require`
@@ -32,7 +32,7 @@ import (
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func decodeInterface(s string, f uint64) (int, interface{}, native.ParsingError)
+func decodeInterface(s string, f uint64) (int, interface{}, types.ParsingError)
 
 //go:nosplit
 //go:noescape
@@ -54,7 +54,7 @@ func TestGeneric_DecodeInterface(t *testing.T) {
 func TestGeneric_DecodeObjectKeyString(t *testing.T) {
     r := decodeObjectKeyString(`    "hello\u2333world"`, 4)
     if v := (*rt.GoString)(unsafe.Pointer(&r)).Len; v < 0 {
-        require.NoError(t, native.ParsingError(-v))
+        require.NoError(t, types.ParsingError(-v))
     }
     spew.Dump(r)
 }

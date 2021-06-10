@@ -182,7 +182,9 @@ func (self *BaseAssembler) assignOperands(p *obj.Prog, args []obj.Addr) {
         case 0  :
         case 1  : p.To                     = args[0]
         case 2  : p.To, p.From             = args[1], args[0]
-        default : p.To, p.From, p.RestArgs = args[1], args[0], args[2:]
+        case 3  : p.To, p.From, p.RestArgs = args[2], args[0], args[1:2]
+        case 4  : p.To, p.From, p.RestArgs = args[2], args[3], args[:2]
+        default : panic("invalid operands")
     }
 }
 
