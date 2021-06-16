@@ -9,6 +9,7 @@ header:
 
   paths-ignore:
     - 'ast/asm.s'                                   # empty file
+    - 'decoder/asm.s'                               # empty file
     - 'encoder/asm.s'                               # empty file
     - 'internal/caching/asm.s'                      # empty file
     - 'internal/jit/asm.s'                          # empty file

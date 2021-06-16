@@ -2,6 +2,8 @@
 
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT(just-in-time compiling) and SIMD(single-instruction-multi-data).
 
+**WARNING: This is still in alpha stage, use with care !**
+
 ## Benchmarks
 For all sizes of json and all scenes of usage, Sonic performs almost best.
 - Small (400B, 11 keys, 3 levels)

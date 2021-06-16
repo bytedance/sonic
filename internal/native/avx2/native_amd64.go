@@ -57,7 +57,7 @@ func __lspace(sp unsafe.Pointer, nb int, off int) (ret int)
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func __value(s unsafe.Pointer, n int, p int, v *types.JsonState) (ret int)
+func __value(s unsafe.Pointer, n int, p int, v *types.JsonState, allow_control int) (ret int)
 
 //go:nosplit
 //go:noescape

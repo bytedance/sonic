@@ -59,8 +59,8 @@ func TestMap(t *testing.T) {
     assert.Equal(t, m, map[string]interface{}{
         "a": float64(0),    
         "b": float64(1),    
-        "c": float64(-1.2),    
-        "d": float64(-1.2e-10),    
+        "c": -1.2,
+        "d": -1.2e-10,
     })
     m1 := node.MapUseNumber()
     assert.Equal(t, m1, map[string]interface{}{
@@ -79,9 +79,9 @@ func TestArray(t *testing.T) {
     m := node.Array()
     assert.Equal(t, m, []interface{}{
         float64(0),    
-        float64(1),    
-        float64(-1.2),    
-        float64(-1.2e-10),    
+        float64(1),
+        -1.2,
+        -1.2e-10,
     })
     m1 := node.ArrayUseNumber()
     assert.Equal(t, m1, []interface{}{

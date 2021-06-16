@@ -92,13 +92,13 @@ func TestLoadIndex(t *testing.T) {
         t.Fatal(err)
     }
     a := node.Index(3).Float64()
-    assert.Equal(t, float64(-1.2e-10), a)
+    assert.Equal(t, -1.2e-10, a)
     m := node.Array()
     assert.Equal(t, m, []interface{}{
         float64(0),    
-        float64(1),    
-        float64(-1.2),    
-        float64(-1.2e-10),    
+        float64(1),
+        -1.2,
+        -1.2e-10,
     })
 }
 

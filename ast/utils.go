@@ -19,20 +19,8 @@ package ast
 import (
     `unsafe`
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
-
-//go:nosplit
-func i64tof(v int64) float64 {
-    return *(*float64)(unsafe.Pointer(&v))
-}
-
-//go:nosplit
-func f64toi(v float64) int64 {
-    return *(*int64)(unsafe.Pointer(&v))
-}
 
 //go:nosplit
 func mem2ptr(s []byte) unsafe.Pointer {
@@ -51,25 +39,3 @@ func addr2str(p unsafe.Pointer, n int64) (s string) {
     return
 }
 
-func unquoteBytes(s string, m *[]byte) types.ParsingError {
-    pos := -1
-    slv := (*rt.GoSlice)(unsafe.Pointer(m))
-    str := (*rt.GoString)(unsafe.Pointer(&s))
-    ret := native.Unquote(str.Ptr, str.Len, slv.Ptr, &pos, 0)
-
-    /* check for errors */
-    if ret < 0 {
-        return types.ParsingError(-ret)
-    }
-
-    /* update the length */
-    slv.Len = ret
-    return 0
-}
-
-func UnquoteString(s string) (ret string, err types.ParsingError) {
-    mm := make([]byte, 0, len(s))
-    err = unquoteBytes(s, &mm)
-    ret = rt.Mem2Str(mm)
-    return
-}

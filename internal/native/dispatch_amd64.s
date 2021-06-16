@@ -36,7 +36,7 @@ TEXT ·Lspace(SB), NOSPLIT, $0 - 32
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__lspace(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__lspace(SB)
 
-TEXT ·Value(SB), NOSPLIT, $0 - 40
+TEXT ·Value(SB), NOSPLIT, $0 - 48
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__value(SB)

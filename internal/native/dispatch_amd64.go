@@ -35,7 +35,6 @@ var (
 )
 
 var (
-    S_value     uintptr
     S_vstring   uintptr
     S_vnumber   uintptr
     S_vsigned   uintptr
@@ -66,7 +65,7 @@ func Lspace(sp unsafe.Pointer, nb int, off int) int
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func Value(s unsafe.Pointer, n int, p int, v *types.JsonState) int
+func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, allow_control int) int
 
 //go:nosplit
 //go:noescape
@@ -85,7 +84,6 @@ func useAVX() {
     S_lquote      = avx.S_lquote
     S_lspace      = avx.S_lspace
     S_unquote     = avx.S_unquote
-    S_value       = avx.S_value
     S_vstring     = avx.S_vstring
     S_vnumber     = avx.S_vnumber
     S_vsigned     = avx.S_vsigned
@@ -102,7 +100,6 @@ func useAVX2() {
     S_lquote      = avx2.S_lquote
     S_lspace      = avx2.S_lspace
     S_unquote     = avx2.S_unquote
-    S_value       = avx2.S_value
     S_vstring     = avx2.S_vstring
     S_vnumber     = avx2.S_vnumber
     S_vsigned     = avx2.S_vsigned

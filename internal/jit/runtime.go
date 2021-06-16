@@ -30,7 +30,11 @@ import (
 func getitab(inter *rt.GoType, typ *rt.GoType, canfail bool) *rt.GoItab
 
 func Func(f interface{}) obj.Addr {
-    return Imm(*(*int64)(rt.UnpackEface(f).Value))
+    if p := rt.UnpackEface(f); p.Type.Kind() != reflect.Func {
+        panic("f is not a function")
+    } else {
+        return Imm(*(*int64)(p.Value))
+    }
 }
 
 func Type(t reflect.Type) obj.Addr {

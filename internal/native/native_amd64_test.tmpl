@@ -34,7 +34,7 @@ func TestNative_Value(t *testing.T) {
     var v types.JsonState
     s := `   -12345`
     p := (*rt.GoString)(unsafe.Pointer(&s))
-    x := __value(p.Ptr, p.Len, 0, &v)
+    x := __value(p.Ptr, p.Len, 0, &v, 0)
     assert.Equal(t, 9, x)
     assert.Equal(t, types.V_INTEGER, v.Vt)
     assert.Equal(t, int64(-12345), v.Iv)

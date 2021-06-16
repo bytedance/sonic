@@ -20,6 +20,7 @@ import (
     `fmt`
 
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/unquote`
 )
 
 type Searcher struct {
@@ -113,7 +114,7 @@ func (self *Parser) searchKey(match string) types.ParsingError {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = UnquoteString(key); err != 0 {
+            if key, err = unquote.String(key); err != 0 {
                 return err
             }
         }

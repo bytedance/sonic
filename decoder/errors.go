@@ -109,8 +109,3 @@ func error_value(value string, vtype reflect.Type) error {
         Value : value,
     }
 }
-
-//go:nosplit
-func throw_invalid_type(vt types.ValueType) {
-    throw(fmt.Sprintf("invalid value type: %d", vt))
-}

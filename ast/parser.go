@@ -17,12 +17,13 @@
 package ast
 
 import (
-	`sync`
-	`unsafe`
+    `sync`
+    `unsafe`
 
-	`github.com/bytedance/sonic/internal/native`
-	`github.com/bytedance/sonic/internal/native/types`
-	`github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/unquote`
 )
 
 const _DEFAULT_NODE_CAP = 16
@@ -105,7 +106,7 @@ func (self *Parser) lspace(sp int) int {
 
 func (self *Parser) decodeValue() (val types.JsonState) {
     sv := (*rt.GoString)(unsafe.Pointer(&self.s))
-    self.p = native.Value(sv.Ptr, sv.Len, self.p, &val)
+    self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, 0)
     return
 }
 
@@ -188,7 +189,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = UnquoteString(key); err != 0 {
+            if key, err = unquote.String(key); err != 0 {
                 return Node{}, err
             }
         }
@@ -236,7 +237,7 @@ func (self *Parser) decodeString(iv int64, ep int) (Node, types.ParsingError) {
 
     /* unquote the string */
     buf := make([]byte, 0, len(s))
-    err := unquoteBytes(s, &buf)
+    err := unquote.IntoBytes(s, &buf)
 
     /* check for errors */
     if err != 0 {
