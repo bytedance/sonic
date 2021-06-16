@@ -167,6 +167,29 @@ func TestLoads(t *testing.T) {
     assert.Equal(t, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": json.Number("2.4"), "f": json.Number("1.2e15"), "g": json.Number("1")}, i)
 }
 
+func TestParsehNotExist(t *testing.T) {
+    s,err := NewParser(` { "xx" : [ 0, "" ] ,"yy" :{ "2": "" } } `).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    node := s.GetByPath("xx", 2)
+    if node.Exists() {
+        t.Fatalf("node: %v", node)
+    }
+    node = s.GetByPath("xx", 1)
+    if !node.Exists() {
+        t.Fatalf("node: %v", nil)
+    }
+    node = s.GetByPath("yy", "3")
+    if node.Exists() {
+        t.Fatalf("node: %v", node)
+    }
+    node = s.GetByPath("yy", "2")
+    if !node.Exists() {
+        t.Fatalf("node: %v", nil)
+    }
+}
+
 func BenchmarkParser_StdLib(b *testing.B) {
     var bv = []byte(_TwitterJson)
     b.SetBytes(int64(len(_TwitterJson)))

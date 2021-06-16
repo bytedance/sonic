@@ -594,3 +594,26 @@ func TestGetMany4(t *testing.T) {
         }
     }
 }
+
+func TestGetNotExist(t *testing.T) {
+    var dataStr = `{"m1":{"m2":3}}`
+    ret, err := GetFromString(dataStr, "not_exist", "m3")
+    if err == nil || ret.Exists() {
+        t.Fatal("Get exist!")
+    }
+    if ret.Type() != ast.V_NONE {
+        t.Fatal(ret.Type())
+    }
+    ret, err = GetFromString(dataStr)
+    if !ret.IsRaw() || ret.Type() != ast.V_OBJECT {
+        t.Fatal(ret.Type())
+    }
+    v11 := ret.Get("not_exist")
+    if v11.Exists() {
+        t.Fatal()
+    }
+    v2 := ret.GetByPath("m1", "m2")
+    if !v2.Exists() || v2.IsRaw() || v2.Type() != ast.V_NUMBER {
+        t.Fatal(ret.Type())
+    }
+}

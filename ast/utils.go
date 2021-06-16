@@ -28,6 +28,16 @@ func mem2ptr(s []byte) unsafe.Pointer {
 }
 
 //go:nosplit
+func ptr2slice(s unsafe.Pointer, l int, c int) unsafe.Pointer {
+    slice := &rt.GoSlice{
+		Ptr: s,
+		Len: l,
+		Cap: c,
+    }
+    return unsafe.Pointer(slice)
+}
+
+//go:nosplit
 func str2ptr(s string) unsafe.Pointer {
     return (*rt.GoString)(unsafe.Pointer(&s)).Ptr
 }
@@ -39,3 +49,8 @@ func addr2str(p unsafe.Pointer, n int64) (s string) {
     return
 }
 
+const _SPACE_CHAR_MASK = (1<<' ')|(1<<'\t')|(1<<'\r')|(1<<'\n')
+
+func isSpace(c byte) bool {
+    return (int(1<<c) & _SPACE_CHAR_MASK) != 0
+}

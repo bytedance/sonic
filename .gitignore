@@ -43,3 +43,5 @@ coverage.xml
 junit.xml
 *.profile
 *.svg
+*.out
+ast/test.out
