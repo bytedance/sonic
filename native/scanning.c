@@ -318,7 +318,7 @@ static inline int64_t advance_number(const GoString *src, long *p, long i, JsonS
 
 /** Value Scanning Routines **/
 
-long value(const char *s, size_t n, long p, JsonState *ret) {
+long value(const char *s, size_t n, long p, JsonState *ret, int allow_control) {
     long     q = p;
     GoString m = {.buf = s, .len = n};
 
@@ -341,8 +341,12 @@ long value(const char *s, size_t n, long p, JsonState *ret) {
         case 'f' : ret->vt = advance_dword(&m, &q, 0, V_FALSE, VS_ALSE) ; return q;
         case '[' : ret->vt = V_ARRAY                                    ; return q;
         case '{' : ret->vt = V_OBJECT                                   ; return q;
+        case ':' : ret->vt = allow_control ? V_KEY_SEP : -ERR_INVAL     ; return allow_control ? q : q - 1;
+        case ',' : ret->vt = allow_control ? V_ELEM_SEP : -ERR_INVAL    ; return allow_control ? q : q - 1;
+        case ']' : ret->vt = allow_control ? V_ARRAY_END : -ERR_INVAL   ; return allow_control ? q : q - 1;
+        case '}' : ret->vt = allow_control ? V_OBJECT_END : -ERR_INVAL  ; return allow_control ? q : q - 1;
         case  0  : ret->vt = V_EOF                                      ; return q;
-        default  : ret->vt = -ERR_INVAL                                 ; return q;
+        default  : ret->vt = -ERR_INVAL                                 ; return q - 1;
     }
 }
 

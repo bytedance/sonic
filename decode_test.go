@@ -2214,10 +2214,10 @@ func TestUnmarshalErrorAfterMultipleJSON(t *testing.T) {
 		err error
 	}{{
 		in:  `1 false null :`,
-		err: (&JsonSyntaxError{"invalid character ':' looking for beginning of value", 14}).err(),
+		err: (&JsonSyntaxError{"invalid character ':' looking for beginning of value", 13}).err(),
 	}, {
 		in:  `1 [] [,]`,
-		err: (&JsonSyntaxError{"invalid character ',' looking for beginning of value", 7}).err(),
+		err: (&JsonSyntaxError{"invalid character ',' looking for beginning of value", 6}).err(),
 	}, {
 		in:  `1 [] [true:]`,
 		err: (&JsonSyntaxError{"invalid character ':' after array element", 10}).err(),

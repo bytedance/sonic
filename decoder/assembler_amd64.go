@@ -376,7 +376,6 @@ var (
     _I_int8    , _T_int8    = rtype(reflect.TypeOf(int8(0)))
     _I_int16   , _T_int16   = rtype(reflect.TypeOf(int16(0)))
     _I_int32   , _T_int32   = rtype(reflect.TypeOf(int32(0)))
-    _          , _T_int64   = rtype(reflect.TypeOf(int64(0)))
     _I_uint8   , _T_uint8   = rtype(reflect.TypeOf(uint8(0)))
     _I_uint16  , _T_uint16  = rtype(reflect.TypeOf(uint16(0)))
     _I_uint32  , _T_uint32  = rtype(reflect.TypeOf(uint32(0)))
@@ -866,23 +865,20 @@ var (
 )
 
 var (
-    _F_decodeTypedPointer          obj.Addr
-    _F_FieldMap_GetCaseInsensitive obj.Addr
-)
-
-var (
     _F_lspace  = jit.Imm(int64(native.S_lspace))
     _F_strhash = jit.Imm(int64(caching.S_strhash))
 )
 
 var (
+    _F_b64decode   = jit.Imm(int64(_subr__b64decode))
     _F_skip_array  = jit.Imm(int64(native.S_skip_array))
     _F_skip_object = jit.Imm(int64(native.S_skip_object))
 )
 
 var (
-    _F_b64decode    = jit.Imm(int64(_subr__b64decode))
-    _F_decode_value = jit.Imm(int64(_subr_decode_value))
+    _F_decodeGeneric               obj.Addr
+    _F_decodeTypedPointer          obj.Addr
+    _F_FieldMap_GetCaseInsensitive obj.Addr
 )
 
 const (
@@ -892,19 +888,24 @@ const (
 )
 
 func init() {
+    _F_decodeGeneric               = jit.Func(decodeGeneric)
     _F_decodeTypedPointer          = jit.Func(decodeTypedPointer)
     _F_FieldMap_GetCaseInsensitive = jit.Func((*caching.FieldMap).GetCaseInsensitive)
 }
 
 func (self *_Assembler) _asm_OP_any(_ *_Instr) {
-    self.save(_VP)                              // SAVE  VP
-    self.Emit("MOVQ" , _ARG_fv, _VP)            // MOVQ  fv, VP
-    self.call(_F_decode_value)                  // CALL  decode_value
-    self.load(_VP)                              // LOAD  VP
-    self.Emit("TESTQ", _EP, _EP)                // TESTQ EP, EP
-    self.Sjmp("JNZ"  , _LB_parsing_error)       // JNZ   _parsing_error
-    self.Emit("MOVQ" , _R8, jit.Ptr(_VP, 0))    // MOVQ  R8, (VP)
-    self.Emit("MOVQ" , _R9, jit.Ptr(_VP, 8))    // MOVQ  R9, 8(VP)
+    self.Emit("MOVQ" , _ARG_fv, _AX)            // MOVQ    fv, AX
+    self.Emit("MOVQ" , _IP, jit.Ptr(_SP, 0))    // MOVQ    IP, (SP)
+    self.Emit("MOVQ" , _IL, jit.Ptr(_SP, 8))    // MOVQ    IL, 8(SP)
+    self.Emit("MOVQ" , _IC, jit.Ptr(_SP, 16))   // MOVQ    IC, 16(SP)
+    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 24))   // MOVQ    AX, 24(SP)
+    self.call_go(_F_decodeGeneric)              // CALL_GO decodeGeneric
+    self.Emit("MOVQ" , jit.Ptr(_SP, 32), _IC)   // MOVQ    32(SP), IC
+    self.Emit("MOVOU", jit.Ptr(_SP, 40), _X0)   // MOVOU   40(SP), X0
+    self.Emit("MOVQ" , jit.Ptr(_SP, 56), _EP)   // MOVQ    56(SP), EP
+    self.Emit("TESTQ", _EP, _EP)                // TESTQ   ET, ET
+    self.Sjmp("JNZ"  , _LB_parsing_error)       // JNZ     _parsing_error
+    self.Emit("MOVOU", _X0, jit.Ptr(_VP, 0))    // MOVOU   X0, (VP)
 }
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {

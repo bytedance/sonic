@@ -30,6 +30,10 @@
 #define V_STRING        7
 #define V_DOUBLE        8
 #define V_INTEGER       9
+#define V_KEY_SEP       10
+#define V_ELEM_SEP      11
+#define V_ARRAY_END     12
+#define V_OBJECT_END    13
 
 #define F_DBLUNQ        (1 << 0)
 #define F_UNIREP        (1 << 1)
@@ -97,7 +101,7 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
 ssize_t strchr1(const GoString *s, size_t p, char ch);
 ssize_t strchr2(const GoString *s, size_t p, char c0, char c1);
 
-long value(const char *s, size_t n, long p, JsonState *ret);
+long value(const char *s, size_t n, long p, JsonState *ret, int allow_control);
 void vstring(const GoString *src, long *p, JsonState *ret);
 void vnumber(const GoString *src, long *p, JsonState *ret);
 void vsigned(const GoString *src, long *p, JsonState *ret);

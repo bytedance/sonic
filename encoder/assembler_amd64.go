@@ -69,7 +69,7 @@ const (
 const (
     _FP_args  = 40  // 40 bytes for passing arguments to this function
     _FP_fargs = 64  // 64 bytes for passing arguments to other Go functions
-    _FP_saves = 64  // 72 bytes for saving the registers before CALL instructions
+    _FP_saves = 64  // 64 bytes for saving the registers before CALL instructions
 )
 
 const (

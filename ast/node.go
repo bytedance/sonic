@@ -23,6 +23,7 @@ import (
 
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/unquote`
 )
 
 const (
@@ -36,8 +37,9 @@ const (
 )
 
 const (
-    V_RAW        types.ValueType = 1 << 4
-    V_NUMBER     types.ValueType = 10
+    V_NODE_BASE  types.ValueType = 32768
+    V_RAW        types.ValueType = 1 << 16
+    V_NUMBER                     = V_NODE_BASE + 0
     V_ARRAY_RAW                  = V_RAW | types.V_ARRAY
     V_OBJECT_RAW                 = V_RAW | types.V_OBJECT
     MASK_RAW                     = V_RAW - 1
@@ -631,7 +633,7 @@ func (self *Node) loadNextPair() (*Pair, types.ParsingError) {
 
     /* check for escape sequence */
     if njs.Ep != -1 {
-        if key, err = UnquoteString(key); err != 0 {
+        if key, err = unquote.String(key); err != 0 {
             return nil, err
         }
     }
