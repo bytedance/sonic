@@ -29,9 +29,27 @@ var _subr__b64decode uintptr
 
 //go:nosplit
 //go:noescape
+//go:linkname throw runtime.throw
+//goland:noinspection GoUnusedParameter
+func throw(s string)
+
+//go:nosplit
+//go:noescape
 //go:linkname convT64 runtime.convT64
 //goland:noinspection GoUnusedParameter
 func convT64(v uint64) unsafe.Pointer
+
+//go:nosplit
+//go:noescape
+//go:linkname convTslice runtime.convTslice
+//goland:noinspection GoUnusedParameter
+func convTslice(v []byte) unsafe.Pointer
+
+//go:nosplit
+//go:noescape
+//go:linkname convTstring runtime.convTstring
+//goland:noinspection GoUnusedParameter
+func convTstring(v uint64) unsafe.Pointer
 
 //go:nosplit
 //go:noescape

@@ -38,6 +38,7 @@ const (
     V_ELEM_SEP   ValueType = 11
     V_ARRAY_END  ValueType = 12
     V_OBJECT_END ValueType = 13
+    V_MAX
 )
 
 const (

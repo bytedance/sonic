@@ -23,6 +23,11 @@ import (
 )
 
 //go:nosplit
+func pbool(v bool) uintptr {
+    return freezeValue(unsafe.Pointer(&v))
+}
+
+//go:nosplit
 func ptodec(p loader.Function) _Decoder {
     return *(*_Decoder)(unsafe.Pointer(&p))
 }
