@@ -125,6 +125,7 @@ var (
 )
 
 var (
+    _DF = jit.Reg("R10")    // reuse R10 in generic decoder for flags
     _ET = jit.Reg("R10")
     _EP = jit.Reg("R11")
 )
@@ -871,12 +872,15 @@ var (
 
 var (
     _F_b64decode   = jit.Imm(int64(_subr__b64decode))
+    _F_decodeValue = jit.Imm(int64(_subr_decode_value))
+)
+
+var (
     _F_skip_array  = jit.Imm(int64(native.S_skip_array))
     _F_skip_object = jit.Imm(int64(native.S_skip_object))
 )
 
 var (
-    _F_decodeGeneric               obj.Addr
     _F_decodeTypedPointer          obj.Addr
     _F_FieldMap_GetCaseInsensitive obj.Addr
 )
@@ -888,24 +892,15 @@ const (
 )
 
 func init() {
-    _F_decodeGeneric               = jit.Func(decodeGeneric)
     _F_decodeTypedPointer          = jit.Func(decodeTypedPointer)
     _F_FieldMap_GetCaseInsensitive = jit.Func((*caching.FieldMap).GetCaseInsensitive)
 }
 
 func (self *_Assembler) _asm_OP_any(_ *_Instr) {
-    self.Emit("MOVQ" , _ARG_fv, _AX)            // MOVQ    fv, AX
-    self.Emit("MOVQ" , _IP, jit.Ptr(_SP, 0))    // MOVQ    IP, (SP)
-    self.Emit("MOVQ" , _IL, jit.Ptr(_SP, 8))    // MOVQ    IL, 8(SP)
-    self.Emit("MOVQ" , _IC, jit.Ptr(_SP, 16))   // MOVQ    IC, 16(SP)
-    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 24))   // MOVQ    AX, 24(SP)
-    self.call_go(_F_decodeGeneric)              // CALL_GO decodeGeneric
-    self.Emit("MOVQ" , jit.Ptr(_SP, 32), _IC)   // MOVQ    32(SP), IC
-    self.Emit("MOVOU", jit.Ptr(_SP, 40), _X0)   // MOVOU   40(SP), X0
-    self.Emit("MOVQ" , jit.Ptr(_SP, 56), _EP)   // MOVQ    56(SP), EP
-    self.Emit("TESTQ", _EP, _EP)                // TESTQ   ET, ET
-    self.Sjmp("JNZ"  , _LB_parsing_error)       // JNZ     _parsing_error
-    self.Emit("MOVOU", _X0, jit.Ptr(_VP, 0))    // MOVOU   X0, (VP)
+    self.Emit("MOVQ" , _ARG_fv, _DF)            // MOVQ  fv, DF
+    self.call(_F_decodeValue)                   // CALL  decodeValue
+    self.Emit("TESTQ", _EP, _EP)                // TESTQ EP, EP
+    self.Sjmp("JNZ"  , _LB_parsing_error)       // JNZ   _parsing_error
 }
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {

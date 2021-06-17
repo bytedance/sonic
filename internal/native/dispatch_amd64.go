@@ -35,6 +35,7 @@ var (
 )
 
 var (
+    S_value     uintptr
     S_vstring   uintptr
     S_vnumber   uintptr
     S_vsigned   uintptr
@@ -84,6 +85,7 @@ func useAVX() {
     S_lquote      = avx.S_lquote
     S_lspace      = avx.S_lspace
     S_unquote     = avx.S_unquote
+    S_value       = avx.S_value
     S_vstring     = avx.S_vstring
     S_vnumber     = avx.S_vnumber
     S_vsigned     = avx.S_vsigned
@@ -100,6 +102,7 @@ func useAVX2() {
     S_lquote      = avx2.S_lquote
     S_lspace      = avx2.S_lspace
     S_unquote     = avx2.S_unquote
+    S_value       = avx2.S_value
     S_vstring     = avx2.S_vstring
     S_vnumber     = avx2.S_vnumber
     S_vsigned     = avx2.S_vsigned

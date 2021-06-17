@@ -31,6 +31,7 @@ var (
 )
 
 var (
+    S_value     = _subr__value
     S_vstring   = _subr__vstring
     S_vnumber   = _subr__vnumber
     S_vsigned   = _subr__vsigned

@@ -26,13 +26,18 @@ import (
 )
 
 const (
-    _MinSlice  = 16
-    _MaxStack  = 262144  // 256k slots
-    _FsmOffset = int64(unsafe.Offsetof(_Stack{}.mm))
+    _MinSlice = 16
+    _MaxStack = 262144 // 256k slots
+)
+
+const (
+    _PtrBytes  = _PTR_SIZE / 8
+    _FsmOffset = (_MaxStack + 1) * _PtrBytes
 )
 
 var (
     stackPool    = sync.Pool{}
+    valueCache   = []unsafe.Pointer(nil)
     fieldCache   = []*caching.FieldMap(nil)
     programCache = caching.CreateProgramCache()
 )
@@ -41,6 +46,7 @@ type _Stack struct {
     sp uintptr
     sb [_MaxStack]unsafe.Pointer
     mm types.StateMachine
+    vp [types.MAX_RECURSE]*interface{}
 }
 
 type _Decoder func(
@@ -61,6 +67,11 @@ func newStack() *_Stack {
 
 func freeStack(p *_Stack) {
     stackPool.Put(p)
+}
+
+func freezeValue(v unsafe.Pointer) uintptr {
+    valueCache = append(valueCache, v)
+    return uintptr(v)
 }
 
 func freezeFields(v *caching.FieldMap) int64 {
