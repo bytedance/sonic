@@ -6,14 +6,12 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 
 ## Benchmarks
 For all sizes of json and all scenes of usage, Sonic performs almost best.
-- Small (400B, 11 keys, 3 levels)
+- [Small](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 keys, 3 levels)
 ![small benchmarks](bench-400B.png)
-- Medium (110KB, 300+ keys, 3 levels, with many quoted-json values)
-![medium benchmarks](bench-110KB.png)
-- Large (550KB, 10000+ key, 6 levels)
+- [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitterescaped.json) (550KB, 10000+ key, 6 levels)
 ![large benchmarks](bench-550KB.png)
 
-For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19)(cpu i9-9880H, goarch amd64), Sonic is **1.5x** faster than [json-iterator](https://github.com/json-iterator/go) in decoding, **2.5x** faster in encoding.
+For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19), Sonic is **1.5x** faster than [json-iterator](https://github.com/json-iterator/go) in decoding, **2.5x** faster in encoding.
 
 ```powershell
 goos: darwin
