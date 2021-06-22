@@ -24,6 +24,7 @@ import (
     `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
+    gojson `github.com/goccy/go-json`
 )
 
 var _BindingValue TwitterStruct
@@ -111,6 +112,18 @@ func BenchmarkDecoder_Generic_JsonIter(b *testing.B) {
     }
 }
 
+func BenchmarkDecoder_Generic_GoJson(b *testing.B) {
+    var w interface{}
+    m := []byte(TwitterJson)
+    _ = gojson.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v interface{}
+        _ = gojson.Unmarshal(m, &v)
+    }
+}
+
 func BenchmarkDecoder_Binding_Sonic(b *testing.B) {
     var w TwitterStruct
     _, _ = decode(TwitterJson, &w)
@@ -143,6 +156,18 @@ func BenchmarkDecoder_Binding_JsonIter(b *testing.B) {
     for i := 0; i < b.N; i++ {
         var v TwitterStruct
         _ = jsoniter.Unmarshal(m, &v)
+    }
+}
+
+func BenchmarkDecoder_Binding_GoJson(b *testing.B) {
+    var w TwitterStruct
+    m := []byte(TwitterJson)
+    _ = gojson.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v TwitterStruct
+        _ = gojson.Unmarshal(m, &v)
     }
 }
 
@@ -187,6 +212,20 @@ func BenchmarkDecoder_Parallel_Generic_JsonIter(b *testing.B) {
     })
 }
 
+func BenchmarkDecoder_Parallel_Generic_GoJson(b *testing.B) {
+    var w interface{}
+    m := []byte(TwitterJson)
+    _ = gojson.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v interface{}
+            _ = gojson.Unmarshal(m, &v)
+        }
+    })
+}
+
 func BenchmarkDecoder_Parallel_Binding_Sonic(b *testing.B) {
     var w TwitterStruct
     _, _ = decode(TwitterJson, &w)
@@ -227,3 +266,18 @@ func BenchmarkDecoder_Parallel_Binding_JsonIter(b *testing.B) {
         }
     })
 }
+
+func BenchmarkDecoder_Parallel_Binding_GoJson(b *testing.B) {
+    var w TwitterStruct
+    m := []byte(TwitterJson)
+    _ = gojson.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v TwitterStruct
+            _ = gojson.Unmarshal(m, &v)
+        }
+    })
+}
+
