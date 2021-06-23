@@ -84,6 +84,24 @@ type GoMap struct {
     Extra      unsafe.Pointer
 }
 
+type GoMapIterator struct {
+    Key         unsafe.Pointer
+    Elem        unsafe.Pointer
+    T           *GoMapType
+    H           *GoMap
+    Buckets     unsafe.Pointer
+    Bptr        *unsafe.Pointer
+    Overflow    *[]unsafe.Pointer
+    OldOverflow *[]unsafe.Pointer
+    StartBucket uintptr
+    Offset      uint8
+    Wrapped     bool
+    B           uint8
+    I           uint8
+    Bucket      uintptr
+    CheckBucket uintptr
+}
+
 type GoItab struct {
     it unsafe.Pointer
     vt *GoType
