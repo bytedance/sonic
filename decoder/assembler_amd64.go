@@ -1176,7 +1176,7 @@ func (self *_Assembler) _asm_OP_array_clear_p(p *_Instr) {
 func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
     self.Emit("XORL" , _AX, _AX)                    // XORL    AX, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))        // MOVQ    AX, 8(VP)
-    self.Emit("MOVQ" , jit.Ptr(_VP, 0), _AX)        // MOVQ    (VP), AX
+    self.Emit("MOVQ" , jit.Ptr(_VP, 16), _AX)       // MOVQ    16(VP), AX
     self.Emit("TESTQ", _AX, _AX)                    // TESTQ   AX, AX
     self.Sjmp("JNZ"  , "_done_{n}")                 // JNZ     _done_{n}
     self.Emit("MOVQ" , jit.Imm(_MinSlice), _CX)     // MOVQ    ${_MinSlice}, CX
@@ -1189,6 +1189,8 @@ func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
     self.Emit("MOVQ" , jit.Ptr(_SP, 24), _AX)       // MOVQ    24(SP), AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 0))        // MOVQ    AX, (VP)
     self.Link("_done_{n}")                          // _done_{n}:
+    self.Emit("XORL" , _AX, _AX)                    // XORL    AX, AX
+    self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))        // MOVQ    AX, 8(VP)
 }
 
 func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
