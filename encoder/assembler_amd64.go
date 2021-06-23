@@ -20,6 +20,7 @@ import (
     `fmt`
     `reflect`
     `strconv`
+    `sync`
     `unsafe`
 
     `github.com/bytedance/sonic/internal/cpu`
@@ -754,8 +755,16 @@ func (self *_Assembler) check_zero(nb int, dest int) {
 /** OpCode Assembler Functions **/
 
 var (
+    _T_map_Iterator           = rt.UnpackType(mapIteratorType)
+    _T_map_PIterator          = rt.UnpackType(mapPIteratorType)
     _T_json_Marshaler         = rt.UnpackType(jsonMarshalerType)
     _T_encoding_TextMarshaler = rt.UnpackType(encodingTextMarshalerType)
+)
+
+var (
+    _P_iteratorPool = new(sync.Pool)
+    _N_iteratorPool = jit.Imm(int64(unsafe.Sizeof(rt.GoMapIterator{})))
+    _V_iteratorPool = jit.Imm(int64(uintptr(unsafe.Pointer(_P_iteratorPool))))
 )
 
 var (
@@ -767,12 +776,19 @@ var (
 )
 
 var (
-    _F_memmove       = jit.Func(memmove)
-    _F_isZeroTyped   = jit.Func(isZeroTyped)
-    _F_mapiternext   = jit.Func(mapiternext)
-    _F_mapiterinit   = jit.Func(mapiterinit)
-    _F_error_number  = jit.Func(error_number)
-    _F_isValidNumber = jit.Func(isValidNumber)
+    _F_memmove              = jit.Func(memmove)
+    _F_newobject            = jit.Func(newobject)
+    _F_isZeroTyped          = jit.Func(isZeroTyped)
+    _F_mapiternext          = jit.Func(mapiternext)
+    _F_mapiterinit          = jit.Func(mapiterinit)
+    _F_error_number         = jit.Func(error_number)
+    _F_isValidNumber        = jit.Func(isValidNumber)
+    _F_memclrNoHeapPointers = jit.Func(memclrNoHeapPointers)
+)
+
+var (
+    _F_sync_Pool_Get = jit.Func((*sync.Pool).Get)
+    _F_sync_Pool_Put = jit.Func((*sync.Pool).Put)
 )
 
 var (
@@ -1075,18 +1091,44 @@ func (self *_Assembler) _asm_OP_goto(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_iter(p *_Instr) {
-    self.Emit("MOVQ", jit.Type(p.vt()), _AX)    // MOVQ    $p.vt(), AX
-    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))     // MOVQ    AX, (SP)
-    self.Emit("MOVQ", jit.Ptr(_SP_p, 0), _AX)   // MOVQ    (SP.p), AX
-    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))     // MOVQ    AX, 8(SP)
-    self.call_go(_F_mapiterinit)                // CALL_GO mapiterinit
-    self.Emit("MOVQ", jit.Ptr(_SP, 16), _SP_q)  // MOVQ    16(SP), SP.q
+    self.Emit("MOVQ" , _V_iteratorPool, _AX)                // MOVQ    $&iteratorPool, AX
+    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))                // MOVQ    AX, (SP)
+    self.call_go(_F_sync_Pool_Get)                          // CALL_GO (*sync.Pool).Get
+    self.Emit("MOVQ" , jit.Ptr(_SP, 16), _SP_q)             // MOVQ    16(SP), SP.q
+    self.Emit("TESTQ", _SP_q, _SP_q)                        // TESTQ   SP.q, SP.q
+    self.Sjmp("JZ"   , "_new_iter_{n}")                     // JZ      _new_iter_{n}
+    self.Emit("MOVL" , _N_iteratorPool, _AX)                // MOVL    ${size(GoMapIterator)}, AX
+    self.Emit("MOVQ" , _SP_q, jit.Ptr(_SP, 0))              // MOVQ    SP.q, (SP)
+    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 8))                // MOVQ    AX, 8(SP)
+    self.call_go(_F_memclrNoHeapPointers)                   // CALL_GO memclrNoHeapPointers
+    self.Sjmp("JMP"  , "_init_iter_{n}")                    // JMP     _init_iter_{n}
+    self.Link("_new_iter_{n}")                              // _new_iter_{n}:
+    self.Emit("MOVQ" , jit.Gtype(_T_map_Iterator), _AX)     // MOVQ    ${type(GoMapIterator)}, AX
+    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))                // MOVQ    AX, (SP)
+    self.call_go(_F_newobject)                              // CALL_GO newobject
+    self.Emit("MOVQ" , jit.Ptr(_SP, 8), _SP_q)              // MOVQ    8(SP), SP.q
+    self.Link("_init_iter_{n}")                             // _init_iter_{n}:
+    self.Emit("MOVQ" , jit.Type(p.vt()), _AX)               // MOVQ    $p.vt(), AX
+    self.Emit("MOVQ" , jit.Ptr(_SP_p, 0), _CX)              // MOVQ    (SP.p), CX
+    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))                // MOVQ    AX, (SP)
+    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 8))                // MOVQ    CX, 8(SP)
+    self.Emit("MOVQ" , _SP_q, jit.Ptr(_SP, 16))             // MOVQ    SP.q, 16(SP)
+    self.call_go(_F_mapiterinit)                            // CALL_GO mapiterinit
 }
 
 func (self *_Assembler) _asm_OP_map_check_key(p *_Instr) {
-    self.Emit("MOVQ" , jit.Ptr(_SP_q, 0), _SP_p)    // MOVQ  (SP.q), SP.p
-    self.Emit("TESTQ", _SP_p, _SP_p)                // TESTQ SP.p, SP.p
-    self.Xjmp("JZ"   , p.vi())                      // JZ    p.vi()
+    self.Emit("MOVQ" , jit.Ptr(_SP_q, 0), _SP_p)            // MOVQ    (SP.q), SP.p
+    self.Emit("TESTQ", _SP_p, _SP_p)                        // TESTQ   SP.p, SP.p
+    self.Sjmp("JNZ"  , "_map_next_{n}")                     // JNZ     _map_next_{n}
+    self.Emit("MOVQ" , _V_iteratorPool, _AX)                // MOVQ    $&iteratorPool, AX
+    self.Emit("MOVQ" , jit.Gtype(_T_map_PIterator), _CX)    // MOVQ    ${type(*GoMapIterator)}, CX
+    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))                // MOVQ    AX, (SP)
+    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 8))                // MOVQ    CX, 8(SP)
+    self.Emit("MOVQ" , _SP_q, jit.Ptr(_SP, 16))             // MOVQ    SP.q, 16(SP)
+    self.call_go(_F_sync_Pool_Put)                          // CALL_GO (*sync.Pool).Put
+    self.Emit("XORL" , _SP_q, _SP_q)                        // XORL    SP.q, SP.q
+    self.Xjmp("JMP"  , p.vi())                              // JMP     p.vi()
+    self.Link("_map_next_{n}")                              // _map_next_{n}:
 }
 
 func (self *_Assembler) _asm_OP_map_value_next(_ *_Instr) {
