@@ -22,7 +22,7 @@ import (
     `testing`
 )
 
-func TestIterator(t *testing.T) {
+func getTestIteratorSample() (string, int) {
 	var data []int
 	var v1 = ""
 	var v2 = ""
@@ -36,7 +36,56 @@ func TestIterator(t *testing.T) {
 			v2+=`,`
 		}
 	}
-	var str = `{"array":[`+v1+`], "object":{`+v2+`}}`
+	return `{"array":[`+v1+`], "object":{`+v2+`}}`, loop
+}
+
+func TestRawIterator(t *testing.T) {
+    str, loop := getTestIteratorSample()
+    fmt.Println(str)
+    
+    root, err := NewSearcher(str).GetByPath("array")
+    if err != nil {
+        t.Fatal(err)
+    }
+    ai := root.Values()
+    i := int64(0)
+    for ai.HasNext() {
+        v := &Node{}
+        if !ai.Next(v) {
+            t.Fatalf("no next")
+        }
+        if i < int64(loop) && v.Int64() != i {
+            t.Fatalf("exp:%v, got:%v", i, v)
+        }
+        if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
+            t.Fatal(i)
+        }
+        i++
+    }
+    
+    root, err = NewSearcher(str).GetByPath("object")
+    if err != nil {
+        t.Fatal(err)
+    }
+    mi := root.Properties()
+    i = int64(0)
+    for mi.HasNext() {
+        v := &Pair{}
+        if !mi.Next(v) {
+            t.Fatalf("no next")
+        }
+        if i < int64(loop) &&( v.Value.Int64() != i ||v.Key != fmt.Sprintf("k%d", i)) {
+            t.Fatalf("exp:%v, got:%v", i, v.Value.Interface())
+        }
+        if i != int64(mi.Pos())-1 || i >= int64(mi.Len()) {
+            t.Fatal(i)
+        }
+        i++
+    }
+}
+
+func TestIterator(t *testing.T) {
+	str, loop := getTestIteratorSample()
 	fmt.Println(str)
 
 	root, err := NewParser(str).Parse()

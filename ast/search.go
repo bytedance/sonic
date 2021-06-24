@@ -36,18 +36,6 @@ func NewSearcher(str string) *Searcher {
     }
 }
 
-func (self *Parser) printNear(start int) string {
-    start -= 10
-    if start < 0 {
-        start = 0
-    }
-    end := self.p + 10
-    if end > len(self.s) {
-        end = len(self.s)
-    }
-    return self.s[start:end]
-}
-
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     self.parser.p = 0
 
@@ -57,12 +45,12 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
         case int:
             start := self.parser.p
             if err = self.parser.searchIndex(p.(int)); err != 0 {
-                return Node{}, fmt.Errorf("%v at %d, near '%s'", err, start, self.parser.printNear(start))
+                return Node{}, self.parser.ExportError(err, start)
             }
         case string:
             start := self.parser.p
             if err = self.parser.searchKey(p.(string)); err != 0 {
-                return Node{}, fmt.Errorf("%v at %d, near '%s'", err, start, self.parser.printNear(start))
+                return Node{}, self.parser.ExportError(err, start)
             }
         default:
             panic("path must be either int or string")
@@ -71,14 +59,19 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
 
     var start int
     if start, err = self.parser.skip(); err != 0 {
-        return Node{}, fmt.Errorf("%v at %d, near '%s'", err, self.parser.p, self.parser.printNear(start))
+        return Node{}, self.parser.ExportError(err, start)
     }
     ns := len(self.parser.s)
-    if self.parser.p > ns || start > ns {
+    if self.parser.p > ns || start >= ns {
         return Node{}, fmt.Errorf("skip %d char out of json boundary", start)
     }
 
-    return newRawNode(self.parser.s[start:self.parser.p]), nil
+    t := switchRawType(self.parser.s[start])
+    if t == _V_NONE {
+        return Node{}, self.parser.ExportError(err, start)
+    }
+
+    return newRawNode(self.parser.s[start:self.parser.p], t), nil
 }
 
 func (self *Parser) searchKey(match string) types.ParsingError {
@@ -95,7 +88,7 @@ func (self *Parser) searchKey(match string) types.ParsingError {
     /* check for empty object */
     if self.s[self.p] == '}' {
         self.p++
-        return types.ERR_EOF
+        return _ERR_NOT_FOUND
     }
 
     var njs types.JsonState
@@ -145,7 +138,7 @@ func (self *Parser) searchKey(match string) types.ParsingError {
             self.p++
         case '}':
             self.p++
-            return types.ERR_EOF
+            return _ERR_NOT_FOUND
         default:
             return types.ERR_INVALID_CHAR
         }
@@ -166,7 +159,7 @@ func (self *Parser) searchIndex(idx int) types.ParsingError {
     /* check for empty array */
     if self.s[self.p] == ']' {
         self.p++
-        return types.ERR_EOF
+        return _ERR_NOT_FOUND
     }
 
     var err types.ParsingError
@@ -190,7 +183,7 @@ func (self *Parser) searchIndex(idx int) types.ParsingError {
             self.p++
         case ']':
             self.p++
-            return types.ERR_EOF
+            return _ERR_NOT_FOUND
         default:
             return types.ERR_INVALID_CHAR
         }

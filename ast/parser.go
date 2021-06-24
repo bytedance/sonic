@@ -17,8 +17,9 @@
 package ast
 
 import (
-    `sync`
-    `unsafe`
+    `fmt`
+	`sync`
+	`unsafe`
 
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
@@ -26,12 +27,15 @@ import (
     `github.com/bytedance/sonic/unquote`
 )
 
-const _DEFAULT_NODE_CAP = 16
+const _DEFAULT_NODE_CAP int = 16
+
+const _ERR_NOT_FOUND types.ParsingError = 33
 
 type Parser struct {
-    p      int
-    s      string
-    noLazy bool
+    p           int
+    s           string
+    noLazy      bool
+    skipValue   bool
 }
 
 var stackPool = sync.Pool{
@@ -100,8 +104,10 @@ func (self *Parser) array() types.ParsingError {
 }
 
 func (self *Parser) lspace(sp int) int {
-    sv := (*rt.GoString)(unsafe.Pointer(&self.s))
-    return native.Lspace(sv.Ptr, sv.Len, sp)
+    ns := len(self.s)
+    for ; sp<ns && isSpace(self.s[sp]); sp+=1 {}
+
+    return sp
 }
 
 func (self *Parser) decodeValue() (val types.JsonState) {
@@ -130,9 +136,25 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
         var val Node
         var err types.ParsingError
 
-        /* decode the value */
-        if val, err = self.Parse(); err != 0 {
-            return Node{}, err
+        if self.skipValue {
+            /* skip the value */
+            var start int
+            if start, err = self.skip(); err != 0 {
+                return Node{}, err
+            }
+            if self.p > ns {
+                return Node{}, types.ERR_EOF
+            }
+            t := switchRawType(self.s[start])
+            if t == _V_NONE {
+                return Node{}, types.ERR_INVALID_CHAR
+            }
+            val = newRawNode(self.s[start:self.p], t)
+        }else{
+            /* decode the value */
+            if val, err = self.Parse(); err != 0 {
+                return Node{}, err
+            }
         }
 
         /* add the value to result */
@@ -149,8 +171,8 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
             case ',' : self.p++
             case ']' : self.p++; return newArray(ret), 0
         default:
-            if val.IsRaw() {
-                return newRawArray(self, ret), 0
+            if val.isLazy() {
+                return newLazyArray(self, ret), 0
             }
             return Node{}, types.ERR_INVALID_CHAR
         }
@@ -199,9 +221,26 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
             return Node{}, err
         }
 
-        /* decode the value */
-        if val, err = self.Parse(); err != 0 {
-            return Node{}, err
+        
+        if self.skipValue {
+            /* skip the value */
+            var start int
+            if start, err = self.skip(); err != 0 {
+                return Node{}, err
+            }
+            if self.p > ns {
+                return Node{}, types.ERR_EOF
+            }
+            t := switchRawType(self.s[start])
+            if t == _V_NONE {
+                return Node{}, types.ERR_INVALID_CHAR
+            }
+            val = newRawNode(self.s[start:self.p], t)
+        }else{
+            /* decode the value */
+            if val, err = self.Parse(); err != 0 {
+                return Node{}, err
+            }
         }
 
         /* add the value to result */
@@ -218,8 +257,8 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
             case ',' : self.p++
             case '}' : self.p++; return newObject(ret), 0
         default:
-            if val.IsRaw() {
-                return newRawObject(self, ret), 0
+            if val.isLazy() {
+                return newLazyObject(self, ret), 0
             }
             return Node{}, types.ERR_INVALID_CHAR
         }
@@ -264,12 +303,12 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
             if self.noLazy {
                 return self.decodeArray(make([]Node, 0, _DEFAULT_NODE_CAP))
             }
-            return newRawArray(self, make([]Node, 0, _DEFAULT_NODE_CAP)), 0
+            return newLazyArray(self, make([]Node, 0, _DEFAULT_NODE_CAP)), 0
         case types.V_OBJECT:
             if self.noLazy {
                 return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP))
             }
-            return newRawObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
+            return newLazyObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
         case types.V_DOUBLE  : return newNumber(self.s[val.Ep:self.p]), 0
         case types.V_INTEGER : return newNumber(self.s[val.Ep:self.p]), 0
         default              : return Node{}, types.ParsingError(-val.Vt)
@@ -317,4 +356,23 @@ func LoadsUseNumber(src string) (int, interface{}, types.ParsingError) {
 
 func NewParser(src string) *Parser {
     return &Parser{s: src}
+}
+
+// ExportError converts types.ParsingError to std Error
+func (self *Parser) ExportError(err types.ParsingError, start int) error {
+    if err == _ERR_NOT_FOUND {
+        return fmt.Errorf("node not exists")
+    }
+    return fmt.Errorf("%v at %d, near '%s'", err, self.p, self.printNear(start))
+}
+
+func (self *Parser) printNear(start int) string {
+    if start < 0 {
+        start = 0
+    }
+    end := self.p + 10
+    if end > len(self.s) {
+        end = len(self.s)
+    }
+    return self.s[start:end]
 }

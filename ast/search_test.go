@@ -102,6 +102,26 @@ func TestLoadIndex(t *testing.T) {
     })
 }
 
+func TestSearchNotExist(t *testing.T) {
+    s := NewSearcher(` { "xx" : [ 0, "" ] ,"yy" :{ "2": "" } } `)
+    node, e := s.GetByPath("xx", 2)
+    if node.Exists() {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+    node, e = s.GetByPath("xx", 1)
+    if e != nil || !node.Exists() {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+    node, e = s.GetByPath("yy", "3")
+    if node.Exists() {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+    node, e = s.GetByPath("yy", "2")
+    if e != nil || !node.Exists() {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+}
+
 func BenchmarkSearchOne_Gjson(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
