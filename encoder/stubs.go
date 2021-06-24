@@ -33,6 +33,11 @@ var _subr__b64encode uintptr
 func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 
 //go:noescape
+//go:linkname newobject runtime.newobject
+//goland:noinspection ALL
+func newobject(typ *rt.GoType) unsafe.Pointer
+
+//go:noescape
 //go:linkname growslice runtime.growslice
 //goland:noinspection ALL
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
@@ -48,11 +53,16 @@ func assertI2I(inter *rt.GoType, i rt.GoIface) rt.GoIface
 func mapiternext(it unsafe.Pointer)
 
 //go:noescape
-//go:linkname mapiterinit reflect.mapiterinit
+//go:linkname mapiterinit runtime.mapiterinit
 //goland:noinspection ALL
-func mapiterinit(t *rt.GoType, m unsafe.Pointer) unsafe.Pointer
+func mapiterinit(t *rt.GoType, m unsafe.Pointer, it *rt.GoMapIterator)
 
 //go:noescape
 //go:linkname isValidNumber encoding/json.isValidNumber
 //goland:noinspection ALL
 func isValidNumber(s string) bool
+
+//go:noescape
+//go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
+//goland:noinspection ALL
+func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)

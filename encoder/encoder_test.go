@@ -21,6 +21,7 @@ import (
     `strconv`
     `testing`
 
+    gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
 )
@@ -128,6 +129,15 @@ func BenchmarkEncoder_Generic_JsonIter(b *testing.B) {
     }
 }
 
+func BenchmarkEncoder_Generic_GoJson(b *testing.B) {
+    _, _ = gojson.Marshal(_GenericValue)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = gojson.Marshal(_GenericValue)
+    }
+}
+
 func BenchmarkEncoder_Generic_StdLib(b *testing.B) {
     _, _ = json.Marshal(_GenericValue)
     b.SetBytes(int64(len(TwitterJson)))
@@ -152,6 +162,15 @@ func BenchmarkEncoder_Binding_JsonIter(b *testing.B) {
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = jsoniter.Marshal(&_BindingValue)
+    }
+}
+
+func BenchmarkEncoder_Binding_GoJson(b *testing.B) {
+    _, _ = gojson.Marshal(&_BindingValue)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = gojson.Marshal(&_BindingValue)
     }
 }
 
@@ -186,6 +205,17 @@ func BenchmarkEncoder_Parallel_Generic_JsonIter(b *testing.B) {
     })
 }
 
+func BenchmarkEncoder_Parallel_Generic_GoJson(b *testing.B) {
+    _, _ = gojson.Marshal(_GenericValue)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            _, _ = gojson.Marshal(_GenericValue)
+        }
+    })
+}
+
 func BenchmarkEncoder_Parallel_Generic_StdLib(b *testing.B) {
     _, _ = json.Marshal(_GenericValue)
     b.SetBytes(int64(len(TwitterJson)))
@@ -215,6 +245,17 @@ func BenchmarkEncoder_Parallel_Binding_JsonIter(b *testing.B) {
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
             _, _ = jsoniter.Marshal(&_BindingValue)
+        }
+    })
+}
+
+func BenchmarkEncoder_Parallel_Binding_GoJson(b *testing.B) {
+    _, _ = gojson.Marshal(&_BindingValue)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            _, _ = gojson.Marshal(&_BindingValue)
         }
     })
 }
