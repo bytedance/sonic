@@ -144,12 +144,12 @@ var (
     _V_max     = jit.Imm(int64(types.V_MAX))
     _E_eof     = jit.Imm(int64(types.ERR_EOF))
     _E_invalid = jit.Imm(int64(types.ERR_INVALID_CHAR))
+    _E_recurse = jit.Imm(int64(types.ERR_RECURSE_EXCEED_MAX))
 )
 
 var (
     _F_convTslice    = jit.Func(convTslice)
     _F_convTstring   = jit.Func(convTstring)
-    _F_stack_exceed  = jit.Func(stack_exceed)
     _F_invalid_vtype = jit.Func(invalid_vtype)
 )
 
@@ -596,6 +596,9 @@ func (self *_ValueDecoder) compile() {
     self.Sjmp("JMP" , "_array_append")                      // JMP  _array_append
 
     /* error handlers */
+    self.Link("_stack_overflow")
+    self.Emit("MOVL" , _E_recurse, _EP)         // MOVQ  _E_recurse, EP
+    self.Sjmp("JMP"  , "_error")                // JMP   _error
     self.Link("_vtype_error")                   // _vtype_error:
     self.Emit("MOVQ" , _DI, _IC)                // MOVQ  DI, IC
     self.Emit("MOVL" , _E_invalid, _EP)         // MOVL  _E_invalid, EP
@@ -619,12 +622,6 @@ func (self *_ValueDecoder) compile() {
     self.Link("_invalid_vtype")
     self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))     // MOVQ AX, (SP)
     self.call(_F_invalid_vtype)                 // CALL invalid_type
-    self.Emit("UD2")                            // UD2
-
-    /* stack overflow, never returns */
-    self.Link("_stack_overflow")
-    self.Emit("MOVQ", _CX, jit.Ptr(_SP, 0))     // MOVQ CX, (SP)
-    self.call(_F_stack_exceed)                  // CALL stack_exceed
     self.Emit("UD2")                            // UD2
 
     /* switch jump table */
@@ -662,11 +659,6 @@ func (self *_ValueDecoder) compile() {
 var (
     _subr_decode_value = new(_ValueDecoder).build()
 )
-
-//go:nosplit
-func stack_exceed(n int) {
-    panic(fmt.Sprintf("stack size exceeds limit %d: %d", types.MAX_RECURSE, n))
-}
 
 //go:nosplit
 func invalid_vtype(vt types.ValueType) {
