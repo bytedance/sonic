@@ -28,6 +28,7 @@ func TestIssue27_EmptySlice(t *testing.T) {
     _ = Pretouch(reflect.TypeOf([]*int{}))
     wg := sync.WaitGroup{}
     for i := 0; i < 1000; i++ {
+        wg.Add(1)
         go func() {
             defer wg.Done()
             v := make([]*int, 16)
@@ -35,7 +36,6 @@ func TestIssue27_EmptySlice(t *testing.T) {
             require.NoError(t, err)
             require.Equal(t, []*int{nil, nil}, v)
         }()
-        wg.Add(1)
     }
     wg.Wait()
 }

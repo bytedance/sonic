@@ -27,7 +27,7 @@ import (
 
 const (
     _MinSlice = 16
-    _MaxStack = 262144 // 256k slots
+    _MaxStack = 65536 // 64k slots
 )
 
 const (

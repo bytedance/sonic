@@ -2365,7 +2365,7 @@ func TestUnmarshalMaxDepth(t *testing.T) {
 		},
 		{
 			name:        "ObjectOverMaxNestingDepth",
-			data:        `{"a":` + strings.Repeat(`{"a":`, 65536) + `0` + strings.Repeat(`}`, 65536) + `}`,
+			data:        `{"a":` + strings.Repeat(`{"a":`, 65537) + `0` + strings.Repeat(`}`, 65537) + `}`,
 			errMaxDepth: true,
 		},
 		{
@@ -2379,23 +2379,22 @@ func TestUnmarshalMaxDepth(t *testing.T) {
 		name     string
 		newValue func() interface{}
 	}{
-		// FIXME: support these two cases
-		// {
-		// 	name: "unstructured",
-		// 	newValue: func() interface{} {
-		// 		var v interface{}
-		// 		return &v
-		// 	},
-		// },
-		// {
-		// 	name: "typed named field",
-		// 	newValue: func() interface{} {
-		// 		v := struct {
-		// 			A interface{} `json:"a"`
-		// 		}{}
-		// 		return &v
-		// 	},
-		// },
+		{
+			name: "unstructured",
+			newValue: func() interface{} {
+				var v interface{}
+				return &v
+			},
+		},
+		{
+			name: "typed named field",
+			newValue: func() interface{} {
+				v := struct {
+					A interface{} `json:"a"`
+				}{}
+				return &v
+			},
+		},
 		{
 			name: "typed missing field",
 			newValue: func() interface{} {
