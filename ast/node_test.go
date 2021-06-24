@@ -17,12 +17,12 @@
 package ast
 
 import (
-	"encoding/json"
-	"strconv"
+    "encoding/json"
+    "strconv"
     "testing"
 
-	jsoniter "github.com/json-iterator/go"
-	"github.com/stretchr/testify/assert"
+    jsoniter "github.com/json-iterator/go"
+    "github.com/stretchr/testify/assert"
 )
 
 var parallelism = 4
@@ -32,13 +32,13 @@ func TestUnsafeNode(t *testing.T) {
 
     root, err := NewSearcher(str).GetByPath("array")
     if err != nil {
-		t.Fatal(err)
+        t.Fatal(err)
     }
     a := root.UnsafeArray()
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
-	for i := int64(0); i<int64(loop); i++{
+    for i := int64(0); i<int64(loop); i++{
         in := a[i]
         if in.Int64() != i {
             t.Fatalf("exp:%v, got:%v", i, in.Int64())
@@ -47,14 +47,13 @@ func TestUnsafeNode(t *testing.T) {
     
     root, err = NewSearcher(str).GetByPath("object")
     if err != nil {
-		t.Fatal(err)
+        t.Fatal(err)
     }
     b := root.UnsafeMap()
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
-    //fmt.Printf("%#v\n", b)
-	for i := int64(0); i<int64(loop); i++ {
+    for i := int64(0); i<int64(loop); i++ {
         k := `k`+strconv.Itoa(int(i))
         if k != b[i].Key {
             t.Fatalf("unexpected element: %#v", b[i])
@@ -62,7 +61,7 @@ func TestUnsafeNode(t *testing.T) {
         if b[i].Value.Int64() != i {
             t.Fatalf("exp:%v, got:%v", i, b[i].Value.Int64())
         }
-	}
+    }
 }
 
 func TestUseNode(t *testing.T) {
@@ -70,13 +69,13 @@ func TestUseNode(t *testing.T) {
 
     root, err := NewSearcher(str).GetByPath("array")
     if err != nil {
-		t.Fatal(err)
+        t.Fatal(err)
     }
     a := root.ArrayUseNode()
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
-	for i := int64(0); i<int64(loop); i++{
+    for i := int64(0); i<int64(loop); i++{
         in := a[i]
         if in.Int64() != i {
             t.Fatalf("exp:%v, got:%v", i, in.Int64())
@@ -85,13 +84,13 @@ func TestUseNode(t *testing.T) {
 
     root, err = NewSearcher(str).GetByPath("array")
     if err != nil {
-		t.Fatal(err)
+        t.Fatal(err)
     }
     a = root.InterfaceUseNode().([]Node)
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
-	for i := int64(0); i<int64(loop); i++{
+    for i := int64(0); i<int64(loop); i++{
         in := a[i]
         if in.Int64() != i {
             t.Fatalf("exp:%v, got:%v", i, in.Int64())
@@ -100,14 +99,13 @@ func TestUseNode(t *testing.T) {
     
     root, err = NewSearcher(str).GetByPath("object")
     if err != nil {
-		t.Fatal(err)
+        t.Fatal(err)
     }
     b := root.MapUseNode()
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
-    //fmt.Printf("%#v\n", b)
-	for i := int64(0); i<int64(loop); i++ {
+    for i := int64(0); i<int64(loop); i++ {
         k := `k`+strconv.Itoa(int(i))
         xn, ok := b[k]
         if !ok {
@@ -120,14 +118,13 @@ func TestUseNode(t *testing.T) {
     
     root, err = NewSearcher(str).GetByPath("object")
     if err != nil {
-		t.Fatal(err)
+        t.Fatal(err)
     }
     b = root.InterfaceUseNode().(map[string]Node)
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
-    //fmt.Printf("%#v\n", b)
-	for i := int64(0); i<int64(loop); i++ {
+    for i := int64(0); i<int64(loop); i++ {
         k := `k`+strconv.Itoa(int(i))
         xn, ok := b[k]
         if !ok {
@@ -136,7 +133,7 @@ func TestUseNode(t *testing.T) {
         if xn.Int64() != i {
             t.Fatalf("exp:%v, got:%v", i, xn.Int64())
         }
-	}
+    }
 }
 
 func TestUseNumber(t *testing.T) {

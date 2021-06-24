@@ -35,16 +35,15 @@ const (
 )
 
 const (
-    _V_NONE       types.ValueType = 0
-
-    _V_NODE_BASE  types.ValueType = 1<<5
-    _V_LAZY        types.ValueType = 1 << 7
-    _V_RAW         types.ValueType = 1 << 8
-    _V_NUMBER                     = _V_NODE_BASE + 1
-    _V_ARRAY_LAZY                  = _V_LAZY | types.V_ARRAY
-    _V_OBJECT_LAZY                 = _V_LAZY | types.V_OBJECT
-    _MASK_LAZY                     = _V_LAZY - 1
-    _MASK_RAW = _V_RAW - 1
+    _V_NONE         types.ValueType = 0
+    _V_NODE_BASE    types.ValueType = 1<<5
+    _V_LAZY         types.ValueType = 1 << 7
+    _V_RAW          types.ValueType = 1 << 8
+    _V_NUMBER                       = _V_NODE_BASE + 1
+    _V_ARRAY_LAZY                   = _V_LAZY | types.V_ARRAY
+    _V_OBJECT_LAZY                  = _V_LAZY | types.V_OBJECT
+    _MASK_LAZY                      = _V_LAZY - 1
+    _MASK_RAW                       = _V_RAW - 1
 )
 
 const (
@@ -89,11 +88,7 @@ func (self *Node) Exists() bool {
     return self != nil && self.t != _V_NONE
 }
 
-// IsRaw returns true if the node is type of below three:
-//
-// 1. V_RAW (never parsed)
-// 2. types.V_Object_RAW (partially parsed)
-// 3. types.V_Array_RAW (partially parsed)
+// IsRaw returns true if node's underlying value is raw json
 func (self *Node) IsRaw() bool {
     return self.t&_V_RAW != 0
 }
@@ -137,7 +132,7 @@ func (self *Node) Bool() bool {
 func (self *Node) Int64() int64 {
     self.checkRaw()
     switch self.t {
-        case _V_NUMBER         : return numberToInt64(self)
+        case _V_NUMBER        : return numberToInt64(self)
         case types.V_TRUE     : return 1
         case types.V_FALSE    : return 0
         default               : panic("value cannot be represented as an integer")
@@ -148,7 +143,7 @@ func (self *Node) Int64() int64 {
 func (self *Node) Number() json.Number {
     self.checkRaw()
     switch self.t {
-        case _V_NUMBER         : return toNumber(self)
+        case _V_NUMBER        : return toNumber(self)
         default               : panic("value cannot be represented as a json.Number")
     }
 }
@@ -157,7 +152,7 @@ func (self *Node) Number() json.Number {
 func (self *Node) String() string {
     self.checkRaw()
     switch self.t {
-        case _V_NUMBER        : return toNumber(self).String()
+        case _V_NUMBER       : return toNumber(self).String()
         case types.V_NULL    : return "null"
         case types.V_TRUE    : return "true"
         case types.V_FALSE   : return "false"
@@ -170,7 +165,7 @@ func (self *Node) String() string {
 func (self *Node) Float64() float64 {
     self.checkRaw()
     switch self.t {
-        case _V_NUMBER        : return numberToFloat64(self)
+        case _V_NUMBER       : return numberToFloat64(self)
         case types.V_TRUE    : return 1.0
         case types.V_FALSE   : return 0.0
         default              : panic("value cannot be represented as an integer")
@@ -287,8 +282,7 @@ func (self *Node) Index(idx int) *Node {
     return self.loadIndex(idx)
 }
 
-// Values returns iterator for array's children traversal.
-// non-parsed children will be represented as V_RAW nodes
+// Values returns iterator for array's children traversal
 func (self *Node) Values() ListIterator {
     self.must(types.V_ARRAY, "an array")
     self.skipAllIndex()
@@ -296,7 +290,6 @@ func (self *Node) Values() ListIterator {
 }
 
 // Properties returns iterator for object's children traversal
-// non-parsed children will be represented as V_RAW nodes.
 func (self *Node) Properties() ObjectIterator {
     self.must(types.V_OBJECT, "an object")
     self.skipAllKey()
@@ -320,14 +313,14 @@ func (self *Node) MapUseNumber() map[string]interface{} {
 }
 
 // MapUseNode scans both parsed and non-parsed chidren nodes, 
-// and indexes them on map by their keys
+// and map them by their keys
 func (self *Node) MapUseNode() map[string]Node {
     self.must(types.V_OBJECT, "an object")
     self.skipAllKey()
     return self.toGenericObjectUseNode()
 }
 
-// MapUnsafe exports the internal pointer to its children map
+// MapUnsafe exports the underlying pointer to its children map
 // WARN: don't use it unless you know what you are doing
 func (self *Node) UnsafeMap() []Pair {
     self.must(types.V_OBJECT, "an object")
@@ -358,7 +351,7 @@ func (self *Node) ArrayUseNode() []Node {
     return self.toGenericArrayUseNode()
 }
 
-// ArrayUnsafe exports the internal pointer to its children array
+// ArrayUnsafe exports the underlying pointer to its children array
 // WARN: don't use it unless you know what you are doing
 func (self *Node) UnsafeArray() []Node {
     self.must(types.V_ARRAY, "an array")
@@ -380,11 +373,11 @@ func (self *Node) Interface() interface{} {
         case types.V_ARRAY   : return self.toGenericArray()
         case types.V_OBJECT  : return self.toGenericObject()
         case types.V_STRING  : return addr2str(self.p, self.v)
-        case _V_NUMBER        : return numberToFloat64(self)
+        case _V_NUMBER       : return numberToFloat64(self)
         case _V_ARRAY_LAZY:
             self.loadAllIndex()
             return self.toGenericArray()
-        case _V_OBJECT_LAZY:
+        case _V_OBJECT_LAZY  :
             self.loadAllKey()
             return self.toGenericObject()
         default              : panic("not gonna happen")
@@ -403,11 +396,11 @@ func (self *Node) InterfaceUseNumber() interface{} {
         case types.V_ARRAY   : return self.toGenericArrayUseNumber()
         case types.V_OBJECT  : return self.toGenericObjectUseNumber()
         case types.V_STRING  : return addr2str(self.p, self.v)
-        case _V_NUMBER        : return toNumber(self)
-        case _V_ARRAY_LAZY:
+        case _V_NUMBER       : return toNumber(self)
+        case _V_ARRAY_LAZY   :
             self.loadAllIndex()
             return self.toGenericArrayUseNumber()
-        case _V_OBJECT_LAZY:
+        case _V_OBJECT_LAZY  :
             self.loadAllKey()
             return self.toGenericObjectUseNumber()
         default              : panic("not gonna happen")
