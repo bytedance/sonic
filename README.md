@@ -10,8 +10,8 @@ For all sizes of json and all scenes of usage, Sonic performs almost best.
 ![small benchmarks](bench-400B.png)
 - [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitterescaped.json) (550KB, 10000+ key, 6 levels)
 ![large benchmarks](bench-550KB.png)
-
-For a 13KB [TwitterJson](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19), Sonic is **1.5x** faster than [json-iterator](https://github.com/json-iterator/go) in decoding, **2.5x** faster in encoding.
+- [Medium](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19) (13KB, 300+ key, 6 levels)
+For a 13KB TwitterJson, Sonic is **1.5x** faster than [json-iterator](https://github.com/json-iterator/go) in decoding, **2.5x** faster in encoding.
 
 ```powershell
 goos: darwin
@@ -39,6 +39,11 @@ BenchmarkDecoder_Binding_JsonIter-16                      100000             379
 BenchmarkDecoder_Binding_GoJson-16                        100000             33741 ns/op         386.33 MB/s       22047 B/op         49 allocs/op
 ```
 More detail see [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go), [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [ast/parser_test.go](https://github.com/bytedance/sonic/blob/main/ast/parser_test.go)
+
+## Requirement
+- Go 1.15/1.16
+- Linux/darwin OS
+- Amd64 CPU with AVX/AVX2 instruction set
 
 ## Usage
 
