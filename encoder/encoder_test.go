@@ -134,7 +134,7 @@ func BenchmarkEncoder_Generic_GoJson(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _, _ = gojson.Marshal(_GenericValue)
+        _, _ = gojson.MarshalWithOption(_GenericValue, gojson.UnorderedMap())
     }
 }
 
@@ -170,7 +170,7 @@ func BenchmarkEncoder_Binding_GoJson(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _, _ = gojson.Marshal(&_BindingValue)
+        _, _ = gojson.MarshalWithOption(&_BindingValue, gojson.UnorderedMap())
     }
 }
 
@@ -211,7 +211,7 @@ func BenchmarkEncoder_Parallel_Generic_GoJson(b *testing.B) {
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = gojson.Marshal(_GenericValue)
+            _, _ = gojson.MarshalWithOption(_GenericValue, gojson.UnorderedMap())
         }
     })
 }
@@ -255,7 +255,7 @@ func BenchmarkEncoder_Parallel_Binding_GoJson(b *testing.B) {
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = gojson.Marshal(&_BindingValue)
+            _, _ = gojson.MarshalWithOption(&_BindingValue, gojson.UnorderedMap())
         }
     })
 }
