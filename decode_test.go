@@ -19,22 +19,22 @@ package sonic
 import (
 	"bytes"
 	"encoding"
-	`encoding/json`
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
 	"math"
 	"math/big"
-	`math/rand`
+	"math/rand"
 	"net"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
-	`unsafe`
+	"unsafe"
 
-	`github.com/bytedance/sonic/decoder`
+	"github.com/bytedance/sonic/decoder"
 )
 
 type T struct {
@@ -474,8 +474,8 @@ var unmarshalTests = []unmarshalTest{
 	{in: `{"X": "foo", "Y"}`, err: (&JsonSyntaxError{"invalid character '}' after object key", 17}).err()},
 	{in: `[1, 2, 3+]`, err: (&JsonSyntaxError{"invalid character '+' after array element", 9}).err()},
 	{in: `{"X":12x}`, err: (&JsonSyntaxError{"invalid character 'x' after object key:value pair", 8}).err(), useNumber: true},
-	{in: `[2, 3`, err: (&JsonSyntaxError{Msg:  "unexpected end of JSON input", Offset: 5}).err()},
-	{in: `{"F3": -}`, ptr: new(V), out: V{F3: json.Number("-")}, err: (&JsonSyntaxError{Msg:  "invalid character '}' in numeric literal", Offset: 9}).err()},
+	{in: `[2, 3`, err: (&JsonSyntaxError{Msg: "unexpected end of JSON input", Offset: 5}).err()},
+	{in: `{"F3": -}`, ptr: new(V), out: V{F3: json.Number("-")}, err: (&JsonSyntaxError{Msg: "invalid character '}' in numeric literal", Offset: 9}).err()},
 
 	// raw value errors
 	{in: "\x01 42", err: (&JsonSyntaxError{"invalid character '\\x01' looking for beginning of value", 1}).err()},
@@ -1247,7 +1247,7 @@ func genMap(n int) map[string]interface{} {
 		f = 1
 	}
 	x := make(map[string]interface{})
-	x[genString(10)] = genValue(n/f)
+	x[genString(10)] = genValue(n / f)
 	return x
 }
 
@@ -2435,12 +2435,12 @@ func TestUnmarshalMaxDepth(t *testing.T) {
 
 // Issues: map value type larger than 128 bytes are stored by pointer
 type ChargeToolPacingBucketItemTcc struct {
-    _ [128]byte
-    T string `json:"T"`
+	_ [128]byte
+	T string `json:"T"`
 }
 
 type ChargeToolPacingParamsForDataRead struct {
-    Bucket2Item map[int64]ChargeToolPacingBucketItemTcc `json:"bucket_to_item"`
+	Bucket2Item map[int64]ChargeToolPacingBucketItemTcc `json:"bucket_to_item"`
 }
 
 var panicStr = `
@@ -2454,17 +2454,17 @@ var panicStr = `
 `
 
 func TestChangeTool(t *testing.T) {
-    dataForRaw := ChargeToolPacingParamsForDataRead{}
+	dataForRaw := ChargeToolPacingParamsForDataRead{}
 
-    err := Unmarshal([]byte(panicStr), &dataForRaw)
-    if err != nil {
-        t.Fatalf("err %+v\n", err)
-    }
-    t.Logf("%#v\n", dataForRaw)
-    t.Logf("%#v\n", &dataForRaw.Bucket2Item)
-    a := dataForRaw.Bucket2Item[102]
-    if a.T != "xxxx" {
-        t.Fatalf("exp:%v, got:%v", "xxxx", a.T)
-    }
+	err := Unmarshal([]byte(panicStr), &dataForRaw)
+	if err != nil {
+		t.Fatalf("err %+v\n", err)
+	}
+	t.Logf("%#v\n", dataForRaw)
+	t.Logf("%#v\n", &dataForRaw.Bucket2Item)
+	a := dataForRaw.Bucket2Item[102]
+	if a.T != "xxxx" {
+		t.Fatalf("exp:%v, got:%v", "xxxx", a.T)
+	}
 
 }

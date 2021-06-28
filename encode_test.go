@@ -19,7 +19,7 @@ package sonic
 import (
 	"bytes"
 	"encoding"
-	`encoding/json`
+	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -27,9 +27,9 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
-	`unsafe`
+	"unsafe"
 
-	`github.com/bytedance/sonic/encoder`
+	"github.com/bytedance/sonic/encoder"
 )
 
 type Optionals struct {

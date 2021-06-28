@@ -18,39 +18,39 @@
 package sonic
 
 import (
-    `reflect`
+	"reflect"
 
-    `github.com/bytedance/sonic/ast`
-    `github.com/bytedance/sonic/decoder`
-    `github.com/bytedance/sonic/encoder`
+	"github.com/bytedance/sonic/ast"
+	"github.com/bytedance/sonic/decoder"
+	"github.com/bytedance/sonic/encoder"
 )
 
 // Marshal returns the JSON encoding of v.
 func Marshal(val interface{}) ([]byte, error) {
-    return encoder.Encode(val)
+	return encoder.Encode(val)
 }
 
 // Unmarshal parses the JSON-encoded data and stores the result in the value
 // pointed to by v.
 func Unmarshal(buf []byte, val interface{}) error {
-    return UnmarshalString(string(buf), val)
+	return UnmarshalString(string(buf), val)
 }
 
 // UnmarshalString is like Unmarshal, except buf is a string.
 func UnmarshalString(buf string, val interface{}) error {
-    return decoder.NewDecoder(buf).Decode(val)
+	return decoder.NewDecoder(buf).Decode(val)
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
 // order to reduce the first-hit latency.
 func Pretouch(vt reflect.Type) error {
-    if err := encoder.Pretouch(vt); err != nil {
-        return err
-    } else if err = decoder.Pretouch(vt); err != nil {
-        return err
-    } else {
-        return nil
-    }
+	if err := encoder.Pretouch(vt); err != nil {
+		return err
+	} else if err = decoder.Pretouch(vt); err != nil {
+		return err
+	} else {
+		return nil
+	}
 }
 
 // Get searches the given path json,
@@ -60,11 +60,11 @@ func Pretouch(vt reflect.Type) error {
 //     - Integer means searching current node as array,
 //     - String means searching current node as object
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(string(src), path...)
+	return GetFromString(string(src), path...)
 }
 
 // GetFromString is same with Get except src is string,
 // which can reduce unnecessary memory copy
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
-    return ast.NewSearcher(src).GetByPath(path...)
+	return ast.NewSearcher(src).GetByPath(path...)
 }
