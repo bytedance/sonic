@@ -17,14 +17,14 @@
 package sonic
 
 import (
-    `testing`
+	"testing"
 
-    `github.com/stretchr/testify/require`
+	"github.com/stretchr/testify/require"
 )
 
 func TestIssue7(t *testing.T) {
-    v := &[...]int{1, 2, 3, 4, 5, 6, 7}
-    err := Unmarshal([]byte(`[3]`), v)
-    require.Nil(t, err)
-    require.Equal(t, &[...]int{3, 0, 0, 0, 0, 0, 0}, v)
+	v := &[...]int{1, 2, 3, 4, 5, 6, 7}
+	err := Unmarshal([]byte(`[3]`), v)
+	require.Nil(t, err)
+	require.Equal(t, &[...]int{3, 0, 0, 0, 0, 0, 0}, v)
 }

@@ -17,8 +17,8 @@
 package loader
 
 import (
-    `sync`
-    _ `unsafe`
+	"sync"
+	_ "unsafe"
 )
 
 //go:linkname lastmoduledatap runtime.lastmoduledatap
@@ -32,35 +32,35 @@ func moduledataverify1(_ *_ModuleData)
 func no_pointers_stackmap() uintptr
 
 var (
-    modLock sync.Mutex
-    modList []*_ModuleData
+	modLock sync.Mutex
+	modList []*_ModuleData
 )
 
 func encodeVariant(v int) []byte {
-    var u int
-    var r []byte
+	var u int
+	var r []byte
 
-    /* split every 7 bits */
-    for v > 127 {
-        u = v & 0x7f
-        v = v >> 7
-        r = append(r, byte(u) | 0x80)
-    }
+	/* split every 7 bits */
+	for v > 127 {
+		u = v & 0x7f
+		v = v >> 7
+		r = append(r, byte(u)|0x80)
+	}
 
-    /* check for last one */
-    if v == 0 {
-        return r
-    }
+	/* check for last one */
+	if v == 0 {
+		return r
+	}
 
-    /* add the last one */
-    r = append(r, byte(v))
-    return r
+	/* add the last one */
+	r = append(r, byte(v))
+	return r
 }
 
 func registerModule(mod *_ModuleData) {
-    modLock.Lock()
-    modList = append(modList, mod)
-    lastmoduledatap.next = mod
-    lastmoduledatap = mod
-    modLock.Unlock()
+	modLock.Lock()
+	modList = append(modList, mod)
+	lastmoduledatap.next = mod
+	lastmoduledatap = mod
+	modLock.Unlock()
 }

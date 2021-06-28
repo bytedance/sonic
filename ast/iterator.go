@@ -17,49 +17,49 @@
 package ast
 
 type Pair struct {
-    Key   string
-    Value Node
+	Key   string
+	Value Node
 }
 
 type Iterator struct {
-    i int
-    p *Node
+	i int
+	p *Node
 }
 
 func (self *Iterator) Pos() int {
-    return self.i
+	return self.i
 }
 
 func (self *Iterator) Len() int {
-    return self.p.Len()
+	return self.p.Len()
 }
 
 func (self *Iterator) HasNext() bool {
-    return self.i < self.p.Len()
+	return self.i < self.p.Len()
 }
 
 type ListIterator struct {
-    Iterator
+	Iterator
 }
 
 type ObjectIterator struct {
-    Iterator
+	Iterator
 }
 
 func (self *ListIterator) Next(v *Node) bool {
-    if !self.HasNext() {
-        return false
-    } else {
-        *v, self.i = *self.p.nodeAt(self.i), self.i + 1
-        return true
-    }
+	if !self.HasNext() {
+		return false
+	} else {
+		*v, self.i = *self.p.nodeAt(self.i), self.i+1
+		return true
+	}
 }
 
 func (self *ObjectIterator) Next(p *Pair) bool {
-    if !self.HasNext() {
-        return false
-    } else {
-        *p, self.i = *self.p.pairAt(self.i), self.i + 1
-        return true
-    }
+	if !self.HasNext() {
+		return false
+	} else {
+		*p, self.i = *self.p.pairAt(self.i), self.i+1
+		return true
+	}
 }

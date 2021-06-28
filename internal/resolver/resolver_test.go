@@ -17,55 +17,55 @@
 package resolver
 
 import (
-    `reflect`
-    `testing`
+	"reflect"
+	"testing"
 )
 
 type bas struct {
-    Y int `json:"Y"`
+	Y int `json:"Y"`
 }
 
 type bat struct {
-    bas
+	bas
 }
 
 type bau struct {
-    Y int
+	Y int
 }
 
 type bay struct {
-    Y int `json:"Y"`
+	Y int `json:"Y"`
 }
 
 type baz struct {
-    Y int `json:"W"`
+	Y int `json:"W"`
 }
 
 type bar struct {
-    bat
-    bau
-    *bay
-    baz
+	bat
+	bau
+	*bay
+	baz
 }
 
 type PackageError struct {
-    ImportStack      []string
-    Pos              string
-    Err              error
-    IsImportCycle    bool
-    Hard             bool
-    alwaysPrintStack bool
-    Y                *int
+	ImportStack      []string
+	Pos              string
+	Err              error
+	IsImportCycle    bool
+	Hard             bool
+	alwaysPrintStack bool
+	Y                *int
 }
 
 type Foo struct {
-    X int
-    *PackageError
-    bar
+	X int
+	*PackageError
+	bar
 }
 
 func TestResolver_ResolveStruct(t *testing.T) {
-    for _, fv := range ResolveStruct(reflect.TypeOf(Foo{})) {
-        println(fv.String())
-    }
+	for _, fv := range ResolveStruct(reflect.TypeOf(Foo{})) {
+		println(fv.String())
+	}
 }

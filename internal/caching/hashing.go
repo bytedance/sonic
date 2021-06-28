@@ -17,14 +17,14 @@
 package caching
 
 import (
-    `unsafe`
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 var (
-    V_strhash = rt.UnpackEface(strhash)
-    S_strhash = *(*uintptr)(V_strhash.Value)
+	V_strhash = rt.UnpackEface(strhash)
+	S_strhash = *(*uintptr)(V_strhash.Value)
 )
 
 //go:noescape
@@ -32,9 +32,9 @@ var (
 func strhash(_ unsafe.Pointer, _ uintptr) uintptr
 
 func StrHash(s string) uint64 {
-    if v := strhash(unsafe.Pointer(&s), 0); v == 0 {
-        return 1
-    } else {
-        return uint64(v)
-    }
+	if v := strhash(unsafe.Pointer(&s), 0); v == 0 {
+		return 1
+	} else {
+		return uint64(v)
+	}
 }

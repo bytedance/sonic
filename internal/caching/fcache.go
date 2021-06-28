@@ -17,100 +17,100 @@
 package caching
 
 import (
-    `strings`
-    `unsafe`
+	"strings"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type FieldMap struct {
-    N uint64
-    b unsafe.Pointer
-    m map[string]int
+	N uint64
+	b unsafe.Pointer
+	m map[string]int
 }
 
 type FieldEntry struct {
-    ID   int
-    Name string
-    Hash uint64
+	ID   int
+	Name string
+	Hash uint64
 }
 
 const (
-    FieldMap_N     = int64(unsafe.Offsetof(FieldMap{}.N))
-    FieldMap_b     = int64(unsafe.Offsetof(FieldMap{}.b))
+	FieldMap_N     = int64(unsafe.Offsetof(FieldMap{}.N))
+	FieldMap_b     = int64(unsafe.Offsetof(FieldMap{}.b))
 	FieldEntrySize = int64(unsafe.Sizeof(FieldEntry{}))
 )
 
 func newBucket(n int) unsafe.Pointer {
-    v := make([]FieldEntry, n)
-    return (*rt.GoSlice)(unsafe.Pointer(&v)).Ptr
+	v := make([]FieldEntry, n)
+	return (*rt.GoSlice)(unsafe.Pointer(&v)).Ptr
 }
 
 func CreateFieldMap(n int) *FieldMap {
-    return &FieldMap {
-        N: uint64(n * 2),
-        b: newBucket(n * 2),    // LoadFactor = 0.5
-        m: make(map[string]int, n * 2),
-    }
+	return &FieldMap{
+		N: uint64(n * 2),
+		b: newBucket(n * 2), // LoadFactor = 0.5
+		m: make(map[string]int, n*2),
+	}
 }
 
 func (self *FieldMap) At(p uint64) *FieldEntry {
-    off := uintptr(p) * uintptr(FieldEntrySize)
-    return (*FieldEntry)(unsafe.Pointer(uintptr(self.b) + off))
+	off := uintptr(p) * uintptr(FieldEntrySize)
+	return (*FieldEntry)(unsafe.Pointer(uintptr(self.b) + off))
 }
 
 // Get searches FieldMap by name. JIT generated assembly does NOT call this
 // function, rather it implements it's own version directly in assembly. So
 // we must ensure this function stays in sync with the JIT generated one.
 func (self *FieldMap) Get(name string) int {
-    h := StrHash(name)
-    p := h % self.N
-    s := self.At(p)
+	h := StrHash(name)
+	p := h % self.N
+	s := self.At(p)
 
-    /* find the element;
-     * the hash map is never full, so the loop will always terminate */
-    for s.Hash != 0 {
-        if s.Hash == h && s.Name == name {
-            return s.ID
-        } else {
-            p = (p + 1) % self.N
-            s = self.At(p)
-        }
-    }
+	/* find the element;
+	 * the hash map is never full, so the loop will always terminate */
+	for s.Hash != 0 {
+		if s.Hash == h && s.Name == name {
+			return s.ID
+		} else {
+			p = (p + 1) % self.N
+			s = self.At(p)
+		}
+	}
 
-    /* not found */
-    return -1
+	/* not found */
+	return -1
 }
 
 func (self *FieldMap) Set(name string, i int) {
-    h := StrHash(name)
-    p := h % self.N
-    s := self.At(p)
+	h := StrHash(name)
+	p := h % self.N
+	s := self.At(p)
 
-    /* searching for an empty slot;
-     * the hash map is never full, so the loop will always terminate */
-    for s.Hash != 0 {
-        p = (p + 1) % self.N
-        s = self.At(p)
-    }
+	/* searching for an empty slot;
+	 * the hash map is never full, so the loop will always terminate */
+	for s.Hash != 0 {
+		p = (p + 1) % self.N
+		s = self.At(p)
+	}
 
-    /* set the value */
-    s.ID   = i
-    s.Hash = h
-    s.Name = name
+	/* set the value */
+	s.ID = i
+	s.Hash = h
+	s.Name = name
 
-    /* add the case-insensitive version, prefer the one with smaller field ID */
-    if key := strings.ToLower(name); key != name {
-        if v, ok := self.m[key]; !ok || i < v {
-            self.m[key] = i
-        }
-    }
+	/* add the case-insensitive version, prefer the one with smaller field ID */
+	if key := strings.ToLower(name); key != name {
+		if v, ok := self.m[key]; !ok || i < v {
+			self.m[key] = i
+		}
+	}
 }
 
 func (self *FieldMap) GetCaseInsensitive(name string) int {
-    if i, ok := self.m[strings.ToLower(name)]; ok {
-        return i
-    } else {
-        return -1
-    }
+	if i, ok := self.m[strings.ToLower(name)]; ok {
+		return i
+	} else {
+		return -1
+	}
 }

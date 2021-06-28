@@ -19,27 +19,27 @@
 package avx
 
 var (
-    S_f64toa = _subr__f64toa
-    S_i64toa = _subr__i64toa
-    S_lquote = _subr__lquote
-    S_u64toa = _subr__u64toa
+	S_f64toa = _subr__f64toa
+	S_i64toa = _subr__i64toa
+	S_lquote = _subr__lquote
+	S_u64toa = _subr__u64toa
 )
 
 var (
-    S_lspace  = _subr__lspace
-    S_unquote = _subr__unquote
+	S_lspace  = _subr__lspace
+	S_unquote = _subr__unquote
 )
 
 var (
-    S_value     = _subr__value
-    S_vstring   = _subr__vstring
-    S_vnumber   = _subr__vnumber
-    S_vsigned   = _subr__vsigned
-    S_vunsigned = _subr__vunsigned
+	S_value     = _subr__value
+	S_vstring   = _subr__vstring
+	S_vnumber   = _subr__vnumber
+	S_vsigned   = _subr__vsigned
+	S_vunsigned = _subr__vunsigned
 )
 
 var (
-    S_skip_one    = _subr__skip_one
-    S_skip_array  = _subr__skip_array
-    S_skip_object = _subr__skip_object
+	S_skip_one    = _subr__skip_one
+	S_skip_array  = _subr__skip_array
+	S_skip_object = _subr__skip_object
 )

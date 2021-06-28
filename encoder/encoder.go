@@ -17,97 +17,97 @@
 package encoder
 
 import (
-    `bytes`
-    `encoding/json`
-    `reflect`
+	"bytes"
+	"encoding/json"
+	"reflect"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 func Quote(s string) string {
-    var n int
-    var p []byte
+	var n int
+	var p []byte
 
-    /* check for empty string */
-    if s == "" {
-        return `""`
-    }
+	/* check for empty string */
+	if s == "" {
+		return `""`
+	}
 
-    /* allocate space for result */
-    n = len(s) + 2
-    p = make([]byte, 0, n)
+	/* allocate space for result */
+	n = len(s) + 2
+	p = make([]byte, 0, n)
 
-    /* call the encoder */
-    _ = encodeStr(&p, s)
-    return rt.Mem2Str(p)
+	/* call the encoder */
+	_ = encodeStr(&p, s)
+	return rt.Mem2Str(p)
 }
 
 func Encode(val interface{}) ([]byte, error) {
-    buf := newBytes()
-    err := EncodeInto(&buf, val)
+	buf := newBytes()
+	err := EncodeInto(&buf, val)
 
-    /* check for errors */
-    if err != nil {
-        freeBytes(buf)
-        return nil, err
-    }
+	/* check for errors */
+	if err != nil {
+		freeBytes(buf)
+		return nil, err
+	}
 
-    /* make a copy of the result */
-    ret := make([]byte, len(buf))
-    copy(ret, buf)
+	/* make a copy of the result */
+	ret := make([]byte, len(buf))
+	copy(ret, buf)
 
-    /* return the buffer into pool */
-    freeBytes(buf)
-    return ret, nil
+	/* return the buffer into pool */
+	freeBytes(buf)
+	return ret, nil
 }
 
 func EncodeInto(buf *[]byte, val interface{}) error {
-    stk := newStack()
-    efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk)
+	stk := newStack()
+	efv := rt.UnpackEface(val)
+	err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk)
 
-    /* return the stack into pool */
-    freeStack(stk)
-    return err
+	/* return the stack into pool */
+	freeStack(stk)
+	return err
 }
 
 func EncodeIndented(val interface{}, prefix string, indent string) ([]byte, error) {
-    var err error
-    var out []byte
-    var buf *bytes.Buffer
+	var err error
+	var out []byte
+	var buf *bytes.Buffer
 
-    /* encode into the buffer */
-    out = newBytes()
-    err = EncodeInto(&out, val)
+	/* encode into the buffer */
+	out = newBytes()
+	err = EncodeInto(&out, val)
 
-    /* check for errors */
-    if err != nil {
-        freeBytes(out)
-        return nil, err
-    }
+	/* check for errors */
+	if err != nil {
+		freeBytes(out)
+		return nil, err
+	}
 
-    /* indent the JSON */
-    buf = newBuffer()
-    err = json.Indent(buf, out, prefix, indent)
+	/* indent the JSON */
+	buf = newBuffer()
+	err = json.Indent(buf, out, prefix, indent)
 
-    /* check for errors */
-    if err != nil {
-        freeBytes(out)
-        freeBuffer(buf)
-        return nil, err
-    }
+	/* check for errors */
+	if err != nil {
+		freeBytes(out)
+		freeBuffer(buf)
+		return nil, err
+	}
 
-    /* copy to the result buffer */
-    ret := make([]byte, buf.Len())
-    copy(ret, buf.Bytes())
+	/* copy to the result buffer */
+	ret := make([]byte, buf.Len())
+	copy(ret, buf.Bytes())
 
-    /* return the buffers into pool */
-    freeBytes(out)
-    freeBuffer(buf)
-    return ret, nil
+	/* return the buffers into pool */
+	freeBytes(out)
+	freeBuffer(buf)
+	return ret, nil
 }
 
 func Pretouch(vt reflect.Type) (err error) {
-    _, err = findOrCompile(rt.UnpackType(vt))
-    return
+	_, err = findOrCompile(rt.UnpackType(vt))
+	return
 }

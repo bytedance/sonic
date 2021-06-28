@@ -17,28 +17,28 @@
 package encoder
 
 import (
-    `encoding/json`
-    `reflect`
-    `strconv`
+	"encoding/json"
+	"reflect"
+	"strconv"
 )
 
-var _ERR_too_deep = &json.UnsupportedValueError {
-    Str   : "Value nesting too deep",
-    Value : reflect.ValueOf("..."),
+var _ERR_too_deep = &json.UnsupportedValueError{
+	Str:   "Value nesting too deep",
+	Value: reflect.ValueOf("..."),
 }
 
-var _ERR_nan_or_infinite = &json.UnsupportedValueError {
-    Str   : "NaN or ±Infinite",
-    Value : reflect.ValueOf("NaN or ±Infinite"),
+var _ERR_nan_or_infinite = &json.UnsupportedValueError{
+	Str:   "NaN or ±Infinite",
+	Value: reflect.ValueOf("NaN or ±Infinite"),
 }
 
 func error_type(vtype reflect.Type) error {
-    return &json.UnsupportedTypeError{Type: vtype}
+	return &json.UnsupportedTypeError{Type: vtype}
 }
 
 func error_number(number json.Number) error {
-    return &json.UnsupportedValueError {
-        Str   : "invalid number literal: " + strconv.Quote(string(number)),
-        Value : reflect.ValueOf(number),
-    }
+	return &json.UnsupportedValueError{
+		Str:   "invalid number literal: " + strconv.Quote(string(number)),
+		Value: reflect.ValueOf(number),
+	}
 }

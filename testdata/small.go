@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2021 ByteDance Inc.
  *

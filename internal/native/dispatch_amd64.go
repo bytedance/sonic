@@ -17,35 +17,35 @@
 package native
 
 import (
-    `unsafe`
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/native/avx`
-    `github.com/bytedance/sonic/internal/native/avx2`
-    `github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/cpu"
+	"github.com/bytedance/sonic/internal/native/avx"
+	"github.com/bytedance/sonic/internal/native/avx2"
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 var (
-    S_f64toa  uintptr
-    S_i64toa  uintptr
-    S_u64toa  uintptr
-    S_lquote  uintptr
-    S_lspace  uintptr
-    S_unquote uintptr
+	S_f64toa  uintptr
+	S_i64toa  uintptr
+	S_u64toa  uintptr
+	S_lquote  uintptr
+	S_lspace  uintptr
+	S_unquote uintptr
 )
 
 var (
-    S_value     uintptr
-    S_vstring   uintptr
-    S_vnumber   uintptr
-    S_vsigned   uintptr
-    S_vunsigned uintptr
+	S_value     uintptr
+	S_vstring   uintptr
+	S_vnumber   uintptr
+	S_vsigned   uintptr
+	S_vunsigned uintptr
 )
 
 var (
-    S_skip_one    uintptr
-    S_skip_array  uintptr
-    S_skip_object uintptr
+	S_skip_one    uintptr
+	S_skip_array  uintptr
+	S_skip_object uintptr
 )
 
 //go:nosplit
@@ -79,45 +79,45 @@ func SkipOne(s *string, p *int, m *types.StateMachine) int
 func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int
 
 func useAVX() {
-    S_f64toa      = avx.S_f64toa
-    S_i64toa      = avx.S_i64toa
-    S_u64toa      = avx.S_u64toa
-    S_lquote      = avx.S_lquote
-    S_lspace      = avx.S_lspace
-    S_unquote     = avx.S_unquote
-    S_value       = avx.S_value
-    S_vstring     = avx.S_vstring
-    S_vnumber     = avx.S_vnumber
-    S_vsigned     = avx.S_vsigned
-    S_vunsigned   = avx.S_vunsigned
-    S_skip_one    = avx.S_skip_one
-    S_skip_array  = avx.S_skip_array
-    S_skip_object = avx.S_skip_object
+	S_f64toa = avx.S_f64toa
+	S_i64toa = avx.S_i64toa
+	S_u64toa = avx.S_u64toa
+	S_lquote = avx.S_lquote
+	S_lspace = avx.S_lspace
+	S_unquote = avx.S_unquote
+	S_value = avx.S_value
+	S_vstring = avx.S_vstring
+	S_vnumber = avx.S_vnumber
+	S_vsigned = avx.S_vsigned
+	S_vunsigned = avx.S_vunsigned
+	S_skip_one = avx.S_skip_one
+	S_skip_array = avx.S_skip_array
+	S_skip_object = avx.S_skip_object
 }
 
 func useAVX2() {
-    S_f64toa      = avx2.S_f64toa
-    S_i64toa      = avx2.S_i64toa
-    S_u64toa      = avx2.S_u64toa
-    S_lquote      = avx2.S_lquote
-    S_lspace      = avx2.S_lspace
-    S_unquote     = avx2.S_unquote
-    S_value       = avx2.S_value
-    S_vstring     = avx2.S_vstring
-    S_vnumber     = avx2.S_vnumber
-    S_vsigned     = avx2.S_vsigned
-    S_vunsigned   = avx2.S_vunsigned
-    S_skip_one    = avx2.S_skip_one
-    S_skip_array  = avx2.S_skip_array
-    S_skip_object = avx2.S_skip_object
+	S_f64toa = avx2.S_f64toa
+	S_i64toa = avx2.S_i64toa
+	S_u64toa = avx2.S_u64toa
+	S_lquote = avx2.S_lquote
+	S_lspace = avx2.S_lspace
+	S_unquote = avx2.S_unquote
+	S_value = avx2.S_value
+	S_vstring = avx2.S_vstring
+	S_vnumber = avx2.S_vnumber
+	S_vsigned = avx2.S_vsigned
+	S_vunsigned = avx2.S_vunsigned
+	S_skip_one = avx2.S_skip_one
+	S_skip_array = avx2.S_skip_array
+	S_skip_object = avx2.S_skip_object
 }
 
 func init() {
-    if cpu.HasAVX2 {
-        useAVX2()
-    } else if cpu.HasAVX {
-        useAVX()
-    } else {
-        panic("Unsupported CPU, maybe it's too old to run Sonic.")
-    }
+	if cpu.HasAVX2 {
+		useAVX2()
+	} else if cpu.HasAVX {
+		useAVX()
+	} else {
+		panic("Unsupported CPU, maybe it's too old to run Sonic.")
+	}
 }

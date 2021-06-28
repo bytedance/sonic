@@ -17,14 +17,14 @@
 package decoder
 
 import (
-    `reflect`
-    `testing`
+	"reflect"
+	"testing"
 
-    `github.com/stretchr/testify/assert`
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCompiler_Compile(t *testing.T) {
-    prg, err := newCompiler().compile(reflect.TypeOf(TwitterStruct{}))
-    assert.Nil(t, err)
-    println(prg.disassemble())
+	prg, err := newCompiler().compile(reflect.TypeOf(TwitterStruct{}))
+	assert.Nil(t, err)
+	println(prg.disassemble())
 }

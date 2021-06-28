@@ -17,90 +17,90 @@
 package decoder
 
 import (
-    `sync`
-    `unsafe`
+	"sync"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
-    _MinSlice = 16
-    _MaxStack = 65536 // 64k slots
+	_MinSlice = 16
+	_MaxStack = 65536 // 64k slots
 )
 
 const (
-    _PtrBytes  = _PTR_SIZE / 8
-    _FsmOffset = (_MaxStack + 1) * _PtrBytes
+	_PtrBytes  = _PTR_SIZE / 8
+	_FsmOffset = (_MaxStack + 1) * _PtrBytes
 )
 
 var (
-    stackPool    = sync.Pool{}
-    valueCache   = []unsafe.Pointer(nil)
-    fieldCache   = []*caching.FieldMap(nil)
-    programCache = caching.CreateProgramCache()
+	stackPool    = sync.Pool{}
+	valueCache   = []unsafe.Pointer(nil)
+	fieldCache   = []*caching.FieldMap(nil)
+	programCache = caching.CreateProgramCache()
 )
 
 type _Stack struct {
-    sp uintptr
-    sb [_MaxStack]unsafe.Pointer
-    mm types.StateMachine
-    vp [types.MAX_RECURSE]*interface{}
+	sp uintptr
+	sb [_MaxStack]unsafe.Pointer
+	mm types.StateMachine
+	vp [types.MAX_RECURSE]*interface{}
 }
 
 type _Decoder func(
-    s  string,
-    i  int,
-    vp unsafe.Pointer,
-    sb *_Stack,
-    fv uint64,
+	s string,
+	i int,
+	vp unsafe.Pointer,
+	sb *_Stack,
+	fv uint64,
 ) (int, error)
 
 func newStack() *_Stack {
-    if ret := stackPool.Get(); ret == nil {
-        return new(_Stack)
-    } else {
-        return ret.(*_Stack)
-    }
+	if ret := stackPool.Get(); ret == nil {
+		return new(_Stack)
+	} else {
+		return ret.(*_Stack)
+	}
 }
 
 func freeStack(p *_Stack) {
-    stackPool.Put(p)
+	stackPool.Put(p)
 }
 
 func freezeValue(v unsafe.Pointer) uintptr {
-    valueCache = append(valueCache, v)
-    return uintptr(v)
+	valueCache = append(valueCache, v)
+	return uintptr(v)
 }
 
 func freezeFields(v *caching.FieldMap) int64 {
-    fieldCache = append(fieldCache, v)
-    return referenceFields(v)
+	fieldCache = append(fieldCache, v)
+	return referenceFields(v)
 }
 
 func referenceFields(v *caching.FieldMap) int64 {
-    return int64(uintptr(unsafe.Pointer(v)))
+	return int64(uintptr(unsafe.Pointer(v)))
 }
 
 func findOrCompile(vt *rt.GoType) (_Decoder, error) {
-    var ex error
-    var fn _Decoder
-    var pp *_Program
-    var fv interface{}
+	var ex error
+	var fn _Decoder
+	var pp *_Program
+	var fv interface{}
 
-    /* fast path: the program is in the cache */
-    if fv = programCache.Get(vt); fv != nil {
-        return fv.(_Decoder), nil
-    }
+	/* fast path: the program is in the cache */
+	if fv = programCache.Get(vt); fv != nil {
+		return fv.(_Decoder), nil
+	}
 
-    /* slow path: not found, compile the type on the fly */
-    if pp, ex = newCompiler().compile(vt.Pack()); ex != nil {
-        return nil, ex
-    }
+	/* slow path: not found, compile the type on the fly */
+	if pp, ex = newCompiler().compile(vt.Pack()); ex != nil {
+		return nil, ex
+	}
 
-    /* link the program, and put it into cache */
-    fn = newAssembler(pp).Load()
-    programCache.Put(vt, fn)
-    return fn, nil
+	/* link the program, and put it into cache */
+	fn = newAssembler(pp).Load()
+	programCache.Put(vt, fn)
+	return fn, nil
 }

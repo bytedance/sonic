@@ -17,95 +17,95 @@
 package decoder
 
 import (
-    `encoding/json`
-    `errors`
-    `fmt`
-    `reflect`
-    `strconv`
-    `strings`
+	"encoding/json"
+	"errors"
+	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
 
-    `github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 type SyntaxError struct {
-    Pos  int
-    Src  string
-    Code types.ParsingError
+	Pos  int
+	Src  string
+	Code types.ParsingError
 }
 
 func (self SyntaxError) Error() string {
-    return fmt.Sprintf("Syntax error at index %d: %s", self.Pos, self.Code.Message())
+	return fmt.Sprintf("Syntax error at index %d: %s", self.Pos, self.Code.Message())
 }
 
 func (self SyntaxError) Description() string {
-    i := 16
-    p := self.Pos - i
-    q := self.Pos + i
+	i := 16
+	p := self.Pos - i
+	q := self.Pos + i
 
-    /* check for empty source */
-    if self.Src == "" {
-        return self.Error() + " (no sources available)"
-    }
+	/* check for empty source */
+	if self.Src == "" {
+		return self.Error() + " (no sources available)"
+	}
 
-    /* prevent slicing before the beginning */
-    if p < 0 {
-        p, q, i = 0, q - p, i + p
-    }
+	/* prevent slicing before the beginning */
+	if p < 0 {
+		p, q, i = 0, q-p, i+p
+	}
 
-    /* prevent slicing beyond the end */
-    if n := len(self.Src); q > n {
-        n = q - n
-        q = len(self.Src)
+	/* prevent slicing beyond the end */
+	if n := len(self.Src); q > n {
+		n = q - n
+		q = len(self.Src)
 
-        /* move the left bound if possible */
-        if p > n {
-            i += n
-            p -= n
-        }
-    }
+		/* move the left bound if possible */
+		if p > n {
+			i += n
+			p -= n
+		}
+	}
 
-    /* left and right length */
-    x := clamp_zero(i)
-    y := clamp_zero(q - p - i - 1)
+	/* left and right length */
+	x := clamp_zero(i)
+	y := clamp_zero(q - p - i - 1)
 
-    /* compose the error description */
-    return fmt.Sprintf(
-        "%s\n\n\t%s\n\t%s^%s\n",
-        self.Error(),
-        self.Src[p:q],
-        strings.Repeat(".", x),
-        strings.Repeat(".", y),
-    )
+	/* compose the error description */
+	return fmt.Sprintf(
+		"%s\n\n\t%s\n\t%s^%s\n",
+		self.Error(),
+		self.Src[p:q],
+		strings.Repeat(".", x),
+		strings.Repeat(".", y),
+	)
 }
 
 func clamp_zero(v int) int {
-    if v < 0 {
-        return 0
-    } else {
-        return v
-    }
+	if v < 0 {
+		return 0
+	} else {
+		return v
+	}
 }
 
 func error_wrap(src string, pos int, code types.ParsingError) error {
-    return SyntaxError {
-        Pos  : pos,
-        Src  : src,
-        Code : code,
-    }
+	return SyntaxError{
+		Pos:  pos,
+		Src:  src,
+		Code: code,
+	}
 }
 
 func error_type(vtype reflect.Type) error {
-    return &json.UnmarshalTypeError{Type: vtype}
+	return &json.UnmarshalTypeError{Type: vtype}
 }
 
 func error_field(name string) error {
-    return errors.New("json: unknown field " + strconv.Quote(name))
+	return errors.New("json: unknown field " + strconv.Quote(name))
 }
 
 //go:nosplit
 func error_value(value string, vtype reflect.Type) error {
-    return &json.UnmarshalTypeError {
-        Type  : vtype,
-        Value : value,
-    }
+	return &json.UnmarshalTypeError{
+		Type:  vtype,
+		Value: value,
+	}
 }

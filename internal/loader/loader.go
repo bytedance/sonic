@@ -17,54 +17,54 @@
 package loader
 
 import (
-    `fmt`
-    `os`
-    `reflect`
-    `syscall`
-    `unsafe`
+	"fmt"
+	"os"
+	"reflect"
+	"syscall"
+	"unsafe"
 )
 
 const (
-    _AP = syscall.MAP_ANON  | syscall.MAP_PRIVATE
-    _RX = syscall.PROT_READ | syscall.PROT_EXEC
-    _RW = syscall.PROT_READ | syscall.PROT_WRITE
+	_AP = syscall.MAP_ANON | syscall.MAP_PRIVATE
+	_RX = syscall.PROT_READ | syscall.PROT_EXEC
+	_RW = syscall.PROT_READ | syscall.PROT_WRITE
 )
 
-type Loader   []byte
+type Loader []byte
 type Function unsafe.Pointer
 
 func (self Loader) Load(fn string, fp int, args int) (f Function) {
-    p := os.Getpagesize()
-    n := (((len(self) - 1) / p) + 1) * p
+	p := os.Getpagesize()
+	n := (((len(self) - 1) / p) + 1) * p
 
-    /* register the function */
-    m := mmap(n)
-    v := fmt.Sprintf("__%s_%x", fn, m)
-    registerFunction(v, m, fp, args, uintptr(len(self)))
+	/* register the function */
+	m := mmap(n)
+	v := fmt.Sprintf("__%s_%x", fn, m)
+	registerFunction(v, m, fp, args, uintptr(len(self)))
 
-    /* reference as a slice */
-    s := *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader {
-        Data : m,
-        Cap  : n,
-        Len  : len(self),
-    }))
+	/* reference as a slice */
+	s := *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
+		Data: m,
+		Cap:  n,
+		Len:  len(self),
+	}))
 
-    /* copy the machine code, and make it executable */
-    copy(s, self)
-    mprotect(m, n)
-    return Function(&m)
+	/* copy the machine code, and make it executable */
+	copy(s, self)
+	mprotect(m, n)
+	return Function(&m)
 }
 
 func mmap(nb int) uintptr {
-    if m, _, e := syscall.RawSyscall6(syscall.SYS_MMAP, 0, uintptr(nb), _RW, _AP, 0, 0); e != 0 {
-        panic(e)
-    } else {
-        return m
-    }
+	if m, _, e := syscall.RawSyscall6(syscall.SYS_MMAP, 0, uintptr(nb), _RW, _AP, 0, 0); e != 0 {
+		panic(e)
+	} else {
+		return m
+	}
 }
 
 func mprotect(p uintptr, nb int) {
-    if _, _, err := syscall.RawSyscall(syscall.SYS_MPROTECT, p, uintptr(nb), _RX); err != 0 {
-        panic(err)
-    }
+	if _, _, err := syscall.RawSyscall(syscall.SYS_MPROTECT, p, uintptr(nb), _RX); err != 0 {
+		panic(err)
+	}
 }

@@ -17,31 +17,31 @@
 package encoder
 
 import (
-    `encoding/json`
-    `unsafe`
+	"encoding/json"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/loader`
+	"github.com/bytedance/sonic/internal/loader"
 )
 
 //go:nosplit
 func ptoenc(p loader.Function) _Encoder {
-    return *(*_Encoder)(unsafe.Pointer(&p))
+	return *(*_Encoder)(unsafe.Pointer(&p))
 }
 
 func compact(p *[]byte, v []byte) error {
-    buf := newBuffer()
-    err := json.Compact(buf, v)
+	buf := newBuffer()
+	err := json.Compact(buf, v)
 
-    /* check for errors */
-    if err != nil {
-        return err
-    }
+	/* check for errors */
+	if err != nil {
+		return err
+	}
 
-    /* add to result */
-    v = buf.Bytes()
-    *p = append(*p, v...)
+	/* add to result */
+	v = buf.Bytes()
+	*p = append(*p, v...)
 
-    /* return the buffer into pool */
-    freeBuffer(buf)
-    return nil
+	/* return the buffer into pool */
+	freeBuffer(buf)
+	return nil
 }

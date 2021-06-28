@@ -17,30 +17,30 @@
 package sonic
 
 import (
-    `io/ioutil`
-    `testing`
+	"io/ioutil"
+	"testing"
 
-    `github.com/stretchr/testify/require`
+	"github.com/stretchr/testify/require"
 )
 
 func benchmarkEncodeSonic(b *testing.B, data []byte) {
-    var xbook = map[string]interface{}{}
-    if err := Unmarshal(data, &xbook); err != nil {
-        b.Fatal(err)
-    }
-    if _, err := Marshal(&xbook); err != nil {
-        b.Fatal(err)
-    }
-    b.SetBytes(int64(len(data)))
-    b.ReportAllocs()
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        _, _ = Marshal(&xbook)
-    }
+	var xbook = map[string]interface{}{}
+	if err := Unmarshal(data, &xbook); err != nil {
+		b.Fatal(err)
+	}
+	if _, err := Marshal(&xbook); err != nil {
+		b.Fatal(err)
+	}
+	b.SetBytes(int64(len(data)))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = Marshal(&xbook)
+	}
 }
 
 func BenchmarkIssue16(b *testing.B) {
-    data, err := ioutil.ReadFile("testdata/twitterescaped.json")
-    require.Nil(b, err)
-    benchmarkEncodeSonic(b, data)
+	data, err := ioutil.ReadFile("testdata/twitterescaped.json")
+	require.Nil(b, err)
+	benchmarkEncodeSonic(b, data)
 }

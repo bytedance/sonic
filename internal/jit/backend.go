@@ -17,25 +17,25 @@
 package jit
 
 import (
-    `fmt`
-    `sync`
-    _ `unsafe`
+	"fmt"
+	"sync"
+	_ "unsafe"
 
-    `github.com/twitchyliquid64/golang-asm/asm/arch`
-    `github.com/twitchyliquid64/golang-asm/obj`
-    `github.com/twitchyliquid64/golang-asm/objabi`
+	"github.com/twitchyliquid64/golang-asm/asm/arch"
+	"github.com/twitchyliquid64/golang-asm/obj"
+	"github.com/twitchyliquid64/golang-asm/objabi"
 )
 
 type Backend struct {
-    Ctxt *obj.Link
-    Arch *arch.Arch
-    Head *obj.Prog
-    Tail *obj.Prog
-    Prog []*obj.Prog
+	Ctxt *obj.Link
+	Arch *arch.Arch
+	Head *obj.Prog
+	Tail *obj.Prog
+	Prog []*obj.Prog
 }
 
 var (
-    _progPool sync.Pool
+	_progPool sync.Pool
 )
 
 //go:nosplit
@@ -43,78 +43,78 @@ var (
 func throw(_ string)
 
 func newProg() *obj.Prog {
-    if val := _progPool.Get(); val == nil {
-        return new(obj.Prog)
-    } else {
-        return remProg(val.(*obj.Prog))
-    }
+	if val := _progPool.Get(); val == nil {
+		return new(obj.Prog)
+	} else {
+		return remProg(val.(*obj.Prog))
+	}
 }
 
 func remProg(p *obj.Prog) *obj.Prog {
-    *p = obj.Prog{}
-    return p
+	*p = obj.Prog{}
+	return p
 }
 
 func newBackend(name string) (ret *Backend) {
-    ret      = new(Backend)
-    ret.Arch = arch.Set(name)
-    ret.Ctxt = newLinkContext(ret.Arch.LinkArch)
-    ret.Arch.Init(ret.Ctxt)
-    return
+	ret = new(Backend)
+	ret.Arch = arch.Set(name)
+	ret.Ctxt = newLinkContext(ret.Arch.LinkArch)
+	ret.Arch.Init(ret.Ctxt)
+	return
 }
 
 func newLinkContext(arch *obj.LinkArch) (ret *obj.Link) {
-    ret          = obj.Linknew(arch)
-    ret.Headtype = objabi.Hlinux
-    ret.DiagFunc = diagLinkContext
-    return
+	ret = obj.Linknew(arch)
+	ret.Headtype = objabi.Hlinux
+	ret.DiagFunc = diagLinkContext
+	return
 }
 
 func diagLinkContext(str string, args ...interface{}) {
-    throw(fmt.Sprintf(str, args...))
+	throw(fmt.Sprintf(str, args...))
 }
 
 func (self *Backend) New() (ret *obj.Prog) {
-    ret = newProg()
-    ret.Ctxt = self.Ctxt
-    self.Prog = append(self.Prog, ret)
-    return
+	ret = newProg()
+	ret.Ctxt = self.Ctxt
+	self.Prog = append(self.Prog, ret)
+	return
 }
 
 func (self *Backend) Append(p *obj.Prog) {
-    if self.Head == nil {
-        self.Head = p
-        self.Tail = p
-    } else {
-        self.Tail.Link = p
-        self.Tail = p
-    }
+	if self.Head == nil {
+		self.Head = p
+		self.Tail = p
+	} else {
+		self.Tail.Link = p
+		self.Tail = p
+	}
 }
 
 func (self *Backend) Release() {
-    self.Arch = nil
-    self.Ctxt = nil
+	self.Arch = nil
+	self.Ctxt = nil
 
-    /* return all the progs into pool */
-    for _, p := range self.Prog {
-        _progPool.Put(p)
-    }
+	/* return all the progs into pool */
+	for _, p := range self.Prog {
+		_progPool.Put(p)
+	}
 
-    /* clear all the references */
-    self.Head = nil
-    self.Tail = nil
-    self.Prog = nil
+	/* clear all the references */
+	self.Head = nil
+	self.Tail = nil
+	self.Prog = nil
 }
 
 func (self *Backend) Assemble() []byte {
-    var sym obj.LSym
-    var fnv obj.FuncInfo
+	var sym obj.LSym
+	var fnv obj.FuncInfo
 
-    /* construct the function */
-    sym.Func = &fnv
-    fnv.Text = self.Head
+	/* construct the function */
+	sym.Func = &fnv
+	fnv.Text = self.Head
 
-    /* call the assembler */
-    self.Arch.Assemble(self.Ctxt, &sym, self.New)
-    return sym.P
+	/* call the assembler */
+	self.Arch.Assemble(self.Ctxt, &sym, self.New)
+	return sym.P
 }

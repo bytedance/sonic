@@ -17,25 +17,25 @@
 package sonic
 
 import (
-    `reflect`
-    `sync`
-    `testing`
+	"reflect"
+	"sync"
+	"testing"
 
-    `github.com/stretchr/testify/require`
+	"github.com/stretchr/testify/require"
 )
 
 func TestIssue27_EmptySlice(t *testing.T) {
-    _ = Pretouch(reflect.TypeOf([]*int{}))
-    wg := sync.WaitGroup{}
-    for i := 0; i < 1000; i++ {
-        wg.Add(1)
-        go func() {
-            defer wg.Done()
-            v := make([]*int, 16)
-            err := UnmarshalString(`[null, null]`, &v)
-            require.NoError(t, err)
-            require.Equal(t, []*int{nil, nil}, v)
-        }()
-    }
-    wg.Wait()
+	_ = Pretouch(reflect.TypeOf([]*int{}))
+	wg := sync.WaitGroup{}
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			v := make([]*int, 16)
+			err := UnmarshalString(`[null, null]`, &v)
+			require.NoError(t, err)
+			require.Equal(t, []*int{nil, nil}, v)
+		}()
+	}
+	wg.Wait()
 }

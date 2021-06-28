@@ -17,76 +17,76 @@
 package decoder
 
 import (
-    `encoding/json`
-    `reflect`
+	"encoding/json"
+	"reflect"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
-    _F_use_int64 = iota
-    _F_use_number
-    _F_disable_urc
-    _F_disable_unknown
+	_F_use_int64 = iota
+	_F_use_number
+	_F_disable_urc
+	_F_disable_unknown
 )
 
 type Decoder struct {
-    i int
-    f uint64
-    s string
+	i int
+	f uint64
+	s string
 }
 
 func NewDecoder(s string) *Decoder {
-    return &Decoder{s: s}
+	return &Decoder{s: s}
 }
 
 func (self *Decoder) Pos() int {
-    return self.i
+	return self.i
 }
 
 func (self *Decoder) Decode(val interface{}) error {
-    vv := rt.UnpackEface(val)
-    vp := vv.Value
+	vv := rt.UnpackEface(val)
+	vp := vv.Value
 
-    /* check for nil type */
-    if vv.Type == nil {
-        return &json.InvalidUnmarshalError{}
-    }
+	/* check for nil type */
+	if vv.Type == nil {
+		return &json.InvalidUnmarshalError{}
+	}
 
-    /* must be a non-nil pointer */
-    if vp == nil || vv.Type.Kind() != reflect.Ptr {
-        return &json.InvalidUnmarshalError{Type: vv.Type.Pack()}
-    }
+	/* must be a non-nil pointer */
+	if vp == nil || vv.Type.Kind() != reflect.Ptr {
+		return &json.InvalidUnmarshalError{Type: vv.Type.Pack()}
+	}
 
-    /* create a new stack, and call the decoder */
-    sb, etp := newStack(), rt.PtrElem(vv.Type)
-    nb, err := decodeTypedPointer(self.s, self.i, etp, vp, sb, self.f)
+	/* create a new stack, and call the decoder */
+	sb, etp := newStack(), rt.PtrElem(vv.Type)
+	nb, err := decodeTypedPointer(self.s, self.i, etp, vp, sb, self.f)
 
-    /* return the stack back */
-    self.i = nb
-    freeStack(sb)
-    return err
+	/* return the stack back */
+	self.i = nb
+	freeStack(sb)
+	return err
 }
 
 func (self *Decoder) UseInt64() {
-    self.f  |= 1 << _F_use_int64
-    self.f &^= 1 << _F_use_number
+	self.f |= 1 << _F_use_int64
+	self.f &^= 1 << _F_use_number
 }
 
 func (self *Decoder) UseNumber() {
-    self.f &^= 1 << _F_use_int64
-    self.f  |= 1 << _F_use_number
+	self.f &^= 1 << _F_use_int64
+	self.f |= 1 << _F_use_number
 }
 
 func (self *Decoder) UseUnicodeErrors() {
-    self.f |= 1 << _F_disable_urc
+	self.f |= 1 << _F_disable_urc
 }
 
 func (self *Decoder) DisallowUnknownFields() {
-    self.f |= 1 << _F_disable_unknown
+	self.f |= 1 << _F_disable_unknown
 }
 
 func Pretouch(vt reflect.Type) (err error) {
-    _, err = findOrCompile(rt.UnpackType(vt))
-    return
+	_, err = findOrCompile(rt.UnpackType(vt))
+	return
 }

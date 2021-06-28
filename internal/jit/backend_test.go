@@ -17,18 +17,18 @@
 package jit
 
 import (
-    `testing`
+	"testing"
 
-    `github.com/davecgh/go-spew/spew`
-    `github.com/twitchyliquid64/golang-asm/obj`
-    `github.com/twitchyliquid64/golang-asm/obj/x86`
+	"github.com/davecgh/go-spew/spew"
+	"github.com/twitchyliquid64/golang-asm/obj"
+	"github.com/twitchyliquid64/golang-asm/obj/x86"
 )
 
 func TestBackend(t *testing.T) {
-    e := newBackend("amd64")
-    p := e.New()
-    p.As = x86.AVPTEST
-    (*BaseAssembler)(nil).assignOperands(p, []obj.Addr{Reg("Y2"), Reg("Y1")})
-    e.Append(p)
-    spew.Dump(e.Assemble())
+	e := newBackend("amd64")
+	p := e.New()
+	p.As = x86.AVPTEST
+	(*BaseAssembler)(nil).assignOperands(p, []obj.Addr{Reg("Y2"), Reg("Y1")})
+	e.Append(p)
+	spew.Dump(e.Assemble())
 }

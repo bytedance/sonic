@@ -17,40 +17,40 @@
 package ast
 
 import (
-    `unsafe`
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 //go:nosplit
 func mem2ptr(s []byte) unsafe.Pointer {
-    return (*rt.GoSlice)(unsafe.Pointer(&s)).Ptr
+	return (*rt.GoSlice)(unsafe.Pointer(&s)).Ptr
 }
 
 //go:nosplit
 func ptr2slice(s unsafe.Pointer, l int, c int) unsafe.Pointer {
-    slice := &rt.GoSlice{
+	slice := &rt.GoSlice{
 		Ptr: s,
 		Len: l,
 		Cap: c,
-    }
-    return unsafe.Pointer(slice)
+	}
+	return unsafe.Pointer(slice)
 }
 
 //go:nosplit
 func str2ptr(s string) unsafe.Pointer {
-    return (*rt.GoString)(unsafe.Pointer(&s)).Ptr
+	return (*rt.GoString)(unsafe.Pointer(&s)).Ptr
 }
 
 //go:nosplit
 func addr2str(p unsafe.Pointer, n int64) (s string) {
-    (*rt.GoString)(unsafe.Pointer(&s)).Ptr = p
-    (*rt.GoString)(unsafe.Pointer(&s)).Len = int(n)
-    return
+	(*rt.GoString)(unsafe.Pointer(&s)).Ptr = p
+	(*rt.GoString)(unsafe.Pointer(&s)).Len = int(n)
+	return
 }
 
-const _SPACE_CHAR_MASK = (1<<' ')|(1<<'\t')|(1<<'\r')|(1<<'\n')
+const _SPACE_CHAR_MASK = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
 
 func isSpace(c byte) bool {
-    return (int(1<<c) & _SPACE_CHAR_MASK) != 0
+	return (int(1<<c) & _SPACE_CHAR_MASK) != 0
 }

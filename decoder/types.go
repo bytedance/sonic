@@ -17,28 +17,28 @@
 package decoder
 
 import (
-    `encoding`
-    `encoding/base64`
-    `encoding/json`
-    `reflect`
-    `unsafe`
+	"encoding"
+	"encoding/base64"
+	"encoding/json"
+	"reflect"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 var (
-    byteType                = reflect.TypeOf(byte(0))
-    jsonNumberType          = reflect.TypeOf(json.Number(""))
-    base64CorruptInputError = reflect.TypeOf(base64.CorruptInputError(0))
+	byteType                = reflect.TypeOf(byte(0))
+	jsonNumberType          = reflect.TypeOf(json.Number(""))
+	base64CorruptInputError = reflect.TypeOf(base64.CorruptInputError(0))
 )
 
 var (
-    errorType                   = reflect.TypeOf((*error)(nil)).Elem()
-    jsonUnmarshalerType         = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
-    encodingTextUnmarshalerType = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
+	errorType                   = reflect.TypeOf((*error)(nil)).Elem()
+	jsonUnmarshalerType         = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
+	encodingTextUnmarshalerType = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 )
 
 func rtype(t reflect.Type) (*rt.GoItab, *rt.GoType) {
-    p := (*rt.GoIface)(unsafe.Pointer(&t))
-    return p.Itab, (*rt.GoType)(p.Value)
+	p := (*rt.GoIface)(unsafe.Pointer(&t))
+	return p.Itab, (*rt.GoType)(p.Value)
 }
