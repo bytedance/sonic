@@ -38,7 +38,7 @@ func Quote(s string) string {
     p = make([]byte, 0, n)
 
     /* call the encoder */
-    _ = encodeStr(&p, s)
+    _ = encodeString(&p, s)
     return rt.Mem2Str(p)
 }
 

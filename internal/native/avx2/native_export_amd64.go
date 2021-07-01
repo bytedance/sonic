@@ -21,12 +21,12 @@ package avx2
 var (
     S_f64toa = _subr__f64toa
     S_i64toa = _subr__i64toa
-    S_lquote = _subr__lquote
     S_u64toa = _subr__u64toa
+    S_lspace = _subr__lspace
 )
 
 var (
-    S_lspace  = _subr__lspace
+    S_quote   = _subr__quote
     S_unquote = _subr__unquote
 )
 

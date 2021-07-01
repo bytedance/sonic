@@ -23,8 +23,8 @@ import (
     `sync`
     `unsafe`
 
-    `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
     `github.com/twitchyliquid64/golang-asm/obj/x86`
 
@@ -68,13 +68,14 @@ const (
 )
 
 const (
-    _FP_args  = 40  // 40 bytes for passing arguments to this function
-    _FP_fargs = 64  // 64 bytes for passing arguments to other Go functions
-    _FP_saves = 64  // 64 bytes for saving the registers before CALL instructions
+    _FP_args   = 40     // 40 bytes for passing arguments to this function
+    _FP_fargs  = 64     // 64 bytes for passing arguments to other Go functions
+    _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
+    _FP_locals = 16     // 16 bytes for local variables
 )
 
 const (
-    _FP_offs = _FP_fargs + _FP_saves
+    _FP_offs = _FP_fargs + _FP_saves + _FP_locals
     _FP_size = _FP_offs + 8     // 8 bytes for the parent frame pointer
     _FP_base = _FP_size + 8     // 8 bytes for the return address
 )
@@ -118,11 +119,6 @@ var (
 var (
     _X0 = jit.Reg("X0")
     _Y0 = jit.Reg("Y0")
-    _Y1 = jit.Reg("Y1")
-    _Y2 = jit.Reg("Y2")
-    _Y3 = jit.Reg("Y3")
-    _Y4 = jit.Reg("Y4")
-    _Y5 = jit.Reg("Y5")
 )
 
 var (
@@ -154,6 +150,11 @@ var (
 var (
     _RET_et = jit.Ptr(_SP, _FP_base + 24)
     _RET_ep = jit.Ptr(_SP, _FP_base + 32)
+)
+
+var (
+    _VAR_sp = jit.Ptr(_SP, _FP_fargs + _FP_saves)
+    _VAR_dn = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
 )
 
 var (
@@ -380,13 +381,17 @@ func (self *_Assembler) check_size_rl(v obj.Addr) {
 
     /* check for buffer capacity */
     self.x++
-    self.Emit("LEAQ", v, _AX)           // LEAQ $v, AX
-    self.Emit("CMPQ", _AX, _RC)         // CMPQ AX, RC
-    self.Sjmp("JBE" , key)              // JBE  _more_space_return_{n}
+    self.Emit("LEAQ", v, _AX)       // LEAQ $v, AX
+    self.Emit("CMPQ", _AX, _RC)     // CMPQ AX, RC
+    self.Sjmp("JBE" , key)          // JBE  _more_space_return_{n}
+    self.slice_grow_ax(key)         // GROW $key
+    self.Link(key)                  // _more_space_return_{n}:
+}
+
+func (self *_Assembler) slice_grow_ax(ret string) {
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ ?(PC), R9
-    self.Sref(key, 4)                   // .... &key
+    self.Sref(ret, 4)                   // .... &ret
     self.Sjmp("JMP" , _LB_more_space)   // JMP  _more_space
-    self.Link(key)                      // _more_space_return_{n}:
 }
 
 /** State Stack Helpers **/
@@ -431,6 +436,11 @@ func (self *_Assembler) add_char(ch byte) {
 func (self *_Assembler) add_long(ch uint32, n int64) {
     self.Emit("MOVL", jit.Imm(int64(ch)), jit.Sib(_RP, _RL, 1, 0))  // MOVL $ch, (RP)(RL)
     self.Emit("ADDQ", jit.Imm(n), _RL)                              // ADDQ $n, RL
+}
+
+func (self *_Assembler) add_text(ss string) {
+    self.store_str(ss)                                  // TEXT $ss
+    self.Emit("ADDQ", jit.Imm(int64(len(ss))), _RL)     // ADDQ ${len(ss)}, RL
 }
 
 func (self *_Assembler) prep_buffer() {
@@ -602,7 +612,16 @@ func (self *_Assembler) error_nan_or_infinite()  {
 
 /** String Encoding Routine **/
 
-func (self *_Assembler) open_quote(doubleQuote bool) {
+var (
+    _F_quote = jit.Imm(int64(native.S_quote))
+)
+
+func (self *_Assembler) encode_string(doubleQuote bool) {
+    self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _AX)  // MOVQ  8(SP.p), AX
+    self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
+    self.Sjmp("JZ"   , "_str_empty_{n}")        // JZ    _str_empty_{n}
+
+    /* openning quote, check for double quote */
     if !doubleQuote {
         self.check_size_r(_AX, 2)   // SIZE $2
         self.add_char('"')          // CHAR $'"'
@@ -610,46 +629,69 @@ func (self *_Assembler) open_quote(doubleQuote bool) {
         self.check_size_r(_AX, 6)   // SIZE $6
         self.add_long(_IM_open, 3)  // TEXT $`"\"`
     }
-}
 
-func (self *_Assembler) close_quote(doubleQuote bool) {
+    /* quoting loop */
+    self.Emit("XORL", _AX, _AX)         // XORL AX, AX
+    self.Emit("MOVQ", _AX, _VAR_sp)     // MOVQ AX, sp
+    self.Link("_str_loop_{n}")          // _str_loop_{n}:
+    self.save_c()                       // SAVE $REG_ffi
+
+    /* load the output buffer first, and then input buffer,
+     * because the parameter registers collide with RP / RL / RC */
+    self.Emit("MOVQ", _RC, _CX)                         // MOVQ RC, CX
+    self.Emit("SUBQ", _RL, _CX)                         // SUBQ RL, CX
+    self.Emit("MOVQ", _CX, _VAR_dn)                     // MOVQ CX, dn
+    self.Emit("LEAQ", jit.Sib(_RP, _RL, 1, 0), _DX)     // LEAQ (RP)(RL), DX
+    self.Emit("LEAQ", _VAR_dn, _CX)                     // LEAQ dn, CX
+    self.Emit("MOVQ", _VAR_sp, _AX)                     // MOVQ sp, AX
+    self.Emit("MOVQ", jit.Ptr(_SP_p, 0), _DI)           // MOVQ (SP.p), DI
+    self.Emit("MOVQ", jit.Ptr(_SP_p, 8), _SI)           // MOVQ 8(SP.p), SI
+    self.Emit("ADDQ", _AX, _DI)                         // ADDQ AX, DI
+    self.Emit("SUBQ", _AX, _SI)                         // SUBQ AX, SI
+
+    /* set the flags based on `doubleQuote` */
     if !doubleQuote {
-        self.check_size(1)          // SIZE $1
-        self.Link("_str_end_{n}")   // _str_end_{n}:
-        self.add_char('"')          // CHAR $'"'
+        self.Emit("XORL", _R8, _R8)                                 // XORL R8, R8
+    } else {
+        self.Emit("MOVL", jit.Imm(types.F_DOUBLE_UNQUOTE), _R8)     // MOVL ${types.F_DOUBLE_UNQUOTE}, R8
+    }
+
+    /* call the native quoter */
+    self.call_c(_F_quote)                   // CALL  quote
+    self.Emit("ADDQ" , _VAR_dn, _RL)        // ADDQ  dn, RL
+    self.Emit("TESTQ", _AX, _AX)            // TESTQ AX, AX
+    self.Sjmp("JS"   , "_str_space_{n}")    // JS    _str_space_{n}
+
+    /* close the string, check for double quote */
+    if !doubleQuote {
+        self.check_size(1)                  // SIZE $1
+        self.add_char('"')                  // CHAR $'"'
+        self.Sjmp("JMP", "_str_end_{n}")    // JMP  _str_end_{n}
     } else {
         self.check_size(3)                  // SIZE $3
-        self.Link("_str_end_{n}")           // _str_end_{n}:
-        self.store_str(`\""`)               // TEXT $`\""`
-        self.Emit("ADDQ", jit.Imm(3), _RL)  // ADDQ $3, RL
+        self.add_text("\\\"\"")             // TEXT $'\""'
+        self.Sjmp("JMP", "_str_end_{n}")    // JMP  _str_end_{n}
     }
-}
 
-func (self *_Assembler) encode_string(fn obj.Addr, doubleQuote bool) {
-    self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _AX)          // MOVQ    8(SP.p), AX
-    self.open_quote(doubleQuote)                        // QOPEN   $doubleQuote
-    self.Emit("CMPQ" , jit.Ptr(_SP_p, 8), jit.Imm(0))   // CMPQ    8(SP.p), $0
-    self.Sjmp("JE"   , "_str_end_{n}")                  // JE      _str_end_{n}
-    self.save_c()                                       // SAVE    $REG_ffi
-    self.Emit("MOVQ" , _SP_p, _DI)                      // MOVQ    SP.p, DI
-    self.Emit("XORL" , _SI, _SI)                        // XORL    SI, SI
-    self.call_c(_F_lquote)                              // CALL    lquote
-    self.Emit("CMPQ" , _AX, jit.Ptr(_SP_p, 8))          // CMPQ    AX, 8(SP.p)
-    self.Sjmp("JNE"  , "_str_quote_{n}")                // JNE     _str_quote_{n}
-    self.Emit("LEAQ" , jit.Sib(_RP, _RL, 1, 0), _AX)    // LEAQ    (RP)(RL), AX
-    self.Emit("ADDQ" , jit.Ptr(_SP_p, 8), _RL)          // ADDQ    8(SP.p), RL
-    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))            // MOVQ    AX, 0(SP)
-    self.Emit("MOVOU", jit.Ptr(_SP_p, 0), _X0)          // MOVOU   (SP.p), X0
-    self.Emit("MOVOU", _X0, jit.Ptr(_SP, 8))            // MOVOU   X0, 8(SP)
-    self.call_go(_F_memmove)                            // CALL_GO memmove
-    self.Sjmp("JMP"  , "_str_end_{n}")                  // JMP     _str_end_{n}
-    self.Link("_str_quote_{n}")                         // _str_quote_{n}:
-    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 8))            // MOVQ    AX, 8(SP)
-    self.prep_buffer()                                  // MOVE    {buf}, (SP)
-    self.Emit("MOVOU", jit.Ptr(_SP_p, 0), _X0)          // MOVOU   (SP.p), X0
-    self.Emit("MOVOU", _X0, jit.Ptr(_SP, 16))           // MOVOU   X0, 16(SP)
-    self.call_encoder(fn)                               // CALL    $fn
-    self.close_quote(doubleQuote)                       // QCLOSE  $doubleQuote
+    /* not enough space to contain the quoted string */
+    self.Link("_str_space_{n}")                         // _str_space_{n}:
+    self.Emit("NOTQ", _AX)                              // NOTQ AX
+    self.Emit("ADDQ", _AX, _VAR_sp)                     // ADDQ AX, sp
+    self.Emit("LEAQ", jit.Sib(_RC, _RC, 1, 0), _AX)     // LEAQ (RC)(RC), AX
+    self.slice_grow_ax("_str_loop_{n}")                 // GROW _str_loop_{n}
+
+    /* empty string, check for double quote */
+    if !doubleQuote {
+        self.Link("_str_empty_{n}")     // _str_empty_{n}:
+        self.check_size(2)              // SIZE $2
+        self.add_text("\"\"")           // TEXT $'""'
+        self.Link("_str_end_{n}")       // _str_end_{n}:
+    } else {
+        self.Link("_str_empty_{n}")     // _str_empty_{n}:
+        self.check_size(6)              // SIZE $6
+        self.add_text("\"\\\"\\\"\"")   // TEXT $'"\"\""'
+        self.Link("_str_end_{n}")       // _str_end_{n}:
+    }
 }
 
 /** Zero Value Check Routine **/
@@ -663,46 +705,11 @@ func (self *_Assembler) check_zero(nb int, dest int) {
         return
     }
 
-    /* default instructions for AVX2 */
-    vclear := func(v obj.Addr)       { self.Emit("VPXOR"   , v, v, v) }
-    vset1a := func(a, b obj.Addr)    { self.Emit("VPCMPEQB", a, a, b) }
-    vandpb := func(b, a, r obj.Addr) { self.Emit("VPAND"   , b, a, r) }
-    vcmpeq := func(b, a, r obj.Addr) { self.Emit("VPCMPEQB", b, a, r) }
-
-    /* fall-back instructions for AVX */
-    if !cpu.HasAVX2 {
-        vclear = func(v obj.Addr)       { self.Emit("VXORPS", v, v, v) }
-        vset1a = func(a, b obj.Addr)    { self.Emit("VCMPPS", a, a, b, jit.Imm(0x0f)) }
-        vandpb = func(b, a, r obj.Addr) { self.Emit("VANDPS", b, a, r) }
-        vcmpeq = func(b, a, r obj.Addr) { self.Emit("VCMPPS", b, a, r, jit.Imm(0x00)) }
-    }
-
-    /* if n is less than 32 byte, only scalar code will be used;
-     * otherwise AVX is used, so clear Y0, and set Y1 to all 1s */
-    if e >= 32 {
-        vclear(_Y0)         // CLEAR Y0
-        vset1a(_Y0, _Y1)    // SET1A Y0, Y1
-    }
-
-    /* 128-byte tests */
-    for i <= e - 128 {
-        vcmpeq(jit.Ptr(_SP_p, i +  0), _Y0, _Y2)    // CMPEQ  i+0(SP.p), Y0, Y2
-        vcmpeq(jit.Ptr(_SP_p, i + 32), _Y0, _Y3)    // CMPEQ  i+32(SP.p), Y0, Y3
-        vcmpeq(jit.Ptr(_SP_p, i + 64), _Y0, _Y4)    // CMPEQ  i+64(SP.p), Y0, Y4
-        vcmpeq(jit.Ptr(_SP_p, i + 96), _Y0, _Y5)    // CMPEQ  i+96(SP.p), Y0, Y5
-        vandpb(_Y3, _Y2, _Y2)                       // ANDPB  Y3, Y2, Y2
-        vandpb(_Y5, _Y4, _Y3)                       // ANDPB  Y5, Y4, Y3
-        vandpb(_Y2, _Y3, _Y3)                       // ANDPB  Y2, Y3, Y3
-        self.Emit("VPTEST", _Y1, _Y3)               // VPTEST Y1, Y3
-        self.Sjmp("JNC"   , "_not_zero_z_{n}")      // JNC    _not_zero_z_{n}
-        i += 128
-    }
-
-    /* 32-byte tests */
+    /* 32-byte test */
     for i <= e - 32 {
-        vcmpeq(jit.Ptr(_SP_p, i), _Y0, _Y2)     // CMPEQ  i(SP.p), Y0, Y2
-        self.Emit("VPTEST", _Y1, _Y2)           // VPTEST Y1, Y2
-        self.Sjmp("JNC"   , "_not_zero_z_{n}")  // JNC    _not_zero_z_{n}
+        self.Emit("VMOVDQU", jit.Ptr(_SP_p, i), _Y0)    // VMOVDQU (SP.p), Y0
+        self.Emit("VPTEST" , _Y0, _Y0)                  // VPTEST  Y0, Y0
+        self.Sjmp("JNZ"    , "_not_zero_z_{n}")         // JNZ     _not_zero_z_{n}
         i += 32
     }
 
@@ -711,8 +718,16 @@ func (self *_Assembler) check_zero(nb int, dest int) {
         self.Emit("VZEROUPPER")
     }
 
-    /* 8-byte tests */
-    for i <= e - 8 {
+    /* 16-byte test */
+    if i <= e - 16 {
+        self.Emit("MOVOU", jit.Ptr(_SP_p, i), _X0)  // MOVOU (SP.p), X0
+        self.Emit("PTEST", _X0, _X0)                // PTEST X0, X0
+        self.Sjmp("JNZ"  , "_not_zero_{n}")         // JNZ   _not_zero_{n}
+        i += 16
+    }
+
+    /* 8-byte test */
+    if i <= e - 8 {
         self.Emit("CMPQ", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPQ i(SP.p), $0
         self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
         i += 8
@@ -771,7 +786,6 @@ var (
     _F_f64toa    = jit.Imm(int64(native.S_f64toa))
     _F_i64toa    = jit.Imm(int64(native.S_i64toa))
     _F_u64toa    = jit.Imm(int64(native.S_u64toa))
-    _F_lquote    = jit.Imm(int64(native.S_lquote))
     _F_b64encode = jit.Imm(int64(_subr__b64encode))
 )
 
@@ -792,16 +806,12 @@ var (
 )
 
 var (
-    _F_encodeQuote         obj.Addr
-    _F_encodeDoubleQuote   obj.Addr
     _F_encodeTypedPointer  obj.Addr
     _F_encodeJsonMarshaler obj.Addr
     _F_encodeTextMarshaler obj.Addr
 )
 
 func init() {
-    _F_encodeQuote         = jit.Func(encodeQuote)
-    _F_encodeDoubleQuote   = jit.Func(encodeDoubleQuote)
     _F_encodeTypedPointer  = jit.Func(encodeTypedPointer)
     _F_encodeJsonMarshaler = jit.Func(encodeJsonMarshaler)
     _F_encodeTextMarshaler = jit.Func(encodeTextMarshaler)
@@ -889,7 +899,7 @@ func (self *_Assembler) _asm_OP_f64(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {
-    self.encode_string(_F_encodeQuote, false)
+    self.encode_string(false)
 }
 
 func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
@@ -913,7 +923,7 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_quote(_ *_Instr) {
-    self.encode_string(_F_encodeDoubleQuote, true)
+    self.encode_string(true)
 }
 
 func (self *_Assembler) _asm_OP_number(_ *_Instr) {
@@ -977,9 +987,8 @@ func (self *_Assembler) _asm_OP_byte(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_text(p *_Instr) {
-    self.check_size(len(p.vs()))
-    self.store_str(p.vs())
-    self.Emit("ADDQ", jit.Imm(int64(len(p.vs()))), _RL)     // ADDQ $len(p.vs()), RL
+    self.check_size(len(p.vs()))    // SIZE ${len(p.vs())}
+    self.add_text(p.vs())           // TEXT ${p.vs()}
 }
 
 func (self *_Assembler) _asm_OP_deref(_ *_Instr) {

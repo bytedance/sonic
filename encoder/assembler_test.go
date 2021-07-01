@@ -26,6 +26,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/rt`
+    `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/assert`
 )
 
@@ -337,6 +338,18 @@ func TestAssembler_OpCode(t *testing.T) {
             testOpCode(t, tv.val, tv.exp, tv.err, tv.ins)
         })
     }
+}
+
+func TestAssembler_StringMoreSpace(t *testing.T) {
+    p := &_Program{ins: []_Instr{newInsOp(_OP_str)}}
+    m := make([]byte, 0, 8)
+    s := new(_Stack)
+    a := newAssembler(p)
+    f := a.Load()
+    v := "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010"
+    e := f(&m, unsafe.Pointer(&v), s)
+    assert.Nil(t, e)
+    spew.Dump(m)
 }
 
 func TestAssembler_TwitterJSON_Generic(t *testing.T) {

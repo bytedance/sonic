@@ -26,11 +26,14 @@ import (
 )
 
 var (
-    S_f64toa  uintptr
-    S_i64toa  uintptr
-    S_u64toa  uintptr
-    S_lquote  uintptr
-    S_lspace  uintptr
+    S_f64toa uintptr
+    S_i64toa uintptr
+    S_u64toa uintptr
+    S_lspace uintptr
+)
+
+var (
+    S_quote   uintptr
     S_unquote uintptr
 )
 
@@ -56,12 +59,12 @@ func Lzero(p unsafe.Pointer, n int) int
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func Lquote(buf *string, off int) int
+func Quote(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) int
 
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func Lspace(sp unsafe.Pointer, nb int, off int) int
+func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int
 
 //go:nosplit
 //go:noescape
@@ -73,17 +76,12 @@ func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, allow_control int
 //goland:noinspection GoUnusedParameter
 func SkipOne(s *string, p *int, m *types.StateMachine) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int
-
 func useAVX() {
     S_f64toa      = avx.S_f64toa
     S_i64toa      = avx.S_i64toa
     S_u64toa      = avx.S_u64toa
-    S_lquote      = avx.S_lquote
     S_lspace      = avx.S_lspace
+    S_quote       = avx.S_quote
     S_unquote     = avx.S_unquote
     S_value       = avx.S_value
     S_vstring     = avx.S_vstring
@@ -99,8 +97,8 @@ func useAVX2() {
     S_f64toa      = avx2.S_f64toa
     S_i64toa      = avx2.S_i64toa
     S_u64toa      = avx2.S_u64toa
-    S_lquote      = avx2.S_lquote
     S_lspace      = avx2.S_lspace
+    S_quote       = avx2.S_quote
     S_unquote     = avx2.S_unquote
     S_value       = avx2.S_value
     S_vstring     = avx2.S_vstring

@@ -81,6 +81,10 @@ const (
 )
 
 const (
+    _BM_space = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
+)
+
+const (
     _LB_error           = "_error"
     _LB_im_error        = "_im_error"
     _LB_eof_error       = "_eof_error"
@@ -1318,15 +1322,34 @@ func (self *_Assembler) _asm_OP_unmarshal_text_p(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_lspace(_ *_Instr) {
-    self.Emit("MOVQ" , _IP, _DI)                // MOVQ  IP, DI
-    self.Emit("MOVQ" , _IL, _SI)                // MOVQ  IL, SI
-    self.Emit("MOVQ" , _IC, _DX)                // MOVQ  IC, DX
-    self.call(_F_lspace)                        // CALL  lspace
-    self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
-    self.Sjmp("JS"   , _LB_parsing_error_v)     // JS    _parsing_error_v
-    self.Emit("CMPQ" , _AX, _IL)                // CMPQ  AX, IL
-    self.Sjmp("JAE"  , _LB_eof_error)           // JAE   _eof_error
-    self.Emit("MOVQ" , _AX, _IC)                // MOVQ  AX, IC
+    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+    self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
+    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
+    self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+    self.Emit("BTQ"    , _AX, _DX)                      // BTQ     AX, DX
+    self.Sjmp("JNC"    , "_nospace_{n}")                // JNC     _nospace_{n}
+
+    /* test up to 4 characters */
+    for i := 0; i < 3; i++ {
+        self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
+        self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+        self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
+        self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+        self.Emit("BTQ"    , _AX, _DX)                      // BTQ     AX, DX
+        self.Sjmp("JNC"    , "_nospace_{n}")                // JNC     _nospace_{n}
+    }
+
+    /* handle over to the native function */
+    self.Emit("MOVQ"   , _IP, _DI)                      // MOVQ    IP, DI
+    self.Emit("MOVQ"   , _IL, _SI)                      // MOVQ    IL, SI
+    self.Emit("MOVQ"   , _IC, _DX)                      // MOVQ    IC, DX
+    self.call(_F_lspace)                                // CALL    lspace
+    self.Emit("TESTQ"  , _AX, _AX)                      // TESTQ   AX, AX
+    self.Sjmp("JS"     , _LB_parsing_error_v)           // JS      _parsing_error_v
+    self.Emit("CMPQ"   , _AX, _IL)                      // CMPQ    AX, IL
+    self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
+    self.Emit("MOVQ"   , _AX, _IC)                      // MOVQ    AX, IC
+    self.Link("_nospace_{n}")                           // _nospace_{n}:
 }
 
 func (self *_Assembler) _asm_OP_match_char(p *_Instr) {

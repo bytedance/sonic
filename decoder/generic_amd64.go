@@ -120,10 +120,6 @@ const (
 )
 
 const (
-    _X_space = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
-)
-
-const (
     _A_init_len = 1
     _A_init_cap = 16
 )
@@ -206,15 +202,42 @@ func (self *_ValueDecoder) compile() {
     self.Emit("TESTQ", _AX, _AX)                    // TESTQ AX, AX
     self.Sjmp("JS"   , "_return")                   // JS    _return
 
-    /* fast path: no-space or 1-space cases */
+    /* fast path: test up to 4 characters manually */
     self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
     self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
     self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
-    self.Emit("MOVQ"   , jit.Imm(_X_space), _DX)        // MOVQ    _X_space, DX
+    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
     self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
     self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
 
     /* 1-space case */
+    self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
+    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
+    self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
+    self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
+    self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
+
+    /* 2-space case */
+    self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
+    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
+    self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
+    self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
+    self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
+
+    /* 3-space case */
+    self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
+    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
+    self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
+    self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
+    self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
+
+    /* 4-space case */
     self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
     self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
     self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
@@ -232,14 +255,14 @@ func (self *_ValueDecoder) compile() {
     self.Rjmp("JMP"    , _AX)                           // JMP     AX
 
     /* decode with native decoder */
-    self.Link("_decode_native")             // _decode_native:
-    self.Emit("MOVQ", _IP, _DI)             // MOVQ IP, DI
-    self.Emit("MOVQ", _IL, _SI)             // MOVQ IL, SI
-    self.Emit("MOVQ", _IC, _DX)             // MOVQ IC, DX
-    self.Emit("LEAQ", _VAR_ss, _CX)         // LEAQ ss, CX
-    self.Emit("MOVL", jit.Imm(1), _R8)      // MOVL $1, R8
-    self.call(_F_value)                     // CALL value
-    self.Emit("MOVQ", _AX, _IC)             // MOVQ AX, IC
+    self.Link("_decode_native")         // _decode_native:
+    self.Emit("MOVQ", _IP, _DI)         // MOVQ IP, DI
+    self.Emit("MOVQ", _IL, _SI)         // MOVQ IL, SI
+    self.Emit("MOVQ", _IC, _DX)         // MOVQ IC, DX
+    self.Emit("LEAQ", _VAR_ss, _CX)     // LEAQ ss, CX
+    self.Emit("MOVL", jit.Imm(1), _R8)  // MOVL $1, R8
+    self.call(_F_value)                 // CALL value
+    self.Emit("MOVQ", _AX, _IC)         // MOVQ AX, IC
 
     /* check for errors */
     self.Emit("MOVQ" , _VAR_ss_Vt, _AX)     // MOVQ  ss.Vt, AX
@@ -565,6 +588,7 @@ func (self *_ValueDecoder) compile() {
     /* return from decoder */
     self.Link("_return")                            // _return:
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
+    self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Vp))    // MOVQ EP, ST.Vp[0]
     self.Link("_epilogue")                          // _epilogue:
     self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)     // SUBQ _FsmOffset, _ST
     self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP

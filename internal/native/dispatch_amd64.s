@@ -24,17 +24,17 @@ TEXT ·Lzero(SB), NOSPLIT, $0 - 24
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__lzero(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__lzero(SB)
 
-TEXT ·Lquote(SB), NOSPLIT, $0 - 24
+TEXT ·Quote(SB), NOSPLIT, $0 - 48
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__lquote(SB)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__lquote(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__quote(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__quote(SB)
 
-TEXT ·Lspace(SB), NOSPLIT, $0 - 32
+TEXT ·Unquote(SB), NOSPLIT, $0 - 48
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__lspace(SB)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__lspace(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__unquote(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__unquote(SB)
 
 TEXT ·Value(SB), NOSPLIT, $0 - 48
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
@@ -47,9 +47,3 @@ TEXT ·SkipOne(SB), NOSPLIT, $0 - 32
     JE   2(PC)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__skip_one(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__skip_one(SB)
-
-TEXT ·Unquote(SB), NOSPLIT, $0 - 48
-    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
-    JE   2(PC)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__unquote(SB)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__unquote(SB)

@@ -16,8 +16,6 @@
 
 #include "native.h"
 
-#if USE_SSE
-
 static const char Digits[200] = {
     '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', '0', '5', '0', '6', '0', '7', '0', '8', '0', '9',
     '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', '1', '5', '1', '6', '1', '7', '1', '8', '1', '9',
@@ -223,8 +221,6 @@ static inline int u64toa_xlarge_sse2(char *out, uint64_t val) {
     return n + 16;
 }
 
-#endif
-
 int i64toa(char *out, int64_t val) {
     if (likely(val >= 0)) {
         return u64toa(out, (uint64_t)val);
@@ -233,8 +229,6 @@ int i64toa(char *out, int64_t val) {
         return u64toa(out + 1, (uint64_t)(-val)) + 1;
     }
 }
-
-#if USE_SSE
 
 int u64toa(char *out, uint64_t val) {
     if (likely(val < 10000)) {
@@ -247,29 +241,3 @@ int u64toa(char *out, uint64_t val) {
         return u64toa_xlarge_sse2(out, val);
     }
 }
-
-#else
-
-int u64toa(char *out, uint64_t val) {
-    char     c;
-    long     n = 0;
-    uint64_t v = val;
-
-    /* convert each digit */
-    while (val) {
-        out[n++] = v % 10 + '0';
-        v /= 10;
-    }
-
-    /* reverse the output */
-    for (long i = 0; i < n / 2; i++) {
-        c = out[i];
-        out[i] = out[n - i - 1];
-        out[n - i - 1] = c;
-    }
-
-    /* all done */
-    return n;
-}
-
-#endif
