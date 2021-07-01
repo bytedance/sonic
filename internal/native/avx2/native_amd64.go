@@ -47,12 +47,17 @@ func __lzero(p unsafe.Pointer, n int) (ret int)
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func __lquote(buf *string, off int) (ret int)
+func __lspace(sp unsafe.Pointer, nb int, off int) (ret int)
 
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func __lspace(sp unsafe.Pointer, nb int, off int) (ret int)
+func __quote(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) (ret int)
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func __unquote(sp unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) (ret int)
 
 //go:nosplit
 //go:noescape
@@ -93,8 +98,3 @@ func __skip_array(s *string, p *int, m *types.StateMachine) (ret int)
 //go:noescape
 //goland:noinspection GoUnusedParameter
 func __skip_object(s *string, p *int, m *types.StateMachine) (ret int)
-
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) (ret int)

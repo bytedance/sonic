@@ -43,6 +43,45 @@ func TestNative_Value(t *testing.T) {
     assert.Equal(t, 3, v.Ep)
 }
 
+func TestNative_Quote(t *testing.T) {
+    s := "hello\b\f\n\r\t\\\"\u666fworld"
+    d := make([]byte, 256)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __quote(sp.Ptr, sp.Len, dp.Ptr, &dp.Len, 0)
+    if rv < 0 {
+        require.NoError(t, types.ParsingError(-rv))
+    }
+    assert.Equal(t, len(s), rv)
+    assert.Equal(t, 27, len(d))
+    assert.Equal(t, `hello\b\f\n\r\t\\\"景world`, string(d))
+}
+
+func TestNative_QuoteNoMem(t *testing.T) {
+    s := "hello\b\f\n\r\t\\\"\u666fworld"
+    d := make([]byte, 10)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __quote(sp.Ptr, sp.Len, dp.Ptr, &dp.Len, 0)
+    assert.Equal(t, -8, rv)
+    assert.Equal(t, 9, len(d))
+    assert.Equal(t, `hello\b\f`, string(d))
+}
+
+func TestNative_DoubleQuote(t *testing.T) {
+    s := "hello\b\f\n\r\t\\\"\u666fworld"
+    d := make([]byte, 256)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __quote(sp.Ptr, sp.Len, dp.Ptr, &dp.Len, types.F_DOUBLE_UNQUOTE)
+    if rv < 0 {
+        require.NoError(t, types.ParsingError(-rv))
+    }
+    assert.Equal(t, len(s), rv)
+    assert.Equal(t, 36, len(d))
+    assert.Equal(t, `hello\\b\\f\\n\\r\\t\\\\\\\"景world`, string(d))
+}
+
 func TestNative_Unquote(t *testing.T) {
     s := `hello\b\f\n\r\t\\\"\u2333world`
     d := make([]byte, 0, len(s))
@@ -171,6 +210,16 @@ func TestNative_Vstring(t *testing.T) {
     assert.Equal(t, 13, i)
     assert.Equal(t, 9, v.Ep)
     assert.Equal(t, int64(5), v.Iv)
+}
+
+func TestNative_VstringEscapeEOF(t *testing.T) {
+    var v types.JsonState
+    i := 0
+    s := `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"x`
+    __vstring(&s, &i, &v)
+    assert.Equal(t, 95, i)
+    assert.Equal(t, 63, v.Ep)
+    assert.Equal(t, int64(0), v.Iv)
 }
 
 func TestNative_VstringHangUpOnRandomData(t *testing.T) {

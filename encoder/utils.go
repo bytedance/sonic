@@ -24,6 +24,11 @@ import (
 )
 
 //go:nosplit
+func padd(p unsafe.Pointer, v int) unsafe.Pointer {
+    return unsafe.Pointer(uintptr(p) + uintptr(v))
+}
+
+//go:nosplit
 func ptoenc(p loader.Function) _Encoder {
     return *(*_Encoder)(unsafe.Pointer(&p))
 }

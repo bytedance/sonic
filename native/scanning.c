@@ -19,6 +19,9 @@
 static const char *CS_ARRAY  = "[]{},\"[]{},\"[]{}";
 static const char *CS_OBJECT = "[]{},:\"[]{}:,\"[]";
 
+static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
+static const uint64_t EVEN_MASK = 0x5555555555555555;
+
 static const double P10_TAB[632] = {
     /* <================= -Inf ================= */ 1e-323, 1e-322, 1e-321, 1e-320,
     1e-319, 1e-318, 1e-317, 1e-316, 1e-315, 1e-314, 1e-313, 1e-312, 1e-311, 1e-310,
@@ -96,22 +99,54 @@ static inline double pow10(double v, int p) {
     }
 }
 
+static inline uint64_t add32(uint64_t v1, uint64_t v2, uint64_t *vo) {
+    uint32_t v;
+    uint32_t c = __builtin_uadd_overflow((uint32_t)v1, (uint32_t)v2, &v);
+
+    /* set the carry */
+    *vo = c;
+    return v;
+}
+
+static inline uint64_t add64(uint64_t v1, uint64_t v2, uint64_t *vo) {
+    uint64_t v;
+    uint64_t c = __builtin_uaddll_overflow(v1, v2, &v);
+
+    /* set the carry */
+    *vo = c;
+    return v;
+}
+
+static inline char isspace(char ch) {
+    return ch == ' ' || ch == '\r' || ch == '\n' | ch == '\t';
+}
+
 static inline void vdigits(const GoString *src, long *p, JsonState *ret) {
     --*p;
     vnumber(src, p, ret);
 }
 
-static inline char advance(const GoString *src, long *p) {
-    if (*p >= src->len) {
-        return 0;
-    } else {
-        return src->buf[(*p)++];
-    }
-}
-
 static inline char advance_ns(const GoString *src, long *p) {
-    *p = lspace(src->buf, src->len, *p);
-    return advance(src, p);
+    size_t       vi = *p;
+    size_t       nb = src->len;
+    const char * sp = src->buf;
+
+    /* it's likely to run into non-spaces within a few
+     * characters, so test up to 4 characters manually */
+    for (int i = 0; i < 4 && vi < nb; i++, vi++) {
+        if (!isspace(sp[vi])) {
+            goto nospace;
+        }
+    }
+
+    /* too many spaces, use SIMD to search for characters */
+    if ((vi = lspace(sp, nb, vi)) >= nb) {
+        return 0;
+    }
+
+nospace:
+    *p = vi + 1;
+    return src->buf[vi];
 }
 
 static inline int64_t advance_dword(const GoString *src, long *p, long dec, int64_t ret, uint32_t val) {
@@ -128,192 +163,219 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
     }
 }
 
-static inline ssize_t advance_string(const GoString *src, long *p, int64_t *ep) {
-    ssize_t e;
-    ssize_t i;
+static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
+    char     ch;
+    uint64_t es;
+    uint64_t fe;
+    uint64_t os;
+    uint64_t m0;
+    uint64_t m1;
+    uint64_t mx;
+    uint64_t cr = 0;
 
-    /* check for end of string */
-    if ((e = strchr2(src, *p, '"', '\\')) < 0) {
-        *p = src->len;
-        return -ERR_EOF;
-    }
+    /* buffer pointers */
+    size_t       nb = src->len;
+    const char * sp = src->buf;
+    const char * ss = src->buf;
 
-    /* encounters a '"' at the first scan, it's an unquoted string */
-    if (src->buf[e] == '"') {
-        *ep = -1;
-        return e;
-    }
+#define ep_init()   *ep = -1;
+#define ep_setc()   ep_setx(sp - ss - 1)
+#define ep_setx(x)  if (*ep == -1) { *ep = (x); }
 
-    /* search for the next double quote */
-    i = e;
-    e = strchr1(src, e + 1, '"');
+    /* seek to `p` */
+    nb -= p;
+    sp += p;
+    ep_init()
 
-    /* seek to the end of string */
-    while (e >= 0) {
-        int          n = 0;
-        const char * q = src->buf + e;
+#if USE_AVX2
+    /* initialize vectors */
+    __m256i v0;
+    __m256i v1;
+    __m256i q0;
+    __m256i q1;
+    __m256i x0;
+    __m256i x1;
+    __m256i cq = _mm256_set1_epi8('"');
+    __m256i cx = _mm256_set1_epi8('\\');
 
-        /* counting backslashes */
-        while (*--q == '\\') {
-            n++;
+    /* partial masks */
+    uint32_t s0;
+    uint32_t s1;
+    uint32_t t0;
+    uint32_t t1;
+#else
+    /* initialize vectors */
+    __m128i v0;
+    __m128i v1;
+    __m128i v2;
+    __m128i v3;
+    __m128i q0;
+    __m128i q1;
+    __m128i q2;
+    __m128i q3;
+    __m128i x0;
+    __m128i x1;
+    __m128i x2;
+    __m128i x3;
+    __m128i cq = _mm_set1_epi8('"');
+    __m128i cx = _mm_set1_epi8('\\');
+
+    /* partial masks */
+    uint32_t s0;
+    uint32_t s1;
+    uint32_t s2;
+    uint32_t s3;
+    uint32_t t0;
+    uint32_t t1;
+    uint32_t t2;
+    uint32_t t3;
+#endif
+
+#define m0_mask(add)                \
+    m1 &= ~cr;                      \
+    fe  = (m1 << 1) | cr;           \
+    os  = (m1 & ~fe) & ODD_MASK;    \
+    es  = add(os, m1, &cr) << 1;    \
+    m0 &= ~(fe & (es ^ EVEN_MASK));
+
+    /* 64-byte SIMD loop */
+    while (likely(nb >= 64)) {
+#if USE_AVX2
+        v0 = _mm256_loadu_si256   ((const void *)(sp +  0));
+        v1 = _mm256_loadu_si256   ((const void *)(sp + 32));
+        q0 = _mm256_cmpeq_epi8    (v0, cq);
+        q1 = _mm256_cmpeq_epi8    (v1, cq);
+        x0 = _mm256_cmpeq_epi8    (v0, cx);
+        x1 = _mm256_cmpeq_epi8    (v1, cx);
+        s0 = _mm256_movemask_epi8 (q0);
+        s1 = _mm256_movemask_epi8 (q1);
+        t0 = _mm256_movemask_epi8 (x0);
+        t1 = _mm256_movemask_epi8 (x1);
+        m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
+        m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
+#else
+        v0 = _mm_loadu_si128   ((const void *)(sp +  0));
+        v1 = _mm_loadu_si128   ((const void *)(sp + 16));
+        v2 = _mm_loadu_si128   ((const void *)(sp + 32));
+        v3 = _mm_loadu_si128   ((const void *)(sp + 48));
+        q0 = _mm_cmpeq_epi8    (v0, cq);
+        q1 = _mm_cmpeq_epi8    (v1, cq);
+        q2 = _mm_cmpeq_epi8    (v2, cq);
+        q3 = _mm_cmpeq_epi8    (v3, cq);
+        x0 = _mm_cmpeq_epi8    (v0, cx);
+        x1 = _mm_cmpeq_epi8    (v1, cx);
+        x2 = _mm_cmpeq_epi8    (v2, cx);
+        x3 = _mm_cmpeq_epi8    (v3, cx);
+        s0 = _mm_movemask_epi8 (q0);
+        s1 = _mm_movemask_epi8 (q1);
+        s2 = _mm_movemask_epi8 (q2);
+        s3 = _mm_movemask_epi8 (q3);
+        t0 = _mm_movemask_epi8 (x0);
+        t1 = _mm_movemask_epi8 (x1);
+        t2 = _mm_movemask_epi8 (x2);
+        t3 = _mm_movemask_epi8 (x3);
+        m0 = ((uint64_t)s3 << 48) | ((uint64_t)s2 << 32) | ((uint64_t)s1 << 16) | (uint64_t)s0;
+        m1 = ((uint64_t)t3 << 48) | ((uint64_t)t2 << 32) | ((uint64_t)t1 << 16) | (uint64_t)t0;
+#endif
+
+        /** update first quote position */
+        if (unlikely(m1 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m1))
         }
 
-        /* pairs of backslashes cancel each other out */
-        if ((n & 1) == 0) {
-            break;
+        /** mask all the escaped quotes */
+        if (unlikely(m1 != 0 || cr != 0)) {
+            m0_mask(add64)
         }
 
-        /* find the next double quote */
-        e = e + 1;
-        e = strchr1(src, e, '"');
-    }
-
-    /* check for end of string */
-    if (e < 0) {
-        *p = src->len;
-        return -ERR_EOF;
-    }
-
-    /* update the result */
-    *ep = i;
-    return e;
-}
-
-static inline int64_t advance_number(const GoString *src, long *p, long i, JsonState *ret, size_t sp) {
-    size_t       n = src->len;
-    const char * s = src->buf;
-
-    /* check for EOF */
-    if (i >= n) {
-        *p = n;
-        return -ERR_EOF;
-    }
-
-    /* base factors */
-    int     esm = 1;
-    int     exp = 0;
-    int     ovf = 0;
-    int     rem = 0;
-    double  val = 0;
-    int64_t idx = 0;
-    int64_t i64 = 0;
-    int64_t rvt = V_INTEGER;
-
-    /* initial state */
-    ret->iv = 0;
-    ret->ep = sp;
-
-    /* check for the special case of '0' */
-    if (s[i] == '0') {
-        if (++i >= n) {
-            *p = i;
-            return V_INTEGER;
+        /* check for end quote */
+        if (m0 != 0) {
+            return sp - ss + __builtin_ctzll(m0) + 1;
         }
-    } else {
-        if (s[i] < '0' || s[i] > '9') {
-            *p = i;
-            return -ERR_INVAL;
+
+        /* move to the next block */
+        sp += 64;
+        nb -= 64;
+    }
+
+    /* 32-byte SIMD round */
+    if (likely(nb >= 32)) {
+#if USE_AVX2
+        v0 = _mm256_loadu_si256   ((const void *)sp);
+        q0 = _mm256_cmpeq_epi8    (v0, cq);
+        x0 = _mm256_cmpeq_epi8    (v0, cx);
+        s0 = _mm256_movemask_epi8 (q0);
+        t0 = _mm256_movemask_epi8 (x0);
+        m0 = (uint64_t)s0;
+        m1 = (uint64_t)t0;
+#else
+        v0 = _mm_loadu_si128   ((const void *)(sp +  0));
+        v1 = _mm_loadu_si128   ((const void *)(sp + 16));
+        q0 = _mm_cmpeq_epi8    (v0, cq);
+        q1 = _mm_cmpeq_epi8    (v1, cq);
+        x0 = _mm_cmpeq_epi8    (v0, cx);
+        x1 = _mm_cmpeq_epi8    (v1, cx);
+        s0 = _mm_movemask_epi8 (q0);
+        s1 = _mm_movemask_epi8 (q1);
+        t0 = _mm_movemask_epi8 (x0);
+        t1 = _mm_movemask_epi8 (x1);
+        m0 = ((uint64_t)s1 << 16) | (uint64_t)s0;
+        m1 = ((uint64_t)t1 << 16) | (uint64_t)t0;
+#endif
+
+        /** update first quote position */
+        if (unlikely(m1 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m1))
+        }
+
+        /** mask all the escaped quotes */
+        if (unlikely(m1 != 0 || cr != 0)) {
+            m0_mask(add32)
+        }
+
+        /* check for end quote */
+        if (m0 != 0) {
+            return sp - ss + __builtin_ctzll(m0) + 1;
+        }
+
+        /* move to the next block */
+        sp += 32;
+        nb -= 32;
+    }
+
+    /* check for carry */
+    if (unlikely(cr != 0)) {
+        if (nb == 0) {
+            return -ERR_EOF;
         } else {
-            while (!(ovf = __builtin_smulll_overflow((idx = i64), 10, &i64)) &&
-                   !(ovf = __builtin_saddll_overflow(i64, s[i] - '0', &i64)) &&
-                   !(++i >= n || !(s[i] >= '0' && s[i] <= '9')));
+            ep_setc()
+            sp++, nb--;
         }
     }
 
-    /* set the integer part */
-    ret->iv = i64;
-    ret->dv = i64;
-
-    /* check for integer overflow, in such case
-     * the number must be represented by double */
-    if (ovf) {
-        val = idx;
-        rvt = V_DOUBLE;
-
-        /* convert the remaining digits */
-        do {
-            val *= 10;
-            val += s[i++] - '0';
-        } while (i < n && s[i] >= '0' && s[i] <= '9');
-
-        /* set the integer part to INT64_MAX to indicate an overflow */
-        ret->dv = val;
-        ret->iv = INT64_MAX;
-    }
-
-    /* check for decimal points */
-    if (i < n && s[i] == '.') {
-        idx = ++i;
-        rvt = V_DOUBLE;
-
-        /* check for EOF */
-        if (i >= n) {
-            *p = n;
-            return -ERR_EOF;
-        }
-
-        /* should be a digit */
-        if (s[i] < '0' || s[i] > '9') {
-            *p = i;
-            return -ERR_INVAL;
-        }
-
-        /* convert the fractional part */
-        do {
-            rem *= 10;
-            rem += s[i++] - '0';
-        } while (i < n && s[i] >= '0' && s[i] <= '9');
-
-        /* combine with the integer part */
-        idx -= i;
-        ret->dv += pow10(rem, idx);
-    }
-
-    /* check for exponent */
-    if (i < n && (s[i] == 'e' || s[i] == 'E')) {
-        i++;
-        rvt = V_DOUBLE;
-
-        /* check for EOF */
-        if (i >= n) {
-            *p = n;
-            return -ERR_EOF;
-        }
-
-        /* check for the '+' or '-' sign */
-        if (s[i] == '+' || s[i] == '-') {
-            if (i >= n - 1) {
-                *p = i;
+    /* handle the remaining bytes with scalar code */
+    while (nb-- > 0 && (ch = *sp++) != '"') {
+        if (unlikely(ch == '\\')) {
+            if (nb == 0) {
                 return -ERR_EOF;
             } else {
-                if (s[i++] == '+') {
-                    esm = 1;
-                } else {
-                    esm = -1;
-                }
+                ep_setc()
+                sp++, nb--;
             }
         }
-
-        /* should be a digit */
-        if (s[i] < '0' || s[i] > '9') {
-            *p = i;
-            return -ERR_INVAL;
-        }
-
-        /* convert the power */
-        do {
-            exp *= 10;
-            exp += s[i++] - '0';
-        } while (i < n && s[i] >= '0' && s[i] <= '9');
-
-        /* apply the power */
-        exp *= esm;
-        ret->dv = pow10(ret->dv, exp);
     }
 
-    /* calculate the offset */
-    *p = i;
-    return rvt;
+#undef ep_init
+#undef ep_setc
+#undef ep_setx
+#undef m0_mask
+
+    /* check for quotes */
+    if (ch == '"') {
+        return sp - ss;
+    } else {
+        return -ERR_EOF;
+    }
 }
 
 /** Value Scanning Routines **/
@@ -352,16 +414,17 @@ long value(const char *s, size_t n, long p, JsonState *ret, int allow_control) {
 
 void vstring(const GoString *src, long *p, JsonState *ret) {
     int64_t i = *p;
-    ssize_t e = advance_string(src, p, &ret->ep);
+    ssize_t e = advance_string(src, i, &ret->ep);
 
     /* check for errors */
     if (e < 0) {
+        *p = src->len;
         ret->vt = e;
         return;
     }
 
     /* update the result */
-    *p = e + 1;
+    *p = e;
     ret->iv = i;
     ret->vt = V_STRING;
 }
@@ -743,6 +806,218 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
 #undef FSM_CHAR
 #undef FSM_XERR
 
+#define check_bits(mv)                              \
+    if (unlikely((v = mv & (mv - 1)) != 0)) {       \
+        return -(sp - ss + __builtin_ctz(v) + 1);   \
+    }
+
+#define check_sidx(iv)          \
+    if (likely(iv == -1)) {     \
+        iv = sp - ss - 1;       \
+    } else {                    \
+        return -(sp - ss);      \
+    }
+
+#define check_vidx(iv, mv)                              \
+    if (mv != 0) {                                      \
+        if (likely(iv == -1)) {                         \
+            iv = sp - ss + __builtin_ctz(mv);           \
+        } else {                                        \
+            return -(sp - ss + __builtin_ctz(mv) + 1);  \
+        }                                               \
+    }
+
+static inline long skip_number(const char *sp, size_t nb) {
+    long         di = -1;
+    long         ei = -1;
+    long         si = -1;
+    const char * ss = sp;
+
+    /* check for EOF */
+    if (nb == 0) {
+        return -1;
+    }
+
+    /* special case of '0' */
+    if (*sp == '0' && (nb == 1 || sp[1] != '.')) {
+        return 1;
+    }
+
+#if USE_AVX2
+    /* can do with AVX-2 */
+    if (likely(nb >= 32)) {
+        __m256i d9 = _mm256_set1_epi8('9');
+        __m256i ds = _mm256_set1_epi8('/');
+        __m256i dp = _mm256_set1_epi8('.');
+        __m256i el = _mm256_set1_epi8('e');
+        __m256i eu = _mm256_set1_epi8('E');
+        __m256i xp = _mm256_set1_epi8('+');
+        __m256i xm = _mm256_set1_epi8('-');
+
+        /* 32-byte loop */
+        do {
+            __m256i sb = _mm256_loadu_si256  ((const void *)sp);
+            __m256i i0 = _mm256_cmpgt_epi8   (sb, ds);
+            __m256i i9 = _mm256_cmpgt_epi8   (sb, d9);
+            __m256i id = _mm256_cmpeq_epi8   (sb, dp);
+            __m256i il = _mm256_cmpeq_epi8   (sb, el);
+            __m256i iu = _mm256_cmpeq_epi8   (sb, eu);
+            __m256i ip = _mm256_cmpeq_epi8   (sb, xp);
+            __m256i im = _mm256_cmpeq_epi8   (sb, xm);
+            __m256i iv = _mm256_andnot_si256 (i9, i0);
+            __m256i ie = _mm256_or_si256     (il, iu);
+            __m256i is = _mm256_or_si256     (ip, im);
+            __m256i rt = _mm256_or_si256     (iv, id);
+            __m256i ru = _mm256_or_si256     (ie, is);
+            __m256i rv = _mm256_or_si256     (rt, ru);
+
+            /* exponent and sign position */
+            uint32_t md = _mm256_movemask_epi8(id);
+            uint32_t me = _mm256_movemask_epi8(ie);
+            uint32_t ms = _mm256_movemask_epi8(is);
+            uint32_t mr = _mm256_movemask_epi8(rv);
+
+            /* mismatch position */
+            uint32_t v;
+            uint32_t i = __builtin_ctzll(~(uint64_t)mr | 0x0100000000);
+
+            /* mask out excess characters */
+            if (i != 32) {
+                md &= (1 << i) - 1;
+                me &= (1 << i) - 1;
+                ms &= (1 << i) - 1;
+            }
+
+            /* check & update decimal point, exponent and sign index */
+            check_bits(md)
+            check_bits(me)
+            check_bits(ms)
+            check_vidx(di, md)
+            check_vidx(ei, me)
+            check_vidx(si, ms)
+
+            /* check for valid number */
+            if (i != 32) {
+                sp += i;
+                _mm256_zeroupper();
+                goto check_index;
+            }
+
+            /* move to next block */
+            sp += 32;
+            nb -= 32;
+        } while (nb >= 32);
+
+        /* clear the upper half to prevent AVX-SSE transition penalty */
+        _mm256_zeroupper();
+    }
+#endif
+
+    /* can do with SSE */
+    if (likely(nb >= 16)) {
+        __m128i dc = _mm_set1_epi8(':');
+        __m128i ds = _mm_set1_epi8('/');
+        __m128i dp = _mm_set1_epi8('.');
+        __m128i el = _mm_set1_epi8('e');
+        __m128i eu = _mm_set1_epi8('E');
+        __m128i xp = _mm_set1_epi8('+');
+        __m128i xm = _mm_set1_epi8('-');
+        __m128i v1 = _mm_set1_epi8(0xff);
+
+        /* 16-byte loop */
+        do {
+            __m128i sb = _mm_loadu_si128 ((const void *)sp);
+            __m128i i0 = _mm_cmpgt_epi8  (sb, ds);
+            __m128i i9 = _mm_cmplt_epi8  (sb, dc);
+            __m128i id = _mm_cmpeq_epi8  (sb, dp);
+            __m128i il = _mm_cmpeq_epi8  (sb, el);
+            __m128i iu = _mm_cmpeq_epi8  (sb, eu);
+            __m128i ip = _mm_cmpeq_epi8  (sb, xp);
+            __m128i im = _mm_cmpeq_epi8  (sb, xm);
+            __m128i iv = _mm_and_si128   (i9, i0);
+            __m128i ie = _mm_or_si128    (il, iu);
+            __m128i is = _mm_or_si128    (ip, im);
+            __m128i rt = _mm_or_si128    (iv, id);
+            __m128i ru = _mm_or_si128    (ie, is);
+            __m128i rv = _mm_or_si128    (rt, ru);
+
+            /* exponent and sign position */
+            uint32_t md = _mm_movemask_epi8(id);
+            uint32_t me = _mm_movemask_epi8(ie);
+            uint32_t ms = _mm_movemask_epi8(is);
+            uint32_t mr = _mm_movemask_epi8(rv);
+
+            /* mismatch position */
+            uint32_t v;
+            uint32_t i = __builtin_ctzll(~mr | 0x00010000);
+
+            /* mask out excess characters */
+            if (i != 16) {
+                md &= (1 << i) - 1;
+                me &= (1 << i) - 1;
+                ms &= (1 << i) - 1;
+            }
+
+            /* check & update exponent and sign index */
+            check_bits(md)
+            check_bits(me)
+            check_bits(ms)
+            check_vidx(di, md)
+            check_vidx(ei, me)
+            check_vidx(si, ms)
+
+            /* check for valid number */
+            if (i != 16) {
+                sp += i;
+                goto check_index;
+            }
+
+            /* move to next block */
+            sp += 16;
+            nb -= 16;
+        } while (nb >= 16);
+    }
+
+    /* remaining bytes, do with scalar code */
+    while (likely(--nb >= 0)) {
+        switch (*sp++) {
+            case '0' : /* fallthrough */
+            case '1' : /* fallthrough */
+            case '2' : /* fallthrough */
+            case '3' : /* fallthrough */
+            case '4' : /* fallthrough */
+            case '5' : /* fallthrough */
+            case '6' : /* fallthrough */
+            case '7' : /* fallthrough */
+            case '8' : /* fallthrough */
+            case '9' : break;
+            case '.' : check_sidx(di); break;
+            case 'e' : /* fallthrough */
+            case 'E' : check_sidx(ei); break;
+            case '+' : /* fallthrough */
+            case '-' : check_sidx(si); break;
+            default  : sp--; goto check_index;
+        }
+    }
+
+check_index:
+    if (di == 0 || si == 0) {
+        return -1;
+    } else if (si > 0 && ei != si - 1) {
+        return -si - 1;
+    } else if (di >= 0 && ei >= 0 && di > ei - 1) {
+        return -di - 1;
+    } else if (di >= 0 && ei >= 0 && di == ei - 1) {
+        return -ei - 1;
+    } else {
+        return sp - ss;
+    }
+}
+
+#undef check_bits
+#undef check_sidx
+#undef check_vidx
+
 long skip_one(const GoString *src, long *p, StateMachine *m) {
     fsm_init(m, FSM_VAL);
     return fsm_exec(m, src, p);
@@ -761,40 +1036,44 @@ long skip_object(const GoString *src, long *p, StateMachine *m) {
 long skip_string(const GoString *src, long *p) {
     int64_t v;
     ssize_t q = *p - 1;
-    ssize_t e = advance_string(src, p, &v);
+    ssize_t e = advance_string(src, *p, &v);
 
-    /* check for errors */
-    if (e < 0) {
+    /* check for errors, and update the position */
+    if (e >= 0) {
+        *p = e;
+        return q;
+    } else {
+        *p = src->len;
         return e;
     }
-
-    /* update the position */
-    *p = e + 1;
-    return q;
 }
 
 long skip_negative(const GoString *src, long *p) {
-    long      q = *p - 1;
-    int64_t   r;
-    JsonState v;
+    long i = *p;
+    long r = skip_number(src->buf + i, src->len - i);
 
-    /* skip the number */
-    if ((r = advance_number(src, p, *p, &v, q)) < 0) {
-        return r;
-    } else {
-        return q;
+    /* check for errors */
+    if (r < 0) {
+        *p -= r + 1;
+        return -ERR_INVAL;
     }
+
+    /* update value pointer */
+    *p += r;
+    return i - 1;
 }
 
 long skip_positive(const GoString *src, long *p) {
-    long      q = *p - 1;
-    int64_t   r;
-    JsonState v;
+    long i = *p - 1;
+    long r = skip_number(src->buf + i, src->len - i);
 
-    /* skip the number */
-    if ((r = advance_number(src, p, q, &v, q)) < 0) {
-        return r;
-    } else {
-        return q;
+    /* check for errors */
+    if (r < 0) {
+        *p -= r + 2;
+        return -ERR_INVAL;
     }
+
+    /* update value pointer */
+    *p += r - 1;
+    return i;
 }
