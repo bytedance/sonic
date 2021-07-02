@@ -125,9 +125,9 @@ func TestSearchNotExist(t *testing.T) {
 func BenchmarkSearchOne_Gjson(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
-        ast := gjson.Get(_TwitterJson, "statuses.2.id")
+        ast := gjson.Get(_TwitterJson, "statuses.3.id")
         node := ast.Int()
-        if node != 249289491129438208 {
+        if node != 249279667666817024 {
             b.Fail()
         }
     }
@@ -137,9 +137,9 @@ func BenchmarkSearchOne_Jsoniter(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     data := []byte(_TwitterJson)
     for i := 0; i < b.N; i++ {
-        ast := jsoniter.Get(data, "statuses", 2, "id")
+        ast := jsoniter.Get(data, "statuses", 3, "id")
         node := ast.ToInt()
-        if node != 249289491129438208 {
+        if node != 249279667666817024 {
             b.Fail()
         }
     }
@@ -149,11 +149,11 @@ func BenchmarkSearchOne_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     ast := NewSearcher(_TwitterJson)
     for i := 0; i < b.N; i++ {
-        node, err := ast.GetByPath("statuses", 2, "id")
+        node, err := ast.GetByPath("statuses", 3, "id")
         if err != nil {
             b.Fatal(err)
         }
-        if node.Int64() != 249289491129438208 {
+        if node.Int64() != 249279667666817024 {
             b.Fatal(node.Interface())
         }
     }
@@ -164,9 +164,9 @@ func BenchmarkSearchOne_Parallel_Gjson(b *testing.B) {
     b.SetParallelism(parallelism)
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            ast := gjson.Get(_TwitterJson, "statuses.2.id")
+            ast := gjson.Get(_TwitterJson, "statuses.3.id")
             node := ast.Int()
-            if node != 249289491129438208 {
+            if node != 249279667666817024 {
                 b.Fail()
             }
         }
@@ -179,9 +179,9 @@ func BenchmarkSearchOne_Parallel_Jsoniter(b *testing.B) {
     b.SetParallelism(parallelism)
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            ast := jsoniter.Get(data, "statuses", 2, "id")
+            ast := jsoniter.Get(data, "statuses", 3, "id")
             node := ast.ToInt()
-            if node != 249289491129438208 {
+            if node != 249279667666817024 {
                 b.Fail()
             }
         }
@@ -194,11 +194,11 @@ func BenchmarkSearchOne_Parallel_Sonic(b *testing.B) {
     b.RunParallel(func(pb *testing.PB) {
         ast := NewSearcher(_TwitterJson)
         for pb.Next() {
-            node, err := ast.GetByPath("statuses", 2, "id")
+            node, err := ast.GetByPath("statuses", 3, "id")
             if err != nil {
                 b.Fatal(err)
             }
-            if node.Int64() != 249289491129438208 {
+            if node.Int64() != 249279667666817024 {
                 b.Fatal(node.Interface())
             }
         }
