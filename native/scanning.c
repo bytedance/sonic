@@ -413,8 +413,9 @@ long value(const char *s, size_t n, long p, JsonState *ret, int allow_control) {
 }
 
 void vstring(const GoString *src, long *p, JsonState *ret) {
+    int64_t v = -1;
     int64_t i = *p;
-    ssize_t e = advance_string(src, i, &ret->ep);
+    ssize_t e = advance_string(src, i, &v);
 
     /* check for errors */
     if (e < 0) {
@@ -423,10 +424,11 @@ void vstring(const GoString *src, long *p, JsonState *ret) {
         return;
     }
 
-    /* update the result */
+    /* update the result, and fix the escape position (escaping past the end of string) */
     *p = e;
     ret->iv = i;
     ret->vt = V_STRING;
+    ret->ep = v >= e ? -1 : v;
 }
 
 #define set_vt(t)   \
