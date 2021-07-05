@@ -1,4 +1,4 @@
-// +build !go1.15 go1.17
+// +build !go1.15 go1.18
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -20,9 +20,9 @@ package loader
 
 // triggers a compilation error
 const (
-	_ = panic("Unsupported Go version. Supported versions are: 1.15, 1.16")
+	_ = panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17")
 )
 
 func registerFunction(_ string, _ uintptr, _ int, _ int, _ uintptr) {
-    panic("Unsupported Go version. Supported versions are: 1.15, 1.16")
+	panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17")
 }
