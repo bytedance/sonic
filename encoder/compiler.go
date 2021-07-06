@@ -239,7 +239,7 @@ func (self _Instr) i64() int64 {
 }
 
 func (self _Instr) vlen() int {
-    return (*rt.GoType)(self.p).Size()
+    return int((*rt.GoType)(self.p).Size)
 }
 
 func (self _Instr) isBranch() bool {

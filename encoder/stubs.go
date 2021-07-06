@@ -29,34 +29,34 @@ var _subr__b64encode uintptr
 
 //go:noescape
 //go:linkname memmove runtime.memmove
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 
 //go:linkname newobject runtime.newobject
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func newobject(typ *rt.GoType) unsafe.Pointer
 
 //go:linkname growslice runtime.growslice
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 
 //go:linkname assertI2I runtime.assertI2I
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func assertI2I(inter *rt.GoType, i rt.GoIface) rt.GoIface
 
 //go:linkname mapiternext runtime.mapiternext
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func mapiternext(it unsafe.Pointer)
 
 //go:linkname mapiterinit runtime.mapiterinit
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func mapiterinit(t *rt.GoType, m unsafe.Pointer, it *rt.GoMapIterator)
 
 //go:linkname isValidNumber encoding/json.isValidNumber
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func isValidNumber(s string) bool
 
 //go:noescape
 //go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
-//goland:noinspection ALL
+//goland:noinspection GoUnusedParameter
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
