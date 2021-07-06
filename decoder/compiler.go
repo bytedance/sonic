@@ -17,6 +17,7 @@
 package decoder
 
 import (
+    `encoding/json`
     `fmt`
     `reflect`
     `sort`
@@ -33,6 +34,7 @@ type _Op uint8
 
 const (
     _OP_any _Op = iota + 1
+    _OP_dyn
     _OP_str
     _OP_bin
     _OP_bool
@@ -104,6 +106,7 @@ const (
 
 var _OpNames = [256]string {
     _OP_any              : "any",
+    _OP_dyn              : "dyn",
     _OP_str              : "str",
     _OP_bin              : "bin",
     _OP_bool             : "bool",
@@ -295,7 +298,7 @@ func (self _Instr) i64() int64 {
 }
 
 func (self _Instr) vlen() int {
-    return (*rt.GoType)(self.p).Size()
+    return int((*rt.GoType)(self.p).Size)
 }
 
 func (self _Instr) isBranch() bool {
@@ -310,6 +313,7 @@ func (self _Instr) isBranch() bool {
 
 func (self _Instr) disassemble() string {
     switch self.op() {
+        case _OP_dyn              : fallthrough
         case _OP_deref            : fallthrough
         case _OP_map_key_i8       : fallthrough
         case _OP_map_key_i16      : fallthrough
@@ -573,7 +577,7 @@ func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
         case reflect.Ptr       : self.compilePtr       (p, sp, vt)
         case reflect.Slice     : self.compileSlice     (p, sp, vt.Elem())
         case reflect.Struct    : self.compileStruct    (p, sp, vt)
-        default                : panic                 (error_type(vt))
+        default                : panic                 (&json.UnmarshalTypeError{Type: vt})
     }
 }
 
@@ -603,7 +607,7 @@ func (self *_Compiler) compileMapUt(p *_Program, sp int, vt reflect.Type) {
         case reflect.Float32 : self.compileMapOp(p, sp, vt, _OP_map_key_f32)
         case reflect.Float64 : self.compileMapOp(p, sp, vt, _OP_map_key_f64)
         case reflect.String  : self.compileMapOp(p, sp, vt, _OP_map_key_str)
-        default              : panic(error_type(vt))
+        default              : panic(&json.UnmarshalTypeError{Type: vt})
     }
 }
 
@@ -708,7 +712,7 @@ func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
     p.rel(v)
 
     /* check for pointer data */
-    if rt.UnpackType(vt.Elem()).NoPtr() {
+    if rt.UnpackType(vt.Elem()).PtrData == 0 {
         p.int(_OP_array_clear, int(vt.Size()))
     } else {
         p.int(_OP_array_clear_p, int(vt.Size()))
@@ -991,16 +995,16 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
 
 func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
     i := p.pc()
-    n := vt.NumMethod()
+    p.add(_OP_is_null)
 
-    /* only empty interface is acceptable */
-    if n != 0 {
-        panic(error_type(vt))
+    /* check for empty interface */
+    if vt.NumMethod() == 0 {
+        p.add(_OP_any)
+    } else {
+        p.rtt(_OP_dyn, vt)
     }
 
-    /* check for nil, and compile the interface */
-    p.add(_OP_is_null)
-    p.add(_OP_any)
+    /* finish the OpCode */
     j := p.pc()
     p.add(_OP_goto)
     p.pin(i)
@@ -1034,30 +1038,33 @@ func (self *_Compiler) compileUnmarshalEnd(p *_Program, vt reflect.Type, i int) 
 
 func (self *_Compiler) compileUnmarshalJson(p *_Program, vt reflect.Type) {
     i := p.pc()
+    v := _OP_unmarshal
     p.add(_OP_is_null)
 
-    /* must not be an interface */
+    /* check for dynamic interface */
     if vt.Kind() == reflect.Interface {
-        panic(error_type(vt))
+        v = _OP_dyn
     }
 
     /* call the unmarshaler */
-    p.rtt(_OP_unmarshal, vt)
+    p.rtt(v, vt)
     self.compileUnmarshalEnd(p, vt, i)
 }
 
 func (self *_Compiler) compileUnmarshalText(p *_Program, vt reflect.Type) {
     i := p.pc()
+    v := _OP_unmarshal_text
     p.add(_OP_is_null)
-    p.chr(_OP_match_char, '"')
 
-    /* must not be an interface */
+    /* check for dynamic interface */
     if vt.Kind() == reflect.Interface {
-        panic(error_type(vt))
+        v = _OP_dyn
+    } else {
+        p.chr(_OP_match_char, '"')
     }
 
     /* call the unmarshaler */
-    p.rtt(_OP_unmarshal_text, vt)
+    p.rtt(v, vt)
     self.compileUnmarshalEnd(p, vt, i)
 }
 

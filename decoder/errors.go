@@ -25,6 +25,7 @@ import (
     `strings`
 
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 type SyntaxError struct {
@@ -86,6 +87,14 @@ func clamp_zero(v int) int {
     }
 }
 
+/** JIT Error Helpers **/
+
+var stackOverflow = &json.UnsupportedValueError {
+    Str   : "Value nesting too deep",
+    Value : reflect.ValueOf("..."),
+}
+
+//go:nosplit
 func error_wrap(src string, pos int, code types.ParsingError) error {
     return SyntaxError {
         Pos  : pos,
@@ -94,10 +103,12 @@ func error_wrap(src string, pos int, code types.ParsingError) error {
     }
 }
 
-func error_type(vtype reflect.Type) error {
-    return &json.UnmarshalTypeError{Type: vtype}
+//go:nosplit
+func error_type(vt *rt.GoType) error {
+    return &json.UnmarshalTypeError{Type: vt.Pack()}
 }
 
+//go:nosplit
 func error_field(name string) error {
     return errors.New("json: unknown field " + strconv.Quote(name))
 }

@@ -21,51 +21,37 @@ import (
     `unsafe`
 )
 
-var reflectRtypeItab = findReflectRtypeItab()
+var (
+	reflectRtypeItab = findReflectRtypeItab()
+)
 
 const (
-    _KindMask    = (1 << 5) - 1
-    _DirectIface = 1 << 5
+    F_direct    = 1 << 5
+    F_kind_mask = (1 << 5) - 1
 )
 
 type GoType struct {
-    nb     uintptr
-    ptrd   uintptr
-    hash   uint32
-    tflags uint8
-    align  uint8
-    falign uint8
-    kflags uint8
-    traits unsafe.Pointer
-    gcdata *byte
-    str    int32
-    p      int32
-}
-
-func (self *GoType) Size() int {
-    return int(self.nb)
-}
-
-func (self *GoType) Hash() uint32 {
-    return self.hash
+    Size       uintptr
+    PtrData    uintptr
+    Hash       uint32
+    Flags      uint8
+    Align      uint8
+    FieldAlign uint8
+    KindFlags  uint8
+    Traits     unsafe.Pointer
+    GCData     *byte
+    Str        int32
+    PtrToSelf  int32
 }
 
 func (self *GoType) Kind() reflect.Kind {
-    return reflect.Kind(self.kflags & _KindMask)
+    return reflect.Kind(self.KindFlags & F_kind_mask)
 }
 
 func (self *GoType) Pack() (t reflect.Type) {
     (*GoIface)(unsafe.Pointer(&t)).Itab = reflectRtypeItab
     (*GoIface)(unsafe.Pointer(&t)).Value = unsafe.Pointer(self)
     return
-}
-
-func (self *GoType) NoPtr() bool {
-    return self.ptrd == 0
-}
-
-func (self *GoType) Indir() bool {
-    return (self.kflags & _DirectIface) == 0
 }
 
 func (self *GoType) String() string {

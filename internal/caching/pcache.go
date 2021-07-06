@@ -52,7 +52,7 @@ func newProgramMap() *_ProgramMap {
 
 func (self *_ProgramMap) get(vt *rt.GoType) interface{} {
     i := self.m + 1
-    p := vt.Hash() & self.m
+    p := vt.Hash & self.m
 
     /* linear probing */
     for ; i > 0; i-- {
@@ -99,7 +99,7 @@ func (self *_ProgramMap) rehash() *_ProgramMap {
 }
 
 func (self *_ProgramMap) insert(vt *rt.GoType, fn interface{}) {
-    h := vt.Hash()
+    h := vt.Hash
     p := h & self.m
 
     /* linear probing */

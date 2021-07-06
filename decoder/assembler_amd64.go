@@ -17,6 +17,7 @@
 package decoder
 
 import (
+    `encoding/json`
     `fmt`
     `math`
     `reflect`
@@ -88,8 +89,10 @@ const (
     _LB_error           = "_error"
     _LB_im_error        = "_im_error"
     _LB_eof_error       = "_eof_error"
+    _LB_type_error      = "_type_error"
     _LB_field_error     = "_field_error"
     _LB_range_error     = "_range_error"
+    _LB_stack_error     = "_stack_error"
     _LB_base64_error    = "_base64_error"
     _LB_unquote_error   = "_unquote_error"
     _LB_parsing_error   = "_parsing_error"
@@ -201,8 +204,10 @@ func (self *_Assembler) compile() {
     self.prologue()
     self.instrs()
     self.epilogue()
+    self.type_error()
     self.field_error()
     self.range_error()
+    self.stack_error()
     self.base64_error()
     self.parsing_error()
 }
@@ -211,6 +216,7 @@ func (self *_Assembler) compile() {
 
 var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_any              : (*_Assembler)._asm_OP_any,
+    _OP_dyn              : (*_Assembler)._asm_OP_dyn,
     _OP_str              : (*_Assembler)._asm_OP_str,
     _OP_bin              : (*_Assembler)._asm_OP_bin,
     _OP_bool             : (*_Assembler)._asm_OP_bool,
@@ -373,6 +379,7 @@ func (self *_Assembler) call_vf(fn obj.Addr) {
 var (
     _F_convT64     = jit.Func(convT64)
     _F_error_wrap  = jit.Func(error_wrap)
+    _F_error_type  = jit.Func(error_type)
     _F_error_field = jit.Func(error_field)
     _F_error_value = jit.Func(error_value)
 )
@@ -391,6 +398,20 @@ var (
     _T_error                    = rt.UnpackType(errorType)
     _I_base64_CorruptInputError = jit.Itab(_T_error, base64CorruptInputError)
 )
+
+var (
+    _V_stackOverflow              = jit.Imm(int64(uintptr(unsafe.Pointer(&stackOverflow))))
+    _I_json_UnsupportedValueError = jit.Itab(_T_error, reflect.TypeOf(new(json.UnsupportedValueError)))
+)
+
+func (self *_Assembler) type_error() {
+    self.Link(_LB_type_error)                   // _type_error:
+    self.Emit("MOVQ", _ET, jit.Ptr(_SP, 0))     // MOVQ    ET, (SP)
+    self.call_go(_F_error_type)                 // CALL_GO error_type
+    self.Emit("MOVQ", jit.Ptr(_SP, 8), _ET)     // MOVQ    8(SP), ET
+    self.Emit("MOVQ", jit.Ptr(_SP, 16), _EP)    // MOVQ    16(SP), EP
+    self.Sjmp("JMP" , _LB_error)                // JMP     _error
+}
 
 func (self *_Assembler) field_error() {
     self.Link(_LB_field_error)                  // _field_error:
@@ -413,6 +434,13 @@ func (self *_Assembler) range_error() {
     self.Emit("MOVQ", jit.Ptr(_SP, 32), _ET)    // MOVQ    32(SP), ET
     self.Emit("MOVQ", jit.Ptr(_SP, 40), _EP)    // MOVQ    40(SP), EP
     self.Sjmp("JMP" , _LB_error)                // JMP     _error
+}
+
+func (self *_Assembler) stack_error() {
+    self.Link(_LB_stack_error)                              // _stack_error:
+    self.Emit("MOVQ", _V_stackOverflow, _EP)                // MOVQ ${_V_stackOverflow}, EP
+    self.Emit("MOVQ", _I_json_UnsupportedValueError, _ET)   // MOVQ ${_I_json_UnsupportedValueError}, ET
+    self.Sjmp("JMP" , _LB_error)                            // JMP  _error
 }
 
 func (self *_Assembler) base64_error() {
@@ -697,13 +725,13 @@ func (self *_Assembler) mem_clear_fn(ptrfree bool) {
 }
 
 func (self *_Assembler) mem_clear_rem(size int64, ptrfree bool) {
-    self.Emit("MOVQ" , jit.Imm(size), _CX)              // MOVQ    ${size}, CX
-    self.Emit("MOVQ" , jit.Ptr(_ST, 0), _AX)            // MOVQ    (ST), AX
-    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 0), _AX)    // MOVQ    (ST)(AX), AX
-    self.Emit("SUBQ" , _VP, _AX)                        // SUBQ    VP, AX
-    self.Emit("ADDQ" , _AX, _CX)                        // ADDQ    AX, CX
-    self.Emit("MOVQ" , _VP, jit.Ptr(_SP, 0))            // MOVQ    VP, (SP)
-    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 8))            // MOVQ    CX, 8(SP)
+    self.Emit("MOVQ", jit.Imm(size), _CX)               // MOVQ    ${size}, CX
+    self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ    (ST), AX
+    self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 0), _AX)     // MOVQ    (ST)(AX), AX
+    self.Emit("SUBQ", _VP, _AX)                         // SUBQ    VP, AX
+    self.Emit("ADDQ", _AX, _CX)                         // ADDQ    AX, CX
+    self.Emit("MOVQ", _VP, jit.Ptr(_SP, 0))             // MOVQ    VP, (SP)
+    self.Emit("MOVQ", _CX, jit.Ptr(_SP, 8))             // MOVQ    CX, 8(SP)
     self.mem_clear_fn(ptrfree)                          // CALL_GO memclr{Has,NoHeap}Pointers
 }
 
@@ -859,6 +887,33 @@ func (self *_Assembler) unmarshal_func(t reflect.Type, fn obj.Addr, deref bool) 
     self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
 }
 
+/** Dynamic Decoding Routine **/
+
+var (
+    _F_decodeTypedPointer obj.Addr
+)
+
+func init() {
+    _F_decodeTypedPointer = jit.Func(decodeTypedPointer)
+}
+
+func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
+    self.Emit("MOVQ" , _ARG_fv, _CX)            // MOVQ    fv, CX
+    self.Emit("MOVOU", _ARG_sp, _X0)            // MOVOU   sp, X0
+    self.Emit("MOVOU", _X0, jit.Ptr(_SP, 0))    // MOVOU   X0, (SP)
+    self.Emit("MOVQ" , _IC, jit.Ptr(_SP, 16))   // MOVQ    IC, 16(SP)
+    self.Emit("MOVQ" , vt, jit.Ptr(_SP, 24))    // MOVQ    ${vt}, 24(SP)
+    self.Emit("MOVQ" , vp, jit.Ptr(_SP, 32))    // MOVQ    ${vp}, 32(SP)
+    self.Emit("MOVQ" , _ST, jit.Ptr(_SP, 40))   // MOVQ    ST, 40(SP)
+    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 48))   // MOVQ    CX, 48(SP)
+    self.call_go(_F_decodeTypedPointer)         // CALL_GO decodeTypedPointer
+    self.Emit("MOVQ" , jit.Ptr(_SP, 64), _ET)   // MOVQ    64(SP), ET
+    self.Emit("MOVQ" , jit.Ptr(_SP, 72), _EP)   // MOVQ    72(SP), EP
+    self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
+    self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
+    self.Emit("MOVQ" , jit.Ptr(_SP, 56), _IC)   // MOVQ    56(SP), IC
+}
+
 /** OpCode Assembler Functions **/
 
 var (
@@ -885,7 +940,6 @@ var (
 )
 
 var (
-    _F_decodeTypedPointer          obj.Addr
     _F_FieldMap_GetCaseInsensitive obj.Addr
 )
 
@@ -895,16 +949,50 @@ const (
     _Fe_Hash = int64(unsafe.Offsetof(caching.FieldEntry{}.Hash))
 )
 
+const (
+    _Vk_Ptr       = int64(reflect.Ptr)
+    _Gt_KindFlags = int64(unsafe.Offsetof(rt.GoType{}.KindFlags))
+)
+
 func init() {
-    _F_decodeTypedPointer          = jit.Func(decodeTypedPointer)
     _F_FieldMap_GetCaseInsensitive = jit.Func((*caching.FieldMap).GetCaseInsensitive)
 }
 
 func (self *_Assembler) _asm_OP_any(_ *_Instr) {
-    self.Emit("MOVQ" , _ARG_fv, _DF)            // MOVQ  fv, DF
-    self.call(_F_decodeValue)                   // CALL  decodeValue
-    self.Emit("TESTQ", _EP, _EP)                // TESTQ EP, EP
-    self.Sjmp("JNZ"  , _LB_parsing_error)       // JNZ   _parsing_error
+    self.Emit("MOVQ"   , jit.Ptr(_VP, 8), _CX)              // MOVQ    8(VP), CX
+    self.Emit("TESTQ"  , _CX, _CX)                          // TESTQ   CX, CX
+    self.Sjmp("JZ"     , "_decode_{n}")                     // JZ      _decode_{n}
+    self.Emit("CMPQ"   , _CX, _VP)                          // CMPQ    CX, VP
+    self.Sjmp("JE"     , "_decode_{n}")                     // JE      _decode_{n}
+    self.Emit("MOVQ"   , jit.Ptr(_VP, 0), _AX)              // MOVQ    (VP), AX
+    self.Emit("MOVBLZX", jit.Ptr(_AX, _Gt_KindFlags), _DX)  // MOVBLZX _Gt_KindFlags(AX), DX
+    self.Emit("ANDL"   , jit.Imm(rt.F_kind_mask), _DX)      // ANDL    ${F_kind_mask}, DX
+    self.Emit("CMPL"   , _DX, jit.Imm(_Vk_Ptr))             // CMPL    DX, ${reflect.Ptr}
+    self.Sjmp("JNE"    , "_decode_{n}")                     // JNE     _decode_{n}
+    self.Emit("LEAQ"   , jit.Ptr(_VP, 8), _DI)              // LEAQ    8(VP), DI
+    self.decode_dynamic(_AX, _DI)                           // DECODE  AX, DI
+    self.Sjmp("JMP"    , "_decode_end_{n}")                 // JMP     _decode_end_{n}
+    self.Link("_decode_{n}")                                // _decode_{n}:
+    self.Emit("MOVQ"   , _ARG_fv, _DF)                      // MOVQ    fv, DF
+    self.call(_F_decodeValue)                               // CALL    decodeValue
+    self.Emit("TESTQ"  , _EP, _EP)                          // TESTQ   EP, EP
+    self.Sjmp("JNZ"    , _LB_parsing_error)                 // JNZ     _parsing_error
+    self.Link("_decode_end_{n}")                            // _decode_end_{n}:
+}
+
+func (self *_Assembler) _asm_OP_dyn(p *_Instr) {
+    self.Emit("MOVQ"   , jit.Type(p.vt()), _ET)             // MOVQ    ${p.vt()}, ET
+    self.Emit("CMPQ"   , jit.Ptr(_VP, 8), jit.Imm(0))       // CMPQ    8(VP), $0
+    self.Sjmp("JE"     , _LB_type_error)                    // JE      _type_error
+    self.Emit("MOVQ"   , jit.Ptr(_VP, 0), _AX)              // MOVQ    (VP), AX
+    self.Emit("MOVQ"   , jit.Ptr(_AX, 8), _AX)              // MOVQ    8(AX), AX
+    self.Emit("MOVBLZX", jit.Ptr(_AX, _Gt_KindFlags), _DX)  // MOVBLZX _Gt_KindFlags(AX), DX
+    self.Emit("ANDL"   , jit.Imm(rt.F_kind_mask), _DX)      // ANDL    ${F_kind_mask}, DX
+    self.Emit("CMPL"   , _DX, jit.Imm(_Vk_Ptr))             // CMPL    DX, ${reflect.Ptr}
+    self.Sjmp("JNE"    , _LB_type_error)                    // JNE     _type_error
+    self.Emit("LEAQ"   , jit.Ptr(_VP, 8), _DI)              // LEAQ    8(VP), DI
+    self.decode_dynamic(_AX, _DI)                           // DECODE  AX, DI
+    self.Link("_decode_end_{n}")                            // _decode_end_{n}:
 }
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {
@@ -1374,6 +1462,8 @@ func (self *_Assembler) _asm_OP_load(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_save(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
+    self.Emit("CMPQ", _AX, jit.Imm(_MaxStack))          // CMPQ AX, ${_MaxStack}
+    self.Sjmp("JA"  , _LB_stack_error)                  // JA   _stack_error
     self.Emit("MOVQ", _VP, jit.Sib(_ST, _AX, 1, 8))     // MOVQ VP, 8(ST)(AX)
     self.Emit("ADDQ", jit.Imm(8), _AX)                  // ADDQ $8, AX
     self.Emit("MOVQ", _AX, jit.Ptr(_ST, 0))             // MOVQ AX, (ST)
@@ -1398,21 +1488,8 @@ func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
-    self.Emit("MOVQ" , jit.Type(p.vt()), _AX)   // MOVQ    ${p.vt()}, AX
-    self.Emit("MOVQ" , _ARG_fv, _CX)            // MOVQ    fv, cx
-    self.Emit("MOVOU", _ARG_sp, _X0)            // MOVOU   sp, X0
-    self.Emit("MOVOU", _X0, jit.Ptr(_SP, 0))    // MOVOU   X0, (SP)
-    self.Emit("MOVQ" , _IC, jit.Ptr(_SP, 16))   // MOVQ    IC, 16(SP)
-    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 24))   // MOVQ    AX, 24(SP)
-    self.Emit("MOVQ" , _VP, jit.Ptr(_SP, 32))   // MOVQ    VP, 32(SP)
-    self.Emit("MOVQ" , _ST, jit.Ptr(_SP, 40))   // MOVQ    ST, 40(SP)
-    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 48))   // MOVQ    CX, 48(SP)
-    self.call_go(_F_decodeTypedPointer)         // CALL_GO decodeTypedPointer
-    self.Emit("MOVQ" , jit.Ptr(_SP, 64), _ET)   // MOVQ    64(SP), ET
-    self.Emit("MOVQ" , jit.Ptr(_SP, 72), _EP)   // MOVQ    72(SP), EP
-    self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
-    self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
-    self.Emit("MOVQ" , jit.Ptr(_SP, 56), _IC)   // MOVQ    56(SP), IC
+    self.Emit("MOVQ", jit.Type(p.vt()), _AX)    // MOVQ   ${p.vt()}, AX
+    self.decode_dynamic(_AX, _VP)               // DECODE AX, VP
 }
 
 func (self *_Assembler) _asm_OP_goto(p *_Instr) {

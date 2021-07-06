@@ -71,7 +71,7 @@ func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Sta
         return encodeNil(buf)
     } else if fn, err := findOrCompile(vt); err != nil {
         return err
-    } else if vt.Indir() {
+    } else if (vt.KindFlags & rt.F_direct) == 0 {
         return fn(buf, *vp, sb)
     } else {
         return fn(buf, unsafe.Pointer(vp), sb)
@@ -95,7 +95,7 @@ func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler) error {
 }
 
 func isZeroSafe(p unsafe.Pointer, vt *rt.GoType) bool {
-    if native.Lzero(p, vt.Size()) == 0 {
+    if native.Lzero(p, int(vt.Size)) == 0 {
         return true
     } else {
         return isZeroTyped(p, vt)
