@@ -38,8 +38,23 @@ func (self SyntaxError) Error() string {
     return fmt.Sprintf("Syntax error at index %d: %s", self.Pos, self.Code.Message())
 }
 
+// DescriptionLine works like DescriptionWindow,
+// but prints entire string in one line
+func (self SyntaxError) DescriptionLine(window int) string {
+    return fmt.Sprintf("%q", self.DescriptionWindow(window))
+}
+
+// Description prints error message 
+// and invalid json near failing position
 func (self SyntaxError) Description() string {
-    i := 16
+    return self.DescriptionWindow(16)
+}
+
+// DescriptionWindow prints error message 
+// and invalid json near failing position,
+// with given window boundary
+func (self SyntaxError) DescriptionWindow(window int) string {
+    i := window
     p := self.Pos - i
     q := self.Pos + i
 
@@ -78,7 +93,6 @@ func (self SyntaxError) Description() string {
         strings.Repeat(".", y),
     )
 }
-
 func clamp_zero(v int) int {
     if v < 0 {
         return 0

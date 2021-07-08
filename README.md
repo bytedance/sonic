@@ -130,6 +130,31 @@ fn := root.Float64()
 fm := root.Interface().(float64) // jn == jm
  ```
 
+### Print Syntax Error
+```go
+import "github.com/bytedance/sonic/decoder"
+
+var data interface{}
+dc := decoder.NewDecoder("[[[}]]")
+if err := dc.Decode(&data); err != nil {
+    if e, ok := err.(decoder.SyntaxError); ok {
+        
+        /*Syntax error at index 3: invalid char
+
+            [[[}]]
+            ...^..
+        */
+        print(e.Description())
+
+        /*"Syntax error at index 3: invalid char\n\n\t[[}]\n\t..^.\n"*/
+        println(e.DescriptionLine(2))
+    }
+
+    /*Decode: Syntax error at index 3: invalid char*/
+    t.Fatalf("Decode: %v", err) 
+}
+```
+
 ## Tips
 
 ### Pretouch

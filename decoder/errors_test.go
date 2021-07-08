@@ -53,3 +53,10 @@ func TestErrors_ShortDescription(t *testing.T) {
 func TestErrors_EmptyDescription(t *testing.T) {
     println(make_err("", 0).Description())
 }
+
+func TestErros_DescriptionLine(t *testing.T) {
+    out := make_err("012345678980", 5).DescriptionLine(3)
+    if out != `"Syntax error at index 5: invalid char\n\n\t234567\n\t...^..\n"` {
+        t.Fatal(out)
+    }
+}
