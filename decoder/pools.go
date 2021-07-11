@@ -36,10 +36,11 @@ const (
 )
 
 var (
-    stackPool    = sync.Pool{}
-    valueCache   = []unsafe.Pointer(nil)
-    fieldCache   = []*caching.FieldMap(nil)
-    programCache = caching.CreateProgramCache()
+    stackPool     = sync.Pool{}
+    valueCache    = []unsafe.Pointer(nil)
+    fieldCache    = []*caching.FieldMap(nil)
+    fieldCacheMux = sync.Mutex{}
+    programCache  = caching.CreateProgramCache()
 )
 
 type _Stack struct {
@@ -75,7 +76,9 @@ func freezeValue(v unsafe.Pointer) uintptr {
 }
 
 func freezeFields(v *caching.FieldMap) int64 {
+    fieldCacheMux.Lock()
     fieldCache = append(fieldCache, v)
+    fieldCacheMux.Unlock()
     return referenceFields(v)
 }
 
