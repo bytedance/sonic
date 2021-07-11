@@ -50,6 +50,18 @@ func newProgramMap() *_ProgramMap {
     }
 }
 
+func (self *_ProgramMap) copy() *_ProgramMap {
+    fork := &_ProgramMap{
+        n: self.n,
+        m: self.m,
+        b: make([]_ProgramEntry, len(self.b)),
+    }
+    for i, f := range self.b {
+        fork.b[i] = f
+    }
+    return fork
+}
+
 func (self *_ProgramMap) get(vt *rt.GoType) interface{} {
     i := self.m + 1
     p := vt.Hash & self.m
@@ -70,12 +82,12 @@ func (self *_ProgramMap) get(vt *rt.GoType) interface{} {
 }
 
 func (self *_ProgramMap) add(vt *rt.GoType, fn interface{}) *_ProgramMap {
-    p := self
+    p := self.copy()
     f := float64(atomic.LoadUint64(&p.n) + 1) / float64(p.m + 1)
 
     /* check for load factor */
     if f > _LoadFactor {
-        p = self.rehash()
+        p = p.rehash()
     }
 
     /* insert the value */
