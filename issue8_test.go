@@ -14,11 +14,27 @@
  * limitations under the License.
  */
 
-#include "native.h"
-#include "fastbytes.c"
-#include "fastfloat.c"
-#include "fastint.c"
-#include "parsing.c"
-#include "atof_eisel_lemire.c"
-#include "atof_native.c"
-#include "scanning.c"
+package sonic
+
+import (
+	"encoding/json"
+	"reflect"
+	"testing"
+
+	_ "github.com/stretchr/testify/assert"
+)
+
+func TestFloat(t *testing.T) {
+	data := `{"test":0.6666}`
+	var stdobj map[string]interface{}
+	if err := json.Unmarshal([]byte(data), &stdobj); err != nil {
+		t.Fatal(err)
+	}
+	var sonicobj map[string]interface{}
+	if err := Unmarshal([]byte(data), &sonicobj); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(stdobj, sonicobj) {
+		t.Fatalf("exp: \n%#v, \ngot: \n%#v\n", stdobj, sonicobj)
+	}
+}

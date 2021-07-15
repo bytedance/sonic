@@ -22,82 +22,12 @@ static const char *CS_OBJECT = "[]{},:\"[]{}:,\"[]";
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
 
-static const double P10_TAB[632] = {
-    /* <================= -Inf ================= */ 1e-323, 1e-322, 1e-321, 1e-320,
-    1e-319, 1e-318, 1e-317, 1e-316, 1e-315, 1e-314, 1e-313, 1e-312, 1e-311, 1e-310,
-    1e-309, 1e-308, 1e-307, 1e-306, 1e-305, 1e-304, 1e-303, 1e-302, 1e-301, 1e-300,
-    1e-299, 1e-298, 1e-297, 1e-296, 1e-295, 1e-294, 1e-293, 1e-292, 1e-291, 1e-290,
-    1e-289, 1e-288, 1e-287, 1e-286, 1e-285, 1e-284, 1e-283, 1e-282, 1e-281, 1e-280,
-    1e-279, 1e-278, 1e-277, 1e-276, 1e-275, 1e-274, 1e-273, 1e-272, 1e-271, 1e-270,
-    1e-269, 1e-268, 1e-267, 1e-266, 1e-265, 1e-264, 1e-263, 1e-262, 1e-261, 1e-260,
-    1e-259, 1e-258, 1e-257, 1e-256, 1e-255, 1e-254, 1e-253, 1e-252, 1e-251, 1e-250,
-    1e-249, 1e-248, 1e-247, 1e-246, 1e-245, 1e-244, 1e-243, 1e-242, 1e-241, 1e-240,
-    1e-239, 1e-238, 1e-237, 1e-236, 1e-235, 1e-234, 1e-233, 1e-232, 1e-231, 1e-230,
-    1e-229, 1e-228, 1e-227, 1e-226, 1e-225, 1e-224, 1e-223, 1e-222, 1e-221, 1e-220,
-    1e-219, 1e-218, 1e-217, 1e-216, 1e-215, 1e-214, 1e-213, 1e-212, 1e-211, 1e-210,
-    1e-209, 1e-208, 1e-207, 1e-206, 1e-205, 1e-204, 1e-203, 1e-202, 1e-201, 1e-200,
-    1e-199, 1e-198, 1e-197, 1e-196, 1e-195, 1e-194, 1e-193, 1e-192, 1e-191, 1e-190,
-    1e-189, 1e-188, 1e-187, 1e-186, 1e-185, 1e-184, 1e-183, 1e-182, 1e-181, 1e-180,
-    1e-179, 1e-178, 1e-177, 1e-176, 1e-175, 1e-174, 1e-173, 1e-172, 1e-171, 1e-170,
-    1e-169, 1e-168, 1e-167, 1e-166, 1e-165, 1e-164, 1e-163, 1e-162, 1e-161, 1e-160,
-    1e-159, 1e-158, 1e-157, 1e-156, 1e-155, 1e-154, 1e-153, 1e-152, 1e-151, 1e-150,
-    1e-149, 1e-148, 1e-147, 1e-146, 1e-145, 1e-144, 1e-143, 1e-142, 1e-141, 1e-140,
-    1e-139, 1e-138, 1e-137, 1e-136, 1e-135, 1e-134, 1e-133, 1e-132, 1e-131, 1e-130,
-    1e-129, 1e-128, 1e-127, 1e-126, 1e-125, 1e-124, 1e-123, 1e-122, 1e-121, 1e-120,
-    1e-119, 1e-118, 1e-117, 1e-116, 1e-115, 1e-114, 1e-113, 1e-112, 1e-111, 1e-110,
-    1e-109, 1e-108, 1e-107, 1e-106, 1e-105, 1e-104, 1e-103, 1e-102, 1e-101, 1e-100,
-    1e-099, 1e-098, 1e-097, 1e-096, 1e-095, 1e-094, 1e-093, 1e-092, 1e-091, 1e-090,
-    1e-089, 1e-088, 1e-087, 1e-086, 1e-085, 1e-084, 1e-083, 1e-082, 1e-081, 1e-080,
-    1e-079, 1e-078, 1e-077, 1e-076, 1e-075, 1e-074, 1e-073, 1e-072, 1e-071, 1e-070,
-    1e-069, 1e-068, 1e-067, 1e-066, 1e-065, 1e-064, 1e-063, 1e-062, 1e-061, 1e-060,
-    1e-059, 1e-058, 1e-057, 1e-056, 1e-055, 1e-054, 1e-053, 1e-052, 1e-051, 1e-050,
-    1e-049, 1e-048, 1e-047, 1e-046, 1e-045, 1e-044, 1e-043, 1e-042, 1e-041, 1e-040,
-    1e-039, 1e-038, 1e-037, 1e-036, 1e-035, 1e-034, 1e-033, 1e-032, 1e-031, 1e-030,
-    1e-029, 1e-028, 1e-027, 1e-026, 1e-025, 1e-024, 1e-023, 1e-022, 1e-021, 1e-020,
-    1e-019, 1e-018, 1e-017, 1e-016, 1e-015, 1e-014, 1e-013, 1e-012, 1e-011, 1e-010,
-    1e-009, 1e-008, 1e-007, 1e-006, 1e-005, 1e-004, 1e-003, 1e-002, 1e-001, 1e-000,
+static const double P10_TAB[23] = {
+    /* <= the connvertion to double is not exact when less than 1 => */     1e-000,
     1e+001, 1e+002, 1e+003, 1e+004, 1e+005, 1e+006, 1e+007, 1e+008, 1e+009, 1e+010,
     1e+011, 1e+012, 1e+013, 1e+014, 1e+015, 1e+016, 1e+017, 1e+018, 1e+019, 1e+020,
-    1e+021, 1e+022, 1e+023, 1e+024, 1e+025, 1e+026, 1e+027, 1e+028, 1e+029, 1e+030,
-    1e+031, 1e+032, 1e+033, 1e+034, 1e+035, 1e+036, 1e+037, 1e+038, 1e+039, 1e+040,
-    1e+041, 1e+042, 1e+043, 1e+044, 1e+045, 1e+046, 1e+047, 1e+048, 1e+049, 1e+050,
-    1e+051, 1e+052, 1e+053, 1e+054, 1e+055, 1e+056, 1e+057, 1e+058, 1e+059, 1e+060,
-    1e+061, 1e+062, 1e+063, 1e+064, 1e+065, 1e+066, 1e+067, 1e+068, 1e+069, 1e+070,
-    1e+071, 1e+072, 1e+073, 1e+074, 1e+075, 1e+076, 1e+077, 1e+078, 1e+079, 1e+080,
-    1e+081, 1e+082, 1e+083, 1e+084, 1e+085, 1e+086, 1e+087, 1e+088, 1e+089, 1e+090,
-    1e+091, 1e+092, 1e+093, 1e+094, 1e+095, 1e+096, 1e+097, 1e+098, 1e+099, 1e+100,
-    1e+101, 1e+102, 1e+103, 1e+104, 1e+105, 1e+106, 1e+107, 1e+108, 1e+109, 1e+110,
-    1e+111, 1e+112, 1e+113, 1e+114, 1e+115, 1e+116, 1e+117, 1e+118, 1e+119, 1e+120,
-    1e+121, 1e+122, 1e+123, 1e+124, 1e+125, 1e+126, 1e+127, 1e+128, 1e+129, 1e+130,
-    1e+131, 1e+132, 1e+133, 1e+134, 1e+135, 1e+136, 1e+137, 1e+138, 1e+139, 1e+140,
-    1e+141, 1e+142, 1e+143, 1e+144, 1e+145, 1e+146, 1e+147, 1e+148, 1e+149, 1e+150,
-    1e+151, 1e+152, 1e+153, 1e+154, 1e+155, 1e+156, 1e+157, 1e+158, 1e+159, 1e+160,
-    1e+161, 1e+162, 1e+163, 1e+164, 1e+165, 1e+166, 1e+167, 1e+168, 1e+169, 1e+170,
-    1e+171, 1e+172, 1e+173, 1e+174, 1e+175, 1e+176, 1e+177, 1e+178, 1e+179, 1e+180,
-    1e+181, 1e+182, 1e+183, 1e+184, 1e+185, 1e+186, 1e+187, 1e+188, 1e+189, 1e+190,
-    1e+191, 1e+192, 1e+193, 1e+194, 1e+195, 1e+196, 1e+197, 1e+198, 1e+199, 1e+200,
-    1e+201, 1e+202, 1e+203, 1e+204, 1e+205, 1e+206, 1e+207, 1e+208, 1e+209, 1e+210,
-    1e+211, 1e+212, 1e+213, 1e+214, 1e+215, 1e+216, 1e+217, 1e+218, 1e+219, 1e+220,
-    1e+221, 1e+222, 1e+223, 1e+224, 1e+225, 1e+226, 1e+227, 1e+228, 1e+229, 1e+230,
-    1e+231, 1e+232, 1e+233, 1e+234, 1e+235, 1e+236, 1e+237, 1e+238, 1e+239, 1e+240,
-    1e+241, 1e+242, 1e+243, 1e+244, 1e+245, 1e+246, 1e+247, 1e+248, 1e+249, 1e+250,
-    1e+251, 1e+252, 1e+253, 1e+254, 1e+255, 1e+256, 1e+257, 1e+258, 1e+259, 1e+260,
-    1e+261, 1e+262, 1e+263, 1e+264, 1e+265, 1e+266, 1e+267, 1e+268, 1e+269, 1e+270,
-    1e+271, 1e+272, 1e+273, 1e+274, 1e+275, 1e+276, 1e+277, 1e+278, 1e+279, 1e+280,
-    1e+281, 1e+282, 1e+283, 1e+284, 1e+285, 1e+286, 1e+287, 1e+288, 1e+289, 1e+290,
-    1e+291, 1e+292, 1e+293, 1e+294, 1e+295, 1e+296, 1e+297, 1e+298, 1e+299, 1e+300,
-    1e+301, 1e+302, 1e+303, 1e+304, 1e+305, 1e+306, 1e+307, 1e+308, /* = +Inf => */
+    1e+021, 1e+022 /* <= the connvertion to double is not exact when larger,  => */
 };
-
-static inline double pow10(double v, int p) {
-    if (p < -323) {
-        return 0.0;
-    } else if (p > 308) {
-        return __builtin_inf();
-    } else {
-        return v * P10_TAB[p + 323];
-    }
-}
 
 static inline uint64_t add32(uint64_t v1, uint64_t v2, uint64_t *vo) {
     uint32_t v;
@@ -473,6 +403,22 @@ void vstring(const GoString *src, long *p, JsonState *ret) {
         check_eof()                     \
     }
 
+#define is_digit(val) \
+    '0' <= val && val <= '9'
+
+#define add_integer_to_mantissa(man, man_nd, exp10, dig) \
+    if (man_nd < 19) {                                   \
+        man = man * 10 + dig;                            \
+        man_nd++;                                        \
+    } else {                                             \
+        exp10++;                                         \
+    }                                                    \
+
+#define add_float_to_mantissa(man, man_nd, exp10, dig) \
+    man = man * 10 + dig;                              \
+    man_nd++;                                          \
+    exp10--;                                           \
+
 #define parse_float_digits(val, sgn, ...)                       \
     while (i < n && s[i] >= '0' && s[i] <= '9' __VA_ARGS__) {   \
         val *= 10;                                              \
@@ -536,71 +482,126 @@ void vstring(const GoString *src, long *p, JsonState *ret) {
     *p = i;                                             \
     ret->iv = val;
 
+/** check whether float can represent the val exactly **/
+static inline int is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
+    double f = (double)man;
+
+    if (man >> 52 != 0) { 
+        return 0;
+    }
+
+    f *= sgn;
+    *val = 0;
+
+    if (exp == 0) {
+        *val = f;
+        return 1;
+    } else if (exp > 0 && exp <= 15+22) {
+        /* uint64 integers: accurate range <= 10^15          *
+         * Powers of 10: accurate range <= 10^22, as P10_TAB *
+         * Example: man 1, exp 36, is ok                     */
+        if (exp > 22) {
+            f *= P10_TAB[exp-22];
+            exp = 22;
+        }
+
+        /* f is not accurate when too larger */
+        if (f > 1e15 || f < -1e15) {
+            return 0;
+        }
+
+        *val = f * P10_TAB[exp];
+        return 1;
+    } else if (exp < 0 && exp >= -22) {
+        *val = f / P10_TAB[-exp];
+        return 1;
+    } 
+
+    return 0;
+}
+
+double parse_float64(uint64_t man, int exp, int sgn, const GoString *src, long idx) {
+    double val = 0.0;
+
+	/* look-up for fast atof if the conversion can be exactly */
+    if (is_atof_exact(man, exp, sgn, &val)) {
+        return val;
+    }
+
+    /* A fast atof algorithm for high percison */
+    if (atof_eisel_lemire64(man, exp, sgn, &val)) {
+        return val;
+    }
+
+    /* when above algorithms failed, fallback. It is slow. */
+    return atof_native_decimal(src->buf + idx, src->len - idx);
+} 
+
+
 void vnumber(const GoString *src, long *p, JsonState *ret) {
-    int     dig;
-    int     ovf = 0;
-    int     sgn = 1;
-    double  val = 0;
-    int64_t dec = 0;
+    int      dig;
+    int      ovf = 0;
+    int      sgn = 1;
+    double   val = 0;
+    uint64_t man = 0; // mantissa for double (float64)
+    int   man_nd = 0; // # digits of mantissa, 10^19 fits uint64_t
+    int    exp10 = 0; // man * exp10 represents the true value
 
     /* initial buffer pointers */
     long         i = *p;
     size_t       n = src->len;
     const char * s = src->buf;
+	long		si = *p; // record the idx for fall-back when parsing float.
 
     /* initialize the result, and check for EOF */
     init_ret(V_INTEGER)
     check_eof()
     check_sign(sgn = -1)
 
+    /* zero */
+    if (i + 1 == n && s[i] == '0') { 
+        i++;
+        goto out;
+    }
+
     /* check for leading zero */
     check_digit()
     check_leading_zero()
 
     /* parse the integer part */
-    while (i < n && s[i] >= '0' && s[i] <= '9') {
-        val = dec;
-        dig = sgn * (s[i++] - '0');
-
-        /* add the digit to the integer part if not overflowed */
-        if (add_digit_overflow(dec, dig)) {
-            ovf = 1;
-            val = (val * 10.0) + dig;
-            set_vt(V_DOUBLE)
-            break;
-        }
-    }
-
-    /* after overflow, we can only continue with floating point values */
-    if (!ovf) {
-        val = dec;
-    }
-
-    /* after overflow, we can only continue with floating point values */
-    while (ovf && i < n && s[i] >= '0' && s[i] <= '9') {
-        val *= 10.0;
-        val += sgn * (s[i++] - '0');
+    while (i < n && is_digit(s[i])) {
+        add_integer_to_mantissa(man, man_nd, exp10, (s[i] - '0'))
+        i++;
     }
 
     /* check for decimal points */
     if (i < n && s[i] == '.') {
-        int     idx = ++i;
-        int64_t rem = 0;
-
-        /* convert the fractional part (float64 can represent at most 16 digits) */
+        i++;
         set_vt(V_DOUBLE)
         check_eof()
         check_digit()
-        parse_float_digits(rem, sgn, && i <= idx + 17)
+    }
 
-        /* combine with the decimal part */
-        idx -= i;
-        val += pow10(rem, idx);
-
-        /* skip the remaining digits */
-        while (i < n && s[i] >= '0' && s[i] <= '9') {
+    /* skip the leading zeros of 0.000xxxx */ 
+    if (man == 0 && exp10 == 0) { 
+        int idx = i;
+        while (i < n && s[i] == '0') {
             i++;
         }
+        exp10 = idx - i;
+        man = 0;
+        man_nd = 0;
+    }
+
+    /* the fractional part (uint64_t mantissa can represent at most 19 digits) */
+    while (i < n && man_nd < 19 && is_digit(s[i])) {
+        add_float_to_mantissa(man, man_nd, exp10, (s[i] - '0'))
+        i++;
+    }
+
+     /* skip the remaining digits */
+    while (i < n && is_digit(s[i])) {
+        i++;
     }
 
     /* check for exponent */
@@ -614,22 +615,29 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
         check_eof()
         parse_sign(esm)
         check_digit()
-        parse_float_digits(exp, esm)
-
-        /* scale with */
-        if (exp != 1) {
-            val = pow10(val, exp);
+        while (i < n && is_digit(s[i])) {
+            exp = exp * 10 + (s[i++] - '0');
+        }
+        exp10 += exp * esm;
+    }
+   
+out:    
+    if (ret->vt == V_INTEGER) {
+        /* if INT64_MIN <= man * sgn <= INT64_MAX */
+        if ( exp10 == 0 && (((man & ((uint64_t)1 << 63)) == 0) || ((man & sgn) == man))) {
+            ret->iv = (int64_t)man * sgn;
+			ret->dv = (double)(ret->iv);
+        } else { // integer overflow
+            set_vt(V_DOUBLE)
         }
     }
 
-    /* check for integer overflow */
-    if (!ovf) {
-        ret->iv = dec;
+    if (ret->vt == V_DOUBLE) {
+        ret->dv = parse_float64(man, exp10, sgn, src, si);
     }
 
     /* update the result */
     *p = i;
-    ret->dv = val;
 }
 
 void vsigned(const GoString *src, long *p, JsonState *ret) {
@@ -650,6 +658,9 @@ void vunsigned(const GoString *src, long *p, JsonState *ret) {
 #undef check_digit
 #undef check_leading_zero
 #undef parse_sign
+#undef is_digit
+#undef add_integer_to_mantissa
+#undef add_float_to_mantissa
 #undef parse_float_digits
 #undef parse_integer_digits
 #undef add_digit_overflow
