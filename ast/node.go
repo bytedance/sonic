@@ -514,10 +514,9 @@ func (self *Node) loadAllIndex() {
     parser, stack := self.getParserAndArrayStack()
     old := parser.noLazy
     parser.noLazy = true
-    start := parser.p
     *self, err = parser.decodeArray(stack.v)
     if err != 0 {
-        panic(parser.ExportError(err, start))
+        panic(parser.ExportError(err))
     }
     parser.noLazy = old
 }
@@ -532,10 +531,9 @@ func (self *Node) skipAllIndex() {
     parser.skipValue = true
     oldl := parser.noLazy
     parser.noLazy = true
-    start := parser.p
     *self, err = parser.decodeArray(stack.v)
     if err != 0 {
-        panic(parser.ExportError(err, start))
+        panic(parser.ExportError(err))
     }
     parser.skipValue = olds
     parser.noLazy = oldl
@@ -549,10 +547,9 @@ func (self *Node) loadAllKey() {
     parser, stack := self.getParserAndObjectStack()
     old := parser.noLazy
     parser.noLazy = true
-    start := parser.p
     *self, err = parser.decodeObject(stack.v)
     if err != 0 {
-        panic(parser.ExportError(err, start))
+        panic(parser.ExportError(err))
     }
     parser.noLazy = old
 }
@@ -567,10 +564,9 @@ func (self *Node) skipAllKey() {
     parser.skipValue = true
     oldl := parser.noLazy
     parser.noLazy = true
-    start := parser.p
     *self, err = parser.decodeObject(stack.v)
     if err != 0 {
-        panic(parser.ExportError(err, start))
+        panic(parser.ExportError(err))
     }
     parser.skipValue = olds
     parser.noLazy = oldl
@@ -604,11 +600,10 @@ func (self *Node) loadNextNode() *Node {
     parser := &stack.parser
     sp := parser.p
     ns := len(parser.s)
-    start := sp
 
     /* check for EOF */
     if parser.p = parser.lspace(sp); parser.p >= ns {
-        panic(parser.ExportError(types.ERR_EOF, start))
+        panic(parser.ExportError(types.ERR_EOF))
     }
 
     /* check for empty array */
@@ -624,9 +619,8 @@ func (self *Node) loadNextNode() *Node {
     /* decode the value */
     old := parser.noLazy
     parser.noLazy = true
-    start = parser.p
     if val, err = parser.Parse(); err != 0 {
-        panic(parser.ExportError(err, start))
+        panic(parser.ExportError(err))
     }
     parser.noLazy = old
 
@@ -636,7 +630,7 @@ func (self *Node) loadNextNode() *Node {
 
     /* check for EOF */
     if parser.p >= ns {
-        panic(parser.ExportError(types.ERR_EOF, start))
+        panic(parser.ExportError(types.ERR_EOF))
     }
 
     /* check for the next character */
@@ -650,7 +644,7 @@ func (self *Node) loadNextNode() *Node {
         self.setArray(ret)
         return &ret[len(ret)-1]
     default:
-        panic(parser.ExportError(types.ERR_INVALID_CHAR, start))
+        panic(parser.ExportError(types.ERR_INVALID_CHAR))
     }
 }
 
@@ -682,11 +676,10 @@ func (self *Node) loadNextPair() (*Pair) {
     parser := &stack.parser
     sp := parser.p
     ns := len(parser.s)
-    start := sp
 
     /* check for EOF */
     if parser.p = parser.lspace(sp); parser.p >= ns {
-        panic(parser.ExportError(types.ERR_EOF, start))
+        panic(parser.ExportError(types.ERR_EOF))
     }
 
     /* check for empty object */
@@ -702,9 +695,8 @@ func (self *Node) loadNextPair() (*Pair) {
     var err types.ParsingError
 
     /* decode the key */
-    start = parser.p
     if njs = parser.decodeValue(); njs.Vt != types.V_STRING {
-        panic(parser.ExportError(types.ERR_INVALID_CHAR, start))
+        panic(parser.ExportError(types.ERR_INVALID_CHAR))
     }
 
     /* extract the key */
@@ -714,22 +706,20 @@ func (self *Node) loadNextPair() (*Pair) {
     /* check for escape sequence */
     if njs.Ep != -1 {
         if key, err = unquote.String(key); err != 0 {
-            panic(parser.ExportError(err, start))
+            panic(parser.ExportError(err))
         }
     }
 
     /* expect a ':' delimiter */
-    start = parser.p
     if err = parser.delim(); err != 0 {
-        panic(parser.ExportError(err, start))
+        panic(parser.ExportError(err))
     }
 
     /* decode the value */
     old := parser.noLazy
     parser.noLazy = true
-    start = parser.p
     if val, err = parser.Parse(); err != 0 {
-        panic(parser.ExportError(err, start))
+        panic(parser.ExportError(err))
     }
     parser.noLazy = old
 
@@ -739,7 +729,7 @@ func (self *Node) loadNextPair() (*Pair) {
 
     /* check for EOF */
     if parser.p >= ns {
-        panic(parser.ExportError(types.ERR_EOF, start))
+        panic(parser.ExportError(types.ERR_EOF))
     }
 
     /* check for the next character */
@@ -753,7 +743,7 @@ func (self *Node) loadNextPair() (*Pair) {
         self.setObject(ret)
         return &ret[len(ret)-1]
     default:
-        panic(parser.ExportError(types.ERR_INVALID_CHAR, start))
+        panic(parser.ExportError(types.ERR_INVALID_CHAR))
     }
 }
 
@@ -1015,7 +1005,7 @@ func (self *Node) parseRaw() Node {
     parser := NewParser(raw)
     n, e := parser.Parse()
     if e != 0 {
-        panic(parser.ExportError(e, 0))
+        panic(parser.ExportError(e))
     }
     return n
 }

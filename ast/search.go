@@ -43,32 +43,30 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     for _, p := range path {
         switch p.(type) {
         case int:
-            start := self.parser.p
             if err = self.parser.searchIndex(p.(int)); err != 0 {
-                return Node{}, self.parser.ExportError(err, start)
+                return Node{}, self.parser.ExportError(err)
             }
         case string:
-            start := self.parser.p
             if err = self.parser.searchKey(p.(string)); err != 0 {
-                return Node{}, self.parser.ExportError(err, start)
+                return Node{}, self.parser.ExportError(err)
             }
         default:
             panic("path must be either int or string")
         }
     }
 
-    var start int
+    var start = self.parser.p
     if start, err = self.parser.skip(); err != 0 {
-        return Node{}, self.parser.ExportError(err, start)
+        return Node{}, self.parser.ExportError(err)
     }
     ns := len(self.parser.s)
-    if self.parser.p > ns || start >= ns {
+    if self.parser.p > ns || start >= ns || start>=self.parser.p {
         return Node{}, fmt.Errorf("skip %d char out of json boundary", start)
     }
 
     t := switchRawType(self.parser.s[start])
     if t == _V_NONE {
-        return Node{}, self.parser.ExportError(err, start)
+        return Node{}, self.parser.ExportError(err)
     }
 
     return newRawNode(self.parser.s[start:self.parser.p], t), nil

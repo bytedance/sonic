@@ -24,6 +24,38 @@ import (
     `github.com/tidwall/gjson`
 )
 
+func TestExportError(t *testing.T) {
+    data := `{"a":]`
+    p := NewSearcher(data)
+    _, err := p.GetByPath("a")
+    if err == nil {
+        t.Fatal()
+    }
+    if err.Error() != `"Syntax error at index 6: invalid char\n\n\t{\"a\":]\n\t......^\n"` {
+        t.Fatal(err)
+    }
+
+    data = `:"b"]`
+    p = NewSearcher(data)
+    _, err = p.GetByPath("a")
+    if err == nil {
+        t.Fatal()
+    }
+    if err.Error() != `"Syntax error at index 0: invalid char\n\n\t:\"b\"]\n\t^....\n"` {
+        t.Fatal(err)
+    }
+
+    data = `{:"b"]`
+    p = NewSearcher(data)
+    _, err = p.GetByPath("a")
+    if err == nil {
+        t.Fatal()
+    }
+    if err.Error() != `"Syntax error at index 1: invalid char\n\n\t{:\"b\"]\n\t.^....\n"` {
+        t.Fatal(err)
+    }
+}
+
 func TestSearcher_GetByPath(t *testing.T) {
     s := NewSearcher(` { "xx" : [] ,"yy" :{ }, "test" : [ true , 0.1 , "abc", ["h"], {"a":"bc"} ] } `)
 

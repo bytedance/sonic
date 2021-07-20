@@ -17,14 +17,15 @@
 package ast
 
 import (
-    `fmt`
+	`fmt`
 	`sync`
 	`unsafe`
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/bytedance/sonic/unquote`
+	`github.com/bytedance/sonic/decoder`
+	`github.com/bytedance/sonic/internal/native`
+	`github.com/bytedance/sonic/internal/native/types`
+	`github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/unquote`
 )
 
 const _DEFAULT_NODE_CAP int = 16
@@ -359,20 +360,27 @@ func NewParser(src string) *Parser {
 }
 
 // ExportError converts types.ParsingError to std Error
-func (self *Parser) ExportError(err types.ParsingError, start int) error {
+func (self *Parser) ExportError(err types.ParsingError) error {
     if err == _ERR_NOT_FOUND {
         return fmt.Errorf("node not exists")
     }
-    return fmt.Errorf("%v at %d, near '%s'", err, self.p, self.printNear(start))
+    return fmt.Errorf("%q", decoder.SyntaxError{
+        Pos: self.p,
+        Src: self.s,
+        Code: err,
+    }.Description())
 }
 
-func (self *Parser) printNear(start int) string {
-    if start < 0 {
-        start = 0
-    }
-    end := self.p + 10
-    if end > len(self.s) {
-        end = len(self.s)
-    }
-    return self.s[start:end]
-}
+// func (self *Parser) printNear(start int) string {
+//     end := self.p + 10
+//     if end > len(self.s) {
+//         end = len(self.s)
+//     }
+//     if start > end {
+//         start = end - 1
+//     }
+//     if start < 0 {
+//         start = 0
+//     }
+//     return self.s[start:end]
+// }

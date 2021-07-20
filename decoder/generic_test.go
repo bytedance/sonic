@@ -21,7 +21,6 @@ import (
     `reflect`
     `testing`
 
-    `github.com/bytedance/sonic/ast`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/assert`
@@ -55,15 +54,6 @@ func TestGeneric_DecodeInterface(t *testing.T) {
     fmt.Printf("type: %s\n", reflect.TypeOf(v))
 }
 
-func BenchmarkGeneric_DecodeAST(b *testing.B) {
-    _, _, _ = ast.Loads(TwitterJson)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        _, _, _ = ast.Loads(TwitterJson)
-    }
-}
-
 func BenchmarkGeneric_DecodeGeneric(b *testing.B) {
     t := newStack()
     _, _, _ = decodeValue(t, TwitterJson, 0, 0)
@@ -73,17 +63,6 @@ func BenchmarkGeneric_DecodeGeneric(b *testing.B) {
         _, _, _ = decodeValue(t, TwitterJson, 0, 0)
     }
     freeStack(t)
-}
-
-func BenchmarkGeneric_Parallel_DecodeAST(b *testing.B) {
-    _, _, _ = ast.Loads(TwitterJson)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            _, _, _ = ast.Loads(TwitterJson)
-        }
-    })
 }
 
 func BenchmarkGeneric_Parallel_DecodeGeneric(b *testing.B) {
