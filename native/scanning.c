@@ -486,14 +486,14 @@ void vstring(const GoString *src, long *p, JsonState *ret) {
 static inline int is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
     double f = (double)man;
 
-    if (man >> 52 != 0) { 
+    if (man >> 52 != 0) {
         return 0;
     }
 
     f *= sgn;
     *val = 0;
 
-    if (exp == 0) {
+    if (exp == 0 || man == 0) {
         *val = f;
         return 1;
     } else if (exp > 0 && exp <= 15+22) {
@@ -515,13 +515,14 @@ static inline int is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
     } else if (exp < 0 && exp >= -22) {
         *val = f / P10_TAB[-exp];
         return 1;
-    } 
+    }
 
     return 0;
 }
 
-double parse_float64(uint64_t man, int exp, int sgn, const GoString *src, long idx) {
-    double val = 0.0;
+static inline double parse_float64(uint64_t man, int exp, int sgn, int trunc, const GoString *src, long idx) {
+    double val    = 0.0;
+    double val_up = 0.0;
 
     /* look-up for fast atof if the conversion can be exactly */
     if (is_atof_exact(man, exp, sgn, &val)) {
@@ -530,22 +531,26 @@ double parse_float64(uint64_t man, int exp, int sgn, const GoString *src, long i
 
     /* A fast atof algorithm for high percison */
     if (atof_eisel_lemire64(man, exp, sgn, &val)) {
-        return val;
+        if (!trunc) {
+            return val;
+        }
+        if (atof_eisel_lemire64(man+1, exp, sgn, &val_up) && val_up == val) {
+            return val;
+        }
     }
 
     /* when above algorithms failed, fallback. It is slow. */
     return atof_native_decimal(src->buf + idx, src->len - idx);
-} 
+}
 
 
 void vnumber(const GoString *src, long *p, JsonState *ret) {
     int      dig;
-    int      ovf = 0;
     int      sgn = 1;
-    double   val = 0;
     uint64_t man = 0; // mantissa for double (float64)
     int   man_nd = 0; // # digits of mantissa, 10^19 fits uint64_t
     int    exp10 = 0; // man * exp10 represents the true value
+    int    trunc = 0;
 
     /* initial buffer pointers */
     long         i = *p;
@@ -559,7 +564,7 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
     check_sign(sgn = -1)
 
     /* zero */
-    if (i + 1 == n && s[i] == '0') { 
+    if (i + 1 == n && s[i] == '0') {
         i++;
         goto out;
     }
@@ -574,6 +579,10 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
         i++;
     }
 
+    if (exp10 > 0) {
+        trunc = 1;
+    }
+
     /* check for decimal points */
     if (i < n && s[i] == '.') {
         i++;
@@ -582,8 +591,8 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
         check_digit()
     }
 
-    /* skip the leading zeros of 0.000xxxx */ 
-    if (man == 0 && exp10 == 0) { 
+    /* skip the leading zeros of 0.000xxxx */
+    if (man == 0 && exp10 == 0) {
         int idx = i;
         while (i < n && s[i] == '0') {
             i++;
@@ -601,6 +610,7 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
 
      /* skip the remaining digits */
     while (i < n && is_digit(s[i])) {
+        trunc = 1;
         i++;
     }
 
@@ -616,12 +626,15 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
         parse_sign(esm)
         check_digit()
         while (i < n && is_digit(s[i])) {
-            exp = exp * 10 + (s[i++] - '0');
+            if (exp < 10000) {
+                exp = exp * 10 + (s[i] - '0');
+            }
+            i++;
         }
         exp10 += exp * esm;
     }
-   
-out:    
+
+out:
     if (ret->vt == V_INTEGER) {
         /* if INT64_MIN <= man * sgn <= INT64_MAX */
         if ( exp10 == 0 && (((man & ((uint64_t)1 << 63)) == 0) || ((man & sgn) == man))) {
@@ -633,7 +646,7 @@ out:
     }
 
     if (ret->vt == V_DOUBLE) {
-        ret->dv = parse_float64(man, exp10, sgn, src, si);
+        ret->dv = parse_float64(man, exp10, sgn, trunc, src, si);
     }
 
     /* update the result */
