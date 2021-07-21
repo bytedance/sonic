@@ -23,16 +23,17 @@
 /* Decimal represent the integer or float
  * example 1: 1.1   {"11", 2, 1, 0}
  * example 2: -0.1  {"1", 1, 0, 1}
- * example 3: 999   {"999", 3, 3, 0} 
+ * example 3: 999   {"999", 3, 3, 0}
  */
 typedef struct Decimal {
     char  d[DECIMAL_MAX_DNUM];
     int   nd;
     int   dp;
-    int   neg; 
+    int   neg;
+    int   trunc;
 } Decimal;
 
-/* decimal power of ten to binary power of two. 
+/* decimal power of ten to binary power of two.
  * For example: POW_TAB[1]: 10 ** 1 ~ 2 ** 3
  */
 static const int POW_TAB[9] = {1, 3, 6, 9, 13, 16, 19, 23, 26};
@@ -50,7 +51,7 @@ typedef struct lshift_cheat  {
  * idx is shift bits for binary.
  * value is the shift information for decimal.
  * For example, idx is 4, the value is {2, "625"}.
- * That means the binary shift 4 bits left, will cause add 2 digits to the decimal 
+ * That means the binary shift 4 bits left, will cause add 2 digits to the decimal
  * if the prefix of decimal is under "625".
  */
 const static lshift_cheat LSHIFT_TAB[61];
@@ -59,9 +60,10 @@ static inline void decimal_init(Decimal *d) {
     for (int i = 0; i < DECIMAL_MAX_DNUM; ++i) {
         d->d[i] = 0;
     }
-    d->dp  = 0;
-    d->nd  = 0;
-    d->neg = 0;
+    d->dp    = 0;
+    d->nd    = 0;
+    d->neg   = 0;
+    d->trunc = 0;
 }
 
 static inline void decimal_set(Decimal *d, const char *s, int len) {
@@ -70,7 +72,7 @@ static inline void decimal_set(Decimal *d, const char *s, int len) {
     decimal_init(d);
     if (s[i] == '+') {
         i++;
-    } 
+    }
     else if (s[i] == '-') {
         i++;
         d->neg = 1;
@@ -88,17 +90,18 @@ static inline void decimal_set(Decimal *d, const char *s, int len) {
                 d->nd++;
             } else if (s[i] != '0') {
                 /* truncat the remaining digits */
+                d->trunc = 1;
             }
         } else if (s[i] == '.') {
             saw_dot = 1;
             d->dp = d->nd;
         } else {
             break;
-        } 
+        }
     }
 
     /* integer */
-    if (saw_dot == 0) { 
+    if (saw_dot == 0) {
         d->dp = d->nd;
     }
 
@@ -115,7 +118,7 @@ static inline void decimal_set(Decimal *d, const char *s, int len) {
             esgn = -1;
         }
 
-        for (; i < len && ('0' <= s[i] && s[i] <= '9'); i++) {
+        for (; i < len && ('0' <= s[i] && s[i] <= '9') && exp < 10000; i++) {
                 exp = exp * 10 + (s[i] - '0');
         }
         d->dp += exp * esgn;
@@ -148,7 +151,7 @@ static inline void right_shift(Decimal *d, uint32_t k) {
                 return;
             }
             /* until n has enough bits for right shift */
-            while (n>>k == 0) { 
+            while (n>>k == 0) {
                 n *= 10;
                 r++;
             }
@@ -165,7 +168,7 @@ static inline void right_shift(Decimal *d, uint32_t k) {
     for (; r < d->nd; r++) {
         dig = n >> k;
         n &= mask;
-        d->d[w++] = (char)(dig + '0'); 
+        d->d[w++] = (char)(dig + '0');
         n = n * 10 + d->d[r] - '0';
     }
 
@@ -178,6 +181,7 @@ static inline void right_shift(Decimal *d, uint32_t k) {
             w++;
         } else if (dig > 0) {
             /* truncated */
+            d->trunc = 1;
         }
         n *= 10;
     }
@@ -227,6 +231,7 @@ static inline void left_shift(Decimal *d, uint32_t k) {
             w--;
         } else if (rem != 0) {
             /* truncated */
+            d->trunc = 1;
         }
         n = quo;
     }
@@ -240,6 +245,7 @@ static inline void left_shift(Decimal *d, uint32_t k) {
             w--;
         } else if (rem != 0) {
             /* truncated */
+            d->trunc = 1;
         }
         n = quo;
     }
@@ -276,7 +282,7 @@ static inline void decimal_shift(Decimal *d, int k) {
             right_shift(d, -k);
         }
     }
-    
+
 }
 
 static inline int should_roundup(Decimal *d, int nd) {
@@ -285,7 +291,10 @@ static inline int should_roundup(Decimal *d, int nd) {
     }
 
     /* Exactly halfway - round to even */
-    if (d->d[nd] == '5' && nd+1 == d->nd) { 
+    if (d->d[nd] == '5' && nd+1 == d->nd) {
+        if (d->trunc) {
+            return 1;
+        }
         return nd > 0 && (d->d[nd-1]-'0')%2 != 0;
     }
 
@@ -344,7 +353,7 @@ int decimal_to_f64(Decimal *d, double *val) {
         } else {
             n = POW_TAB[d->dp];
         }
-        decimal_shift(d, -n); // shift right 
+        decimal_shift(d, -n); // shift right
         exp2 += n;
     }
     while ((d->dp < 0) || (d->dp == 0) && (d->d[0] < '5')) { // d < 0.5
@@ -376,12 +385,12 @@ int decimal_to_f64(Decimal *d, double *val) {
     }
 
     /* Extract 53 bits. */
-    decimal_shift(d, 53);  // shift left 
+    decimal_shift(d, 53);  // shift left
     mant = rounded_integer(d);
 
     /* Rounding might have added a bit; shift down. */
     if (mant == (((uint64_t)2) << 52)) { // mant has 54 bits
-        mant >>= 1; 
+        mant >>= 1;
         exp2 ++;
         if ((exp2 + 1023) >= 0x7FF) {
             goto overflow;
