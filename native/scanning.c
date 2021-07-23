@@ -412,12 +412,12 @@ void vstring(const GoString *src, long *p, JsonState *ret) {
         man_nd++;                                        \
     } else {                                             \
         exp10++;                                         \
-    }                                                    \
+    }
 
 #define add_float_to_mantissa(man, man_nd, exp10, dig) \
     man = man * 10 + dig;                              \
     man_nd++;                                          \
-    exp10--;                                           \
+    exp10--;
 
 #define parse_float_digits(val, sgn, ...)                       \
     while (i < n && s[i] >= '0' && s[i] <= '9' __VA_ARGS__) {   \
@@ -490,7 +490,9 @@ static inline int is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
         return 0;
     }
 
-    f *= sgn;
+    if (sgn == -1) {
+        f = -f;
+    }
     *val = 0;
 
     if (exp == 0 || man == 0) {
@@ -563,12 +565,6 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
     check_eof()
     check_sign(sgn = -1)
 
-    /* zero */
-    if (i + 1 == n && s[i] == '0') {
-        i++;
-        goto out;
-    }
-
     /* check for leading zero */
     check_digit()
     check_leading_zero()
@@ -634,10 +630,8 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
         exp10 += exp * esm;
     }
 
-out:
     if (ret->vt == V_INTEGER) {
-        /* if INT64_MIN <= man * sgn <= INT64_MAX */
-        if ( exp10 == 0 && (((man & ((uint64_t)1 << 63)) == 0) || ((man & sgn) == man))) {
+        if ( exp10 == 0 && (man >> 63) == 0) {
             ret->iv = (int64_t)man * sgn;
             ret->dv = (double)(ret->iv);
         } else { // integer overflow
