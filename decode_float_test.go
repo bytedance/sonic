@@ -34,8 +34,8 @@ type atofTest struct {
 // Tests from Go strconv package, https://github.com/golang/go/blob/master/src/strconv/atof_test.go
 // All tests are passed in Go encoding/json.
 var atoftests = []atofTest{
-	{"1.234e", "1.234", nil},
-	{"1i", "1", nil},
+	{"1.234e", "", nil}, // error
+	{"1i", "1", nil},    // pass
 	{"1", "1", nil},
 	{"1e23", "1e+23", nil},
 	{"1E23", "1e+23", nil},
@@ -140,19 +140,25 @@ var atoftests = []atofTest{
 	{"1090544144181609348671888949248", "1.0905441441816093e+30", nil},
 	// slightly above, rounds up
 	{"1090544144181609348835077142190", "1.0905441441816094e+30", nil},
+
+	// Corner case between int64 and float64 for the input
+	{"9223372036854775807", "9223372036854775807", nil}, // max int64: (1 << 63) - 1
+	{"9223372036854775808", "9223372036854775808", nil},
+	{"-9223372036854775808", "-9223372036854775808", nil}, // min int64: 1 << 63
+	{"-9223372036854775809", "-9223372036854775809", nil},
 }
 
 func TestDecodeFloat(t *testing.T) {
-	var sonicout, stdout interface{}
-	for _, tt := range atoftests {
+	for i, tt := range atoftests {
 		// default float64
+		var sonicout, stdout interface{}
 		sonicerr := decoder.NewDecoder(tt.in).Decode(&sonicout)
 		stderr := json.NewDecoder(strings.NewReader(tt.in)).Decode(&stdout)
 		if !reflect.DeepEqual(sonicout, stdout) {
-			t.Fatalf("Test %#v\ngot:\n   %#v\nexp:\n   %#v\n", tt.in, sonicout, stdout)
+			t.Fatalf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sonicout, stdout)
 		}
 		if !reflect.DeepEqual(sonicerr == nil, stderr == nil) {
-			t.Fatalf("Test %#v\ngot:\n   %#v\nexp:\n   %#v\n", tt.in, sonicerr, stderr)
+			t.Fatalf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sonicerr, stderr)
 		}
 	}
 }
