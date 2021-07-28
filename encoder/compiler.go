@@ -416,7 +416,7 @@ func (self *_Compiler) compileRec(p *_Program, sp int, vt reflect.Type, pv bool)
 
     /* check for `json.Marshaler` */
     if vt.Implements(jsonMarshalerType) {
-        p.rtt(_OP_marshal, vt)
+        self.compileMarshaler(p, _OP_marshal, vt, jsonMarshalerType)
         return
     }
 
@@ -428,7 +428,7 @@ func (self *_Compiler) compileRec(p *_Program, sp int, vt reflect.Type, pv bool)
 
     /* check for `encoding.TextMarshaler` */
     if vt.Implements(encodingTextMarshalerType) {
-        p.rtt(_OP_marshal_text, vt)
+        self.compileMarshaler(p, _OP_marshal_text, vt, encodingTextMarshalerType)
         return
     }
 
@@ -819,4 +819,24 @@ func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
     p.pin(x)
     p.add(_OP_null)
     p.pin(e)
+}
+
+func (self *_Compiler) compileMarshaler(p *_Program, op _Op, vt reflect.Type, mt reflect.Type) {
+    pc := p.pc()
+    vk := vt.Kind()
+
+    /* direct receiver */
+    if vk != reflect.Ptr || !vt.Elem().Implements(mt) {
+        p.rtt(op, vt)
+        return
+    }
+
+    /* value receiver with a pointer type, check for nil before calling the marshaler */
+    p.add(_OP_is_nil)
+    p.rtt(op, vt)
+    i := p.pc()
+    p.add(_OP_goto)
+    p.pin(pc)
+    p.add(_OP_null)
+    p.pin(i)
 }
