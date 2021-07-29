@@ -19,16 +19,16 @@ var (
     _subr__lspace      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 238
     _subr__lzero       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 0
     _subr__quote       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 4854
-    _subr__skip_array  = **(**uintptr)(unsafe.Pointer(&_func__base)) + 15896
-    _subr__skip_object = **(**uintptr)(unsafe.Pointer(&_func__base)) + 15931
-    _subr__skip_one    = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13574
+    _subr__skip_array  = **(**uintptr)(unsafe.Pointer(&_func__base)) + 15938
+    _subr__skip_object = **(**uintptr)(unsafe.Pointer(&_func__base)) + 15973
+    _subr__skip_one    = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13616
     _subr__u64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 3634
     _subr__unquote     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 5875
     _subr__value       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 9329
     _subr__vnumber     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 11904
-    _subr__vsigned     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13024
+    _subr__vsigned     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13066
     _subr__vstring     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 10935
-    _subr__vunsigned   = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13301
+    _subr__vunsigned   = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13343
 )
 
 var (

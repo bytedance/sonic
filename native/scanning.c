@@ -545,13 +545,17 @@ static inline double parse_float64(uint64_t man, int exp, int sgn, int trunc, co
     return atof_native_decimal(src->buf + idx, src->len - idx);
 }
 
+static bool inline is_overflow(uint64_t man, int sgn, int exp10) {
+    return exp10 != 0 ||
+        ((man >> 63) == 1 && ((uint64_t)sgn & man) != (1ull << 63));
+}
 
 void vnumber(const GoString *src, long *p, JsonState *ret) {
     int      dig;
     int      sgn = 1;
     uint64_t man = 0; // mantissa for double (float64)
     int   man_nd = 0; // # digits of mantissa, 10^19 fits uint64_t
-    int    exp10 = 0; // man * exp10 represents the true value
+    int    exp10 = 0; // val = sgn * man * 10 ^ exp10
     int    trunc = 0;
 
     /* initial buffer pointers */
@@ -631,10 +635,10 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
     }
 
     if (ret->vt == V_INTEGER) {
-        if ( exp10 == 0 && (man >> 63) == 0) {
+        if (!is_overflow(man, sgn, exp10)) {
             ret->iv = (int64_t)man * sgn;
             ret->dv = (double)(ret->iv);
-        } else { // integer overflow
+        } else {
             set_vt(V_DOUBLE)
         }
     }
