@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <immintrin.h>
+#include <stdbool.h>
 
 #define V_EOF           1
 #define V_NULL          2
