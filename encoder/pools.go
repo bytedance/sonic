@@ -28,12 +28,18 @@ import (
 const (
     _MaxStack  = 65536      // 64k states
     _MaxBuffer = 1048576    // 1MB buffer size
+    _MaxKey    = 256    // 256B buffer size
+    _MaxKvs    = 1024    // 
 )
 
 var (
     bytesPool    = sync.Pool{}
     stackPool    = sync.Pool{}
     bufferPool   = sync.Pool{}
+    kvsPool       = sync.Pool{}
+    keyPool       = sync.Pool{}
+    iterPool = sync.Pool{}
+    iterSize = unsafe.Sizeof(rt.GoMapIterator{})
     programCache = caching.CreateProgramCache()
 )
 
@@ -53,6 +59,7 @@ type _Encoder func(
     rb *[]byte,
     vp unsafe.Pointer,
     sb *_Stack,
+    fv uint64,
 ) error
 
 func newBytes() []byte {
@@ -79,6 +86,27 @@ func newBuffer() *bytes.Buffer {
     }
 }
 
+
+func newKvSlice(n int) *kvSlice {
+    if ret := kvsPool.Get(); ret != nil {
+        return ret.(*kvSlice)
+    }
+    kvs := make(kvSlice, n)
+    for i := range kvs {
+        kvs[i].k = make([]byte, 0, _MaxKey)
+    }
+    kvs = kvs[:0]
+    return &kvs
+}
+
+func newKeyBuffer() []byte {
+    if ret := keyPool.Get(); ret != nil {
+        return ret.([]byte)
+    } else {
+        return make([]byte, 0, _MaxBuffer)
+    }
+}
+
 func freeBytes(p []byte) {
     p = p[:0]
     bytesPool.Put(p)
@@ -92,6 +120,20 @@ func freeStack(p *_Stack) {
 func freeBuffer(p *bytes.Buffer) {
     p.Reset()
     bufferPool.Put(p)
+}
+
+func freeKvs(p *kvSlice) {
+    kvs := *p
+    for i := range kvs {
+        kvs[i].k = kvs[i].k[:0]
+    }
+    kvs = kvs[:0]
+    kvsPool.Put(kvs)
+}
+
+func freeKeyBuffer(p []byte) {
+    p = p[:0]
+    keyPool.Put(p)
 }
 
 func findOrCompile(vt *rt.GoType) (_Encoder, error) {

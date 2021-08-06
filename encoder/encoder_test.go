@@ -17,14 +17,49 @@
 package encoder
 
 import (
-    `encoding/json`
-    `strconv`
-    `testing`
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"testing"
 
-    gojson `github.com/goccy/go-json`
-    `github.com/json-iterator/go`
-    `github.com/stretchr/testify/assert`
+	gojson "github.com/goccy/go-json"
+	"github.com/json-iterator/go"
+	"github.com/stretchr/testify/assert"
 )
+
+type strTM string 
+
+func (self strTM) MarshalText() ([]byte, error) {
+    return []byte(self+"?"), nil
+}
+
+func TestMarshalMap(t *testing.T) {
+    t.Parallel()
+    var m = map[strTM]interface{}{
+        "a": true,
+        "b": 1,
+        "c": "test",
+        "d": -0.1,
+    }
+
+    t.Run("sort", func(t *testing.T){
+        ec := NewEncoder([]byte{})
+        ec.SortKeys()
+        if err := ec.Encode(m); err != nil {
+            t.Fatal(err)
+        }
+        fmt.Printf("%s\n", ec.Bytes())
+    })
+
+    t.Run("not_sort", func(t *testing.T){
+        b, err := Encode(m)
+        if err != nil {
+            t.Fatal(err)
+        }
+        fmt.Printf("%s\n", b)
+    })
+
+}
 
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {
     assert.Equal(t, exp, fn(arg))

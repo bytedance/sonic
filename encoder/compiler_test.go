@@ -28,3 +28,9 @@ func TestCompiler_Compile(t *testing.T) {
     assert.Nil(t, err)
     println(p.disassemble())
 }
+
+func TestCompiler_Map(t *testing.T) {
+    p, err := newCompiler().compile(reflect.TypeOf(map[string]interface{}{}))
+    assert.Nil(t, err)
+    println(p.disassemble())
+}

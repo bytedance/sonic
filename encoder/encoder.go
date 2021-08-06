@@ -24,6 +24,42 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
+const (
+     _F_sort_keys = 1 + iota
+)
+
+type Encoder struct {
+    buf []byte
+    pos int
+    flags uint64
+}
+
+func NewEncoder(buf []byte) *Encoder {
+    return &Encoder{buf, 0, 0}
+}
+
+func (self *Encoder) Encode(val interface{}) error {
+    if self.buf == nil {
+        self.buf = newBytes()
+    }
+
+    stk := newStack()
+    efv := rt.UnpackEface(val)
+    err := encodeTypedPointer(&self.buf, efv.Type, &efv.Value, stk, self.flags)
+
+    /* return the stack into pool */
+    freeStack(stk)
+    return  err
+}
+
+func (self *Encoder) Bytes() []byte {
+    return self.buf
+}
+
+func (self *Encoder) SortKeys() {
+    self.flags |= 1 << _F_sort_keys
+}
+
 func Quote(s string) string {
     var n int
     var p []byte
@@ -61,10 +97,10 @@ func Encode(val interface{}) ([]byte, error) {
     return ret, nil
 }
 
-func EncodeInto(buf *[]byte, val interface{}) error {
+func EncodeInto(buf *[]byte, val interface{}, ) error {
     stk := newStack()
     efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk)
+    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, 0)
 
     /* return the stack into pool */
     freeStack(stk)

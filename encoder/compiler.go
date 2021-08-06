@@ -70,6 +70,15 @@ const (
     _OP_map_iter
     _OP_map_check_key
     _OP_map_value_next
+
+    _OP_flag_not_sort
+    _OP_map_to_kvs
+    _OP_free_kvs
+    _OP_kvs_len
+    _OP_kvs_next
+    _OP_kvs_key
+    _OP_kvs_next_val
+
     _OP_slice_len
     _OP_slice_next
     _OP_marshal
@@ -78,6 +87,7 @@ const (
     _OP_marshal_text_p
     _OP_cond_set
     _OP_cond_testc
+    _OP_print_stack
 )
 
 const (
@@ -139,6 +149,14 @@ var _OpNames = [256]string {
     _OP_marshal_text_p : "marshal_text_p",
     _OP_cond_set       : "cond_set",
     _OP_cond_testc     : "cond_testc",
+    _OP_flag_not_sort  : "flag_not_sort",
+    _OP_map_to_kvs     : "map_to_kvs",
+    _OP_free_kvs       : "free_kvs",
+    _OP_kvs_len        : "kvs_len",
+    _OP_kvs_next       : "kvs_next",
+    _OP_kvs_key        : "kvs_key",
+    _OP_kvs_next_val   : "kvs_next_val",
+
 }
 
 func (self _Op) String() string {
@@ -255,6 +273,8 @@ func (self _Instr) isBranch() bool {
         case _OP_is_zero_safe  : fallthrough
         case _OP_map_check_key : fallthrough
         case _OP_slice_next    : fallthrough
+        case _OP_kvs_next      : fallthrough
+        case _OP_flag_not_sort : fallthrough
         case _OP_cond_testc    : return true
         default                : return false
     }
@@ -280,6 +300,8 @@ func (self _Instr) disassemble() string {
         case _OP_is_zero_8      : fallthrough
         case _OP_is_zero_map    : fallthrough
         case _OP_cond_testc     : fallthrough
+        case _OP_kvs_next       : fallthrough
+        case _OP_flag_not_sort  : fallthrough
         case _OP_map_check_key  : return fmt.Sprintf("%-18sL_%d", self.op().String(), self.vi())
         case _OP_is_zero_mem    : fallthrough
         case _OP_is_zero_safe   : fallthrough
@@ -493,21 +515,22 @@ func (self *_Compiler) compilePtrBody(p *_Program, sp int, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileMap(p *_Program, sp int, vt reflect.Type) {
-    self.compileNil(p, sp, vt, self.compileMapBody)
+    self.compileNil(p, sp, vt, self.compileMapAll)
 }
 
 func (self *_Compiler) compileMapBody(p *_Program, sp int, vt reflect.Type) {
-    p.tag(sp + 1)
-    p.int(_OP_byte, '{')
-    p.add(_OP_save)
-    p.rtt(_OP_map_iter, vt)
-    p.add(_OP_save)
+    // p.tag(sp + 1)
+    // p.int(_OP_byte, '{')
+    // p.add(_OP_save)
+    // p.rtt(_OP_map_iter, vt)
+    // p.tag(sp + 1)
+    // p.add(_OP_save)
     i := p.pc()
     p.add(_OP_map_check_key)
     self.compileMapBodyKey(p, vt.Key())
     p.int(_OP_byte, ':')
     p.add(_OP_map_value_next)
-    self.compileOne(p, sp + 2, vt.Elem(), false)
+    self.compileOne(p, sp + 1, vt.Elem(), false)
     j := p.pc()
     p.add(_OP_map_check_key)
     p.int(_OP_byte, ',')
@@ -518,8 +541,8 @@ func (self *_Compiler) compileMapBody(p *_Program, sp int, vt reflect.Type) {
     p.int(_OP_goto, j)
     p.pin(i)
     p.pin(j)
-    p.add(_OP_drop_2)
-    p.int(_OP_byte, '}')
+    // p.add(_OP_drop_2)
+    // p.int(_OP_byte, '}')
 }
 
 func (self *_Compiler) compileMapBodyKey(p *_Program, vk reflect.Type) {
@@ -839,4 +862,65 @@ func (self *_Compiler) compileMarshaler(p *_Program, op _Op, vt reflect.Type, mt
     p.pin(pc)
     p.add(_OP_null)
     p.pin(i)
+}
+
+
+func (self *_Compiler) compileMapAll(p *_Program, sp int, vt reflect.Type) {
+    p.tag(sp + 1)
+    p.int(_OP_byte, '{')
+    p.add(_OP_save)
+    p.rtt(_OP_map_iter, vt)
+
+    i := p.pc()
+    p.add(_OP_flag_not_sort)
+    j := self.compileMapBodySort(p, sp, vt)
+    p.pin(i)
+    self.compileMapBody(p, sp, vt)
+    p.pin(j)
+
+    p.add(_OP_drop_2)
+    p.int(_OP_byte, '}')
+}
+
+func (self *_Compiler) compileMapBodySort(p *_Program, sp int, vt reflect.Type) int {
+    // p.tag(sp + 1)
+    // p.add(_OP_save)
+    p.add(_OP_print_stack)
+    // iterate map to *kvSlice (saved at Stack.q)
+    p.add(_OP_map_to_kvs) 
+    p.add(_OP_print_stack)
+    p.tag(sp + 1)
+    p.add(_OP_save)
+
+    // iterate *kvSlice 
+    p.add(_OP_kvs_len) 
+    p.add(_OP_print_stack)
+    i := p.pc()
+    p.add(_OP_kvs_next)
+    p.add(_OP_print_stack)
+    p.add(_OP_kvs_key)
+    p.int(_OP_byte, ':')
+    p.add(_OP_kvs_next_val)
+    p.add(_OP_print_stack)
+    self.compileOne(p, sp + 1, vt.Elem(), false)
+    p.add(_OP_print_stack)
+    j := p.pc()
+    p.add(_OP_kvs_next)
+    p.int(_OP_byte, ',')
+    p.add(_OP_kvs_key)
+    p.int(_OP_byte, ':')
+    p.add(_OP_kvs_next_val)
+    self.compileOne(p, sp + 1, vt.Elem(), false)
+    p.int(_OP_goto, j)
+    p.pin(i)
+    p.pin(j)
+    p.add(_OP_print_stack)
+    // free *kvSlice
+    p.add(_OP_drop)
+    p.add(_OP_print_stack)
+    p.add(_OP_free_kvs)
+    //p.add(_OP_drop)
+    ret := p.pc()
+    p.add(_OP_goto)
+    return ret
 }

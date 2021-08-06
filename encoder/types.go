@@ -29,6 +29,7 @@ var (
     jsonNumberType           = reflect.TypeOf(json.Number(""))
     mapIteratorType          = reflect.TypeOf(rt.GoMapIterator{})
     mapPIteratorType         = reflect.TypeOf(new(rt.GoMapIterator))
+    kvSliceType              = reflect.TypeOf(new(kvSlice))
     jsonUnsupportedValueType = reflect.TypeOf(new(json.UnsupportedValueError))
 )
 
