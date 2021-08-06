@@ -17,15 +17,15 @@
 package encoder
 
 import (
-	"bytes"
-	"encoding"
-	"encoding/json"
-	"fmt"
-	"reflect"
-	"unsafe"
+    "bytes"
+    "encoding"
+    "encoding/json"
+    "fmt"
+    "reflect"
+    "unsafe"
 
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/rt"
+    "github.com/bytedance/sonic/internal/native"
+    "github.com/bytedance/sonic/internal/rt"
 )
 
 /** Encoder Primitives **/
@@ -176,7 +176,7 @@ type keyValue struct {
 type kvSlice []keyValue
 
 func (self *kvSlice) Sort() {
-    (*self)[0], (*self)[len(*self)-1] = (*self)[len(*self)-1], (*self)[0] 
+    radixQsort(*self, 0, maxDepth(len(*self)))
 }
 
 func (kvs kvSlice) String() string {
