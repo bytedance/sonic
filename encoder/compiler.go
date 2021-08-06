@@ -870,6 +870,8 @@ func (self *_Compiler) compileMapAll(p *_Program, sp int, vt reflect.Type) {
     p.int(_OP_byte, '{')
     p.add(_OP_save)
     p.rtt(_OP_map_iter, vt)
+    p.tag(sp + 1)
+    p.add(_OP_save)
 
     i := p.pc()
     p.add(_OP_flag_not_sort)
@@ -883,8 +885,6 @@ func (self *_Compiler) compileMapAll(p *_Program, sp int, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileMapBodySort(p *_Program, sp int, vt reflect.Type) int {
-    // p.tag(sp + 1)
-    // p.add(_OP_save)
     p.add(_OP_print_stack)
     // iterate map to *kvSlice (saved at Stack.q)
     p.add(_OP_map_to_kvs) 
@@ -915,6 +915,7 @@ func (self *_Compiler) compileMapBodySort(p *_Program, sp int, vt reflect.Type) 
     p.pin(i)
     p.pin(j)
     p.add(_OP_print_stack)
+
     // free *kvSlice
     p.add(_OP_drop)
     p.add(_OP_print_stack)

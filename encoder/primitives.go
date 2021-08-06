@@ -69,11 +69,13 @@ func encodeString(buf *[]byte, val string) error {
 }
 
 func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv uint64) error {
+//    fmt.Printf("\tvt:%v\n\tvp:%x\n", vt.String(), *vp)
     if vt == nil {
         return encodeNil(buf)
     } else if fn, err := findOrCompile(vt); err != nil {
         return err
     } else if (vt.KindFlags & rt.F_direct) == 0 {
+//        fmt.Printf("\t\tfn: %#v\n", fn)
         return fn(buf, *vp, sb, fv)
     } else {
         return fn(buf, unsafe.Pointer(vp), sb, fv)
@@ -226,11 +228,11 @@ func map2kvs(it *rt.GoMapIterator, st *_Stack, fv uint64) (*kvSlice, error) {
     return &ret, nil
 } 
 
-func printStack(st *_Stack,  cur _State, fv uint64, buf rt.GoSlice) {
+func printStack(st *_Stack,  cur _State, fv uint64, buf []byte) {
     top := st.sp-2
     if top < 0 {
         top = 0
     }
-    fmt.Printf("fv:%x\nbuf:%#v\nstate:%#x\ntop:%#v\n", fv, buf, cur, st.sb[top])
+    fmt.Printf("fv:%x\nbuf:%v\nstate:%#x\ntop:%#v\n", fv, rt.Mem2Str(buf), cur, st.sb[top])
 }
 
