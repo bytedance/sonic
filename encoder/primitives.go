@@ -196,11 +196,6 @@ func (kvs kvSlice) String() string {
 
 
 func map2kvs(it *rt.GoMapIterator, st *_Stack, fv uint64) (*kvSlice, error) {
-    // top := st.sp-2
-    // if top < 0 {
-    //     top = 0
-    // }
-    // fmt.Printf("fv:%v\nit:%#v\nst:%#v\n", fv, it, st.sb[top])
     if it == nil  {
         return nil, nil
     }
@@ -209,7 +204,7 @@ func map2kvs(it *rt.GoMapIterator, st *_Stack, fv uint64) (*kvSlice, error) {
     if err != nil {
         return nil, err
     }
-    fmt.Printf("fn:%#v\n", fn)
+    //fmt.Printf("fn:%#v\n", fn)
 
     n := it.H.Count
     kvs := newKvSlice(n)
@@ -224,7 +219,7 @@ func map2kvs(it *rt.GoMapIterator, st *_Stack, fv uint64) (*kvSlice, error) {
     }
     
     ret.Sort()
-    fmt.Printf("ret:%s\n", ret)
+    //fmt.Printf("ret:%s\n", ret)
     return &ret, nil
 } 
 

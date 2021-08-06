@@ -1247,9 +1247,7 @@ func (self *_Assembler) _asm_OP_map_to_kvs(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_free_kvs(p *_Instr) {
-    self.Emit("MOVQ", _V_kvsPool, _AX)// MOVQ $&kvsPool, AX
-    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))// MOVQ AX, 0(SP)
-    self.Emit("MOVQ", _SP_q, jit.Ptr(_SP, 8))// MOVQ SP.q, 8(SP)
+    self.Emit("MOVQ", _SP_q, jit.Ptr(_SP, 0))// MOVQ SP.q, 0(SP)
     self.call_go(_F_free_kvs)// CALL_GO freeKvs()
 }
 

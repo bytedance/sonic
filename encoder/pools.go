@@ -88,9 +88,16 @@ func newBuffer() *bytes.Buffer {
 
 
 func newKvSlice(n int) *kvSlice {
+    var p *kvSlice
     if ret := kvsPool.Get(); ret != nil {
-        return ret.(*kvSlice)
+        p = (ret.(*kvSlice))
+        if cap(*p) >= n {
+            return p
+        }else{
+            kvsPool.Put(p)
+        }
     }
+    
     kvs := make(kvSlice, n)
     for i := range kvs {
         kvs[i].k = make([]byte, 0, _MaxKey)
@@ -128,7 +135,7 @@ func freeKvs(p *kvSlice) {
         kvs[i].k = kvs[i].k[:0]
     }
     kvs = kvs[:0]
-    kvsPool.Put(kvs)
+    kvsPool.Put(&kvs)
 }
 
 func freeKeyBuffer(p []byte) {

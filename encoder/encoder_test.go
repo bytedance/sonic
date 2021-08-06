@@ -155,6 +155,22 @@ func BenchmarkEncoder_Generic_Sonic(b *testing.B) {
     }
 }
 
+func BenchmarkEncoder_Generic_Sort_Sonic(b *testing.B) {
+    ec := NewEncoder([]byte{})
+    ec.SortKeys()
+    err := ec.Encode(_GenericValue)
+    if err != nil {
+        b.Fatal(err)
+    }
+    ec.Reset()
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _ = ec.Encode(_GenericValue)
+        ec.Reset()
+    }
+}
+
 func BenchmarkEncoder_Generic_JsonIter(b *testing.B) {
     _, _ = jsoniter.Marshal(_GenericValue)
     b.SetBytes(int64(len(TwitterJson)))
@@ -225,6 +241,24 @@ func BenchmarkEncoder_Parallel_Generic_Sonic(b *testing.B) {
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
             _, _ = Encode(_GenericValue)
+        }
+    })
+}
+
+func BenchmarkEncoder_Parallel_Generic_Sort_Sonic(b *testing.B) {
+    ec := NewEncoder([]byte{})
+    ec.SortKeys()
+    err := ec.Encode(_GenericValue)
+    if err != nil {
+        b.Fatal(err)
+    }
+    ec.Reset()
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            _ = ec.Encode(_GenericValue)
+            ec.Reset()
         }
     })
 }

@@ -56,6 +56,10 @@ func (self *Encoder) Bytes() []byte {
     return self.buf
 }
 
+func (self *Encoder) Reset() {
+    self.buf = self.buf[:0]
+}
+
 func (self *Encoder) SortKeys() {
     self.flags |= 1 << _F_sort_keys
 }
