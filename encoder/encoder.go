@@ -57,6 +57,9 @@ func (self *Encoder) Bytes() []byte {
 }
 
 func (self *Encoder) Reset() {
+    if self.buf == nil {
+        self.buf = newBytes()
+    }
     self.buf = self.buf[:0]
 }
 

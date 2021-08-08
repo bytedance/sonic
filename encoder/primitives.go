@@ -69,15 +69,16 @@ func encodeString(buf *[]byte, val string) error {
 }
 
 func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv uint64) error {
-//    fmt.Printf("\tvt:%v\n\tvp:%x\n", vt.String(), *vp)
+    //fmt.Printf("\tvt:%v vk:%v vp:%x\n", vt.String(), vt.Kind().String(), unsafe.Pointer(vp))
     if vt == nil {
         return encodeNil(buf)
     } else if fn, err := findOrCompile(vt); err != nil {
         return err
     } else if (vt.KindFlags & rt.F_direct) == 0 {
-//        fmt.Printf("\t\tfn: %#v\n", fn)
+        //fmt.Printf("\t\tfn: %#v *vp: %x\n", fn, *vp)
         return fn(buf, *vp, sb, fv)
     } else {
+        //fmt.Printf("\t\tfn: %#v vp: %x\n", fn, vp)
         return fn(buf, unsafe.Pointer(vp), sb, fv)
     }
 }
@@ -175,8 +176,11 @@ type keyValue struct {
 
 type kvSlice []keyValue
 
+//go:nosplit
 func (self *kvSlice) Sort() {
+    //fmt.Printf("kvs:%v\n", self.String())
     radixQsort(*self, 0, maxDepth(len(*self)))
+    //fmt.Printf("kvs:%v\n", self.String())
 }
 
 func (kvs kvSlice) String() string {
@@ -188,7 +192,9 @@ func (kvs kvSlice) String() string {
         }
         buf.WriteString(string(kv.k))
         buf.WriteByte(':')
-        buf.WriteString(fmt.Sprintf("%d", kv.v))
+        //eface :=(*rt.GoEface)(kv.v)
+        //buf.WriteString(fmt.Sprintf("%#v(%x)\tvt:%x\tvp:%x", *(*interface{})(kv.v), kv.v, eface.Type, eface.Value))
+        buf.WriteString(fmt.Sprintf("%x", kv.v))
     }
     buf.WriteByte(']')
     return buf.String()
@@ -223,11 +229,11 @@ func map2kvs(it *rt.GoMapIterator, st *_Stack, fv uint64) (*kvSlice, error) {
     return &ret, nil
 } 
 
-func printStack(st *_Stack,  cur _State, fv uint64, buf []byte) {
-    top := st.sp-2
+func printStack(st *_Stack,  cur _State, fv uint64, buf []byte, c byte) {
+    top := (st.sp-8)/uint64(_StateSize)-1
     if top < 0 {
         top = 0
     }
-    fmt.Printf("fv:%x\nbuf:%v\nstate:%#x\ntop:%#v\n", fv, rt.Mem2Str(buf), cur, st.sb[top])
+    fmt.Printf("%v\nfv:%x\nbuf:%v\nstate:%#x\ntop:%#v\n", c, fv, rt.Mem2Str(buf), cur, st.sb[top])
 }
 

@@ -29,16 +29,22 @@ func TestCompiler_Compile(t *testing.T) {
     println(p.disassemble())
 }
 
-func TestCompiler_Map(t *testing.T) {
-    _, err := newCompiler().compile(reflect.TypeOf(allValue))
+func TestCompiler_All(t *testing.T) {
+	p, err := newCompiler().compile(reflect.TypeOf(allValue))
     assert.Nil(t, err)
-    //println(p.disassemble())
+	println(p.disassemble())
+}
 
-    ec := NewEncoder([]byte{})
-    if err := ec.Encode(allValue); err != nil {
-        t.Fatal(err)
+func TestCompiler_Map(t *testing.T) {
+	var m = map[strTM]interface{}{
+        "a": true,
+        "b": 1,
+        "c": "test",
+        "d": -0.1,
     }
-    println(string(ec.Bytes()))
+    p, err := newCompiler().compile(reflect.TypeOf(m))
+    assert.Nil(t, err)
+    println(p.disassemble())
 }
 
 type Small struct {

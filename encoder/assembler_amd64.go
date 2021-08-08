@@ -240,12 +240,19 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_map_value_next : (*_Assembler)._asm_OP_map_value_next,
     
     _OP_flag_not_sort  : (*_Assembler)._asm_OP_flag_not_sort,
-    _OP_map_to_kvs     : (*_Assembler)._asm_OP_map_to_kvs,
+    //_OP_map_to_kvs     : (*_Assembler)._asm_OP_map_to_kvs,
+    _OP_map_len        : (*_Assembler)._asm_OP_map_len,
+    _OP_kvs_next_map   : (*_Assembler)._asm_OP_kvs_next_map,
     _OP_free_kvs       : (*_Assembler)._asm_OP_free_kvs,
     _OP_kvs_len        : (*_Assembler)._asm_OP_kvs_len,
     _OP_kvs_next       : (*_Assembler)._asm_OP_kvs_next,
     _OP_kvs_key        : (*_Assembler)._asm_OP_kvs_key,
     _OP_kvs_next_val   : (*_Assembler)._asm_OP_kvs_next_val,
+    _OP_kvs_new        : (*_Assembler)._asm_OP_kvs_new,
+    _OP_kvs_load       : (*_Assembler)._asm_OP_kvs_load,
+    _OP_kvs_sort       : (*_Assembler)._asm_OP_kvs_sort,
+    _OP_kvs_set_buf    : (*_Assembler)._asm_OP_kvs_set_buf,
+    _OP_kvs_map_next_value: (*_Assembler)._asm_OP_kvs_map_next_value,
 
     _OP_slice_len      : (*_Assembler)._asm_OP_slice_len,
     _OP_slice_next     : (*_Assembler)._asm_OP_slice_next,
@@ -255,6 +262,9 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_marshal_text_p : (*_Assembler)._asm_OP_marshal_text_p,
     _OP_cond_set       : (*_Assembler)._asm_OP_cond_set,
     _OP_cond_testc     : (*_Assembler)._asm_OP_cond_testc,
+
+    _OP_save_buffer_to_stack: (*_Assembler)._asm_OP_save_buffer_to_stack,
+    _OP_load_buffer_from_stack: (*_Assembler)._asm_OP_load_buffer_from_stack,
     _OP_print_stack    : (*_Assembler)._asm_OP_print_stack,
 }
 
@@ -820,6 +830,7 @@ var (
     _F_error_number         = jit.Func(error_number)
     _F_isValidNumber        = jit.Func(isValidNumber)
     _F_memclrNoHeapPointers = jit.Func(memclrNoHeapPointers)
+    _F_newKvSlice           = jit.Func(newKvSlice)
     _F_print_stack          = jit.Func(printStack)
 )
 
@@ -828,6 +839,7 @@ var (
     _F_sync_Pool_Put = jit.Func((*sync.Pool).Put)
 
     _F_map_to_kvs obj.Addr
+    _F_kvs_sort obj.Addr
     _F_free_kvs obj.Addr
 )
 
@@ -842,7 +854,8 @@ func init() {
     _F_encodeJsonMarshaler = jit.Func(encodeJsonMarshaler)
     _F_encodeTextMarshaler = jit.Func(encodeTextMarshaler)
     _F_map_to_kvs = jit.Func(map2kvs)
-    _F_free_kvs = jit.Func(freeKvs)
+    _F_kvs_sort = jit.Func((*kvSlice).Sort)
+    _F_free_kvs = jit.Func(freeKvSlice)
 }
 
 func (self *_Assembler) _asm_OP_null(_ *_Instr) {
@@ -1247,49 +1260,43 @@ func (self *_Assembler) _asm_OP_map_to_kvs(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_free_kvs(p *_Instr) {
-    self.Emit("MOVQ", _SP_q, jit.Ptr(_SP, 0))// MOVQ SP.q, 0(SP)
+    self.Emit("MOVQ", _SP_f, jit.Ptr(_SP, 0))// MOVQ SP.q, 0(SP)
     self.call_go(_F_free_kvs)// CALL_GO freeKvs()
 }
 
 func (self *_Assembler) _asm_OP_kvs_len(p *_Instr) {
-    self.Emit("MOVQ" , jit.Ptr(_SP_q, 8), _SP_x)        // MOVQ  8(SP.q), SP.x
-    self.Emit("MOVQ" , jit.Ptr(_SP_q, 0), _SP_q)        // MOVQ  (SP.q), SP.p
-    self.Emit("MOVQ" , _SP_q, _SP_p)        // MOVQ  (SP.q), SP.p
-    self.Emit("ORQ"  , jit.Imm(1 << _S_init), _SP_f)    // ORQ   $(1<<_S_init), SP.f
+    self.Emit("MOVQ" , jit.Ptr(_SP_f, 8), _SP_x)        // MOVQ  8(SP.q), SP.x
+    self.Emit("MOVQ" , jit.Ptr(_SP_f, 0), _SP_f)        // MOVQ  (SP.q), SP.p
+    self.Emit("MOVQ" , _SP_f, _SP_p)        // MOVQ  (SP.q), SP.p
+    //self.Emit("ORQ"  , jit.Imm(1 << _S_init), _SP_f)    // ORQ   $(1<<_S_init), SP.f
 }
 
 func (self *_Assembler) _asm_OP_kvs_next(p *_Instr) {
+    self.Emit("SUBQ"   , jit.Imm(1), _SP_x)                     // SUBQ    1, SP.x
     self.Emit("TESTQ"  , _SP_x, _SP_x)                          // TESTQ   SP.x, SP.x
     self.Xjmp("JZ"     , p.vi())                                // JZ      p.vi()
-    self.Emit("SUBQ"   , jit.Imm(1), _SP_x)                     // SUBQ    1, SP.x
-    self.Emit("BTRQ"   , jit.Imm(_S_init), _SP_f)               // BTRQ    $_S_init, SP.f
-    self.Emit("LEAQ"   , jit.Ptr(_SP_q, 32), _AX)                // LEAQ    (8)(SP.p), AX
-    self.Emit("CMOVQCC", _AX, _SP_q)                            // CMOVQNC AX, SP.p
+    //self.Emit("BTRQ"   , jit.Imm(_S_init), _SP_f)               // BTRQ    $_S_init, SP.f
+    self.Emit("ADDQ"   , jit.Imm(32), _SP_f)                // LEAQ    (8)(SP.p), AX
+    //self.Emit("CMOVQCC", _AX, _SP_f)                            // CMOVQNC AX, SP.p
 }
 
 func (self *_Assembler) _asm_OP_kvs_next_val(p *_Instr) {
-    self.Emit("MOVQ", jit.Ptr(_SP_q, 24), _AX)
-    self.Emit("LEAQ", jit.Ptr(_AX, 0), _SP_p) 
+    self.Emit("MOVQ", jit.Ptr(_SP_f, 24), _SP_p)
 }
-
 
 func (self *_Assembler) _asm_OP_kvs_key(p *_Instr) {
-    self.Emit("MOVQ" , _SP_q, _SP_p)                    // MOVQ SP.p, SP.q            
-    // self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _CX)          // MOVQ    (SP.p), CX
-    // self.Emit("TESTQ", _CX, _CX)                        // TESTQ   CX, CX
-    // self.Sjmp("JZ"   , "_empty_{n}")                    // JZ      _empty_{n}
-    self.Emit("MOVQ", jit.Ptr(_SP_q, 8), _AX)           // MOVQ 8(SP.q), _AX
+    self.Emit("MOVQ" , _SP_f, _SP_p)                    // MOVQ SP.p, SP.q            
+    self.Emit("MOVQ", jit.Ptr(_SP_f, 8), _AX)           // MOVQ 8(SP.q), _AX
     self.check_size_r(_AX, 0)
     self.Emit("LEAQ" , jit.Sib(_RP, _RL, 1, 0), _AX)    // LEAQ    (RP)(RL), AX
-    self.Emit("ADDQ" , jit.Ptr(_SP_q, 8), _RL)          // ADDQ    8(SP.p), RL
+    self.Emit("ADDQ" , jit.Ptr(_SP_f, 8), _RL)          // ADDQ    8(SP.p), RL
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))            // MOVQ    AX, (SP)
-    self.Emit("MOVOU", jit.Ptr(_SP_q, 0), _X0)          // MOVOU   (SP.p), X0
+    self.Emit("MOVOU", jit.Ptr(_SP_f, 0), _X0)          // MOVOU   (SP.p), X0
     self.Emit("MOVOU", _X0, jit.Ptr(_SP, 8))            // MOVOU   X0, 8(SP)
     self.call_go(_F_memmove)                            // CALL_GO memmove
-    // self.Link("_empty_{n}")
 }
 
-func (self *_Assembler) _asm_OP_print_stack(_p *_Instr) {
+func (self *_Assembler) _asm_OP_print_stack(p *_Instr) {
     self.Emit("MOVQ", _ST, jit.Ptr(_SP, 0))    // MOVQ ST, 0(SP)
     self.Emit("MOVQ", _SP_x, jit.Ptr(_SP, 8))  // MOVQ SP.x, 0(SP)
     self.Emit("MOVQ", _SP_f, jit.Ptr(_SP, 16)) // MOVQ SP.x, 0(SP)
@@ -1299,5 +1306,81 @@ func (self *_Assembler) _asm_OP_print_stack(_p *_Instr) {
     self.Emit("MOVQ", _RP, jit.Ptr(_SP, 48)) // MOVQ SP.x, 0(SP)
     self.Emit("MOVQ", _RL, jit.Ptr(_SP, 56)) // MOVQ SP.x, 0(SP)
     self.Emit("MOVQ", _RC, jit.Ptr(_SP, 64)) // MOVQ SP.x, 0(SP)
+    self.Emit("MOVB", jit.Imm(int64(p.vi())), jit.Ptr(_SP, 72))// MOVB $p.vi, 72(SP)
     self.call_go(_F_print_stack)
+}
+
+func (self *_Assembler) _asm_OP_save_buffer_to_stack(p *_Instr) {
+    self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)           // MOVQ (ST), AX
+    self.Emit("LEAQ", jit.Ptr(_AX, _StateSize), _CX)  // LEAQ _StateSize(AX), CX
+    self.Emit("CMPQ", _CX, jit.Imm(_StackLimit))      // CMPQ CX, $_StackLimit
+    self.Sjmp("JA"  , _LB_error_too_deep)             // JA   _error_too_deep
+    self.Emit("MOVQ", _RL, jit.Sib(_ST, _AX, 1, 8))   // MOVQ RL, 8(ST)(AX)
+    self.Emit("MOVQ", _RC, jit.Sib(_ST, _AX, 1, 16))  // MOVQ RC, 16(ST)(AX)
+    self.Emit("MOVQ", _RP, jit.Sib(_ST, _AX, 1, 24))  // MOVQ RP, 24(ST)(AX)
+    self.Emit("MOVQ", _ARG_rb, _DX)                   // LEAQ $(0(SP)), _DX,
+    self.Emit("MOVQ", _DX, jit.Sib(_ST, _AX, 1, 32))  // MOVQ DX, 32(ST)(AX)
+    self.Emit("MOVQ", _CX, jit.Ptr(_ST, 0))            // MOVQ CX, (ST)
+}
+
+func (self *_Assembler) _asm_OP_load_buffer_from_stack(p *_Instr) {
+    self.Emit("MOVQ" , jit.Ptr(_ST, 0), _AX)              // MOVQ  (ST), AX
+    self.Emit("SUBQ" , jit.Imm(_StateSize), _AX)          // SUBQ  $_StateSize, AX
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 8), _RL)      // MOVQ  8(ST)(AX),  RL
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 16), _RC)     // MOVQ  16(ST)(AX), RC
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 24), _RP)     // MOVQ  24(ST)(AX), RP
+    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 32), _CX)     // MOVQ  32(ST)(AX), CX
+    self.Emit("MOVQ" , _CX, _ARG_rb)                      // MOVQ  CX, 0(SP)
+    self.Emit("PXOR" , _X0, _X0)                          // PXOR  X0, X0
+    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))      // MOVOU X0, 8(ST)(AX)
+    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 24))     // MOVOU X0, 24(ST)(AX)
+    self.Emit("MOVQ" , _AX, jit.Ptr(_ST, 0))              // MOVQ  AX, (ST)
+}
+
+func (self *_Assembler) _asm_OP_map_len(p *_Instr) {
+    self.Emit("MOVQ", jit.Ptr(_SP_q, 24), _AX)
+    self.Emit("TESTQ", _AX, _AX)
+    self.Xjmp("JZ", p.vi())
+    self.Emit("MOVQ", jit.Ptr(_AX, 0), _SP_x)
+    self.Emit("TESTQ",_SP_x, _SP_x)
+    self.Xjmp("JZ", p.vi())
+}
+
+func (self *_Assembler) _asm_OP_kvs_new(p *_Instr) {
+    self.Emit("MOVQ", _SP_x, jit.Ptr(_SP, 0))
+    self.call_go(_F_newKvSlice)
+    self.Emit("MOVQ", jit.Ptr(_SP, 8), _SP_f)
+}
+
+func (self *_Assembler) _asm_OP_kvs_load(p *_Instr) {
+    self.Emit("MOVQ", jit.Ptr(_SP_f, 0), _SP_f)
+}
+
+func(self *_Assembler) _asm_OP_kvs_next_map(p *_Instr) {
+    self.Emit("MOVQ", jit.Ptr(_SP_q, 0), _SP_p)
+    self.Emit("TESTQ", _SP_p, _SP_p)
+    self.Xjmp("JZ", p.vi())
+    self.Emit("MOVQ", jit.Ptr(_SP_q, 8), _AX)
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP_f, 24))
+}
+
+func (self *_Assembler) _asm_OP_kvs_set_buf(p *_Instr) {
+    self.Emit("MOVQ", _SP_f,  _ARG_rb)
+    self.Emit("MOVQ", jit.Ptr(_SP_f, 0), _RP)
+    self.Emit("MOVQ", jit.Ptr(_SP_f, 8), _RL)
+    self.Emit("MOVQ", jit.Ptr(_SP_f, 16), _RC)
+}
+
+func(self *_Assembler) _asm_OP_kvs_map_next_value(p *_Instr) {
+    self.Emit("SUBQ", jit.Imm(1), _SP_x)
+    self.Emit("TESTQ", _SP_x, _SP_x)
+    self.Xjmp("JZ", p.vi())
+    self.Emit("ADDQ", jit.Imm(32), _SP_f)
+    self.Emit("MOVQ", _SP_q, jit.Ptr(_SP, 0))
+    self.call_go(_F_mapiternext)
+}
+
+func(self *_Assembler) _asm_OP_kvs_sort(p *_Instr) {
+    self.Emit("MOVQ", _SP_f, jit.Ptr(_SP, 0))
+    self.call_go(_F_kvs_sort)
 }

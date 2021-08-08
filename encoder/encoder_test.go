@@ -40,6 +40,7 @@ func TestMarshalMap(t *testing.T) {
         "b": 1,
         "c": "test",
         "d": -0.1,
+        "e": nil,
     }
 
     t.Run("sort", func(t *testing.T){
@@ -48,7 +49,7 @@ func TestMarshalMap(t *testing.T) {
         if err := ec.Encode(m); err != nil {
             t.Fatal(err)
         }
-        fmt.Printf("%s\n", ec.Bytes())
+        fmt.Printf("result: %s\n", ec.Bytes())
     })
 
     t.Run("not_sort", func(t *testing.T){
@@ -56,7 +57,7 @@ func TestMarshalMap(t *testing.T) {
         if err != nil {
             t.Fatal(err)
         }
-        fmt.Printf("%s\n", b)
+        fmt.Printf("result: %s\n", b)
     })
 
 }

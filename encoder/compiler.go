@@ -73,11 +73,18 @@ const (
 
     _OP_flag_not_sort
     _OP_map_to_kvs
+    _OP_map_len
+    _OP_kvs_next_map
     _OP_free_kvs
     _OP_kvs_len
     _OP_kvs_next
     _OP_kvs_key
     _OP_kvs_next_val
+    _OP_kvs_new
+    _OP_kvs_load
+    _OP_kvs_sort
+    _OP_kvs_set_buf
+    _OP_kvs_map_next_value
 
     _OP_slice_len
     _OP_slice_next
@@ -87,7 +94,10 @@ const (
     _OP_marshal_text_p
     _OP_cond_set
     _OP_cond_testc
+
     _OP_print_stack
+    _OP_save_buffer_to_stack
+    _OP_load_buffer_from_stack
 )
 
 const (
@@ -156,7 +166,16 @@ var _OpNames = [256]string {
     _OP_kvs_next       : "kvs_next",
     _OP_kvs_key        : "kvs_key",
     _OP_kvs_next_val   : "kvs_next_val",
-
+    _OP_map_len        : "_OP_map_len",
+    _OP_kvs_next_map   : "_OP_kvs_next_map",
+    _OP_kvs_new        : "_OP_kvs_new",
+    _OP_kvs_load       : "_OP_kvs_load",
+    _OP_kvs_sort       : "_OP_kvs_sort",
+    _OP_kvs_set_buf   : "_OP_kvs_next_buf",
+ _OP_kvs_map_next_value: "_OP_kvs_map_next_value",
+ _OP_save_buffer_to_stack: "_OP_save_buffer_to_stack",
+ _OP_load_buffer_from_stack: "_OP_load_buffer_from_stack",
+   
 }
 
 func (self _Op) String() string {
@@ -275,6 +294,9 @@ func (self _Instr) isBranch() bool {
         case _OP_slice_next    : fallthrough
         case _OP_kvs_next      : fallthrough
         case _OP_flag_not_sort : fallthrough
+        case _OP_map_len        : fallthrough
+        case _OP_kvs_next_map   : fallthrough
+        case _OP_kvs_map_next_value : fallthrough
         case _OP_cond_testc    : return true
         default                : return false
     }
@@ -301,6 +323,9 @@ func (self _Instr) disassemble() string {
         case _OP_is_zero_map    : fallthrough
         case _OP_cond_testc     : fallthrough
         case _OP_kvs_next       : fallthrough
+        case _OP_map_len        : fallthrough
+        case _OP_kvs_next_map   : fallthrough
+        case _OP_kvs_map_next_value : fallthrough
         case _OP_flag_not_sort  : fallthrough
         case _OP_map_check_key  : return fmt.Sprintf("%-18sL_%d", self.op().String(), self.vi())
         case _OP_is_zero_mem    : fallthrough
@@ -519,12 +544,6 @@ func (self *_Compiler) compileMap(p *_Program, sp int, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileMapBody(p *_Program, sp int, vt reflect.Type) {
-    // p.tag(sp + 1)
-    // p.int(_OP_byte, '{')
-    // p.add(_OP_save)
-    // p.rtt(_OP_map_iter, vt)
-    // p.tag(sp + 1)
-    // p.add(_OP_save)
     i := p.pc()
     p.add(_OP_map_check_key)
     self.compileMapBodyKey(p, vt.Key())
@@ -541,8 +560,6 @@ func (self *_Compiler) compileMapBody(p *_Program, sp int, vt reflect.Type) {
     p.int(_OP_goto, j)
     p.pin(i)
     p.pin(j)
-    // p.add(_OP_drop_2)
-    // p.int(_OP_byte, '}')
 }
 
 func (self *_Compiler) compileMapBodyKey(p *_Program, vk reflect.Type) {
@@ -884,44 +901,92 @@ func (self *_Compiler) compileMapAll(p *_Program, sp int, vt reflect.Type) {
     p.int(_OP_byte, '}')
 }
 
-func (self *_Compiler) compileMapBodySort(p *_Program, sp int, vt reflect.Type) int {
-    //p.add(_OP_print_stack)
-    // iterate map to *kvSlice (saved at Stack.q)
-    p.add(_OP_map_to_kvs) 
-    //p.add(_OP_print_stack)
+func (self *_Compiler) compileMapToKvs(p *_Program, sp int, vt reflect.Type) {
     p.tag(sp + 1)
-    p.add(_OP_save)
+    p.add(_OP_save) 
+    p.add(_OP_kvs_load)
+    //p.print(1)
+
+    p.add(_OP_save_buffer_to_stack) 
+    //p.print(2)
+
+    // iterate 
+    i := p.pc()
+    p.add(_OP_kvs_next_map) // next iter, put it.Key at SP.p
+    //p.print(4)
+    p.add(_OP_kvs_set_buf) // next kvs, put kvs[i].k at RP, RL, RC
+    //p.print(5) 
+    //p.add(_OP_save)
+    self.compileMapBodyKey(p, vt.Key())
+    //p.add(_OP_drop)
+    //p.print(6)
+    j := p.pc()
+    p.add(_OP_kvs_map_next_value) // put it.Elem to kvs[i].v, and iter next
+    //p.print(7)
+    p.int(_OP_goto, i)
+    p.pin(i)
+    p.pin(j)
+
+    p.add(_OP_load_buffer_from_stack)
+    //p.print(7)
+    p.add(_OP_drop)
+}
+
+func (self *_Compiler) compileMapBodySort(p *_Program, sp int, vt reflect.Type) int {
+    //p.print(0)
+    x := p.pc()
+    p.add(_OP_map_len) // check it.H.Count and move to SP.t
+    p.add(_OP_kvs_new) // call newKvs() to alloc *kvs at SP.f
+    //p.print(11)
+    self.compileMapToKvs(p, sp + 1, vt)
+    //p.print(11)
+
+    //p.add(_OP_map_to_kvs) // iterate map to *kvs (saved at Stack.f)
+    p.add(_OP_kvs_sort)
 
     // iterate *kvSlice 
-    p.add(_OP_kvs_len) 
-    //p.add(_OP_print_stack)
+    p.tag(sp + 1)
+    p.add(_OP_save) 
+    p.add(_OP_kvs_load)
+
+    p.add(_OP_kvs_key)
+    //p.print(14)
+    p.int(_OP_byte, ':')
+    //p.print(14)
+    p.add(_OP_kvs_next_val)
+    //p.print(14)
+    self.compileOne(p, sp + 1, vt.Elem(), false)
+    //p.print(14)
     i := p.pc()
     p.add(_OP_kvs_next)
-    //p.add(_OP_print_stack)
-    p.add(_OP_kvs_key)
-    p.int(_OP_byte, ':')
-    p.add(_OP_kvs_next_val)
-    //p.add(_OP_print_stack)
-    self.compileOne(p, sp + 1, vt.Elem(), false)
-    //p.add(_OP_print_stack)
-    j := p.pc()
-    p.add(_OP_kvs_next)
+    //p.print(15)
+    next := p.pc()
     p.int(_OP_byte, ',')
     p.add(_OP_kvs_key)
     p.int(_OP_byte, ':')
     p.add(_OP_kvs_next_val)
     self.compileOne(p, sp + 1, vt.Elem(), false)
-    p.int(_OP_goto, j)
+    //p.print(16)
+    j := p.pc()
+    p.add(_OP_kvs_next)
+    //p.print(161)
+    p.int(_OP_goto, next)
     p.pin(i)
     p.pin(j)
-    //p.add(_OP_print_stack)
+    //p.print(17)
 
     // free *kvSlice
     p.add(_OP_drop)
-    //p.add(_OP_print_stack)
+    //p.print(18)
     p.add(_OP_free_kvs)
-    //p.add(_OP_drop)
+    
+    p.pin(x)
     ret := p.pc()
     p.add(_OP_goto)
     return ret
 }
+
+func (p *_Program) print(c int) {
+    p.int(_OP_print_stack, int(c))
+}
+

@@ -28,24 +28,23 @@ import (
 const (
     _MaxStack  = 65536      // 64k states
     _MaxBuffer = 1048576    // 1MB buffer size
-    _MaxKey    = 256    // 256B buffer size
-    _MaxKvs    = 1024    // 
+    _MaxKey    = 64         // 64B buffer size
+    _MaxKvs    = 1024       // 1024 kvSlice
 )
 
 var (
     bytesPool    = sync.Pool{}
     stackPool    = sync.Pool{}
     bufferPool   = sync.Pool{}
-    kvsPool       = sync.Pool{}
-    keyPool       = sync.Pool{}
-    iterPool = sync.Pool{}
-    iterSize = unsafe.Sizeof(rt.GoMapIterator{})
+    kvsPool      = sync.Pool{}
+    iterPool     = sync.Pool{}
+    iterSize     = unsafe.Sizeof(rt.GoMapIterator{})
     programCache = caching.CreateProgramCache()
 )
 
 type _State struct {
     x int
-    f uint64
+    f unsafe.Pointer
     p unsafe.Pointer
     q unsafe.Pointer
 }
@@ -86,15 +85,12 @@ func newBuffer() *bytes.Buffer {
     }
 }
 
-
+//go:nosplit
 func newKvSlice(n int) *kvSlice {
-    var p *kvSlice
     if ret := kvsPool.Get(); ret != nil {
-        p = (ret.(*kvSlice))
-        if cap(*p) >= n {
+        p := ret.(*kvSlice)
+        if p != nil && cap(*p) >= n {
             return p
-        }else{
-            kvsPool.Put(p)
         }
     }
     
@@ -102,17 +98,9 @@ func newKvSlice(n int) *kvSlice {
     for i := range kvs {
         kvs[i].k = make([]byte, 0, _MaxKey)
     }
-    kvs = kvs[:0]
     return &kvs
 }
 
-func newKeyBuffer() []byte {
-    if ret := keyPool.Get(); ret != nil {
-        return ret.([]byte)
-    } else {
-        return make([]byte, 0, _MaxBuffer)
-    }
-}
 
 func freeBytes(p []byte) {
     p = p[:0]
@@ -129,18 +117,18 @@ func freeBuffer(p *bytes.Buffer) {
     bufferPool.Put(p)
 }
 
-func freeKvs(p *kvSlice) {
+//go:nosplit
+func freeKvSlice(p *kvSlice) {
+    if p == nil {
+        return
+    }
     kvs := *p
     for i := range kvs {
         kvs[i].k = kvs[i].k[:0]
     }
     kvs = kvs[:0]
-    kvsPool.Put(&kvs)
-}
-
-func freeKeyBuffer(p []byte) {
-    p = p[:0]
-    keyPool.Put(p)
+    *p = kvs
+    kvsPool.Put(p)
 }
 
 func findOrCompile(vt *rt.GoType) (_Encoder, error) {

@@ -1,12 +1,13 @@
 package encoder
 
 import (
-    "bytes"
-    "math/rand"
-    "reflect"
-    "sort"
-    "testing"
-    "unsafe"
+	"bytes"
+	"math/rand"
+	"reflect"
+	"sort"
+	"strconv"
+	"testing"
+	"unsafe"
 )
 
 // Make kvSlice meet sort.Interface.
@@ -15,6 +16,73 @@ func (x kvSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 func (x kvSlice) Len() int           { return len(x) }
 
 var keyLen = 15
+
+type encodedKeyValues []encodedKV
+type encodedKV struct {
+	key      string
+	keyValue []byte
+}
+
+func (sv encodedKeyValues) Len() int           { return len(sv) }
+func (sv encodedKeyValues) Swap(i, j int)      { sv[i], sv[j] = sv[j], sv[i] }
+func (sv encodedKeyValues) Less(i, j int) bool { return sv[i].key < sv[j].key }
+
+func getKvs(std bool) interface{} {
+    var map_size = 1000
+    if std {
+        kvs := make(encodedKeyValues, map_size)
+        for i:=map_size-1; i>=0; i-- {
+            kvs[i] = encodedKV{
+                key: "test_" + strconv.Itoa(i),
+            }
+        }
+        return kvs
+    }else{
+        kvs := make(kvSlice, map_size)
+        for i:=map_size-1; i>=0; i-- {
+            kvs[i] = keyValue{
+                k: []byte("test_" + strconv.Itoa(i)),
+            }
+        }
+        return kvs
+    }
+}
+
+func BenchmarkSort_Sonic(b *testing.B) {
+    kvs := getKvs(false).(kvSlice)
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        radixQsort(kvs, 0, maxDepth(len(kvs)))
+    }
+}
+
+func BenchmarkSort_Std(b *testing.B) {
+    kvs := getKvs(true).(encodedKeyValues)
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        sort.Sort(kvs)
+    }
+}
+
+func BenchmarkSort_Parallel_Sonic(b *testing.B) {
+    kvs := getKvs(false).(kvSlice)
+    b.ResetTimer()
+    b.RunParallel(func(p *testing.PB) {
+        for p.Next() {
+            radixQsort(kvs, 0, maxDepth(len(kvs)))
+        }
+    })
+}
+
+func BenchmarkSort_Parallel_Std(b *testing.B) {
+    kvs := getKvs(true).(encodedKeyValues)
+    b.ResetTimer()
+    b.RunParallel(func(p *testing.PB) {
+        for p.Next() {
+            sort.Sort(kvs)
+        }
+    })
+}
 
 func TestSortRandKvs(t *testing.T) {
     kvs := getRandKvs(100, keyLen)
