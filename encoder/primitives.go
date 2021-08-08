@@ -179,7 +179,8 @@ type kvSlice []keyValue
 //go:nosplit
 func (self *kvSlice) Sort() {
     //fmt.Printf("kvs:%v\n", self.String())
-    radixQsort(*self, 0, maxDepth(len(*self)))
+    // skip the first byte '"'
+    radixQsort(*self, 1, maxDepth(len(*self)))
     //fmt.Printf("kvs:%v\n", self.String())
 }
 

@@ -10,13 +10,6 @@ import (
 	"unsafe"
 )
 
-// Make kvSlice meet sort.Interface.
-func (x kvSlice) Less(i, j int) bool { return bytes.Compare(x[i].k, x[j].k) < 0 }
-func (x kvSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
-func (x kvSlice) Len() int           { return len(x) }
-
-var keyLen = 15
-
 type encodedKeyValues []encodedKV
 type encodedKV struct {
 	key      string
@@ -33,7 +26,7 @@ func getKvs(std bool) interface{} {
         kvs := make(encodedKeyValues, map_size)
         for i:=map_size-1; i>=0; i-- {
             kvs[i] = encodedKV{
-                key: "test_" + strconv.Itoa(i),
+                key: "\"test_" + strconv.Itoa(i) + "\"",
             }
         }
         return kvs
@@ -41,7 +34,7 @@ func getKvs(std bool) interface{} {
         kvs := make(kvSlice, map_size)
         for i:=map_size-1; i>=0; i-- {
             kvs[i] = keyValue{
-                k: []byte("test_" + strconv.Itoa(i)),
+                k: []byte("\"test_" + strconv.Itoa(i) + "\""),
             }
         }
         return kvs
@@ -84,8 +77,13 @@ func BenchmarkSort_Parallel_Std(b *testing.B) {
     })
 }
 
+// Make kvSlice meet sort.Interface.
+func (x kvSlice) Less(i, j int) bool { return bytes.Compare(x[i].k, x[j].k) < 0 }
+func (x kvSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+func (x kvSlice) Len() int           { return len(x) }
+
 func TestSortRandKvs(t *testing.T) {
-    kvs := getRandKvs(100, keyLen)
+    kvs := getRandKvs(100, 15)
     sorted := make([]keyValue, len(kvs))
 
     copy(sorted, kvs)
@@ -99,10 +97,11 @@ func TestSortRandKvs(t *testing.T) {
     }
 }
 
-func genKey(kl int) []byte {
-    l := int(rand.Uint32()%uint32(kl) + 1)
+func genRandKey(kl int) []byte {
+    l := int(rand.Uint32()%uint32(kl) + 2)
     k := make([]byte, l)
-    for i := 0; i < l; i++ {
+    k[0], k[l-1] = '"', '"'
+    for i := 1; i < l-1; i++ {
         k[i] = byte('a' + int(rand.Uint32()%26))
     }
     return k
@@ -112,7 +111,7 @@ func getRandKvs(kn int, kl int) kvSlice {
     keys := make(map[string]bool)
     kvs := make([]keyValue, 0)
     for len(keys) < kn {
-        k := genKey(kl)
+        k := genRandKey(kl)
         keys[string(k)] = true
     }
     for k := range keys {
@@ -121,5 +120,5 @@ func getRandKvs(kn int, kl int) kvSlice {
         kv.v = unsafe.Pointer(&k)
         kvs = append(kvs, kv)
     }
-    return kvs[:]
+    return kvs
 }

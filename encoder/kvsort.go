@@ -65,7 +65,7 @@ func pivot(kvs kvSlice, d int) int {
 }
 
 func medianThree(i, j, k int) int {
-    if i < j {
+    if i > j {
         i, j = j, i
     }
     if k < i {
@@ -134,6 +134,8 @@ func lessFrom(a, b []byte, d int) bool {
     if l > len(b) {
         l = len(b)
     }
+    // skip the last byte '"'
+    l -= 1
     for i := d; i < l; i++ {
         if a[i] == b[i] {
             continue
