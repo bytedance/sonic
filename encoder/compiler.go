@@ -69,6 +69,7 @@ const (
     _OP_goto
     _OP_map_iter
     _OP_map_check_key
+    _OP_map_put_iter
     _OP_map_value_next
 
     _OP_flag_not_sort
@@ -81,6 +82,7 @@ const (
     _OP_kvs_key
     _OP_kvs_next_val
     _OP_kvs_new
+    _OP_kvs_release
     _OP_kvs_load
     _OP_kvs_sort
     _OP_kvs_set_buf
@@ -150,6 +152,7 @@ var _OpNames = [256]string {
     _OP_goto           : "goto",
     _OP_map_iter       : "map_iter",
     _OP_map_check_key  : "map_check_key",
+    _OP_map_put_iter   : "_OP_map_put_iter",
     _OP_map_value_next : "map_value_next",
     _OP_slice_len      : "slice_len",
     _OP_slice_next     : "slice_next",
@@ -169,12 +172,13 @@ var _OpNames = [256]string {
     _OP_map_len        : "_OP_map_len",
     _OP_kvs_next_map   : "_OP_kvs_next_map",
     _OP_kvs_new        : "_OP_kvs_new",
+    _OP_kvs_release    : "_OP_kvs_release",
     _OP_kvs_load       : "_OP_kvs_load",
     _OP_kvs_sort       : "_OP_kvs_sort",
-    _OP_kvs_set_buf   : "_OP_kvs_next_buf",
- _OP_kvs_map_next_value: "_OP_kvs_map_next_value",
- _OP_save_buffer_to_stack: "_OP_save_buffer_to_stack",
- _OP_load_buffer_from_stack: "_OP_load_buffer_from_stack",
+    _OP_kvs_set_buf    : "_OP_kvs_next_buf",
+    _OP_kvs_map_next_value: "_OP_kvs_map_next_value",
+    _OP_save_buffer_to_stack: "_OP_save_buffer_to_stack",
+    _OP_load_buffer_from_stack: "_OP_load_buffer_from_stack",
    
 }
 
@@ -901,55 +905,24 @@ func (self *_Compiler) compileMapAll(p *_Program, sp int, vt reflect.Type) {
     p.int(_OP_byte, '}')
 }
 
-func (self *_Compiler) compileMapToKvs(p *_Program, sp int, vt reflect.Type) {
-    p.tag(sp + 1)
-    p.add(_OP_save) 
-    p.add(_OP_kvs_load)
-    //p.print(1)
-
-    p.add(_OP_save_buffer_to_stack) 
-    //p.print(2)
-
-    // iterate 
-    i := p.pc()
-    p.add(_OP_kvs_next_map) // next iter, put it.Key at SP.p
-    //p.print(4)
-    p.add(_OP_kvs_set_buf) // next kvs, put kvs[i].k at RP, RL, RC
-    //p.print(5) 
-    //p.add(_OP_save)
-    self.compileMapBodyKey(p, vt.Key())
-    //p.add(_OP_drop)
-    //p.print(6)
-    j := p.pc()
-    p.add(_OP_kvs_map_next_value) // put it.Elem to kvs[i].v, and iter next
-    //p.print(7)
-    p.int(_OP_goto, i)
-    p.pin(i)
-    p.pin(j)
-
-    p.add(_OP_load_buffer_from_stack)
-    //p.print(7)
-    p.add(_OP_drop)
-}
-
 func (self *_Compiler) compileMapBodySort(p *_Program, sp int, vt reflect.Type) int {
     //p.print(0)
     x := p.pc()
     p.add(_OP_map_len) // check it.H.Count and move to SP.t
-    p.add(_OP_kvs_new) // call newKvs() to alloc *kvs at SP.f
+    p.add(_OP_kvs_new) // check _FV to alloc kvSlice at SP.f
     //p.print(11)
     self.compileMapToKvs(p, sp + 1, vt)
     //p.print(11)
 
-    //p.add(_OP_map_to_kvs) // iterate map to *kvs (saved at Stack.f)
-    p.add(_OP_kvs_sort)
+    p.add(_OP_kvs_sort)// sort kvSlice 
+    //p.print(11)
 
-    // iterate *kvSlice 
     p.tag(sp + 1)
     p.add(_OP_save) 
-    p.add(_OP_kvs_load)
+    //p.print(18)
 
-    p.add(_OP_kvs_key)
+    
+    p.add(_OP_kvs_key) // iterate kvSlice 
     //p.print(14)
     p.int(_OP_byte, ':')
     //p.print(14)
@@ -975,15 +948,44 @@ func (self *_Compiler) compileMapBodySort(p *_Program, sp int, vt reflect.Type) 
     p.pin(j)
     //p.print(17)
 
-    // free *kvSlice
+    
     p.add(_OP_drop)
+    p.add(_OP_kvs_release)  // free kvSlice
+    p.add(_OP_map_put_iter) // free map.it
     //p.print(18)
-    p.add(_OP_free_kvs)
     
     p.pin(x)
     ret := p.pc()
     p.add(_OP_goto)
     return ret
+}
+
+func (self *_Compiler) compileMapToKvs(p *_Program, sp int, vt reflect.Type) {
+    p.tag(sp)
+    p.add(_OP_save) // save SP.f (*kvs[0]), SP.x (len(kvs))
+    //p.print(1)
+
+    p.add(_OP_save_buffer_to_stack) // save origin buffer *rb
+    //p.print(2)
+
+    // iterate 
+    i := p.pc()
+    p.add(_OP_kvs_next_map) // next iter, put it.Key at SP.p
+    //p.print(4)
+    p.add(_OP_kvs_set_buf)  // next kvs, put kvs[i].k at RP, RL, RC
+    //p.print(5) 
+    self.compileMapBodyKey(p, vt.Key())
+    //p.print(6)
+    j := p.pc()
+    p.add(_OP_kvs_map_next_value) // put it.Elem to kvs[i].v, and mapiternext
+    //p.print(7)
+    p.int(_OP_goto, i)
+    p.pin(i)
+    p.pin(j)
+
+    p.add(_OP_load_buffer_from_stack) // recover origin buffer *rb
+    //p.print(7)
+    p.add(_OP_drop) // recover SP.f (*kvs[0]), SP.x (len(kvs))
 }
 
 func (p *_Program) print(c int) {

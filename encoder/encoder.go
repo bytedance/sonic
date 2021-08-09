@@ -45,10 +45,19 @@ func (self *Encoder) Encode(val interface{}) error {
 
     stk := newStack()
     efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(&self.buf, efv.Type, &efv.Value, stk, self.flags)
+
+    var kvs *kvSlice
+    if self.IsSortKeys() {
+        kvs = newKvSlice()
+    }
+
+    err := encodeTypedPointer(&self.buf, efv.Type, &efv.Value, stk, kvs)
 
     /* return the stack into pool */
     freeStack(stk)
+    if kvs != nil {
+        freeKvSlice(kvs)
+    }
     return  err
 }
 
@@ -65,6 +74,10 @@ func (self *Encoder) Reset() {
 
 func (self *Encoder) SortKeys() {
     self.flags |= 1 << _F_sort_keys
+}
+
+func (self *Encoder) IsSortKeys() bool {
+    return (self.flags & (1 << _F_sort_keys)) != 0
 }
 
 func Quote(s string) string {
@@ -104,10 +117,10 @@ func Encode(val interface{}) ([]byte, error) {
     return ret, nil
 }
 
-func EncodeInto(buf *[]byte, val interface{}, ) error {
+func EncodeInto(buf *[]byte, val interface{}) error {
     stk := newStack()
     efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, 0)
+    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, nil)
 
     /* return the stack into pool */
     freeStack(stk)

@@ -17,15 +17,15 @@
 package encoder
 
 import (
-    "bytes"
-    "encoding"
-    "encoding/json"
-    "fmt"
-    "reflect"
-    "unsafe"
+    `bytes`
+    `encoding`
+    `encoding/json`
+    `fmt`
+    `reflect`
+    `unsafe`
 
-    "github.com/bytedance/sonic/internal/native"
-    "github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 /** Encoder Primitives **/
@@ -68,17 +68,17 @@ func encodeString(buf *[]byte, val string) error {
     return nil
 }
 
-func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv uint64) error {
-    //fmt.Printf("\tvt:%v vk:%v vp:%x\n", vt.String(), vt.Kind().String(), unsafe.Pointer(vp))
+func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv *kvSlice) error {
+    //fmt.Printf("vt:%v vk:%v vp:%x fv:%#v\n", vt.String(), vt.Kind().String(), unsafe.Pointer(vp), fv)
     if vt == nil {
         return encodeNil(buf)
     } else if fn, err := findOrCompile(vt); err != nil {
         return err
     } else if (vt.KindFlags & rt.F_direct) == 0 {
-        //fmt.Printf("\t\tfn: %#v *vp: %x\n", fn, *vp)
+        //fmt.Printf("\tfn: %#v *vp: %x\n", fn, *vp)
         return fn(buf, *vp, sb, fv)
     } else {
-        //fmt.Printf("\t\tfn: %#v vp: %x\n", fn, vp)
+        //fmt.Printf("\tfn: %#v vp: %x\n", fn, vp)
         return fn(buf, unsafe.Pointer(vp), sb, fv)
     }
 }
@@ -177,10 +177,10 @@ type keyValue struct {
 type kvSlice []keyValue
 
 //go:nosplit
-func (self *kvSlice) Sort() {
+func (self kvSlice) Sort() {
     //fmt.Printf("kvs:%v\n", self.String())
     // skip the first byte '"'
-    insertRadixSort(*self, 1)
+    insertRadixSort(self, 1)
     //fmt.Printf("kvs:%v\n", self.String())
 }
 
@@ -200,35 +200,6 @@ func (kvs kvSlice) String() string {
     buf.WriteByte(']')
     return buf.String()
 }
-
-
-func map2kvs(it *rt.GoMapIterator, st *_Stack, fv uint64) (*kvSlice, error) {
-    if it == nil  {
-        return nil, nil
-    }
-
-    fn, err := findOrCompile(it.T.Key)
-    if err != nil {
-        return nil, err
-    }
-    //fmt.Printf("fn:%#v\n", fn)
-
-    n := it.H.Count
-    kvs := newKvSlice(n)
-    ret := (*kvs)[:n]
-    
-    for i := 0; it.Key != nil && i<n; i++ {
-        if err := fn(&ret[i].k, it.Key, st, fv); err != nil {
-            return nil, err
-        }
-        ret[i].v = it.Elem
-        mapiternext(unsafe.Pointer(it))
-    }
-    
-    ret.Sort()
-    //fmt.Printf("ret:%s\n", ret)
-    return &ret, nil
-} 
 
 func printStack(st *_Stack,  cur _State, fv uint64, buf []byte, c byte) {
     top := (st.sp-8)/uint64(_StateSize)-1

@@ -58,7 +58,7 @@ type _Encoder func(
     rb *[]byte,
     vp unsafe.Pointer,
     sb *_Stack,
-    fv uint64,
+    fv *kvSlice,
 ) error
 
 func newBytes() []byte {
@@ -86,15 +86,15 @@ func newBuffer() *bytes.Buffer {
 }
 
 //go:nosplit
-func newKvSlice(n int) *kvSlice {
+func newKvSlice() *kvSlice {
     if ret := kvsPool.Get(); ret != nil {
         p := ret.(*kvSlice)
-        if p != nil && cap(*p) >= n {
+        if p != nil && cap(*p) >= 0 {
             return p
         }
     }
     
-    kvs := make(kvSlice, n)
+    kvs := make(kvSlice, 0, _MaxKvs)
     for i := range kvs {
         kvs[i].k = make([]byte, 0, _MaxKey)
     }

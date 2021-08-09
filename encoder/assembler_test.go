@@ -41,7 +41,7 @@ func TestAssembler_CompileAndLoad(t *testing.T) {
     /* true */
     v := true
     u := &v
-    e := f(&b, unsafe.Pointer(&u), s, 0)
+    e := f(&b, unsafe.Pointer(&u), s, nil)
     assert.Nil(t, e)
     println(cap(b))
     println(hex.Dump(b))
@@ -50,7 +50,7 @@ func TestAssembler_CompileAndLoad(t *testing.T) {
     v = false
     u = &v
     b = b[:0]
-    e = f(&b, unsafe.Pointer(&u), s, 0)
+    e = f(&b, unsafe.Pointer(&u), s, nil)
     assert.Nil(t, e)
     println(cap(b))
     println(hex.Dump(b))
@@ -58,7 +58,7 @@ func TestAssembler_CompileAndLoad(t *testing.T) {
     /* nil */
     u = nil
     b = b[:0]
-    e = f(&b, unsafe.Pointer(&u), s, 0)
+    e = f(&b, unsafe.Pointer(&u), s, nil)
     assert.Nil(t, e)
     println(cap(b))
     println(hex.Dump(b))
@@ -78,7 +78,7 @@ func testOpCode(t *testing.T, v interface{}, ex string, err error, ins []_Instr)
     s := new(_Stack)
     a := newAssembler(p)
     f := a.Load()
-    e := f(&m, rt.UnpackEface(v).Value, s, 0)
+    e := f(&m, rt.UnpackEface(v).Value, s, nil)
     if err != nil {
         assert.EqualError(t, e, err.Error())
     } else {
@@ -347,7 +347,7 @@ func TestAssembler_StringMoreSpace(t *testing.T) {
     a := newAssembler(p)
     f := a.Load()
     v := "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010"
-    e := f(&m, unsafe.Pointer(&v), s, 0)
+    e := f(&m, unsafe.Pointer(&v), s, nil)
     assert.Nil(t, e)
     spew.Dump(m)
 }
@@ -359,7 +359,7 @@ func TestAssembler_TwitterJSON_Generic(t *testing.T) {
     a := newAssembler(p)
     f := a.Load()
     v := &_GenericValue
-    e := f(&m, unsafe.Pointer(&v), s, 0)
+    e := f(&m, unsafe.Pointer(&v), s, nil)
     assert.Nil(t, e)
     println(string(m))
 }
@@ -370,7 +370,7 @@ func TestAssembler_TwitterJSON_Structure(t *testing.T) {
     s := new(_Stack)
     a := newAssembler(p)
     f := a.Load()
-    e := f(&m, unsafe.Pointer(&_BindingValue), s, 0)
+    e := f(&m, unsafe.Pointer(&_BindingValue), s, nil)
     assert.Nil(t, e)
     println(string(m))
     runtime.KeepAlive(s)

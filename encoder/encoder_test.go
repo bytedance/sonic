@@ -17,14 +17,14 @@
 package encoder
 
 import (
-	"encoding/json"
-	"fmt"
-	"strconv"
-	"testing"
+	`encoding/json`
+	`fmt`
+	`strconv`
+	`testing`
 
-	gojson "github.com/goccy/go-json"
-	"github.com/json-iterator/go"
-	"github.com/stretchr/testify/assert"
+	gojson `github.com/goccy/go-json`
+	`github.com/json-iterator/go`
+	`github.com/stretchr/testify/assert`
 )
 
 type strTM string 
@@ -41,6 +41,10 @@ func TestMarshalMap(t *testing.T) {
         "c": "test",
         "d": -0.1,
         "e": nil,
+        "f": map[string]interface{}{
+            "g": false,
+            "h": true,
+        },
     }
 
     t.Run("sort", func(t *testing.T){

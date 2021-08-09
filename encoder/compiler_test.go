@@ -41,6 +41,11 @@ func TestCompiler_Map(t *testing.T) {
         "b": 1,
         "c": "test",
         "d": -0.1,
+        "e": nil,
+        "f": map[string]interface{}{
+            "g": false,
+            "h": true,
+        },
     }
     p, err := newCompiler().compile(reflect.TypeOf(m))
     assert.Nil(t, err)
