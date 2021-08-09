@@ -180,7 +180,7 @@ type kvSlice []keyValue
 func (self *kvSlice) Sort() {
     //fmt.Printf("kvs:%v\n", self.String())
     // skip the first byte '"'
-    radixQsort(*self, 1, maxDepth(len(*self)))
+    insertRadixSort(*self, 1)
     //fmt.Printf("kvs:%v\n", self.String())
 }
 

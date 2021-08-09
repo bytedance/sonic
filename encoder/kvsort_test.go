@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package encoder
 
 import (
@@ -42,7 +42,8 @@ func getKvs(std bool) interface{} {
         kvs := make(encodedKeyValues, map_size)
         for i:=map_size-1; i>=0; i-- {
             kvs[i] = encodedKV{
-                key: "\"test_" + strconv.Itoa(i) + "\"",
+                key:"\"test_" + strconv.Itoa(i) + "\"",
+                // key: string(genRandKey(10)),
             }
         }
         return kvs
@@ -51,6 +52,7 @@ func getKvs(std bool) interface{} {
         for i:=map_size-1; i>=0; i-- {
             kvs[i] = keyValue{
                 k: []byte("\"test_" + strconv.Itoa(i) + "\""),
+                // k: genRandKey(10),
             }
         }
         return kvs
@@ -62,6 +64,14 @@ func BenchmarkSort_Sonic(b *testing.B) {
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
         radixQsort(kvs, 0, maxDepth(len(kvs)))
+    }
+}
+
+func BenchmarkSort_Insert(b *testing.B) {
+    kvs := getKvs(false).(kvSlice)
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        insertRadixSort(kvs, 0)
     }
 }
 
@@ -83,6 +93,16 @@ func BenchmarkSort_Parallel_Sonic(b *testing.B) {
     })
 }
 
+func BenchmarkSort_Parallel_Insert(b *testing.B) {
+    kvs := getKvs(false).(kvSlice)
+    b.ResetTimer()
+    b.RunParallel(func(p *testing.PB) {
+        for p.Next() {
+            insertRadixSort(kvs, 0)
+        }
+    })
+}
+
 func BenchmarkSort_Parallel_Std(b *testing.B) {
     kvs := getKvs(true).(encodedKeyValues)
     b.ResetTimer()
@@ -98,18 +118,38 @@ func (x kvSlice) Less(i, j int) bool { return bytes.Compare(x[i].k, x[j].k) < 0 
 func (x kvSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 func (x kvSlice) Len() int           { return len(x) }
 
-func TestSortRandKvs(t *testing.T) {
+func TestSortRadixRandKvs(t *testing.T) {
     kvs := getRandKvs(1000, 15)
     sorted := make([]keyValue, len(kvs))
-
-    copy(sorted, kvs)
+    for i := range(sorted) {
+        k := make([]byte, len(kvs[i].k))
+        copy(k, kvs[i].k)
+        sorted[i].k = k[:]
+        sorted[i].v = kvs[i].v
+    }
     sort.Sort(kvSlice(sorted))
     kvs.Sort()
 
-    got := kvs.String()
-    want := kvSlice(sorted).String()
-    if !reflect.DeepEqual(got, want) {
-        t.Errorf(" got: %v\nwant: %v\n", got, want)
+    if !reflect.DeepEqual(kvs, kvSlice(sorted)) {
+         t.Errorf(" got: %v\nwant: %v\n", kvs, kvSlice(sorted))
+    }
+}
+
+func TestSortInsertRandKvs(t *testing.T) {
+    kvs := getRandKvs(10, 15)
+    sorted := make([]keyValue, len(kvs))
+    for i := range(sorted) {
+        k := make([]byte, len(kvs[i].k))
+        copy(k, kvs[i].k)
+        sorted[i].k = k[:]
+        sorted[i].v = kvs[i].v
+    }
+
+    sort.Sort(kvSlice(sorted))
+    insertRadixSort(kvs, 0)
+
+    if !reflect.DeepEqual(kvs, kvSlice(sorted)) {
+         t.Errorf(" got: %v\nwant: %v\n", kvs, kvSlice(sorted))
     }
 }
 
