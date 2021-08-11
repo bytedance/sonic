@@ -147,7 +147,7 @@ if err := dc.Decode(&data); err != nil {
         print(e.Description())
 
         /*"Syntax error at index 3: invalid char\n\n\t[[[}]]\n\t...^..\n"*/
-        println(fmt.Sprintf("%q", self.Description()))
+        println(fmt.Sprintf("%q", e.Description()))
     }
 
     /*Decode: Syntax error at index 3: invalid char*/
@@ -158,7 +158,7 @@ if err := dc.Decode(&data); err != nil {
 ## Tips
 
 ### Pretouch
-Since Sonic uses JIT(just-in-time) compiling for decoder/encoder, huge schema may cause request-timeout. For better stability, we suggest to use `Pretouch()` for more-than-10000-field schema(struct) before `Marshal()/Unmarshal()`.
+Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise to **use `Pretouch()` for huge-schema or compact-memory application** before `Marshal()/Unmarshal()`.
 ```go
 import (
     "reflect"
@@ -170,6 +170,7 @@ func init() {
     err := sonic.Pretouch(reflect.TypeOf(v))
 }
 ```
+**CAUSION:**  use the **STRUCT instead of its POINTER** to `Pretouch()`, otherwish it won't work when you pass the pointer to `Marshal()/Unmarshal()`!  
 
 ### Pass string or []byte?
 For alignment to encoding/json, we provide API to pass `[]byte` as arguement, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin json is huge. Therefore, you can use `UnmarshalString`, `GetFromString` to pass string, as long as your origin data is string or **nocopy-cast** is safe for your []byte.
