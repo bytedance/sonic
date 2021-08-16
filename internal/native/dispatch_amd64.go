@@ -76,6 +76,16 @@ func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, allow_control int
 //goland:noinspection GoUnusedParameter
 func SkipOne(s *string, p *int, m *types.StateMachine) int
 
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func I64toa(out *byte, val int64) (ret int)
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func U64toa(out *byte, val uint64) (ret int)
+
 func useAVX() {
     S_f64toa      = avx.S_f64toa
     S_i64toa      = avx.S_i64toa

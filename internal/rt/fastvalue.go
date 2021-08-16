@@ -71,8 +71,8 @@ type GoMap struct {
 }
 
 type GoMapIterator struct {
-    Key         unsafe.Pointer
-    Elem        unsafe.Pointer
+    K           unsafe.Pointer
+    V           unsafe.Pointer
     T           *GoMapType
     H           *GoMap
     Buckets     unsafe.Pointer
@@ -144,6 +144,17 @@ type GoStructField struct {
     OffEmbed uintptr
 }
 
+type GoInterfaceType struct {
+    GoType
+    PkgPath *byte
+    Methods []GoInterfaceMethod
+}
+
+type GoInterfaceMethod struct {
+    Name int32
+    Type int32
+}
+
 type GoSlice struct {
     Ptr unsafe.Pointer
     Len int
@@ -156,19 +167,15 @@ type GoString struct {
 }
 
 func PtrElem(t *GoType) *GoType {
-    if t.Kind() != reflect.Ptr {
-        panic("not a pointer: " + t.String())
-    } else {
-        return (*GoPtrType)(unsafe.Pointer(t)).Elem
-    }
+    return (*GoPtrType)(unsafe.Pointer(t)).Elem
 }
 
 func MapType(t *GoType) *GoMapType {
-    if t.Kind() != reflect.Map {
-        panic("not a map: " + t.String())
-    } else {
-        return (*GoMapType)(unsafe.Pointer(t))
-    }
+    return (*GoMapType)(unsafe.Pointer(t))
+}
+
+func IfaceType(t *GoType) *GoInterfaceType {
+    return (*GoInterfaceType)(unsafe.Pointer(t))
 }
 
 func UnpackType(t reflect.Type) *GoType {
