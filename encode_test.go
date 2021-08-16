@@ -77,7 +77,7 @@ func TestOmitEmpty(t *testing.T) {
 	o.Mr = map[string]interface{}{}
 	o.Mo = map[string]interface{}{}
 
-	got, err := encoder.EncodeIndented(&o, "", " ")
+	got, err := encoder.EncodeIndented(&o, "", " ", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +137,7 @@ func TestRoundtripStringTag(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			// Indent with a tab prefix to make the multi-line string
 			// literals in the table nicer to read.
-			got, err := encoder.EncodeIndented(&test.in, "\t\t\t", "\t")
+			got, err := encoder.EncodeIndented(&test.in, "\t\t\t", "\t", 0)
 			if err != nil {
 				t.Fatal(err)
 			}

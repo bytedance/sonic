@@ -23,11 +23,11 @@ import (
 
     gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
-    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {
-    assert.Equal(t, exp, fn(arg))
+    require.Equal(t, exp, fn(arg))
 }
 
 func TestEncoder_String(t *testing.T) {
@@ -51,8 +51,8 @@ type StringStruct struct {
 func TestEncoder_FieldStringize(t *testing.T) {
     x := 12345
     v := StringStruct{X: &x, Y: []int{1, 2, 3}, Z: "4567456", W: "asdf"}
-    r, e := Encode(v)
-    assert.Nil(t, e)
+    r, e := Encode(v, 0)
+    require.NoError(t, e)
     println(string(r))
 }
 
@@ -70,12 +70,12 @@ type MarshalerStruct struct {
 
 func TestEncoder_Marshaler(t *testing.T) {
     v := MarshalerStruct{V: MarshalerImpl{X: 12345}}
-    ret, err := Encode(&v)
-    assert.Nil(t, err)
-    assert.Equal(t, `{"V":12345}`, string(ret))
-    ret, err = Encode(v)
-    assert.Nil(t, err)
-    assert.Equal(t, `{"V":{"X":12345}}`, string(ret))
+    ret, err := Encode(&v, 0)
+    require.NoError(t, err)
+    require.Equal(t, `{"V":12345}`, string(ret))
+    ret, err = Encode(v, 0)
+    require.NoError(t, err)
+    require.Equal(t, `{"V":{"X":12345}}`, string(ret))
 }
 
 type RawMessageStruct struct {
@@ -86,9 +86,9 @@ func TestEncoder_RawMessage(t *testing.T) {
     rms := RawMessageStruct{
         X: json.RawMessage("123456"),
     }
-    ret, err := Encode(&rms)
-    assert.Nil(t, err)
-    assert.Equal(t, `{"X":123456}`, string(ret))
+    ret, err := Encode(&rms, 0)
+    require.NoError(t, err)
+    require.Equal(t, `{"X":123456}`, string(ret))
 }
 
 var _GenericValue interface{}
@@ -100,23 +100,46 @@ func init() {
 }
 
 func TestEncoder_Generic(t *testing.T) {
-    v, e := Encode(_GenericValue)
-    assert.Nil(t, e)
+    v, e := Encode(_GenericValue, 0)
+    require.NoError(t, e)
     println(string(v))
 }
 
 func TestEncoder_Binding(t *testing.T) {
-    v, e := Encode(_BindingValue)
-    assert.Nil(t, e)
+    v, e := Encode(_BindingValue, 0)
+    require.NoError(t, e)
     println(string(v))
 }
 
+func TestEncoder_MapSortKey(t *testing.T) {
+    m := map[string]string {
+        "C": "third",
+        "D": "forth",
+        "A": "first",
+        "F": "sixth",
+        "E": "fifth",
+        "B": "second",
+    }
+    v, e := Encode(m, SortMapKeys)
+    require.NoError(t, e)
+    require.Equal(t, `{"A":"first","B":"second","C":"third","D":"forth","E":"fifth","F":"sixth"}`, string(v))
+}
+
 func BenchmarkEncoder_Generic_Sonic(b *testing.B) {
-    _, _ = Encode(_GenericValue)
+    _, _ = Encode(_GenericValue, 0)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _, _ = Encode(_GenericValue)
+        _, _ = Encode(_GenericValue, 0)
+    }
+}
+
+func BenchmarkEncoder_Generic_SonicSorted(b *testing.B) {
+    _, _ = Encode(_GenericValue, SortMapKeys)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = Encode(_GenericValue, SortMapKeys)
     }
 }
 
@@ -148,11 +171,20 @@ func BenchmarkEncoder_Generic_StdLib(b *testing.B) {
 }
 
 func BenchmarkEncoder_Binding_Sonic(b *testing.B) {
-    _, _ = Encode(&_BindingValue)
+    _, _ = Encode(&_BindingValue, 0)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _, _ = Encode(&_BindingValue)
+        _, _ = Encode(&_BindingValue, 0)
+    }
+}
+
+func BenchmarkEncoder_Binding_SonicSorted(b *testing.B) {
+    _, _ = Encode(&_BindingValue, SortMapKeys)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = Encode(&_BindingValue, SortMapKeys)
     }
 }
 
@@ -184,12 +216,23 @@ func BenchmarkEncoder_Binding_StdLib(b *testing.B) {
 }
 
 func BenchmarkEncoder_Parallel_Generic_Sonic(b *testing.B) {
-    _, _ = Encode(_GenericValue)
+    _, _ = Encode(_GenericValue, 0)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = Encode(_GenericValue)
+            _, _ = Encode(_GenericValue, 0)
+        }
+    })
+}
+
+func BenchmarkEncoder_Parallel_Generic_SonicSorted(b *testing.B) {
+    _, _ = Encode(_GenericValue, SortMapKeys)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            _, _ = Encode(_GenericValue, SortMapKeys)
         }
     })
 }
@@ -228,12 +271,23 @@ func BenchmarkEncoder_Parallel_Generic_StdLib(b *testing.B) {
 }
 
 func BenchmarkEncoder_Parallel_Binding_Sonic(b *testing.B) {
-    _, _ = Encode(&_BindingValue)
+    _, _ = Encode(&_BindingValue, 0)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = Encode(&_BindingValue)
+            _, _ = Encode(&_BindingValue, 0)
+        }
+    })
+}
+
+func BenchmarkEncoder_Parallel_Binding_SonicSorted(b *testing.B) {
+    _, _ = Encode(&_BindingValue, SortMapKeys)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            _, _ = Encode(&_BindingValue, SortMapKeys)
         }
     })
 }

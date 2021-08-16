@@ -27,7 +27,7 @@ import (
 
 // Marshal returns the JSON encoding of v.
 func Marshal(val interface{}) ([]byte, error) {
-    return encoder.Encode(val)
+    return encoder.Encode(val, 0)
 }
 
 // Unmarshal parses the JSON-encoded data and stores the result in the value
