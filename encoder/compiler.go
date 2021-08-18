@@ -68,7 +68,9 @@ const (
     _OP_is_zero_safe
     _OP_goto
     _OP_map_iter
+    _OP_map_stop
     _OP_map_check_key
+    _OP_map_write_key
     _OP_map_value_next
     _OP_slice_len
     _OP_slice_next
@@ -129,7 +131,9 @@ var _OpNames = [256]string {
     _OP_is_zero_safe   : "is_zero_safe",
     _OP_goto           : "goto",
     _OP_map_iter       : "map_iter",
+    _OP_map_stop       : "map_stop",
     _OP_map_check_key  : "map_check_key",
+    _OP_map_write_key  : "map_write_key",
     _OP_map_value_next : "map_value_next",
     _OP_slice_len      : "slice_len",
     _OP_slice_next     : "slice_next",
@@ -254,6 +258,7 @@ func (self _Instr) isBranch() bool {
         case _OP_is_zero_mem   : fallthrough
         case _OP_is_zero_safe  : fallthrough
         case _OP_map_check_key : fallthrough
+        case _OP_map_write_key : fallthrough
         case _OP_slice_next    : fallthrough
         case _OP_cond_testc    : return true
         default                : return false
@@ -280,7 +285,8 @@ func (self _Instr) disassemble() string {
         case _OP_is_zero_8      : fallthrough
         case _OP_is_zero_map    : fallthrough
         case _OP_cond_testc     : fallthrough
-        case _OP_map_check_key  : return fmt.Sprintf("%-18sL_%d", self.op().String(), self.vi())
+        case _OP_map_check_key  : fallthrough
+        case _OP_map_write_key  : return fmt.Sprintf("%-18sL_%d", self.op().String(), self.vi())
         case _OP_is_zero_mem    : fallthrough
         case _OP_is_zero_safe   : fallthrough
         case _OP_slice_next     : return fmt.Sprintf("%-18sL_%d, %s", self.op().String(), self.vi(), self.vt())
@@ -504,20 +510,27 @@ func (self *_Compiler) compileMapBody(p *_Program, sp int, vt reflect.Type) {
     p.add(_OP_save)
     i := p.pc()
     p.add(_OP_map_check_key)
+    u := p.pc()
+    p.add(_OP_map_write_key)
     self.compileMapBodyKey(p, vt.Key())
+    p.pin(u)
     p.int(_OP_byte, ':')
     p.add(_OP_map_value_next)
     self.compileOne(p, sp + 2, vt.Elem(), false)
     j := p.pc()
     p.add(_OP_map_check_key)
     p.int(_OP_byte, ',')
+    v := p.pc()
+    p.add(_OP_map_write_key)
     self.compileMapBodyKey(p, vt.Key())
+    p.pin(v)
     p.int(_OP_byte, ':')
     p.add(_OP_map_value_next)
     self.compileOne(p, sp + 1, vt.Elem(), false)
     p.int(_OP_goto, j)
     p.pin(i)
     p.pin(j)
+    p.add(_OP_map_stop)
     p.add(_OP_drop_2)
     p.int(_OP_byte, '}')
 }

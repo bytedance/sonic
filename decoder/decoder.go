@@ -30,20 +30,25 @@ const (
     _F_disable_unknown
 )
 
+// Decoder is the decoder context object
 type Decoder struct {
     i int
     f uint64
     s string
 }
 
+// NewDecoder creates a new decoder instance.
 func NewDecoder(s string) *Decoder {
     return &Decoder{s: s}
 }
 
+// Pos returns the current decoding position.
 func (self *Decoder) Pos() int {
     return self.i
 }
 
+// Decode parses the JSON-encoded data from current position and stores the result
+// in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
     vv := rt.UnpackEface(val)
     vp := vv.Value
@@ -68,24 +73,35 @@ func (self *Decoder) Decode(val interface{}) error {
     return err
 }
 
+// UseInt64 causes the Decoder to unmarshal an integer into an interface{} as an
+// int64 instead of as a float64.
 func (self *Decoder) UseInt64() {
     self.f  |= 1 << _F_use_int64
     self.f &^= 1 << _F_use_number
 }
 
+// UseNumber causes the Decoder to unmarshal a number into an interface{} as a
+// json.Number instead of as a float64.
 func (self *Decoder) UseNumber() {
     self.f &^= 1 << _F_use_int64
     self.f  |= 1 << _F_use_number
 }
 
+// UseUnicodeErrors causes the Decoder to return an error when encounter invalid
+// UTF-8 escape sequences.
 func (self *Decoder) UseUnicodeErrors() {
     self.f |= 1 << _F_disable_urc
 }
 
+// DisallowUnknownFields causes the Decoder to return an error when the destination
+// is a struct and the input contains object keys which do not match any
+// non-ignored, exported fields in the destination.
 func (self *Decoder) DisallowUnknownFields() {
     self.f |= 1 << _F_disable_unknown
 }
 
+// Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
+// order to reduce the first-hit latency.
 func Pretouch(vt reflect.Type) (err error) {
     _, err = findOrCompile(rt.UnpackType(vt))
     return

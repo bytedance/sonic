@@ -20,15 +20,11 @@ import (
     `encoding`
     `encoding/json`
     `reflect`
-
-    `github.com/bytedance/sonic/internal/rt`
 )
 
 var (
     byteType                 = reflect.TypeOf(byte(0))
     jsonNumberType           = reflect.TypeOf(json.Number(""))
-    mapIteratorType          = reflect.TypeOf(rt.GoMapIterator{})
-    mapPIteratorType         = reflect.TypeOf(new(rt.GoMapIterator))
     jsonUnsupportedValueType = reflect.TypeOf(new(json.UnsupportedValueError))
 )
 

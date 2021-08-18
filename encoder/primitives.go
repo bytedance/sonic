@@ -66,15 +66,15 @@ func encodeString(buf *[]byte, val string) error {
     return nil
 }
 
-func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack) error {
+func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv uint64) error {
     if vt == nil {
         return encodeNil(buf)
     } else if fn, err := findOrCompile(vt); err != nil {
         return err
     } else if (vt.KindFlags & rt.F_direct) == 0 {
-        return fn(buf, *vp, sb)
+        return fn(buf, *vp, sb, fv)
     } else {
-        return fn(buf, unsafe.Pointer(vp), sb)
+        return fn(buf, unsafe.Pointer(vp), sb, fv)
     }
 }
 

@@ -24,6 +24,37 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
+// Options is a set of encoding options.
+type Options uint64
+
+const (
+    bitSortMapKeys = iota
+)
+
+const (
+    // SortMapKeys indicate that the keys of a map needs to be sorted before
+    // serializing into JSON.
+    // WARNING: This hurts performance A LOT, USE WITH CARE.
+    SortMapKeys Options = 1 << bitSortMapKeys
+)
+
+// Encoder represents a specific set of encoder configurations.
+type Encoder struct {
+    Opts Options
+}
+
+// Encode returns the JSON encoding of v.
+func (self *Encoder) Encode(v interface{}) ([]byte, error) {
+    return Encode(v, self.Opts)
+}
+
+// SortKeys enables the SortMapKeys option.
+func (self *Encoder) SortKeys() *Encoder {
+    self.Opts |= SortMapKeys
+    return self
+}
+
+// Quote returns the JSON-quoted version of s.
 func Quote(s string) string {
     var n int
     var p []byte
@@ -42,9 +73,10 @@ func Quote(s string) string {
     return rt.Mem2Str(p)
 }
 
-func Encode(val interface{}) ([]byte, error) {
+// Encode returns the JSON encoding of val, encoded with opts.
+func Encode(val interface{}, opts Options) ([]byte, error) {
     buf := newBytes()
-    err := EncodeInto(&buf, val)
+    err := EncodeInto(&buf, val, opts)
 
     /* check for errors */
     if err != nil {
@@ -61,24 +93,29 @@ func Encode(val interface{}) ([]byte, error) {
     return ret, nil
 }
 
-func EncodeInto(buf *[]byte, val interface{}) error {
+// EncodeInto is like Encode but uses a user-supplied buffer instead of allocating
+// a new one.
+func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     stk := newStack()
     efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk)
+    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
 
     /* return the stack into pool */
     freeStack(stk)
     return err
 }
 
-func EncodeIndented(val interface{}, prefix string, indent string) ([]byte, error) {
+// EncodeIndented is like Encode but applies Indent to format the output.
+// Each JSON element in the output will begin on a new line beginning with prefix
+// followed by one or more copies of indent according to the indentation nesting.
+func EncodeIndented(val interface{}, prefix string, indent string, opts Options) ([]byte, error) {
     var err error
     var out []byte
     var buf *bytes.Buffer
 
     /* encode into the buffer */
     out = newBytes()
-    err = EncodeInto(&out, val)
+    err = EncodeInto(&out, val, opts)
 
     /* check for errors */
     if err != nil {
@@ -107,6 +144,8 @@ func EncodeIndented(val interface{}, prefix string, indent string) ([]byte, erro
     return ret, nil
 }
 
+// Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
+// order to reduce the first-hit latency.
 func Pretouch(vt reflect.Type) (err error) {
     _, err = findOrCompile(rt.UnpackType(vt))
     return

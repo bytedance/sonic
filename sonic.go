@@ -23,11 +23,16 @@ import (
     `github.com/bytedance/sonic/ast`
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/encoder`
+    `github.com/bytedance/sonic/internal/native/types`
+)
+
+const (
+    _SpaceMask = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
 )
 
 // Marshal returns the JSON encoding of v.
 func Marshal(val interface{}) ([]byte, error) {
-    return encoder.Encode(val)
+    return encoder.Encode(val, 0)
 }
 
 // Unmarshal parses the JSON-encoded data and stores the result in the value
@@ -38,7 +43,33 @@ func Unmarshal(buf []byte, val interface{}) error {
 
 // UnmarshalString is like Unmarshal, except buf is a string.
 func UnmarshalString(buf string, val interface{}) error {
-    return decoder.NewDecoder(buf).Decode(val)
+    dec := decoder.NewDecoder(buf)
+    err := dec.Decode(val)
+    pos := dec.Pos()
+
+    /* check for errors */
+    if err != nil {
+        return err
+    }
+
+    /* skip all the trailing spaces */
+    if pos != len(buf) {
+        for pos < len(buf) && (_SpaceMask & (1 << buf[pos])) != 0 {
+            pos++
+        }
+    }
+
+    /* then it must be at EOF */
+    if pos == len(buf) {
+        return nil
+    }
+
+    /* junk after JSON value */
+    return decoder.SyntaxError {
+        Src  : buf,
+        Pos  : dec.Pos(),
+        Code : types.ERR_INVALID_CHAR,
+    }
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
@@ -54,17 +85,17 @@ func Pretouch(vt reflect.Type) error {
 }
 
 // Get searches the given path json,
-// and returns its representing ast.Node
+// and returns its representing ast.Node.
 //
 // Each path arg must be integer or string:
-//     - Integer means searching current node as array,
+//     - Integer means searching current node as array
 //     - String means searching current node as object
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
     return GetFromString(string(src), path...)
 }
 
 // GetFromString is same with Get except src is string,
-// which can reduce unnecessary memory copy
+// which can reduce unnecessary memory copy.
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
 }

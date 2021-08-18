@@ -32,10 +32,6 @@ var _subr__b64encode uintptr
 //goland:noinspection GoUnusedParameter
 func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 
-//go:linkname newobject runtime.newobject
-//goland:noinspection GoUnusedParameter
-func newobject(typ *rt.GoType) unsafe.Pointer
-
 //go:linkname growslice runtime.growslice
 //goland:noinspection GoUnusedParameter
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
@@ -46,17 +42,12 @@ func assertI2I(inter *rt.GoType, i rt.GoIface) rt.GoIface
 
 //go:linkname mapiternext runtime.mapiternext
 //goland:noinspection GoUnusedParameter
-func mapiternext(it unsafe.Pointer)
+func mapiternext(it *rt.GoMapIterator)
 
 //go:linkname mapiterinit runtime.mapiterinit
 //goland:noinspection GoUnusedParameter
-func mapiterinit(t *rt.GoType, m unsafe.Pointer, it *rt.GoMapIterator)
+func mapiterinit(t *rt.GoMapType, m *rt.GoMap, it *rt.GoMapIterator)
 
 //go:linkname isValidNumber encoding/json.isValidNumber
 //goland:noinspection GoUnusedParameter
 func isValidNumber(s string) bool
-
-//go:noescape
-//go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
-//goland:noinspection GoUnusedParameter
-func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)

@@ -53,6 +53,7 @@ type _Encoder func(
     rb *[]byte,
     vp unsafe.Pointer,
     sb *_Stack,
+    fv uint64,
 ) error
 
 func newBytes() []byte {
