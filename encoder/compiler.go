@@ -224,6 +224,10 @@ func (self _Instr) vi() int {
     return rt.UnpackInt(self.u)
 }
 
+func (self _Instr) vf() uint8 {
+    return (*rt.GoType)(self.p).KindFlags
+}
+
 func (self _Instr) vs() (v string) {
     (*rt.GoString)(unsafe.Pointer(&v)).Ptr = self.p
     (*rt.GoString)(unsafe.Pointer(&v)).Len = self.vi()

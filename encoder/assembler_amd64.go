@@ -1022,7 +1022,7 @@ func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))     // MOVQ AX, 8(SP)
 
     /* check for indirection */
-    if p.vk() == reflect.Ptr {
+    if (p.vf() & rt.F_direct) != 0 {
         self.Emit("MOVQ", _SP_p, _AX)               // MOVQ SP.p, AX
     } else {
         self.Emit("MOVQ", _SP_p, jit.Ptr(_SP, 48))  // MOVQ SP.p, 48(SP)
