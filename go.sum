@@ -1,5 +1,5 @@
-github.com/chenzhuoyu/base64x v0.0.0-20210823060942-dfd952a155c6 h1:sB+841K/1P6YcZTZQQBnj8B3b/gD1Km3ur/gtcpgA1o=
-github.com/chenzhuoyu/base64x v0.0.0-20210823060942-dfd952a155c6/go.mod h1:Yj9Cv70aYHquW+Amrru9SJztDiIfOR4cn8bE7Vb5Gl0=
+github.com/chenzhuoyu/base64x v0.0.0-20210823061504-5637f8385dfd h1:buYObuVp1rYcsL1N7xSL9vzKrjqth+S78o65r6+D8bk=
+github.com/chenzhuoyu/base64x v0.0.0-20210823061504-5637f8385dfd/go.mod h1:DH46F32mSOjUmXrMHnKwZdA8wcEefY7UVqBKYGjpdQY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
