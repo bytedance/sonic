@@ -24,6 +24,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/caching`
+    `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
@@ -944,6 +945,10 @@ var (
 )
 
 const (
+    _MODE_AVX2 = 1 << 2
+)
+
+const (
     _Fe_ID   = int64(unsafe.Offsetof(caching.FieldEntry{}.ID))
     _Fe_Name = int64(unsafe.Offsetof(caching.FieldEntry{}.Name))
     _Fe_Hash = int64(unsafe.Offsetof(caching.FieldEntry{}.Hash))
@@ -1009,15 +1014,23 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
     self.Emit("LEAQ" , jit.Sib(_SI, _SI, 2, 0), _SI)    // LEAQ   (SI)(SI*2), SI
     self.Emit("MOVQ" , _SI, jit.Ptr(_VP, 16))           // MOVQ   SI, 16(VP)
     self.malloc(_SI, _SI)                               // MALLOC SI, SI
-    self.Emit("XORL" , _CX, _CX)                        // XORL   CX, CX
-    self.Emit("XORL" , _DX, _DX)                        // XORL   DX, DX
-    self.Emit("MOVQ" , _VP, _DI)                        // MOVQ   VP, DI
-    self.Emit("XCHGQ", _SI, jit.Ptr(_VP, 0))            // XCHGQ  SI, (VP)
-    self.Emit("XCHGQ", _DX, jit.Ptr(_VP, 8))            // XCHGQ  DX, 8(VP)
-    self.call(_F_b64decode)                             // CALL   b64decode
-    self.Emit("TESTQ", _AX, _AX)                        // TESTQ  AX, AX
-    self.Sjmp("JS"   , _LB_base64_error)                // JS     _base64_error
-    self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))            // MOVQ   AX, 8(VP)
+
+    /* check for AVX2 support */
+    if !cpu.HasAVX2 {
+        self.Emit("XORL", _CX, _CX)                     // XORL CX, CX
+    } else {
+        self.Emit("MOVL", jit.Imm(_MODE_AVX2), _CX)     // MOVL $_MODE_AVX2, CX
+    }
+
+    /* call the decoder */
+    self.Emit("XORL" , _DX, _DX)                // XORL  DX, DX
+    self.Emit("MOVQ" , _VP, _DI)                // MOVQ  VP, DI
+    self.Emit("XCHGQ", _SI, jit.Ptr(_VP, 0))    // XCHGQ SI, (VP)
+    self.Emit("XCHGQ", _DX, jit.Ptr(_VP, 8))    // XCHGQ DX, 8(VP)
+    self.call(_F_b64decode)                     // CALL  b64decode
+    self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
+    self.Sjmp("JS"   , _LB_base64_error)        // JS    _base64_error
+    self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))    // MOVQ  AX, 8(VP)
 }
 
 func (self *_Assembler) _asm_OP_bool(_ *_Instr) {

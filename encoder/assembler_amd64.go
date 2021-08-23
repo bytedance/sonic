@@ -22,6 +22,7 @@ import (
     `strconv`
     `unsafe`
 
+    `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
@@ -803,6 +804,10 @@ var (
     _F_encodeTextMarshaler obj.Addr
 )
 
+const (
+    _MODE_AVX2 = 1 << 2
+)
+
 func init() {
     _F_encodeTypedPointer  = jit.Func(encodeTypedPointer)
     _F_encodeJsonMarshaler = jit.Func(encodeJsonMarshaler)
@@ -908,10 +913,18 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
     self.save_c()                                       // SAVE $REG_ffi
     self.prep_buffer_c()                                // MOVE {buf}, DI
     self.Emit("MOVQ", _SP_p, _SI)                       // MOVQ SP.p, SI
-    self.Emit("XORL", _DX, _DX)                         // XORL DX, DX
-    self.call_c(_F_b64encode)                           // CALL b64encode
-    self.load_buffer()                                  // LOAD {buf}
-    self.add_char('"')                                  // CHAR $'"'
+
+    /* check for AVX2 support */
+    if !cpu.HasAVX2 {
+        self.Emit("XORL", _DX, _DX)                     // XORL DX, DX
+    } else {
+        self.Emit("MOVL", jit.Imm(_MODE_AVX2), _DX)     // MOVL $_MODE_AVX2, DX
+    }
+
+    /* call the encoder */
+    self.call_c(_F_b64encode)   // CALL b64encode
+    self.load_buffer()          // LOAD {buf}
+    self.add_char('"')          // CHAR $'"'
 }
 
 func (self *_Assembler) _asm_OP_quote(_ *_Instr) {
