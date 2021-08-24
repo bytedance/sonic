@@ -170,7 +170,7 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
         /* check for the next character */
         switch self.s[self.p] {
             case ',' : self.p++
-            case ']' : self.p++; return newArray(ret), 0
+            case ']' : self.p++; return NewArray(ret), 0
         default:
             if val.isLazy() {
                 return newLazyArray(self, ret), 0
@@ -256,7 +256,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
         /* check for the next character */
         switch self.s[self.p] {
             case ',' : self.p++
-            case '}' : self.p++; return newObject(ret), 0
+            case '}' : self.p++; return NewObject(ret), 0
         default:
             if val.isLazy() {
                 return newLazyObject(self, ret), 0
@@ -272,7 +272,7 @@ func (self *Parser) decodeString(iv int64, ep int) (Node, types.ParsingError) {
 
     /* fast path: no escape sequence */
     if ep == -1 {
-        return newString(s), 0
+        return NewString(s), 0
     }
 
     /* unquote the string */
@@ -310,8 +310,8 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
                 return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP))
             }
             return newLazyObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
-        case types.V_DOUBLE  : return newNumber(self.s[val.Ep:self.p]), 0
-        case types.V_INTEGER : return newNumber(self.s[val.Ep:self.p]), 0
+        case types.V_DOUBLE  : return NewNumber(self.s[val.Ep:self.p]), 0
+        case types.V_INTEGER : return NewNumber(self.s[val.Ep:self.p]), 0
         default              : return Node{}, types.ParsingError(-val.Vt)
     }
 }
@@ -370,17 +370,3 @@ func (self *Parser) ExportError(err types.ParsingError) error {
         Code: err,
     }.Description())
 }
-
-// func (self *Parser) printNear(start int) string {
-//     end := self.p + 10
-//     if end > len(self.s) {
-//         end = len(self.s)
-//     }
-//     if start > end {
-//         start = end - 1
-//     }
-//     if start < 0 {
-//         start = 0
-//     }
-//     return self.s[start:end]
-// }

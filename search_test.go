@@ -613,7 +613,7 @@ func TestGetNotExist(t *testing.T) {
         t.Fatal()
     }
     v2 := ret.GetByPath("m1", "m2")
-    if !v2.Exists() || v2.IsRaw() || v2.Type() != ast.V_NUMBER {
+    if !v2.Exists() || !v2.IsRaw() || v2.Int64() != 3 {
         t.Fatal(ret.Type())
     }
 }

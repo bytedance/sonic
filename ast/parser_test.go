@@ -258,6 +258,7 @@ func BenchmarkParser_Parallel_Sonic(b *testing.B) {
 }
 
 func BenchmarkGetOne_Gjson(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast := gjson.Get(_TwitterJson, "statuses.2.id")
         node := ast.Int()
@@ -268,6 +269,7 @@ func BenchmarkGetOne_Gjson(b *testing.B) {
 }
 
 func BenchmarkGetOne_Jsoniter(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
     data := []byte(_TwitterJson)
     for i := 0; i < b.N; i++ {
         ast := jsoniter.Get(data, "statuses", 2, "id")
@@ -279,6 +281,7 @@ func BenchmarkGetOne_Jsoniter(b *testing.B) {
 }
 
 func BenchmarkGetOne_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
         node := ast.Get("statuses").Index(2).Get("id").Int64()
@@ -289,6 +292,7 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
 }
 
 func BenchmarkGetSeven_Gjson(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast := gjson.Get(_TwitterJson, "statuses.3.id")
         ast = gjson.Get(_TwitterJson, "statuses.3.user.entities.description")
@@ -304,6 +308,7 @@ func BenchmarkGetSeven_Gjson(b *testing.B) {
 }
 
 func BenchmarkGetSeven_Jsoniter(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
     data := []byte(_TwitterJson)
     for i := 0; i < b.N; i++ {
         ast := jsoniter.Get(data, "statuses", 3, "id")
@@ -320,6 +325,7 @@ func BenchmarkGetSeven_Jsoniter(b *testing.B) {
 }
 
 func BenchmarkGetSeven_SonicParser(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
         node := ast.GetByPath( "statuses", 3, "id")
