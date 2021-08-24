@@ -31,11 +31,11 @@ func (self *Iterator) Pos() int {
 }
 
 func (self *Iterator) Len() int {
-    return self.p.Len()
+    return self.p.len()
 }
 
 func (self *Iterator) HasNext() bool {
-    return self.i < self.p.Len()
+    return self.i < self.p.len()
 }
 
 type ListIterator struct {

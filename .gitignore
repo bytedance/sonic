@@ -45,3 +45,4 @@ junit.xml
 *.svg
 *.out
 ast/test.out
+ast/bench.sh

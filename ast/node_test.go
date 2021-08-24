@@ -17,15 +17,92 @@
 package ast
 
 import (
-    "encoding/json"
-    "strconv"
-    "testing"
+	`encoding/json`
+	`strconv`
+	`testing`
 
-    jsoniter "github.com/json-iterator/go"
-    "github.com/stretchr/testify/assert"
+	`github.com/bytedance/sonic/internal/native/types`
+	jsoniter `github.com/json-iterator/go`
+	`github.com/stretchr/testify/assert`
 )
 
 var parallelism = 4
+
+func TestIndex(t *testing.T) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        t.Fatalf("decode failed: %v", derr.Error())
+    }
+    status := root.GetByPath("statuses", 0)
+    if status.Index(4).String() !=  status.Get("id_str").String() {
+        t.Fail()
+    }
+}
+
+func TestUnset(t *testing.T) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        t.Fatalf("decode failed: %v", derr.Error())
+    }
+    entities := root.GetByPath("statuses", 0, "entities")
+    if !entities.Exists() {
+        t.Fatal()
+    }
+    exist := entities.Unset("urls")
+    if !exist {
+        t.Fatal()
+    }
+    e := entities.Get("urls")
+    if e.Exists() {
+        t.Fatal()
+    }
+    if entities.Len() != 2 {
+        t.Fatal()
+    }
+
+    entities.Set("urls", NewString("a"))
+    e = entities.Get("urls")
+    if !e.Exists() || e.String() != "a" {
+        t.Fatal()
+    }
+    exist = entities.UnsetByIndex(entities.Len()-1)
+    if !exist {
+        t.Fatal()
+    }
+    e = entities.Get("urls")
+    if e.Exists() {
+        t.Fatal()
+    }
+
+    hashtags := entities.Get("hashtags").Index(0)
+    hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
+    exist = hashtags.Unset("indices")
+    if !exist || hashtags.Len() != 2 {
+        t.Fatal()
+    }
+    if hashtags.Get("text").String() != "freebandnames" {
+        t.Fatal()
+    }
+    if hashtags.Get("text2").Type() != V_OBJECT {
+        t.Fatal()
+    }
+
+    ums := entities.Get("user_mentions")
+    ums.Add(NewNull())
+    ums.Add(NewBool(true))
+    ums.Add(NewBool(false))
+    if ums.Len() != 3 {
+        t.Fatal()
+    }
+    exist = ums.UnsetByIndex(1)
+    if !exist {
+        t.Fatal()
+    }
+    if ums.Index(0).Interface() != nil || ums.Index(1).Interface() != false {
+        t.Fatal()
+    } 
+
+}
 
 func TestUnsafeNode(t *testing.T) {
     str, loop := getTestIteratorSample()
@@ -351,9 +428,11 @@ func TestNodeSetByIndex(t *testing.T) {
         t.Fatalf("decode failed: %v", derr.Error())
     }
     app, _ := NewParser("111").Parse()
-    root.GetByPath("statuses").SetByIndex(0, app)
-    val := root.GetByPath("statuses", 0).Int64()
-    if val != 111 {
+    st := root.GetByPath("statuses")
+    st.SetByIndex(0, app)
+    st = root.GetByPath("statuses") 
+    val := st.Index(0)
+    if val.Int64() != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
 
@@ -452,11 +531,11 @@ func BenchmarkNodeGet(b *testing.B) {
         b.Fatalf("decode failed: %v", derr.Error())
     }
     node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
-    node.Set("test1", newNumber("1"))
-    node.Set("test2", newNumber("2"))
-    node.Set("test3", newNumber("3"))
-    node.Set("test4", newNumber("4"))
-    node.Set("test5", newNumber("5"))
+    node.Set("test1", NewNumber("1"))
+    node.Set("test2", NewNumber("2"))
+    node.Set("test3", NewNumber("3"))
+    node.Set("test4", NewNumber("4"))
+    node.Set("test5", NewNumber("5"))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node.Get("text")
@@ -469,11 +548,11 @@ func BenchmarkMapGet(b *testing.B) {
         b.Fatalf("decode failed: %v", derr.Error())
     }
     node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
-    node.Set("test1", newNumber("1"))
-    node.Set("test2", newNumber("2"))
-    node.Set("test3", newNumber("3"))
-    node.Set("test4", newNumber("4"))
-    node.Set("test5", newNumber("5"))
+    node.Set("test1", NewNumber("1"))
+    node.Set("test2", NewNumber("2"))
+    node.Set("test3", NewNumber("3"))
+    node.Set("test4", NewNumber("4"))
+    node.Set("test5", NewNumber("5"))
     m := node.Map()
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
@@ -490,7 +569,7 @@ func BenchmarkNodeSet(b *testing.B) {
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        node.Set("test1", newNumber("1"))
+        node.Set("test1", NewNumber("1"))
     }
 }
 
@@ -518,7 +597,7 @@ func BenchmarkNodeAdd(b *testing.B) {
     for i := 0; i < b.N; i++ {
         root, _ := NewParser(data).Parse()
         node := root.Get("statuses")
-        node.Add(newObject([]Pair{{"test", newNumber("1")}}))
+        node.Add(NewObject([]Pair{{"test", NewNumber("1")}}))
     }
 }
 
