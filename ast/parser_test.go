@@ -285,7 +285,7 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
-        node := ast.Get("statuses").Index(2).Get("id").Int64()
+        node, _ := ast.Get("statuses").Index(2).Get("id").Int64()
         if node != 249289491129438208 {
             b.Fail()
         }

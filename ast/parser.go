@@ -36,10 +36,10 @@ const (
 )
 
 var (
-    nodeNotFound = newError(_ERR_NOT_FOUND, -1, "value not exists")
-    nodeUnsupportType = newError(_ERR_UNSUPPORT_TYPE, -1, "unsupported type")
+    nodeNotExist = newError(_ERR_NOT_FOUND, "value not exists")
+    nodeUnsupportType = newError(_ERR_UNSUPPORT_TYPE, "unsupported type")
 
-    ErrNotFound error = nodeNotFound
+    ErrNotExist error = nodeNotExist
     ErrUnsupportType error = nodeUnsupportType
 )
 
@@ -381,7 +381,7 @@ func NewParser(src string) *Parser {
 // ExportError converts types.ParsingError to std Error
 func (self *Parser) ExportError(err types.ParsingError) error {
     if err == _ERR_NOT_FOUND {
-        return ErrNotFound
+        return ErrNotExist
     }
     return fmt.Errorf("%q", decoder.SyntaxError{
         Pos : self.p,

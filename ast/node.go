@@ -102,9 +102,9 @@ func (self *Node) Valid() bool {
 // Check check if the node itself is valid, and return:
 //   - ErrNotFound If the node does not exist
 //   - Its underlying error If the node is V_ERROR
-func (self *Node) Check() error {
+func (self *Node)  Check() error {
     if self == nil || self.t == V_NONE {
-        return ErrNotFound
+        return ErrNotExist
     } else if self.t != V_ERROR {
         return nil
     } else {
@@ -136,11 +136,11 @@ func (self Node) isLazy() bool {
 
 // Raw returns underlying json string of an raw node,
 // which usually created by Search() api
-func (self Node) Raw() string {
+func (self *Node) Raw() (string, error) {
     if !self.IsRaw() {
-        panic("value cannot be represented as raw json")
+        return "", ErrUnsupportType
     }
-    return addr2str(self.p, self.v)
+    return addr2str(self.p, self.v), nil
 }
 
 func (self *Node) checkRaw() error {
@@ -153,82 +153,77 @@ func (self *Node) checkRaw() error {
     return nil
 }
 
-// Bool returns bool value represented by this node
+// Bool_E returns bool value represented by this node
 //
-// If node type is not types.V_TRUE or types.V_FALSE, or V_RAW (must be a bool json value)
-// it will panic
-func (self *Node) Bool() bool {
+// If node type is not types.V_TRUE or types.V_FALSE, or V_RAW (must be a bool json value),
+// it will return error
+func (self *Node) Bool() (bool, error) {
     if err := self.checkRaw(); err != nil {
-        panic(err)
+        return false, err
     }
     switch self.t {
-        case types.V_TRUE  : return true
-        case types.V_FALSE : return false
-        default : panic("value cannot be represented as a boolean")
+        case types.V_TRUE  : return true , nil
+        case types.V_FALSE : return false, nil
+        default            : return false, ErrUnsupportType
     }
 }
 
 // Int64 as above.
-func (self *Node) Int64() int64 {
+func (self *Node) Int64() (int64, error) {
     if err := self.checkRaw(); err != nil {
-        panic(err)
+        return 0, err
     }
     switch self.t {
-        case _V_NUMBER        : 
-        v, e := numberToInt64(self)
-        if e != nil {
-            panic(e.Error())
-        }
-        return v
-        case types.V_TRUE     : return 1
-        case types.V_FALSE    : return 0
-        default               : panic("value cannot be represented as an integer")
+        case _V_NUMBER        : return numberToInt64(self)
+        case types.V_TRUE     : return 1, nil
+        case types.V_FALSE    : return 0, nil
+        default               : return 0, ErrUnsupportType
     }
 }
 
 // Number as above.
-func (self *Node) Number() json.Number {
+func (self *Node) Number() (json.Number, error) {
     if err := self.checkRaw(); err != nil {
-        panic(err)
+        return json.Number(""), err
     }
     switch self.t {
-        case _V_NUMBER        : return toNumber(self)
-        case types.V_TRUE     : return json.Number("1")
-        case types.V_FALSE    : return json.Number("0")
-        default               : panic("value cannot be represented as a json.Number")
+        case _V_NUMBER        : return toNumber(self)  , nil
+        case types.V_TRUE     : return json.Number("1"), nil
+        case types.V_FALSE    : return json.Number("0"), nil
+        default               : return json.Number(""), ErrUnsupportType
     }
 }
 
-// String as above.
-func (self *Node) String() string {
+// String returns raw string value if node type is V_STRING.
+// Or return the string representation of other types:
+//  V_NULL => "null",
+//  V_TRUE => "true",
+//  V_FALSE => "false",
+//  V_NUMBER => "[0-9\.]*"
+func (self *Node) String() (string, error) {
     if err := self.checkRaw(); err != nil {
-        panic(err)
+        return "", err
     }
     switch self.t {
-        case _V_NUMBER       : return toNumber(self).String()
-        case types.V_NULL    : return "null"
-        case types.V_TRUE    : return "true"
-        case types.V_FALSE   : return "false"
-        case types.V_STRING  : return addr2str(self.p, self.v)
-        default              : panic("value cannot be represented as a simple string")
+        case _V_NUMBER       : return toNumber(self).String(), nil
+        case types.V_NULL    : return "null" , nil
+        case types.V_TRUE    : return "true" , nil
+        case types.V_FALSE   : return "false", nil
+        case types.V_STRING  : return addr2str(self.p, self.v), nil
+        default              : return ""     , ErrUnsupportType
     }
 }
 
 // Float64 as above.
-func (self *Node) Float64() float64 {
+func (self *Node) Float64() (float64, error) {
     if err := self.checkRaw(); err != nil {
-        panic(err)
+        return 0.0, err
     }
     switch self.t {
-        case _V_NUMBER       :
-        v, e := numberToFloat64(self)
-        if e != nil {
-            panic(e.Error())
-        }
-        return v
-        case types.V_TRUE    : return 1.0
-        case types.V_FALSE   : return 0.0
-        default              : panic("value cannot be represented as an integer")
+        case _V_NUMBER       : return numberToFloat64(self)
+        case types.V_TRUE    : return 1.0, nil
+        case types.V_FALSE   : return 0.0, nil
+        default              : return 0.0, ErrUnsupportType
     }
 }
 
@@ -236,16 +231,16 @@ func (self *Node) Float64() float64 {
 
 // Len returns children count of a array|object|string node
 // For partially loaded node, it also works but only counts the parsed children
-func (self *Node) Len() int {
+func (self *Node) Len() (int, error) {
     if err := self.checkRaw(); err != nil {
-        panic(err)
+        return 0, err
     }
     if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY {
-        return int(self.v & _LEN_MASK)
+        return int(self.v & _LEN_MASK), nil
     } else if self.t == types.V_STRING {
-        return int(self.v)
+        return int(self.v), nil
     } else {
-        panic("value does not have a length")
+        return 0, ErrUnsupportType
     }
 }
 
@@ -254,14 +249,14 @@ func (self Node) len() int {
 }
 
 // Cap returns malloc capacity of a array|object node for children
-func (self *Node) Cap() int {
+func (self *Node) Cap() (int, error) {
     if err := self.checkRaw(); err != nil {
-        panic(err)
+        return 0, err
     }
     if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY {
-        return int(self.v >> _CAP_BITS)
+        return int(self.v >> _CAP_BITS), nil
     } else {
-        panic("value does not have a capacity")
+        return 0, ErrUnsupportType
     }
 }
 
@@ -318,7 +313,7 @@ func (self *Node) Unset(key string) (bool, error) {
 func (self *Node) SetByIndex(index int, node Node) (bool, error) {
     p := self.Index(index)
     if !p.Exists() {
-        return false, ErrNotFound
+        return false, ErrNotExist
     } else if err := p.Check(); err != nil {
         return false, err
     }
@@ -336,7 +331,7 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
     }else if it == types.V_OBJECT {
         pr := self.skipIndexPair(index)
         if pr == nil {
-           return false, ErrNotFound
+           return false, ErrNotExist
         }
         p = &pr.Value
     }else{
@@ -344,7 +339,7 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
     }
 
     if !p.Exists() {
-        return false, ErrNotFound
+        return false, ErrNotExist
     }
 
     if it == types.V_ARRAY {
@@ -429,7 +424,7 @@ func (self *Node) Index(idx int) *Node {
     }else if it == types.V_OBJECT {
         pr := self.skipIndexPair(idx)
         if pr == nil {
-           return nodeNotFound
+           return nodeNotExist
         }
         return &pr.Value
 
@@ -440,9 +435,11 @@ func (self *Node) Index(idx int) *Node {
 
 // Values returns iterator for array's children traversal
 func (self *Node) Values() (ListIterator, error) {
-    self.must(types.V_ARRAY, "an array")
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return ListIterator{}, err
+    }
     if err := self.skipAllIndex(); err != nil {
-        return ListIterator{}, nil
+        return ListIterator{}, err
     }
     return ListIterator{Iterator{p: self}}, nil
 }
@@ -550,7 +547,7 @@ func (self *Node) UnsafeArray() ([]Node, error) {
     if err := self.loadAllIndex(); err != nil {
         return nil, err
     }
-    s := ptr2slice(self.p, self.len(), self.Cap())
+    s := ptr2slice(self.p, self.len(), self.cap())
     return *(*[]Node)(s), nil
 }
 
@@ -684,12 +681,6 @@ func (self *Node) should(t types.ValueType, s string) error {
         return ErrUnsupportType
     }
     return nil
-}
-
-func (self *Node) bound(i int) {
-    if i < 0 || i >= self.Len() {
-        panic("list index out of range")
-    }
 }
 
 func (self *Node) nodeAt(i int) *Node {
@@ -1401,12 +1392,7 @@ func (self *Node) parseRaw() Node {
     return n
 }
 
-func newError(err types.ParsingError, pos int, src string) *Node {
-    msg := decoder.SyntaxError{
-        Src: src,
-        Pos: pos,
-        Code: err,
-    }.Description()
+func newError(err types.ParsingError, msg string) *Node {
     return &Node{
         t: V_ERROR,
         v: int64(err),

@@ -48,17 +48,20 @@ func TestExampleSearch(t *testing.T) {
     data := []byte(` { "xx" : [] ,"yy" :{ }, "test" : [ true , 0.1 , "abc", ["h"], {"a":"bc"} ] } `)
 
     node, e := Get(data, "test", 0)
-    if e != nil || node.Bool() != true {
+    x, _ := node.Bool()
+    if e != nil || x != true {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
     node, e = Get(data, "test", 1)
-    if e != nil || node.Float64() != 0.1 {
+    a, _ := node.Float64()
+    if e != nil || a != 0.1 {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
     node, e = Get(data, "test", 2)
-    if e != nil || node.String() != "abc" {
+    b, _ := node.String()
+    if e != nil || b != "abc" {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
@@ -69,7 +72,8 @@ func TestExampleSearch(t *testing.T) {
     }
 
     node, e = Get(data, "test", 4, "a")
-    if e != nil || node.String() != "bc" {
+    c, _ := node.String()
+    if e != nil || c != "bc" {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 }
@@ -168,8 +172,9 @@ func TestEmoji(t *testing.T) {
         t.Fatal(err)
     }
     s, _ := v["utf8"].(string)
-    if value.String() != s {
-        t.Fatalf("expected '%v', got '%v'", s, value.String())
+    x, _ := value.String()
+    if x != s {
+        t.Fatalf("expected '%v', got '%v'", s, x)
     }
 }
 
@@ -178,7 +183,8 @@ func testEscapePath(t *testing.T, json, expect string, path ...interface{}) {
     if e != nil {
         t.Fatal(e)
     }
-    if n.String() != expect {
+    x, _ := n.String()
+    if x != expect {
         x, _ := n.Interface()
         t.Fatalf("expected '%v', got '%v'", expect, x)
     }
@@ -216,19 +222,23 @@ func TestParseAny(t *testing.T) {
     if n == nil {
         panic("n is nil")
     }
-    assertCond(n.Float64() == 100)
+    x, _ := n.Float64()
+    assertCond(x == 100)
     n, e = Parse("true")
     assertCond(e == nil)
     if n == nil {
         panic("n is nil")
     }
-    assertCond(n.Bool())
+
+    a, _ := n.Bool()
+    assertCond(a)
     n, e = Parse("false")
     assertCond(e == nil)
     if n == nil {
         panic("n is nil")
     }
-    assertCond(n.Bool() == false)
+    b, _ := n.Bool()
+    assertCond(b == false)
     n, e = Parse("yikes")
     assertCond(e != nil)
 }
@@ -623,7 +633,11 @@ func TestGetNotExist(t *testing.T) {
         t.Fatal()
     }
     v2 := ret.GetByPath("m1", "m2")
-    if !v2.Exists() || !v2.IsRaw() || v2.Int64() != 3 {
+    if !v2.Exists() || !v2.IsRaw() {
         t.Fatal(ret.Type())
+    }
+    x, _ := v2.Int64()
+    if x != 3 {
+        t.Fatal(x)
     }
 }

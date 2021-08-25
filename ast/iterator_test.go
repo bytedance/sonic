@@ -53,8 +53,9 @@ func TestRawIterator(t *testing.T) {
         v := &Node{}
         if !ai.Next(v) {
             t.Fatalf("no next")
-        }
-        if i < int64(loop) && v.Int64() != i {
+		}
+		x, _ := v.Int64()
+        if i < int64(loop) && x != i {
             t.Fatalf("exp:%v, got:%v", i, v)
         }
         if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
@@ -73,8 +74,9 @@ func TestRawIterator(t *testing.T) {
         v := &Pair{}
         if !mi.Next(v) {
             t.Fatalf("no next")
-        }
-        if i < int64(loop) &&( v.Value.Int64() != i ||v.Key != fmt.Sprintf("k%d", i)) {
+		}
+		x, _ := v.Value.Int64()
+        if i < int64(loop) &&( x != i ||v.Key != fmt.Sprintf("k%d", i)) {
 			vv, _ := v.Value.Interface()
             t.Fatalf("exp:%v, got:%v", i, vv)
         }
@@ -100,7 +102,8 @@ func TestIterator(t *testing.T) {
 		if !ai.Next(v) {
 			t.Fatalf("no next")
 		}
-		if i < int64(loop) && v.Int64() != i {
+		x, _ := v.Int64()
+		if i < int64(loop) && x != i {
 			t.Fatalf("exp:%v, got:%v", i, v)
 		}
 		if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
@@ -120,7 +123,8 @@ func TestIterator(t *testing.T) {
 		if !mi.Next(v) {
 			t.Fatalf("no next")
 		}
-		if i < int64(loop) &&( v.Value.Int64() != i ||v.Key != fmt.Sprintf("k%d", i)) {
+		x, _ := v.Value.Int64()
+		if i < int64(loop) &&( x != i ||v.Key != fmt.Sprintf("k%d", i)) {
 			vv, _ := v.Value.Interface()
 			t.Fatalf("exp:%v, got:%v", i, vv)
 		}
