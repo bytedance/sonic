@@ -19,7 +19,7 @@ package ast
 import (
 	`fmt`
 	`sync`
-	`unsafe`
+    `unsafe`
 
 	`github.com/bytedance/sonic/decoder`
 	`github.com/bytedance/sonic/internal/native`
@@ -30,7 +30,18 @@ import (
 
 const _DEFAULT_NODE_CAP int = 16
 
-const _ERR_NOT_FOUND types.ParsingError = 33
+const (
+    _ERR_NOT_FOUND      types.ParsingError = 33
+    _ERR_UNSUPPORT_TYPE types.ParsingError = 34
+)
+
+var (
+    nodeNotFound = newError(_ERR_NOT_FOUND, -1, "value not exists")
+    nodeUnsupportType = newError(_ERR_UNSUPPORT_TYPE, -1, "unsupported type")
+
+    ErrNotFound error = nodeNotFound
+    ErrUnsupportType error = nodeUnsupportType
+)
 
 type Parser struct {
     p           int
@@ -330,20 +341,24 @@ func (self *Parser) skip() (int, types.ParsingError) {
 /** Parser Factory **/
 
 // Loads parse all json into interface{}
-func Loads(src string) (int, interface{}, types.ParsingError) {
+func Loads(src string) (int, interface{}, error) {
     ps := &Parser{s: src}
     np, err := ps.Parse()
 
     /* check for errors */
     if err != 0 {
-        return 0, nil, err
+        return 0, nil, ps.ExportError(err)
     } else {
-        return ps.Pos(), np.Interface(), 0
+        x, err := np.Interface()
+        if err != nil {
+            return 0, nil, err
+        }
+        return ps.Pos(), x, nil
     }
 }
 
 // LoadsUseNumber parse all json into interface{}, with numeric nodes casted to json.Number
-func LoadsUseNumber(src string) (int, interface{}, types.ParsingError) {
+func LoadsUseNumber(src string) (int, interface{}, error) {
     ps := &Parser{s: src}
     np, err := ps.Parse()
 
@@ -351,7 +366,11 @@ func LoadsUseNumber(src string) (int, interface{}, types.ParsingError) {
     if err != 0 {
         return 0, nil, err
     } else {
-        return ps.Pos(), np.InterfaceUseNumber(), 0
+        x, err := np.InterfaceUseNumber()
+        if err != nil {
+            return 0, nil, err
+        }
+        return ps.Pos(), x, nil
     }
 }
 
@@ -362,11 +381,19 @@ func NewParser(src string) *Parser {
 // ExportError converts types.ParsingError to std Error
 func (self *Parser) ExportError(err types.ParsingError) error {
     if err == _ERR_NOT_FOUND {
-        return fmt.Errorf("node not exists")
+        return ErrNotFound
     }
     return fmt.Errorf("%q", decoder.SyntaxError{
-        Pos: self.p,
-        Src: self.s,
+        Pos : self.p,
+        Src : self.s,
         Code: err,
     }.Description())
+}
+
+func (self *Parser) syntaxError(err types.ParsingError) *decoder.SyntaxError {
+    return &decoder.SyntaxError{
+        Pos : self.p,
+        Src : self.s,
+        Code: err,
+    }
 }

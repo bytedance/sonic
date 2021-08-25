@@ -63,7 +63,8 @@ func TestExampleSearch(t *testing.T) {
     }
 
     node, e = Get(data, "test", 3)
-    if e != nil || node.Array()[0] != "h" {
+    arr, _ := node.Array()
+    if e != nil || arr[0] != "h" {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
@@ -148,8 +149,9 @@ func TestRandomValidStrings(t *testing.T) {
         if err != nil {
             t.Fatal("search data failed:",err)
         }
-        if token.Interface().(string) != su {
-            t.Fatalf("string mismatch, exp: %v, got: %v", su, token.Interface())
+        x, _ := token.Interface()
+        if x.(string) != su {
+            t.Fatalf("string mismatch, exp: %v, got: %v", su, x)
         }
     }
 }
@@ -177,7 +179,8 @@ func testEscapePath(t *testing.T, json, expect string, path ...interface{}) {
         t.Fatal(e)
     }
     if n.String() != expect {
-        t.Fatalf("expected '%v', got '%v'", expect, n.Interface())
+        x, _ := n.Interface()
+        t.Fatalf("expected '%v', got '%v'", expect, x)
     }
 }
 
@@ -263,7 +266,9 @@ func TestTime(t *testing.T) {
     if e != nil {
         t.Fatal(e)
     }
-    for _, v := range n.Array() {
+
+    arr, _ := n.Array()
+    for _, v := range arr {
         s := v.(string)
         num = append(num, s)
     }
@@ -303,7 +308,7 @@ func TestUnmarshalMap(t *testing.T) {
     if err != nil || n == nil {
         t.Fatal(err)
     }
-    m1 := n.Map()
+    m1, _ := n.Map()
     var m2 map[string]interface{}
     if err := json.Unmarshal([]byte(exampleJSON), &m2); err != nil {
         t.Fatal(err)
@@ -337,7 +342,8 @@ func GetMany(src2 string, path ...string) (ret []string) {
             ret = append(ret, "")
             continue
         }
-        ret = append(ret, fmt.Sprintf("%v", n.Interface()))
+        x, _ := n.Interface()
+        ret = append(ret, fmt.Sprintf("%v", x))
     }
     return
 }
@@ -361,7 +367,7 @@ func get(str string, path string) *ast.Node {
 
 func TestSingleArrayValue(t *testing.T) {
     var data = []byte(`{"key": "value","key2":[1,2,3,4,"A"]}`)
-    array := get(string(data), "key2").Array()
+    array, _ := get(string(data), "key2").Array()
     if len(array) != 5 {
         t.Fatalf("got '%v', expected '%v'", len(array), 5)
     }
@@ -392,6 +398,7 @@ var manyJSON = `  {
 
 func TestManyBasic(t *testing.T) {
     testMany := func(shouldFallback bool, expect string, paths ...string) {
+        println()
         rs := GetMany(
             manyJSON,
             paths...,
@@ -413,7 +420,8 @@ func TestManyBasic(t *testing.T) {
     testMany(true, `[]`, strings.Repeat("a.", 40)+"hello")
     res := get(manyJSON, strings.Repeat("a.", 48)+"a")
     assertCond(res != nil)
-    testMany(true, "["+fmt.Sprint(res.Interface())+"]", strings.Repeat("a.", 48)+"a")
+    x, _ := res.Interface()
+    testMany(true, "["+fmt.Sprint(x)+"]", strings.Repeat("a.", 48)+"a")
     // these should fallback
     testMany(true, `[Cat Nancy]`, "name_first", "name.first")
     testMany(true, `[world]`, strings.Repeat("a.", 70)+"hello")
@@ -432,7 +440,8 @@ func testManyAny(t *testing.T, json string, paths, expected []string) {
             which = "Get"
             result = nil
             for j := 0; j < len(expected); j++ {
-                result = append(result, fmt.Sprintf("%v", get(json, paths[j]).Interface()))
+                x, _ := get(json, paths[j]).Interface()
+                result = append(result, fmt.Sprintf("%v", x))
             }
         } else if i == 1 {
             which = "GetMany"
@@ -546,7 +555,7 @@ func TestGetMany2(t *testing.T) {
 }
 
 func TestNullArray(t *testing.T) {
-    n := get(`{"data":null}`, "data").Interface()
+    n, _ := get(`{"data":null}`, "data").Interface()
     if n != nil {
         t.Fatalf("expected '%v', got '%v'", nil, n)
     }
@@ -558,7 +567,8 @@ func TestNullArray(t *testing.T) {
     if reflect.DeepEqual(n, &ast.Node{}) {
         t.Fatalf("expected '%v', got '%v'", nil, n)
     }
-    n = len(get(`{"data":[null]}`, "data").Array())
+    arr, _ := get(`{"data":[null]}`, "data").Array()
+    n = len(arr)
     if n != 1 {
         t.Fatalf("expected '%v', got '%v'", 1, n)
     }

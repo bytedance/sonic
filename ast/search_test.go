@@ -75,7 +75,8 @@ func TestSearcher_GetByPath(t *testing.T) {
     }
 
     node, e = s.GetByPath("test", 3)
-    if e != nil || node.Array()[0] != "h" {
+    arr, _ := node.Array()
+    if e != nil || arr[0] != "h" {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
@@ -125,7 +126,7 @@ func TestLoadIndex(t *testing.T) {
     }
     a := node.Index(3).Float64()
     assert.Equal(t, -1.2e-10, a)
-    m := node.Array()
+    m, _ := node.Array()
     assert.Equal(t, m, []interface{}{
         float64(0),    
         float64(1),

@@ -18,6 +18,7 @@ package ast
 
 import (
 	`encoding/json`
+	`fmt`
 	`strconv`
 	`testing`
 
@@ -27,6 +28,37 @@ import (
 )
 
 var parallelism = 4
+
+func TestCheckError(t *testing.T) {
+    s, err := NewParser(`{"a":[], "b":talse, "c":{}}`).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    root := s.GetByPath()
+    // fmt.Println(root.Check())
+    a := root.Get("a")
+    if a.Check() != nil {
+        t.Fatal(a.Check())
+    }
+    c := root.Get("c")
+    if c.Check() == nil {
+        t.Fatal()
+    }
+    fmt.Println(c.Check())
+
+    // defer func(){
+    //     if e := recover(); e == nil {
+    //         t.Fatal()
+    //     }
+    // }()
+    // root.Interface()
+
+    it, e := root.Interface()
+    if e == nil {
+        t.Fatal(it)
+    }
+    fmt.Println(e)
+}
 
 func TestIndex(t *testing.T) {
     root, derr := NewParser(_TwitterJson).Parse()
@@ -48,8 +80,8 @@ func TestUnset(t *testing.T) {
     if !entities.Exists() {
         t.Fatal()
     }
-    exist := entities.Unset("urls")
-    if !exist {
+    exist, err := entities.Unset("urls")
+    if !exist || err != nil {
         t.Fatal()
     }
     e := entities.Get("urls")
@@ -65,8 +97,8 @@ func TestUnset(t *testing.T) {
     if !e.Exists() || e.String() != "a" {
         t.Fatal()
     }
-    exist = entities.UnsetByIndex(entities.Len()-1)
-    if !exist {
+    exist, err = entities.UnsetByIndex(entities.Len()-1)
+    if !exist || err != nil {
         t.Fatal()
     }
     e = entities.Get("urls")
@@ -76,8 +108,8 @@ func TestUnset(t *testing.T) {
 
     hashtags := entities.Get("hashtags").Index(0)
     hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
-    exist = hashtags.Unset("indices")
-    if !exist || hashtags.Len() != 2 {
+    exist, err = hashtags.Unset("indices")
+    if !exist || err != nil || hashtags.Len() != 2 {
         t.Fatal()
     }
     if hashtags.Get("text").String() != "freebandnames" {
@@ -94,11 +126,13 @@ func TestUnset(t *testing.T) {
     if ums.Len() != 3 {
         t.Fatal()
     }
-    exist = ums.UnsetByIndex(1)
-    if !exist {
+    exist, err = ums.UnsetByIndex(1)
+    if !exist || err != nil {
         t.Fatal()
     }
-    if ums.Index(0).Interface() != nil || ums.Index(1).Interface() != false {
+    v1, _ := ums.Index(0).Interface()
+    v2, _ := ums.Index(1).Interface()
+    if v1 != nil || v2 != false {
         t.Fatal()
     } 
 
@@ -111,7 +145,7 @@ func TestUnsafeNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    a := root.UnsafeArray()
+    a, _ := root.UnsafeArray()
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
@@ -126,7 +160,7 @@ func TestUnsafeNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    b := root.UnsafeMap()
+    b, _ := root.UnsafeMap()
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
@@ -148,7 +182,7 @@ func TestUseNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    a := root.ArrayUseNode()
+    a, _ := root.ArrayUseNode()
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
@@ -163,7 +197,8 @@ func TestUseNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    a = root.InterfaceUseNode().([]Node)
+    x, _ := root.InterfaceUseNode()
+    a = x.([]Node)
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
@@ -178,7 +213,7 @@ func TestUseNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    b := root.MapUseNode()
+    b, _ := root.MapUseNode()
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
@@ -197,7 +232,8 @@ func TestUseNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    b = root.InterfaceUseNode().(map[string]Node)
+    x, _ = root.InterfaceUseNode()
+    b = x.(map[string]Node)
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
@@ -221,11 +257,13 @@ func TestUseNumber(t *testing.T) {
     if node.Type() != V_NUMBER {
         t.Fatalf("wrong type: %v", node.Type())
     }
-    iv := node.InterfaceUseNumber().(json.Number)
+    x, _ := node.InterfaceUseNumber()
+    iv := x.(json.Number)
     if iv.String() != "1061346755812312312313" {
         t.Fatalf("exp:%#v, got:%#v", "1061346755812312312313", iv.String())
     }
-    ix := node.Interface().(float64)
+    x, _ = node.Interface()
+    ix := x.(float64)
     if ix != float64(1061346755812312312313) {
         t.Fatalf("exp:%#v, got:%#v", float64(1061346755812312312313), ix)
     }
@@ -241,14 +279,14 @@ func TestMap(t *testing.T) {
     if err != 0 {
         t.Fatal(err)
     }
-    m := node.Map()
+    m, _ := node.Map()
     assert.Equal(t, m, map[string]interface{}{
         "a": float64(0),    
         "b": float64(1),    
         "c": -1.2,
         "d": -1.2e-10,
     })
-    m1 := node.MapUseNumber()
+    m1, _ := node.MapUseNumber()
     assert.Equal(t, m1, map[string]interface{}{
         "a": json.Number("-0"),    
         "b": json.Number("1"),    
@@ -262,14 +300,14 @@ func TestArray(t *testing.T) {
     if err != 0 {
         t.Fatal(err)
     }
-    m := node.Array()
+    m, _ := node.Array()
     assert.Equal(t, m, []interface{}{
         float64(0),    
         float64(1),
         -1.2,
         -1.2e-10,
     })
-    m1 := node.ArrayUseNumber()
+    m1, _ := node.ArrayUseNumber()
     assert.Equal(t, m1, []interface{}{
         json.Number("-0"),    
         json.Number("1"),    
@@ -553,7 +591,7 @@ func BenchmarkMapGet(b *testing.B) {
     node.Set("test3", NewNumber("3"))
     node.Set("test4", NewNumber("4"))
     node.Set("test5", NewNumber("5"))
-    m := node.Map()
+    m, _ := node.Map()
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _ = m["text"]
@@ -578,7 +616,7 @@ func BenchmarkMapSet(b *testing.B) {
     if derr != 0 {
         b.Fatalf("decode failed: %v", derr.Error())
     }
-    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0).Map()
+    node, _ := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0).Map()
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
@@ -611,7 +649,7 @@ func BenchmarkSliceAdd(b *testing.B) {
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         root, _ := NewParser(data).Parse()
-        node := root.Get("statuses").Array()
+        node, _ := root.Get("statuses").Array()
         node = append(node, map[string]interface{}{"test": 1})
     }
 }

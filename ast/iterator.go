@@ -35,7 +35,7 @@ func (self *Iterator) Len() int {
 }
 
 func (self *Iterator) HasNext() bool {
-    return self.i < self.p.len()
+    return self.i < self.p.len() && self.p.Valid()
 }
 
 type ListIterator struct {
