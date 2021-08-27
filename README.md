@@ -80,28 +80,6 @@ output, err := sonic.Marshal(&data)
 err := sonic.Unmarshal(input, &data) 
  ```
 
-### Get
-
-Search partial json by given pathes, which must be non-negative integer or string or nil
-```go
-import "github.com/bytedance/sonic"
-
-input := []byte(`{"key1":[{},{"key2":{"key3":[1,2,3]}}]}`)
-
-// no path, returns entire json
-root, err := sonic.Get(input)
-raw := root.Raw() // == string(input)
-
-// multiple pathes
-root, err := sonic.Get(input, "key1", 1, "key2")
-sub := root.Get("key3").Index(2).Int64() // == 3
-```
-Returned ast.Node supports：
-- secondary search: `Get()`, `Index()`, `GetByPath()`
-- type assignment: `Int64()`, `Float64()`, `String()`, `Number()`, `Bool()`, `Map()`, `Array()`
-- children traversal: `Values()`, `Properties()`
-- supplement: `Set()`, `SetByIndex()`, `Add()`, `Cap()`, `Len()`
-
 ### Use Number/Use Int64
  ```go
 import "github.com/bytedance/sonic/decoder"
@@ -154,6 +132,44 @@ if err := dc.Decode(&data); err != nil {
     t.Fatalf("Decode: %v", err) 
 }
 ```
+
+### Ast.Node
+
+#### Get
+Search partial json by given pathes, which must be non-negative integer or string or nil
+```go
+import "github.com/bytedance/sonic"
+
+input := []byte(`{"key1":[{},{"key2":{"key3":[1,2,3]}}]}`)
+
+// no path, returns entire json
+root, err := sonic.Get(input)
+raw := root.Raw() // == string(input)
+
+// multiple pathes
+root, err := sonic.Get(input, "key1", 1, "key2")
+sub := root.Get("key3").Index(2).Int64() // == 3
+```
+
+#### Serialize
+To encode `ast.Node` as json, use `MarshalJson()` or `json.Marshal()` (MUST pass the node's pointer)
+```go
+import (
+    "encoding/json"
+    "github.com/bytedance/sonic"
+)
+
+buf, err := root.MarshalJson()
+println(string(buf))                //{"key1":[{},{"key2":{"key3":[1,2,3]}}]}
+exp, err := json.Marshal(&root)     //WARN: use pointer
+println(string(buf) == string(exp)) // true
+```
+
+#### Other features
+- secondary search: `Get()`, `Index()`, `GetByPath()`
+- type assignment: `Int64()`, `Float64()`, `String()`, `Number()`, `Bool()`, `Map()`, `Array()`
+- children traversal: `Values()`, `Properties()`
+- modification: `Set()`, `SetByIndex()`, `Add()`, `Cap()`, `Len()`
 
 ## Tips
 

@@ -74,11 +74,11 @@ type Node struct {
 //    V_OBJECT = 6
 //    V_STRING = 7
 //    V_NUMBER = 33
-func (self *Node) Type() int {
+func (self Node) Type() int {
     return int(self.t & _MASK_LAZY & _MASK_RAW)
 }
 
-func (self *Node) itype() types.ValueType {
+func (self Node) itype() types.ValueType {
     return self.t & _MASK_LAZY & _MASK_RAW
 }
 
@@ -88,11 +88,11 @@ func (self *Node) Exists() bool {
 }
 
 // IsRaw returns true if node's underlying value is raw json
-func (self *Node) IsRaw() bool {
+func (self Node) IsRaw() bool {
     return self.t&_V_RAW != 0
 }
 
-func (self *Node) isLazy() bool {
+func (self Node) isLazy() bool {
     return self.t&_V_LAZY != 0
 }
 
@@ -100,7 +100,7 @@ func (self *Node) isLazy() bool {
 
 // Raw returns underlying json string of an raw node,
 // which usually created by Search() api
-func (self *Node) Raw() string {
+func (self Node) Raw() string {
     if !self.IsRaw() {
         panic("value cannot be represented as raw json")
     }
@@ -186,7 +186,7 @@ func (self *Node) Len() int {
     }
 }
 
-func (self *Node) len() int {
+func (self Node) len() int {
     return int(self.v & _LEN_MASK)
 }
 
@@ -200,7 +200,7 @@ func (self *Node) Cap() int {
     }
 }
 
-func (self *Node) cap() int {
+func (self Node) cap() int {
     return int(self.v >> _CAP_BITS)
 }
 
