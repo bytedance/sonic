@@ -11,5 +11,6 @@ go test -benchmem -run=^$ -benchtime=100000x -bench "^(BenchmarkDecoder_Generic_
 cd $pwd/ast
 go test -benchmem -run=^$ -benchtime=100000x -bench "^(BenchmarkSearchOne_Gjson|BenchmarkSearchOne_Jsoniter|BenchmarkSearchOne_Sonic|BenchmarkSearchOne_Parallel_Gjson|BenchmarkSearchOne_Parallel_Jsoniter|BenchmarkSearchOne_Parallel_Sonic)$"
 go test -benchmem -run=^$ -benchtime=10000x -bench "^(BenchmarkParser_StdLib|BenchmarkParser_JsonIter|BenchmarkParser_Sonic|BenchmarkParser_Parallel_StdLib|BenchmarkParser_Parallel_JsonIter|BenchmarkParser_Parallel_Sonic|BenchmarkGetOne_Gjson|BenchmarkGetOne_Jsoniter|BenchmarkGetOne_Sonic|BenchmarkGetSeven_Gjson|BenchmarkGetSeven_Jsoniter|BenchmarkGetSeven_SonicParser)$"
+go test -benchmem -run=^$ -benchtime=100000x -bench '^(BenchmarkEncodeRaw|BenchmarkEncodeSkip|BenchmarkEncodeLoad)$'
 
 cd $pwd
