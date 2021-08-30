@@ -18,6 +18,8 @@ package ast
 
 import (
 	`encoding/json`
+	`fmt`
+	`reflect`
 	`strconv`
 	`testing`
 
@@ -28,13 +30,134 @@ import (
 
 var parallelism = 4
 
+func TestTypeCast(t *testing.T) {
+    type tcase struct {
+        method string
+        node Node
+        exp interface{}
+        err error
+    }
+    lazyArray, _ := NewParser("[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]").Parse()
+    lazyObject, _ := NewParser(`{"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16}`).Parse()
+    var cases = []tcase{
+        {"Raw", Node{}, "", ErrUnsupportType},
+        {"Raw", newRawNode("[ ]", types.V_ARRAY), "[ ]", nil},
+        {"Bool", Node{}, false, ErrNotExist},
+        {"Bool", newRawNode("true", types.V_TRUE), true, nil},
+        {"Bool", newRawNode("false", types.V_FALSE), false, nil},
+        {"Int64", Node{}, int64(0), ErrNotExist},
+        {"Int64", newRawNode("0", _V_NUMBER), int64(0), nil},
+        {"Float64", Node{}, float64(0), ErrNotExist},
+        {"Float64", newRawNode("0.0", _V_NUMBER), float64(0.0), nil},
+        {"Number", Node{}, json.Number(""), ErrNotExist},
+        {"Number", newRawNode("0.0", _V_NUMBER), json.Number("0.0"), nil},
+        {"Number", newRawNode("true", types.V_TRUE), json.Number("1"), nil},
+        {"Number", newRawNode("false", types.V_FALSE), json.Number("0"), nil},
+        {"String", Node{}, "", ErrNotExist},
+        {"String", newRawNode(`""`, types.V_STRING), ``, nil},
+        {"String", newRawNode(`0.0`, _V_NUMBER), "0.0", nil},
+        {"String", newRawNode(`null`, types.V_NULL), "null", nil},
+        {"String", newRawNode(`true`, types.V_TRUE), "true", nil},
+        {"String", newRawNode(`false`, types.V_FALSE), "false", nil},
+        {"Len", NewNull(), 0, ErrUnsupportType},
+        {"Len", newRawNode(`"1"`, types.V_STRING), 1, nil},
+        {"Len", newRawNode(`[1]`, types.V_ARRAY), 0, nil},
+        {"Len", NewArray([]Node{NewNull()}), 1, nil},
+        {"Len", lazyArray, 0, nil},
+        {"Len", newRawNode(`{"a":1}`, types.V_OBJECT), 0, nil},
+        {"Len", lazyObject, 0, nil},
+        {"Cap", NewNull(), 0, ErrUnsupportType},
+        {"Cap", newRawNode(`[1]`, types.V_ARRAY), _DEFAULT_NODE_CAP, nil},
+        {"Cap", NewObject([]Pair{{"",NewNull()}}), 1, nil},
+        {"Cap", newRawNode(`{"a":1}`, types.V_OBJECT), _DEFAULT_NODE_CAP, nil},
+    }
+    lazyArray.skipAllIndex()
+    lazyObject.skipAllKey()
+    cases = append(cases, 
+        tcase{"Len", lazyObject, 17, nil},
+        tcase{"Len", lazyObject, 17, nil},
+        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*2, nil},
+        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*2, nil},
+    )
+
+    for i, c := range cases {
+        fmt.Println(c)
+        rt := reflect.ValueOf(&c.node)
+        m := rt.MethodByName(c.method)
+        rets := m.Call([]reflect.Value{})
+        if len(rets) != 2 {
+            t.Fatal(i, rets)
+        }
+        if rets[0].Interface() != c.exp {
+            t.Fatal(i, rets[0].Interface())
+        }
+        if rets[1].Interface() != c.err {
+            t.Fatal(i, rets[1].Interface())
+        }
+    }
+}
+
+func TestCheckError(t *testing.T) {
+    s, err := NewParser(`{"a":{}, "b":talse, "c":{}}`).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    root := s.GetByPath()
+    // fmt.Println(root.Check())
+    a := root.Get("a")
+    if a.Check() != nil {
+        t.Fatal(a.Check())
+    }
+    c := root.Get("c")
+    if c.Check() == nil {
+        t.Fatal()
+    }
+    fmt.Println(c.Check())
+
+    _, e := a.Properties()
+    if e != nil {
+        t.Fatal(e)
+    }
+    exist, e := a.Set("d", newRawNode("x", types.V_OBJECT))
+    if exist || e != nil {
+        t.Fatal(err)
+    }
+    if a.len() != 1 {
+        t.Fail()
+    }
+    d := a.Get("d").Get("")
+    if d.Check() == nil {
+        t.Fatal(d) 
+    }
+    exist, e = a.Set("e", newRawNode("[}", types.V_ARRAY))
+    if e != nil {
+        t.Fatal(e)
+    }
+    if a.len() != 2 {
+        t.Fail()
+    }
+    d = a.Index(1).Index(0)
+    if d.Check() == nil {
+        t.Fatal(d)
+    }
+
+
+    it, e := root.Interface()
+    if e == nil {
+        t.Fatal(it)
+    }
+    fmt.Println(e)
+}
+
 func TestIndex(t *testing.T) {
     root, derr := NewParser(_TwitterJson).Parse()
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
     status := root.GetByPath("statuses", 0)
-    if status.Index(4).String() !=  status.Get("id_str").String() {
+    x, _ := status.Index(4).String()
+    y, _ := status.Get("id_str").String()
+    if x != y {
         t.Fail()
     }
 }
@@ -48,25 +171,26 @@ func TestUnset(t *testing.T) {
     if !entities.Exists() {
         t.Fatal()
     }
-    exist := entities.Unset("urls")
-    if !exist {
+    exist, err := entities.Unset("urls")
+    if !exist || err != nil {
         t.Fatal()
     }
     e := entities.Get("urls")
     if e.Exists() {
         t.Fatal()
     }
-    if entities.Len() != 2 {
+    if entities.len() != 2 {
         t.Fatal()
     }
 
     entities.Set("urls", NewString("a"))
     e = entities.Get("urls")
-    if !e.Exists() || e.String() != "a" {
+    x, _ := e.String()
+    if !e.Exists() || x != "a" {
         t.Fatal()
     }
-    exist = entities.UnsetByIndex(entities.Len()-1)
-    if !exist {
+    exist, err = entities.UnsetByIndex(entities.len()-1)
+    if !exist || err != nil {
         t.Fatal()
     }
     e = entities.Get("urls")
@@ -76,11 +200,12 @@ func TestUnset(t *testing.T) {
 
     hashtags := entities.Get("hashtags").Index(0)
     hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
-    exist = hashtags.Unset("indices")
-    if !exist || hashtags.Len() != 2 {
+    exist, err = hashtags.Unset("indices")
+    if !exist || err != nil || hashtags.len() != 2 {
         t.Fatal()
     }
-    if hashtags.Get("text").String() != "freebandnames" {
+    y, _ := hashtags.Get("text").String()
+    if y != "freebandnames" {
         t.Fatal()
     }
     if hashtags.Get("text2").Type() != V_OBJECT {
@@ -91,14 +216,16 @@ func TestUnset(t *testing.T) {
     ums.Add(NewNull())
     ums.Add(NewBool(true))
     ums.Add(NewBool(false))
-    if ums.Len() != 3 {
+    if ums.len() != 3 {
         t.Fatal()
     }
-    exist = ums.UnsetByIndex(1)
-    if !exist {
+    exist, err = ums.UnsetByIndex(1)
+    if !exist || err != nil {
         t.Fatal()
     }
-    if ums.Index(0).Interface() != nil || ums.Index(1).Interface() != false {
+    v1, _ := ums.Index(0).Interface()
+    v2, _ := ums.Index(1).Interface()
+    if v1 != nil || v2 != false {
         t.Fatal()
     } 
 
@@ -111,14 +238,15 @@ func TestUnsafeNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    a := root.UnsafeArray()
+    a, _ := root.UnsafeArray()
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
     for i := int64(0); i<int64(loop); i++{
         in := a[i]
-        if in.Int64() != i {
-            t.Fatalf("exp:%v, got:%v", i, in.Int64())
+        x, _ := in.Int64()
+        if x != i {
+            t.Fatalf("exp:%v, got:%v", i, x)
         }
     }
     
@@ -126,7 +254,7 @@ func TestUnsafeNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    b := root.UnsafeMap()
+    b, _ := root.UnsafeMap()
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
@@ -135,27 +263,37 @@ func TestUnsafeNode(t *testing.T) {
         if k != b[i].Key {
             t.Fatalf("unexpected element: %#v", b[i])
         }
-        if b[i].Value.Int64() != i {
-            t.Fatalf("exp:%v, got:%v", i, b[i].Value.Int64())
+        x, _ := b[i].Value.Int64()
+        if x != i {
+            t.Fatalf("exp:%v, got:%v", i, x)
         }
     }
 }
 
 func TestUseNode(t *testing.T) {
     str, loop := getTestIteratorSample()
+    root, e := NewParser(str).Parse()
+    if e != 0 {
+        t.Fatal(e)
+    }
+    _, er := root.InterfaceUseNode()
+    if er != nil {
+        t.Fatal(er)
+    }
 
     root, err := NewSearcher(str).GetByPath("array")
     if err != nil {
         t.Fatal(err)
     }
-    a := root.ArrayUseNode()
+    a, _ := root.ArrayUseNode()
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
     for i := int64(0); i<int64(loop); i++{
         in := a[i]
-        if in.Int64() != i {
-            t.Fatalf("exp:%v, got:%v", i, in.Int64())
+        a, _ := in.Int64()
+        if a != i {
+            t.Fatalf("exp:%v, got:%v", i, a)
         }
     }
 
@@ -163,14 +301,16 @@ func TestUseNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    a = root.InterfaceUseNode().([]Node)
+    x, _ := root.InterfaceUseNode()
+    a = x.([]Node)
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
     for i := int64(0); i<int64(loop); i++{
         in := a[i]
-        if in.Int64() != i {
-            t.Fatalf("exp:%v, got:%v", i, in.Int64())
+        a, _ := in.Int64()
+        if a != i {
+            t.Fatalf("exp:%v, got:%v", i, a)
         }
     }
     
@@ -178,7 +318,7 @@ func TestUseNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    b := root.MapUseNode()
+    b, _ := root.MapUseNode()
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
@@ -188,8 +328,9 @@ func TestUseNode(t *testing.T) {
         if !ok {
             t.Fatalf("unexpected element: %#v", xn)
         }
-        if xn.Int64() != i {
-            t.Fatalf("exp:%v, got:%v", i, xn.Int64())
+        a, _ := xn.Int64()
+        if a != i {
+            t.Fatalf("exp:%v, got:%v", i, a)
         }
     }
     
@@ -197,7 +338,8 @@ func TestUseNode(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    b = root.InterfaceUseNode().(map[string]Node)
+    x, _ = root.InterfaceUseNode()
+    b = x.(map[string]Node)
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
@@ -207,13 +349,24 @@ func TestUseNode(t *testing.T) {
         if !ok {
             t.Fatalf("unexpected element: %#v", xn)
         }
-        if xn.Int64() != i {
-            t.Fatalf("exp:%v, got:%v", i, xn.Int64())
+        a, _ := xn.Int64()
+        if a != i {
+            t.Fatalf("exp:%v, got:%v", i, a)
         }
     }
 }
 
 func TestUseNumber(t *testing.T) {
+    str, _ := getTestIteratorSample()
+    root, e := NewParser(str).Parse()
+    if e != 0 {
+        t.Fatal(e)
+    }
+    _, er := root.InterfaceUseNumber()
+    if er != nil {
+        t.Fatal(er)
+    }
+
     node, err := NewParser("1061346755812312312313").Parse()
     if err != 0 {
         t.Fatal(err)
@@ -221,16 +374,19 @@ func TestUseNumber(t *testing.T) {
     if node.Type() != V_NUMBER {
         t.Fatalf("wrong type: %v", node.Type())
     }
-    iv := node.InterfaceUseNumber().(json.Number)
+    x, _ := node.InterfaceUseNumber()
+    iv := x.(json.Number)
     if iv.String() != "1061346755812312312313" {
         t.Fatalf("exp:%#v, got:%#v", "1061346755812312312313", iv.String())
     }
-    ix := node.Interface().(float64)
+    x, _ = node.Interface()
+    ix := x.(float64)
     if ix != float64(1061346755812312312313) {
         t.Fatalf("exp:%#v, got:%#v", float64(1061346755812312312313), ix)
     }
-    ij,_ := node.Number().Int64()
-    jj,_ := json.Number("1061346755812312312313").Int64()
+    xj, _ := node.Number()
+    ij, _ := xj.Int64()
+    jj, _ := json.Number("1061346755812312312313").Int64()
     if ij != jj {
         t.Fatalf("exp:%#v, got:%#v", jj, ij)
     }
@@ -241,14 +397,14 @@ func TestMap(t *testing.T) {
     if err != 0 {
         t.Fatal(err)
     }
-    m := node.Map()
+    m, _ := node.Map()
     assert.Equal(t, m, map[string]interface{}{
         "a": float64(0),    
         "b": float64(1),    
         "c": -1.2,
         "d": -1.2e-10,
     })
-    m1 := node.MapUseNumber()
+    m1, _ := node.MapUseNumber()
     assert.Equal(t, m1, map[string]interface{}{
         "a": json.Number("-0"),    
         "b": json.Number("1"),    
@@ -262,14 +418,14 @@ func TestArray(t *testing.T) {
     if err != 0 {
         t.Fatal(err)
     }
-    m := node.Array()
+    m, _ := node.Array()
     assert.Equal(t, m, []interface{}{
         float64(0),    
         float64(1),
         -1.2,
         -1.2e-10,
     })
-    m1 := node.ArrayUseNumber()
+    m1, _ := node.ArrayUseNumber()
     assert.Equal(t, m1, []interface{}{
         json.Number("-0"),    
         json.Number("1"),    
@@ -283,7 +439,7 @@ func TestNodeRaw(t *testing.T) {
     if derr != nil {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val := root.Raw()
+    val, _ := root.Raw()
     var comp = `{
     "max_id": 250126199840518145,
     "since_id": 24012619984051000,
@@ -303,7 +459,7 @@ func TestNodeRaw(t *testing.T) {
     if derr != nil {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val = root.Raw()
+    val, _ = root.Raw()
     comp = `[
           {
             "text": "freebandnames",
@@ -322,7 +478,7 @@ func TestNodeRaw(t *testing.T) {
     if derr != nil {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val = root.Raw()
+    val, _ = root.Raw()
     comp = `{ "a" : "bc"}`
     if val != comp {
         t.Fatalf("exp: %+v, got: %+v", comp, val)
@@ -332,7 +488,7 @@ func TestNodeRaw(t *testing.T) {
     if derr != nil {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val = root.Raw()
+    val, _ = root.Raw()
     comp = `[1,2 ]`
     if val != comp {
         t.Fatalf("exp: %+v, got: %+v", comp, val)
@@ -342,7 +498,7 @@ func TestNodeRaw(t *testing.T) {
     if derr != nil {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val = root.Raw()
+    val, _ = root.Raw()
     comp = `{}`
     if val != comp {
         t.Fatalf("exp: %+v, got: %+v", comp, val)
@@ -352,7 +508,7 @@ func TestNodeRaw(t *testing.T) {
     if derr != nil {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val = root.Raw()
+    val, _ = root.Raw()
     comp = `[]`
     if val != comp {
         t.Fatalf("exp: %+v, got: %+v", comp, val)
@@ -364,7 +520,7 @@ func TestNodeGet(t *testing.T) {
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val := root.Get("search_metadata").Get("max_id").Int64()
+    val, _ := root.Get("search_metadata").Get("max_id").Int64()
     if val != int64(250126199840518145) {
         t.Fatalf("exp: %+v, got: %+v", 250126199840518145, val)
     }
@@ -375,7 +531,7 @@ func TestNodeIndex(t *testing.T) {
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val := root.Get("statuses").Index(3).Get("id_str").String()
+    val, _ := root.Get("statuses").Index(3).Get("id_str").String()
     if val != "249279667666817024" {
         t.Fatalf("exp: %+v, got: %+v", "249279667666817024", val)
     }
@@ -386,7 +542,7 @@ func TestNodeGetByPath(t *testing.T) {
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    val := root.GetByPath("statuses", 3, "id_str").String()
+    val, _ := root.GetByPath("statuses", 3, "id_str").String()
     if val != "249279667666817024" {
         t.Fatalf("exp: %+v, got: %+v", "249279667666817024", val)
     }
@@ -399,14 +555,14 @@ func TestNodeSet(t *testing.T) {
     }
     app,_ := NewParser("111").Parse()
     root.GetByPath("statuses", 3).Set("id_str", app)
-    val := root.GetByPath("statuses", 3, "id_str").Int64()
+    val, _ := root.GetByPath("statuses", 3, "id_str").Int64()
     if val != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
-    for i := root.GetByPath("statuses", 3).Cap(); i >= 0; i-- {
+    for i := root.GetByPath("statuses", 3).cap(); i >= 0; i-- {
         root.GetByPath("statuses", 3).Set("id_str"+strconv.Itoa(i), app)
     }
-    val = root.GetByPath("statuses", 3, "id_str0").Int64()
+    val, _ = root.GetByPath("statuses", 3, "id_str0").Int64()
     if val != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
@@ -416,7 +572,7 @@ func TestNodeSet(t *testing.T) {
         t.Fatalf("decode failed: %v", derr.Error())
     }
     root.GetByPath("statuses", 3).Set("id_str2", nroot)
-    val2 := root.GetByPath("statuses", 3, "id_str2", "a", 4, "b").String()
+    val2, _ := root.GetByPath("statuses", 3, "id_str2", "a", 4, "b").String()
     if val2 != "c" {
         t.Fatalf("exp:%+v, got:%+v", "c", val2)
     }
@@ -432,7 +588,8 @@ func TestNodeSetByIndex(t *testing.T) {
     st.SetByIndex(0, app)
     st = root.GetByPath("statuses") 
     val := st.Index(0)
-    if val.Int64() != 111 {
+    x, _ := val.Int64()
+    if x != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
 
@@ -441,7 +598,7 @@ func TestNodeSetByIndex(t *testing.T) {
         t.Fatalf("decode failed: %v", derr.Error())
     }
     root.GetByPath("statuses").SetByIndex(0, nroot)
-    val2 := root.GetByPath("statuses", 0, "a", 4, "b").String()
+    val2, _ := root.GetByPath("statuses", 0, "a", 4, "b").String()
     if val2 != "c" {
         t.Fatalf("exp:%+v, got:%+v", "c", val2)
     }
@@ -454,14 +611,14 @@ func TestNodeAdd(t *testing.T) {
     }
     app, _ := NewParser("111").Parse()
 
-    for i := root.GetByPath("statuses").Cap(); i >= 0; i-- {
+    for i := root.GetByPath("statuses").cap(); i >= 0; i-- {
         root.GetByPath("statuses").Add(app)
     }
-    val := root.GetByPath("statuses", 4).Int64()
+    val, _ := root.GetByPath("statuses", 4).Int64()
     if val != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
-    val = root.GetByPath("statuses", root.GetByPath("statuses").Len()-1).Int64()
+    val, _ = root.GetByPath("statuses", root.GetByPath("statuses").len()-1).Int64()
     if val != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
@@ -471,7 +628,7 @@ func TestNodeAdd(t *testing.T) {
         t.Fatalf("decode failed: %v", derr.Error())
     }
     root.GetByPath("statuses").Add(nroot)
-    val2 := root.GetByPath("statuses", root.GetByPath("statuses").Len()-1, "a", 4, "b").String()
+    val2, _ := root.GetByPath("statuses", root.GetByPath("statuses").len()-1, "a", 4, "b").String()
     if val2 != "c" {
         t.Fatalf("exp:%+v, got:%+v", "c", val2)
     }
@@ -497,13 +654,13 @@ func BenchmarkNodeGetByPath(b *testing.B) {
     if derr != 0 {
         b.Fatalf("decode failed: %v", derr.Error())
     }
-    _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
+    _, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
     b.SetParallelism(parallelism)
     b.ResetTimer()
 
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
+            _, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
         }
     })
 }
@@ -553,7 +710,7 @@ func BenchmarkMapGet(b *testing.B) {
     node.Set("test3", NewNumber("3"))
     node.Set("test4", NewNumber("4"))
     node.Set("test5", NewNumber("5"))
-    m := node.Map()
+    m, _ := node.Map()
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _ = m["text"]
@@ -578,7 +735,7 @@ func BenchmarkMapSet(b *testing.B) {
     if derr != 0 {
         b.Fatalf("decode failed: %v", derr.Error())
     }
-    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0).Map()
+    node, _ := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0).Map()
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
@@ -611,7 +768,7 @@ func BenchmarkSliceAdd(b *testing.B) {
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         root, _ := NewParser(data).Parse()
-        node := root.Get("statuses").Array()
+        node, _ := root.Get("statuses").Array()
         node = append(node, map[string]interface{}{"test": 1})
     }
 }

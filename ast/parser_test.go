@@ -28,13 +28,14 @@ import (
 func runDecoderTest(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()
     if err != 0 { panic(err) }
-    assert.Equal(t, expect, vv.Interface())
+    x, _ := vv.Interface()
+    assert.Equal(t, expect, x)
 }
 
 func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()
     if err != 0 { panic(err) }
-    vvv := vv.InterfaceUseNumber()
+    vvv, _ := vv.InterfaceUseNumber()
     switch vvv.(type) {
     case json.Number:
         assert.Equal(t, expect, n2f64(vvv.(json.Number)))
@@ -156,12 +157,12 @@ func TestParser_Basic(t *testing.T) {
 
 func TestLoads(t *testing.T) {
     _,i,e := Loads(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
-    if e != 0 {
+    if e != nil {
         t.Fatal(e)
     }
     assert.Equal(t, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": 2.4, "f": 1.2e15, "g": float64(1)}, i)
     _,i,e = LoadsUseNumber(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
-    if e != 0 {
+    if e != nil {
         t.Fatal(e)
     }
     assert.Equal(t, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": json.Number("2.4"), "f": json.Number("1.2e15"), "g": json.Number("1")}, i)
@@ -284,7 +285,7 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
-        node := ast.Get("statuses").Index(2).Get("id").Int64()
+        node, _ := ast.Get("statuses").Index(2).Get("id").Int64()
         if node != 249289491129438208 {
             b.Fail()
         }

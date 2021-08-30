@@ -60,27 +60,32 @@ func TestSearcher_GetByPath(t *testing.T) {
     s := NewSearcher(` { "xx" : [] ,"yy" :{ }, "test" : [ true , 0.1 , "abc", ["h"], {"a":"bc"} ] } `)
 
     node, e := s.GetByPath("test", 0)
-    if e != nil || node.Bool() != true {
+    a, _ := node.Bool()
+    if e != nil || a != true {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
     node, e = s.GetByPath("test", 1)
-    if e != nil || node.Float64() != 0.1 {
+    b, _ := node.Float64()
+    if e != nil || b != 0.1 {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
     node, e = s.GetByPath("test", 2)
-    if e != nil || node.String() != "abc" {
+    c, _ := node.String()
+    if e != nil || c != "abc" {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
     node, e = s.GetByPath("test", 3)
-    if e != nil || node.Array()[0] != "h" {
+    arr, _ := node.Array()
+    if e != nil || arr[0] != "h" {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 
     node, e = s.GetByPath("test", 4, "a")
-    if e != nil || node.String() != "bc" {
+    d, _ := node.String()
+    if e != nil || d != "bc" {
         t.Fatalf("node: %v, err: %v", node, e)
     }
 }
@@ -123,9 +128,9 @@ func TestLoadIndex(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    a := node.Index(3).Float64()
+    a, _ := node.Index(3).Float64()
     assert.Equal(t, -1.2e-10, a)
-    m := node.Array()
+    m, _ := node.Array()
     assert.Equal(t, m, []interface{}{
         float64(0),    
         float64(1),
@@ -185,7 +190,8 @@ func BenchmarkSearchOne_Sonic(b *testing.B) {
         if err != nil {
             b.Fatal(err)
         }
-        if node.Int64() != 249279667666817024 {
+        x, _ := node.Int64()
+        if x != 249279667666817024 {
             b.Fatal(node.Interface())
         }
     }
@@ -230,7 +236,8 @@ func BenchmarkSearchOne_Parallel_Sonic(b *testing.B) {
             if err != nil {
                 b.Fatal(err)
             }
-            if node.Int64() != 249279667666817024 {
+            x, _ := node.Int64()
+            if x != 249279667666817024 {
                 b.Fatal(node.Interface())
             }
         }

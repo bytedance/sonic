@@ -47,14 +47,15 @@ func TestRawIterator(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    ai := root.Values()
+    ai, _ := root.Values()
     i := int64(0)
     for ai.HasNext() {
         v := &Node{}
         if !ai.Next(v) {
             t.Fatalf("no next")
-        }
-        if i < int64(loop) && v.Int64() != i {
+		}
+		x, _ := v.Int64()
+        if i < int64(loop) && x != i {
             t.Fatalf("exp:%v, got:%v", i, v)
         }
         if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
@@ -67,15 +68,17 @@ func TestRawIterator(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    mi := root.Properties()
+    mi, _ := root.Properties()
     i = int64(0)
     for mi.HasNext() {
         v := &Pair{}
         if !mi.Next(v) {
             t.Fatalf("no next")
-        }
-        if i < int64(loop) &&( v.Value.Int64() != i ||v.Key != fmt.Sprintf("k%d", i)) {
-            t.Fatalf("exp:%v, got:%v", i, v.Value.Interface())
+		}
+		x, _ := v.Value.Int64()
+        if i < int64(loop) &&( x != i ||v.Key != fmt.Sprintf("k%d", i)) {
+			vv, _ := v.Value.Interface()
+            t.Fatalf("exp:%v, got:%v", i, vv)
         }
         if i != int64(mi.Pos())-1 || i >= int64(mi.Len()) {
             t.Fatal(i)
@@ -92,14 +95,15 @@ func TestIterator(t *testing.T) {
 	if err != 0 {
 		t.Fatal(err)
 	}
-	ai := root.Get("array").Values()
+	ai, _ := root.Get("array").Values()
 	i := int64(0)
 	for ai.HasNext() {
 		v := &Node{}
 		if !ai.Next(v) {
 			t.Fatalf("no next")
 		}
-		if i < int64(loop) && v.Int64() != i {
+		x, _ := v.Int64()
+		if i < int64(loop) && x != i {
 			t.Fatalf("exp:%v, got:%v", i, v)
 		}
 		if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
@@ -112,15 +116,17 @@ func TestIterator(t *testing.T) {
 	if err != 0 {
 		t.Fatal(err)
 	}
-	mi := root.Get("object").Properties()
+	mi, _ := root.Get("object").Properties()
 	i = int64(0)
 	for mi.HasNext() {
 		v := &Pair{}
 		if !mi.Next(v) {
 			t.Fatalf("no next")
 		}
-		if i < int64(loop) &&( v.Value.Int64() != i ||v.Key != fmt.Sprintf("k%d", i)) {
-			t.Fatalf("exp:%v, got:%v", i, v.Value.Interface())
+		x, _ := v.Value.Int64()
+		if i < int64(loop) &&( x != i ||v.Key != fmt.Sprintf("k%d", i)) {
+			vv, _ := v.Value.Interface()
+			t.Fatalf("exp:%v, got:%v", i, vv)
 		}
 		if i != int64(mi.Pos())-1 || i >= int64(mi.Len()) {
 			t.Fatal(i)
@@ -135,7 +141,7 @@ func BenchmarkArrays(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		a := root.Array()
+		a, _ := root.Array()
 		for _,v := range a {
 			_ = v
 		}
@@ -148,7 +154,7 @@ func BenchmarkListIterator(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		it := root.Values()
+		it, _ := root.Values()
 		for it.HasNext() {
 			v := &Node{}
 			if !it.Next(v) {
@@ -164,7 +170,7 @@ func BenchmarkMap(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		m := root.Map()
+		m, _ := root.Map()
 		for k,v := range m {
 			_ = v
 			_ = k
@@ -178,7 +184,7 @@ func BenchmarkObjectIterator(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		it := root.Properties()
+		it, _ := root.Properties()
 		for it.HasNext() {
 			v := &Pair{}
 			if !it.Next(v)  {

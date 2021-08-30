@@ -151,6 +151,23 @@ root, err := sonic.Get(input, "key1", 1, "key2")
 sub := root.Get("key3").Index(2).Int64() // == 3
 ```
 
+#### Set/Unset
+Modify the json content by Set()/Unset()
+```go
+import "github.com/bytedance/sonic"
+
+// Set
+exist, err := root.Set("key4", NewBool(true)) // exist == false
+alias1 := root.Get("key4") 
+println(alias1.Valid()) // true
+alias2 := root.Index(1)
+println(alias1 == alias2) // true
+
+// Unset
+exist, err := root.UnsetByIndex(1) // exist == true
+println(root.Get("key4").Check()) // "value not exist"
+```
+
 #### Serialize
 To encode `ast.Node` as json, use `MarshalJson()` or `json.Marshal()` (MUST pass the node's pointer)
 ```go

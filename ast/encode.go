@@ -17,7 +17,6 @@
 package ast
 
 import (
-	`errors`
 	`sync`
 )
 
@@ -69,7 +68,8 @@ func (self *Node) encode(buf *[]byte) error {
 		return self.encodeRaw(buf)
 	}
 	switch self.Type() {
-		case V_NONE  : return errors.New("value not exist")
+		case V_NONE  : return ErrNotExist
+		case V_ERROR : return self.Check()
 		case V_NULL  : return self.encodeNull(buf)
 		case V_TRUE  : return self.encodeTrue(buf)
 		case V_FALSE : return self.encodeFalse(buf)
@@ -77,13 +77,15 @@ func (self *Node) encode(buf *[]byte) error {
 		case V_OBJECT: return self.encodeObject(buf)
 		case V_STRING: return self.encodeString(buf)
 		case V_NUMBER: return self.encodeNumber(buf)
-		default      : errors.New("unsupported type")  
+		default      : return ErrUnsupportType 
 	}
-	return nil
 }
 
 func (self *Node) encodeRaw(buf *[]byte) error {
-	raw := self.Raw()
+	raw, err := self.Raw()
+	if err != nil {
+		return err
+	}
 	*buf = append(*buf, raw...)
 	return nil
 }
@@ -119,7 +121,9 @@ func (self *Node) encodeString(buf *[]byte) error {
 
 func (self *Node) encodeArray(buf *[]byte) error {
 	if self.isLazy() {
-		self.skipAllIndex()
+		if err := self.skipAllIndex(); err != nil {
+			return err
+		}
 	}
 
 	nb := self.len()
@@ -157,7 +161,9 @@ func (self *Pair) encode(buf *[]byte) error {
 
 func (self *Node) encodeObject(buf *[]byte) error {
 	if self.isLazy() {
-		self.skipAllKey()
+		if err := self.skipAllKey(); err != nil {
+			return err
+		}
 	}
 	
 	nb := self.len()
