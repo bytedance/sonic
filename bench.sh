@@ -13,4 +13,6 @@ go test -benchmem -run=^$ -benchtime=100000x -bench "^(BenchmarkSearchOne_Gjson|
 go test -benchmem -run=^$ -benchtime=10000x -bench "^(BenchmarkParser_StdLib|BenchmarkParser_JsonIter|BenchmarkParser_Sonic|BenchmarkParser_Parallel_StdLib|BenchmarkParser_Parallel_JsonIter|BenchmarkParser_Parallel_Sonic|BenchmarkGetOne_Gjson|BenchmarkGetOne_Jsoniter|BenchmarkGetOne_Sonic|BenchmarkGetSeven_Gjson|BenchmarkGetSeven_Jsoniter|BenchmarkGetSeven_SonicParser)$"
 go test -benchmem -run=^$ -benchtime=100000x -bench '^(BenchmarkEncodeRaw|BenchmarkEncodeSkip|BenchmarkEncodeLoad)$'
 
+go test -benchmem -run=^$ -benchtime=10000000x -bench "^(BenchmarkNodeGetByPath|BenchmarkStructGetByPath_Jsoniter|BenchmarkNodeIndex|BenchmarkStructIndex|BenchmarkSliceIndex|BenchmarkMapIndex|BenchmarkNodeGet|BenchmarkSliceGet|BenchmarkMapGet|BenchmarkNodeSet|BenchmarkMapSet|BenchmarkNodeSetByIndex|BenchmarkSliceSetByIndex|BenchmarkStructSetByIndex|BenchmarkNodeUnset|BenchmarkMapUnset|BenchmarkNodUnsetByIndex|BenchmarkSliceUnsetByIndex|BenchmarkNodeAdd|BenchmarkSliceAdd|BenchmarkMapAdd)$"
+
 cd $pwd
