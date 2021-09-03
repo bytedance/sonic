@@ -30,6 +30,38 @@ import (
 
 var parallelism = 4
 
+func TestIndexPair(t *testing.T) {
+    root, _ := NewParser(`{"a":1,"b":2}`).Parse()
+    a := root.IndexPair(0)
+    if a == nil || a.Key != "a" {
+        t.Fatal(a)
+    }
+    b := root.IndexPair(1)
+    if b == nil || b.Key != "b" {
+        t.Fatal(b)
+    }
+    c := root.IndexPair(2)
+    if c != nil {
+        t.Fatal(c)
+    }
+}
+
+func TestIndexOrGet(t *testing.T) {
+    root, _ := NewParser(`{"a":1,"b":2}`).Parse()
+    a := root.IndexOrGet(0, "a")
+    if v, err := a.Int64(); err != nil || v != int64(1) {
+        t.Fatal(a)
+    }
+    a = root.IndexOrGet(0, "b")
+    if v, err := a.Int64(); err != nil || v != int64(2) {
+        t.Fatal(a)
+    }
+    a = root.IndexOrGet(0, "c")
+    if a.Valid()  {
+        t.Fatal(a)
+    }
+}
+
 func TestTypeCast(t *testing.T) {
     type tcase struct {
         method string
@@ -634,21 +666,6 @@ func TestNodeAdd(t *testing.T) {
     }
 }
 
-func BenchmarkNodeRaw(b *testing.B) {
-    root, derr := NewSearcher(_TwitterJson).GetByPath("search_metadata")
-    if derr != nil {
-        b.Fatalf("decode failed: %v", derr.Error())
-    }
-    b.SetParallelism(parallelism)
-    b.ResetTimer()
-
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            root.Raw()
-        }
-    })
-}
-
 func BenchmarkNodeGetByPath(b *testing.B) {
     root, derr := NewParser(_TwitterJson).Parse()
     if derr != 0 {
@@ -682,7 +699,7 @@ func BenchmarkStructGetByPath_Jsoniter(b *testing.B) {
     })
 }
 
-func BenchmarkNodeGet(b *testing.B) {
+func BenchmarkNodeIndex(b *testing.B) {
     root, derr := NewParser(_TwitterJson).Parse()
     if derr != 0 {
         b.Fatalf("decode failed: %v", derr.Error())
@@ -695,7 +712,73 @@ func BenchmarkNodeGet(b *testing.B) {
     node.Set("test5", NewNumber("5"))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        node.Get("text")
+        node.Index(2)
+    }
+}
+
+func BenchmarkStructIndex(b *testing.B) {
+    type T struct {
+        A Node
+        B Node
+        C Node
+        D Node
+        E Node
+    }
+    var obj = new(T)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _ = obj.C
+    }
+}
+
+func BenchmarkSliceIndex(b *testing.B) {
+    var obj = []Node{Node{},Node{},Node{},Node{},Node{}}
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _ = obj[2]
+    }
+}
+
+func BenchmarkMapIndex(b *testing.B) {
+    var obj = map[string]interface{}{"test1":Node{}, "test2":Node{}, "test3":Node{}, "test4":Node{}, "test5":Node{}}
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        for k := range obj {
+            if k == "test3" {
+                break 
+            }
+        }
+    }
+}
+
+func BenchmarkNodeGet(b *testing.B) {
+    var N = 5
+    var half = "test" + strconv.Itoa(N/2+1)
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        b.Fatalf("decode failed: %v", derr.Error())
+    }
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
+    for i:=0; i<N; i++ {
+        node.Set("test"+strconv.Itoa(i), NewNumber(strconv.Itoa(i)))
+    }
+
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _ = node.Get(half)
+    }
+}
+
+func BenchmarkSliceGet(b *testing.B) {
+    var obj = []string{"test1", "test2", "test3", "test4", "test5"}
+    str := "test3"
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        for _, k := range obj {
+            if k == str {
+                break 
+            }
+        }
     }
 }
 
@@ -713,7 +796,7 @@ func BenchmarkMapGet(b *testing.B) {
     m, _ := node.Map()
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _ = m["text"]
+        _ = m["test3"]
     }
 }
 
@@ -723,10 +806,16 @@ func BenchmarkNodeSet(b *testing.B) {
         b.Fatalf("decode failed: %v", derr.Error())
     }
     node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
+    node.Set("test1", NewNumber("1"))
+    node.Set("test2", NewNumber("2"))
+    node.Set("test3", NewNumber("3"))
+    node.Set("test4", NewNumber("4"))
+    node.Set("test5", NewNumber("5"))
+    n := NewNull()
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        node.Set("test1", NewNumber("1"))
+        node.Set("test3", n)
     }
 }
 
@@ -735,40 +824,178 @@ func BenchmarkMapSet(b *testing.B) {
     if derr != 0 {
         b.Fatalf("decode failed: %v", derr.Error())
     }
-    node, _ := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0).Map()
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
+    node.Set("test1", NewNumber("1"))
+    node.Set("test2", NewNumber("2"))
+    node.Set("test3", NewNumber("3"))
+    node.Set("test4", NewNumber("4"))
+    node.Set("test5", NewNumber("5"))
+    m, _ := node.Map()
+    n := NewNull()
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        node["test1"] = map[string]int{"test1": 1}
+        m["test3"] = n
+    }
+}
+
+func BenchmarkNodeSetByIndex(b *testing.B) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        b.Fatalf("decode failed: %v", derr.Error())
+    }
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags")
+    node.Add(NewNumber("1"))
+    node.Add(NewNumber("2"))
+    node.Add(NewNumber("3"))
+    node.Add(NewNumber("4"))
+    node.Add(NewNumber("5"))
+    n := NewNull()
+    b.SetParallelism(parallelism)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        node.SetByIndex(2, n)
+    }
+}
+
+func BenchmarkSliceSetByIndex(b *testing.B) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        b.Fatalf("decode failed: %v", derr.Error())
+    }
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags")
+    node.Add(NewNumber("1"))
+    node.Add(NewNumber("2"))
+    node.Add(NewNumber("3"))
+    node.Add(NewNumber("4"))
+    node.Add(NewNumber("5"))
+    m, _ := node.Array()
+    n := NewNull()
+    b.SetParallelism(parallelism)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        m[2] = n
+    }
+}
+
+func BenchmarkStructSetByIndex(b *testing.B) {
+    type T struct {
+        A Node
+        B Node
+        C Node
+        D Node
+        E Node
+    }
+    var obj = new(T)
+    n := NewNull()
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        obj.C = n
+    }
+}
+
+func BenchmarkNodeUnset(b *testing.B) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        b.Fatalf("decode failed: %v", derr.Error())
+    }
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
+    node.Set("test1", NewNumber("1"))
+    node.Set("test2", NewNumber("2"))
+    node.Set("test3", NewNumber("3"))
+    node.Set("test4", NewNumber("4"))
+    node.Set("test5", NewNumber("5"))
+    b.SetParallelism(parallelism)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        node.Unset("test3")
+    }
+}
+
+func BenchmarkMapUnset(b *testing.B) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        b.Fatalf("decode failed: %v", derr.Error())
+    }
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
+    node.Set("test1", NewNumber("1"))
+    node.Set("test2", NewNumber("2"))
+    node.Set("test3", NewNumber("3"))
+    node.Set("test4", NewNumber("4"))
+    node.Set("test5", NewNumber("5"))
+    m, _ := node.Map()
+    b.SetParallelism(parallelism)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        delete(m, "test3")
+    }
+}
+
+func BenchmarkNodUnsetByIndex(b *testing.B) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        b.Fatalf("decode failed: %v", derr.Error())
+    }
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags")
+    node.Add(NewNumber("1"))
+    node.Add(NewNumber("2"))
+    node.Add(NewNumber("3"))
+    node.Add(NewNumber("4"))
+    node.Add(NewNumber("5"))
+    b.SetParallelism(parallelism)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        node.UnsetByIndex(2)
+    }
+}
+
+func BenchmarkSliceUnsetByIndex(b *testing.B) {
+    root, derr := NewParser(_TwitterJson).Parse()
+    if derr != 0 {
+        b.Fatalf("decode failed: %v", derr.Error())
+    }
+    node := root.Get("statuses").Index(3).Get("entities").Get("hashtags")
+    node.Add(NewNumber("1"))
+    node.Add(NewNumber("2"))
+    node.Add(NewNumber("3"))
+    node.Add(NewNumber("4"))
+    node.Add(NewNumber("5"))
+    m, _ := node.Array()
+    b.SetParallelism(parallelism)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        for i:=3; i<5; i++ {
+            m[i-1] = m[i]
+        }
     }
 }
 
 func BenchmarkNodeAdd(b *testing.B) {
-    data := `{"statuses":[]}`
-    _, derr := NewParser(data).Parse()
-    if derr != 0 {
-        b.Fatalf("decode failed: %v", derr.Error())
-    }
+    n := NewObject([]Pair{{"test", NewNumber("1")}})
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        root, _ := NewParser(data).Parse()
-        node := root.Get("statuses")
-        node.Add(NewObject([]Pair{{"test", NewNumber("1")}}))
+        node := NewArray([]Node{})
+        node.Add(n)
     }
 }
 
 func BenchmarkSliceAdd(b *testing.B) {
-    data := `{"statuses":[]}`
-    _, derr := NewParser(data).Parse()
-    if derr != 0 {
-        b.Fatalf("decode failed: %v", derr.Error())
-    }
+    n := NewObject([]Pair{{"test", NewNumber("1")}})
     b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        root, _ := NewParser(data).Parse()
-        node, _ := root.Get("statuses").Array()
-        node = append(node, map[string]interface{}{"test": 1})
+        node := []Node{}
+        node = append(node, n)
+    }
+}
+
+func BenchmarkMapAdd(b *testing.B) {
+    n := NewObject([]Pair{{"test", NewNumber("1")}})
+    b.SetParallelism(parallelism)
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        node := map[string]Node{}
+        node["test3"] = n
     }
 }

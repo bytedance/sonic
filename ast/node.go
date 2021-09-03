@@ -267,8 +267,11 @@ func (self Node) cap() int {
 // Set sets the node of given key under object parent
 // If the key doesn't exist, it will be append to the last
 func (self *Node) Set(key string, node Node) (bool, error) {
-    p := self.Get(key)
+    if err := node.Check(); err != nil {
+        return false, err 
+    }
 
+    p := self.Get(key)
     if !p.Exists() {
         l := self.len()
         c := self.cap()
@@ -311,6 +314,10 @@ func (self *Node) Unset(key string) (bool, error) {
 //
 // The index must within parent array's children
 func (self *Node) SetByIndex(index int, node Node) (bool, error) {
+    if err := node.Check(); err != nil {
+        return false, err 
+    }
+
     p := self.Index(index)
     if !p.Exists() {
         return false, ErrNotExist
@@ -359,19 +366,16 @@ func (self *Node) Add(node Node) error {
         return err
     }
 
-    l := self.len()
-    c := self.cap()
-    if l == c {
-        // TODO: maybe change append_extra_size in future
-        c += _DEFAULT_NODE_CAP
-        mem := unsafe_NewArray(_NODE_TYPE, c)
-        memmove(mem, self.p, _NODE_SIZE * uintptr(l))
-        self.p = mem
-    }
+    var p rt.GoSlice
+    p.Cap = self.cap()
+    p.Len = self.len()
+    p.Ptr = self.p
 
-    v := self.nodeAt(l)
-    *v = node
-    self.setCapAndLen(c, l+1)
+    s := *(*[]Node)(unsafe.Pointer(&p))
+    s = append(s, node)
+
+    self.p = unsafe.Pointer(&s[0])
+    self.setCapAndLen(cap(s), len(s))
     return nil
 }
 
@@ -410,8 +414,8 @@ func (self *Node) Get(key string) *Node {
     return n
 }
 
-// Index loads given index of an node on demands,
-// node type can be either V_OBJECT or V_ARRAY
+// Index indexies node at given idx,
+// node type CAN be either V_OBJECT or V_ARRAY
 func (self *Node) Index(idx int) *Node {
     if err := self.checkRaw(); err != nil {
         return unwrapError(err)
@@ -431,6 +435,30 @@ func (self *Node) Index(idx int) *Node {
     }else{
         return nodeUnsupportType
     }
+}
+
+// IndexPair indexies pair at given idx,
+// node type MUST be either V_OBJECT
+func (self *Node) IndexPair(idx int) *Pair {
+    if err := self.should(types.V_OBJECT, "an object"); err != nil {
+        return nil
+    }
+    return self.skipIndexPair(idx)
+}
+
+// IndexOrGet firstly use idx to index a value and check if its key matches
+// If not, then use the key to search value
+func (self *Node) IndexOrGet(idx int, key string) *Node {
+    if err := self.should(types.V_OBJECT, "an object"); err != nil {
+        return unwrapError(err)
+    }
+
+    pr := self.skipIndexPair(idx)
+    if pr != nil && pr.Key == key {
+        return &pr.Value
+    }
+    n, _ := self.skipKey(key)
+    return n
 }
 
 // Values returns iterator for array's children traversal
@@ -630,7 +658,7 @@ func (self *Node) InterfaceUseNode() (interface{}, error) {
             }
             return self.toGenericArrayUseNode()
         case _V_OBJECT_LAZY  :
-            if err := self.loadAllKey(); err != nil {
+            if err := self.skipAllKey(); err != nil {
                 return nil, err
             }
             return self.toGenericObjectUseNode()
@@ -699,34 +727,6 @@ func (self *Node) pairAt(i int) *Pair {
         p = *(*unsafe.Pointer)(unsafe.Pointer(&stack.v))
     }
     return (*Pair)(unsafe.Pointer(uintptr(p) + uintptr(i)*_PAIR_SIZE))
-}
-
-func (self *Node) findKey(key string) (*Node, int) {
-    nb := self.len()
-    if nb <= 0 {
-        return nil, -1
-    }
-
-    var p *Pair
-    if !self.isLazy() {
-        p = (*Pair)(self.p)
-    } else {
-        s := (*parseObjectStack)(self.p)
-        p = &s.v[0]
-    }
-
-    if p.Key == key {
-        return &p.Value, 0
-    }
-    for i := 1; i < nb; i++ {
-        p = p.unsafe_next()
-        if p.Key == key {
-            return &p.Value, i
-        }
-    }
-
-    /* not found */
-    return nil, -1
 }
 
 func (self *Node) getParserAndArrayStack() (*Parser, *parseArrayStack) {
@@ -917,26 +917,46 @@ func (self *Node) skipNextPair() (*Pair) {
 }
 
 func (self *Node) skipKey(key string) (*Node, int) {
-    node, pos := self.findKey(key)
-    if node != nil {
-        return node, pos
+    nb := self.len()
+    lazy := self.isLazy()
+
+    if nb > 0 {
+        /* linear search */
+        var p *Pair
+        if lazy {
+            s := (*parseObjectStack)(self.p)
+            p = &s.v[0]
+        } else {
+            p = (*Pair)(self.p)
+        }
+
+        if p.Key == key {
+            return &p.Value, 0
+        }
+        for i := 1; i < nb; i++ {
+            p = p.unsafe_next()
+            if p.Key == key {
+                return &p.Value, i
+            }
+        }
     }
-    if !self.isLazy() {
-        return &Node{}, -1
+
+    /* not found */
+    if !lazy {
+        return nil, -1
     }
 
     // lazy load
-    var i = self.len()
-    for last := self.skipNextPair(); last != nil; last = self.skipNextPair() {
+    for last, i := self.skipNextPair(), nb; last != nil; last, i = self.skipNextPair(), i+1 {
         if last.Value.Check() != nil {
             return &last.Value, -1
         }
         if last.Key == key {
             return &last.Value, i
         }
-        i++
     }
-    return &Node{}, -1
+
+    return nil, -1
 }
 
 func (self *Node) skipIndex(index int) *Node {
@@ -946,7 +966,7 @@ func (self *Node) skipIndex(index int) *Node {
         return v
     }
     if !self.isLazy() {
-        return &Node{}
+        return nil
     }
 
     // lazy load
@@ -959,7 +979,7 @@ func (self *Node) skipIndex(index int) *Node {
         }
     }
 
-    return &Node{}
+    return nil
 }
 
 func (self *Node) skipIndexPair(index int) *Pair {
