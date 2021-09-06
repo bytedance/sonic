@@ -298,38 +298,38 @@ func (self _Instr) disassemble() string {
     }
 }
 
-type _Program struct {
-    ins []_Instr
+type (
+	_Program []_Instr
+)
+
+func (self _Program) pc() int {
+    return len(self)
 }
 
-func (self *_Program) pc() int {
-    return len(self.ins)
-}
-
-func (self *_Program) tag(n int) {
+func (self _Program) tag(n int) {
     if n >= _MaxStack {
         panic("type nesting too deep")
     }
 }
 
-func (self *_Program) pin(i int) {
-    v := &self.ins[i]
+func (self _Program) pin(i int) {
+    v := &self[i]
     v.u &= 0xffff000000000000
     v.u |= rt.PackInt(self.pc())
 }
 
-func (self *_Program) rel(v []int) {
+func (self _Program) rel(v []int) {
     for _, i := range v {
         self.pin(i)
     }
 }
 
 func (self *_Program) add(op _Op) {
-    self.ins = append(self.ins, newInsOp(op))
+    *self = append(*self, newInsOp(op))
 }
 
 func (self *_Program) key(op _Op) {
-    self.ins = append(self.ins,
+    *self = append(*self,
         newInsVi(_OP_byte, '"'),
         newInsOp(op),
         newInsVi(_OP_byte, '"'),
@@ -337,31 +337,31 @@ func (self *_Program) key(op _Op) {
 }
 
 func (self *_Program) int(op _Op, vi int) {
-    self.ins = append(self.ins, newInsVi(op, vi))
+    *self = append(*self, newInsVi(op, vi))
 }
 
 func (self *_Program) str(op _Op, vs string) {
-    self.ins = append(self.ins, newInsVs(op, vs))
+    *self = append(*self, newInsVs(op, vs))
 }
 
 func (self *_Program) rtt(op _Op, vt reflect.Type) {
-    self.ins = append(self.ins, newInsVt(op, vt))
+    *self = append(*self, newInsVt(op, vt))
 }
 
-func (self *_Program) disassemble() string {
-    nb  := len(self.ins)
+func (self _Program) disassemble() string {
+    nb  := len(self)
     tab := make([]bool, nb + 1)
     ret := make([]string, 0, nb + 1)
 
     /* prescan to get all the labels */
-    for _, ins := range self.ins {
+    for _, ins := range self {
         if ins.isBranch() {
             tab[ins.vi()] = true
         }
     }
 
     /* disassemble each instruction */
-    for i, ins := range self.ins {
+    for i, ins := range self {
         if !tab[i] {
             ret = append(ret, "\t" + ins.disassemble())
         } else {
@@ -399,10 +399,9 @@ func (self *_Compiler) rescue(ep *error) {
     }
 }
 
-func (self *_Compiler) compile(vt reflect.Type) (ret *_Program, err error) {
-    ret = &_Program{}
+func (self *_Compiler) compile(vt reflect.Type) (ret _Program, err error) {
     defer self.rescue(&err)
-    self.compileOne(ret, 0, vt, false)
+    self.compileOne(&ret, 0, vt, false)
     return
 }
 
@@ -652,7 +651,7 @@ func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
-    if sp >= _MAX_STACK || len(p.ins) >= _MAX_ILBUF {
+    if sp >= _MAX_STACK || p.pc() >= _MAX_ILBUF {
         p.rtt(_OP_recurse, vt)
     } else {
         self.compileStructBody(p, sp, vt)

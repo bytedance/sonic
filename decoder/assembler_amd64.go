@@ -182,10 +182,10 @@ var (
 
 type _Assembler struct {
     jit.BaseAssembler
-    p *_Program
+    p _Program
 }
 
-func newAssembler(p *_Program) *_Assembler {
+func newAssembler(p _Program) *_Assembler {
     return new(_Assembler).Init(p)
 }
 
@@ -195,7 +195,7 @@ func (self *_Assembler) Load() _Decoder {
     return ptodec(self.BaseAssembler.Load("json_decoder", _FP_size, _FP_args))
 }
 
-func (self *_Assembler) Init(p *_Program) *_Assembler {
+func (self *_Assembler) Init(p _Program) *_Assembler {
     self.p = p
     self.BaseAssembler.Init(self.compile)
     return self
@@ -286,14 +286,14 @@ func (self *_Assembler) instr(v *_Instr) {
 }
 
 func (self *_Assembler) instrs() {
-    for i, v := range self.p.ins {
+    for i, v := range self.p {
         self.Mark(i)
         self.instr(&v)
     }
 }
 
 func (self *_Assembler) epilogue() {
-    self.Mark(len(self.p.ins))
+    self.Mark(len(self.p))
     self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
     self.Link(_LB_error)                            // _error:
