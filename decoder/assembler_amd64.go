@@ -688,7 +688,9 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr) {
     self.slice_from(_VAR_st_Iv, -3)                                 // SLICE  st.Iv, $-3
     self.Emit("MOVQ" , _DI, p)                                      // MOVQ   DI, ${p}
     self.Emit("MOVQ" , _SI, n)                                      // MOVQ   SI, ${n}
-    self.Emit("CMPQ" , _VAR_st_Ep, _SI)                             // CMPQ   st.Ep, SI
+    self.Emit("MOVQ" , _SI, _AX)                                    // MOVQ   SI, AX
+    self.Emit("ADDQ" , _VAR_st_Iv, _AX)                             // ADDQ   st.Iv, AX
+    self.Emit("CMPQ" , _VAR_st_Ep, _AX)                             // CMPQ   st.Ep, AX
     self.Sjmp("JE"   , "_noescape_{n}")                             // JE     _noescape_{n}
     self.malloc(_SI, _DX)                                           // MALLOC SI, DX
     self.Emit("MOVQ" , p, _DI)                                      // MOVQ   ${p}, DI

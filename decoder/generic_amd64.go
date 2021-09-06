@@ -478,7 +478,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ"    , _VAR_ss_Iv, _AX)                  // MOVQ     ss.Iv, AX
     self.Emit("CVTSQ2SD", _AX, _X0)                         // CVTSQ2SD AX, X0
 
-    /* represent number as `float64` */
+    /* represent numbers as `float64` */
     self.Link("_use_float64")                   // _use_float64:
     self.Emit("MOVSD", _X0, jit.Ptr(_SP, 0))    // MOVSD   X0, (SP)
     self.call_go(_F_convT64)                    // CALL_GO runtime.convT64
@@ -487,7 +487,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ" , _VAR_ss_Ep, _DI)         // MOVQ    ss.Ep, DI
     self.Sjmp("JMP"  , "_set_value")            // JMP     _set_value
 
-    /* represent number as `json.Number` */
+    /* represent numbers as `json.Number` */
     self.Link("_use_number")                            // _use_number
     self.Emit("MOVQ", _VAR_ss_Ep, _AX)                  // MOVQ    ss.Ep, AX
     self.Emit("LEAQ", jit.Sib(_IP, _AX, 1, 0), _SI)     // LEAQ    (IP)(AX), SI
@@ -501,7 +501,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", _VAR_ss_Ep, _DI)                  // MOVQ    ss.Ep, DI
     self.Sjmp("JMP" , "_set_value")                     // JMP     _set_value
 
-    /* represent number as `int64` */
+    /* represent numbers as `int64` */
     self.Link("_use_int64")                     // _use_int64:
     self.Emit("MOVQ", _VAR_ss_Iv, _AX)          // MOVQ    ss.Iv, AX
     self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))     // MOVQ    AX, (SP)
