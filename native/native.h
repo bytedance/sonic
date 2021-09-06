@@ -114,7 +114,7 @@ long skip_string(const GoString *src, long *p);
 long skip_negative(const GoString *src, long *p);
 long skip_positive(const GoString *src, long *p);
 
-int atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
+bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
 double atof_native_decimal(const char *buf, int len);
 
 #endif
