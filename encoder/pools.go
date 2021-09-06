@@ -98,7 +98,7 @@ func freeBuffer(p *bytes.Buffer) {
 func findOrCompile(vt *rt.GoType) (_Encoder, error) {
     var ex error
     var fn _Encoder
-    var pp *_Program
+    var pp _Program
     var fv interface{}
 
     /* fast path: the program is in the cache */

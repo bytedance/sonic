@@ -388,63 +388,63 @@ func (self _Instr) formatStructFields() string {
     return strings.Join(r, ", ")
 }
 
-type _Program struct {
-    ins []_Instr
+type (
+	_Program []_Instr
+)
+
+func (self _Program) pc() int {
+    return len(self)
 }
 
-func (self *_Program) pc() int {
-    return len(self.ins)
-}
-
-func (self *_Program) tag(n int) {
+func (self _Program) tag(n int) {
     if n >= _MaxStack {
         panic("type nesting too deep")
     }
 }
 
-func (self *_Program) pin(i int) {
-    v := &self.ins[i]
+func (self _Program) pin(i int) {
+    v := &self[i]
     v.u &= 0xffff000000000000
     v.u |= rt.PackInt(self.pc())
 }
 
-func (self *_Program) rel(v []int) {
+func (self _Program) rel(v []int) {
     for _, i := range v {
         self.pin(i)
     }
 }
 
 func (self *_Program) add(op _Op) {
-    self.ins = append(self.ins, newInsOp(op))
+    *self = append(*self, newInsOp(op))
 }
 
 func (self *_Program) int(op _Op, vi int) {
-    self.ins = append(self.ins, newInsVi(op, vi))
+    *self = append(*self, newInsVi(op, vi))
 }
 
 func (self *_Program) chr(op _Op, vb byte) {
-    self.ins = append(self.ins, newInsVb(op, vb))
+    *self = append(*self, newInsVb(op, vb))
 }
 
 func (self *_Program) tab(op _Op, vs []int) {
-    self.ins = append(self.ins, newInsVs(op, vs))
+    *self = append(*self, newInsVs(op, vs))
 }
 
 func (self *_Program) rtt(op _Op, vt reflect.Type) {
-    self.ins = append(self.ins, newInsVt(op, vt))
+    *self = append(*self, newInsVt(op, vt))
 }
 
 func (self *_Program) fmv(op _Op, vf *caching.FieldMap) {
-    self.ins = append(self.ins, newInsVf(op, vf))
+    *self = append(*self, newInsVf(op, vf))
 }
 
-func (self *_Program) disassemble() string {
-    nb  := len(self.ins)
+func (self _Program) disassemble() string {
+    nb  := len(self)
     tab := make([]bool, nb + 1)
     ret := make([]string, 0, nb + 1)
 
     /* prescan to get all the labels */
-    for _, ins := range self.ins {
+    for _, ins := range self {
         if ins.isBranch() {
             if ins.op() != _OP_switch {
                 tab[ins.vi()] = true
@@ -457,7 +457,7 @@ func (self *_Program) disassemble() string {
     }
 
     /* disassemble each instruction */
-    for i, ins := range self.ins {
+    for i, ins := range self {
         if !tab[i] {
             ret = append(ret, "\t" + ins.disassemble())
         } else {
@@ -474,18 +474,11 @@ func (self *_Program) disassemble() string {
     return strings.Join(append(ret, "\tend"), "\n")
 }
 
-type _Compiler struct {
-    pv  bool
-    tab map[reflect.Type]bool
-}
+type (
+	_Compiler map[reflect.Type]bool
+)
 
-func newCompiler() *_Compiler {
-    return &_Compiler {
-        tab: map[reflect.Type]bool{},
-    }
-}
-
-func (self *_Compiler) rescue(ep *error) {
+func (self _Compiler) rescue(ep *error) {
     if val := recover(); val != nil {
         if err, ok := val.(error); ok {
             *ep = err
@@ -495,27 +488,24 @@ func (self *_Compiler) rescue(ep *error) {
     }
 }
 
-func (self *_Compiler) compile(vt reflect.Type) (ret *_Program, err error) {
-    ret = &_Program{}
+func (self _Compiler) compile(vt reflect.Type) (ret _Program, err error) {
     defer self.rescue(&err)
-    self.compileOne(ret, 0, vt, true)
+    self.compileOne(&ret, 0, vt)
     return
 }
 
-func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type, pv bool) {
-    if self.tab[vt] {
-        p.rtt(_OP_recurse, vt)
-    } else {
-        self.compileRec(p, sp, vt, pv)
-    }
-}
-
-func (self *_Compiler) compileRec(p *_Program, sp int, vt reflect.Type, pv bool) {
-    pr := self.pv
+func (self _Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
+    ok := self[vt]
     pt := reflect.PtrTo(vt)
 
-    /* check for addressable `json.Unmarshaler` with pointer receiver */
-    if pv && pt.Implements(jsonUnmarshalerType) {
+    /* check for recursive nesting */
+    if ok {
+        p.rtt(_OP_recurse, vt)
+        return
+    }
+
+    /* check for `json.Unmarshaler` with pointer receiver */
+    if pt.Implements(jsonUnmarshalerType) {
         p.rtt(_OP_unmarshal_p, pt)
         return
     }
@@ -527,8 +517,8 @@ func (self *_Compiler) compileRec(p *_Program, sp int, vt reflect.Type, pv bool)
         return
     }
 
-    /* check for addressable `encoding.TextMarshaler` with pointer receiver */
-    if pv && pt.Implements(encodingTextUnmarshalerType) {
+    /* check for `encoding.TextMarshaler` with pointer receiver */
+    if pt.Implements(encodingTextUnmarshalerType) {
         p.add(_OP_lspace)
         self.compileUnmarshalTextPtr(p, pt)
         return
@@ -542,19 +532,13 @@ func (self *_Compiler) compileRec(p *_Program, sp int, vt reflect.Type, pv bool)
     }
 
     /* enter the recursion */
-    self.pv = pv
-    self.tab[vt] = true
-
-    /* compile the type */
     p.add(_OP_lspace)
+    self[vt] = true
     self.compileOps(p, sp, vt)
-
-    /* exit the recursion */
-    self.pv = pr
-    delete(self.tab, vt)
+    delete(self, vt)
 }
 
-func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
+func (self _Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
     switch vt.Kind() {
         case reflect.Bool      : self.compilePrimitive (p, _OP_bool)
         case reflect.Int       : self.compilePrimitive (p, _OP_int())
@@ -581,7 +565,7 @@ func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
     }
 }
 
-func (self *_Compiler) compileMap(p *_Program, sp int, vt reflect.Type) {
+func (self _Compiler) compileMap(p *_Program, sp int, vt reflect.Type) {
     if reflect.PtrTo(vt.Key()).Implements(encodingTextUnmarshalerType) {
         self.compileMapOp(p, sp, vt, _OP_map_key_utext_p)
     } else if vt.Key().Implements(encodingTextUnmarshalerType) {
@@ -591,7 +575,7 @@ func (self *_Compiler) compileMap(p *_Program, sp int, vt reflect.Type) {
     }
 }
 
-func (self *_Compiler) compileMapUt(p *_Program, sp int, vt reflect.Type) {
+func (self _Compiler) compileMapUt(p *_Program, sp int, vt reflect.Type) {
     switch vt.Key().Kind() {
         case reflect.Int     : self.compileMapOp(p, sp, vt, _OP_map_key_int())
         case reflect.Int8    : self.compileMapOp(p, sp, vt, _OP_map_key_i8)
@@ -611,7 +595,7 @@ func (self *_Compiler) compileMapUt(p *_Program, sp int, vt reflect.Type) {
     }
 }
 
-func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op) {
+func (self _Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op) {
     i := p.pc()
     p.add(_OP_is_null)
     p.tag(sp + 1)
@@ -633,7 +617,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     /* match the value separator */
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
-    self.compileOne(p, sp + 2, vt.Elem(), false)
+    self.compileOne(p, sp + 2, vt.Elem())
     p.add(_OP_load)
     k0 := p.pc()
     p.add(_OP_lspace)
@@ -652,7 +636,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     /* match the value separator */
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
-    self.compileOne(p, sp + 2, vt.Elem(), false)
+    self.compileOne(p, sp + 2, vt.Elem())
     p.add(_OP_load)
     p.int(_OP_goto, k0)
     p.pin(j)
@@ -665,7 +649,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.pin(x)
 }
 
-func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
+func (self _Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
     i := p.pc()
     p.add(_OP_is_null)
 
@@ -676,7 +660,7 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
     }
 
     /* compile the element type */
-    self.compileOne(p, sp + 1, et, true)
+    self.compileOne(p, sp + 1, et)
     j := p.pc()
     p.add(_OP_goto)
     p.pin(i)
@@ -684,7 +668,7 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
     p.pin(j)
 }
 
-func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
+func (self _Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
     x := p.pc()
     p.add(_OP_is_null)
     p.tag(sp)
@@ -696,7 +680,7 @@ func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
 
     /* decode every item */
     for i := 1; i <= vt.Len(); i++ {
-        self.compileOne(p, sp + 1, vt.Elem(), self.pv)
+        self.compileOne(p, sp + 1, vt.Elem())
         p.add(_OP_load)
         p.int(_OP_index, i * int(vt.Elem().Size()))
         p.add(_OP_lspace)
@@ -724,7 +708,7 @@ func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
     p.pin(x)
 }
 
-func (self *_Compiler) compileSlice(p *_Program, sp int, et reflect.Type) {
+func (self _Compiler) compileSlice(p *_Program, sp int, et reflect.Type) {
     if et.Kind() == byteType.Kind() {
         self.compileSliceBin(p, sp, et)
     } else {
@@ -732,7 +716,7 @@ func (self *_Compiler) compileSlice(p *_Program, sp int, et reflect.Type) {
     }
 }
 
-func (self *_Compiler) compileSliceBin(p *_Program, sp int, et reflect.Type) {
+func (self _Compiler) compileSliceBin(p *_Program, sp int, et reflect.Type) {
     i := p.pc()
     p.add(_OP_is_null)
     j := p.pc()
@@ -754,7 +738,7 @@ func (self *_Compiler) compileSliceBin(p *_Program, sp int, et reflect.Type) {
     p.pin(y)
 }
 
-func (self *_Compiler) compileSliceList(p *_Program, sp int, et reflect.Type) {
+func (self _Compiler) compileSliceList(p *_Program, sp int, et reflect.Type) {
     i := p.pc()
     p.add(_OP_is_null)
     p.tag(sp)
@@ -767,14 +751,14 @@ func (self *_Compiler) compileSliceList(p *_Program, sp int, et reflect.Type) {
     p.pin(x)
 }
 
-func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
+func (self _Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
     p.rtt(_OP_slice_init, et)
     p.add(_OP_save)
     p.add(_OP_lspace)
     j := p.pc()
     p.chr(_OP_check_char, ']')
     p.rtt(_OP_slice_append, et)
-    self.compileOne(p, sp + 1, et, true)
+    self.compileOne(p, sp + 1, et)
     p.add(_OP_load)
     k0 := p.pc()
     p.add(_OP_lspace)
@@ -782,7 +766,7 @@ func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
     p.chr(_OP_check_char, ']')
     p.chr(_OP_match_char, ',')
     p.rtt(_OP_slice_append, et)
-    self.compileOne(p, sp + 1, et, true)
+    self.compileOne(p, sp + 1, et)
     p.add(_OP_load)
     p.int(_OP_goto, k0)
     p.pin(j)
@@ -790,7 +774,7 @@ func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
     p.add(_OP_drop)
 }
 
-func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
+func (self _Compiler) compileString(p *_Program, vt reflect.Type) {
     if vt == jsonNumberType {
         self.compilePrimitive(p, _OP_num)
     } else {
@@ -798,7 +782,7 @@ func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
     }
 }
 
-func (self *_Compiler) compileStringBody(p *_Program) {
+func (self _Compiler) compileStringBody(p *_Program) {
     i := p.pc()
     p.add(_OP_is_null)
     p.chr(_OP_match_char, '"')
@@ -806,15 +790,15 @@ func (self *_Compiler) compileStringBody(p *_Program) {
     p.pin(i)
 }
 
-func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
-    if sp >= _MAX_STACK || len(p.ins) >= _MAX_ILBUF {
+func (self _Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
+    if sp >= _MAX_STACK || p.pc() >= _MAX_ILBUF {
         p.rtt(_OP_recurse, vt)
     } else {
         self.compileStructBody(p, sp, vt)
     }
 }
 
-func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
+func (self _Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
     fv := resolver.ResolveStruct(vt)
     fm, sw := caching.CreateFieldMap(len(fv)), make([]int, len(fv))
 
@@ -869,7 +853,7 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
 
         /* check for "stringnize" option */
         if (f.Opts & resolver.F_stringize) == 0 {
-            self.compileOne(p, sp + 1, f.Type, self.pv)
+            self.compileOne(p, sp + 1, f.Type)
         } else {
             self.compileStructFieldStr(p, sp + 1, f.Type)
         }
@@ -886,7 +870,7 @@ end_of_object:
     p.pin(n)
 }
 
-func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Type) {
+func (self _Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Type) {
     n1 := -1
     ft := vt
     sv := false
@@ -917,7 +901,7 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
 
     /* if it's not, ignore the "string" and follow the regular path */
     if !sv {
-        self.compileOne(p, sp, vt, self.pv)
+        self.compileOne(p, sp, vt)
         return
     }
 
@@ -993,7 +977,7 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
     p.pin(pc)
 }
 
-func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
+func (self _Compiler) compileInterface(p *_Program, vt reflect.Type) {
     i := p.pc()
     p.add(_OP_is_null)
 
@@ -1012,14 +996,14 @@ func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
     p.pin(j)
 }
 
-func (self *_Compiler) compilePrimitive(p *_Program, op _Op) {
+func (self _Compiler) compilePrimitive(p *_Program, op _Op) {
     i := p.pc()
     p.add(_OP_is_null)
     p.add(op)
     p.pin(i)
 }
 
-func (self *_Compiler) compileUnmarshalEnd(p *_Program, vt reflect.Type, i int) {
+func (self _Compiler) compileUnmarshalEnd(p *_Program, vt reflect.Type, i int) {
     j := p.pc()
     k := vt.Kind()
 
@@ -1036,7 +1020,7 @@ func (self *_Compiler) compileUnmarshalEnd(p *_Program, vt reflect.Type, i int) 
     p.pin(j)
 }
 
-func (self *_Compiler) compileUnmarshalJson(p *_Program, vt reflect.Type) {
+func (self _Compiler) compileUnmarshalJson(p *_Program, vt reflect.Type) {
     i := p.pc()
     v := _OP_unmarshal
     p.add(_OP_is_null)
@@ -1051,7 +1035,7 @@ func (self *_Compiler) compileUnmarshalJson(p *_Program, vt reflect.Type) {
     self.compileUnmarshalEnd(p, vt, i)
 }
 
-func (self *_Compiler) compileUnmarshalText(p *_Program, vt reflect.Type) {
+func (self _Compiler) compileUnmarshalText(p *_Program, vt reflect.Type) {
     i := p.pc()
     v := _OP_unmarshal_text
     p.add(_OP_is_null)
@@ -1068,7 +1052,7 @@ func (self *_Compiler) compileUnmarshalText(p *_Program, vt reflect.Type) {
     self.compileUnmarshalEnd(p, vt, i)
 }
 
-func (self *_Compiler) compileUnmarshalTextPtr(p *_Program, vt reflect.Type) {
+func (self _Compiler) compileUnmarshalTextPtr(p *_Program, vt reflect.Type) {
     i := p.pc()
     p.add(_OP_is_null)
     p.chr(_OP_match_char, '"')
