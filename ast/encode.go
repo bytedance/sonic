@@ -24,18 +24,12 @@ const (
 	_MaxBuffer = 4 * 1024    // 4KB buffer size
 )
 
-var (
-	bytesNull   = []byte("null")
-	bytesTrue   = []byte("true")
-	bytesFalse  = []byte("false")
-	bytesObject = []byte("{}")
-	bytesArray  = []byte("[]")
-
-	lenNull   = len("null")
-	lenTrue   = len("true")
-	lenFalse  = len("false")
-	lenObject = len("{}")
-	lenArray  = len("[]")
+const (
+	bytesNull   = "null"
+	bytesTrue   = "true"
+	bytesFalse  = "false"
+	bytesObject = "{}"
+	bytesArray  = "[]"
 )
 
 var bytesPool   = sync.Pool{}
