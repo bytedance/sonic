@@ -54,9 +54,9 @@ static inline u128_output mul_u64(uint64_t x, uint64_t y) {
 /* This is Eisel Lemire ParseFloat algorithm implemented in C.
  * reference: https://nigeltao.github.io/blog/2020/eisel-lemire.html 
  */
-int atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
+bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
     if (exp10 < -348 || exp10 > 347) {
-        return 0;
+        return false;
     }
 
     /* Calculate the 2-base exponent of float */
@@ -78,7 +78,7 @@ int atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
      */
     if ((x_hi & 0x1FF) == 0x1FF && (x_lo + mant) < mant) {
         /* lower 64 bits of POW10 mantissa */
-        u128_output y = mul_u64(mant, POW10_M128_TAB[exp10 + 347][0]); 
+        u128_output y = mul_u64(mant, POW10_M128_TAB[exp10 + 348][0]);
         uint64_t merged_hi = x_hi;
         uint64_t merged_lo = x_lo + y.hi; 
 
@@ -89,7 +89,7 @@ int atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
 
         /* Still ambigunous */
         if ((merged_hi & 0x1FF) == 0x1FF && (merged_lo + 1) == 0 && (y.lo + mant) < mant) {
-            return 0;
+            return false;
         }
 
         x_hi = merged_hi;
@@ -103,7 +103,7 @@ int atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
 
     /* Half-way Ambiguity */
     if ((x_lo == 0) && ((x_hi & 0x1FF) == 0) && ((ret_man & 3) == 1)) {
-        return 0;
+        return false;
     }
 
     /* If not half-way, then it's rounding to-nearest 
@@ -121,17 +121,17 @@ int atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
      * ret_exp2 >= 0x7FF means INF/inf.
      */
     if ((ret_exp2 - 1) >= (0x7FF - 1)) {
-        return 0;
+        return false;
     }
 
     /* Get the lower 52 bits as finnal mantissa */
     uint64_t bits = (ret_exp2 << 52) | (ret_man & 0x000FFFFFFFFFFFFF);
     if (sgn == -1) {
-        bits |= ((uint64_t)1) << 63;
+        bits |= 1ull << 63;
     }
     *(int64_t*)val = bits;
 
-    return 1;
+    return true;
 }
 
 

@@ -70,10 +70,7 @@ static inline void decimal_set(Decimal *d, const char *s, int len) {
     int i = 0;
 
     decimal_init(d);
-    if (s[i] == '+') {
-        i++;
-    }
-    else if (s[i] == '-') {
+    if (s[i] == '-') {
         i++;
         d->neg = 1;
     }
@@ -144,14 +141,14 @@ static inline void right_shift(Decimal *d, uint32_t k) {
     uint64_t n = 0;
 
     /* Pick up enough leading digits to cover first shift */
-    for (; n>>k == 0; r++) {
+    for (; n >> k == 0; r++) {
         if (r >= d->nd) {
             if (n == 0) {
                 d->nd = 0; // no digits for this num
                 return;
             }
             /* until n has enough bits for right shift */
-            while (n>>k == 0) {
+            while (n >> k == 0) {
                 n *= 10;
                 r++;
             }
@@ -161,7 +158,7 @@ static inline void right_shift(Decimal *d, uint32_t k) {
     }
     d->dp -= r - 1; // point shift left
 
-    uint64_t mask = (((uint64_t)1) << k) - 1;
+    uint64_t mask = (1ull << k) - 1;
     uint64_t dig = 0;
 
     /* Pick up a digit, put down a digit */
@@ -191,44 +188,41 @@ static inline void right_shift(Decimal *d, uint32_t k) {
 }
 
 /* Compare the leading prefix, if b is lexicographically less, return 0 */
-static inline int prefix_cmp(const char *b, const char *s, uint64_t len) {
+static inline bool prefix_is_less(const char *b, const char *s, uint64_t bn) {
     int i = 0;
-
-    for (; i < len; i++) {
+    for (; i < bn; i++) {
+        if (s[i] == '\0') {
+            return false;
+        }
         if (b[i] != s[i]) {
-            return b[i] > s[i];
+            return b[i] < s[i];
         }
     }
-    /* when b is substr of s */
-    if (i < DECIMAL_MAX_DNUM && s[i] >= '0' && s[i] <= '9') {
-        return 0;
-    }
-
-    return 1;
+    return s[i] != '\0';
 }
 
 /* Binary shift left (* 2) by k bits.  k <= maxShift to avoid overflow */
 static inline void left_shift(Decimal *d, uint32_t k) {
     int delta = LSHIFT_TAB[k].delta;
 
-    if (prefix_cmp(d->d, LSHIFT_TAB[k].cutoff, d->nd) == 0){
+    if (prefix_is_less(d->d, LSHIFT_TAB[k].cutoff, d->nd)){
         delta--;
     }
 
-    int r = d->nd - 1;         // read index
-    int w = d->nd + delta - 1; // write index
+    int r = d->nd;         // read index
+    int w = d->nd + delta; // write index
     uint64_t n = 0;
     uint64_t quo = 0;
     uint64_t rem = 0;
 
     /* Pick up a digit, put down a digit */
-    for (; r >= 0; r--) {
+    for (r--; r >= 0; r--) {
         n += (uint64_t)(d->d[r] - '0') << k;
         quo = n / 10;
         rem = n - 10 * quo;
+        w--;
         if (w < DECIMAL_MAX_DNUM) {
             d->d[w] = (char)(rem + '0');
-            w--;
         } else if (rem != 0) {
             /* truncated */
             d->trunc = 1;
@@ -240,9 +234,9 @@ static inline void left_shift(Decimal *d, uint32_t k) {
     while (n > 0) {
         quo = n / 10;
         rem = n - 10 * quo;
+        w--;
         if (w < DECIMAL_MAX_DNUM) {
             d->d[w] = (char)(rem + '0');
-            w--;
         } else if (rem != 0) {
             /* truncated */
             d->trunc = 1;
@@ -356,7 +350,7 @@ int decimal_to_f64(Decimal *d, double *val) {
         decimal_shift(d, -n); // shift right
         exp2 += n;
     }
-    while ((d->dp < 0) || (d->dp == 0) && (d->d[0] < '5')) { // d < 0.5
+    while ((d->dp < 0) || ((d->dp == 0) && (d->d[0] < '5'))) { // d < 0.5
         if (-d->dp >= 9) {
             n = 27;
         } else {
@@ -389,7 +383,7 @@ int decimal_to_f64(Decimal *d, double *val) {
     mant = rounded_integer(d);
 
     /* Rounding might have added a bit; shift down. */
-    if (mant == (((uint64_t)2) << 52)) { // mant has 54 bits
+    if (mant == (2ull << 52)) { // mant has 54 bits
         mant >>= 1;
         exp2 ++;
         if ((exp2 + 1023) >= 0x7FF) {
@@ -398,7 +392,7 @@ int decimal_to_f64(Decimal *d, double *val) {
     }
 
     /* Denormalized? */
-    if ((mant & (((uint64_t)1) << 52)) == 0) {
+    if ((mant & (1ull << 52)) == 0) {
         exp2 = -1023;
     }
     goto out;
@@ -413,7 +407,7 @@ out:
     bits = mant & 0x000FFFFFFFFFFFFF;
     bits |= (uint64_t)((exp2 + 1023) & 0x7FF) << 52;
     if (d->neg) {
-        bits |= ((uint64_t)1) << 63;
+        bits |= 1ull << 63;
     }
     *(uint64_t*)val = bits;
     return 0;

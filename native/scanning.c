@@ -483,11 +483,11 @@ void vstring(const GoString *src, long *p, JsonState *ret) {
     ret->iv = val;
 
 /** check whether float can represent the val exactly **/
-static inline int is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
+static inline bool is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
     double f = (double)man;
 
     if (man >> 52 != 0) {
-        return 0;
+        return false;
     }
 
     if (sgn == -1) {
@@ -497,7 +497,7 @@ static inline int is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
 
     if (exp == 0 || man == 0) {
         *val = f;
-        return 1;
+        return true;
     } else if (exp > 0 && exp <= 15+22) {
         /* uint64 integers: accurate range <= 10^15          *
          * Powers of 10: accurate range <= 10^22, as P10_TAB *
@@ -509,17 +509,17 @@ static inline int is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
 
         /* f is not accurate when too larger */
         if (f > 1e15 || f < -1e15) {
-            return 0;
+            return false;
         }
 
         *val = f * P10_TAB[exp];
-        return 1;
+        return true;
     } else if (exp < 0 && exp >= -22) {
         *val = f / P10_TAB[-exp];
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 static inline double parse_float64(uint64_t man, int exp, int sgn, int trunc, const GoString *src, long idx) {
