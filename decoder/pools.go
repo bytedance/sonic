@@ -89,7 +89,7 @@ func referenceFields(v *caching.FieldMap) int64 {
 func findOrCompile(vt *rt.GoType) (_Decoder, error) {
     var ex error
     var fn _Decoder
-    var pp *_Program
+    var pp _Program
     var fv interface{}
 
     /* fast path: the program is in the cache */
@@ -98,7 +98,7 @@ func findOrCompile(vt *rt.GoType) (_Decoder, error) {
     }
 
     /* slow path: not found, compile the type on the fly */
-    if pp, ex = newCompiler().compile(vt.Pack()); ex != nil {
+    if pp, ex = make(_Compiler).compile(vt.Pack()); ex != nil {
         return nil, ex
     }
 

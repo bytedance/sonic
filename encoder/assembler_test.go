@@ -66,14 +66,14 @@ func TestAssembler_CompileAndLoad(t *testing.T) {
 
 type testOps struct {
     key string
-    ins []_Instr
+    ins _Program
     exp string
     err error
     val interface{}
 }
 
-func testOpCode(t *testing.T, v interface{}, ex string, err error, ins []_Instr) {
-    p := &_Program{ins: ins}
+func testOpCode(t *testing.T, v interface{}, ex string, err error, ins _Program) {
+    p := ins
     m := []byte(nil)
     s := new(_Stack)
     a := newAssembler(p)
@@ -105,7 +105,7 @@ type RecursiveValue struct {
     Z int                       `json:"z"`
 }
 
-func mustCompile(t interface{}) *_Program {
+func mustCompile(t interface{}) _Program {
     p, err := newCompiler().compile(reflect.TypeOf(t))
     if err != nil {
         panic(err)
@@ -297,12 +297,12 @@ func TestAssembler_OpCode(t *testing.T) {
         val: nil,
     }, {
         key: "_OP_map_[iter,next,value]",
-        ins: mustCompile(map[string]map[int64]int{}).ins,
+        ins: mustCompile(map[string]map[int64]int{}),
         exp: `{"asdf":{"-9223372036854775808":1234}}`,
         val: &map[string]map[int64]int{"asdf": {math.MinInt64: 1234}},
     }, {
         key: "_OP_slice_[len,next]",
-        ins: mustCompile([][]int{}).ins,
+        ins: mustCompile([][]int{}),
         exp: `[[1,2,3],[4,5,6]]`,
         val: &[][]int{{1, 2, 3}, {4, 5, 6}},
     }, {
@@ -327,7 +327,7 @@ func TestAssembler_OpCode(t *testing.T) {
         val: &jifp,
     }, {
         key: "_OP_recurse",
-        ins: mustCompile(rec).ins,
+        ins: mustCompile(rec),
         exp: `{"a":123,"p":{"a":789,"p":{"a":777,"q":[{"a":999,"q":null,"r":{"` +
              `xxx":{"a":333,"q":null,"r":null,"z":0}},"z":222}],"r":null,"z":8` +
              `88},"q":null,"r":null,"z":666},"q":null,"r":null,"z":456}`,
@@ -341,7 +341,7 @@ func TestAssembler_OpCode(t *testing.T) {
 }
 
 func TestAssembler_StringMoreSpace(t *testing.T) {
-    p := &_Program{ins: []_Instr{newInsOp(_OP_str)}}
+    p := _Program{newInsOp(_OP_str)}
     m := make([]byte, 0, 8)
     s := new(_Stack)
     a := newAssembler(p)
@@ -353,7 +353,7 @@ func TestAssembler_StringMoreSpace(t *testing.T) {
 }
 
 func TestAssembler_TwitterJSON_Generic(t *testing.T) {
-    p := &_Program{ins: mustCompile(&_GenericValue).ins}
+    p := mustCompile(&_GenericValue)
     m := []byte(nil)
     s := new(_Stack)
     a := newAssembler(p)
@@ -365,7 +365,7 @@ func TestAssembler_TwitterJSON_Generic(t *testing.T) {
 }
 
 func TestAssembler_TwitterJSON_Structure(t *testing.T) {
-    p := &_Program{ins: mustCompile(_BindingValue).ins}
+    p := mustCompile(_BindingValue)
     m := []byte(nil)
     s := new(_Stack)
     a := newAssembler(p)
