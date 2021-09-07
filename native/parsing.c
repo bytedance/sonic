@@ -512,6 +512,9 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
         sp += 4;
         nb -= 4;
 
+    /* from line 598 */
+    retry_decode:
+
         /* ASCII characters, unlikely */
         if (unlikely(r0 <= 0x7f)) {
             *dp++ = (char)r0;
@@ -536,14 +539,24 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
         /* check for double unquote */
         if (unlikely(flags & F_DBLUNQ)) {
             if (nb < 1) {
-                *ep = x;
-                return -ERR_EOF;
-            } else if (sp[0] != '\\') {
-                *ep = sp - s - 4;
-                return -ERR_UNICODE;
+                if (likely(flags & F_UNIREP)) {
+                    unirep(&dp);
+                    continue;
+                } else {
+                    *ep = x;
+                    return -ERR_EOF;
+                }
             } else {
-                nb--;
-                sp++;
+                if (sp[0] == '\\') {
+                    nb--;
+                    sp++;
+                } else if (likely(flags & F_UNIREP)) {
+                    unirep(&dp);
+                    continue;
+                } else {
+                    *ep = sp - s - 4;
+                    return -ERR_UNICODE;
+                }
             }
         }
 
@@ -561,7 +574,7 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
         /* check the hexadecimal escape */
         if (!unhex16_is(sp + 2)) {
             *ep = sp - s + 2;
-            for (int i = 0; i < 4 && ishex(sp[2]); i++, sp++) ++*ep;
+            for (int i = 2; i < 6 && ishex(sp[i]); i++) ++*ep;
             return -ERR_INVAL;
         }
 
@@ -572,13 +585,17 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
 
         /* it must be the other half */
         if (r1 < 0xdc00 || r1 > 0xdfff) {
-            if (likely(!(flags & F_UNIREP))) {
+            if (unlikely(!(flags & F_UNIREP))) {
                 *ep = sp - s - 4;
                 return -ERR_UNICODE;
-            } else {
+            } else if (likely(r1 >= 0xd800 && r1 <= 0xdfff)) {
                 unirep(&dp);
                 unirep(&dp);
                 continue;
+            } else {
+                r0 = r1;
+                unirep(&dp);
+                goto retry_decode;
             }
         }
 
