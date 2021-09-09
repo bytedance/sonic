@@ -86,24 +86,20 @@ func referenceFields(v *caching.FieldMap) int64 {
     return int64(uintptr(unsafe.Pointer(v)))
 }
 
+func makeDecoder(vt *rt.GoType) (interface{}, error) {
+    if pp, err := make(_Compiler).compile(vt.Pack()); err != nil {
+        return nil, err
+    } else {
+        return newAssembler(pp).Load(), nil
+    }
+}
+
 func findOrCompile(vt *rt.GoType) (_Decoder, error) {
-    var ex error
-    var fn _Decoder
-    var pp _Program
-    var fv interface{}
-
-    /* fast path: the program is in the cache */
-    if fv = programCache.Get(vt); fv != nil {
-        return fv.(_Decoder), nil
+    if val := programCache.Get(vt); val != nil {
+        return val.(_Decoder), nil
+    } else if ret, err := programCache.Compute(vt, makeDecoder); err == nil {
+        return ret.(_Decoder), nil
+    } else {
+        return nil, err
     }
-
-    /* slow path: not found, compile the type on the fly */
-    if pp, ex = make(_Compiler).compile(vt.Pack()); ex != nil {
-        return nil, ex
-    }
-
-    /* link the program, and put it into cache */
-    fn = newAssembler(pp).Load()
-    programCache.Put(vt, fn)
-    return fn, nil
 }
