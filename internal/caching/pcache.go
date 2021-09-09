@@ -149,8 +149,25 @@ func (self *ProgramCache) Get(vt *rt.GoType) interface{} {
     return (*_ProgramMap)(atomic.LoadPointer(&self.p)).get(vt)
 }
 
-func (self *ProgramCache) Put(vt *rt.GoType, fn interface{}) {
+func (self *ProgramCache) Compute(vt *rt.GoType, compute func(*rt.GoType) (interface{}, error)) (interface{}, error) {
+    var err error
+    var val interface{}
+
+    /* use defer to prevent inlining of this function */
     self.m.Lock()
-    atomic.StorePointer(&self.p, unsafe.Pointer((*_ProgramMap)(atomic.LoadPointer(&self.p)).add(vt, fn)))
-    self.m.Unlock()
+    defer self.m.Unlock()
+
+    /* double check with write lock held */
+    if val = self.Get(vt); val != nil {
+        return val, nil
+    }
+
+    /* compute the value */
+    if val, err = compute(vt); err != nil {
+        return nil, err
+    }
+
+    /* update the RCU cache */
+    atomic.StorePointer(&self.p, unsafe.Pointer((*_ProgramMap)(atomic.LoadPointer(&self.p)).add(vt, val)))
+    return val, nil
 }

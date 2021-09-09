@@ -95,24 +95,20 @@ func freeBuffer(p *bytes.Buffer) {
     bufferPool.Put(p)
 }
 
+func makeEncoder(vt *rt.GoType) (interface{}, error) {
+    if pp, err := newCompiler().compile(vt.Pack()); err != nil {
+        return nil, err
+    } else {
+        return newAssembler(pp).Load(), nil
+    }
+}
+
 func findOrCompile(vt *rt.GoType) (_Encoder, error) {
-    var ex error
-    var fn _Encoder
-    var pp _Program
-    var fv interface{}
-
-    /* fast path: the program is in the cache */
-    if fv = programCache.Get(vt); fv != nil {
-        return fv.(_Encoder), nil
+    if val := programCache.Get(vt); val != nil {
+        return val.(_Encoder), nil
+    } else if ret, err := programCache.Compute(vt, makeEncoder); err == nil {
+        return ret.(_Encoder), nil
+    } else {
+        return nil, err
     }
-
-    /* slow path: not found, compile the type on the fly */
-    if pp, ex = newCompiler().compile(vt.Pack()); ex != nil {
-        return nil, ex
-    }
-
-    /* link the program, and put it into cache */
-    fn = newAssembler(pp).Load()
-    programCache.Put(vt, fn)
-    return fn, nil
 }

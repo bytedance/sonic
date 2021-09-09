@@ -60,7 +60,7 @@ func (self *FieldMap) At(p uint64) *FieldEntry {
 }
 
 // Get searches FieldMap by name. JIT generated assembly does NOT call this
-// function, rather it implements it's own version directly in assembly. So
+// function, rather it implements its own version directly in assembly. So
 // we must ensure this function stays in sync with the JIT generated one.
 func (self *FieldMap) Get(name string) int {
     h := StrHash(name)
