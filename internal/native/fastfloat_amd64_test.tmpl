@@ -27,7 +27,7 @@ import (
 func TestFastFloat_Encode(t *testing.T) {
     var buf [64]byte
     assert.Equal(t, "0"                         , string(buf[:__f64toa(&buf[0], 0)]))
-    assert.Equal(t, "0"                         , string(buf[:__f64toa(&buf[0], math.Float64frombits(0x8000000000000000))]))
+    assert.Equal(t, "-0"                         , string(buf[:__f64toa(&buf[0], math.Float64frombits(0x8000000000000000))]))
     assert.Equal(t, "12340000000"               , string(buf[:__f64toa(&buf[0], 1234e7)]))
     assert.Equal(t, "12.34"                     , string(buf[:__f64toa(&buf[0], 1234e-2)]))
     assert.Equal(t, "0.001234"                  , string(buf[:__f64toa(&buf[0], 1234e-6)]))
@@ -62,3 +62,21 @@ func BenchmarkFastFloat_Encode(b *testing.B) {
         b.Run(bm.name, bm.test)
     }
 }
+
+func BenchmarkFastFloat_EncodeZero(b *testing.B) {
+    val := float64(0)
+    benchmarks := []struct {
+        name string
+        test func(*testing.B)
+    }{{
+        name: "StdLib",
+        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:], val, 'g', -1, 64) }},
+    }, {
+        name: "FastFloat",
+        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f64toa(&buf[0], val) }},
+    }}
+    for _, bm := range benchmarks {
+        b.Run(bm.name, bm.test)
+    }
+}
+

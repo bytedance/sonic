@@ -100,7 +100,6 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     uint64_t os;
     uint64_t m0;
     uint64_t m1;
-    uint64_t mx;
     uint64_t cr = 0;
 
     /* buffer pointers */
@@ -484,38 +483,35 @@ void vstring(const GoString *src, long *p, JsonState *ret) {
 
 /** check whether float can represent the val exactly **/
 static inline bool is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
-    double f = (double)man;
+    *val = (double)man;
 
     if (man >> 52 != 0) {
         return false;
     }
 
-    if (sgn == -1) {
-        f = -f;
-    }
-    *val = 0;
+    /* equal to if (sgn == -1) { *val *= -1; } */
+    *(uint64_t *)val |= ((uint64_t)(sgn) >> 63 << 63);
 
     if (exp == 0 || man == 0) {
-        *val = f;
         return true;
     } else if (exp > 0 && exp <= 15+22) {
         /* uint64 integers: accurate range <= 10^15          *
          * Powers of 10: accurate range <= 10^22, as P10_TAB *
          * Example: man 1, exp 36, is ok                     */
         if (exp > 22) {
-            f *= P10_TAB[exp-22];
+            *val *= P10_TAB[exp-22];
             exp = 22;
         }
 
         /* f is not accurate when too larger */
-        if (f > 1e15 || f < -1e15) {
+        if (*val > 1e15 || *val < -1e15) {
             return false;
         }
 
-        *val = f * P10_TAB[exp];
+        *val *= P10_TAB[exp];
         return true;
     } else if (exp < 0 && exp >= -22) {
-        *val = f / P10_TAB[-exp];
+        *val /=  P10_TAB[-exp];
         return true;
     }
 
@@ -546,15 +542,16 @@ static inline double parse_float64(uint64_t man, int exp, int sgn, int trunc, co
 }
 
 static bool inline is_overflow(uint64_t man, int sgn, int exp10) {
+    /* the former exp10 != 0 means man has overflowed
+     * the later euqals to man*sgn < INT64_MIN or > INT64_MAX */
     return exp10 != 0 ||
         ((man >> 63) == 1 && ((uint64_t)sgn & man) != (1ull << 63));
 }
 
 void vnumber(const GoString *src, long *p, JsonState *ret) {
-    int      dig;
     int      sgn = 1;
     uint64_t man = 0; // mantissa for double (float64)
-    int   man_nd = 0; // # digits of mantissa, 10^19 fits uint64_t
+    int   man_nd = 0; // # digits of mantissa, 10 ^ 19 fits uint64_t
     int    exp10 = 0; // val = sgn * man * 10 ^ exp10
     int    trunc = 0;
 
@@ -632,21 +629,25 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
             i++;
         }
         exp10 += exp * esm;
+        goto parse_float;
     }
 
     if (ret->vt == V_INTEGER) {
         if (!is_overflow(man, sgn, exp10)) {
             ret->iv = (int64_t)man * sgn;
-            ret->dv = (double)(ret->iv);
-        } else {
-            set_vt(V_DOUBLE)
+            
+            /* following lines equal to ret->dv = (double)(man) * sgn */
+            ret->dv = (double)(man);
+            *(uint64_t *)&ret->dv |= ((uint64_t)(sgn) >> 63 << 63);
+
+            *p = i;
+            return;
         }
+        set_vt(V_DOUBLE)
     }
 
-    if (ret->vt == V_DOUBLE) {
-        ret->dv = parse_float64(man, exp10, sgn, trunc, src, si);
-    }
-
+parse_float:
+    ret->dv = parse_float64(man, exp10, sgn, trunc, src, si);
     /* update the result */
     *p = i;
 }
@@ -946,7 +947,6 @@ static inline long skip_number(const char *sp, size_t nb) {
         __m128i eu = _mm_set1_epi8('E');
         __m128i xp = _mm_set1_epi8('+');
         __m128i xm = _mm_set1_epi8('-');
-        __m128i v1 = _mm_set1_epi8(0xff);
 
         /* 16-byte loop */
         do {
