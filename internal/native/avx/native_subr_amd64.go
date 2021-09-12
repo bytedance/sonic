@@ -14,21 +14,21 @@ func ___asm2asm_compiled_code__DO_NOT_CALL_THIS_SYMBOL___()
 
 var (
     _func__base        = ___asm2asm_compiled_code__DO_NOT_CALL_THIS_SYMBOL___
-    _subr__f64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 558
-    _subr__i64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 3541
+    _subr__f64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 542
+    _subr__i64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 3551
     _subr__lspace      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 238
     _subr__lzero       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 0
-    _subr__quote       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 4854
-    _subr__skip_array  = **(**uintptr)(unsafe.Pointer(&_func__base)) + 16673
-    _subr__skip_object = **(**uintptr)(unsafe.Pointer(&_func__base)) + 16708
-    _subr__skip_one    = **(**uintptr)(unsafe.Pointer(&_func__base)) + 14351
-    _subr__u64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 3634
-    _subr__unquote     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 5875
-    _subr__value       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 10064
-    _subr__vnumber     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 12639
-    _subr__vsigned     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13801
-    _subr__vstring     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 11670
-    _subr__vunsigned   = **(**uintptr)(unsafe.Pointer(&_func__base)) + 14078
+    _subr__quote       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 4864
+    _subr__skip_array  = **(**uintptr)(unsafe.Pointer(&_func__base)) + 16717
+    _subr__skip_object = **(**uintptr)(unsafe.Pointer(&_func__base)) + 16752
+    _subr__skip_one    = **(**uintptr)(unsafe.Pointer(&_func__base)) + 14395
+    _subr__u64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 3644
+    _subr__unquote     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 5885
+    _subr__value       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 10074
+    _subr__vnumber     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 12633
+    _subr__vsigned     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13845
+    _subr__vstring     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 11680
+    _subr__vunsigned   = **(**uintptr)(unsafe.Pointer(&_func__base)) + 14122
 )
 
 var (

@@ -429,9 +429,8 @@ static inline bool f64tod_exct_int(const uint64_t man, const uint32_t exp,
     return true;
 }
 
-static int inline ryu(double val, char *out) {
+static int inline ryu(uint64_t bits, char *out) {
     /* Step 1: Decode the floating-point number */
-    uint64_t bits = *(uint64_t *)(&val);
     uint64_t man = bits & ((1ull << 52) - 1);
     uint32_t exp = (uint32_t) ((bits >> 52) & ((1u << 11) - 1));
 
@@ -459,29 +458,28 @@ static int inline ryu(double val, char *out) {
     else      // decimal format
         idx += print_decimal(v, out + idx, mlen);
 
-    /* Terminate the string */
-    out[idx] = '\0';
     return idx;
 }
 
 int f64toa(char *out, double val) {
     int   i = 0;
     char *p = out;
-
-    /* simple case of 0.0 */
-    if (val == 0.0) {
-        *p = '0';
-        return 1;
-    }
+    uint64_t uval = *(uint64_t *)&val;
 
     /* negative numbers */
-    if (val < 0.0) {
+    if (unlikely(uval >> 63) == 1) {
         i    = 1;
-        val  = -val;
+        uval &= ((1ull << 63) - 1);
         *p++ = '-';
     }
 
+    /* simple case of 0.0 */
+    if (uval ==  0) {
+        *p = '0';
+        return i + 1;
+    }
+
     /* print the number with Ryu algorithm */
-    int n = ryu(val, p);
+    int n = ryu(uval, p);
     return n + i;
 }
