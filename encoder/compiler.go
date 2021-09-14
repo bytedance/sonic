@@ -529,7 +529,7 @@ func (self *_Compiler) compileMapBody(p *_Program, sp int, vt reflect.Type) {
     p.pin(v)
     p.int(_OP_byte, ':')
     p.add(_OP_map_value_next)
-    self.compileOne(p, sp + 1, vt.Elem(), false)
+    self.compileOne(p, sp + 2, vt.Elem(), false)
     p.int(_OP_goto, j)
     p.pin(i)
     p.pin(j)
