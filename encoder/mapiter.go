@@ -158,9 +158,8 @@ func iteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*_MapIterator, erro
     it := newIterator()
     mapiterinit(t, m, &it.it)
 
-    /* check for key-sorting
-     * empty map or map with only 1 item don't need sorting */
-    if m.Count <= 1 || (fv & uint64(SortMapKeys)) == 0 {
+    /* check for key-sorting, empty map don't need sorting */
+    if m.Count == 0 || (fv & uint64(SortMapKeys)) == 0 {
         it.ki = -1
         return it, nil
     }
@@ -178,9 +177,10 @@ func iteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*_MapIterator, erro
         }
     }
 
-    /* sort the keys */
-    it.ki = 1
-    radixQsort(it.data(), 0, maxDepth(it.kv.Len))
+    /* sort the keys, map with only 1 item don't need sorting */
+    if it.ki = 1; m.Count > 1 {
+        radixQsort(it.data(), 0, maxDepth(it.kv.Len))
+    }
 
     /* load the first pair into iterator */
     it.it.V = it.at(0).v
