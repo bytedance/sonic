@@ -63,6 +63,7 @@ const (
     ERR_INTEGER_OVERFLOW   ParsingError = 5
     ERR_INVALID_NUMBER_FMT ParsingError = 6
     ERR_RECURSE_EXCEED_MAX ParsingError = 7
+    ERR_FLOAT_INFINITY     ParsingError = 8
 )
 
 var _ParsingErrors = []string{
@@ -74,6 +75,7 @@ var _ParsingErrors = []string{
     ERR_INTEGER_OVERFLOW   : "integer overflow",
     ERR_INVALID_NUMBER_FMT : "invalid number format",
     ERR_RECURSE_EXCEED_MAX : "recursion exceeded max depth",
+    ERR_FLOAT_INFINITY     : "float number is infinity",
 }
 
 func (self ParsingError) Error() string {

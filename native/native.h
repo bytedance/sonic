@@ -50,6 +50,7 @@
 #define ERR_OVERFLOW    5
 #define ERR_NUMBER_FMT  6
 #define ERR_RECURSE_MAX 7
+#define ERR_FLOAT_INF   8
 
 #define MAX_RECURSE     65536
 

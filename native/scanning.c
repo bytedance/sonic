@@ -648,6 +648,10 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
 
 parse_float:
     ret->dv = parse_float64(man, exp10, sgn, trunc, src, si);
+    /* if the float number is infinity */
+    if (((*(uint64_t *)&ret->dv) << 1) == 0xFFE0000000000000) {
+        ret->vt = -ERR_FLOAT_INF;
+    }
     /* update the result */
     *p = i;
 }
