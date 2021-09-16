@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
+    . `github.com/bytedance/sonic`
     `testing`
 
-    `github.com/davecgh/go-spew/spew`
+    `github.com/bytedance/sonic/decoder`
     `github.com/stretchr/testify/require`
 )
 
-func TestIssue101_UnmarshalMWithNumber(t *testing.T) {
-    var v interface{}
-    err := Unmarshal([]byte("M10"), &v) // MIJ`
-    spew.Dump(v)
-    require.Error(t, err)
+type Issue83Struct struct {
+    X string `json:"x,string"`
+}
+
+func TestIssue83_SurrogateHalfInDoubleQuotedString(t *testing.T) {
+    var v Issue83Struct
+    err := Unmarshal([]byte(`{"x":"\"\\ud800\\u1234\""}`), &v)
+    if err != nil {
+        println(err.(decoder.SyntaxError).Description())
+        require.NoError(t, err)
+    }
+    require.Equal(t, Issue83Struct{"\ufffd\u1234"}, v)
 }

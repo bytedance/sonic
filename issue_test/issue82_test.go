@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
+    . `github.com/bytedance/sonic`
     `testing`
 
+    `github.com/bytedance/sonic/decoder`
     `github.com/stretchr/testify/require`
 )
 
-type (
-    Issue58ValueReceiver   struct {}
-    Issue58PointerReceiver struct {}
-)
+type Issue82String string
 
-func (_ Issue58ValueReceiver) MarshalJSON() ([]byte, error)    { return []byte(`"value"`), nil }
-func (_ *Issue58PointerReceiver) MarshalJSON() ([]byte, error) { return []byte(`"pointer"`), nil }
+func (s *Issue82String) UnmarshalJSON(b []byte) error {
+    *s = Issue82String(b)
+    return nil
+}
 
-func TestIssue58_NilPointerOnValueMethod(t *testing.T) {
-    v := struct {
-        X *Issue58ValueReceiver
-        Y *Issue58PointerReceiver
-    }{}
-    buf, err := Marshal(v)
-    require.NoError(t, err)
-    require.Equal(t, []byte(`{"X":null,"Y":"pointer"}`), buf)
+func TestIssue82_MapValueIsStringUnmarshaler(t *testing.T) {
+    var v map[string]Issue82String
+    err := Unmarshal([]byte(`{"a":123}`), &v)
+    if err != nil {
+        println(err.(decoder.SyntaxError).Description())
+        require.NoError(t, err)
+    }
+    require.Equal(t, map[string]Issue82String{"a": "123"}, v)
 }

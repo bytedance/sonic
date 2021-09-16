@@ -13,29 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package sonic
+ 
+package issue_test
 
 import (
-    `testing`
-
-    `github.com/bytedance/sonic/decoder`
-    `github.com/stretchr/testify/require`
+    . `github.com/bytedance/sonic`
+    "encoding/json"
+    "fmt"
+    "testing"
 )
 
-type Issue82String string
-
-func (s *Issue82String) UnmarshalJSON(b []byte) error {
-    *s = Issue82String(b)
-    return nil
-}
-
-func TestIssue82_MapValueIsStringUnmarshaler(t *testing.T) {
-    var v map[string]Issue82String
-    err := Unmarshal([]byte(`{"a":123}`), &v)
-    if err != nil {
-        println(err.(decoder.SyntaxError).Description())
-        require.NoError(t, err)
+func TestUnmarshalInfinity(t *testing.T) {
+    var v interface{}
+    data := []byte("9e370")
+    sonicerr := Unmarshal(data, &v)
+    stderr := json.Unmarshal(data, &v)
+    if sonicerr == nil && stderr != nil {
+        t.Errorf("should have unmarshal error like %#v\n", stderr)
     }
-    require.Equal(t, map[string]Issue82String{"a": "123"}, v)
+    fmt.Println(sonicerr, stderr)
 }

@@ -14,33 +14,18 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
-    `io/ioutil`
+    . `github.com/bytedance/sonic`
     `testing`
 
     `github.com/stretchr/testify/require`
 )
 
-func benchmarkEncodeSonic(b *testing.B, data []byte) {
-    var xbook = map[string]interface{}{}
-    if err := Unmarshal(data, &xbook); err != nil {
-        b.Fatal(err)
-    }
-    if _, err := Marshal(&xbook); err != nil {
-        b.Fatal(err)
-    }
-    b.SetBytes(int64(len(data)))
-    b.ReportAllocs()
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        _, _ = Marshal(&xbook)
-    }
-}
-
-func BenchmarkIssue16(b *testing.B) {
-    data, err := ioutil.ReadFile("testdata/twitterescaped.json")
-    require.Nil(b, err)
-    benchmarkEncodeSonic(b, data)
+func TestIssue7(t *testing.T) {
+    v := &[...]int{1, 2, 3, 4, 5, 6, 7}
+    err := Unmarshal([]byte(`[3]`), v)
+    require.Nil(t, err)
+    require.Equal(t, &[...]int{3, 0, 0, 0, 0, 0, 0}, v)
 }
