@@ -17,21 +17,21 @@
 package sonic
 
 import (
-	"bytes"
-	"encoding"
+	`bytes`
+	`encoding`
 	`encoding/json`
-	"errors"
-	"fmt"
-	"image"
-	"math"
-	"math/big"
+	`errors`
+	`fmt`
+	`image`
+	`math`
+	`math/big`
 	`math/rand`
-	"net"
-	"reflect"
-	"strconv"
-	"strings"
-	"testing"
-	"time"
+	`net`
+	`reflect`
+	`strconv`
+	`strings`
+	`testing`
+	`time`
 	`unsafe`
 
 	`github.com/bytedance/sonic/decoder`

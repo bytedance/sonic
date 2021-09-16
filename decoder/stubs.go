@@ -18,6 +18,7 @@ package decoder
 
 import (
     `unsafe`
+    `reflect`
 
     _ `github.com/chenzhuoyu/base64x`
 
@@ -26,6 +27,14 @@ import (
 
 //go:linkname _subr__b64decode github.com/chenzhuoyu/base64x._subr__b64decode
 var _subr__b64decode uintptr
+
+// runtime.maxElementSize
+const _max_map_element_size uintptr = 128
+
+func mapfast(vt reflect.Type) bool {
+    return vt.Elem().Size() <= _max_map_element_size
+}
+
 
 //go:nosplit
 //go:linkname throw runtime.throw

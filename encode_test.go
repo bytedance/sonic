@@ -17,16 +17,16 @@
 package sonic
 
 import (
-	"bytes"
-	"encoding"
+	`bytes`
+	`encoding`
 	`encoding/json`
-	"fmt"
-	"log"
-	"math"
-	"reflect"
-	"regexp"
-	"strconv"
-	"testing"
+	`fmt`
+	`log`
+	`math`
+	`reflect`
+	`regexp`
+	`strconv`
+	`testing`
 	`unsafe`
 
 	`github.com/bytedance/sonic/encoder`
