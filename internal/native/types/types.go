@@ -25,19 +25,19 @@ type ParsingError uint
 type SearchingError uint
 
 const (
-    V_EOF        ValueType = 1
-    V_NULL       ValueType = 2
-    V_TRUE       ValueType = 3
-    V_FALSE      ValueType = 4
-    V_ARRAY      ValueType = 5
-    V_OBJECT     ValueType = 6
-    V_STRING     ValueType = 7
-    V_DOUBLE     ValueType = 8
-    V_INTEGER    ValueType = 9
-    V_KEY_SEP    ValueType = 10
-    V_ELEM_SEP   ValueType = 11
-    V_ARRAY_END  ValueType = 12
-    V_OBJECT_END ValueType = 13
+    V_EOF     ValueType = 1
+    V_NULL    ValueType = 2
+    V_TRUE    ValueType = 3
+    V_FALSE   ValueType = 4
+    V_ARRAY   ValueType = 5
+    V_OBJECT  ValueType = 6
+    V_STRING  ValueType = 7
+    V_DOUBLE  ValueType = 8
+    V_INTEGER ValueType = 9
+    _         ValueType = 10    // V_KEY_SEP
+    _         ValueType = 11    // V_ELEM_SEP
+    _         ValueType = 12    // V_ARRAY_END
+    _         ValueType = 13    // V_OBJECT_END
     V_MAX
 )
 

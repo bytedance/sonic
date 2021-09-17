@@ -63,10 +63,15 @@ static inline char advance_ns(const GoString *src, long *p) {
 
     /* it's likely to run into non-spaces within a few
      * characters, so test up to 4 characters manually */
-    for (int i = 0; i < 4 && vi < nb; i++, vi++) {
-        if (!isspace(sp[vi])) {
-            goto nospace;
-        }
+    if (vi < nb && !isspace(sp[vi])) goto nospace; else vi++;
+    if (vi < nb && !isspace(sp[vi])) goto nospace; else vi++;
+    if (vi < nb && !isspace(sp[vi])) goto nospace; else vi++;
+    if (vi < nb && !isspace(sp[vi])) goto nospace; else vi++;
+
+    /* check EOF */
+    if (vi >= nb) {
+        *p = vi;
+        return 0;
     }
 
     /* too many spaces, use SIMD to search for characters */
@@ -635,7 +640,7 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
     if (ret->vt == V_INTEGER) {
         if (!is_overflow(man, sgn, exp10)) {
             ret->iv = (int64_t)man * sgn;
-            
+
             /* following lines equal to ret->dv = (double)(man) * sgn */
             ret->dv = (double)(man);
             *(uint64_t *)&ret->dv |= ((uint64_t)(sgn) >> 63 << 63);
