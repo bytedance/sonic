@@ -207,38 +207,25 @@ func (self *_ValueDecoder) compile() {
     self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
     self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
     self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
+    self.Emit("CMPQ"   , _AX, jit.Imm(' '))             // CMPQ    AX, $' '
+    self.Sjmp("JA"     , "_decode_fast")                // JA      _decode_fast
     self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
     self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
-
-    /* 1-space case */
     self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
-    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
-    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
-    self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
-    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
-    self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
-    self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
 
-    /* 2-space case */
-    self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
-    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
-    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
-    self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
-    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
-    self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
-    self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
+    /* at least 1 to 3 spaces */
+    for i := 0; i < 3; i++ {
+        self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+        self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
+        self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+        self.Emit("CMPQ"   , _AX, jit.Imm(' '))             // CMPQ    AX, $' '
+        self.Sjmp("JA"     , "_decode_fast")                // JA      _decode_fast
+        self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
+        self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
+        self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
+    }
 
-    /* 3-space case */
-    self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
-    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
-    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
-    self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
-    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
-    self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
-    self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
-
-    /* 4-space case */
-    self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
+    /* at least 4 spaces */
     self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
     self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
     self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX

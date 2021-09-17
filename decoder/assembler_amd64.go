@@ -1449,6 +1449,8 @@ func (self *_Assembler) _asm_OP_lspace(_ *_Instr) {
     self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
     self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
     self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+    self.Emit("CMPQ"   , _AX, jit.Imm(' '))             // CMPQ    AX, $' '
+    self.Sjmp("JA"     , "_nospace_{n}")                // JA      _nospace_{n}
     self.Emit("BTQ"    , _AX, _DX)                      // BTQ     AX, DX
     self.Sjmp("JNC"    , "_nospace_{n}")                // JNC     _nospace_{n}
 
@@ -1458,6 +1460,8 @@ func (self *_Assembler) _asm_OP_lspace(_ *_Instr) {
         self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
         self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
         self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
+        self.Emit("CMPQ"   , _AX, jit.Imm(' '))             // CMPQ    AX, $' '
+        self.Sjmp("JA"     , "_nospace_{n}")                // JA      _nospace_{n}
         self.Emit("BTQ"    , _AX, _DX)                      // BTQ     AX, DX
         self.Sjmp("JNC"    , "_nospace_{n}")                // JNC     _nospace_{n}
     }
