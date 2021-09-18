@@ -17,13 +17,13 @@
 package encoder
 
 import (
-    "bytes"
-    "math/rand"
-    "reflect"
-    "sort"
-    "strconv"
-    "testing"
-    "unsafe"
+    `bytes`
+    `math/rand`
+    `reflect`
+    `sort`
+    `strconv`
+    `testing`
+    `unsafe`
 )
 
 var keyLen = 15

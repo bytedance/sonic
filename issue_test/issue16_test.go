@@ -14,25 +14,34 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
+    . `github.com/bytedance/sonic`
+    `io/ioutil`
     `testing`
 
-    `github.com/bytedance/sonic/decoder`
     `github.com/stretchr/testify/require`
 )
 
-type Issue83Struct struct {
-    X string `json:"x,string"`
+func benchmarkEncodeSonic(b *testing.B, data []byte) {
+    var xbook = map[string]interface{}{}
+    if err := Unmarshal(data, &xbook); err != nil {
+        b.Fatal(err)
+    }
+    if _, err := Marshal(&xbook); err != nil {
+        b.Fatal(err)
+    }
+    b.SetBytes(int64(len(data)))
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = Marshal(&xbook)
+    }
 }
 
-func TestIssue83_SurrogateHalfInDoubleQuotedString(t *testing.T) {
-    var v Issue83Struct
-    err := Unmarshal([]byte(`{"x":"\"\\ud800\\u1234\""}`), &v)
-    if err != nil {
-        println(err.(decoder.SyntaxError).Description())
-        require.NoError(t, err)
-    }
-    require.Equal(t, Issue83Struct{"\ufffd\u1234"}, v)
+func BenchmarkIssue16(b *testing.B) {
+    data, err := ioutil.ReadFile("../testdata/twitterescaped.json")
+    require.Nil(b, err)
+    benchmarkEncodeSonic(b, data)
 }

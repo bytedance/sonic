@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
     `testing`
 
+    `github.com/bytedance/sonic/encoder`
     `github.com/stretchr/testify/require`
 )
 
-func TestIssue5(t *testing.T) {
-    var x int
-    var i interface{} = &x
-    err := Unmarshal([]byte(`1`), &i)
+func TestIssue98_SingleElementMapWithKeySorting(t *testing.T) {
+    v, err := encoder.Encode(map[int64]bool{1234: true}, encoder.SortMapKeys)
     require.NoError(t, err)
-    require.Equal(t, 1, x)
+    require.Equal(t, `{"1234":true}`, string(v))
 }

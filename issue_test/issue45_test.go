@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
+    . `github.com/bytedance/sonic`
     `fmt`
     `sync`
     `testing`

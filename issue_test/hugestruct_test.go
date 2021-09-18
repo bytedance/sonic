@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 type HugeStruct0 struct {
 	Field0 map[string]*int64 `json:"field_0,omitempty"`

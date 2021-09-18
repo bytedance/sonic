@@ -14,17 +14,29 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
+    . `github.com/bytedance/sonic`
     `testing`
 
-    `github.com/bytedance/sonic/encoder`
     `github.com/stretchr/testify/require`
 )
 
-func TestIssue98_SingleElementMapWithKeySorting(t *testing.T) {
-    v, err := encoder.Encode(map[int64]bool{1234: true}, encoder.SortMapKeys)
+type (
+    Issue58ValueReceiver   struct {}
+    Issue58PointerReceiver struct {}
+)
+
+func (_ Issue58ValueReceiver) MarshalJSON() ([]byte, error)    { return []byte(`"value"`), nil }
+func (_ *Issue58PointerReceiver) MarshalJSON() ([]byte, error) { return []byte(`"pointer"`), nil }
+
+func TestIssue58_NilPointerOnValueMethod(t *testing.T) {
+    v := struct {
+        X *Issue58ValueReceiver
+        Y *Issue58PointerReceiver
+    }{}
+    buf, err := Marshal(v)
     require.NoError(t, err)
-    require.Equal(t, `{"1234":true}`, string(v))
+    require.Equal(t, []byte(`{"X":null,"Y":"pointer"}`), buf)
 }

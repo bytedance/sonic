@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-package sonic
+
+package issue_test
 
 import (
-    "encoding/json"
-    "fmt"
-    "testing"
+    `testing`
+    . `github.com/bytedance/sonic`
+
+    `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/require`
 )
 
-func TestUnmarshalInfinity(t *testing.T) {
+func TestIssue101_UnmarshalMWithNumber(t *testing.T) {
     var v interface{}
-    data := []byte("9e370")
-    sonicerr := Unmarshal(data, &v)
-    stderr := json.Unmarshal(data, &v)
-    if sonicerr == nil && stderr != nil {
-        t.Errorf("should have unmarshal error like %#v\n", stderr)
-    }
-    fmt.Println(sonicerr, stderr)
+    err := Unmarshal([]byte("M10"), &v) // MIJ`
+    spew.Dump(v)
+    require.Error(t, err)
 }

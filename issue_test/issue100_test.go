@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
-    stdjson `encoding/json`
-    `fmt`
-    `reflect`
-    _ `sync`
-    `testing`
-    `unsafe`
+    . `github.com/bytedance/sonic`
+	`fmt`
+	`reflect`
+	_ `sync`
+	`testing`
+	`unsafe`
+
+	stdjson `encoding/json`
 )
 
 func TestLargeMapValue(t *testing.T) {

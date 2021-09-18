@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
-    `reflect`
-    `sync`
+    . `github.com/bytedance/sonic`
     `testing`
 
     `github.com/stretchr/testify/require`
 )
 
-func TestIssue27_EmptySlice(t *testing.T) {
-    _ = Pretouch(reflect.TypeOf([]*int{}))
-    wg := sync.WaitGroup{}
-    for i := 0; i < 1000; i++ {
-        wg.Add(1)
-        go func() {
-            defer wg.Done()
-            v := make([]*int, 16)
-            err := UnmarshalString(`[null, null]`, &v)
-            require.NoError(t, err)
-            require.Equal(t, []*int{nil, nil}, v)
-        }()
-    }
-    wg.Wait()
+func TestIssue5(t *testing.T) {
+    var x int
+    var i interface{} = &x
+    err := Unmarshal([]byte(`1`), &i)
+    require.NoError(t, err)
+    require.Equal(t, 1, x)
 }

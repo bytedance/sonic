@@ -14,38 +14,20 @@
  * limitations under the License.
  */
 
-package sonic
+package issue_test
 
 import (
+    . `github.com/bytedance/sonic`
     `encoding/json`
-    `fmt`
     `testing`
-
-    `github.com/davecgh/go-spew/spew`
 )
 
-type SingleMapField struct {
-    Z *int
-}
-
-type SingleMapFieldOuter struct {
-    Y *SingleMapField
-}
-
-type SingleMapFieldOuterContainer struct {
-    X *SingleMapFieldOuter
-}
-
-func TestIssue76_MarshalSingleMapField(t *testing.T) {
-    data := `{"X": {"Y": {"Z": 1}}}`
-    obj := new(SingleMapFieldOuterContainer)
-    if err := json.Unmarshal([]byte(data), obj); err != nil {
-        t.Fatal(err)
+func TestIssue67_JunkAfterJSON(t *testing.T) {
+    data := `1e2e3`
+    var stdobj, sonicobj interface{}
+    stderr := json.Unmarshal([]byte(data), &stdobj)
+    sonicerr := Unmarshal([]byte(data), &sonicobj)
+    if (stderr == nil) != (sonicerr == nil) {
+        t.Fatalf("exp err: \n%#v, \ngot err: \n%#v\n", stderr, sonicerr)
     }
-    spew.Dump(obj)
-    buf, err := Marshal(obj)
-    if err != nil {
-        t.Fatal(err)
-    }
-    fmt.Println(string(buf))
 }
