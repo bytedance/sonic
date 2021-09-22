@@ -873,7 +873,7 @@ static inline long skip_number(const char *sp, size_t nb) {
     }
 
     /* special case of '0' */
-    if (*sp == '0' && (nb == 1 || sp[1] != '.')) {
+    if (*sp == '0' && (nb == 1 || (sp[1] != '.' && sp[1] != 'e' && sp[1] != 'E'))) {
         return 1;
     }
 
