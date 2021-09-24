@@ -588,10 +588,6 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
             if (unlikely(!(flags & F_UNIREP))) {
                 *ep = sp - s - 4;
                 return -ERR_UNICODE;
-            } else if (likely(r1 >= 0xd800 && r1 <= 0xdfff)) {
-                unirep(&dp);
-                unirep(&dp);
-                continue;
             } else {
                 r0 = r1;
                 unirep(&dp);
