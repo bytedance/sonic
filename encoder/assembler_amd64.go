@@ -232,8 +232,6 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_is_zero_4      : (*_Assembler)._asm_OP_is_zero_4,
     _OP_is_zero_8      : (*_Assembler)._asm_OP_is_zero_8,
     _OP_is_zero_map    : (*_Assembler)._asm_OP_is_zero_map,
-    _OP_is_zero_mem    : (*_Assembler)._asm_OP_is_zero_mem,
-    _OP_is_zero_safe   : (*_Assembler)._asm_OP_is_zero_safe,
     _OP_goto           : (*_Assembler)._asm_OP_goto,
     _OP_map_iter       : (*_Assembler)._asm_OP_map_iter,
     _OP_map_stop       : (*_Assembler)._asm_OP_map_stop,
@@ -698,79 +696,6 @@ func (self *_Assembler) encode_string(doubleQuote bool) {
     }
 }
 
-/** Zero Value Check Routine **/
-
-func (self *_Assembler) check_zero(nb int, dest int) {
-    i := int64(0)
-    e := int64(nb)
-
-    /* special case: zero-sized value, always empty */
-    if e == 0 {
-        return
-    }
-
-    /* 32-byte test */
-    for i <= e - 32 {
-        self.Emit("VMOVDQU", jit.Ptr(_SP_p, i), _Y0)    // VMOVDQU (SP.p), Y0
-        self.Emit("VPTEST" , _Y0, _Y0)                  // VPTEST  Y0, Y0
-        self.Sjmp("JNZ"    , "_not_zero_z_{n}")         // JNZ     _not_zero_z_{n}
-        i += 32
-    }
-
-    /* VZEROUPPER to avoid AVX-SSE transition penalty */
-    if e >= 32 {
-        self.Emit("VZEROUPPER")
-    }
-
-    /* 16-byte test */
-    if i <= e - 16 {
-        self.Emit("MOVOU", jit.Ptr(_SP_p, i), _X0)  // MOVOU (SP.p), X0
-        self.Emit("PTEST", _X0, _X0)                // PTEST X0, X0
-        self.Sjmp("JNZ"  , "_not_zero_{n}")         // JNZ   _not_zero_{n}
-        i += 16
-    }
-
-    /* 8-byte test */
-    if i <= e - 8 {
-        self.Emit("CMPQ", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPQ i(SP.p), $0
-        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
-        i += 8
-    }
-
-    /* 4 byte test */
-    if i <= e - 4 {
-        self.Emit("CMPL", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPL i(SP.p), $0
-        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
-        i += 4
-    }
-
-    /* 2 byte test */
-    if i <= e - 2 {
-        self.Emit("CMPW", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPW i(SP.p), $0
-        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
-        i += 2
-    }
-
-    /* the last byte */
-    if i < e {
-        self.Emit("CMPB", jit.Ptr(_SP_p, i), jit.Imm(0))    // CMPB i(SP.p), $0
-        self.Sjmp("JNE" , "_not_zero_{n}")                  // JNE  _not_zero_{n}
-    }
-
-    /* value is not zero */
-    if e < 32 {
-        self.Xjmp("JMP", dest)
-        self.Link("_not_zero_{n}")
-        return
-    }
-
-    /* VZEROUPPER to avoid AVX-SSE transition penalty */
-    self.Xjmp("JMP", dest)
-    self.Link("_not_zero_z_{n}")
-    self.Emit("VZEROUPPER")
-    self.Link("_not_zero_{n}")
-}
-
 /** OpCode Assembler Functions **/
 
 var (
@@ -787,7 +712,6 @@ var (
 
 var (
     _F_memmove       = jit.Func(memmove)
-    _F_isZeroTyped   = jit.Func(isZeroTyped)
     _F_error_number  = jit.Func(error_number)
     _F_isValidNumber = jit.Func(isValidNumber)
 )
@@ -1090,20 +1014,6 @@ func (self *_Assembler) _asm_OP_is_zero_map(p *_Instr) {
     self.Xjmp("JZ"   , p.vi())                          // JZ    p.vi()
     self.Emit("CMPQ" , jit.Ptr(_AX, 0), jit.Imm(0))     // CMPQ  (AX), $0
     self.Xjmp("JE"   , p.vi())                          // JE    p.vi()
-}
-
-func (self *_Assembler) _asm_OP_is_zero_mem(p *_Instr) {
-    self.check_zero(p.vlen(), p.vi())
-}
-
-func (self *_Assembler) _asm_OP_is_zero_safe(p *_Instr) {
-    self.check_zero(p.vlen(), p.vi())                   // CHECKZ  $p.vlen(), p.vi()
-    self.Emit("MOVQ", jit.Type(p.vt()), _AX)            // MOVQ    $p.vt(), AX
-    self.Emit("MOVQ", _SP_p, jit.Ptr(_SP, 0))           // MOVQ    SP.p, (SP)
-    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))             // MOVQ    AX, 8(SP)
-    self.call_go(_F_isZeroTyped)                        // CALL_GO isZeroTyped
-    self.Emit("CMPQ", jit.Ptr(_SP, 16), jit.Imm(0))     // CMPQ    16(SP), $0
-    self.Xjmp("JNE" , p.vi())                           // JNE     p.vi()
 }
 
 func (self *_Assembler) _asm_OP_goto(p *_Instr) {
