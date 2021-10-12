@@ -19,7 +19,6 @@ package encoder
 import (
     `encoding`
     `encoding/json`
-    `reflect`
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
@@ -92,74 +91,4 @@ func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler) error {
     } else {
         return encodeString(buf, rt.Mem2Str(ret))
     }
-}
-
-func isZeroSafe(p unsafe.Pointer, vt *rt.GoType) bool {
-    if native.Lzero(p, int(vt.Size)) == 0 {
-        return true
-    } else {
-        return isZeroTyped(p, vt)
-    }
-}
-
-func isZeroTyped(p unsafe.Pointer, vt *rt.GoType) bool {
-    switch vt.Kind() {
-        case reflect.Map       : return (*(**rt.GoMap)(p)).Count == 0
-        case reflect.Slice     : return (*rt.GoSlice)(p).Len == 0
-        case reflect.String    : return (*rt.GoString)(p).Len == 0
-        case reflect.Struct    : return isZeroStruct(p, vt)
-        case reflect.Interface : return (*rt.GoEface)(p).Value == nil
-        default                : return false
-    }
-}
-
-func isZeroStruct(p unsafe.Pointer, vt *rt.GoType) bool {
-    var dp uintptr
-    var fp unsafe.Pointer
-
-    /* check for each field */
-    for _, fv := range (*rt.GoStructType)(unsafe.Pointer(vt)).Fields {
-        dp = fv.OffEmbed >> 1
-        fp = unsafe.Pointer(uintptr(p) + dp)
-
-        /* check for the field */
-        if !isZeroSafe(fp, fv.Type) {
-            return false
-        }
-    }
-
-    /* all tests are passed */
-    return true
-}
-
-func isTrivialZeroable(vt reflect.Type) bool {
-    switch vt.Kind() {
-        case reflect.Bool      : return true
-        case reflect.Int       : return true
-        case reflect.Int8      : return true
-        case reflect.Int16     : return true
-        case reflect.Int32     : return true
-        case reflect.Int64     : return true
-        case reflect.Uint      : return true
-        case reflect.Uint8     : return true
-        case reflect.Uint16    : return true
-        case reflect.Uint32    : return true
-        case reflect.Uint64    : return true
-        case reflect.Uintptr   : return true
-        case reflect.Float32   : return true
-        case reflect.Float64   : return true
-        case reflect.String    : return false
-        case reflect.Array     : return true
-        case reflect.Interface : return false
-        case reflect.Map       : return false
-        case reflect.Ptr       : return true
-        case reflect.Slice     : return false
-        case reflect.Struct    : return isStructTrivialZeroable(vt)
-        default                : return false
-    }
-}
-
-func isStructTrivialZeroable(vt reflect.Type) bool {
-    for i := 0; i < vt.NumField(); i++ { if !isTrivialZeroable(vt.Field(i).Type) { return false } }
-    return true
 }

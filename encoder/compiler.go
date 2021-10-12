@@ -64,8 +64,6 @@ const (
     _OP_is_zero_4
     _OP_is_zero_8
     _OP_is_zero_map
-    _OP_is_zero_mem
-    _OP_is_zero_safe
     _OP_goto
     _OP_map_iter
     _OP_map_stop
@@ -127,8 +125,6 @@ var _OpNames = [256]string {
     _OP_is_zero_4      : "is_zero_4",
     _OP_is_zero_8      : "is_zero_8",
     _OP_is_zero_map    : "is_zero_map",
-    _OP_is_zero_mem    : "is_zero_mem",
-    _OP_is_zero_safe   : "is_zero_safe",
     _OP_goto           : "goto",
     _OP_map_iter       : "map_iter",
     _OP_map_stop       : "map_stop",
@@ -259,8 +255,6 @@ func (self _Instr) isBranch() bool {
         case _OP_is_zero_2     : fallthrough
         case _OP_is_zero_4     : fallthrough
         case _OP_is_zero_8     : fallthrough
-        case _OP_is_zero_mem   : fallthrough
-        case _OP_is_zero_safe  : fallthrough
         case _OP_map_check_key : fallthrough
         case _OP_map_write_key : fallthrough
         case _OP_slice_next    : fallthrough
@@ -291,8 +285,6 @@ func (self _Instr) disassemble() string {
         case _OP_cond_testc     : fallthrough
         case _OP_map_check_key  : fallthrough
         case _OP_map_write_key  : return fmt.Sprintf("%-18sL_%d", self.op().String(), self.vi())
-        case _OP_is_zero_mem    : fallthrough
-        case _OP_is_zero_safe   : fallthrough
         case _OP_slice_next     : return fmt.Sprintf("%-18sL_%d, %s", self.op().String(), self.vi(), self.vt())
         default                 : return self.op().String()
     }
@@ -686,7 +678,7 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
         }
 
         /* check for "omitempty" option */
-        if (fv.Opts & resolver.F_omitempty) != 0 {
+        if fv.Type.Kind() != reflect.Struct && fv.Type.Kind() != reflect.Array && (fv.Opts & resolver.F_omitempty) != 0 {
             s = append(s, p.pc())
             self.compileStructFieldZero(p, fv.Type)
         }
@@ -799,7 +791,6 @@ func (self *_Compiler) compileStructFieldZero(p *_Program, vt reflect.Type) {
         case reflect.Map       : p.add(_OP_is_zero_map)
         case reflect.Ptr       : p.add(_OP_is_nil)
         case reflect.Slice     : p.add(_OP_is_nil_p1)
-        case reflect.Struct    : self.compileStructFieldNonTrivialZero(p, vt)
         default                : panic(error_type(vt))
     }
 }
@@ -808,14 +799,6 @@ func (self *_Compiler) compileStructFieldQuoted(p *_Program, sp int, vt reflect.
     p.int(_OP_byte, '"')
     self.compileOne(p, sp, vt, self.pv)
     p.int(_OP_byte, '"')
-}
-
-func (self *_Compiler) compileStructFieldNonTrivialZero(p *_Program, vt reflect.Type) {
-    if isTrivialZeroable(vt) {
-        p.rtt(_OP_is_zero_mem, vt)
-    } else {
-        p.rtt(_OP_is_zero_safe, vt)
-    }
 }
 
 func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
