@@ -18,9 +18,9 @@ package issue_test
 
 import (
     . `github.com/bytedance/sonic`
-    "encoding/json"
-    "fmt"
-    "testing"
+    `encoding/json`
+    `fmt`
+    `testing`
 )
 
 func TestUnmarshalInfinity(t *testing.T) {

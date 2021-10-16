@@ -27,7 +27,7 @@ import (
 )
 
 type _MapPair struct {
-    k string
+    k string  // when the map key is integer, k is pointed to m
     v unsafe.Pointer
     m [32]byte
 }
