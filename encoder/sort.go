@@ -19,12 +19,16 @@ package encoder
 // Algorithm 3-way Radix Quicksort, d means the radix.
 // Reference: https://algs4.cs.princeton.edu/51radix/Quick3string.java.html
 func radixQsort(kvs []_MapPair, d, maxDepth int) {
-    if maxDepth == 0 {
-        heapSort(kvs, 0, len(kvs))
-        return
-    }
-    maxDepth--
     for len(kvs) > 11 {
+        // To avoid the worst case of quickSort (time: O(n^2)), use introsort here.
+        // Reference: https://en.wikipedia.org/wiki/Introsort and
+        // https://github.com/golang/go/issues/467
+        if maxDepth == 0 {
+            heapSort(kvs, 0, len(kvs))
+            return
+        }
+        maxDepth--
+
         p := pivot(kvs, d)
         lt, i, gt := 0, 0, len(kvs)
         for i < gt {
@@ -42,13 +46,13 @@ func radixQsort(kvs []_MapPair, d, maxDepth int) {
         }
 
         // kvs[0:lt] < v = kvs[lt:gt] < kvs[gt:len(kvs)]
-        // Native:
-        // radixQsort(kvs[:lt], d, maxDepth)
-        // if p > -1 {
-        //     radixQsort(kvs[lt:gt], d+1, maxDepth)
-        // }
-        // radixQsort(kvs[gt:], d, maxDepth)
-        // Optimize: make recursive calls only for the smaller parts.
+        // Native implemention:
+        //     radixQsort(kvs[:lt], d, maxDepth)
+        //     if p > -1 {
+        //         radixQsort(kvs[lt:gt], d+1, maxDepth)
+        //     }
+        //     radixQsort(kvs[gt:], d, maxDepth)
+        // Optimize as follows: make recursive calls only for the smaller parts.
         // Reference: https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/
         if p == -1 {
             if lt > len(kvs) - gt {
@@ -82,7 +86,7 @@ func radixQsort(kvs []_MapPair, d, maxDepth int) {
 func insertRadixSort(kvs []_MapPair, d int) {
     for i := 1; i < len(kvs); i++ {
         for j := i; j > 0 && lessFrom(kvs[j].k, kvs[j-1].k, d); j-- {
-            kvs[j], kvs[j-1] = kvs[j-1], kvs[j]
+            swap(kvs, j, j-1)
         }
     }
 }
@@ -173,8 +177,10 @@ func heapSort(kvs []_MapPair, a, b int) {
     }
 }
 
+// Note that _MapPair.k is NOT pointed to _MapPair.m when map key is integer after swap
 func swap(kvs []_MapPair, a, b int) {
-    kvs[a], kvs[b] = kvs[b], kvs[a]
+    kvs[a].k, kvs[b].k = kvs[b].k, kvs[a].k
+    kvs[a].v, kvs[b].v = kvs[b].v, kvs[a].v
 }
 
 // Compare two strings from the pos d.

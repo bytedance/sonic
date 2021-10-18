@@ -17,10 +17,11 @@
 package issue_test
 
 import (
+    `encoding/json`
+    `reflect`
+    `testing`
+
     . `github.com/bytedance/sonic`
-    "encoding/json"
-    "reflect"
-    "testing"
 )
 
 func TestFloat(t *testing.T) {
