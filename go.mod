@@ -3,7 +3,7 @@ module github.com/bytedance/sonic
 go 1.15
 
 require (
-	github.com/chenzhuoyu/base64x v0.0.0-20210823082418-56861234f7ea
+	github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06
 	github.com/davecgh/go-spew v1.1.1
 	github.com/goccy/go-json v0.7.2
 	github.com/json-iterator/go v1.1.10
