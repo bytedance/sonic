@@ -17,18 +17,103 @@
 package ast
 
 import (
-	`encoding/json`
-	`fmt`
-	`reflect`
-	`strconv`
-	`testing`
+    `encoding/json`
+    `fmt`
+    `reflect`
+    `strconv`
+    `testing`
 
-	`github.com/bytedance/sonic/internal/native/types`
-	jsoniter `github.com/json-iterator/go`
-	`github.com/stretchr/testify/assert`
+    `github.com/bytedance/sonic/internal/native/types`
+    jsoniter `github.com/json-iterator/go`
+    `github.com/stretchr/testify/assert`
 )
 
 var parallelism = 4
+
+func TestLoadAll(t *testing.T) {
+    e := Node{}
+    err := e.Load()
+    if err != ErrNotExist {
+        t.Fatal(err)
+    }
+    err = e.LoadAll()
+    if err != ErrNotExist {
+        t.Fatal(err)
+    }
+
+    root, err := NewSearcher(`{"a":{"1":[1],"2":2},"b":[{"1":1},2],"c":[1,2]}`).GetByPath()
+    if err != nil {
+        t.Fatal(err)
+    }
+    if err = root.Load(); err != nil {
+        t.Fatal(err)
+    }
+    if root.len() != 3 {
+        t.Fatal(root.len())
+    }
+
+    c := root.Get("c")
+    if !c.IsRaw() {
+        t.Fatal(err)
+    }
+    err = c.LoadAll()
+    if err != nil {
+        t.Fatal(err)
+    }
+    if c.len() != 2 {
+        t.Fatal(c.len())
+    }
+    c1 := c.nodeAt(0)
+    if n, err := c1.Int64(); err != nil || n != 1 {
+        t.Fatal(n, err)
+    }
+
+    a := root.pairAt(0)
+    if a.Key != "a" {
+        t.Fatal(a.Key)
+    } else if !a.Value.IsRaw() {
+        t.Fatal(a.Value.itype())
+    } else if n, err := a.Value.Len(); n != 0 || err != nil {
+        t.Fatal(n, err)
+    }
+    if err := a.Value.Load(); err != nil {
+        t.Fatal(err)
+    }
+    if a.Value.len() != 2 {
+        t.Fatal(a.Value.len())
+    }
+    a1 := a.Value.Get("1")
+    if !a1.IsRaw() {
+        t.Fatal(a1)
+    }
+    a.Value.LoadAll()
+    if a1.t != types.V_ARRAY || a1.len() != 1 {
+        t.Fatal(a1.t, a1.len())
+    }
+
+    b := root.pairAt(1)
+    if b.Key != "b" {
+        t.Fatal(b.Key)
+    } else if !b.Value.IsRaw() {
+        t.Fatal(b.Value.itype())
+    } else if n, err := b.Value.Len(); n != 0 || err != nil {
+        t.Fatal(n, err)
+    }
+    if err := b.Value.Load(); err != nil {
+        t.Fatal(err)
+    }
+    if b.Value.len() != 2 {
+        t.Fatal(b.Value.len())
+    }
+    b1 := b.Value.Index(0)
+    if !b1.IsRaw() {
+        t.Fatal(b1)
+    }
+    b.Value.LoadAll()
+    if b1.t != types.V_OBJECT || b1.len() != 1 {
+        t.Fatal(a1.t, a1.len())
+    }
+}
 
 func TestIndexPair(t *testing.T) {
     root, _ := NewParser(`{"a":1,"b":2}`).Parse()
@@ -130,10 +215,27 @@ func TestTypeCast(t *testing.T) {
 }
 
 func TestCheckError(t *testing.T) {
+    n := newRawNode("[hello]", types.V_ARRAY)
+    n.parseRaw(false)
+    if n.Check() != nil {
+        t.Fatal(n.Check())
+    }
+    n = newRawNode("[hello]", types.V_ARRAY)
+    n.parseRaw(true)
+    p := NewParser("[hello]")
+    p.noLazy = true
+    p.skipValue = false
+    _, x := p.Parse()
+    if n.Error() != newSyntaxError(p.syntaxError(x)).Error() {
+        t.Fatal(n.Check())
+    }
+
+
     s, err := NewParser(`{"a":{}, "b":talse, "c":{}}`).Parse()
     if err != 0 {
         t.Fatal(err)
     }
+
     root := s.GetByPath()
     // fmt.Println(root.Check())
     a := root.Get("a")
@@ -664,6 +766,68 @@ func TestNodeAdd(t *testing.T) {
     if val2 != "c" {
         t.Fatalf("exp:%+v, got:%+v", "c", val2)
     }
+}
+
+func BenchmarkLoadNode(b *testing.B) {
+    b.Run("Interface()", func(b *testing.B) {
+        b.SetParallelism(parallelism)
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        b.RunParallel(func(pb *testing.PB) {
+            for pb.Next() {
+                root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+                if err != nil {
+                    b.Fatal(err)
+                }
+                _, _ = root.Interface()
+            }
+        })
+    })
+
+    b.Run("LoadAll()", func(b *testing.B) {
+        b.SetParallelism(parallelism)
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        b.RunParallel(func(pb *testing.PB) {
+            for pb.Next() {
+                root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+                if err != nil {
+                    b.Fatal(err)
+                }
+                _ = root.LoadAll()
+            }
+        })
+    })
+
+    b.Run("InterfaceUseNode()", func(b *testing.B) {
+        b.SetParallelism(parallelism)
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        b.RunParallel(func(pb *testing.PB) {
+            for pb.Next() {
+                root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+                if err != nil {
+                    b.Fatal(err)
+                }
+                _, _ = root.InterfaceUseNode()
+            }
+        })
+    })
+
+    b.Run("Load()", func(b *testing.B) {
+        b.SetParallelism(parallelism)
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        b.RunParallel(func(pb *testing.PB) {
+            for pb.Next() {
+                root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+                if err != nil {
+                    b.Fatal(err)
+                }
+                _ = root.Load()
+            }
+        })
+    })
 }
 
 func BenchmarkNodeGetByPath(b *testing.B) {

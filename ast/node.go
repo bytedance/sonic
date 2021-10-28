@@ -145,7 +145,7 @@ func (self *Node) Raw() (string, error) {
 
 func (self *Node) checkRaw() error {
     if self.IsRaw() {
-        *self = self.parseRaw()
+        self.parseRaw(false)
     }
     if err := self.Check(); err != nil {
         return err
@@ -664,6 +664,64 @@ func (self *Node) InterfaceUseNode() (interface{}, error) {
             return self.toGenericObjectUseNode()
         default              : return *self, nil
     }
+}
+
+// LoadAll loads all the node's children and children's children as parsed.
+// After calling it, the node can be safely used on concurrency
+func (self *Node) LoadAll() error {
+	if self.IsRaw() {
+		self.parseRaw(true)
+		return self.Check()
+	}
+
+	switch self.itype() {
+	case types.V_ARRAY:
+		e := self.len()
+		if err := self.loadAllIndex(); err != nil {
+			return err
+		}
+		for i := 0; i < e; i++ {
+			n := self.nodeAt(i)
+			n.parseRaw(true)
+			if err := n.Check(); err != nil {
+				return err
+			}
+		}
+		return nil
+	case types.V_OBJECT:
+		e := self.len()
+		if err := self.loadAllKey(); err != nil {
+			return err
+		}
+		for i := 0; i < e; i++ {
+			n := self.pairAt(i)
+			n.Value.parseRaw(true)
+			if err := n.Value.Check(); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		return self.Check()
+	}
+}
+
+// Load loads the node's children as parsed.
+// After calling it, only the node itself can be used on concurrency (not include its children)
+func (self *Node) Load() error {
+	if self.IsRaw() {
+		self.parseRaw(false)
+		return self.Load()
+	}
+
+	switch self.t {
+	case _V_ARRAY_LAZY:
+		return self.skipAllIndex()
+	case _V_OBJECT_LAZY:
+		return self.skipAllKey()
+	default:
+		return self.Check()
+	}
 }
 
 /**---------------------------------- Internal Helper Methods ----------------------------------**/
@@ -1402,14 +1460,18 @@ func newRawNode(str string, typ types.ValueType) Node {
     }
 }
 
-func (self *Node) parseRaw() Node {
+func (self *Node) parseRaw(full bool) {
     raw := addr2str(self.p, self.v)
     parser := NewParser(raw)
-    n, e := parser.Parse()
-    if e != 0 {
-        return *newSyntaxError(parser.syntaxError(e))
+    if full {
+        parser.noLazy = true
+        parser.skipValue = false
     }
-    return n
+    var e types.ParsingError
+    *self, e = parser.Parse()
+    if e != 0 {
+        *self = *newSyntaxError(parser.syntaxError(e))
+    }
 }
 
 func newError(err types.ParsingError, msg string) *Node {
