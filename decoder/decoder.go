@@ -19,6 +19,7 @@ package decoder
 import (
     `encoding/json`
     `reflect`
+    `runtime`
 
     `github.com/bytedance/sonic/internal/rt`
 )
@@ -70,6 +71,9 @@ func (self *Decoder) Decode(val interface{}) error {
     /* return the stack back */
     self.i = nb
     freeStack(sb)
+
+    /* avoid GC ahead */
+    runtime.KeepAlive(vv)
     return err
 }
 

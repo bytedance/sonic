@@ -20,6 +20,7 @@ import (
     `bytes`
     `encoding/json`
     `reflect`
+    `runtime`
 
     `github.com/bytedance/sonic/internal/rt`
 )
@@ -102,6 +103,9 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
 
     /* return the stack into pool */
     freeStack(stk)
+
+    /* avoid GC ahead */
+    runtime.KeepAlive(efv)
     return err
 }
 
