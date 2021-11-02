@@ -78,6 +78,7 @@ const (
     _OP_marshal_text_p
     _OP_cond_set
     _OP_cond_testc
+    _OP_force_gc
 )
 
 const (

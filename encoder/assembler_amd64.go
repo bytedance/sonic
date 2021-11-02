@@ -21,7 +21,8 @@ import (
     `reflect`
     `strconv`
     `unsafe`
-
+    `runtime`
+    `runtime/debug`
     `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native/types`
@@ -246,6 +247,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_marshal_text_p : (*_Assembler)._asm_OP_marshal_text_p,
     _OP_cond_set       : (*_Assembler)._asm_OP_cond_set,
     _OP_cond_testc     : (*_Assembler)._asm_OP_cond_testc,
+    _OP_force_gc       : (*_Assembler)._asm_OP_force_gc,
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -256,10 +258,18 @@ func (self *_Assembler) instr(v *_Instr) {
     }
 }
 
+var _Instr_End _Instr = newInsOp(_OP_null)
+
 func (self *_Assembler) instrs() {
     for i, v := range self.p {
         self.Mark(i)
         self.instr(&v)
+        if (i+1 == len(self.p)) {
+            self.print(i, &v, &_Instr_End) 
+        } else {
+            self.print(i, &v, &(self.p[i+1]))
+        }
+        self.force_gc()
     }
 }
 
@@ -1107,4 +1117,32 @@ func (self *_Assembler) _asm_OP_cond_set(_ *_Instr) {
 func (self *_Assembler) _asm_OP_cond_testc(p *_Instr) {
     self.Emit("BTRQ", jit.Imm(_S_cond), _SP_f)      // BTRQ $_S_cond, SP.f
     self.Xjmp("JC"  , p.vi())
+}
+
+var (
+    _F_gc       = jit.Func(runtime.GC)
+    _F_force_gc = jit.Func(debug.FreeOSMemory)
+    _F_println  = jit.Func(println_wrapper)
+)
+
+func (self *_Assembler) _asm_OP_force_gc(_ *_Instr) {
+    self.call_go(_F_gc)
+    self.call_go(_F_force_gc)
+}
+
+func (self *_Assembler) force_gc() {
+    // self.NOP()
+    self.call_go(_F_gc)
+    self.call_go(_F_force_gc)
+}
+
+func (self *_Assembler) print(i int, p1 *_Instr, p2 *_Instr) {
+    self.Emit("MOVQ", jit.Imm(int64(p2.op())),  jit.Ptr(_SP, 16))// MOVQ $(p2.op()), 16(SP)
+    self.Emit("MOVQ", jit.Imm(int64(p1.op())),  jit.Ptr(_SP, 8)) // MOVQ $(p1.op()), 8(SP)
+    self.Emit("MOVQ", jit.Imm(int64(i)),  jit.Ptr(_SP, 0))       // MOVQ $(i), (SP)
+    self.call_go(_F_println)
+}
+
+func println_wrapper(i int, op1 int, op2 int){
+    println(i, " Intrs ", op1, _OpNames[op1], "next: ", op2, _OpNames[op2])
 }
