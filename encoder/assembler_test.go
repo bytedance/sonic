@@ -362,6 +362,8 @@ func TestAssembler_TwitterJSON_Generic(t *testing.T) {
     e := f(&m, unsafe.Pointer(&v), s, 0)
     assert.Nil(t, e)
     println(string(m))
+    runtime.KeepAlive(v)
+    runtime.KeepAlive(s)
 }
 
 func TestAssembler_TwitterJSON_Structure(t *testing.T) {

@@ -129,6 +129,7 @@ func (self *_MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Po
 
 func iteratorStop(p *_MapIterator) {
     iteratorPool.Put(p)
+    //_ = p
 }
 
 func iteratorNext(p *_MapIterator) {

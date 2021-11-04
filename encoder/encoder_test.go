@@ -17,14 +17,89 @@
 package encoder
 
 import (
-    `encoding/json`
-    `strconv`
-    `testing`
+	`encoding/json`
+	`fmt`
+	`runtime`
+	`runtime/debug`
+	`strconv`
+	`testing`
 
-    gojson `github.com/goccy/go-json`
-    `github.com/json-iterator/go`
-    `github.com/stretchr/testify/require`
+	//`time`
+	`unsafe`
+
+	`github.com/bytedance/sonic/internal/rt`
+	gojson `github.com/goccy/go-json`
+	`github.com/json-iterator/go`
+	`github.com/stretchr/testify/assert`
+	`github.com/stretchr/testify/require`
 )
+
+func TestStackMark(t *testing.T) {
+
+    st := new(_Stack)
+    it := new(_MapIterator)
+    fmt.Printf("new iterator: %x\n", unsafe.Pointer(it))
+    i := 0 
+    runtime.SetFinalizer(it, func(it *_MapIterator){
+        fmt.Printf("iterator got dropped: %x\n", unsafe.Pointer(it))
+        if i != 2 {
+            t.Fatal(i)
+        }
+    })
+    runtime.GC()
+    debug.FreeOSMemory()
+
+    testOpCodeStack(t, it, "", nil, []_Instr{newInsOp(_OP_test_iter)}, st)
+
+    println("first GC")
+    i++
+    runtime.GC()
+    debug.FreeOSMemory()
+
+    freeStack(st)
+    println("second GC")
+    i++
+    runtime.GC()
+    debug.FreeOSMemory()
+}
+
+func testOpCodeStack(t *testing.T, v interface{}, ex string, err error, ins _Program, s *_Stack) {
+    p := ins
+    m := []byte(nil)
+    a := newAssembler(p)
+    f := a.Load()
+    e := f(&m, rt.UnpackEface(v).Value, s, 0)
+    if err != nil {
+        assert.EqualError(t, e, err.Error())
+    } else {
+        assert.Nil(t, e)
+        assert.Equal(t, ex, string(m))
+    }
+}
+
+func TestMain(t *testing.M) {
+    debug.SetGCPercent(-1)
+    println("stop GC")
+
+    // var stop bool
+    // timer := time.After(15 * time.Second)
+
+    // go func ()  {
+    //     println("begin GC loop...")
+    //     for !stop {
+    //         runtime.GC()
+    //         debug.FreeOSMemory()
+    //     }
+    //     println("stop GC loop")
+    // }()
+
+    // go func() {
+    //     <- timer
+    //     stop = true
+    // }()
+
+    t.Run()
+}
 
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {
     require.Equal(t, exp, fn(arg))

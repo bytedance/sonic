@@ -17,19 +17,22 @@
 package decoder
 
 import (
-    `encoding/json`
-    `fmt`
-    `math`
-    `reflect`
-    `unsafe`
+	"encoding/json"
+	"fmt"
+	"math"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"strings"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/twitchyliquid64/golang-asm/obj`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/cpu"
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 /** Register Allocations
@@ -289,7 +292,63 @@ func (self *_Assembler) instrs() {
     for i, v := range self.p {
         self.Mark(i)
         self.instr(&v)
+        if (i+1 == len(self.p)) {
+            self.print(i, &v, &_Instr_End) 
+        } else {
+            next := &(self.p[i+1])
+            self.print(i, &v, next)
+            name := _OpNames[next.op()]
+            if strings.Contains(name, "save") {
+                continue
+            }
+        }
+        self.force_gc()
     }
+}
+
+var _Instr_End _Instr = newInsOp(_OP_is_null)
+
+var (
+    _F_gc       = jit.Func(runtime.GC)
+    _F_force_gc = jit.Func(debug.FreeOSMemory)
+    _F_println  = jit.Func(println_wrapper)
+    _F_print_ptr  = jit.Func(printPtr)
+)
+
+func (self *_Assembler) _asm_OP_force_gc(_ *_Instr) {
+    self.call_go(_F_gc)
+    self.call_go(_F_force_gc)
+}
+
+func (self *_Assembler) force_gc() {
+    // self.NOP()
+    self.call_go(_F_gc)
+    self.call_go(_F_force_gc)
+}
+
+func (self *_Assembler) print(i int, p1 *_Instr, p2 *_Instr) {
+    self.Emit("MOVQ", jit.Imm(int64(p2.op())),  jit.Ptr(_SP, 16))// MOVQ $(p2.op()), 16(SP)
+    self.Emit("MOVQ", jit.Imm(int64(p1.op())),  jit.Ptr(_SP, 8)) // MOVQ $(p1.op()), 8(SP)
+    self.Emit("MOVQ", jit.Imm(int64(i)),  jit.Ptr(_SP, 0))       // MOVQ $(i), (SP)
+    self.call_go(_F_println)
+}
+
+func (self *_Assembler) print_ptr(ptrs ...obj.Addr) {
+    for i, ptr := range ptrs {
+        self.Emit("MOVQ", ptr,  jit.Ptr(_SP, int64(i*8)))       // MOVQ $(i), (SP)
+        self.call_go(_F_print_ptr)
+    }
+}
+
+func println_wrapper(i int, op1 int, op2 int){
+    println(i, " Intrs ", op1, _OpNames[op1], "next: ", op2, _OpNames[op2])
+}
+
+func printPtr(ptrs [3]uintptr) {
+    for _, ptr := range ptrs {
+        fmt.Printf("%x, ", ptr)
+    }
+    fmt.Println("]")
 }
 
 func (self *_Assembler) epilogue() {

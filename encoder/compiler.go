@@ -79,6 +79,7 @@ const (
     _OP_cond_set
     _OP_cond_testc
     _OP_force_gc
+    _OP_test_iter
 )
 
 const (

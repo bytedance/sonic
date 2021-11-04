@@ -17,20 +17,22 @@
 package encoder
 
 import (
-    `fmt`
-    `reflect`
-    `strconv`
-    `unsafe`
-    `runtime`
-    `runtime/debug`
-    `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/twitchyliquid64/golang-asm/obj`
-    `github.com/twitchyliquid64/golang-asm/obj/x86`
+	`fmt`
+	`reflect`
+	`runtime`
+	`runtime/debug`
+	`strconv`
+	`strings`
+	`unsafe`
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/internal/cpu`
+	`github.com/bytedance/sonic/internal/jit`
+	`github.com/bytedance/sonic/internal/native/types`
+	`github.com/twitchyliquid64/golang-asm/obj`
+	`github.com/twitchyliquid64/golang-asm/obj/x86`
+
+	`github.com/bytedance/sonic/internal/native`
+	`github.com/bytedance/sonic/internal/rt`
 )
 
 /** Register Allocations
@@ -73,7 +75,7 @@ const (
     _FP_args   = 48     // 48 bytes for passing arguments to this function
     _FP_fargs  = 64     // 64 bytes for passing arguments to other Go functions
     _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
-    _FP_locals = 16     // 16 bytes for local variables
+    _FP_locals = 72     // 16 bytes for local variables
 )
 
 const (
@@ -248,6 +250,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_cond_set       : (*_Assembler)._asm_OP_cond_set,
     _OP_cond_testc     : (*_Assembler)._asm_OP_cond_testc,
     _OP_force_gc       : (*_Assembler)._asm_OP_force_gc,
+    _OP_test_iter      : (*_Assembler)._OP_test_iter,
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -260,6 +263,59 @@ func (self *_Assembler) instr(v *_Instr) {
 
 var _Instr_End _Instr = newInsOp(_OP_null)
 
+var (
+    _F_gc       = jit.Func(runtime.GC)
+    _F_force_gc = jit.Func(debug.FreeOSMemory)
+    _F_println  = jit.Func(println_wrapper)
+    _F_print_ptr  = jit.Func(printPtr)
+)
+
+func (self *_Assembler) _asm_OP_force_gc(_ *_Instr) {
+    self.call_go(_F_gc)
+    self.call_go(_F_force_gc)
+}
+
+func println_wrapper(i int, op1 int, op2 int){
+    println(i, " Intrs ", op1, _OpNames[op1], "next: ", op2, _OpNames[op2])
+}
+
+func printPtr(i int, ptrs [3]uintptr) {
+    fmt.Printf("%d: [", i)
+    for _, ptr := range ptrs {
+        fmt.Printf("%x, ", ptr)
+    }
+    fmt.Println("]")
+}
+
+func (self *_Assembler) force_gc() {
+    // self.NOP()
+    self.call_go(_F_gc)
+    self.call_go(_F_force_gc)
+}
+
+func (self *_Assembler) print(i int, p1 *_Instr, p2 *_Instr) {
+    self.Emit("MOVQ", jit.Imm(int64(p2.op())),  jit.Ptr(_SP, 16))// MOVQ $(p2.op()), 16(SP)
+    self.Emit("MOVQ", jit.Imm(int64(p1.op())),  jit.Ptr(_SP, 8)) // MOVQ $(p1.op()), 8(SP)
+    self.Emit("MOVQ", jit.Imm(int64(i)),  jit.Ptr(_SP, 0))       // MOVQ $(i), (SP)
+    self.call_go(_F_println)
+}
+
+func (self *_Assembler) print_ptr(i int, ptrs ...obj.Addr) {
+    self.Emit("MOVQ", _AX, _VAR_gc_X0)
+    self.Emit("MOVQ", jit.Imm(int64(i)), _AX)
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))
+    for i:=0; i<3; i++ {
+        if i<len(ptrs) {
+            self.Emit("MOVQ", ptrs[i],  _AX)      
+            self.Emit("MOVQ", _AX,  jit.Ptr(_SP, int64(i*8+8)))  
+        }else{
+            self.Emit("MOVQ", jit.Imm(0),  jit.Ptr(_SP, int64(i*8+8)))  
+        }
+    }
+    self.call_go(_F_print_ptr)
+    self.Emit("MOVQ", _VAR_gc_X0, _AX)
+}
+
 func (self *_Assembler) instrs() {
     for i, v := range self.p {
         self.Mark(i)
@@ -267,7 +323,12 @@ func (self *_Assembler) instrs() {
         if (i+1 == len(self.p)) {
             self.print(i, &v, &_Instr_End) 
         } else {
-            self.print(i, &v, &(self.p[i+1]))
+            next := &(self.p[i+1])
+            self.print(i, &v, next)
+            name := _OpNames[next.op()]
+            if strings.Contains(name, "save") {
+                continue
+            }
         }
         self.force_gc()
     }
@@ -420,8 +481,8 @@ func (self *_Assembler) save_state() {
     self.Sjmp("JA"  , _LB_error_too_deep)               // JA   _error_too_deep
     self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _AX, 1, 8))   // MOVQ SP.x, 8(ST)(AX)
     self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _AX, 1, 16))  // MOVQ SP.f, 16(ST)(AX)
-    self.Emit("MOVQ", _SP_p, jit.Sib(_ST, _AX, 1, 24))  // MOVQ SP.p, 24(ST)(AX)
-    self.Emit("MOVQ", _SP_q, jit.Sib(_ST, _AX, 1, 32))  // MOVQ SP.q, 32(ST)(AX)
+    self.write_ptr_cx(_SP_p, jit.Sib(_ST, _AX, 1, 24))  // MOVQ SP.p, 24(ST)(AX)
+    self.write_ptr_cx(_SP_q, jit.Sib(_ST, _AX, 1, 32))  // MOVQ SP.q, 32(ST)(AX)
     self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
 }
 
@@ -1032,9 +1093,9 @@ func (self *_Assembler) _asm_OP_goto(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_map_iter(p *_Instr) {
     self.Emit("MOVQ" , jit.Type(p.vt()), _AX)       // MOVQ    $p.vt(), AX
+    self.write_ptr_cx(_AX, jit.Ptr(_SP, 0))        // MOVQ    AX, (SP)
     self.Emit("MOVQ" , jit.Ptr(_SP_p, 0), _CX)      // MOVQ    (SP.p), CX
-    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))        // MOVQ    AX, (SP)
-    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 8))        // MOVQ    CX, 8(SP)
+    self.write_ptr_ax(_CX, jit.Ptr(_SP, 8))        // MOVQ    CX, 8(SP)
     self.Emit("MOVQ" , _ARG_fv, _AX)                // MOVQ    fv, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 16))       // MOVQ    AX, 16(SP)
     self.call_go(_F_iteratorStart)                  // CALL_GO iteratorStart
@@ -1046,9 +1107,12 @@ func (self *_Assembler) _asm_OP_map_iter(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_stop(_ *_Instr) {
-    self.Emit("MOVQ", _SP_q, jit.Ptr(_SP, 0))   // MOVQ    SP.q, 0(SP)
-    self.call_go(_F_iteratorStop)               // CALL_GO iteratorStop
-    self.Emit("XORL", _SP_q, _SP_q)             // XORL    SP.q, SP.q
+    // self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)
+    // self.Emit("LEAQ", jit.Sib(_ST, _CX, 1, 0), _CX)
+    // self.print_ptr(9, _CX, _SP, _SP_q)
+    self.write_ptr_ax(_SP_q, jit.Ptr(_SP, 0))     // MOVQ    SP.q, 0(SP)
+    self.call_go(_F_iteratorStop)                 // CALL_GO iteratorStop
+    self.Emit("XORL", _SP_q, _SP_q)               // XORL    SP.q, SP.q
 }
 
 func (self *_Assembler) _asm_OP_map_check_key(p *_Instr) {
@@ -1067,7 +1131,7 @@ func (self *_Assembler) _asm_OP_map_write_key(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_map_value_next(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_SP_q, 8), _SP_p)     // MOVQ    8(SP.q), SP.p
-    self.Emit("MOVQ", _SP_q, jit.Ptr(_SP, 0))       // MOVQ    SP.q, (SP)
+    self.write_ptr_ax(_SP_q, jit.Ptr(_SP, 0))       // MOVQ    SP.q, (SP)
     self.call_go(_F_iteratorNext)                   // CALL_GO iteratorNext
 }
 
@@ -1120,29 +1184,67 @@ func (self *_Assembler) _asm_OP_cond_testc(p *_Instr) {
 }
 
 var (
-    _F_gc       = jit.Func(runtime.GC)
-    _F_force_gc = jit.Func(debug.FreeOSMemory)
-    _F_println  = jit.Func(println_wrapper)
+    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+
+    _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
+    _F_gcWriteBarrierCX = jit.Func(gcWriteBarrierCX)
+
+    _VAR_gc_DI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
+    _VAR_gc_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
+    _VAR_gc_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
+    _VAR_gc_X0 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
+    _VAR_gc_X1 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
+
+    _R9 = jit.Reg("R9")
+
+    _count = 0
 )
 
-func (self *_Assembler) _asm_OP_force_gc(_ *_Instr) {
-    self.call_go(_F_gc)
-    self.call_go(_F_force_gc)
+func (self *_Assembler) _OP_test_iter(p *_Instr) {
+    self.Emit("MOVQ", _SP_p, _SP_q)
+    self.save_state()
+    self._asm_OP_map_stop(p)
 }
 
-func (self *_Assembler) force_gc() {
-    // self.NOP()
-    self.call_go(_F_gc)
-    self.call_go(_F_force_gc)
+func (self *_Assembler) write_barrier_ax(i int, rec obj.Addr) {
+    self.Emit("MOVQ", _R9, _VAR_gc_R9)
+    self.Emit("MOVQ", _V_writeBarrier, _R9)
+    self.Emit("CMPL", jit.Ptr(_R9, 0), jit.Imm(0))
+    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.print_ptr(1, _AX, rec)
+    self.Emit("MOVQ", _DI, _VAR_gc_DI)
+    self.Emit("LEAQ", rec, _DI)
+    self.Emit("MOVQ", _F_gcWriteBarrierAX, _R9)  // MOVQ ${fn}, AX
+    self.Rjmp("CALL", _R9)      // CALL AX
+    self.Emit("MOVQ", _VAR_gc_DI, _DI)
+    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", _VAR_gc_R9, _R9)
 }
 
-func (self *_Assembler) print(i int, p1 *_Instr, p2 *_Instr) {
-    self.Emit("MOVQ", jit.Imm(int64(p2.op())),  jit.Ptr(_SP, 16))// MOVQ $(p2.op()), 16(SP)
-    self.Emit("MOVQ", jit.Imm(int64(p1.op())),  jit.Ptr(_SP, 8)) // MOVQ $(p1.op()), 8(SP)
-    self.Emit("MOVQ", jit.Imm(int64(i)),  jit.Ptr(_SP, 0))       // MOVQ $(i), (SP)
-    self.call_go(_F_println)
+func (self *_Assembler) write_barrier_cx(i int, rec obj.Addr) {
+    self.Emit("MOVQ", _R9, _VAR_gc_R9)
+    self.Emit("MOVQ", _V_writeBarrier, _R9)
+    self.Emit("CMPL", jit.Ptr(_R9, 0), jit.Imm(0))
+    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", _DI, _VAR_gc_DI)
+    self.Emit("LEAQ", rec, _DI)
+    self.Emit("MOVQ", _F_gcWriteBarrierCX, _R9)  // MOVQ ${fn}, CX
+    self.Rjmp("CALL", _R9)      // CALL CX
+    self.Emit("MOVQ", _VAR_gc_DI, _DI)
+    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", _VAR_gc_R9, _R9)
 }
 
-func println_wrapper(i int, op1 int, op2 int){
-    println(i, " Intrs ", op1, _OpNames[op1], "next: ", op2, _OpNames[op2])
+func (self *_Assembler) write_ptr_ax(ptr obj.Addr, rec obj.Addr) {
+    self.Emit("MOVQ", ptr, _AX)
+    self.write_barrier_ax(_count, rec)
+    _count++
+    self.Emit("MOVQ", ptr, rec)
+}
+
+func (self *_Assembler) write_ptr_cx(mem obj.Addr, rec obj.Addr) {
+    self.Emit("MOVQ", mem, _CX)
+    self.write_barrier_cx(_count, rec)
+    _count++
+    self.Emit("MOVQ", mem, rec)
 }
