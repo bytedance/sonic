@@ -24,7 +24,6 @@ import (
 	`strconv`
 	`testing`
 
-	//`time`
 	`unsafe`
 
 	`github.com/bytedance/sonic/internal/rt`
@@ -49,7 +48,7 @@ func TestStackMark(t *testing.T) {
     runtime.GC()
     debug.FreeOSMemory()
 
-    testOpCode(t, it, "", nil, []_Instr{newInsOp(_OP_test_iter)})
+    testOpCodeStack(t, it, "", nil, []_Instr{newInsOp(_OP_test_iter)}, st)
 
     iteratorPool.Put(it)
     println("first GC")
@@ -78,29 +77,25 @@ func testOpCodeStack(t *testing.T, v interface{}, ex string, err error, ins _Pro
     }
 }
 
+var concurrentGC = true
+
 func TestMain(t *testing.M) {
-    debug.SetGCPercent(-1)
-    println("stop GC")
-
-
-    // var stop bool
-    // timer := time.After(15 * time.Second)
-
-    // go func ()  {
-    //     println("begin GC loop...")
-    //     for !stop {
-    //         runtime.GC()
-    //         debug.FreeOSMemory()
-    //     }
-    //     println("stop GC loop")
-    // }()
-
-    // go func() {
-    //     <- timer
-    //     stop = true
-    // }()
-
-    t.Run()
+    if concurrentGC == false {
+        debug.SetGCPercent(-1)
+        println("stop GC")
+    }else{
+        var stop bool
+        go func ()  {
+            println("begin GC loop...")
+            for !stop {
+                runtime.GC()
+                debug.FreeOSMemory()
+            }
+            println("stop GC loop")
+        }()
+    
+        t.Run()
+    }
 }
 
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {

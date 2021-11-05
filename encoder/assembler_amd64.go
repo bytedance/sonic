@@ -316,21 +316,26 @@ func (self *_Assembler) print_ptr(i int, ptrs ...obj.Addr) {
     self.Emit("MOVQ", _VAR_gc_X0, _AX)
 }
 
+var debugGC = true
+
 func (self *_Assembler) instrs() {
     for i, v := range self.p {
         self.Mark(i)
         self.instr(&v)
-        if (i+1 == len(self.p)) {
-            self.print(i, &v, &_Instr_End) 
-        } else {
-            next := &(self.p[i+1])
-            self.print(i, &v, next)
-            name := _OpNames[next.op()]
-            if strings.Contains(name, "save") {
-                continue
+        
+        if debugGC {
+            if (i+1 == len(self.p)) {
+                self.print(i, &v, &_Instr_End) 
+            } else {
+                next := &(self.p[i+1])
+                self.print(i, &v, next)
+                name := _OpNames[next.op()]
+                if strings.Contains(name, "save") {
+                    continue
+                }
             }
+            self.force_gc()
         }
-        self.force_gc()
     }
 }
 
@@ -409,6 +414,7 @@ func (self *_Assembler) store_int(nd int, fn obj.Addr, ins string) {
 func (self *_Assembler) store_str(s string) {
     i := 0
     m := rt.Str2Mem(s)
+    self._dump_stack()
 
     /* 8-byte stores */
     for i <= len(m) - 8 {
@@ -484,7 +490,7 @@ func (self *_Assembler) save_state() {
     self.write_ptr_cx(_SP_p, jit.Sib(_ST, _AX, 1, 24))  // MOVQ SP.p, 24(ST)(AX)
     self.write_ptr_cx(_SP_q, jit.Sib(_ST, _AX, 1, 32))  // MOVQ SP.q, 32(ST)(AX)
     self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
-    self._dump_stack()
+    // self._dump_stack()
 }
 
 func (self *_Assembler) drop_state(decr int64) {
@@ -498,7 +504,7 @@ func (self *_Assembler) drop_state(decr int64) {
     self.Emit("PXOR" , _X0, _X0)                            // PXOR  X0, X0
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))        // MOVOU X0, 8(ST)(AX)
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 24))       // MOVOU X0, 24(ST)(AX)
-    self._dump_stack()
+    //self._dump_stack()
 }
 
 /** Buffer Helpers **/
