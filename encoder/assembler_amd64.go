@@ -288,7 +288,7 @@ func printPtr(i int, ptrs [3]uintptr) {
 }
 
 func (self *_Assembler) force_gc() {
-    // self.NOP()
+    // self.print_ptr(666)
     self.call_go(_F_gc)
     self.call_go(_F_force_gc)
 }
@@ -484,6 +484,7 @@ func (self *_Assembler) save_state() {
     self.write_ptr_cx(_SP_p, jit.Sib(_ST, _AX, 1, 24))  // MOVQ SP.p, 24(ST)(AX)
     self.write_ptr_cx(_SP_q, jit.Sib(_ST, _AX, 1, 32))  // MOVQ SP.q, 32(ST)(AX)
     self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
+    self._dump_stack()
 }
 
 func (self *_Assembler) drop_state(decr int64) {
@@ -497,6 +498,7 @@ func (self *_Assembler) drop_state(decr int64) {
     self.Emit("PXOR" , _X0, _X0)                            // PXOR  X0, X0
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))        // MOVOU X0, 8(ST)(AX)
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 24))       // MOVOU X0, 24(ST)(AX)
+    self._dump_stack()
 }
 
 /** Buffer Helpers **/
@@ -1188,6 +1190,7 @@ var (
 
     _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
     _F_gcWriteBarrierCX = jit.Func(gcWriteBarrierCX)
+    _F_dump_stack = jit.Func(dumpStack)
 
     _VAR_gc_DI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
     _VAR_gc_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
@@ -1204,6 +1207,27 @@ func (self *_Assembler) _OP_test_iter(p *_Instr) {
     self.Emit("MOVQ", _SP_p, _SP_q)
     self.save_state()
     self._asm_OP_map_stop(p)
+}
+
+func dumpStack(st *_Stack) {
+    if st == nil {
+        panic("nil stack")
+    }
+    top := st.sp/uint64(_StateSize)
+    stacks := []_State{st.sb[top]}
+    if top > 1 {
+        stacks = append(stacks, st.sb[top-1])
+    }
+    if top > 2 {
+        stacks = append(stacks, st.sb[top-2])
+    }
+    fmt.Printf("stack: %x, sp: %x, state: %#v\n", unsafe.Pointer(st), st.sp, stacks)
+}
+
+func (self *_Assembler) _dump_stack() {
+    self.Emit("MOVQ", _ARG_sb, _AX)
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))
+    self.call_go(_F_dump_stack)
 }
 
 func (self *_Assembler) write_barrier_ax(i int, rec obj.Addr) {

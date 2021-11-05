@@ -49,8 +49,9 @@ func TestStackMark(t *testing.T) {
     runtime.GC()
     debug.FreeOSMemory()
 
-    testOpCodeStack(t, it, "", nil, []_Instr{newInsOp(_OP_test_iter)}, st)
+    testOpCode(t, it, "", nil, []_Instr{newInsOp(_OP_test_iter)})
 
+    iteratorPool.Put(it)
     println("first GC")
     i++
     runtime.GC()
@@ -80,6 +81,7 @@ func testOpCodeStack(t *testing.T, v interface{}, ex string, err error, ins _Pro
 func TestMain(t *testing.M) {
     debug.SetGCPercent(-1)
     println("stop GC")
+
 
     // var stop bool
     // timer := time.After(15 * time.Second)

@@ -17,13 +17,15 @@
 package encoder
 
 import (
-    `encoding`
-    `reflect`
-    `sync`
-    `unsafe`
+	"encoding"
+	"fmt"
+	"reflect"
+	"runtime"
+	"sync"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type _MapPair struct {
@@ -128,8 +130,8 @@ func (self *_MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Po
 }
 
 func iteratorStop(p *_MapIterator) {
-    iteratorPool.Put(p)
-    //_ = p
+    //iteratorPool.Put(p)
+    _ = p
 }
 
 func iteratorNext(p *_MapIterator) {
@@ -157,6 +159,9 @@ func iteratorNext(p *_MapIterator) {
 
 func iteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*_MapIterator, error) {
     it := newIterator()
+    runtime.SetFinalizer(it, func(it *_MapIterator){
+        fmt.Printf("iterator %x got dropped!\n", unsafe.Pointer(it))
+    })
     mapiterinit(t, m, &it.it)
 
     /* check for key-sorting, empty map don't need sorting */
