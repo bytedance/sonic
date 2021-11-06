@@ -33,14 +33,15 @@ const (
 type Loader   []byte
 type Function unsafe.Pointer
 
-func (self Loader) Load(fn string, fp int, args int) (f Function) {
+func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{}) (f Function) {
     p := os.Getpagesize()
     n := (((len(self) - 1) / p) + 1) * p
 
     /* register the function */
     m := mmap(n)
     v := fmt.Sprintf("__%s_%x", fn, m)
-    registerFunction(v, m, fp, args, uintptr(len(self)))
+    argsptr, localsptr := stackMap(faker)
+    registerFunction(v, m, fp, args, uintptr(len(self)), argsptr, localsptr)
 
     /* reference as a slice */
     s := *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader {
@@ -53,6 +54,10 @@ func (self Loader) Load(fn string, fp int, args int) (f Function) {
     copy(s, self)
     mprotect(m, n)
     return Function(&m)
+}
+
+func (self Loader) Load(fn string, fp int, args int) (f Function) {
+    return self.LoadWithFaker(fn, fp, args, func(){})
 }
 
 func mmap(nb int) uintptr {

@@ -123,16 +123,16 @@ var (
 )
 
 var (
-	_ST = jit.Reg("BX")
-	_RP = jit.Reg("DI")
-	_RL = jit.Reg("SI")
-	_RC = jit.Reg("DX")
+    _ST = jit.Reg("BX")
+    _RP = jit.Reg("DI")
+    _RL = jit.Reg("SI")
+    _RC = jit.Reg("DX")
 )
 
 var (
     _LR = jit.Reg("R9")
-	_ET = jit.Reg("R10")
-	_EP = jit.Reg("R11")
+    _ET = jit.Reg("R10")
+    _EP = jit.Reg("R11")
 )
 
 var (
@@ -179,7 +179,7 @@ func newAssembler(p _Program) *_Assembler {
 /** Assembler Interface **/
 
 func (self *_Assembler) Load() _Encoder {
-    return ptoenc(self.BaseAssembler.Load("json_encoder", _FP_size, _FP_args))
+    return ptoenc(self.BaseAssembler.LoadWithFaker("json_encoder", _FP_size, _FP_args, _Encoder_Shadow))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {
@@ -260,6 +260,7 @@ func (self *_Assembler) instrs() {
     for i, v := range self.p {
         self.Mark(i)
         self.instr(&v)
+        self.debug_instr(i, &v)
     }
 }
 

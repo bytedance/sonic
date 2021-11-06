@@ -18,7 +18,8 @@ package loader
 
 import (
     `sync`
-    _ `unsafe`
+    `unsafe`
+    `reflect`
 )
 
 //go:linkname lastmoduledatap runtime.lastmoduledatap
@@ -30,6 +31,25 @@ func moduledataverify1(_ *_ModuleData)
 
 //go:nosplit
 func no_pointers_stackmap() uintptr
+
+// PCDATA and FUNCDATA table indexes.
+//
+// See funcdata.h and $GROOT/src/cmd/internal/objabi/funcdata.go.
+const (
+    _FUNCDATA_ArgsPointerMaps = 0
+    _FUNCDATA_LocalsPointerMaps = 1
+)
+
+type funcInfo struct {
+    *_Func
+    datap *_ModuleData
+}
+
+//go:linkname findfunc runtime.findfunc
+func findfunc(pc uintptr) funcInfo
+
+//go:linkname funcdata runtime.funcdata
+func funcdata(f funcInfo, i uint8) unsafe.Pointer
 
 var (
     modLock sync.Mutex
@@ -63,4 +83,13 @@ func registerModule(mod *_ModuleData) {
     lastmoduledatap.next = mod
     lastmoduledatap = mod
     modLock.Unlock()
+}
+
+func stackMap(f interface{}) (args uintptr, locals uintptr) {
+    fv := reflect.ValueOf(f)
+    if fv.Kind() != reflect.Func {
+        panic("f must be reflect.Func kind!")
+    }
+    fi := findfunc(fv.Pointer())
+    return uintptr(funcdata(fi, uint8(_FUNCDATA_ArgsPointerMaps))), uintptr(funcdata(fi, uint8(_FUNCDATA_LocalsPointerMaps)))
 }

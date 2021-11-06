@@ -18,6 +18,8 @@ package encoder
 
 import (
     `bytes`
+    `errors`
+    `runtime`
     `sync`
     `unsafe`
 
@@ -55,6 +57,22 @@ type _Encoder func(
     sb *_Stack,
     fv uint64,
 ) error
+
+//go:nosplit
+// Faker func of _Encoder, used to export its stackmap as _Encoder's
+func _Encoder_Shadow(rb *[]byte, vp unsafe.Pointer, sb *_Stack, fv uint64) error {
+    // align to assembler_amd64.go: _FP_offs
+    var stacks [_FP_offs]byte
+    runtime.KeepAlive(stacks)
+
+    // must keep rb, vp and sb noticeable to GC
+    runtime.KeepAlive(sb)
+    runtime.KeepAlive(rb)
+    runtime.KeepAlive(vp)
+
+    return errors.New("DON'T CALL THIS!")
+}
+
 
 func newBytes() []byte {
     if ret := bytesPool.Get(); ret != nil {
