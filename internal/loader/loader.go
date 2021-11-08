@@ -39,7 +39,7 @@ func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{})
 
     /* register the function */
     m := mmap(n)
-    v := fmt.Sprintf("__%s_%x", fn, m)
+    v := fmt.Sprintf("runtime.__%s_%x", fn, m)
     argsptr, localsptr := stackMap(faker)
     registerFunction(v, m, fp, args, uintptr(len(self)), argsptr, localsptr)
 
