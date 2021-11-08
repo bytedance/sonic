@@ -58,19 +58,21 @@ type _Encoder func(
     fv uint64,
 ) error
 
-//go:nosplit
+var errCallShadow = errors.New("DON'T CALL THIS!")
+
 // Faker func of _Encoder, used to export its stackmap as _Encoder's
+//go:nosplit
 func _Encoder_Shadow(rb *[]byte, vp unsafe.Pointer, sb *_Stack, fv uint64) error {
     // align to assembler_amd64.go: _FP_offs
-    var stacks [_FP_offs]byte
-    runtime.KeepAlive(stacks)
+    var frames [_FP_offs]byte
+    runtime.KeepAlive(frames)
 
-    // must keep rb, vp and sb noticeable to GC
+    // must keep sb noticeable to GC
     runtime.KeepAlive(sb)
     runtime.KeepAlive(rb)
     runtime.KeepAlive(vp)
 
-    return errors.New("DON'T CALL THIS!")
+    return errCallShadow
 }
 
 

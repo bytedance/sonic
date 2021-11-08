@@ -29,9 +29,6 @@ var lastmoduledatap *_ModuleData
 //go:linkname moduledataverify1 runtime.moduledataverify1
 func moduledataverify1(_ *_ModuleData)
 
-//go:nosplit
-func no_pointers_stackmap() uintptr
-
 // PCDATA and FUNCDATA table indexes.
 //
 // See funcdata.h and $GROOT/src/cmd/internal/objabi/funcdata.go.
