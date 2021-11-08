@@ -19,6 +19,9 @@ package decoder
 import (
     `encoding/json`
     `testing`
+    `runtime`
+    `runtime/debug`
+    `sync`
 
     `github.com/davecgh/go-spew/spew`
     gojson `github.com/goccy/go-json`
@@ -26,6 +29,48 @@ import (
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
 )
+
+func TestMain(m *testing.M) {
+    go func ()  {
+        println("Begin GC looping...")
+       for {
+           runtime.GC()
+           debug.FreeOSMemory() 
+       }
+       println("stop GC looping!")
+    }()
+    m.Run()
+}
+
+func TestGC(t *testing.T) {
+    var w interface{}
+    out, err := decode(TwitterJson, &w)
+    if err != nil {
+        t.Fatal(err)
+    }
+    if out != len(TwitterJson) {
+        t.Fatal(out)
+    }
+    wg := &sync.WaitGroup{}
+    N := 10000
+    for i:=0; i<N; i++ {
+        wg.Add(1)
+        go func (wg *sync.WaitGroup)  {
+            defer wg.Done()
+            var w interface{}
+            out, err := decode(TwitterJson, &w)
+            if err != nil {
+                t.Fatal(err)
+            }
+            if out != len(TwitterJson) {
+                t.Fatal(out)
+            }
+            runtime.GC()
+            debug.FreeOSMemory()
+        }(wg)
+    }
+    wg.Wait()
+}
 
 var _BindingValue TwitterStruct
 
