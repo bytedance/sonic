@@ -72,7 +72,7 @@ const (
     _FP_args   = 48     // 48 bytes for passing arguments to this function
     _FP_fargs  = 64     // 64 bytes for passing arguments to other Go functions
     _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
-    _FP_locals = 16     // 16 bytes for local variables
+    _FP_locals = 24     // 24 bytes for local variables
 )
 
 const (
@@ -157,6 +157,7 @@ var (
 var (
     _VAR_sp = jit.Ptr(_SP, _FP_fargs + _FP_saves)
     _VAR_dn = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
+    _VAR_vp = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
 )
 
 var (
@@ -963,8 +964,8 @@ func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     if (p.vf() & rt.F_direct) != 0 {
         self.Emit("MOVQ", _SP_p, _AX)               // MOVQ SP.p, AX
     } else {
-        self.Emit("MOVQ", _SP_p, jit.Ptr(_SP, 48))  // MOVQ SP.p, 48(SP)
-        self.Emit("LEAQ", jit.Ptr(_SP, 48), _AX)    // LEAQ 48(SP), AX
+        self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, 48(SP)
+        self.Emit("LEAQ", _VAR_vp, _AX)    // LEAQ 48(SP), AX
     }
 
     /* call the encoder */
