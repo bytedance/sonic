@@ -18,13 +18,54 @@ package encoder
 
 import (
     `encoding/json`
+    `runtime`
+    `runtime/debug`
     `strconv`
+    `sync`
     `testing`
 
     gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
     `github.com/stretchr/testify/require`
 )
+
+func TestMain(m *testing.M) {
+    go func ()  {
+        println("Begin GC looping...")
+       for {
+           runtime.GC()
+           debug.FreeOSMemory() 
+       }
+       println("stop GC looping!")
+    }()
+    m.Run()
+}
+
+func TestGC(t *testing.T) {
+    out, err := Encode(_GenericValue, 0)
+    if err != nil {
+        t.Fatal(err)
+    }
+    n := len(out)
+    wg := &sync.WaitGroup{}
+    N := 10000
+    for i:=0; i<N; i++ {
+        wg.Add(1)
+        go func (wg *sync.WaitGroup, size int)  {
+            defer wg.Done()
+            out, err := Encode(_GenericValue, 0)
+            if err != nil {
+                t.Fatal(err)
+            }
+            if len(out) != size {
+                t.Fatal(len(out), size)
+            }
+            runtime.GC()
+            debug.FreeOSMemory()
+        }(wg, n)
+    }
+    wg.Wait()
+}
 
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {
     require.Equal(t, exp, fn(arg))

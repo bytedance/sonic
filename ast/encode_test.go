@@ -17,11 +17,46 @@
 package ast
 
 import (
-	`encoding/json`
-	`testing`
+    `encoding/json`
+    `testing`
+    `runtime`
+    `runtime/debug`
+    `sync`
 
-	`github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/native/types`
 )
+
+func TestGC_Encode(t *testing.T) {
+    root, err := NewSearcher(_TwitterJson).GetByPath()
+    if err != nil {
+        t.Fatal(err)
+    }
+    root.LoadAll()
+    _, err = root.MarshalJSON()
+    if err != nil {
+        t.Fatal(err)
+    }
+    wg := &sync.WaitGroup{}
+    N := 10000
+    for i:=0; i<N; i++ {
+        wg.Add(1)
+        go func (wg *sync.WaitGroup)  {
+			defer wg.Done()
+			root, err := NewSearcher(_TwitterJson).GetByPath()
+			if err != nil {
+				t.Fatal(err)
+			}
+			root.Load()
+            _, err = root.MarshalJSON()
+            if err != nil {
+                t.Fatal(err)
+            }
+            runtime.GC()
+            debug.FreeOSMemory()
+        }(wg)
+    }
+    wg.Wait()
+}
 
 func TestEncodeValue(t *testing.T) {
 	type Case struct {

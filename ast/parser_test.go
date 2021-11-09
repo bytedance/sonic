@@ -19,11 +19,48 @@ package ast
 import (
     `encoding/json`
     `testing`
+    `runtime`
+    `runtime/debug`
+    `sync`
 
     jsoniter `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
     `github.com/tidwall/gjson`
 )
+
+func TestMain(m *testing.M) {
+    go func ()  {
+        println("Begin GC looping...")
+       for {
+           runtime.GC()
+           debug.FreeOSMemory() 
+       }
+       println("stop GC looping!")
+    }()
+    m.Run()
+}
+
+func TestGC_Parse(t *testing.T) {
+    _, _, err := Loads(_TwitterJson)
+    if err != nil {
+        t.Fatal(err)
+    }
+    wg := &sync.WaitGroup{}
+    N := 1000
+    for i:=0; i<N; i++ {
+        wg.Add(1)
+        go func (wg *sync.WaitGroup)  {
+            defer wg.Done()
+            _, _, err := Loads(_TwitterJson)
+            if err != nil {
+                t.Fatal(err)
+            }
+            runtime.GC()
+            debug.FreeOSMemory()
+        }(wg)
+    }
+    wg.Wait()
+}
 
 func runDecoderTest(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()

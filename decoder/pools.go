@@ -17,6 +17,8 @@
 package decoder
 
 import (
+    `errors`
+    `runtime`
     `sync`
     `unsafe`
 
@@ -57,6 +59,23 @@ type _Decoder func(
     sb *_Stack,
     fv uint64,
 ) (int, error)
+
+var errCallShadow = errors.New("DON'T CALL THIS!")
+
+//go:nosplit
+// Faker func of _Decoder, used to export its stackmap as _Decoder's
+func _Decoder_Shadow(rb *[]byte, vp unsafe.Pointer, sb *_Stack, fv uint64) error {
+    // align to assembler_amd64.go: _FP_offs
+    var stacks [_FP_offs]byte
+    runtime.KeepAlive(stacks)
+
+    // must keep rb, vp and sb noticeable to GC
+    runtime.KeepAlive(sb)
+    runtime.KeepAlive(rb)
+    runtime.KeepAlive(vp)
+
+    return errCallShadow
+}
 
 func newStack() *_Stack {
     if ret := stackPool.Get(); ret == nil {

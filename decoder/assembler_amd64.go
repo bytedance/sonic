@@ -192,7 +192,7 @@ func newAssembler(p _Program) *_Assembler {
 /** Assembler Interface **/
 
 func (self *_Assembler) Load() _Decoder {
-    return ptodec(self.BaseAssembler.Load("json_decoder", _FP_size, _FP_args))
+    return ptodec(self.BaseAssembler.LoadWithFaker("json_decoder", _FP_size, _FP_args, _Decoder_Shadow))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {
@@ -289,6 +289,7 @@ func (self *_Assembler) instrs() {
     for i, v := range self.p {
         self.Mark(i)
         self.instr(&v)
+        self.debug_instr(i, &v)
     }
 }
 
