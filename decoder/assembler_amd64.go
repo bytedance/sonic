@@ -298,9 +298,15 @@ func (self *_Assembler) epilogue() {
     self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
     self.Link(_LB_error)                            // _error:
+    //FIXME: use better way to keep error alive
+    self.Emit("MOVQ", _ET, jit.Ptr(_ST, _StackError))
+    self.Emit("MOVQ", _EP, jit.Ptr(_ST, _StackError + 8))
     self.Emit("MOVQ", _IC, _RET_rc)                 // MOVQ IC, rc<>+40(FP)
     self.Emit("MOVQ", _ET, _RET_et)                 // MOVQ ET, et<>+48(FP)
     self.Emit("MOVQ", _EP, _RET_ep)                 // MOVQ EP, ep<>+56(FP)
+    if debugGC {
+        self.force_gc()
+    }
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -310,6 +316,9 @@ func (self *_Assembler) prologue() {
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
+    if debugGC {
+        self.force_gc()
+    }
     self.Emit("MOVQ", _ARG_sp, _IP)                 // MOVQ s.p<>+0(FP), IP
     self.Emit("MOVQ", _ARG_sl, _IL)                 // MOVQ s.l<>+8(FP), IL
     self.Emit("MOVQ", _ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC

@@ -277,10 +277,16 @@ func (self *_Assembler) epilogue() {
     self.Emit("XORL", _ET, _ET)
     self.Emit("XORL", _EP, _EP)
     self.Link(_LB_error)
+    //FIXME: use better way to keep error alive
+    self.Emit("MOVQ", _ET, jit.Ptr(_ST, _StackError))
+    self.Emit("MOVQ", _EP, jit.Ptr(_ST, _StackError + 8))
     self.Emit("MOVQ", _ARG_rb, _AX)                 // MOVQ rb<>+0(FP), AX
     self.Emit("MOVQ", _RL, jit.Ptr(_AX, 8))         // MOVQ RL, 8(AX)
     self.Emit("MOVQ", _ET, _RET_et)                 // MOVQ ET, et<>+24(FP)
     self.Emit("MOVQ", _EP, _RET_ep)                 // MOVQ EP, ep<>+32(FP)
+    if debugGC {
+        self.force_gc()
+    }
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -290,6 +296,9 @@ func (self *_Assembler) prologue() {
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
+    if debugGC {
+        self.force_gc()
+    }
     self.load_buffer()                              // LOAD {buf}
     self.Emit("MOVQ", _ARG_vp, _SP_p)               // MOVQ vp<>+8(FP), SP.p
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ sb<>+16(FP), ST
@@ -403,6 +412,7 @@ func (self *_Assembler) slice_grow_ax(ret string) {
 const (
     _StateSize  = int64(unsafe.Sizeof(_State{}))
     _StackLimit = _MaxStack * _StateSize
+    _StackError = _StackLimit + 8
 )
 
 func (self *_Assembler) save_state() {

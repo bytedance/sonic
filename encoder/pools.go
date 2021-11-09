@@ -49,6 +49,7 @@ type _State struct {
 type _Stack struct {
     sp uint64
     sb [_MaxStack]_State
+    err error
 }
 
 type _Encoder func(
@@ -107,6 +108,7 @@ func freeBytes(p []byte) {
 
 func freeStack(p *_Stack) {
     p.sp = 0
+    p.err = nil
     stackPool.Put(p)
 }
 

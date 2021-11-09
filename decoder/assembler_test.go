@@ -33,7 +33,7 @@ import (
 
 func TestAssembler_PrologueAndEpilogue(t *testing.T) {
     a := newAssembler(nil)
-    _, e := a.Load()("", 0, nil, nil, 0)
+    _, e := a.Load()("", 0, nil, newStack(), 0)
     assert.Nil(t, e)
 }
 

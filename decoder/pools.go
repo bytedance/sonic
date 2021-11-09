@@ -17,19 +17,20 @@
 package decoder
 
 import (
-    `errors`
-    `runtime`
-    `sync`
-    `unsafe`
+	"errors"
+	"runtime"
+	"sync"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
     _MinSlice = 16
     _MaxStack = 65536 // 64k slots
+    _StackError = 8 + _MaxStack * 8 + 8 + types.MAX_RECURSE * 8 * 2
 )
 
 const (
@@ -50,6 +51,7 @@ type _Stack struct {
     sb [_MaxStack]unsafe.Pointer
     mm types.StateMachine
     vp [types.MAX_RECURSE]*interface{}
+    err error
 }
 
 type _Decoder func(
@@ -86,6 +88,7 @@ func newStack() *_Stack {
 }
 
 func freeStack(p *_Stack) {
+    p.err = nil
     stackPool.Put(p)
 }
 

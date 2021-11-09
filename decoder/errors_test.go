@@ -17,9 +17,14 @@
 package decoder
 
 import (
-    `testing`
+	"encoding/json"
+	"fmt"
+	"runtime"
+	"runtime/debug"
+	"testing"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 func make_err(src string, pos int) SyntaxError {
@@ -52,4 +57,22 @@ func TestErrors_ShortDescription(t *testing.T) {
 
 func TestErrors_EmptyDescription(t *testing.T) {
     println(make_err("", 0).Description())
+}
+
+func Test_error_number(t *testing.T) {
+	src := "xxxx"
+	var jn json.Number
+	runtime.SetFinalizer(&jn, func(jn *json.Number){
+		fmt.Printf("json.Number(%v) got dropped!\n", unsafe.Pointer(jn))
+	})
+
+	println("before encode")
+	debugGC = true
+	err := NewDecoder(src).Decode(&jn)
+	debugGC = false
+	println("after encode")
+	runtime.GC()
+	debug.FreeOSMemory()
+
+	println(err, err.Error())
 }
