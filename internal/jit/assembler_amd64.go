@@ -207,6 +207,11 @@ func (self *BaseAssembler) Load(fn string, fp int, args int) loader.Function {
     return loader.Loader(self.c).Load(fn, fp, args)
 }
 
+func (self *BaseAssembler) LoadWithFaker(fn string, fp int, args int, faker interface{}) loader.Function {
+    self.build()
+    return loader.Loader(self.c).LoadWithFaker(fn, fp, args, faker)
+}
+
 /** Assembler Stages **/
 
 func (self *BaseAssembler) init() {

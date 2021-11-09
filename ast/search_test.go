@@ -18,11 +18,37 @@ package ast
 
 import (
     `testing`
+    `runtime`
+    `runtime/debug`
+    `sync`
 
     jsoniter `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
     `github.com/tidwall/gjson`
 )
+
+
+func TestGC_Search(t *testing.T) {
+    _, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0, "id")
+    if err != nil {
+        t.Fatal(err)
+    }
+    wg := &sync.WaitGroup{}
+    N := 10000
+    for i:=0; i<N; i++ {
+        wg.Add(1)
+        go func (wg *sync.WaitGroup)  {
+            defer wg.Done()
+            _, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0, "id")
+            if err != nil {
+                t.Fatal(err)
+            }
+            runtime.GC()
+            debug.FreeOSMemory()
+        }(wg)
+    }
+    wg.Wait()
+}
 
 func TestExportError(t *testing.T) {
     data := `{"a":]`

@@ -3,32 +3,27 @@
 
 package avx
 
-import (
-    `unsafe`
-)
-
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func ___asm2asm_compiled_code__DO_NOT_CALL_THIS_SYMBOL___()
+func __native_entry__() uintptr
 
 var (
-    _func__base        = ___asm2asm_compiled_code__DO_NOT_CALL_THIS_SYMBOL___
-    _subr__f64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 542
-    _subr__i64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 3551
-    _subr__lspace      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 238
-    _subr__lzero       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 0
-    _subr__quote       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 4864
-    _subr__skip_array  = **(**uintptr)(unsafe.Pointer(&_func__base)) + 16010
-    _subr__skip_object = **(**uintptr)(unsafe.Pointer(&_func__base)) + 16045
-    _subr__skip_one    = **(**uintptr)(unsafe.Pointer(&_func__base)) + 14217
-    _subr__u64toa      = **(**uintptr)(unsafe.Pointer(&_func__base)) + 3644
-    _subr__unquote     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 5885
-    _subr__value       = **(**uintptr)(unsafe.Pointer(&_func__base)) + 9700
-    _subr__vnumber     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 12411
-    _subr__vsigned     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13667
-    _subr__vstring     = **(**uintptr)(unsafe.Pointer(&_func__base)) + 11458
-    _subr__vunsigned   = **(**uintptr)(unsafe.Pointer(&_func__base)) + 13944
+    _subr__f64toa      = __native_entry__() + 630
+    _subr__i64toa      = __native_entry__() + 3642
+    _subr__lspace      = __native_entry__() + 301
+    _subr__lzero       = __native_entry__() + 13
+    _subr__quote       = __native_entry__() + 4955
+    _subr__skip_array  = __native_entry__() + 17298
+    _subr__skip_object = __native_entry__() + 17333
+    _subr__skip_one    = __native_entry__() + 15505
+    _subr__u64toa      = __native_entry__() + 3735
+    _subr__unquote     = __native_entry__() + 5888
+    _subr__value       = __native_entry__() + 10928
+    _subr__vnumber     = __native_entry__() + 13704
+    _subr__vsigned     = __native_entry__() + 14977
+    _subr__vstring     = __native_entry__() + 12691
+    _subr__vunsigned   = __native_entry__() + 15236
 )
 
 var (

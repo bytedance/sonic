@@ -25,12 +25,26 @@ import (
 	`math`
 	`reflect`
 	`regexp`
+	`runtime`
+    `runtime/debug`
 	`strconv`
 	`testing`
 	`unsafe`
 
 	`github.com/bytedance/sonic/encoder`
 )
+
+func TestMain(m *testing.M) {
+    go func ()  {
+        println("Begin GC looping...")
+       for {
+           runtime.GC()
+           debug.FreeOSMemory() 
+       }
+       println("stop GC looping!")
+    }()
+    m.Run()
+}
 
 type Optionals struct {
 	Sr string `json:"sr"`

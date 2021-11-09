@@ -98,7 +98,7 @@ var findFuncTab = &_FindFuncBucket {
     idx: 1,
 }
 
-func registerFunction(name string, pc uintptr, fp int, args int, size uintptr) {
+func registerFunction(name string, pc uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
     minpc := pc
     maxpc := pc + size
 
@@ -127,8 +127,8 @@ func registerFunction(name string, pc uintptr, fp int, args int, size uintptr) {
         args      : int32(args),
         pcsp      : int32(pcsp),
         nfuncdata : 2,
-        argptrs   : no_pointers_stackmap(),
-        localptrs : no_pointers_stackmap(),
+        argptrs   : argptrs,
+        localptrs : localptrs,
     }
 
     /* align the func to 8 bytes */
