@@ -98,12 +98,6 @@ func (self *_ValueDecoder) force_gc() {
     }
 }
 
-func (self *_ValueDecoder) debug_gc(i int) {
-    if debugGC {
-        self.force_gc()
-    }
-}
-
 func printPtr(i int, ptrs [3]uintptr) {
     fmt.Printf("%d: [", i)
     for _, ptr := range ptrs {

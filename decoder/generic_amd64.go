@@ -39,26 +39,39 @@ import (
  */
 
 const (
-    _VD_args   = 64     // 64 bytes for passing arguments to other Go functions
+    _VD_args   = 56     // 56 bytes to pass arguments and return values for this function
+    _VD_fargs  = 64     // 64 bytes for passing arguments to other Go functions
     _VD_saves  = 64     // 40 bytes for saving the registers before CALL instructions
     _VD_locals = 40     // 40 bytes for local variables
 )
 
 const (
-    _VD_offs = _VD_args + _VD_saves + _VD_locals
+    _VD_offs = _VD_fargs + _VD_saves + _VD_locals
     _VD_size = _VD_offs + 8     // 8 bytes for the parent frame pointer
+    _VD_base = _VD_size + 8     // 8 bytes for the parent frame pointer
+)
+
+var (
+    _VD_ARG_sp = jit.Ptr(_SP, _VD_base)
+    _VD_ARG_sl = jit.Ptr(_SP, _VD_base + 8)
+    _VD_ARG_ic = jit.Ptr(_SP, _VD_base + 16)
+    _VD_ARG_vp = jit.Ptr(_SP, _VD_base + 24)
+    _VD_ARG_sb = jit.Ptr(_SP, _VD_base + 32)
+    _VD_ARG_fv = jit.Ptr(_SP, _VD_base + 40)
+
+    _VD_RET_rc = jit.Ptr(_SP, _VD_base + 48)
 )
 
 var (
     _VAR_ss = _VAR_ss_Vt
-    _VAR_df = jit.Ptr(_SP, _VD_args + _VD_saves)
+    _VAR_df = jit.Ptr(_SP, _VD_fargs + _VD_saves)
 )
 
 var (
-    _VAR_ss_Vt = jit.Ptr(_SP, _VD_args + _VD_saves + 8)
-    _VAR_ss_Dv = jit.Ptr(_SP, _VD_args + _VD_saves + 16)
-    _VAR_ss_Iv = jit.Ptr(_SP, _VD_args + _VD_saves + 24)
-    _VAR_ss_Ep = jit.Ptr(_SP, _VD_args + _VD_saves + 32)
+    _VAR_ss_Vt = jit.Ptr(_SP, _VD_fargs + _VD_saves + 8)
+    _VAR_ss_Dv = jit.Ptr(_SP, _VD_fargs + _VD_saves + 16)
+    _VAR_ss_Iv = jit.Ptr(_SP, _VD_fargs + _VD_saves + 24)
+    _VAR_ss_Ep = jit.Ptr(_SP, _VD_fargs + _VD_saves + 32)
 )
 
 type _ValueDecoder struct {
@@ -67,7 +80,7 @@ type _ValueDecoder struct {
 
 func (self *_ValueDecoder) build() uintptr {
     self.Init(self.compile)
-    return *(*uintptr)(self.Load("decode_value", _VD_size, 0))
+    return *(*uintptr)(self.LoadWithFaker("decode_value", _VD_size, _VD_args, _Decoder_Generic))
 }
 
 /** Function Calling Helpers **/
@@ -77,7 +90,7 @@ func (self *_ValueDecoder) save(r ...obj.Addr) {
         if i > _VD_saves / 8 - 1 {
             panic("too many registers to save")
         } else {
-            self.Emit("MOVQ", v, jit.Ptr(_SP, _VD_args + int64(i) * 8))
+            self.Emit("MOVQ", v, jit.Ptr(_SP, _VD_fargs + int64(i) * 8))
         }
     }
 }
@@ -87,7 +100,7 @@ func (self *_ValueDecoder) load(r ...obj.Addr) {
         if i > _VD_saves / 8 - 1 {
             panic("too many registers to load")
         } else {
-            self.Emit("MOVQ", jit.Ptr(_SP, _VD_args + int64(i) * 8), v)
+            self.Emit("MOVQ", jit.Ptr(_SP, _VD_fargs + int64(i) * 8), v)
         }
     }
 }
@@ -174,11 +187,18 @@ func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
+
     self.force_gc()
+
+    self.Emit("MOVQ", _VD_ARG_sp, _IP)                 // MOVQ s.p<>+0(FP), IP
+    self.Emit("MOVQ", _VD_ARG_sl, _IL)                 // MOVQ s.l<>+8(FP), IL
+    self.Emit("MOVQ", _VD_ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC
+    self.Emit("MOVQ", _VD_ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
+    self.Emit("MOVQ", _VD_ARG_sb, _ST)                 // MOVQ vp<>+32(FP), ST
+    self.Emit("MOVQ", _VD_ARG_fv, _DF)                 // MOVQ vp<>+32(FP), ST
 
     /* initialize the state machine */
     self.Emit("XORL", _CX, _CX)                                 // XORL CX, CX
-    // self.print_ptr(88, _DF)
     self.Emit("MOVQ", _DF, _VAR_df)                             // MOVQ DF, df
     self.Emit("ADDQ", jit.Imm(_FsmOffset), _ST)                 // ADDQ _FsmOffset, _ST
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                // MOVQ CX, ST.Sp
@@ -581,11 +601,11 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Vp))           // MOVQ EP, ST.Vp[0]
     self.Link("_epilogue")                                 // _epilogue:
     self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Err + 8))      // MOVQ EP, ST.err+8
+    self.Emit("MOVQ", _IC, _VD_RET_rc)                     // MOVQ EP, ST.err+8
+    // self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)             // SUBQ _FsmOffset, _ST
 
-    // self.print_ptr(9, _EP, jit.Ptr(_ST, _ST_Err + 8))
     self.force_gc()
 
-    self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)     // SUBQ _FsmOffset, _ST
     self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_VD_size), _SP)       // ADDQ $_VD_size, SP
     self.Emit("RET")                                // RET

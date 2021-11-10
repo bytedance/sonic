@@ -988,10 +988,19 @@ func (self *_Assembler) _asm_OP_any(_ *_Instr) {
     self.decode_dynamic(_AX, _DI)                           // DECODE  AX, DI
     self.Sjmp("JMP"    , "_decode_end_{n}")                 // JMP     _decode_end_{n}
     self.Link("_decode_{n}")                                // _decode_{n}:
+
+    self.Emit("MOVQ"   , _IP, jit.Ptr(_SP, 0))
+    self.Emit("MOVQ"   , _IL, jit.Ptr(_SP, 8))
+    self.Emit("MOVQ"   , _IC, jit.Ptr(_SP, 16))
+    self.Emit("MOVQ"   , _VP, jit.Ptr(_SP, 24))
+    self.Emit("MOVQ"   , _ST, jit.Ptr(_SP, 32))
     self.Emit("MOVQ"   , _ARG_fv, _DF)                      // MOVQ    fv, DF
-    // self.print_ptr(8, _DF)
-    self.call(_F_decodeValue)                               // CALL    decodeValue
+    self.Emit("MOVQ"   , _DF, jit.Ptr(_SP, 40))             // MOVQ    fv, DF
+    self.call_go(_F_decodeValue)                            // CALL    decodeValue
+    self.Emit("MOVQ"   , jit.Ptr(_SP, 48) , _IC)
     self.Emit("MOVQ", jit.Ptr(_ST, _StackError + 8), _EP)   // MOVQ ST.err+8, EP
+    
+
     self.Emit("TESTQ"  , _EP, _EP)                          // TESTQ   EP, EP
     self.Sjmp("JNZ"    , _LB_parsing_error)                 // JNZ     _parsing_error
     self.Link("_decode_end_{n}")                            // _decode_end_{n}:
