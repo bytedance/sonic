@@ -30,7 +30,7 @@ import (
 const (
     _MinSlice = 16
     _MaxStack = 65536 // 64k slots
-    _StackError = 8 + _MaxStack * 8 + 8 + types.MAX_RECURSE * 8 * 2
+    _StackError = _FsmOffset + _ST_Err
 )
 
 const (

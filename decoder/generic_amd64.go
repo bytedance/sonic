@@ -40,7 +40,7 @@ import (
 
 const (
     _VD_args   = 64     // 64 bytes for passing arguments to other Go functions
-    _VD_saves  = 40     // 40 bytes for saving the registers before CALL instructions
+    _VD_saves  = 64     // 40 bytes for saving the registers before CALL instructions
     _VD_locals = 40     // 40 bytes for local variables
 )
 
@@ -125,9 +125,10 @@ const (
 )
 
 const (
-    _ST_Sp = 0
-    _ST_Vt = _PtrBytes
-    _ST_Vp = _PtrBytes * (types.MAX_RECURSE + 1)
+    _ST_Sp  = 0
+    _ST_Vt  = _PtrBytes
+    _ST_Vp  = _PtrBytes * (types.MAX_RECURSE + 1)
+    _ST_Err = _PtrBytes * types.MAX_RECURSE
 )
 
 var (
@@ -173,9 +174,11 @@ func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
+    self.force_gc()
 
     /* initialize the state machine */
     self.Emit("XORL", _CX, _CX)                                 // XORL CX, CX
+    // self.print_ptr(88, _DF)
     self.Emit("MOVQ", _DF, _VAR_df)                             // MOVQ DF, df
     self.Emit("ADDQ", jit.Imm(_FsmOffset), _ST)                 // ADDQ _FsmOffset, _ST
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                // MOVQ CX, ST.Sp
@@ -573,10 +576,15 @@ func (self *_ValueDecoder) compile() {
     self.Sjmp("JMP" , "_next")                              // JMP  _next
 
     /* return from decoder */
-    self.Link("_return")                            // _return:
-    self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
-    self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Vp))    // MOVQ EP, ST.Vp[0]
-    self.Link("_epilogue")                          // _epilogue:
+    self.Link("_return")                                   // _return:
+    self.Emit("XORL", _EP, _EP)                            // XORL EP, EP
+    self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Vp))           // MOVQ EP, ST.Vp[0]
+    self.Link("_epilogue")                                 // _epilogue:
+    self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Err + 8))      // MOVQ EP, ST.err+8
+
+    // self.print_ptr(9, _EP, jit.Ptr(_ST, _ST_Err + 8))
+    self.force_gc()
+
     self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)     // SUBQ _FsmOffset, _ST
     self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_VD_size), _SP)       // ADDQ $_VD_size, SP

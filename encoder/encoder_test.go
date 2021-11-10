@@ -42,29 +42,31 @@ func TestMain(m *testing.M) {
 }
 
 func TestGC(t *testing.T) {
-    out, err := Encode(_GenericValue, 0)
-    if err != nil {
-        t.Fatal(err)
+    if !debugGC {
+        out, err := Encode(_GenericValue, 0)
+        if err != nil {
+            t.Fatal(err)
+        }
+        n := len(out)
+        wg := &sync.WaitGroup{}
+        N := 10000
+        for i:=0; i<N; i++ {
+            wg.Add(1)
+            go func (wg *sync.WaitGroup, size int)  {
+                defer wg.Done()
+                out, err := Encode(_GenericValue, 0)
+                if err != nil {
+                    t.Fatal(err)
+                }
+                if len(out) != size {
+                    t.Fatal(len(out), size)
+                }
+                runtime.GC()
+                debug.FreeOSMemory()
+            }(wg, n)
+        }
+        wg.Wait()
     }
-    n := len(out)
-    wg := &sync.WaitGroup{}
-    N := 10000
-    for i:=0; i<N; i++ {
-        wg.Add(1)
-        go func (wg *sync.WaitGroup, size int)  {
-            defer wg.Done()
-            out, err := Encode(_GenericValue, 0)
-            if err != nil {
-                t.Fatal(err)
-            }
-            if len(out) != size {
-                t.Fatal(len(out), size)
-            }
-            runtime.GC()
-            debug.FreeOSMemory()
-        }(wg, n)
-    }
-    wg.Wait()
 }
 
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {

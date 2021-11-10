@@ -67,9 +67,10 @@ func Test_error_number(t *testing.T) {
 	})
 
 	println("before encode")
-	debugGC = true
+    nd := debugGC
+    debugGC = true
 	err := NewDecoder(src).Decode(&jn)
-	debugGC = false
+	debugGC = nd
 	println("after encode")
 	runtime.GC()
 	debug.FreeOSMemory()

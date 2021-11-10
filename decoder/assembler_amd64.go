@@ -66,7 +66,7 @@ import (
 const (
     _FP_args   = 72     // 72 bytes to pass arguments and return values for this function
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
-    _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
+    _FP_saves  = 64     // 40 bytes for saving the registers before CALL instructions
     _FP_locals = 96     // 96 bytes for local variables
 )
 
@@ -304,9 +304,8 @@ func (self *_Assembler) epilogue() {
     self.Emit("MOVQ", _IC, _RET_rc)                 // MOVQ IC, rc<>+40(FP)
     self.Emit("MOVQ", _ET, _RET_et)                 // MOVQ ET, et<>+48(FP)
     self.Emit("MOVQ", _EP, _RET_ep)                 // MOVQ EP, ep<>+56(FP)
-    if debugGC {
-        self.force_gc()
-    }
+    self.force_gc()
+
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -316,9 +315,8 @@ func (self *_Assembler) prologue() {
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
-    if debugGC {
-        self.force_gc()
-    }
+    self.force_gc()
+
     self.Emit("MOVQ", _ARG_sp, _IP)                 // MOVQ s.p<>+0(FP), IP
     self.Emit("MOVQ", _ARG_sl, _IL)                 // MOVQ s.l<>+8(FP), IL
     self.Emit("MOVQ", _ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC
@@ -991,7 +989,9 @@ func (self *_Assembler) _asm_OP_any(_ *_Instr) {
     self.Sjmp("JMP"    , "_decode_end_{n}")                 // JMP     _decode_end_{n}
     self.Link("_decode_{n}")                                // _decode_{n}:
     self.Emit("MOVQ"   , _ARG_fv, _DF)                      // MOVQ    fv, DF
+    // self.print_ptr(8, _DF)
     self.call(_F_decodeValue)                               // CALL    decodeValue
+    self.Emit("MOVQ", jit.Ptr(_ST, _StackError + 8), _EP)   // MOVQ ST.err+8, EP
     self.Emit("TESTQ"  , _EP, _EP)                          // TESTQ   EP, EP
     self.Sjmp("JNZ"    , _LB_parsing_error)                 // JNZ     _parsing_error
     self.Link("_decode_end_{n}")                            // _decode_end_{n}:

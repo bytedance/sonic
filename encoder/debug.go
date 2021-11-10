@@ -47,22 +47,28 @@ func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
 }
 
 func (self *_Assembler) force_gc() {
-    self.call_go(_F_gc)
-    self.call_go(_F_force_gc)
+    if debugGC {
+        self.call_go(_F_gc)
+        self.call_go(_F_force_gc)
+    }
+}
+
+func (self *_Assembler) append_gc(i int, v *_Instr) {
+    if (i+1 == len(self.p)) {
+        self.print_gc(i, v, &_Instr_End) 
+    } else {
+        next := &(self.p[i+1])
+        self.print_gc(i, v, next)
+        name := _OpNames[next.op()]
+        if strings.Contains(name, "save") {
+            return
+        }
+    }
+    self.force_gc()
 }
 
 func (self *_Assembler) debug_instr(i int, v *_Instr) {
     if debugGC {
-        if (i+1 == len(self.p)) {
-            self.print_gc(i, v, &_Instr_End) 
-        } else {
-            next := &(self.p[i+1])
-            self.print_gc(i, v, next)
-            name := _OpNames[next.op()]
-            if strings.Contains(name, "save") {
-                return
-            }
-        }
-        self.force_gc()
+        self.append_gc(i, v)
     }
 }

@@ -43,33 +43,35 @@ func TestMain(m *testing.M) {
 }
 
 func TestGC(t *testing.T) {
-    var w interface{}
-    out, err := decode(TwitterJson, &w)
-    if err != nil {
-        t.Fatal(err)
+    if !debugGC {
+        var w interface{}
+        out, err := decode(TwitterJson, &w)
+        if err != nil {
+            t.Fatal(err)
+        }
+        if out != len(TwitterJson) {
+            t.Fatal(out)
+        }
+        wg := &sync.WaitGroup{}
+        N := 10000
+        for i:=0; i<N; i++ {
+            wg.Add(1)
+            go func (wg *sync.WaitGroup)  {
+                defer wg.Done()
+                var w interface{}
+                out, err := decode(TwitterJson, &w)
+                if err != nil {
+                    t.Fatal(err)
+                }
+                if out != len(TwitterJson) {
+                    t.Fatal(out)
+                }
+                runtime.GC()
+                debug.FreeOSMemory()
+            }(wg)
+        }
+        wg.Wait()
     }
-    if out != len(TwitterJson) {
-        t.Fatal(out)
-    }
-    wg := &sync.WaitGroup{}
-    N := 10000
-    for i:=0; i<N; i++ {
-        wg.Add(1)
-        go func (wg *sync.WaitGroup)  {
-            defer wg.Done()
-            var w interface{}
-            out, err := decode(TwitterJson, &w)
-            if err != nil {
-                t.Fatal(err)
-            }
-            if out != len(TwitterJson) {
-                t.Fatal(out)
-            }
-            runtime.GC()
-            debug.FreeOSMemory()
-        }(wg)
-    }
-    wg.Wait()
 }
 
 var _BindingValue TwitterStruct

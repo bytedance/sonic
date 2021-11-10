@@ -549,3 +549,5 @@ type SearchMetadata struct {
     Query       string  `json:"query"`
     MaxIDStr    string  `json:"max_id_str"`
 }
+
+var _TwitterJSON_INVALID = TwitterJson[:len(TwitterJson)-1] + "x"
