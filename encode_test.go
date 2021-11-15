@@ -17,6 +17,7 @@
 package sonic
 
 import (
+	`os`
 	`bytes`
 	`encoding`
 	`encoding/json`
@@ -34,16 +35,22 @@ import (
 	`github.com/bytedance/sonic/encoder`
 )
 
+var (
+    debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
+)
 func TestMain(m *testing.M) {
     go func ()  {
+		if !debugAsyncGC {
+            return 
+        }
         println("Begin GC looping...")
-       for {
-           runtime.GC()
-           debug.FreeOSMemory() 
-       }
-       println("stop GC looping!")
-    }()
-    m.Run()
+		for {
+			runtime.GC()
+			debug.FreeOSMemory() 
+		}
+		println("stop GC looping!")
+	}()
+	m.Run()
 }
 
 type Optionals struct {

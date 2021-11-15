@@ -67,7 +67,7 @@ const (
     _FP_args   = 72     // 72 bytes to pass arguments and return values for this function
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
-    _FP_locals = 96     // 96 bytes for local variables
+    _FP_locals = 96    // 96 bytes for local variables
 )
 
 const (
@@ -536,7 +536,7 @@ func (self *_Assembler) vfollow(vt reflect.Type) {
     self.Emit("TESTQ", _AX, _AX)                // TESTQ  AX, AX
     self.Sjmp("JNZ"  , "_end_{n}")              // JNZ    _end_{n}
     self.valloc(vt, _AX)                        // VALLOC ${vt}, AX
-    self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 0))    // MOVQ   AX, (VP)
+    self.WritePtrCX(1, _AX, jit.Ptr(_VP, 0))    // MOVQ   AX, (VP)
     self.Link("_end_{n}")                       // _end_{n}:
     self.Emit("MOVQ" , _AX, _VP)                // MOVQ   AX, VP
 }
@@ -664,7 +664,7 @@ func (self *_Assembler) unquote_once(p obj.Addr, n obj.Addr) {
     self.malloc(_SI, _DX)                                       // MALLOC SI, DX
     self.Emit("MOVQ" , p, _DI)                                  // MOVQ   ${p}, DI
     self.Emit("MOVQ" , n, _SI)                                  // MOVQ   ${n}, SI
-    self.Emit("MOVQ" , _DX, p)                                  // MOVQ   DX, ${p}
+    self.WritePtrAX(2, _DX, p)                                  // MOVQ   DX, ${p}
     self.Emit("LEAQ" , _VAR_sr, _CX)                            // LEAQ   sr, CX
     self.Emit("XORL" , _R8, _R8)                                // XORL   R8, R8
     self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)        // BTQ    ${_F_disable_urc}, fv
@@ -696,7 +696,7 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr) {
     self.malloc(_SI, _DX)                                           // MALLOC SI, DX
     self.Emit("MOVQ" , p, _DI)                                      // MOVQ   ${p}, DI
     self.Emit("MOVQ" , n, _SI)                                      // MOVQ   ${n}, SI
-    self.Emit("MOVQ" , _DX, p)                                      // MOVQ   DX, ${p}
+    self.WritePtrAX(6, _DX, p)                                  // MOVQ   DX, ${p}
     self.Emit("LEAQ" , _VAR_sr, _CX)                                // LEAQ   sr, CX
     self.Emit("MOVL" , jit.Imm(types.F_DOUBLE_UNQUOTE), _R8)        // MOVL   ${types.F_DOUBLE_UNQUOTE}, R8
     self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)            // BTQ    ${_F_disable_urc}, AX
@@ -866,7 +866,7 @@ func (self *_Assembler) unmarshal_func(t reflect.Type, fn obj.Addr, deref bool) 
         self.Emit("TESTQ", _AX, _AX)                // TESTQ  AX, AX
         self.Sjmp("JNZ"  , "_deref_{n}")            // JNZ    _deref_{n}
         self.valloc(t.Elem(), _AX)                  // VALLOC ${t.Elem()}, AX
-        self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 0))    // MOVQ   AX, (VP)
+        self.WritePtrCX(3, _AX, jit.Ptr(_VP, 0))    // MOVQ   AX, (VP)
         self.Link("_deref_{n}")                     // _deref_{n}:
     }
 
@@ -1029,7 +1029,11 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
     /* call the decoder */
     self.Emit("XORL" , _DX, _DX)                // XORL  DX, DX
     self.Emit("MOVQ" , _VP, _DI)                // MOVQ  VP, DI
-    self.Emit("XCHGQ", _SI, jit.Ptr(_VP, 0))    // XCHGQ SI, (VP)
+
+    self.Emit("MOVQ" , jit.Ptr(_VP, 0), _R9)    // MOVQ SI, （VP)
+    self.WritePtrAX(4, _SI, jit.Ptr(_VP, 0))    // XCHGQ SI, (VP) 
+    self.Emit("MOVQ" , _R9, _SI)
+
     self.Emit("XCHGQ", _DX, jit.Ptr(_VP, 8))    // XCHGQ DX, 8(VP)
     self.call(_F_b64decode)                     // CALL  b64decode
     self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
@@ -1066,7 +1070,7 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.parse_number()                         // PARSE NUMBER
     self.slice_from(_VAR_st_Ep, 0)              // SLICE st.Ep, $0
-    self.Emit("MOVQ", _DI, jit.Ptr(_VP, 0))     // MOVQ  DI, (VP)
+    self.WritePtrAX(5, _DI, jit.Ptr(_VP, 0))     // MOVQ  DI, (VP)
     self.Emit("MOVQ", _SI, jit.Ptr(_VP, 8))     // MOVQ  SI, 8(VP)
 }
 
@@ -1183,7 +1187,7 @@ func (self *_Assembler) _asm_OP_map_init(_ *_Instr) {
     self.Sjmp("JNZ"  , "_end_{n}")              // JNZ     _end_{n}
     self.call_go(_F_makemap_small)              // CALL_GO makemap_small
     self.Emit("MOVQ" , jit.Ptr(_SP, 0), _AX)    // MOVQ    (SP), AX
-    self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 0))    // MOVQ    AX, (VP)
+    self.WritePtrCX(6, _AX, jit.Ptr(_VP, 0))    // MOVQ    AX, (VP)
     self.Link("_end_{n}")                       // _end_{n}:
     self.Emit("MOVQ" , _AX, _VP)                // MOVQ    AX, VP
 }
@@ -1316,7 +1320,7 @@ func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
     self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 16))       // MOVQ    CX, 16(SP)
     self.call_go(_F_makeslice)                      // CALL_GO makeslice
     self.Emit("MOVQ" , jit.Ptr(_SP, 24), _AX)       // MOVQ    24(SP), AX
-    self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 0))        // MOVQ    AX, (VP)
+    self.WritePtrCX(7, _AX, jit.Ptr(_VP, 0))        // MOVQ    AX, (VP)
     self.Link("_done_{n}")                          // _done_{n}:
     self.Emit("XORL" , _AX, _AX)                    // XORL    AX, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))        // MOVQ    AX, 8(VP)
@@ -1338,7 +1342,7 @@ func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
     self.Emit("MOVQ" , jit.Ptr(_SP, 40), _DI)           // MOVQ    40(SP), DI
     self.Emit("MOVQ" , jit.Ptr(_SP, 48), _AX)           // MOVQ    48(SP), AX
     self.Emit("MOVQ" , jit.Ptr(_SP, 56), _SI)           // MOVQ    56(SP), SI
-    self.Emit("MOVQ" , _DI, jit.Ptr(_VP, 0))            // MOVQ    DI, (VP)
+    self.WritePtrCX(8, _DI, jit.Ptr(_VP, 0))            // MOVQ    DI, (VP)
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))            // MOVQ    AX, 8(VP)
     self.Emit("MOVQ" , _SI, jit.Ptr(_VP, 16))           // MOVQ    SI, 16(VP)
     self.Link("_index_{n}")                             // _index_{n}:
@@ -1505,7 +1509,7 @@ func (self *_Assembler) _asm_OP_save(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
     self.Emit("CMPQ", _AX, jit.Imm(_MaxStack))          // CMPQ AX, ${_MaxStack}
     self.Sjmp("JA"  , _LB_stack_error)                  // JA   _stack_error
-    self.Emit("MOVQ", _VP, jit.Sib(_ST, _AX, 1, 8))     // MOVQ VP, 8(ST)(AX)
+    self.WritePtrCX(0, _VP, jit.Sib(_ST, _AX, 1, 8))     // MOVQ VP, 8(ST)(AX)
     self.Emit("ADDQ", jit.Imm(8), _AX)                  // ADDQ $8, AX
     self.Emit("MOVQ", _AX, jit.Ptr(_ST, 0))             // MOVQ AX, (ST)
 }

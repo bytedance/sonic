@@ -26,5 +26,5 @@ import (
 func TestCompiler_Compile(t *testing.T) {
     prg, err := make(_Compiler).compile(reflect.TypeOf(TwitterStruct{}))
     assert.Nil(t, err)
-    println(prg.disassemble())
+    prg.disassemble()
 }

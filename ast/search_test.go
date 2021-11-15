@@ -29,6 +29,9 @@ import (
 
 
 func TestGC_Search(t *testing.T) {
+    if debugSyncGC {
+        return
+    }
     _, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0, "id")
     if err != nil {
         t.Fatal(err)

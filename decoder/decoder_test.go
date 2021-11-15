@@ -32,17 +32,23 @@ import (
 
 func TestMain(m *testing.M) {
     go func ()  {
+        if !debugAsyncGC {
+            return
+        }
         println("Begin GC looping...")
-       for {
+        for {
            runtime.GC()
            debug.FreeOSMemory() 
-       }
-       println("stop GC looping!")
+        }
+        println("stop GC looping!")
     }()
     m.Run()
 }
 
 func TestGC(t *testing.T) {
+    if debugSyncGC {
+        return 
+    }
     var w interface{}
     out, err := decode(TwitterJson, &w)
     if err != nil {
