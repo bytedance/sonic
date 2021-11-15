@@ -39,26 +39,27 @@ import (
  */
 
 const (
-    _VD_args   = 64     // 64 bytes for passing arguments to other Go functions
+    _VD_args   = 8      // 8 bytes  for passing arguments to this functions
+    _VD_fargs  = 64     // 64 bytes for passing arguments to other Go functions
     _VD_saves  = 40     // 40 bytes for saving the registers before CALL instructions
     _VD_locals = 40     // 40 bytes for local variables
 )
 
 const (
-    _VD_offs = _VD_args + _VD_saves + _VD_locals
+    _VD_offs = _VD_fargs + _VD_saves + _VD_locals
     _VD_size = _VD_offs + 8     // 8 bytes for the parent frame pointer
 )
 
 var (
     _VAR_ss = _VAR_ss_Vt
-    _VAR_df = jit.Ptr(_SP, _VD_args + _VD_saves)
+    _VAR_df = jit.Ptr(_SP, _VD_fargs + _VD_saves)
 )
 
 var (
-    _VAR_ss_Vt = jit.Ptr(_SP, _VD_args + _VD_saves + 8)
-    _VAR_ss_Dv = jit.Ptr(_SP, _VD_args + _VD_saves + 16)
-    _VAR_ss_Iv = jit.Ptr(_SP, _VD_args + _VD_saves + 24)
-    _VAR_ss_Ep = jit.Ptr(_SP, _VD_args + _VD_saves + 32)
+    _VAR_ss_Vt = jit.Ptr(_SP, _VD_fargs + _VD_saves + 8)
+    _VAR_ss_Dv = jit.Ptr(_SP, _VD_fargs + _VD_saves + 16)
+    _VAR_ss_Iv = jit.Ptr(_SP, _VD_fargs + _VD_saves + 24)
+    _VAR_ss_Ep = jit.Ptr(_SP, _VD_fargs + _VD_saves + 32)
 )
 
 type _ValueDecoder struct {
@@ -67,7 +68,7 @@ type _ValueDecoder struct {
 
 func (self *_ValueDecoder) build() uintptr {
     self.Init(self.compile)
-    return *(*uintptr)(self.Load("decode_value", _VD_size, 0))
+    return *(*uintptr)(self.LoadWithFaker("decode_value", _VD_size, _VD_fargs, _Decoder_Generic_Shadow))
 }
 
 /** Function Calling Helpers **/
@@ -77,7 +78,7 @@ func (self *_ValueDecoder) save(r ...obj.Addr) {
         if i > _VD_saves / 8 - 1 {
             panic("too many registers to save")
         } else {
-            self.Emit("MOVQ", v, jit.Ptr(_SP, _VD_args + int64(i) * 8))
+            self.Emit("MOVQ", v, jit.Ptr(_SP, _VD_fargs + int64(i) * 8))
         }
     }
 }
@@ -87,7 +88,7 @@ func (self *_ValueDecoder) load(r ...obj.Addr) {
         if i > _VD_saves / 8 - 1 {
             panic("too many registers to load")
         } else {
-            self.Emit("MOVQ", jit.Ptr(_SP, _VD_args + int64(i) * 8), v)
+            self.Emit("MOVQ", jit.Ptr(_SP, _VD_fargs + int64(i) * 8), v)
         }
     }
 }

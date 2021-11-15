@@ -64,17 +64,25 @@ var errCallShadow = errors.New("DON'T CALL THIS!")
 
 //go:nosplit
 // Faker func of _Decoder, used to export its stackmap as _Decoder's
-func _Decoder_Shadow(rb *[]byte, vp unsafe.Pointer, sb *_Stack, fv uint64) error {
+func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) (int, error) {
     // align to assembler_amd64.go: _FP_offs
     var stacks [_FP_offs]byte
     runtime.KeepAlive(stacks)
 
-    // must keep rb, vp and sb noticeable to GC
+    // must keep sb noticeable to GC
     runtime.KeepAlive(sb)
-    runtime.KeepAlive(rb)
-    runtime.KeepAlive(vp)
+    return 0, errCallShadow
+}
 
-    return errCallShadow
+//go:nosplit
+// Faker func of _Decoder_Generic, used to export its stackmap
+func _Decoder_Generic_Shadow(sb *_Stack) {
+    // align to generic_amd64.go: _VD_offs
+    var stacks [_VD_offs]byte
+    runtime.KeepAlive(stacks)
+
+    // must keep sb noticeable to GC
+    runtime.KeepAlive(sb)
 }
 
 func newStack() *_Stack {
@@ -86,6 +94,7 @@ func newStack() *_Stack {
 }
 
 func freeStack(p *_Stack) {
+    p.sp = 0
     stackPool.Put(p)
 }
 

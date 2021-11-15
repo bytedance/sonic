@@ -982,6 +982,7 @@ func (self *_Assembler) _asm_OP_any(_ *_Instr) {
     self.Sjmp("JMP"    , "_decode_end_{n}")                 // JMP     _decode_end_{n}
     self.Link("_decode_{n}")                                // _decode_{n}:
     self.Emit("MOVQ"   , _ARG_fv, _DF)                      // MOVQ    fv, DF
+    self.Emit("MOVQ"   , _ST, jit.Ptr(_SP, 0))              // MOVQ    _ST, (SP)
     self.call(_F_decodeValue)                               // CALL    decodeValue
     self.Emit("TESTQ"  , _EP, _EP)                          // TESTQ   EP, EP
     self.Sjmp("JNZ"    , _LB_parsing_error)                 // JNZ     _parsing_error
