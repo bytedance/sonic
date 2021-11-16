@@ -130,9 +130,10 @@ var (
 )
 
 var (
-    _LR = jit.Reg("R9")
-    _ET = jit.Reg("R10")
-    _EP = jit.Reg("R11")
+    _LR  = jit.Reg("R9")
+    _R10 = jit.Reg("R10")   // used for gcWriterBarrier
+    _ET  = jit.Reg("R10")
+    _EP  = jit.Reg("R11")
 )
 
 var (
@@ -1109,4 +1110,27 @@ func (self *_Assembler) _asm_OP_cond_set(_ *_Instr) {
 func (self *_Assembler) _asm_OP_cond_testc(p *_Instr) {
     self.Emit("BTRQ", jit.Imm(_S_cond), _SP_f)      // BTRQ $_S_cond, SP.f
     self.Xjmp("JC"  , p.vi())
+}
+
+var (
+    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+
+    _F_gcWriteBarrierCX = jit.Func(gcWriteBarrierCX)
+)
+
+// This uses CX and R10 to pass ptr, thus their values will change
+func (self *_Assembler) WritePtrCX(i int, ptr obj.Addr, rec obj.Addr) {
+    self.Emit("MOVQ", _V_writeBarrier, _R10)
+    self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
+    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, _CX)
+    self.xsave(_DI)
+    self.Emit("LEAQ", rec, _DI)
+    self.Emit("MOVQ", _F_gcWriteBarrierCX, _R10)  // MOVQ ${fn}, CX
+    self.Rjmp("CALL", _R10)      
+    self.xload(_DI)
+    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, rec)
+    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
 }

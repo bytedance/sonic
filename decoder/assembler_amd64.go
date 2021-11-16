@@ -22,6 +22,7 @@ import (
     `math`
     `reflect`
     `unsafe`
+    `strconv`
 
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/cpu`
@@ -133,9 +134,10 @@ var (
 )
 
 var (
-    _DF = jit.Reg("R10")    // reuse R10 in generic decoder for flags
-    _ET = jit.Reg("R10")
-    _EP = jit.Reg("R11")
+    _R10 = jit.Reg("R10")   // used for gcWriteBarrier
+    _DF  = jit.Reg("R10")    // reuse R10 in generic decoder for flags
+    _ET  = jit.Reg("R10")
+    _EP  = jit.Reg("R11")
 )
 
 var (
@@ -1562,4 +1564,46 @@ func (self *_Assembler) _asm_OP_switch(p *_Instr) {
     /* default case */
     self.Link("_default_{n}")
     self.NOP()
+}
+
+var (
+    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+
+    _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
+    _F_gcWriteBarrierCX = jit.Func(gcWriteBarrierCX)
+    _F_gcWriteBarrierDX = jit.Func(gcWriteBarrierDX)
+)
+
+// This uses AX to pass ptr, thus AX's value will change
+func (self *_Assembler) WritePtrAX(i int, ptr obj.Addr, rec obj.Addr) {
+    self.Emit("MOVQ", _V_writeBarrier, _R10)
+    self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
+    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, _AX)
+    self.save(_DI)
+    self.Emit("LEAQ", rec, _DI)
+    self.Emit("MOVQ", _F_gcWriteBarrierAX, _R10)  // MOVQ ${fn}, AX
+    self.Rjmp("CALL", _R10)      
+    self.load(_DI)
+    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, rec)
+    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
+}
+
+// This uses CX to pass ptr, thus CX's value will change
+func (self *_Assembler) WritePtrCX(i int, ptr obj.Addr, rec obj.Addr) {
+    self.Emit("MOVQ", _V_writeBarrier, _R10)
+    self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
+    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, _CX)
+    self.save(_DI)
+    self.Emit("LEAQ", rec, _DI)
+    self.Emit("MOVQ", _F_gcWriteBarrierCX, _R10)  // MOVQ ${fn}, CX
+    self.Rjmp("CALL", _R10)      
+    self.load(_DI)
+    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, rec)
+    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
 }

@@ -40,17 +40,17 @@ var (
 )
 func TestMain(m *testing.M) {
     go func ()  {
-		if !debugAsyncGC {
+        if !debugAsyncGC {
             return 
         }
         println("Begin GC looping...")
-		for {
-			runtime.GC()
-			debug.FreeOSMemory() 
-		}
-		println("stop GC looping!")
-	}()
-	m.Run()
+        for {
+            runtime.GC()
+            debug.FreeOSMemory() 
+        }
+        println("stop GC looping!")
+    }()
+    m.Run()
 }
 
 type Optionals struct {
