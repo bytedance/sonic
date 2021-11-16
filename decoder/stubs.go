@@ -49,12 +49,6 @@ var _runtime_writeBarrier writeBarrier
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
 func gcWriteBarrierAX()
 
-//go:linkname gcWriteBarrierCX runtime.gcWriteBarrierCX
-func gcWriteBarrierCX()
-
-//go:linkname gcWriteBarrierDX runtime.gcWriteBarrierDX
-func gcWriteBarrierDX()
-
 //go:nosplit
 //go:linkname throw runtime.throw
 //goland:noinspection GoUnusedParameter

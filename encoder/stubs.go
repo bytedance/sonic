@@ -38,8 +38,8 @@ type writeBarrier struct {
 //go:linkname _runtime_writeBarrier runtime.writeBarrier
 var _runtime_writeBarrier writeBarrier
 
-//go:linkname gcWriteBarrierCX runtime.gcWriteBarrierCX
-func gcWriteBarrierCX()
+//go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
+func gcWriteBarrierAX()
 
 //go:noescape
 //go:linkname memmove runtime.memmove
