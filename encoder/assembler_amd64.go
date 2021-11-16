@@ -412,8 +412,8 @@ func (self *_Assembler) save_state() {
     self.Sjmp("JA"  , _LB_error_too_deep)               // JA   _error_too_deep
     self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _AX, 1, 8))   // MOVQ SP.x, 8(ST)(AX)
     self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _AX, 1, 16))  // MOVQ SP.f, 16(ST)(AX)
-    self.Emit("MOVQ", _SP_p, jit.Sib(_ST, _AX, 1, 24))  // MOVQ SP.p, 24(ST)(AX)
-    self.Emit("MOVQ", _SP_q, jit.Sib(_ST, _AX, 1, 32))  // MOVQ SP.q, 32(ST)(AX)
+    self.WritePtrCX(0, _SP_p, jit.Sib(_ST, _AX, 1, 24)) // MOVQ SP.p, 24(ST)(AX)
+    self.WritePtrCX(1, _SP_q, jit.Sib(_ST, _AX, 1, 32)) // MOVQ SP.q, 32(ST)(AX)
     self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
 }
 
@@ -460,7 +460,7 @@ func (self *_Assembler) prep_buffer_c() {
 
 func (self *_Assembler) save_buffer() {
     self.Emit("MOVQ", _ARG_rb, _AX)             // MOVQ rb<>+0(FP), AX
-    self.Emit("MOVQ", _RP, jit.Ptr(_AX,  0))    // MOVQ RP, (AX)
+    self.WritePtrCX(2, _RP, jit.Ptr(_AX,  0))    // MOVQ RP, (AX)
     self.Emit("MOVQ", _RL, jit.Ptr(_AX,  8))    // MOVQ RL, 8(AX)
     self.Emit("MOVQ", _RC, jit.Ptr(_AX, 16))    // MOVQ RC, 16(AX)
 }
