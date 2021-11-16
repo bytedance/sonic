@@ -175,8 +175,6 @@ func (self *Node) Int64() (int64, error) {
     }
     switch self.t {
         case _V_NUMBER        : return numberToInt64(self)
-        case types.V_TRUE     : return 1, nil
-        case types.V_FALSE    : return 0, nil
         default               : return 0, ErrUnsupportType
     }
 }
@@ -187,30 +185,19 @@ func (self *Node) Number() (json.Number, error) {
         return json.Number(""), err
     }
     switch self.t {
-        case _V_NUMBER        : return toNumber(self)  , nil
-        case types.V_TRUE     : return json.Number("1"), nil
-        case types.V_FALSE    : return json.Number("0"), nil
+        case _V_NUMBER        : return toNumber(self) , nil
         default               : return json.Number(""), ErrUnsupportType
     }
 }
 
 // String returns raw string value if node type is V_STRING.
-// Or return the string representation of other types:
-//  V_NULL => "null",
-//  V_TRUE => "true",
-//  V_FALSE => "false",
-//  V_NUMBER => "[0-9\.]*"
 func (self *Node) String() (string, error) {
     if err := self.checkRaw(); err != nil {
         return "", err
     }
     switch self.t {
-        case _V_NUMBER       : return toNumber(self).String(), nil
-        case types.V_NULL    : return "null" , nil
-        case types.V_TRUE    : return "true" , nil
-        case types.V_FALSE   : return "false", nil
         case types.V_STRING  : return addr2str(self.p, self.v), nil
-        default              : return ""     , ErrUnsupportType
+        default              : return "", ErrUnsupportType
     }
 }
 
@@ -221,8 +208,6 @@ func (self *Node) Float64() (float64, error) {
     }
     switch self.t {
         case _V_NUMBER       : return numberToFloat64(self)
-        case types.V_TRUE    : return 1.0, nil
-        case types.V_FALSE   : return 0.0, nil
         default              : return 0.0, ErrUnsupportType
     }
 }
