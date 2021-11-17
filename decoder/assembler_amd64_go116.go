@@ -1,3 +1,5 @@
+// +build go1.16,!go1.17
+
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -1566,6 +1568,21 @@ func (self *_Assembler) _asm_OP_switch(p *_Instr) {
     self.Link("_default_{n}")
     self.NOP()
 }
+
+
+type writeBarrier struct {
+	enabled bool    // compiler emits a check of this before calling write barrier
+	pad     [3]byte // compiler uses 32-bit load for "enabled" field
+	needed  bool    // whether we need a write barrier for current GC phase
+	cgo     bool    // whether we need a write barrier for a cgo check
+	alignme uint64  // guarantee alignment so that compiler can use a 32 or 64-bit load
+}
+
+//go:linkname _runtime_writeBarrier runtime.writeBarrier
+var _runtime_writeBarrier writeBarrier
+
+//go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
+func gcWriteBarrierAX()
 
 var (
     _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
