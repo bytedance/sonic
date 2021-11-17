@@ -17,6 +17,7 @@
 package encoder
 
 import (
+    `os`
     `strings`
     `runtime`
     `runtime/debug`
@@ -24,8 +25,10 @@ import (
     `github.com/bytedance/sonic/internal/jit`
 )
 
-//WARN: MUST set false after release
-var debugGC = false
+var (
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC")  != ""
+    debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
+)
 
 var (
     _Instr_End _Instr = newInsOp(_OP_null)
@@ -52,7 +55,7 @@ func (self *_Assembler) force_gc() {
 }
 
 func (self *_Assembler) debug_instr(i int, v *_Instr) {
-    if debugGC {
+    if debugSyncGC {
         if (i+1 == len(self.p)) {
             self.print_gc(i, v, &_Instr_End) 
         } else {

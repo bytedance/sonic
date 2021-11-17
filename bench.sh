@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 pwd=$(pwd)
+export SONIC_NO_ASYNC_GC=1
 
 cd $pwd/encoder
 go test -benchmem -run=^$ -benchtime=100000x -bench "^(BenchmarkEncoder_Generic_Sonic|BenchmarkEncoder_Generic_StdLib|BenchmarkEncoder_Generic_JsonIter|BenchmarkEncoder_Generic_GoJson|BenchmarkEncoder_Binding_Sonic|BenchmarkEncoder_Binding_StdLib|BenchmarkEncoder_Binding_JsonIter|BenchmarkEncoder_Binding_GoJson|BenchmarkEncoder_Parallel_Generic_Sonic|BenchmarkEncoder_Parallel_Generic_StdLib|BenchmarkEncoder_Parallel_Generic_JsonIter|BenchmarkEncoder_Parallel_Generic_GoJson|BenchmarkEncoder_Parallel_Binding_Sonic|BenchmarkEncoder_Parallel_Binding_StdLib|BenchmarkEncoder_Parallel_Binding_JsonIter|BenchmarkEncoder_Parallel_Binding_GoJson)$"
@@ -15,4 +16,5 @@ go test -benchmem -run=^$ -benchtime=100000x -bench '^(BenchmarkEncodeRaw|Benchm
 
 go test -benchmem -run=^$ -benchtime=10000000x -bench "^(BenchmarkNodeGetByPath|BenchmarkStructGetByPath_Jsoniter|BenchmarkNodeIndex|BenchmarkStructIndex|BenchmarkSliceIndex|BenchmarkMapIndex|BenchmarkNodeGet|BenchmarkSliceGet|BenchmarkMapGet|BenchmarkNodeSet|BenchmarkMapSet|BenchmarkNodeSetByIndex|BenchmarkSliceSetByIndex|BenchmarkStructSetByIndex|BenchmarkNodeUnset|BenchmarkMapUnset|BenchmarkNodUnsetByIndex|BenchmarkSliceUnsetByIndex|BenchmarkNodeAdd|BenchmarkSliceAdd|BenchmarkMapAdd)$"
 
+unset SONIC_NO_ASYNC_GC
 cd $pwd

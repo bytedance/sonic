@@ -17,6 +17,7 @@
 package ast
 
 import (
+    `os`
     `encoding/json`
     `testing`
     `runtime`
@@ -28,19 +29,30 @@ import (
     `github.com/tidwall/gjson`
 )
 
+var (
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC")  != ""
+    debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
+)
+
 func TestMain(m *testing.M) {
     go func ()  {
+        if !debugAsyncGC {
+            return
+        }
         println("Begin GC looping...")
-       for {
-           runtime.GC()
-           debug.FreeOSMemory() 
-       }
-       println("stop GC looping!")
+        for {
+            runtime.GC()
+            debug.FreeOSMemory() 
+        }
+        println("stop GC looping!")
     }()
     m.Run()
 }
 
 func TestGC_Parse(t *testing.T) {
+    if debugSyncGC {
+        return
+    }
     _, _, err := Loads(_TwitterJson)
     if err != nil {
         t.Fatal(err)

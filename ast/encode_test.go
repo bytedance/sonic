@@ -27,6 +27,9 @@ import (
 )
 
 func TestGC_Encode(t *testing.T) {
+	if debugSyncGC {
+        return
+    }
     root, err := NewSearcher(_TwitterJson).GetByPath()
     if err != nil {
         t.Fatal(err)

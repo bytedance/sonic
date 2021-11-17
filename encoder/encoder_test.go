@@ -31,17 +31,23 @@ import (
 
 func TestMain(m *testing.M) {
     go func ()  {
+        if !debugAsyncGC {
+            return 
+        }
         println("Begin GC looping...")
-       for {
-           runtime.GC()
-           debug.FreeOSMemory() 
-       }
-       println("stop GC looping!")
+        for {
+            runtime.GC()
+            debug.FreeOSMemory() 
+        }
+        println("stop GC looping!")
     }()
     m.Run()
 }
 
 func TestGC(t *testing.T) {
+    if debugSyncGC {
+        return 
+    }
     out, err := Encode(_GenericValue, 0)
     if err != nil {
         t.Fatal(err)

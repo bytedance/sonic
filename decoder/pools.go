@@ -49,7 +49,7 @@ type _Stack struct {
     sp uintptr
     sb [_MaxStack]unsafe.Pointer
     mm types.StateMachine
-    vp [types.MAX_RECURSE]*interface{}
+    vp [types.MAX_RECURSE]unsafe.Pointer
 }
 
 type _Decoder func(

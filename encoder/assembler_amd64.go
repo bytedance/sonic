@@ -130,9 +130,10 @@ var (
 )
 
 var (
-    _LR = jit.Reg("R9")
-    _ET = jit.Reg("R10")
-    _EP = jit.Reg("R11")
+    _LR  = jit.Reg("R9")
+    _R10 = jit.Reg("R10")   // used for gcWriterBarrier
+    _ET  = jit.Reg("R10")
+    _EP  = jit.Reg("R11")
 )
 
 var (
@@ -406,14 +407,14 @@ const (
 )
 
 func (self *_Assembler) save_state() {
-    self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
-    self.Emit("LEAQ", jit.Ptr(_AX, _StateSize), _R8)    // LEAQ _StateSize(AX), R8
+    self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
+    self.Emit("LEAQ", jit.Ptr(_CX, _StateSize), _R8)    // LEAQ _StateSize(CX), R8
     self.Emit("CMPQ", _R8, jit.Imm(_StackLimit))        // CMPQ R8, $_StackLimit
     self.Sjmp("JA"  , _LB_error_too_deep)               // JA   _error_too_deep
-    self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _AX, 1, 8))   // MOVQ SP.x, 8(ST)(AX)
-    self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _AX, 1, 16))  // MOVQ SP.f, 16(ST)(AX)
-    self.Emit("MOVQ", _SP_p, jit.Sib(_ST, _AX, 1, 24))  // MOVQ SP.p, 24(ST)(AX)
-    self.Emit("MOVQ", _SP_q, jit.Sib(_ST, _AX, 1, 32))  // MOVQ SP.q, 32(ST)(AX)
+    self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _CX, 1, 8))   // MOVQ SP.x, 8(ST)(CX)
+    self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16))  // MOVQ SP.f, 16(ST)(CX)
+    self.WriteRecNotAX(0, _SP_p, jit.Sib(_ST, _CX, 1, 24)) // MOVQ SP.p, 24(ST)(CX)
+    self.WriteRecNotAX(1, _SP_q, jit.Sib(_ST, _CX, 1, 32)) // MOVQ SP.q, 32(ST)(CX)
     self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
 }
 
@@ -459,10 +460,10 @@ func (self *_Assembler) prep_buffer_c() {
 }
 
 func (self *_Assembler) save_buffer() {
-    self.Emit("MOVQ", _ARG_rb, _AX)             // MOVQ rb<>+0(FP), AX
-    self.Emit("MOVQ", _RP, jit.Ptr(_AX,  0))    // MOVQ RP, (AX)
-    self.Emit("MOVQ", _RL, jit.Ptr(_AX,  8))    // MOVQ RL, 8(AX)
-    self.Emit("MOVQ", _RC, jit.Ptr(_AX, 16))    // MOVQ RC, 16(AX)
+    self.Emit("MOVQ", _ARG_rb, _CX)             // MOVQ rb<>+0(FP), CX
+    self.WriteRecNotAX(2, _RP, jit.Ptr(_CX,  0))    // MOVQ RP, (CX)
+    self.Emit("MOVQ", _RL, jit.Ptr(_CX,  8))    // MOVQ RL, 8(CX)
+    self.Emit("MOVQ", _RC, jit.Ptr(_CX, 16))    // MOVQ RC, 16(CX)
 }
 
 func (self *_Assembler) load_buffer() {
@@ -1109,4 +1110,29 @@ func (self *_Assembler) _asm_OP_cond_set(_ *_Instr) {
 func (self *_Assembler) _asm_OP_cond_testc(p *_Instr) {
     self.Emit("BTRQ", jit.Imm(_S_cond), _SP_f)      // BTRQ $_S_cond, SP.f
     self.Xjmp("JC"  , p.vi())
+}
+
+var (
+    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+
+    _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
+)
+
+func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr) {
+    if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
+        panic("rec contains AX!")
+    }
+    self.Emit("MOVQ", _V_writeBarrier, _R10)
+    self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
+    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, _AX)
+    self.xsave(_DI)
+    self.Emit("LEAQ", rec, _DI)
+    self.Emit("MOVQ", _F_gcWriteBarrierAX, _R10)  // MOVQ ${fn}, AX
+    self.Rjmp("CALL", _R10)  
+    self.xload(_DI)  
+    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, rec)
+    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
 }
