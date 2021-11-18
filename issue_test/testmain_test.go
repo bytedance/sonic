@@ -17,38 +17,23 @@
 package issue_test
 
 import (
+    `runtime`
+    `runtime/debug`
     `testing`
-
-    `github.com/bytedance/sonic`
 )
 
-//NOTICE: only DEBUG mode can reproduce problem
-func TestIssue128_PanicInRecurseOP(t *testing.T) {
-    data := &Data{
-        Details: []*Detail{
-            {
-                Info: Info{},
-            },
-        },
-    }
+var debugAsyncGC = true
 
-    body, err := sonic.Marshal(data)
-    if err != nil {
-        t.Error(err)
-        return
-    }
-    t.Log(string(body))
+func TestMain(m *testing.M) {
+    go func ()  {
+        if !debugAsyncGC {
+            return 
+        }
+        println("Begin GC looping...")
+        for {
+            runtime.GC()
+            debug.FreeOSMemory() 
+        }
+    }()
+    m.Run()
 }
-
-type Detail struct {
-    Info Info
-}
-
-type Info struct {
-    A int 
-}
-
-type Data struct {
-    Details []*Detail
-}
-

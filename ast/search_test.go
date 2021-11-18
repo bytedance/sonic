@@ -37,7 +37,9 @@ func TestGC_Search(t *testing.T) {
         t.Fatal(err)
     }
     wg := &sync.WaitGroup{}
-    N := 10000
+    // A limitation of the race detecting is 8128.
+    // See https://github.com/golang/go/issues/43898
+    N := 5000
     for i:=0; i<N; i++ {
         wg.Add(1)
         go func (wg *sync.WaitGroup)  {
