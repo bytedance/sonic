@@ -27,20 +27,6 @@ import (
 //go:linkname _subr__b64encode github.com/chenzhuoyu/base64x._subr__b64encode
 var _subr__b64encode uintptr
 
-type writeBarrier struct {
-	enabled bool    // compiler emits a check of this before calling write barrier
-	pad     [3]byte // compiler uses 32-bit load for "enabled" field
-	needed  bool    // whether we need a write barrier for current GC phase
-	cgo     bool    // whether we need a write barrier for a cgo check
-	alignme uint64  // guarantee alignment so that compiler can use a 32 or 64-bit load
-}
-
-//go:linkname _runtime_writeBarrier runtime.writeBarrier
-var _runtime_writeBarrier writeBarrier
-
-//go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
-func gcWriteBarrierAX()
-
 //go:noescape
 //go:linkname memmove runtime.memmove
 //goland:noinspection GoUnusedParameter

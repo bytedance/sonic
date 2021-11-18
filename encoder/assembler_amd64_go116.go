@@ -1,3 +1,5 @@
+// +build go1.16,!go1.17
+
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -1111,6 +1113,20 @@ func (self *_Assembler) _asm_OP_cond_testc(p *_Instr) {
     self.Emit("BTRQ", jit.Imm(_S_cond), _SP_f)      // BTRQ $_S_cond, SP.f
     self.Xjmp("JC"  , p.vi())
 }
+
+type writeBarrier struct {
+	enabled bool    // compiler emits a check of this before calling write barrier
+	pad     [3]byte // compiler uses 32-bit load for "enabled" field
+	needed  bool    // whether we need a write barrier for current GC phase
+	cgo     bool    // whether we need a write barrier for a cgo check
+	alignme uint64  // guarantee alignment so that compiler can use a 32 or 64-bit load
+}
+
+//go:linkname _runtime_writeBarrier runtime.writeBarrier
+var _runtime_writeBarrier writeBarrier
+
+//go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
+func gcWriteBarrierAX()
 
 var (
     _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
