@@ -1,3 +1,5 @@
+// +build go1.17,!go1.18
+
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -17,10 +19,13 @@
 package encoder
 
 import (
+    `encoding`
+    `encoding/json`
     `unsafe`
 
     _ `github.com/chenzhuoyu/base64x`
 
+    `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/rt`
 )
 
@@ -36,9 +41,9 @@ func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 //goland:noinspection GoUnusedParameter
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 
-//go:linkname assertI2I runtime.assertI2I
+//go:linkname assertI2I2 runtime.assertI2I2
 //goland:noinspection GoUnusedParameter
-func assertI2I(inter *rt.GoType, i rt.GoIface) rt.GoIface
+func assertI2I2(inter *rt.GoType, i rt.GoIface) rt.GoIface
 
 //go:linkname mapiternext runtime.mapiternext
 //goland:noinspection GoUnusedParameter
@@ -51,3 +56,33 @@ func mapiterinit(t *rt.GoMapType, m *rt.GoMap, it *rt.GoMapIterator)
 //go:linkname isValidNumber encoding/json.isValidNumber
 //goland:noinspection GoUnusedParameter
 func isValidNumber(s string) bool
+
+var (
+    _F_assertI2I = jit.Func(assertI2I2)
+)
+
+func asText(v unsafe.Pointer) (string, error) {
+    text := assertI2I2(_T_encoding_TextMarshaler, *(*rt.GoIface)(v))
+    r, e := (*(*encoding.TextMarshaler)(unsafe.Pointer(&text))).MarshalText()
+    return rt.Mem2Str(r), e
+}
+
+func asJson(v unsafe.Pointer) (string, error) {
+    text := assertI2I2(_T_json_Marshaler, *(*rt.GoIface)(v))
+    r, e := (*(*json.Marshaler)(unsafe.Pointer(&text))).MarshalJSON()
+    return rt.Mem2Str(r), e
+}
+
+type writeBarrier struct {
+    enabled bool    // compiler emits a check of this before calling write barrier
+    pad     [3]byte // compiler uses 32-bit load for "enabled" field
+    needed  bool    // whether we need a write barrier for current GC phase
+    cgo     bool    // whether we need a write barrier for a cgo check
+    alignme uint64  // guarantee alignment so that compiler can use a 32 or 64-bit load
+}
+
+//go:linkname _runtime_writeBarrier runtime.writeBarrier
+var _runtime_writeBarrier writeBarrier
+
+//go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
+func gcWriteBarrierAX()
