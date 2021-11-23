@@ -17,11 +17,12 @@
 package decoder
 
 import (
-    `encoding`
-    `encoding/json`
-    `unsafe`
+	"encoding"
+	"encoding/json"
+	// "fmt"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 func decodeTypedPointer(s string, i int, vt *rt.GoType, vp unsafe.Pointer, sb *_Stack, fv uint64) (int, error) {
@@ -37,5 +38,6 @@ func decodeJsonUnmarshaler(vv interface{}, s string) error {
 }
 
 func decodeTextUnmarshaler(vv interface{}, s string) error {
+    // fmt.Printf("vv:%#v\ns:%s\n", vv, s)
     return vv.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(s))
 }

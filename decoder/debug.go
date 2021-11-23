@@ -27,7 +27,7 @@ import (
 
 
 var (
-    debugSyncGC  = os.Getenv("SONIC_SYNC_GC")  != ""
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC") == ""
     debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 )
 
@@ -43,12 +43,7 @@ func println_wrapper(i int, op1 int, op2 int){
     println(i, " Intrs ", op1, _OpNames[op1], "next: ", op2, _OpNames[op2])
 }
 
-func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
-    self.Emit("MOVQ", jit.Imm(int64(p2.op())),  jit.Ptr(_SP, 16))// MOVQ $(p2.op()), 16(SP)
-    self.Emit("MOVQ", jit.Imm(int64(p1.op())),  jit.Ptr(_SP, 8)) // MOVQ $(p1.op()), 8(SP)
-    self.Emit("MOVQ", jit.Imm(int64(i)),  jit.Ptr(_SP, 0))       // MOVQ $(i), (SP)
-    self.call_go(_F_println)
-}
+
 
 func (self *_Assembler) force_gc() {
     self.call_go(_F_gc)
@@ -69,4 +64,13 @@ func (self *_Assembler) debug_instr(i int, v *_Instr) {
         }
         self.force_gc()
     }
+}
+
+var stop bool = true
+
+func (self *_Assembler) debug() {
+    if stop {
+        return 
+    }
+    self.Byte(0xcc)
 }
