@@ -25,6 +25,7 @@ import (
 
     `github.com/bytedance/sonic/internal/resolver`
     `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/option`
 )
 
 type _Op uint8
@@ -371,14 +372,24 @@ func (self _Program) disassemble() string {
 }
 
 type _Compiler struct {
-    pv  bool
-    tab map[reflect.Type]bool
+    opts option.CompileOptions
+    pv   bool
+    tab  map[reflect.Type]bool
+    rec  map[reflect.Type]bool
 }
 
 func newCompiler() *_Compiler {
     return &_Compiler {
         tab: map[reflect.Type]bool{},
     }
+}
+
+func (self *_Compiler) apply(opts option.CompileOptions) *_Compiler {
+    self.opts = opts
+    if self.opts.RecursiveDepth > 0 {
+        self.rec = map[reflect.Type]bool{}
+    }
+    return self
 }
 
 func (self *_Compiler) rescue(ep *error) {
@@ -645,6 +656,9 @@ func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
     if sp >= _MAX_STACK || p.pc() >= _MAX_ILBUF {
         p.rtt(_OP_recurse, vt)
+        if self.opts.RecursiveDepth > 0 {
+            self.rec[vt] = true
+        }
     } else {
         self.compileStructBody(p, sp, vt)
     }
