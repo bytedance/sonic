@@ -23,6 +23,7 @@ import (
     `runtime`
 
     `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/option`
 )
 
 // Options is a set of encoding options.
@@ -150,7 +151,54 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
 // order to reduce the first-hit latency.
-func Pretouch(vt reflect.Type) (err error) {
-    _, err = findOrCompile(rt.UnpackType(vt))
-    return
+//
+// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+// a compile option to set the depth of recursive compile for the nested struct type.
+func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
+    cfg := option.DefaultCompileOptions()
+    for _, opt := range opts {
+        opt(&cfg)
+        break
+    }
+    return pretouchRec(map[reflect.Type]bool{vt:true}, cfg)
+}
+
+func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
+    /* compile function */
+    compiler := newCompiler().apply(opts)
+    encoder := func(vt *rt.GoType) (interface{}, error) {
+        if pp, err := compiler.compile(_vt); err != nil {
+            return nil, err
+        } else {
+            return newAssembler(pp).Load(), nil
+        }
+    }
+
+    /* find or compile */
+    vt := rt.UnpackType(_vt)
+    if val := programCache.Get(vt); val != nil {
+        return nil, nil
+    } else if _, err := programCache.Compute(vt, encoder); err == nil {
+        return compiler.rec, nil
+    } else {
+        return nil, err
+    }
+}
+
+func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
+    if opts.RecursiveDepth < 0 || len(vtm) == 0 {
+        return nil
+    }
+    next := make(map[reflect.Type]bool)
+    for vt, _ := range(vtm) {
+        sub, err := pretouchType(vt, opts)
+        if err != nil {
+            return err
+        }
+        for svt, _ := range(sub) {
+            next[svt] = true
+        }
+    }
+    opts.RecursiveDepth -= 1
+    return pretouchRec(next, opts)
 }

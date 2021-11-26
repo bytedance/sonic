@@ -115,7 +115,7 @@ func referenceFields(v *caching.FieldMap) int64 {
 }
 
 func makeDecoder(vt *rt.GoType) (interface{}, error) {
-    if pp, err := make(_Compiler).compile(vt.Pack()); err != nil {
+    if pp, err := newCompiler().compile(vt.Pack()); err != nil {
         return nil, err
     } else {
         return newAssembler(pp).Load(), nil
