@@ -70,8 +70,8 @@ import (
 const (
     _FP_args   = 72     // 72 bytes to pass arguments and return values for this function
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
-    _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
-    _FP_locals = 96    // 96 bytes for local variables
+    _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
+    _FP_locals = 96     // 96 bytes for local variables
 )
 
 const (
@@ -138,7 +138,7 @@ var (
 )
 
 var (
-    _DF = jit.Reg("R10")    // reuse R10 in generic decoder for flags
+    _DF = jit.Reg("AX")    // reuse AX in generic decoder for flags
     _ET = jit.Reg("AX")
     _EP = jit.Reg("BX")
 )
@@ -330,18 +330,11 @@ func (self *_Assembler) prologue() {
 
 /** Function Calling Helpers **/
 
-var _REG_go = []obj.Addr {
-    _ST,
-    _VP,
-    _IP,
-    _IL,
-    _IC,
-}
-
-var _REG_c = []obj.Addr {
-    _IC,
-    _IL,
-}
+var (
+    _REG_go = []obj.Addr { _ST, _VP, _IP, _IL, _IC }
+    _REG_rt = []obj.Addr { _ST, _VP, _IP, _IL, _IC, _IL }
+    _REG_c  = []obj.Addr { _IC, _IL }
+)
 
 func (self *_Assembler) save(r ...obj.Addr) {
     for i, v := range r {
@@ -364,8 +357,8 @@ func (self *_Assembler) load(r ...obj.Addr) {
 }
 
 func (self *_Assembler) call(fn obj.Addr) {
-    self.Emit("MOVQ", fn, _IL)  // MOVQ ${fn}, R11
-    self.Rjmp("CALL", _IL)      // CALL R11
+    self.Emit("MOVQ", fn, _R9)  // MOVQ ${fn}, R11
+    self.Rjmp("CALL", _R9)      // CALL R11
 }
 
 func (self *_Assembler) call_go(fn obj.Addr) {
@@ -911,12 +904,15 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
     self.Emit("MOVQ" , _IC, _CX)                // MOVQ    IC, CX
     self.Emit("MOVQ" , _ST, _R8)                // MOVQ    ST, R8
     self.Emit("MOVQ" , _ARG_fv, _R9)            // MOVQ    fv, R9
-    self.call_go(_F_decodeTypedPointer)         // CALL_GO decodeTypedPointer
+    self.save(_REG_rt...)
+    self.Emit("MOVQ", _F_decodeTypedPointer, _IL)  // MOVQ ${fn}, R11
+    self.Rjmp("CALL", _IL)      // CALL R11
+    self.load(_REG_rt...)
+    self.Emit("MOVQ" , _AX, _IC)                // MOVQ    AX, IC
     self.Emit("MOVQ" , _BX, _ET)                // MOVQ    BX, ET
     self.Emit("MOVQ" , _CX, _EP)                // MOVQ    CX, EP
     self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
-    self.Emit("MOVQ" , _AX, _IC)                // MOVQ    AX, IC
 }
 
 /** OpCode Assembler Functions **/
@@ -984,7 +980,7 @@ func (self *_Assembler) _asm_OP_any(_ *_Instr) {
     self.Link("_decode_{n}")                                // _decode_{n}:
     self.Emit("MOVQ"   , _ARG_fv, _DF)                      // MOVQ    fv, DF
     self.Emit("MOVQ"   , _ST, jit.Ptr(_SP, 0))              // MOVQ    _ST, (SP)
-    self.call_c(_F_decodeValue)                               // CALL    decodeValue
+    self.call(_F_decodeValue)                               // CALL    decodeValue
     self.Emit("TESTQ"  , _EP, _EP)                          // TESTQ   EP, EP
     self.Sjmp("JNZ"    , _LB_parsing_error)                 // JNZ     _parsing_error
     self.Link("_decode_end_{n}")                            // _decode_end_{n}:
@@ -1077,9 +1073,7 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
     self.parse_signed()                                                 // PARSE int8
-    self.debug()
     self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8)     // RANGE int8
-    self.debug()
     self.Emit("MOVB", _CX, jit.Ptr(_VP, 0))                             // MOVB  CX, (VP)
 }
 
@@ -1588,8 +1582,7 @@ func (self *_Assembler) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
         self.save(_DI)
     }
     self.Emit("LEAQ", rec, _DI)
-    self.Emit("MOVQ", _F_gcWriteBarrierAX, _R9)  
-    self.Rjmp("CALL", _R9)  
+    self.call(_F_gcWriteBarrierAX)  
     if saveDI {
         self.load(_DI)
     }    
@@ -1615,8 +1608,7 @@ func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI 
         self.save(_DI)
     }
     self.Emit("LEAQ", rec, _DI)
-    self.Emit("MOVQ", _F_gcWriteBarrierAX, _R9)
-    self.Rjmp("CALL", _R9)  
+    self.call(_F_gcWriteBarrierAX) 
     if saveDI {
         self.load(_DI)
     } 

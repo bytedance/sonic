@@ -119,6 +119,7 @@ var (
     _BP = jit.Reg("BP")
     _SP = jit.Reg("SP")
     _R8 = jit.Reg("R8")
+    _R9 = jit.Reg("R9")
 )
 
 var (
@@ -253,10 +254,6 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_marshal_text_p : (*_Assembler)._asm_OP_marshal_text_p,
     _OP_cond_set       : (*_Assembler)._asm_OP_cond_set,
     _OP_cond_testc     : (*_Assembler)._asm_OP_cond_testc,
-
-
-    _OP_print_stack    : (*_Assembler)._asm_OP_print_stack,
-
 }
 
 func (self *_Assembler) instr(v *_Instr) {
