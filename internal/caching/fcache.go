@@ -100,10 +100,9 @@ func (self *FieldMap) Set(name string, i int) {
     s.Name = name
 
     /* add the case-insensitive version, prefer the one with smaller field ID */
-    if key := strings.ToLower(name); key != name {
-        if v, ok := self.m[key]; !ok || i < v {
-            self.m[key] = i
-        }
+    key := strings.ToLower(name)
+    if v, ok := self.m[key]; !ok || i < v {
+        self.m[key] = i
     }
 }
 
