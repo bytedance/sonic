@@ -141,8 +141,8 @@ var (
 )
 
 var (
-    _SP_p = jit.Reg("R10")
-    _SP_q = jit.Reg("R11")
+    _SP_p = jit.Reg("R10") // saved on BX when call_c
+    _SP_q = jit.Reg("R11") // saved on BP when call_c
     _SP_x = jit.Reg("R12")
     _SP_f = jit.Reg("R13") 
 )
@@ -166,7 +166,7 @@ var (
 )
 
 var (
-    _REG_ffi = []obj.Addr{_SP_p, _SP_q, _RP, _RL, _RC}
+    _REG_ffi = []obj.Addr{ _RP, _RL, _RC}
     _REG_b64 = []obj.Addr{_SP_p, _SP_q}
 
     _REG_go  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
@@ -497,8 +497,12 @@ func (self *_Assembler) call_b64(pc obj.Addr) {
 }
 
 func (self *_Assembler) call_c(pc obj.Addr) {
+    self.Emit("XCHGQ", _SP_p, _BX)
+    self.Emit("XCHGQ", _SP_q, _BP)
     self.call(pc)               // CALL $pc
     self.xload(_REG_ffi...)     // LOAD $REG_ffi
+    self.Emit("XCHGQ", _SP_p, _BX)
+    self.Emit("XCHGQ", _SP_q, _BP)
 }
 
 func (self *_Assembler) call_go(pc obj.Addr) {

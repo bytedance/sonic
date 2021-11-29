@@ -40,16 +40,16 @@ import (
  *
  *  State Registers:
  *
- *      %rbx : stack base
- *      %r12 : input pointer
- *      %r13 : input length
- *      %r14 : input cursor
+ *      %r13 : stack base
+ *      %r10 : input pointer
+ *      %r12 : input length
+ *      %r11 : input cursor
  *      %r15 : value pointer
  *
  *  Error Registers:
  *
- *      %r10 : error type register
- *      %r11 : error pointer register
+ *      %rax : error type register
+ *      %rbx : error pointer register
  */
 
 /** Function Prototype & Stack Map
@@ -130,9 +130,9 @@ var (
 )
 
 var (
-    _IC = jit.Reg("R10")
-    _IL = jit.Reg("R11")
-    _IP = jit.Reg("R12")
+    _IP = jit.Reg("R10")  // saved on BP when callc
+    _IC = jit.Reg("R11")  // saved on BX when call_c
+    _IL = jit.Reg("R12")
     _ST = jit.Reg("R13")
     _VP = jit.Reg("R15")
 )
@@ -333,7 +333,6 @@ func (self *_Assembler) prologue() {
 var (
     _REG_go = []obj.Addr { _ST, _VP, _IP, _IL, _IC }
     _REG_rt = []obj.Addr { _ST, _VP, _IP, _IL, _IC, _IL }
-    _REG_c  = []obj.Addr { _IC, _IL }
 )
 
 func (self *_Assembler) save(r ...obj.Addr) {
@@ -367,10 +366,16 @@ func (self *_Assembler) call_go(fn obj.Addr) {
     self.load(_REG_go...)   // LOAD $REG_go
 }
 
-func (self *_Assembler) call_c(fn obj.Addr) {
-    self.save(_REG_c...)
+func (self *_Assembler) callc(fn obj.Addr) {
+    self.Emit("XCHGQ", _IP, _BP)
     self.call(fn)
-    self.load(_REG_c...)
+    self.Emit("XCHGQ", _IP, _BP)
+}
+
+func (self *_Assembler) call_c(fn obj.Addr) {
+    self.Emit("XCHGQ", _IC, _BX)
+    self.callc(fn)
+    self.Emit("XCHGQ", _IC, _BX)
 }
 
 func (self *_Assembler) call_sf(fn obj.Addr) {
@@ -378,7 +383,7 @@ func (self *_Assembler) call_sf(fn obj.Addr) {
     self.Emit("MOVQ", _IC, _ARG_ic)                     // MOVQ IC, ic<>+16(FP)
     self.Emit("LEAQ", _ARG_ic, _SI)                     // LEAQ ic<>+16(FP), SI
     self.Emit("LEAQ", jit.Ptr(_ST, _FsmOffset), _DX)    // LEAQ _FsmOffset(ST), DX
-    self.call_c(fn)
+    self.callc(fn)
     self.Emit("MOVQ", _ARG_ic, _IC)                     // MOVQ ic<>+16(FP), IC
 }
 
@@ -387,7 +392,7 @@ func (self *_Assembler) call_vf(fn obj.Addr) {
     self.Emit("MOVQ", _IC, _ARG_ic)     // MOVQ IC, ic<>+16(FP)
     self.Emit("LEAQ", _ARG_ic, _SI)     // LEAQ ic<>+16(FP), SI
     self.Emit("LEAQ", _VAR_st, _DX)     // LEAQ st, DX
-    self.call_c(fn)
+    self.callc(fn)
     self.Emit("MOVQ", _ARG_ic, _IC)     // MOVQ ic<>+16(FP), IC
 }
 
@@ -1390,11 +1395,10 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , _R9, _VAR_ss_R9)                         // MOVQ    R9, ss.R9
     self.Emit("MOVQ" , _VAR_sv_p, _AX)                          // MOVQ    _VAR_sv_p, AX
     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Name), _CX)             // MOVQ    FieldEntry.Name(DI), CX
-    // self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))                    // MOVQ    AX, (SP)
-    self.Emit("MOVQ" , _CX, _BX)                    // MOVQ    CX, 8(SP)
-    self.Emit("MOVQ" , _DX, _CX)                   // MOVQ    DX, 16(SP)
+    self.Emit("MOVQ" , _CX, _BX)                                // MOVQ    CX, 8(SP)
+    self.Emit("MOVQ" , _DX, _CX)                                // MOVQ    DX, 16(SP)
     self.call_go(_F_memequal)                                   // CALL_GO memequal
-    self.Emit("MOVB" , _AX, _DX)                   // MOVB    24(SP), DX
+    self.Emit("MOVB" , _AX, _DX)                                // MOVB    24(SP), DX
     self.Emit("MOVQ" , _VAR_ss_AX, _AX)                         // MOVQ    ss.AX, AX
     self.Emit("MOVQ" , _VAR_ss_CX, _CX)                         // MOVQ    ss.CX, CX
     self.Emit("MOVQ" , _VAR_ss_SI, _SI)                         // MOVQ    ss.SI, SI
@@ -1459,7 +1463,7 @@ func (self *_Assembler) _asm_OP_lspace(_ *_Instr) {
     self.Emit("MOVQ"   , _IP, _DI)                      // MOVQ    IP, DI
     self.Emit("MOVQ"   , _IL, _SI)                      // MOVQ    IL, SI
     self.Emit("MOVQ"   , _IC, _DX)                      // MOVQ    IC, DX
-    self.call_c(_F_lspace)                                // CALL    lspace
+    self.callc(_F_lspace)                                // CALL    lspace
     self.Emit("TESTQ"  , _AX, _AX)                      // TESTQ   AX, AX
     self.Sjmp("JS"     , _LB_parsing_error_v)           // JS      _parsing_error_v
     self.Emit("CMPQ"   , _AX, _IL)                      // CMPQ    AX, IL

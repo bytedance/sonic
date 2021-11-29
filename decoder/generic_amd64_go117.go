@@ -33,19 +33,19 @@ import (
 
 /** Crucial Registers:
  *
- *      ST(BX) && 0(SP) : ro, decoder stack
+ *      ST(R13) && 0(SP) : ro, decoder stack
  *      DF(AX)  : ro, decoder flags
- *      EP(R11) : wo, error pointer
- *      IP(R12) : ro, input pointer
- *      IL(R13) : ro, input length
- *      IC(R14) : rw, input cursor
+ *      EP(BX) : wo, error pointer
+ *      IP(R10) : ro, input pointer
+ *      IL(R12) : ro, input length
+ *      IC(R11) : rw, input cursor
  *      VP(R15) : ro, value pointer (to an interface{})
  */
 
 const (
     _VD_args   = 8      // 8 bytes  for passing arguments to this functions
     _VD_fargs  = 64     // 64 bytes for passing arguments to other Go functions
-    _VD_saves  = 88     // 48 bytes for saving the registers before CALL instructions
+    _VD_saves  = 48     // 48 bytes for saving the registers before CALL instructions
     _VD_locals = 40     // 40 bytes for local variables
 )
 
@@ -111,10 +111,16 @@ func (self *_ValueDecoder) call_go(fn obj.Addr) {
     self.load(_REG_go...)   // LOAD $REG_go
 }
 
-func (self *_ValueDecoder) call_c(fn obj.Addr) {
-    self.save(_REG_c...)
+func (self *_ValueDecoder) callc(fn obj.Addr) {
+    self.Emit("XCHGQ", _IP, _BP)
     self.call(fn)
-    self.load(_REG_c...)
+    self.Emit("XCHGQ", _IP, _BP)
+}
+
+func (self *_ValueDecoder) call_c(fn obj.Addr) {
+    self.Emit("XCHGQ", _IC, _BX)
+    self.callc(fn)
+    self.Emit("XCHGQ", _IC, _BX)
 }
 
 /** Decoder Assembler **/
@@ -185,8 +191,6 @@ var _R_tab = map[int]string {
 
 func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
-    self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
-    self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
 
     /* initialize the state machine */
     self.Emit("XORL", _CX, _CX)                                 // XORL CX, CX
@@ -195,12 +199,10 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                // MOVQ CX, ST.Sp
     self.WriteRecNotAX(0, _VP, jit.Ptr(_ST, _ST_Vp), false)                // MOVQ VP, ST.Vp[0]
     self.Emit("MOVQ", jit.Imm(_S_val), jit.Ptr(_ST, _ST_Vt))    // MOVQ _S_val, ST.Vt[0]
-    self.debug_gc(1)
     self.Sjmp("JMP" , "_next")                                  // JMP  _next
 
     /* set the value from previous round */
     self.Link("_set_value")                                 // _set_value:
-    self.debug_gc(2)
     self.Emit("MOVL" , jit.Imm(_S_vmask), _DX)              // MOVL  _S_vmask, DX
     self.Emit("MOVQ" , jit.Ptr(_ST, _ST_Sp), _CX)           // MOVQ  ST.Sp, CX
     self.Emit("MOVQ" , jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)   // MOVQ  ST.Vt[CX], AX
@@ -214,7 +216,6 @@ func (self *_ValueDecoder) compile() {
 
     /* check for value stack */
     self.Link("_next")                              // _next:
-    self.debug_gc(3)
     self.Emit("MOVQ" , jit.Ptr(_ST, _ST_Sp), _AX)   // MOVQ  ST.Sp, AX
     self.Emit("TESTQ", _AX, _AX)                    // TESTQ AX, AX
     self.Sjmp("JS"   , "_return")                   // JS    _return
@@ -249,7 +250,6 @@ func (self *_ValueDecoder) compile() {
 
     /* fast path: use lookup table to select decoder */
     self.Link("_decode_fast")                           // _decode_fast:
-    self.debug_gc(4)
     self.Byte(0x48, 0x8d, 0x3d)                         // LEAQ    ?(PC), DI
     self.Sref("_decode_tab", 4)                         // ....    &_decode_tab
     self.Emit("MOVLQSX", jit.Sib(_DI, _AX, 4, 0), _AX)  // MOVLQSX (DI)(AX*4), AX
@@ -261,13 +261,12 @@ func (self *_ValueDecoder) compile() {
 
     /* decode with native decoder */
     self.Link("_decode_native")         // _decode_native:
-    self.debug_gc(5)
     self.Emit("MOVQ", _IP, _DI)         // MOVQ IP, DI
     self.Emit("MOVQ", _IL, _SI)         // MOVQ IL, SI
     self.Emit("MOVQ", _IC, _DX)         // MOVQ IC, DX
     self.Emit("LEAQ", _VAR_ss, _CX)     // LEAQ ss, CX
     self.Emit("MOVL", jit.Imm(1), _R8)  // MOVL $1, R8
-    self.call_c(_F_value)               // CALL value
+    self.callc(_F_value)               // CALL value
     self.Emit("MOVQ", _AX, _IC)         // MOVQ AX, IC
 
     /* check for errors */
@@ -287,13 +286,11 @@ func (self *_ValueDecoder) compile() {
 
     /** V_EOF **/
     self.Link("_decode_V_EOF")          // _decode_V_EOF:
-    self.debug_gc(6)
     self.Emit("MOVL", _E_eof, _EP)      // MOVL _E_eof, EP
     self.Sjmp("JMP" , "_error")         // JMP  _error
 
     /** V_NULL **/
     self.Link("_decode_V_NULL")                 // _decode_V_NULL:
-    self.debug_gc(7)
     self.Emit("XORL", _R8, _R8)                 // XORL R8, R8
     self.Emit("XORL", _R9, _R9)                 // XORL R9, R9
     self.Emit("LEAQ", jit.Ptr(_IC, -4), _DI)    // LEAQ -4(IC), DI
@@ -301,7 +298,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_TRUE **/
     self.Link("_decode_V_TRUE")                 // _decode_V_TRUE:
-    self.debug_gc(8)
     self.Emit("MOVQ", _T_bool, _R8)             // MOVQ _T_bool, R8
     // TODO: maybe modified by users?
     self.Emit("MOVQ", _V_true, _R9)             // MOVQ _V_true, R9 
@@ -310,7 +306,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_FALSE **/
     self.Link("_decode_V_FALSE")                // _decode_V_FALSE:
-    self.debug_gc(9)
     self.Emit("MOVQ", _T_bool, _R8)             // MOVQ _T_bool, R8
     self.Emit("MOVQ", _V_false, _R9)            // MOVQ _V_false, R9
     self.Emit("LEAQ", jit.Ptr(_IC, -5), _DI)    // LEAQ -5(IC), DI
@@ -318,7 +313,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_ARRAY **/
     self.Link("_decode_V_ARRAY")                            // _decode_V_ARRAY
-    self.debug_gc(10)
     self.Emit("MOVL", jit.Imm(_S_vmask), _DX)               // MOVL _S_vmask, DX
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ ST.Sp, CX
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)    // MOVQ ST.Vt[CX], AX
@@ -357,7 +351,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_OBJECT **/
     self.Link("_decode_V_OBJECT")                                       // _decode_V_OBJECT:
-    self.debug_gc(11)
     self.Emit("MOVL", jit.Imm(_S_vmask), _DX)                           // MOVL    _S_vmask, DX
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)                        // MOVQ    ST.Sp, CX
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)                // MOVQ    ST.Vt[CX], AX
@@ -374,7 +367,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_STRING **/
     self.Link("_decode_V_STRING")       // _decode_V_STRING:
-    self.debug_gc(12)
     self.Emit("XORL", _DX, _DX)         // XORL DX, DX
     self.Emit("MOVQ", _VAR_ss_Iv, _CX)  // MOVQ ss.Iv, CX
     self.Emit("MOVQ", _IC, _AX)         // MOVQ IC, AX
@@ -470,7 +462,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_DOUBLE **/
     self.Link("_decode_V_DOUBLE")                           // _decode_V_DOUBLE:
-    self.debug_gc(13)
     self.Emit("BTQ"  , jit.Imm(_F_use_number), _VAR_df)     // BTQ     _F_use_number, df
     self.Sjmp("JC"   , "_use_number")                       // JC      _use_number
     self.Emit("MOVSD", _VAR_ss_Dv, _X0)                     // MOVSD   ss.Dv, X0
@@ -478,7 +469,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_INTEGER **/
     self.Link("_decode_V_INTEGER")                          // _decode_V_INTEGER:
-    self.debug_gc(14)
     self.Emit("BTQ"     , jit.Imm(_F_use_number), _VAR_df)  // BTQ      _F_use_number, df
     self.Sjmp("JC"      , "_use_number")                    // JC       _use_number
     self.Emit("BTQ"     , jit.Imm(_F_use_int64), _VAR_df)   // BTQ      _F_use_int64, df
@@ -520,7 +510,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_KEY_SEP **/
     self.Link("_decode_V_KEY_SEP")                                          // _decode_V_KEY_SEP:
-    self.debug_gc(15)
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)                            // MOVQ ST.Sp, CX
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)                    // MOVQ ST.Vt[CX], AX
     self.Emit("CMPQ", _AX, jit.Imm(_S_obj_delim))                           // CMPQ AX, _S_obj_delim
@@ -531,7 +520,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_ELEM_SEP **/
     self.Link("_decode_V_ELEM_SEP")                             // _decode_V_ELEM_SEP:
-    self.debug_gc(16)
     self.Emit("MOVQ"    , jit.Imm(_S_obj), _AX)                 // MOVQ     _S_obj, AX
     self.Emit("MOVQ"    , jit.Imm(_S_obj_x), _DX)               // MOVQ     _S_obj_x, DX
     self.Emit("MOVQ"    , jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ     ST.Sp, CX
@@ -561,7 +549,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_ARRAY_END **/
     self.Link("_decode_V_ARRAY_END")                        // _decode_V_ARRAY_END:
-    self.debug_gc(17)
     self.Emit("XORL", _DX, _DX)                             // XORL DX, DX
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ ST.Sp, CX
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)    // MOVQ ST.Vt[CX], AX
@@ -586,7 +573,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_OBJECT_END **/
     self.Link("_decode_V_OBJECT_END")                       // _decode_V_OBJECT_END:
-    self.debug_gc(18)
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ ST.Sp, CX
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)    // MOVQ ST.Vt[CX], AX
     self.Emit("CMPQ", _AX, jit.Imm(_S_obj))                 // CMPQ AX, _S_obj
@@ -598,13 +584,11 @@ func (self *_ValueDecoder) compile() {
 
     /* return from decoder */
     self.Link("_return")                            // _return:
-    self.debug_gc(19)
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
     self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Vp))    // MOVQ EP, ST.Vp[0]
     self.Link("_epilogue")                          // _epilogue:
-    self.debug_gc(20)
     self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)     // SUBQ _FsmOffset, _ST
-    self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
+    // self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_VD_size), _SP)       // ADDQ $_VD_size, SP
     self.Emit("RET")                                // RET
 
@@ -655,7 +639,7 @@ func (self *_ValueDecoder) compile() {
 
     /* invalid value type, never returns */
     self.Link("_invalid_vtype")
-    self.call_c(_F_invalid_vtype)                 // CALL invalid_type
+    self.call_go(_F_invalid_vtype)                 // CALL invalid_type
     self.Emit("UD2")                            // UD2
 
     /* switch jump table */

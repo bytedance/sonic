@@ -24,14 +24,14 @@ TEXT ·decodeValueStub(SB), NOSPLIT, $0 - 72
     NO_LOCAL_POINTERS
     PXOR  X0, X0
     MOVOU X0, rv+48(FP)
-    MOVQ  st+0(FP), R13
-    MOVQ  sp+8(FP), R12
-    MOVQ  sn+16(FP), R11
-    MOVQ  ic+24(FP), R10
+    MOVQ  st+0(FP) , R13
+    MOVQ  sp+8(FP) , R10
+    MOVQ  sn+16(FP), R12
+    MOVQ  ic+24(FP), R11
     MOVQ  vp+32(FP), R15
     MOVQ  df+40(FP), AX
     MOVQ  ·_subr_decode_value(SB), BX
     CALL  BX
-    MOVQ  R10, rp+48(FP)
+    MOVQ  R11, rp+48(FP)
     MOVQ  BX, ex+56(FP)
     RET
