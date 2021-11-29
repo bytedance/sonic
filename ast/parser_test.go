@@ -310,9 +310,10 @@ func BenchmarkParser_Parallel_Sonic(b *testing.B) {
 func BenchmarkGetOne_Gjson(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
-        ast := gjson.Get(_TwitterJson, "statuses.2.id")
-        node := ast.Int()
-        if node != 249289491129438208 {
+        ast := gjson.Parse(_TwitterJson)
+        node := ast.Get("statuses.2.id")
+        v := node.Int()
+        if v != 249289491129438208 {
             b.Fatal(node)
         }
     }
@@ -344,14 +345,15 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
 func BenchmarkGetSeven_Gjson(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
-        ast := gjson.Get(_TwitterJson, "statuses.3.id")
-        ast = gjson.Get(_TwitterJson, "statuses.3.user.entities.description")
-        ast = gjson.Get(_TwitterJson, "statuses.3.user.entities.url.urls")
-        ast = gjson.Get(_TwitterJson, "statuses.3.user.entities.url")
-        ast = gjson.Get(_TwitterJson, "statuses.3.user.created_at")
-        ast = gjson.Get(_TwitterJson, "statuses.3.user.name")
-        ast = gjson.Get(_TwitterJson, "statuses.3.text")
-        if ast.Value() == nil {
+        ast := gjson.Parse(_TwitterJson)
+        node := ast.Get("statuses.3.id")
+        node = ast.Get( "statuses.3.user.entities.description")
+        node = ast.Get( "statuses.3.user.entities.url.urls")
+        node = ast.Get( "statuses.3.user.entities.url")
+        node = ast.Get( "statuses.3.user.created_at")
+        node = ast.Get( "statuses.3.user.name")
+        node = ast.Get( "statuses.3.text")
+        if node.Value() == nil {
             b.Fail()
         }
     }
@@ -374,7 +376,7 @@ func BenchmarkGetSeven_Jsoniter(b *testing.B) {
     }
 }
 
-func BenchmarkGetSeven_SonicParser(b *testing.B) {
+func BenchmarkGetSeven_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
