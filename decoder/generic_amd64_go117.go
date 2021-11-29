@@ -191,6 +191,8 @@ var _R_tab = map[int]string {
 
 func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
+    self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
+    self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
 
     /* initialize the state machine */
     self.Emit("XORL", _CX, _CX)                                 // XORL CX, CX
@@ -588,7 +590,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", _EP, jit.Ptr(_ST, _ST_Vp))    // MOVQ EP, ST.Vp[0]
     self.Link("_epilogue")                          // _epilogue:
     self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)     // SUBQ _FsmOffset, _ST
-    // self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
+    self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_VD_size), _SP)       // ADDQ $_VD_size, SP
     self.Emit("RET")                                // RET
 

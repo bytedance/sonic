@@ -1576,16 +1576,8 @@ func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
     self.call_go(_F_println)
 }
 
-type writeBarrier struct {
-	enabled bool    // compiler emits a check of this before calling write barrier
-	pad     [3]byte // compiler uses 32-bit load for "enabled" field
-	needed  bool    // whether we need a write barrier for current GC phase
-	cgo     bool    // whether we need a write barrier for a cgo check
-	alignme uint64  // guarantee alignment so that compiler can use a 32 or 64-bit load
-}
-
 //go:linkname _runtime_writeBarrier runtime.writeBarrier
-var _runtime_writeBarrier writeBarrier
+var _runtime_writeBarrier uintptr
 
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
 func gcWriteBarrierAX()
