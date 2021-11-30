@@ -139,27 +139,31 @@ func testOpCode(t *testing.T, ops *testOps) {
 }
 
 func TestAssembler_OpCode(t *testing.T) {
-    tests := []testOps{{
+    tests := []testOps{
+    {
         key: "_OP_any/stdlib",
         ins: []_Instr{newInsOp(_OP_any)},
         src: `{"a": [1, 2, 3]}`,
         exp: map[string]interface{}{"a": []interface{}{1.0, 2.0, 3.0}},
         val: new(interface{}),
-    }, {
+    }, 
+    {
         key: "_OP_any/use_int64",
         ins: []_Instr{newInsOp(_OP_any)},
         src: `{"a": [1, 2, 3]}`,
         opt: 1 << _F_use_int64,
         exp: map[string]interface{}{"a": []interface{}{int64(1), int64(2), int64(3)}},
         val: new(interface{}),
-    }, {
+    }, 
+    {
         key: "_OP_any/use_number",
         ins: []_Instr{newInsOp(_OP_any)},
         src: `{"a": [1, 2, 3]}`,
         opt: 1 << _F_use_number,
         exp: map[string]interface{}{"a": []interface{}{json.Number("1"), json.Number("2"), json.Number("3")}},
         val: new(interface{}),
-    }, {
+    }, 
+    {
         key: "_OP_str/plain",
         ins: []_Instr{newInsOp(_OP_str)},
         src: `hello, world"`,
@@ -460,7 +464,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: `foo\nbar"`,
         exp: map[string]int{"foo\nbar": 0},
         val: map[string]int{},
-    }, {
+    }, 
+    {
         key: "_OP_map_key_utext/value",
         ins: []_Instr{newInsVt(_OP_map_key_utext, reflect.TypeOf(map[UtextValue]int{}))},
         src: `foo"`,
@@ -473,7 +478,8 @@ func TestAssembler_OpCode(t *testing.T) {
             assert.Equal(t, []byte("foo"), utextVar)
         },
         val: map[UtextValue]int{},
-    }, {
+    }, 
+    {
         key: "_OP_map_key_utext/pointer",
         ins: []_Instr{newInsVt(_OP_map_key_utext, reflect.TypeOf(map[*UtextStruct]int{}))},
         src: `foo"`,
@@ -485,20 +491,22 @@ func TestAssembler_OpCode(t *testing.T) {
             }
         },
         val: map[*UtextStruct]int{},
-    }, {
+    }, 
+    {
         key: "_OP_map_key_utext_p",
         ins: []_Instr{newInsVt(_OP_map_key_utext_p, reflect.TypeOf(map[UtextStruct]int{}))},
         src: `foo"`,
         exp: map[UtextStruct]int{UtextStruct{V: "foo"}: 0},
         val: map[UtextStruct]int{},
-    }, {
+    }, 
+    {
         key: "_OP_array_skip",
         ins: []_Instr{newInsOp(_OP_array_skip)},
         src: `[1,2.0,true,false,null,"asdf",{"qwer":[1,2,3,4]}]`,
         pos: 1,
         vfn: func(i int, _ interface{}) { assert.Equal(t, 49, i) },
         val: nil,
-    }, {
+    },{
         key: "_OP_slice_init",
         ins: []_Instr{newInsVt(_OP_slice_init, reflect.TypeOf(0))},
         src: "",
@@ -652,7 +660,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "-1234567",
         exp: int32(-1234567),
         val: new(int32),
-    }}
+    },
+    }
     for _, tv := range tests {
         t.Run(tv.key, func(t *testing.T) {
             testOpCode(t, &tv)

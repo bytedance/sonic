@@ -28,7 +28,7 @@ import (
 )
 
 //go:nosplit
-func decodeValueStub(_ *_Stack, _ string, _ int, _ *interface{}, _ uint64) (int, types.ParsingError)
+func decodeValueStub(st *_Stack, sp string, ic int, vp *interface{}, df uint64) (int, types.ParsingError)
 
 func decodeValue(k *_Stack, s string, i int, f uint64) (p int, v interface{}, e types.ParsingError) {
     p, e = decodeValueStub(k, s, i, &v, f)

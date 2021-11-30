@@ -17,12 +17,13 @@
 package issue_test
 
 import (
+    `os`
     `runtime`
     `runtime/debug`
     `testing`
 )
 
-var debugAsyncGC = true
+var debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 
 func TestMain(m *testing.M) {
     go func ()  {

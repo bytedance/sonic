@@ -17,7 +17,6 @@
 package encoder
 
 import (
-    `encoding`
     `reflect`
     `sync`
     `unsafe`
@@ -49,11 +48,6 @@ func init() {
     }
 }
 
-func asText(v unsafe.Pointer) (string, error) {
-    text := assertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(v))
-    r, e := (*(*encoding.TextMarshaler)(unsafe.Pointer(&text))).MarshalText()
-    return rt.Mem2Str(r), e
-}
 
 func newIterator() *_MapIterator {
     if v := iteratorPool.Get(); v == nil {

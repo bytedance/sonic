@@ -17,11 +17,11 @@
 package decoder
 
 import (
-    `encoding`
-    `encoding/json`
-    `unsafe`
+	`encoding`
+	`encoding/json`
+	`unsafe`
 
-    `github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/internal/rt`
 )
 
 func decodeTypedPointer(s string, i int, vt *rt.GoType, vp unsafe.Pointer, sb *_Stack, fv uint64) (int, error) {
