@@ -194,7 +194,7 @@ func TestSearchNotExist(t *testing.T) {
     }
 }
 
-func BenchmarkSearchOne_Gjson(b *testing.B) {
+func BenchmarkGetOne_Gjson(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     for i := 0; i < b.N; i++ {
         ast := gjson.Get(_TwitterJson, "statuses.3.id")
@@ -205,7 +205,7 @@ func BenchmarkSearchOne_Gjson(b *testing.B) {
     }
 }
 
-func BenchmarkSearchOne_Jsoniter(b *testing.B) {
+func BenchmarkGetOne_Jsoniter(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     data := []byte(_TwitterJson)
     for i := 0; i < b.N; i++ {
@@ -217,7 +217,7 @@ func BenchmarkSearchOne_Jsoniter(b *testing.B) {
     }
 }
 
-func BenchmarkSearchOne_Sonic(b *testing.B) {
+func BenchmarkGetOne_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     ast := NewSearcher(_TwitterJson)
     for i := 0; i < b.N; i++ {
@@ -232,9 +232,8 @@ func BenchmarkSearchOne_Sonic(b *testing.B) {
     }
 }
 
-func BenchmarkSearchOne_Parallel_Gjson(b *testing.B) {
+func BenchmarkGetOne_Parallel_Gjson(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
-    b.SetParallelism(parallelism)
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
             ast := gjson.Get(_TwitterJson, "statuses.3.id")
@@ -246,10 +245,9 @@ func BenchmarkSearchOne_Parallel_Gjson(b *testing.B) {
     })
 }
 
-func BenchmarkSearchOne_Parallel_Jsoniter(b *testing.B) {
+func BenchmarkGetOne_Parallel_Jsoniter(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     data := []byte(_TwitterJson)
-    b.SetParallelism(parallelism)
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
             ast := jsoniter.Get(data, "statuses", 3, "id")
@@ -261,9 +259,8 @@ func BenchmarkSearchOne_Parallel_Jsoniter(b *testing.B) {
     })
 }
 
-func BenchmarkSearchOne_Parallel_Sonic(b *testing.B) {
+func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
-    b.SetParallelism(parallelism)
     b.RunParallel(func(pb *testing.PB) {
         ast := NewSearcher(_TwitterJson)
         for pb.Next() {
@@ -277,6 +274,25 @@ func BenchmarkSearchOne_Parallel_Sonic(b *testing.B) {
             }
         }
     })
+}
+
+func BenchmarkSetOne_Sonic(b *testing.B) {
+	node, err := NewSearcher(_TwitterJson).GetByPath("statuses", 3)
+	if err != nil {
+		b.Fatal(err)
+	}
+	n := NewNumber(strconv.Itoa(math.MaxInt32))
+	_, err = node.Set("id", n)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.SetBytes(int64(len(_TwitterJson)))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		node, _ := NewSearcher(_TwitterJson).GetByPath("statuses", 3)
+		_, _ = node.Set("id", n)
+	}
 }
 
 func BenchmarkSetOne_Sjson(b *testing.B) {
@@ -309,7 +325,7 @@ func BenchmarkSetOne_Jsoniter(b *testing.B) {
 	}
 }
 
-func BenchmarkSetOne_Sonic(b *testing.B) {
+func BenchmarkSetOne_Parallel_Sonic(b *testing.B) {
 	node, err := NewSearcher(_TwitterJson).GetByPath("statuses", 3)
 	if err != nil {
 		b.Fatal(err)
@@ -321,11 +337,13 @@ func BenchmarkSetOne_Sonic(b *testing.B) {
 	}
 	b.SetBytes(int64(len(_TwitterJson)))
 	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		node, _ := NewSearcher(_TwitterJson).GetByPath("statuses", 3)
-		_, _ = node.Set("id", n)
-	}
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            node, _ := NewSearcher(_TwitterJson).GetByPath("statuses", 3)
+		    _, _ = node.Set("id", n)
+        }
+    })
 }
 
 func BenchmarkSetOne_Parallel_Sjson(b *testing.B) {
@@ -359,26 +377,5 @@ func BenchmarkSetOne_Parallel_Jsoniter(b *testing.B) {
             node, _ := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
             node["id"] = math.MaxInt32
             }
-    })
-}
-
-func BenchmarkSetOne_Parallel_Sonic(b *testing.B) {
-	node, err := NewSearcher(_TwitterJson).GetByPath("statuses", 3)
-	if err != nil {
-		b.Fatal(err)
-	}
-	n := NewNumber(strconv.Itoa(math.MaxInt32))
-	_, err = node.Set("id", n)
-	if err != nil {
-		b.Fatal(err)
-	}
-	b.SetBytes(int64(len(_TwitterJson)))
-	b.ReportAllocs()
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            node, _ := NewSearcher(_TwitterJson).GetByPath("statuses", 3)
-		    _, _ = node.Set("id", n)
-        }
     })
 }
