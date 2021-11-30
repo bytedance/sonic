@@ -3,7 +3,7 @@
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT (just-in-time compiling) and SIMD (single-instruction-multiple-data).
 
 ## Requirement
-- Go 1.15/1.16
+- Go 1.15/1.16/1.17
 - Linux/darwin OS
 - Amd64 CPU with AVX instruction set
 
@@ -63,9 +63,6 @@ More detail see [decoder/decoder_test.go](https://github.com/bytedance/sonic/blo
 
 ## How it works
 See [INTRODUCTION.md](INTRODUCTION.md)
-
-## Fuzzing
-[sonic-fuzz](https://github.com/liuq19/sonic-fuzz) is the repository for fuzzing tests. If you find any bug, please report the issue to sonic.
 
 ## Usage
 
@@ -211,12 +208,16 @@ Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as 
 import (
     "reflect"
     "github.com/bytedance/sonic"
-)
-
-func init() {
-    var v HugeStruct
-    err := sonic.Pretouch(reflect.TypeOf(v))
-}
+    "github.com/bytedance/sonic/option"
+ )
+ 
+ func init() {
+     var v HugeStruct
+    // For most large types (nesting depth <= 5)
+     err := sonic.Pretouch(reflect.TypeOf(v))
+    // If the type is too deep nesting (nesting depth > 5),
+    // you can set compile recursive depth in Pretouch for better stability in JIT.
+    err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
 ```
 **CAUTION:**  use the **STRUCT instead of its POINTER** to `Pretouch()`, otherwise it won't work when you pass the pointer to `Marshal()/Unmarshal()`!  
 
