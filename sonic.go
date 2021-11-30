@@ -23,6 +23,7 @@ import (
     `github.com/bytedance/sonic/ast`
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/encoder`
+    `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/native/types`
 )
 
@@ -74,10 +75,13 @@ func UnmarshalString(buf string, val interface{}) error {
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
 // order to reduce the first-hit latency.
-func Pretouch(vt reflect.Type) error {
-    if err := encoder.Pretouch(vt); err != nil {
+//
+// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+// a compile option to set the depth of recursive compile for the nested struct type.
+func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
+    if err := encoder.Pretouch(vt, opts...); err != nil {
         return err
-    } else if err = decoder.Pretouch(vt); err != nil {
+    } else if err = decoder.Pretouch(vt, opts...); err != nil {
         return err
     } else {
         return nil

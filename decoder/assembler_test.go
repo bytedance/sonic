@@ -679,7 +679,7 @@ type JsonStruct struct {
 func TestAssembler_DecodeStruct(t *testing.T) {
     var v JsonStruct
     s := `{"A": 123, "B": "asdf", "C": {"qwer": 4567}, "D": [1, 2, 3, 4, 5]}`
-    p, err := make(_Compiler).compile(reflect.TypeOf(v))
+    p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
     k := new(_Stack)
     a := newAssembler(p)
@@ -702,7 +702,7 @@ type Tx struct {
 func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
     var v Tx
     s := `{"x": 1}`
-    p, err := make(_Compiler).compile(reflect.TypeOf(v))
+    p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
     k := new(_Stack)
     a := newAssembler(p)
@@ -716,7 +716,7 @@ func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
 func TestAssembler_DecodeByteSlice_Bin(t *testing.T) {
     var v []byte
     s := `"aGVsbG8sIHdvcmxk"`
-    p, err := make(_Compiler).compile(reflect.TypeOf(v))
+    p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
     k := new(_Stack)
     a := newAssembler(p)
@@ -730,7 +730,7 @@ func TestAssembler_DecodeByteSlice_Bin(t *testing.T) {
 func TestAssembler_DecodeByteSlice_List(t *testing.T) {
     var v []byte
     s := `[104, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100]`
-    p, err := make(_Compiler).compile(reflect.TypeOf(v))
+    p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
     k := new(_Stack)
     a := newAssembler(p)
