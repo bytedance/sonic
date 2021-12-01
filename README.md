@@ -225,7 +225,7 @@ import (
 ```
 
 ### Pass string or []byte?
-For alignment to encoding/json, we provide API to pass `[]byte` as argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString`, `GetFromString` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte.
+For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString` and `GetFromString` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte.
 
 ### Better performance for generic data
 In **fully-parsed** scenario, `Unmarshal()` performs better than `Get()`+`Node.Interface()`. But if you only have a part of schema for specific json, you can combine `Get()` and `Unmarshal()` together:
@@ -248,8 +248,8 @@ err = user.Check()
 go someFunc(user)
 ```
 Why? Because `ast.Node` stores its children using `array`: 
-- `Map`'s performance degrades a lot once rehashing triggered, but `ast.Node` doesn't has this concern;
+- `Map`'s performance degrades a lot once rehashing triggered, but `ast.Node` doesn't have this concern;
 - **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**.
 - Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while in most cases you don't need them all;
 
-**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while still works faster than converting to `map` or `interface{}` 
+**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}` 
