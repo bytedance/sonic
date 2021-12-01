@@ -60,17 +60,35 @@ type _Decoder func(
     fv uint64,
 ) (int, error)
 
+var _KeepAlive struct {
+    s string
+    i int
+    vp unsafe.Pointer
+    sb *_Stack
+    fv uint64
+    ret int
+    err error
+    frame [_FP_offs]byte
+}
+
 var errCallShadow = errors.New("DON'T CALL THIS!")
 
 //go:nosplit
 // Faker func of _Decoder, used to export its stackmap as _Decoder's
-func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) (int, error) {
+func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) (ret int, err error) {
     // align to assembler_amd64.go: _FP_offs
-    var stacks [_FP_offs]byte
-    runtime.KeepAlive(stacks)
+    var frame [_FP_offs]byte
 
-    // must keep sb noticeable to GC
-    runtime.KeepAlive(sb)
+    // keep all args and stacks alive
+    _KeepAlive.s = s
+    _KeepAlive.i = i
+    _KeepAlive.vp = vp
+    _KeepAlive.sb = sb
+    _KeepAlive.fv = fv
+    _KeepAlive.ret = ret
+    _KeepAlive.err = err
+    _KeepAlive.frame = frame
+
     return 0, errCallShadow
 }
 

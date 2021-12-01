@@ -26,7 +26,7 @@ import (
 )
 
 var (
-    debugSyncGC  = os.Getenv("SONIC_SYNC_GC")  != ""
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC") != ""
     debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 )
 
