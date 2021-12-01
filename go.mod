@@ -9,6 +9,7 @@ require (
 	github.com/json-iterator/go v1.1.10
 	github.com/klauspost/cpuid/v2 v2.0.9
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/gjson v1.8.0
+	github.com/tidwall/gjson v1.10.2
+	github.com/tidwall/sjson v1.2.3
 	github.com/twitchyliquid64/golang-asm v0.15.1
 )

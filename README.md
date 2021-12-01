@@ -3,7 +3,7 @@
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT (just-in-time compiling) and SIMD (single-instruction-multiple-data).
 
 ## Requirement
-- Go 1.15/1.16
+- Go 1.15/1.16/1.17
 - Linux/darwin OS
 - Amd64 CPU with AVX instruction set
 
@@ -13,65 +13,67 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 - Fast, fast, fast!
 
 ## Benchmarks
-For **all sizes** of json and **all cases** of usage, **Sonic performs best**.
-- [Small](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 keys, 3 layers)
-![small benchmarks](bench-small.png)
-- [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitter.json) (635KB, 10000+ key, 6 layers)
-![large benchmarks](bench-large.png)
+For **all sizes** of json and **all scenarios** of usage, **Sonic performs best**.
 - [Medium](https://github.com/bytedance/sonic/blob/main/decoder/testdata_test.go#L19) (13KB, 300+ key, 6 layers)
-
-**For medium data, Sonic's speed is `2.6x times` of [json-iterator's](https://github.com/json-iterator/go) in `decoding`, `2.5x times` in `encoding`，and `8.3x times` in `searching`.**
-
 ```powershell
+goversion: 1.17.1
 goos: darwin
 goarch: amd64
 cpu: Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
-BenchmarkEncoder_Generic_Sonic-16                         100000             25547 ns/op         510.23 MB/s       13762 B/op          4 allocs/op
-BenchmarkEncoder_Generic_JsonIter-16                      100000             44526 ns/op         292.75 MB/s       13433 B/op         77 allocs/op
-BenchmarkEncoder_Generic_StdLib-16                        100000            134480 ns/op          96.93 MB/s       48177 B/op        827 allocs/op
-BenchmarkEncoder_Binding_Sonic-16                         100000              6658 ns/op        1957.74 MB/s       14156 B/op          4 allocs/op
-BenchmarkEncoder_Binding_JsonIter-16                      100000             21367 ns/op         610.05 MB/s        9487 B/op          2 allocs/op
-BenchmarkEncoder_Binding_StdLib-16                        100000             17558 ns/op         742.41 MB/s        9480 B/op          1 allocs/op
-BenchmarkEncoder_Parallel_Generic_Sonic-16                100000              4562 ns/op        2857.18 MB/s       10957 B/op          4 allocs/op
-BenchmarkEncoder_Parallel_Generic_JsonIter-16             100000             10943 ns/op        1191.21 MB/s       13449 B/op         77 allocs/op
-BenchmarkEncoder_Parallel_Generic_StdLib-16               100000             52174 ns/op         249.84 MB/s       48218 B/op        827 allocs/op
-BenchmarkEncoder_Parallel_Binding_Sonic-16                100000              1422 ns/op        9168.12 MB/s       11030 B/op          4 allocs/op
-BenchmarkEncoder_Parallel_Binding_JsonIter-16             100000              4630 ns/op        2815.35 MB/s        9496 B/op          2 allocs/op
-BenchmarkEncoder_Parallel_Binding_StdLib-16               100000              4977 ns/op        2619.08 MB/s        9488 B/op          1 allocs/op
+BenchmarkEncoder_Generic_Sonic                        25181 ns/op         517.65 MB/s       13035 B/op          4 allocs/op
+BenchmarkEncoder_Generic_JsonIter                     43765 ns/op         297.84 MB/s       13433 B/op         77 allocs/op
+BenchmarkEncoder_Generic_StdLib                      108776 ns/op         119.83 MB/s       49137 B/op        827 allocs/op
+BenchmarkEncoder_Binding_Sonic                         6282 ns/op        2075.01 MB/s       13765 B/op          4 allocs/op
+BenchmarkEncoder_Binding_JsonIter                     20740 ns/op         628.51 MB/s        9487 B/op          2 allocs/op
+BenchmarkEncoder_Binding_StdLib                       16661 ns/op         782.34 MB/s        9479 B/op          1 allocs/op
+BenchmarkEncoder_Parallel_Generic_Sonic-16             4072 ns/op        3200.89 MB/s       11052 B/op          4 allocs/op
+BenchmarkEncoder_Parallel_Generic_JsonIter-16         11379 ns/op        1145.52 MB/s       13458 B/op         77 allocs/op
+BenchmarkEncoder_Parallel_Generic_StdLib-16           50635 ns/op         257.43 MB/s       49183 B/op        827 allocs/op
+BenchmarkEncoder_Parallel_Binding_Sonic-16             1304 ns/op        9994.64 MB/s       10925 B/op          4 allocs/op
+BenchmarkEncoder_Parallel_Binding_JsonIter-16          6072 ns/op        2146.76 MB/s        9505 B/op          2 allocs/op
+BenchmarkEncoder_Parallel_Binding_StdLib-16            3510 ns/op        3713.89 MB/s        9481 B/op          1 allocs/op
 
-BenchmarkDecoder_Generic_Sonic-16                         100000             57247 ns/op         227.70 MB/s       49727 B/op        313 allocs/op
-BenchmarkDecoder_Generic_StdLib-16                        100000            139698 ns/op          93.31 MB/s       50898 B/op        772 allocs/op
-BenchmarkDecoder_Generic_JsonIter-16                      100000            101967 ns/op         127.84 MB/s       55787 B/op       1068 allocs/op
-BenchmarkDecoder_Binding_Sonic-16                         100000             28254 ns/op         461.35 MB/s       25062 B/op         34 allocs/op
-BenchmarkDecoder_Binding_StdLib-16                        100000            123779 ns/op         105.31 MB/s       10560 B/op        207 allocs/op
-BenchmarkDecoder_Binding_JsonIter-16                      100000             38253 ns/op         340.75 MB/s       14674 B/op        385 allocs/op
-BenchmarkDecoder_Parallel_Generic_Sonic-16                100000             10171 ns/op        1281.59 MB/s       49458 B/op        313 allocs/op
-BenchmarkDecoder_Parallel_Generic_StdLib-16               100000             54916 ns/op         237.36 MB/s       50907 B/op        772 allocs/op
-BenchmarkDecoder_Parallel_Generic_JsonIter-16             100000             48286 ns/op         269.95 MB/s       55811 B/op       1068 allocs/op
-BenchmarkDecoder_Parallel_Binding_Sonic-16                100000              5282 ns/op        2467.83 MB/s       24683 B/op         34 allocs/op
-BenchmarkDecoder_Parallel_Binding_StdLib-16               100000             31875 ns/op         408.94 MB/s       10559 B/op        207 allocs/op
-BenchmarkDecoder_Parallel_Binding_JsonIter-16             100000             13810 ns/op         943.90 MB/s       14679 B/op        385 allocs/op
+BenchmarkDecoder_Generic_Sonic                        53843 ns/op         242.09 MB/s       49779 B/op        313 allocs/op
+BenchmarkDecoder_Generic_StdLib                      130402 ns/op          99.96 MB/s       50868 B/op        772 allocs/op
+BenchmarkDecoder_Generic_JsonIter                     92810 ns/op         140.45 MB/s       55788 B/op       1068 allocs/op
+BenchmarkDecoder_Binding_Sonic                        29793 ns/op         437.52 MB/s       24778 B/op         34 allocs/op
+BenchmarkDecoder_Binding_StdLib                      121206 ns/op         107.54 MB/s       10576 B/op        208 allocs/op
+BenchmarkDecoder_Binding_JsonIter                     36099 ns/op         361.09 MB/s       14674 B/op        385 allocs/op
+BenchmarkDecoder_Parallel_Generic_Sonic-16            10319 ns/op        1263.21 MB/s       49423 B/op        313 allocs/op
+BenchmarkDecoder_Parallel_Generic_StdLib-16           58526 ns/op         222.72 MB/s       50875 B/op        772 allocs/op
+BenchmarkDecoder_Parallel_Generic_JsonIter-16         60156 ns/op         216.69 MB/s       55812 B/op       1068 allocs/op
+BenchmarkDecoder_Parallel_Binding_Sonic-16             7265 ns/op        1794.18 MB/s       24952 B/op         34 allocs/op
+BenchmarkDecoder_Parallel_Binding_StdLib-16           44000 ns/op         296.25 MB/s       10575 B/op        208 allocs/op
+BenchmarkDecoder_Parallel_Binding_JsonIter-16         21029 ns/op         619.86 MB/s       14678 B/op        385 allocs/op
 
-BenchmarkSearchOne_Gjson-16                               100000              8992 ns/op        1448.28 MB/s           0 B/op          0 allocs/op
-BenchmarkSearchOne_Jsoniter-16                            100000             58313 ns/op         223.33 MB/s       27936 B/op        647 allocs/op
-BenchmarkSearchOne_Sonic-16                               100000             10497 ns/op        1240.61 MB/s          29 B/op          1 allocs/op
-BenchmarkSearchOne_Parallel_Gjson-16                      100000              1046 ns/op        12449.59 MB/s          0 B/op          0 allocs/op
-BenchmarkSearchOne_Parallel_Jsoniter-16                   100000             16080 ns/op         809.88 MB/s       27942 B/op        647 allocs/op
-BenchmarkSearchOne_Parallel_Sonic-16                      100000              1435 ns/op        9074.18 MB/s         285 B/op          1 allocs/op
+BenchmarkGetOne_Sonic                                 17070 ns/op         762.94 MB/s          29 B/op          1 allocs/op
+BenchmarkGetOne_Gjson                                 19714 ns/op         660.59 MB/s           0 B/op          0 allocs/op
+BenchmarkGetOne_Jsoniter                              99281 ns/op         131.17 MB/s       27936 B/op        647 allocs/op
+BenchmarkSetOne_Sonic                                 23730 ns/op         548.80 MB/s        1883 B/op         17 allocs/op
+BenchmarkSetOne_Sjson                                 57680 ns/op         225.78 MB/s       52180 B/op          9 allocs/op
+BenchmarkSetOne_Jsoniter                             104018 ns/op         125.20 MB/s       45859 B/op        964 allocs/op
+BenchmarkGetOne_Parallel_Sonic-16                      2010 ns/op        6479.41 MB/s         114 B/op          1 allocs/op
+BenchmarkGetOne_Parallel_Gjson-16                      1815 ns/op        7176.39 MB/s           0 B/op          0 allocs/op
+BenchmarkGetOne_Parallel_Jsoniter-16                  23261 ns/op         559.86 MB/s       27942 B/op        647 allocs/op
+BenchmarkSetOne_Parallel_Sonic-16                      2007 ns/op        6487.78 MB/s        2202 B/op         17 allocs/op
+BenchmarkSetOne_Parallel_Sjson-16                     12422 ns/op        1048.40 MB/s       52180 B/op          9 allocs/op
+BenchmarkSetOne_Parallel_Jsoniter-16                  39204 ns/op         332.18 MB/s       45889 B/op        964 allocs/op
 ```        
-More detail see [decoder/decoder_test.go](https://github.com/bytedance/sonic/blob/main/decoder/decoder_test.go), [encoder/encoder_test.go](https://github.com/bytedance/sonic/blob/main/encoder/encoder_test.go), [ast/search_test.go](https://github.com/bytedance/sonic/blob/main/ast/search_test.go), [ast/parser_test.go](https://github.com/bytedance/sonic/blob/main/ast/parser_test.go), [ast/node_test.go](https://github.com/bytedance/sonic/blob/main/ast/node_test.go)
+- [Small](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 keys, 3 layers)
+![small benchmarks](bench-small.jpg)
+- [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitter.json) (635KB, 10000+ key, 6 layers)
+![large benchmarks](bench-large.jpg)
+
+See [bench.sh](https://github.com/bytedance/sonic/blob/main/bench.sh) for benchmark codes.
 
 ## How it works
-See [INTRODUCTION.md](INTRODUCTION.md)
-
-## Fuzzing
-[sonic-fuzz](https://github.com/liuq19/sonic-fuzz) is the repository for fuzzing tests. If you find any bug, please report the issue to sonic.
+See [INTRODUCTION.md](INTRODUCTION.md).
 
 ## Usage
 
 ### Marshal/Unmarshal
 
-The behaviors are mostly consistent with encoding/json, except some uncommon escaping (see [issue4](https://github.com/bytedance/sonic/issues/4))
+Their behaviors are mostly consistent with `encoding/json`, except two escaping form (see [issue4](https://github.com/bytedance/sonic/issues/4)) that is **NOT** in conformity to [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
  ```go
 import "github.com/bytedance/sonic"
 
@@ -118,7 +120,6 @@ import "github.com/bytedance/sonic/encoder"
 m := map[string]interface{}{}
 v, err := encoder.Encode(m, encoder.SortMapKeys)
 ```
-**Caution**: sonic encode struct in order of its original field declaration, so if you want to sort a struct's keys like the map's, just rewrite your struct. 
 
 ### Print Syntax Error
 ```go
@@ -211,20 +212,23 @@ Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as 
 import (
     "reflect"
     "github.com/bytedance/sonic"
-)
-
-func init() {
-    var v HugeStruct
-    err := sonic.Pretouch(reflect.TypeOf(v))
-}
+    "github.com/bytedance/sonic/option"
+ )
+ 
+ func init() {
+     var v HugeStruct
+    // For most large types (nesting depth <= 5)
+     err := sonic.Pretouch(reflect.TypeOf(v))
+    // If the type is too deep nesting (nesting depth > 5),
+    // you can set compile recursive depth in Pretouch for better stability in JIT.
+    err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
 ```
-**CAUTION:**  use the **STRUCT instead of its POINTER** to `Pretouch()`, otherwise it won't work when you pass the pointer to `Marshal()/Unmarshal()`!  
 
 ### Pass string or []byte?
-For alignment to encoding/json, we provide API to pass `[]byte` as argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString`, `GetFromString` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte.
+For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString` and `GetFromString` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte.
 
-### Better performance for generic deserializing
-In most cases, `Unmarshal()` with schemalized data performs better than `ast.Loads()`/`node.Interface()` with generic data. But if you only have a schema for partial json, you can combine `Get()` and `Unmarshal()` together:
+### Better performance for generic data
+In **fully-parsed** scenario, `Unmarshal()` performs better than `Get()`+`Node.Interface()`. But if you only have a part of schema for specific json, you can combine `Get()` and `Unmarshal()` together:
 ```go
 import "github.com/bytedance/sonic"
 
@@ -232,14 +236,20 @@ node, err := sonic.GetFromString(_TwitterJson, "statuses", 3, "user")
 var user User // your partial schema...
 err = sonic.UnmarshalString(node.Raw(), &user)
 ```
-Even if you don't have any schema, Use `InterfaceUseNode()` as the container of generic values instead of `Map()` or `Interface()`:
+Even if you don't have any schema, use `ast.Node` as the container of generic values instead of `map` or `interface`:
 ```go
 import "github.com/bytedance/sonic"
 
-node, err := sonic.GetFromString(_TwitterJson, "statuses", 3, "user")
-user := node.InterfaceUseNode() // use node.Interface() as little as possible
+root, err := sonic.GetFromString(_TwitterJson)
+user := root.GetByPath("statuses", 3, "user")  // === root.Get("status").Index(3).Get("user")
+err = user.Check()
+
+// err = user.LoadAll() // only call this when you want to use 'user' concurrently...
+go someFunc(user)
 ```
-Why?
-1. using `Interface()` means Sonic must parse all the underlying values, while in most cases you only need several of them;
-2. `map[x]` is not efficient enough compared to `array[x]`, but `ast.Node` can use `Index()`, for either array or object node;
-3. `map`'s performance degrades a lot once rehashing triggered, but `ast.Node` doesn't has this concern;
+Why? Because `ast.Node` stores its children using `array`: 
+- `Map`'s performance degrades a lot once rehashing triggered, but `ast.Node` doesn't have this concern;
+- **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**.
+- Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while in most cases you don't need them all;
+
+**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}` 

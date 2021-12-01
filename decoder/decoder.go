@@ -122,8 +122,6 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
     /* compile function */
     compiler := newCompiler().apply(opts)
-
-    /* compile function */
     decoder := func(vt *rt.GoType) (interface{}, error) {
         if pp, err := compiler.compile(_vt); err != nil {
             return nil, err

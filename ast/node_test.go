@@ -24,11 +24,8 @@ import (
     `testing`
 
     `github.com/bytedance/sonic/internal/native/types`
-    jsoniter `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
 )
-
-var parallelism = 4
 
 func TestLoadAll(t *testing.T) {
     e := Node{}
@@ -770,7 +767,6 @@ func TestNodeAdd(t *testing.T) {
 
 func BenchmarkLoadNode(b *testing.B) {
     b.Run("Interface()", func(b *testing.B) {
-        b.SetParallelism(parallelism)
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
         b.RunParallel(func(pb *testing.PB) {
@@ -785,7 +781,6 @@ func BenchmarkLoadNode(b *testing.B) {
     })
 
     b.Run("LoadAll()", func(b *testing.B) {
-        b.SetParallelism(parallelism)
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
         b.RunParallel(func(pb *testing.PB) {
@@ -800,7 +795,6 @@ func BenchmarkLoadNode(b *testing.B) {
     })
 
     b.Run("InterfaceUseNode()", func(b *testing.B) {
-        b.SetParallelism(parallelism)
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
         b.RunParallel(func(pb *testing.PB) {
@@ -815,7 +809,6 @@ func BenchmarkLoadNode(b *testing.B) {
     })
 
     b.Run("Load()", func(b *testing.B) {
-        b.SetParallelism(parallelism)
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
         b.RunParallel(func(pb *testing.PB) {
@@ -836,7 +829,6 @@ func BenchmarkNodeGetByPath(b *testing.B) {
         b.Fatalf("decode failed: %v", derr.Error())
     }
     _, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
-    b.SetParallelism(parallelism)
     b.ResetTimer()
 
     b.RunParallel(func(pb *testing.PB) {
@@ -846,14 +838,13 @@ func BenchmarkNodeGetByPath(b *testing.B) {
     })
 }
 
-func BenchmarkStructGetByPath_Jsoniter(b *testing.B) {
+func BenchmarkStructGetByPath(b *testing.B) {
     var root = _TwitterStruct{}
-    err := jsoniter.Unmarshal([]byte(_TwitterJson), &root)
+    err := json.Unmarshal([]byte(_TwitterJson), &root)
     if err != nil {
         b.Fatalf("unmarshal failed: %v", err)
     }
 
-    b.SetParallelism(parallelism)
     b.ResetTimer()
 
     b.RunParallel(func(pb *testing.PB) {
@@ -976,7 +967,6 @@ func BenchmarkNodeSet(b *testing.B) {
     node.Set("test4", NewNumber("4"))
     node.Set("test5", NewNumber("5"))
     n := NewNull()
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node.Set("test3", n)
@@ -996,7 +986,6 @@ func BenchmarkMapSet(b *testing.B) {
     node.Set("test5", NewNumber("5"))
     m, _ := node.Map()
     n := NewNull()
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         m["test3"] = n
@@ -1015,7 +1004,6 @@ func BenchmarkNodeSetByIndex(b *testing.B) {
     node.Add(NewNumber("4"))
     node.Add(NewNumber("5"))
     n := NewNull()
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node.SetByIndex(2, n)
@@ -1035,7 +1023,6 @@ func BenchmarkSliceSetByIndex(b *testing.B) {
     node.Add(NewNumber("5"))
     m, _ := node.Array()
     n := NewNull()
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         m[2] = n
@@ -1069,7 +1056,6 @@ func BenchmarkNodeUnset(b *testing.B) {
     node.Set("test3", NewNumber("3"))
     node.Set("test4", NewNumber("4"))
     node.Set("test5", NewNumber("5"))
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node.Unset("test3")
@@ -1088,7 +1074,6 @@ func BenchmarkMapUnset(b *testing.B) {
     node.Set("test4", NewNumber("4"))
     node.Set("test5", NewNumber("5"))
     m, _ := node.Map()
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         delete(m, "test3")
@@ -1106,7 +1091,6 @@ func BenchmarkNodUnsetByIndex(b *testing.B) {
     node.Add(NewNumber("3"))
     node.Add(NewNumber("4"))
     node.Add(NewNumber("5"))
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node.UnsetByIndex(2)
@@ -1125,7 +1109,6 @@ func BenchmarkSliceUnsetByIndex(b *testing.B) {
     node.Add(NewNumber("4"))
     node.Add(NewNumber("5"))
     m, _ := node.Array()
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         for i:=3; i<5; i++ {
@@ -1136,7 +1119,6 @@ func BenchmarkSliceUnsetByIndex(b *testing.B) {
 
 func BenchmarkNodeAdd(b *testing.B) {
     n := NewObject([]Pair{{"test", NewNumber("1")}})
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := NewArray([]Node{})
@@ -1146,7 +1128,6 @@ func BenchmarkNodeAdd(b *testing.B) {
 
 func BenchmarkSliceAdd(b *testing.B) {
     n := NewObject([]Pair{{"test", NewNumber("1")}})
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := []Node{}
@@ -1156,7 +1137,6 @@ func BenchmarkSliceAdd(b *testing.B) {
 
 func BenchmarkMapAdd(b *testing.B) {
     n := NewObject([]Pair{{"test", NewNumber("1")}})
-    b.SetParallelism(parallelism)
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := map[string]Node{}
