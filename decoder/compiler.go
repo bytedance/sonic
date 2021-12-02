@@ -57,6 +57,7 @@ const (
     _OP_deref
     _OP_index
     _OP_is_null
+    _OP_is_null_quote
     _OP_map_init
     _OP_map_key_i8
     _OP_map_key_i16
@@ -129,6 +130,7 @@ var _OpNames = [256]string {
     _OP_deref            : "deref",
     _OP_index            : "index",
     _OP_is_null          : "is_null",
+    _OP_is_null_quote    : "is_null_quote",
     _OP_map_init         : "map_init",
     _OP_map_key_i8       : "map_key_i8",
     _OP_map_key_i16      : "map_key_i16",
@@ -304,11 +306,12 @@ func (self _Instr) vlen() int {
 
 func (self _Instr) isBranch() bool {
     switch self.op() {
-        case _OP_goto       : fallthrough
-        case _OP_switch     : fallthrough
-        case _OP_is_null    : fallthrough
-        case _OP_check_char : return true
-        default             : return false
+        case _OP_goto          : fallthrough
+        case _OP_switch        : fallthrough
+        case _OP_is_null       : fallthrough
+        case _OP_is_null_quote : fallthrough
+        case _OP_check_char    : return true
+        default                : return false
     }
 }
 
@@ -337,6 +340,7 @@ func (self _Instr) disassemble() string {
         case _OP_unmarshal_text_p : fallthrough
         case _OP_recurse          : return fmt.Sprintf("%-18s%s", self.op(), self.vt())
         case _OP_goto             : fallthrough
+        case _OP_is_null_quote    : fallthrough
         case _OP_is_null          : return fmt.Sprintf("%-18sL_%d", self.op(), self.vi())
         case _OP_index            : fallthrough
         case _OP_array_clear      : fallthrough
@@ -932,16 +936,14 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
     p.add(_OP_is_null)
     p.chr(_OP_match_char, '"')
 
-    /* dereference the pointer */
+    /* also check for inner "null" */
+    n1 = p.pc()
+    p.add(_OP_is_null_quote)
+
+    /* dereference the pointer only when it is not null */
     if vk == reflect.Ptr {
         vt = vt.Elem()
         p.rtt(_OP_deref, vt)
-    }
-
-    /* also check for inner "null" for a type that is not `string` */
-    if vt.Kind() != reflect.String {
-        n1 = p.pc()
-        p.add(_OP_is_null)
     }
 
     /* string opcode selector */
@@ -973,14 +975,14 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
         default              : panic("not reachable")
     }
 
-    /* pin the `is_null` jump location */
-    if n1 != -1 {
-        p.pin(n1)
-    }
-
     /* the closing quote is not needed when parsing a pure string */
     if vt == jsonNumberType || vt.Kind() != reflect.String {
         p.chr(_OP_match_char, '"')
+    }
+
+    /* pin the `is_null_quote` jump location */
+    if n1 != -1 && vk != reflect.Ptr {
+        p.pin(n1)
     }
 
     /* "null" but not a pointer, act as if the field is not present */
@@ -992,7 +994,8 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
     /* the "null" case of the pointer */
     pc := p.pc()
     p.add(_OP_goto)
-    p.pin(n0)
+    p.pin(n0) // `is_null` jump location
+    p.pin(n1) // `is_null_quote` jump location
     p.add(_OP_nil_1)
     p.pin(pc)
 }

@@ -244,6 +244,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_deref            : (*_Assembler)._asm_OP_deref,
     _OP_index            : (*_Assembler)._asm_OP_index,
     _OP_is_null          : (*_Assembler)._asm_OP_is_null,
+    _OP_is_null_quote    : (*_Assembler)._asm_OP_is_null_quote,
     _OP_map_init         : (*_Assembler)._asm_OP_map_init,
     _OP_map_key_i8       : (*_Assembler)._asm_OP_map_key_i8,
     _OP_map_key_i16      : (*_Assembler)._asm_OP_map_key_i16,
@@ -1184,6 +1185,18 @@ func (self *_Assembler) _asm_OP_is_null(p *_Instr) {
     self.Emit("CMOVQEQ", _AX, _IC)                                      // CMOVQEQ AX, IC
     self.Xjmp("JE"     , p.vi())                                        // JE      {p.vi()}
     self.Link("_not_null_{n}")                                          // _not_null_{n}:
+}
+
+func (self *_Assembler) _asm_OP_is_null_quote(p *_Instr) {
+    self.Emit("LEAQ"   , jit.Ptr(_IC, 5), _AX)                          // LEAQ    4(IC), AX
+    self.Emit("CMPQ"   , _AX, _IL)                                      // CMPQ    AX, IL
+    self.Sjmp("JA"     , "_not_null_quote_{n}")                         // JA      _not_null_quote_{n}
+    self.Emit("CMPL"   , jit.Sib(_IP, _IC, 1, 0), jit.Imm(_IM_null))    // CMPL    (IP)(IC), $"null"
+    self.Sjmp("JNE"    , "_not_null_quote_{n}")                         // JNE     _not_null_quote_{n}
+    self.Emit("CMPB"   , jit.Sib(_IP, _IC, 1, 4), jit.Imm('"'))         // CMPB    4(IP)(IC), $'"'
+    self.Emit("CMOVQEQ", _AX, _IC)                                      // CMOVQEQ AX, IC
+    self.Xjmp("JE"     , p.vi())                                        // JE      {p.vi()}
+    self.Link("_not_null_quote_{n}")                                    // _not_null_quote_{n}:
 }
 
 func (self *_Assembler) _asm_OP_map_init(_ *_Instr) {
