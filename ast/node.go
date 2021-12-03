@@ -17,13 +17,13 @@
 package ast
 
 import (
-	`encoding/json`
-	`unsafe`
+	"encoding/json"
+	"unsafe"
 
-	`github.com/bytedance/sonic/decoder`
-	`github.com/bytedance/sonic/internal/native/types`
-	`github.com/bytedance/sonic/internal/rt`
-	`github.com/bytedance/sonic/unquote`
+	"github.com/bytedance/sonic/decoder"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/unquote"
 )
 
 const (
@@ -96,14 +96,14 @@ func (self *Node) Valid() bool {
         return false
     }
     it := self.Type()
-    return it >= V_NULL && it <= V_STRING || it == V_NUMBER
+    return it == V_NONE || it >= V_NULL && it <= V_STRING || it == V_NUMBER
 }
 
-// Check check if the node itself is valid, and return:
-//   - ErrNotFound If the node does not exist
+// Check checks if the node itself is valid, and return:
+//   - ErrNotFound If the node is nil
 //   - Its underlying error If the node is V_ERROR
 func (self *Node)  Check() error {
-    if self == nil || self.t == V_NONE {
+    if self == nil {
         return ErrNotExist
     } else if self.t != V_ERROR {
         return nil
@@ -428,12 +428,13 @@ func (self *Node) Index(idx int) *Node {
     }else if it == types.V_OBJECT {
         pr := self.skipIndexPair(idx)
         if pr == nil {
-           return nodeNotExist
+           return newError(_ERR_NOT_FOUND, "value not exists")
         }
         return &pr.Value
 
     }else{
-        return nodeUnsupportType
+
+        return newError(_ERR_NOT_FOUND, "unsupported type")
     }
 }
 
@@ -459,28 +460,6 @@ func (self *Node) IndexOrGet(idx int, key string) *Node {
     }
     n, _ := self.skipKey(key)
     return n
-}
-
-// Values returns iterator for array's children traversal
-func (self *Node) Values() (ListIterator, error) {
-    if err := self.should(types.V_ARRAY, "an array"); err != nil {
-        return ListIterator{}, err
-    }
-    if err := self.skipAllIndex(); err != nil {
-        return ListIterator{}, err
-    }
-    return ListIterator{Iterator{p: self}}, nil
-}
-
-// Properties returns iterator for object's children traversal
-func (self *Node) Properties() (ObjectIterator, error) {
-    if err := self.should(types.V_OBJECT, "an object"); err != nil {
-        return ObjectIterator{}, err
-    }
-    if err := self.skipAllKey(); err != nil {
-        return ObjectIterator{}, err
-    }
-    return ObjectIterator{Iterator{p: self}}, nil
 }
 
 /** Generic Value Converters **/

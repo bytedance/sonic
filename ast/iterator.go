@@ -16,9 +16,77 @@
 
 package ast
 
+import (
+    `github.com/bytedance/sonic/internal/native/types`
+)
+
 type Pair struct {
     Key   string
     Value Node
+}
+
+// type Scanner = func (key interface{}, val Node) bool
+
+// func (self *Node) ForEach(f Scanner) error {
+//     if err := self.checkRaw(); err != nil {
+//         return unwrapError(err)
+//     }
+
+//     it := self.itype()
+//     if it == types.V_ARRAY {
+
+//         if err := self.skipAllIndex(); err != nil {
+//             return err
+//         }
+//         var p = (*Node)(self.p)
+//         for i := 0; i < self.len(); i++ {
+//             p = p.unsafe_next()
+//             if err := p.Check(); err != nil {
+//                 return err
+//             }
+//             if !f(i, *p) {
+//                 return nil
+//             }
+//         }
+
+//     }else if it == types.V_OBJECT {
+        
+//         if err := self.skipAllKey(); err != nil {
+//             return err
+//         }
+//         var p = (*Pair)(self.p)
+//         for i := 0; i < self.len(); i++ {
+//             p = p.unsafe_next()
+//             if err := p.Value.Check(); err != nil {
+//                 return err
+//             }
+//             if !f(p.Key, p.Value) {
+//                 return nil
+//             }
+//         }
+
+//     }else{
+
+//         f(nil, *self)
+//     }
+
+//     return nil
+// }
+
+// Values returns iterator for array's children traversal
+func (self *Node) Values() (ListIterator, error) {
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return ListIterator{}, err
+    }
+    return ListIterator{Iterator{p: self}}, nil
+}
+
+// Properties returns iterator for object's children traversal
+func (self *Node) Properties() (ObjectIterator, error) {
+    if err := self.should(types.V_OBJECT, "an object"); err != nil {
+        return ObjectIterator{}, err
+    }
+    return ObjectIterator{Iterator{p: self}}, nil
 }
 
 type Iterator struct {
@@ -35,7 +103,14 @@ func (self *Iterator) Len() int {
 }
 
 func (self *Iterator) HasNext() bool {
-    return self.i < self.p.len() && self.p.Valid()
+    if !self.p.isLazy() {
+        return self.i < self.p.len() && self.p.Valid()
+    } else if self.p.t == _V_ARRAY_LAZY {
+        return self.p.skipNextNode().Valid()
+    } else if self.p.t == _V_OBJECT_LAZY {
+        return self.p.skipNextPair().Value.Valid()
+    }
+    return false
 }
 
 type ListIterator struct {

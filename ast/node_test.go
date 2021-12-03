@@ -30,11 +30,11 @@ import (
 func TestLoadAll(t *testing.T) {
     e := Node{}
     err := e.Load()
-    if err != ErrNotExist {
+    if err != nil {
         t.Fatal(err)
     }
     err = e.LoadAll()
-    if err != ErrNotExist {
+    if err != nil {
         t.Fatal(err)
     }
 

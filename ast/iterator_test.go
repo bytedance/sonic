@@ -156,10 +156,7 @@ func BenchmarkListIterator(b *testing.B) {
 		}
 		it, _ := root.Values()
 		for it.HasNext() {
-			v := &Node{}
-			if !it.Next(v) {
-				b.Fatalf("no value")
-			}
+			_ = it.Next(&Node{})
 		}
 	}
 }
@@ -186,10 +183,7 @@ func BenchmarkObjectIterator(b *testing.B) {
 		}
 		it, _ := root.Properties()
 		for it.HasNext() {
-			v := &Pair{}
-			if !it.Next(v)  {
-				b.Fatalf("no value")
-			}
+			_ = it.Next(&Pair{})
 		}
 	}
 }
