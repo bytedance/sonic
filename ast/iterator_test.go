@@ -62,7 +62,10 @@ func TestRawIterator(t *testing.T) {
             t.Fatal(i)
         }
         i++
-    }
+	}
+	if i != int64(loop) {
+		t.Fatal(i)
+	}
     
     root, err = NewSearcher(str).GetByPath("object")
     if err != nil {
@@ -84,7 +87,10 @@ func TestRawIterator(t *testing.T) {
             t.Fatal(i)
         }
         i++
-    }
+	}
+	if i != int64(loop) {
+		t.Fatal(i)
+	}
 }
 
 func TestIterator(t *testing.T) {
@@ -111,6 +117,9 @@ func TestIterator(t *testing.T) {
 		}
 		i++
 	}
+	if i != int64(loop) {
+		t.Fatal(i)
+	}
 
 	root, err = NewParser(str).Parse()
 	if err != 0 {
@@ -132,6 +141,9 @@ func TestIterator(t *testing.T) {
 			t.Fatal(i)
 		}
 		i++
+	}
+	if i != int64(loop) {
+		t.Fatal(i)
 	}
 }
 
@@ -156,7 +168,10 @@ func BenchmarkListIterator(b *testing.B) {
 		}
 		it, _ := root.Values()
 		for it.HasNext() {
-			_ = it.Next(&Node{})
+			v := &Node{}
+			if !it.Next(v) {
+				b.Fatalf("no value")
+			}
 		}
 	}
 }
@@ -183,7 +198,10 @@ func BenchmarkObjectIterator(b *testing.B) {
 		}
 		it, _ := root.Properties()
 		for it.HasNext() {
-			_ = it.Next(&Pair{})
+			v := &Pair{}
+			if !it.Next(v)  {
+				b.Fatalf("no value")
+			}
 		}
 	}
 }

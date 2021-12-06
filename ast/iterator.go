@@ -25,54 +25,6 @@ type Pair struct {
     Value Node
 }
 
-// type Scanner = func (key interface{}, val Node) bool
-
-// func (self *Node) ForEach(f Scanner) error {
-//     if err := self.checkRaw(); err != nil {
-//         return unwrapError(err)
-//     }
-
-//     it := self.itype()
-//     if it == types.V_ARRAY {
-
-//         if err := self.skipAllIndex(); err != nil {
-//             return err
-//         }
-//         var p = (*Node)(self.p)
-//         for i := 0; i < self.len(); i++ {
-//             p = p.unsafe_next()
-//             if err := p.Check(); err != nil {
-//                 return err
-//             }
-//             if !f(i, *p) {
-//                 return nil
-//             }
-//         }
-
-//     }else if it == types.V_OBJECT {
-        
-//         if err := self.skipAllKey(); err != nil {
-//             return err
-//         }
-//         var p = (*Pair)(self.p)
-//         for i := 0; i < self.len(); i++ {
-//             p = p.unsafe_next()
-//             if err := p.Value.Check(); err != nil {
-//                 return err
-//             }
-//             if !f(p.Key, p.Value) {
-//                 return nil
-//             }
-//         }
-
-//     }else{
-
-//         f(nil, *self)
-//     }
-
-//     return nil
-// }
-
 // Values returns iterator for array's children traversal
 func (self *Node) Values() (ListIterator, error) {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
@@ -102,9 +54,10 @@ func (self *Iterator) Len() int {
     return self.p.len()
 }
 
+// HasNext reports if it is the end of iteration or has error.
 func (self *Iterator) HasNext() bool {
     if !self.p.isLazy() {
-        return self.i < self.p.len() && self.p.Valid()
+        return self.p.Valid() && self.i < self.p.len()
     } else if self.p.t == _V_ARRAY_LAZY {
         return self.p.skipNextNode().Valid()
     } else if self.p.t == _V_OBJECT_LAZY {
@@ -113,14 +66,18 @@ func (self *Iterator) HasNext() bool {
     return false
 }
 
+// ListIterator is specialized iterator for V_ARRAY
 type ListIterator struct {
     Iterator
 }
 
+// ObjectIterator is specialized iterator for V_ARRAY
 type ObjectIterator struct {
     Iterator
 }
 
+// Next scans through children of underlying V_ARRAY, 
+// copies each child to v, and returns .HasNext().
 func (self *ListIterator) Next(v *Node) bool {
     if !self.HasNext() {
         return false
@@ -130,6 +87,8 @@ func (self *ListIterator) Next(v *Node) bool {
     }
 }
 
+// Next scans through children of underlying V_OBJECT, 
+// copies each child to v, and returns .HasNext().
 func (self *ObjectIterator) Next(p *Pair) bool {
     if !self.HasNext() {
         return false

@@ -17,13 +17,14 @@
 package ast
 
 import (
-	"encoding/json"
-	"unsafe"
+	`encoding/json`
+	`fmt`
+	`unsafe`
 
-	"github.com/bytedance/sonic/decoder"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/bytedance/sonic/unquote"
+	`github.com/bytedance/sonic/decoder`
+	`github.com/bytedance/sonic/internal/native/types`
+	`github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/unquote`
 )
 
 const (
@@ -77,6 +78,7 @@ type Node struct {
 //    V_OBJECT = 6
 //    V_STRING = 7
 //    V_NUMBER = 33
+//    V_ANY    = 34
 func (self Node) Type() int {
     return int(self.t & _MASK_LAZY & _MASK_RAW)
 }
@@ -96,7 +98,7 @@ func (self *Node) Valid() bool {
         return false
     }
     it := self.Type()
-    return it == V_NONE || it >= V_NULL && it <= V_STRING || it == V_NUMBER
+    return it >= V_NULL && it <= V_STRING || it == V_NONE || it == V_NUMBER
 }
 
 // Check checks if the node itself is valid, and return:
@@ -114,9 +116,7 @@ func (self *Node)  Check() error {
 
 // Error returns error message if the node is invalid
 func (self Node) Error() string {
-    if self.t == V_NONE {
-        return "unsupported type"
-    } else if self.t != V_ERROR {
+    if self.t != V_ERROR {
         return ""
     } else {
         return *(*string)(self.p)
@@ -239,6 +239,8 @@ func (self *Node) Len() (int, error) {
         return int(self.v & _LEN_MASK), nil
     } else if self.t == types.V_STRING {
         return int(self.v), nil
+    } else if self.t == _V_NONE {
+        return 0, nil
     } else {
         return 0, ErrUnsupportType
     }
@@ -255,6 +257,8 @@ func (self *Node) Cap() (int, error) {
     }
     if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY {
         return int(self.v >> _CAP_BITS), nil
+    } else if self.t == _V_NONE {
+        return 0, nil
     } else {
         return 0, ErrUnsupportType
     }
@@ -264,9 +268,15 @@ func (self Node) cap() int {
     return int(self.v >> _CAP_BITS)
 }
 
-// Set sets the node of given key under object parent
-// If the key doesn't exist, it will be append to the last
+// Set sets the node of given key under self, and reports if the key has existed.
+//
+// If self is V_NONE, it becomes V_OBJECT and sets the node at the key.
 func (self *Node) Set(key string, node Node) (bool, error) {
+    if self != nil && self.t == _V_NONE {
+        *self = NewObject([]Pair{{key, node}})
+        return false, nil
+    }
+
     if err := node.Check(); err != nil {
         return false, err 
     }
@@ -296,7 +306,7 @@ func (self *Node) Set(key string, node Node) (bool, error) {
     return true, nil
 }
 
-// Unset remove the node of given key under object parent
+// Unset remove the node of given key under object parent, and reports if the key has existed.
 func (self *Node) Unset(key string) (bool, error) {
     self.must(types.V_OBJECT, "an object")
     p, i := self.skipKey(key)
@@ -310,9 +320,9 @@ func (self *Node) Unset(key string) (bool, error) {
     return true, nil
 }
 
-// SetByIndex sets the node of given index
+// SetByIndex sets the node of given index, and reports if the key has existed.
 //
-// The index must within parent array's children
+// The index must be within self's children.
 func (self *Node) SetByIndex(index int, node Node) (bool, error) {
     if err := node.Check(); err != nil {
         return false, err 
@@ -357,8 +367,15 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
     return true, nil
 }
 
-// Add appends the given node under array node
+// Add appends the given node under self.
+//
+// If self is V_NONE, it becomes V_ARRAY and sets the node at index 0.
 func (self *Node) Add(node Node) error {
+    if self != nil && self.t == _V_NONE {
+        *self = NewArray([]Node{node})
+        return nil
+    }
+
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return err
     }
@@ -433,8 +450,7 @@ func (self *Node) Index(idx int) *Node {
         return &pr.Value
 
     }else{
-
-        return newError(_ERR_NOT_FOUND, "unsupported type")
+        return newError(_ERR_UNSUPPORT_TYPE, fmt.Sprintf("unsupported type: %v", self.itype()))
     }
 }
 

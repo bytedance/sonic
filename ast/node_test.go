@@ -156,23 +156,24 @@ func TestTypeCast(t *testing.T) {
     var cases = []tcase{
         {"Raw", Node{}, "", ErrUnsupportType},
         {"Raw", newRawNode("[ ]", types.V_ARRAY), "[ ]", nil},
-        {"Bool", Node{}, false, ErrNotExist},
+        {"Bool", Node{}, false, ErrUnsupportType},
         {"Bool", newRawNode("true", types.V_TRUE), true, nil},
         {"Bool", newRawNode("false", types.V_FALSE), false, nil},
-        {"Int64", Node{}, int64(0), ErrNotExist},
+        {"Int64", Node{}, int64(0), ErrUnsupportType},
         {"Int64", newRawNode("0", _V_NUMBER), int64(0), nil},
-        {"Float64", Node{}, float64(0), ErrNotExist},
+        {"Float64", Node{}, float64(0), ErrUnsupportType},
         {"Float64", newRawNode("0.0", _V_NUMBER), float64(0.0), nil},
-        {"Number", Node{}, json.Number(""), ErrNotExist},
+        {"Number", Node{}, json.Number(""), ErrUnsupportType},
         {"Number", newRawNode("0.0", _V_NUMBER), json.Number("0.0"), nil},
         {"Number", newRawNode("true", types.V_TRUE), json.Number("1"), nil},
         {"Number", newRawNode("false", types.V_FALSE), json.Number("0"), nil},
-        {"String", Node{}, "", ErrNotExist},
+        {"String", Node{}, "", ErrUnsupportType},
         {"String", newRawNode(`""`, types.V_STRING), ``, nil},
         {"String", newRawNode(`0.0`, _V_NUMBER), "0.0", nil},
         {"String", newRawNode(`null`, types.V_NULL), "null", nil},
         {"String", newRawNode(`true`, types.V_TRUE), "true", nil},
         {"String", newRawNode(`false`, types.V_FALSE), "false", nil},
+        {"Len", Node{}, 0, nil},
         {"Len", NewNull(), 0, ErrUnsupportType},
         {"Len", newRawNode(`"1"`, types.V_STRING), 1, nil},
         {"Len", newRawNode(`[1]`, types.V_ARRAY), 0, nil},
@@ -180,6 +181,7 @@ func TestTypeCast(t *testing.T) {
         {"Len", lazyArray, 0, nil},
         {"Len", newRawNode(`{"a":1}`, types.V_OBJECT), 0, nil},
         {"Len", lazyObject, 0, nil},
+        {"Cap", Node{}, 0, nil},
         {"Cap", NewNull(), 0, ErrUnsupportType},
         {"Cap", newRawNode(`[1]`, types.V_ARRAY), _DEFAULT_NODE_CAP, nil},
         {"Cap", NewObject([]Pair{{"",NewNull()}}), 1, nil},
@@ -212,6 +214,11 @@ func TestTypeCast(t *testing.T) {
 }
 
 func TestCheckError(t *testing.T) {
+    empty := Node{}
+    if !empty.Valid() || empty.Check() != nil || empty.Error() != "" {
+        t.Fatal()
+    }
+ 
     n := newRawNode("[hello]", types.V_ARRAY)
     n.parseRaw(false)
     if n.Check() != nil {
@@ -680,6 +687,31 @@ func TestNodeGetByPath(t *testing.T) {
 }
 
 func TestNodeSet(t *testing.T) {
+    empty := Node{}
+    err := empty.Add(Node{})
+    if err != nil {
+        t.Fatal(err)
+    }
+    empty2 := empty.Index(0)
+    if empty2.Check() != nil {
+        t.Fatal(err)
+    }
+    exist, err := empty2.SetByIndex(1, Node{})
+    if exist || err == nil {
+        t.Fatal(exist, err)
+    }
+    empty3 := empty.Index(0)
+    if empty3.Check() != nil {
+        t.Fatal(err)
+    }
+    exist, err = empty3.Set("a", NewNumber("-1"))
+    if exist || err != nil {
+        t.Fatal(exist, err)
+    }
+    if n, e := empty.Index(0).Get("a").Int64(); e != nil || n != -1 {
+        t.Fatal(n, e)
+    }
+    
     root, derr := NewParser(_TwitterJson).Parse()
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
