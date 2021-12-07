@@ -154,8 +154,12 @@ func TestTypeCast(t *testing.T) {
     lazyArray, _ := NewParser("[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]").Parse()
     lazyObject, _ := NewParser(`{"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16}`).Parse()
     var cases = []tcase{
-        {"Raw", Node{}, "", ErrUnsupportType},
+        {"Raw", Node{}, "", ErrNotExist},
         {"Raw", newRawNode("[ ]", types.V_ARRAY), "[ ]", nil},
+        {"Raw", NewBool(true), "true", nil},
+        {"Raw", NewNumber("-0.0"), "-0.0", nil},
+        {"Raw", NewString(""), `""`, nil},
+        {"Raw", NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, nil},
         {"Bool", Node{}, false, ErrUnsupportType},
         {"Bool", newRawNode("true", types.V_TRUE), true, nil},
         {"Bool", newRawNode("false", types.V_FALSE), false, nil},
@@ -738,6 +742,43 @@ func TestNodeSet(t *testing.T) {
     val2, _ := root.GetByPath("statuses", 3, "id_str2", "a", 4, "b").String()
     if val2 != "c" {
         t.Fatalf("exp:%+v, got:%+v", "c", val2)
+    }
+}
+
+func TestNodeAny(t *testing.T) {
+    empty := Node{}
+    _,err := empty.SetAny("any", map[string]interface{}{"a": []int{0}})
+    if err != nil {
+        t.Fatal(err)
+    }
+    if m, err := empty.Get("any").Interface(); err != nil {
+        t.Fatal(err)
+    } else if v, ok := m.(map[string]interface{}); !ok {
+        t.Fatal(v)
+    }
+    if buf, err := empty.MarshalJSON(); err != nil {
+        t.Fatal(err)
+    } else if string(buf) != `{"any":{"a":[0]}}` {
+        t.Fatal(string(buf))
+    }
+    if _, err := empty.Set("any2", Node{}); err != nil {
+        t.Fatal(err)
+    }
+    if err := empty.Get("any2").AddAny(nil); err != nil {
+        t.Fatal(err)
+    }
+    if buf, err := empty.MarshalJSON(); err != nil {
+        t.Fatal(err)
+    } else if string(buf) != `{"any":{"a":[0]},"any2":[null]}` {
+        t.Fatal(string(buf))
+    }
+    if _, err := empty.Get("any2").SetAnyByIndex(0, NewNumber("-0.0")); err != nil {
+        t.Fatal(err)
+    }
+    if buf, err := empty.MarshalJSON(); err != nil {
+        t.Fatal(err)
+    } else if string(buf) != `{"any":{"a":[0]},"any2":[-0.0]}` {
+        t.Fatal(string(buf))
     }
 }
 

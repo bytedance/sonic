@@ -25,6 +25,7 @@ import (
 	`github.com/bytedance/sonic/internal/native/types`
 	`github.com/bytedance/sonic/internal/rt`
 	`github.com/bytedance/sonic/unquote`
+	`github.com/chenzhuoyu/base64x`
 )
 
 const (
@@ -41,6 +42,7 @@ const (
     _V_LAZY         types.ValueType = 1 << 7
     _V_RAW          types.ValueType = 1 << 8
     _V_NUMBER                       = _V_NODE_BASE + 1
+    _V_ANY                          = _V_NODE_BASE + 2
     _V_ARRAY_LAZY                   = _V_LAZY | types.V_ARRAY
     _V_OBJECT_LAZY                  = _V_LAZY | types.V_OBJECT
     _MASK_LAZY                      = _V_LAZY - 1
@@ -57,6 +59,7 @@ const (
     V_OBJECT = 6
     V_STRING = 7
     V_NUMBER = int(_V_NUMBER)
+    V_ANY    = int(_V_ANY)
 )
 
 type Node struct {
@@ -69,16 +72,16 @@ type Node struct {
 
 // Type returns json type represented by the node
 // It will be one of belows:
-//    V_NONE   = 0
-//    V_ERROR  = 1
-//    V_NULL   = 2
-//    V_TRUE   = 3
-//    V_FALSE  = 4
-//    V_ARRAY  = 5
-//    V_OBJECT = 6
-//    V_STRING = 7
-//    V_NUMBER = 33
-//    V_ANY    = 34
+//    V_NONE   = 0 (empty node)
+//    V_ERROR  = 1 (error node)
+//    V_NULL   = 2 (json `null`)
+//    V_TRUE   = 3 (json `true`)
+//    V_FALSE  = 4 (json `false`)
+//    V_ARRAY  = 5 (json `[...]`)
+//    V_OBJECT = 6 (json `{...}`)
+//    V_STRING = 7 (json `"..."`)
+//    V_NUMBER = 33 (json `123...e10...`)
+//    V_ANY    = 34 (golang interface{})
 func (self Node) Type() int {
     return int(self.t & _MASK_LAZY & _MASK_RAW)
 }
@@ -98,7 +101,7 @@ func (self *Node) Valid() bool {
         return false
     }
     it := self.Type()
-    return it >= V_NULL && it <= V_STRING || it == V_NONE || it == V_NUMBER
+    return (it >= V_NULL && it <= V_STRING) || it == V_NONE || it == V_NUMBER || it == V_ANY
 }
 
 // Check checks if the node itself is valid, and return:
@@ -138,7 +141,8 @@ func (self Node) isLazy() bool {
 // which usually created by Search() api
 func (self *Node) Raw() (string, error) {
     if !self.IsRaw() {
-        return "", ErrUnsupportType
+        buf, err := self.MarshalJSON()
+        return rt.Mem2Str(buf), err
     }
     return addr2str(self.p, self.v), nil
 }
@@ -306,6 +310,11 @@ func (self *Node) Set(key string, node Node) (bool, error) {
     return true, nil
 }
 
+// SetAny wraps val with V_ANY node, and Set() the node.
+func (self *Node) SetAny(key string, val interface{}) (bool, error) {
+    return self.Set(key, NewAny(val))
+}
+
 // Unset remove the node of given key under object parent, and reports if the key has existed.
 func (self *Node) Unset(key string) (bool, error) {
     self.must(types.V_OBJECT, "an object")
@@ -337,6 +346,11 @@ func (self *Node) SetByIndex(index int, node Node) (bool, error) {
 
     *p = node
     return true, nil
+}
+
+// SetAny wraps val with V_ANY node, and SetByIndex() the node.
+func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
+    return self.SetByIndex(index, NewAny(val))
 }
 
 // UnsetByIndex remove the node of given index
@@ -394,6 +408,11 @@ func (self *Node) Add(node Node) error {
     self.p = unsafe.Pointer(&s[0])
     self.setCapAndLen(cap(s), len(s))
     return nil
+}
+
+// SetAny wraps val with V_ANY node, and Add() the node.
+func (self *Node) AddAny(val interface{}) error {
+    return self.Add(NewAny(val))
 }
 
 // GetByPath load given path on demands,
@@ -605,6 +624,8 @@ func (self *Node) Interface() (interface{}, error) {
                 return nil, err
             }
             return self.toGenericObject()
+        case _V_ANY:
+            return (*(*rt.GoEface)(self.p)).Pack(), nil
         default              : return nil,  ErrUnsupportType
     }
 }
@@ -634,6 +655,8 @@ func (self *Node) InterfaceUseNumber() (interface{}, error) {
                 return nil, err
             }
             return self.toGenericObjectUseNumber()
+        case _V_ANY:
+            return (*(*rt.GoEface)(self.p)).Pack(), nil
         default              : return nil, ErrUnsupportType
     }
 }
@@ -657,6 +680,8 @@ func (self *Node) InterfaceUseNode() (interface{}, error) {
                 return nil, err
             }
             return self.toGenericObjectUseNode()
+        case _V_ANY:
+            return (*(*rt.GoEface)(self.p)).Pack(), nil
         default              : return *self, nil
     }
 }
@@ -1293,6 +1318,41 @@ var (
     emptyArrayNode  = Node{t: types.V_ARRAY}
     emptyObjectNode = Node{t: types.V_OBJECT}
 )
+
+// NewRaw creates a node of raw json, and decides its type by first char.
+func NewRaw(json string) Node {
+    if json == "" {
+        panic("empty json string")
+    }
+    it := switchRawType(json[0])
+    return newRawNode(json, it)
+}
+
+// NewAny creates a node of type V_ANY if any's type isn't Node or *Node, 
+// which stores interface{} and can be only used for `.Interface()`\`.MarshalJSON()`.
+func NewAny(any interface{}) Node {
+    switch n := any.(type) {
+    case Node:
+        return n
+    case *Node:
+        return *n
+    default:
+        return Node{
+            t: _V_ANY,
+            v: 0,
+            p: unsafe.Pointer(&any),
+        }
+    }
+}
+
+// NewBytes encodes given src with Base64 (RFC 4648), and creates a node of type V_STRING.
+func NewBytes(src []byte) Node {
+    if len(src) == 0 {
+        panic("empty src bytes")
+    }
+    out := base64x.StdEncoding.EncodeToString(src)
+    return NewString(out)
+}
 
 // NewNull creates a node of type V_NULL
 func NewNull() Node {

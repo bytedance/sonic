@@ -18,6 +18,8 @@ package ast
 
 import (
 	`sync`
+
+	`github.com/bytedance/sonic/encoder`
 )
 
 const (
@@ -37,6 +39,11 @@ var bytesPool   = sync.Pool{}
 func (self *Node) MarshalJSON() ([]byte, error) {
 	buf := newBuffer()
 	err := self.encode(buf)
+    if err != nil {
+        freeBuffer(buf)
+        return nil, err
+    }
+
 	ret := make([]byte, len(*buf))
 	copy(ret, *buf)
 	freeBuffer(buf)
@@ -71,6 +78,7 @@ func (self *Node) encode(buf *[]byte) error {
 		case V_OBJECT: return self.encodeObject(buf)
 		case V_STRING: return self.encodeString(buf)
 		case V_NUMBER: return self.encodeNumber(buf)
+	    case V_ANY   : return self.encodeInterface(buf)
 		default      : return ErrUnsupportType 
 	}
 }
@@ -184,4 +192,9 @@ func (self *Node) encodeObject(buf *[]byte) error {
 
 	*buf = append(*buf, '}')
     return nil
+}
+
+func (self *Node) encodeInterface(buf *[]byte) error {
+	val := *(*interface{})(self.p)
+	return encoder.EncodeInto(buf, val, 0)
 }
