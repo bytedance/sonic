@@ -68,6 +68,13 @@ type Node struct {
     p unsafe.Pointer
 }
 
+// UnmarshalJSON is just an adapter to json.Unmarshaler.
+// If you want better performance, use Searcher.GetByPath() directly
+func (self *Node) UnmarshalJSON(data []byte) (err error) {
+    *self, err = NewSearcher(string(data)).GetByPath()
+    return 
+}
+
 /** Node Type Accessor **/
 
 // Type returns json type represented by the node
