@@ -23,20 +23,20 @@ import (
 )
 
 func getTestIteratorSample() (string, int) {
-	var data []int
-	var v1 = ""
-	var v2 = ""
-	loop := _DEFAULT_NODE_CAP+1
-	for i:=0;i<loop;i++{
-		data = append(data, i*i)
-		v1 += strconv.Itoa(i)
-		v2 += `"k`+strconv.Itoa(i)+`":`+strconv.Itoa(i)
-		if i!=loop-1{
-			v1+=`,`
-			v2+=`,`
-		}
-	}
-	return `{"array":[`+v1+`], "object":{`+v2+`}}`, loop
+    var data []int
+    var v1 = ""
+    var v2 = ""
+    loop := _DEFAULT_NODE_CAP+1
+    for i:=0;i<loop;i++{
+        data = append(data, i*i)
+        v1 += strconv.Itoa(i)
+        v2 += `"k`+strconv.Itoa(i)+`":`+strconv.Itoa(i)
+        if i!=loop-1{
+            v1+=`,`
+            v2+=`,`
+        }
+    }
+    return `{"array":[`+v1+`], "object":{`+v2+`}}`, loop
 }
 
 func TestRawIterator(t *testing.T) {
@@ -53,8 +53,8 @@ func TestRawIterator(t *testing.T) {
         v := &Node{}
         if !ai.Next(v) {
             t.Fatalf("no next")
-		}
-		x, _ := v.Int64()
+        }
+        x, _ := v.Int64()
         if i < int64(loop) && x != i {
             t.Fatalf("exp:%v, got:%v", i, v)
         }
@@ -62,10 +62,10 @@ func TestRawIterator(t *testing.T) {
             t.Fatal(i)
         }
         i++
-	}
-	if i != int64(loop) {
-		t.Fatal(i)
-	}
+    }
+    if i != int64(loop) {
+        t.Fatal(i)
+    }
     
     root, err = NewSearcher(str).GetByPath("object")
     if err != nil {
@@ -77,131 +77,131 @@ func TestRawIterator(t *testing.T) {
         v := &Pair{}
         if !mi.Next(v) {
             t.Fatalf("no next")
-		}
-		x, _ := v.Value.Int64()
+        }
+        x, _ := v.Value.Int64()
         if i < int64(loop) &&( x != i ||v.Key != fmt.Sprintf("k%d", i)) {
-			vv, _ := v.Value.Interface()
+            vv, _ := v.Value.Interface()
             t.Fatalf("exp:%v, got:%v", i, vv)
         }
         if i != int64(mi.Pos())-1 || i >= int64(mi.Len()) {
             t.Fatal(i)
         }
         i++
-	}
-	if i != int64(loop) {
-		t.Fatal(i)
-	}
+    }
+    if i != int64(loop) {
+        t.Fatal(i)
+    }
 }
 
 func TestIterator(t *testing.T) {
-	str, loop := getTestIteratorSample()
-	fmt.Println(str)
+    str, loop := getTestIteratorSample()
+    fmt.Println(str)
 
-	root, err := NewParser(str).Parse()
-	if err != 0 {
-		t.Fatal(err)
-	}
-	ai, _ := root.Get("array").Values()
-	i := int64(0)
-	for ai.HasNext() {
-		v := &Node{}
-		if !ai.Next(v) {
-			t.Fatalf("no next")
-		}
-		x, _ := v.Int64()
-		if i < int64(loop) && x != i {
-			t.Fatalf("exp:%v, got:%v", i, v)
-		}
-		if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
-			t.Fatal(i)
-		}
-		i++
-	}
-	if i != int64(loop) {
-		t.Fatal(i)
-	}
+    root, err := NewParser(str).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    ai, _ := root.Get("array").Values()
+    i := int64(0)
+    for ai.HasNext() {
+        v := &Node{}
+        if !ai.Next(v) {
+            t.Fatalf("no next")
+        }
+        x, _ := v.Int64()
+        if i < int64(loop) && x != i {
+            t.Fatalf("exp:%v, got:%v", i, v)
+        }
+        if i != int64(ai.Pos())-1 || i >= int64(ai.Len()) {
+            t.Fatal(i)
+        }
+        i++
+    }
+    if i != int64(loop) {
+        t.Fatal(i)
+    }
 
-	root, err = NewParser(str).Parse()
-	if err != 0 {
-		t.Fatal(err)
-	}
-	mi, _ := root.Get("object").Properties()
-	i = int64(0)
-	for mi.HasNext() {
-		v := &Pair{}
-		if !mi.Next(v) {
-			t.Fatalf("no next")
-		}
-		x, _ := v.Value.Int64()
-		if i < int64(loop) &&( x != i ||v.Key != fmt.Sprintf("k%d", i)) {
-			vv, _ := v.Value.Interface()
-			t.Fatalf("exp:%v, got:%v", i, vv)
-		}
-		if i != int64(mi.Pos())-1 || i >= int64(mi.Len()) {
-			t.Fatal(i)
-		}
-		i++
-	}
-	if i != int64(loop) {
-		t.Fatal(i)
-	}
+    root, err = NewParser(str).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    mi, _ := root.Get("object").Properties()
+    i = int64(0)
+    for mi.HasNext() {
+        v := &Pair{}
+        if !mi.Next(v) {
+            t.Fatalf("no next")
+        }
+        x, _ := v.Value.Int64()
+        if i < int64(loop) &&( x != i ||v.Key != fmt.Sprintf("k%d", i)) {
+            vv, _ := v.Value.Interface()
+            t.Fatalf("exp:%v, got:%v", i, vv)
+        }
+        if i != int64(mi.Pos())-1 || i >= int64(mi.Len()) {
+            t.Fatal(i)
+        }
+        i++
+    }
+    if i != int64(loop) {
+        t.Fatal(i)
+    }
 }
 
 func BenchmarkArrays(b *testing.B) {
-	for i:=0;i<b.N;i++{
-		root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1,"entities","hashtags")
-		if err != nil {
-			b.Fatal(err)
-		}
-		a, _ := root.Array()
-		for _,v := range a {
-			_ = v
-		}
-	}
+    for i:=0;i<b.N;i++{
+        root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1,"entities","hashtags")
+        if err != nil {
+            b.Fatal(err)
+        }
+        a, _ := root.Array()
+        for _,v := range a {
+            _ = v
+        }
+    }
 }
 
 func BenchmarkListIterator(b *testing.B) {
-	for i:=0;i<b.N;i++{
-		root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1,"entities","hashtags")
-		if err != nil {
-			b.Fatal(err)
-		}
-		it, _ := root.Values()
-		for it.HasNext() {
-			v := &Node{}
-			if !it.Next(v) {
-				b.Fatalf("no value")
-			}
-		}
-	}
+    for i:=0;i<b.N;i++{
+        root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1,"entities","hashtags")
+        if err != nil {
+            b.Fatal(err)
+        }
+        it, _ := root.Values()
+        for it.HasNext() {
+            v := &Node{}
+            if !it.Next(v) {
+                b.Fatalf("no value")
+            }
+        }
+    }
 }
 
 func BenchmarkMap(b *testing.B) {
-	for i:=0;i<b.N;i++{
-		root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1, "user")
-		if err != nil {
-			b.Fatal(err)
-		}
-		m, _ := root.Map()
-		for k,v := range m {
-			_ = v
-			_ = k
-		}
-	}
+    for i:=0;i<b.N;i++{
+        root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1, "user")
+        if err != nil {
+            b.Fatal(err)
+        }
+        m, _ := root.Map()
+        for k,v := range m {
+            _ = v
+            _ = k
+        }
+    }
 }
 
 func BenchmarkObjectIterator(b *testing.B) {
-	for i:=0;i<b.N;i++{
-		root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1, "user")
-		if err != nil {
-			b.Fatal(err)
-		}
-		it, _ := root.Properties()
-		for it.HasNext() {
-			v := &Pair{}
-			if !it.Next(v)  {
-				b.Fatalf("no value")
-			}
-		}
-	}
+    for i:=0;i<b.N;i++{
+        root,err := NewSearcher(_TwitterJson).GetByPath("statuses",1, "user")
+        if err != nil {
+            b.Fatal(err)
+        }
+        it, _ := root.Properties()
+        for it.HasNext() {
+            v := &Pair{}
+            if !it.Next(v)  {
+                b.Fatalf("no value")
+            }
+        }
+    }
 }

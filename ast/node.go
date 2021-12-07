@@ -17,15 +17,15 @@
 package ast
 
 import (
-	`encoding/json`
-	`fmt`
-	`unsafe`
+    `encoding/json`
+    `fmt`
+    `unsafe`
 
-	`github.com/bytedance/sonic/decoder`
-	`github.com/bytedance/sonic/internal/native/types`
-	`github.com/bytedance/sonic/internal/rt`
-	`github.com/bytedance/sonic/unquote`
-	`github.com/chenzhuoyu/base64x`
+    `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/unquote`
+    `github.com/chenzhuoyu/base64x`
 )
 
 const (
@@ -102,13 +102,12 @@ func (self *Node) Exists() bool {
     return self != nil && self.t != _V_NONE
 }
 
-// Valid returns true when the node has any type of V_NULL ~ V_STRING, or V_NUMBER
+// Valid reports if self is NOT V_ERROR or nil
 func (self *Node) Valid() bool {
     if self == nil {
         return false
     }
-    it := self.Type()
-    return (it >= V_NULL && it <= V_STRING) || it == V_NONE || it == V_NUMBER || it == V_ANY
+    return self.t != V_ERROR
 }
 
 // Check checks if the node itself is valid, and return:
@@ -696,59 +695,59 @@ func (self *Node) InterfaceUseNode() (interface{}, error) {
 // LoadAll loads all the node's children and children's children as parsed.
 // After calling it, the node can be safely used on concurrency
 func (self *Node) LoadAll() error {
-	if self.IsRaw() {
-		self.parseRaw(true)
-		return self.Check()
-	}
+    if self.IsRaw() {
+        self.parseRaw(true)
+        return self.Check()
+    }
 
-	switch self.itype() {
-	case types.V_ARRAY:
-		e := self.len()
-		if err := self.loadAllIndex(); err != nil {
-			return err
-		}
-		for i := 0; i < e; i++ {
-			n := self.nodeAt(i)
-			n.parseRaw(true)
-			if err := n.Check(); err != nil {
-				return err
-			}
-		}
-		return nil
-	case types.V_OBJECT:
-		e := self.len()
-		if err := self.loadAllKey(); err != nil {
-			return err
-		}
-		for i := 0; i < e; i++ {
-			n := self.pairAt(i)
-			n.Value.parseRaw(true)
-			if err := n.Value.Check(); err != nil {
-				return err
-			}
-		}
-		return nil
-	default:
-		return self.Check()
-	}
+    switch self.itype() {
+    case types.V_ARRAY:
+        e := self.len()
+        if err := self.loadAllIndex(); err != nil {
+            return err
+        }
+        for i := 0; i < e; i++ {
+            n := self.nodeAt(i)
+            n.parseRaw(true)
+            if err := n.Check(); err != nil {
+                return err
+            }
+        }
+        return nil
+    case types.V_OBJECT:
+        e := self.len()
+        if err := self.loadAllKey(); err != nil {
+            return err
+        }
+        for i := 0; i < e; i++ {
+            n := self.pairAt(i)
+            n.Value.parseRaw(true)
+            if err := n.Value.Check(); err != nil {
+                return err
+            }
+        }
+        return nil
+    default:
+        return self.Check()
+    }
 }
 
 // Load loads the node's children as parsed.
 // After calling it, only the node itself can be used on concurrency (not include its children)
 func (self *Node) Load() error {
-	if self.IsRaw() {
-		self.parseRaw(false)
-		return self.Load()
-	}
+    if self.IsRaw() {
+        self.parseRaw(false)
+        return self.Load()
+    }
 
-	switch self.t {
-	case _V_ARRAY_LAZY:
-		return self.skipAllIndex()
-	case _V_OBJECT_LAZY:
-		return self.skipAllKey()
-	default:
-		return self.Check()
-	}
+    switch self.t {
+    case _V_ARRAY_LAZY:
+        return self.skipAllIndex()
+    case _V_OBJECT_LAZY:
+        return self.skipAllKey()
+    default:
+        return self.Check()
+    }
 }
 
 /**---------------------------------- Internal Helper Methods ----------------------------------**/

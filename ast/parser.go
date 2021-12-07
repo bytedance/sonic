@@ -17,15 +17,15 @@
 package ast
 
 import (
-	`fmt`
-	`sync`
+    `fmt`
+    `sync`
     `unsafe`
 
-	`github.com/bytedance/sonic/decoder`
-	`github.com/bytedance/sonic/internal/native`
-	`github.com/bytedance/sonic/internal/native/types`
-	`github.com/bytedance/sonic/internal/rt`
-	`github.com/bytedance/sonic/unquote`
+    `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/unquote`
 )
 
 const _DEFAULT_NODE_CAP int = 16
