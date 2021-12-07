@@ -81,13 +81,13 @@ func (self *Node) UnmarshalJSON(data []byte) (err error) {
 // It will be one of belows:
 //    V_NONE   = 0 (empty node)
 //    V_ERROR  = 1 (error node)
-//    V_NULL   = 2 (json `null`)
-//    V_TRUE   = 3 (json `true`)
-//    V_FALSE  = 4 (json `false`)
-//    V_ARRAY  = 5 (json `[...]`)
-//    V_OBJECT = 6 (json `{...}`)
-//    V_STRING = 7 (json `"..."`)
-//    V_NUMBER = 33 (json `123...e10...`)
+//    V_NULL   = 2 (json value `null`)
+//    V_TRUE   = 3 (json value `true`)
+//    V_FALSE  = 4 (json value `false`)
+//    V_ARRAY  = 5 (json value array)
+//    V_OBJECT = 6 (json value object)
+//    V_STRING = 7 (json value string)
+//    V_NUMBER = 33 (json value number )
 //    V_ANY    = 34 (golang interface{})
 func (self Node) Type() int {
     return int(self.t & _MASK_LAZY & _MASK_RAW)
@@ -137,14 +137,17 @@ func (self Node) IsRaw() bool {
     return self.t&_V_RAW != 0
 }
 
-func (self Node) isLazy() bool {
-    return self.t&_V_LAZY != 0
+func (self *Node) isLazy() bool {
+    return self != nil && self.t&_V_LAZY != 0
+}
+
+func (self *Node) isAny() bool {
+    return self != nil && self.t == _V_ANY
 }
 
 /** Simple Value Methods **/
 
-// Raw returns underlying json string of an raw node,
-// which usually created by Search() api
+// Raw returns json representation of the node,
 func (self *Node) Raw() (string, error) {
     if !self.IsRaw() {
         buf, err := self.MarshalJSON()
@@ -165,7 +168,8 @@ func (self *Node) checkRaw() error {
 
 // Bool_E returns bool value represented by this node
 //
-// If node type is not types.V_TRUE or types.V_FALSE, or V_RAW (must be a bool json value),
+// If node type is not types.V_TRUE or types.V_FALSE, 
+// V_RAW (must be a bool json value), or V_ANY (must be a bool type)
 // it will return error
 func (self *Node) Bool() (bool, error) {
     if err := self.checkRaw(); err != nil {
@@ -174,6 +178,12 @@ func (self *Node) Bool() (bool, error) {
     switch self.t {
         case types.V_TRUE  : return true , nil
         case types.V_FALSE : return false, nil
+        case _V_ANY        :        
+            if v, ok := self.packAny().(bool); ok {
+                return v, nil
+            } else {
+                return false, ErrUnsupportType
+            }
         default            : return false, ErrUnsupportType
     }
 }
@@ -187,6 +197,21 @@ func (self *Node) Int64() (int64, error) {
         case _V_NUMBER        : return numberToInt64(self)
         case types.V_TRUE     : return 1, nil
         case types.V_FALSE    : return 0, nil
+        case _V_ANY           :  
+            any := self.packAny()
+            switch v := any.(type) {
+                case int   : return int64(v), nil
+                case int8  : return int64(v), nil
+                case int16 : return int64(v), nil
+                case int32 : return int64(v), nil
+                case int64 : return int64(v), nil
+                case uint  : return int64(v), nil
+                case uint8 : return int64(v), nil
+                case uint16: return int64(v), nil
+                case uint32: return int64(v), nil
+                case uint64: return int64(v), nil
+                default: return 0, ErrUnsupportType
+            }
         default               : return 0, ErrUnsupportType
     }
 }
@@ -200,6 +225,12 @@ func (self *Node) Number() (json.Number, error) {
         case _V_NUMBER        : return toNumber(self)  , nil
         case types.V_TRUE     : return json.Number("1"), nil
         case types.V_FALSE    : return json.Number("0"), nil
+        case _V_ANY        :        
+            if v, ok := self.packAny().(json.Number); ok {
+                return v, nil
+            } else {
+                return json.Number(""), ErrUnsupportType
+            }
         default               : return json.Number(""), ErrUnsupportType
     }
 }
@@ -210,6 +241,7 @@ func (self *Node) Number() (json.Number, error) {
 //  V_TRUE => "true",
 //  V_FALSE => "false",
 //  V_NUMBER => "[0-9\.]*"
+//  V_ANY => interface{}.(string)
 func (self *Node) String() (string, error) {
     if err := self.checkRaw(); err != nil {
         return "", err
@@ -220,6 +252,12 @@ func (self *Node) String() (string, error) {
         case types.V_TRUE    : return "true" , nil
         case types.V_FALSE   : return "false", nil
         case types.V_STRING  : return addr2str(self.p, self.v), nil
+        case _V_ANY        :        
+            if v, ok := self.packAny().(string); ok {
+                return v, nil
+            } else {
+                return "", ErrUnsupportType
+            }
         default              : return ""     , ErrUnsupportType
     }
 }
@@ -233,6 +271,13 @@ func (self *Node) Float64() (float64, error) {
         case _V_NUMBER       : return numberToFloat64(self)
         case types.V_TRUE    : return 1.0, nil
         case types.V_FALSE   : return 0.0, nil
+        case _V_ANY        :        
+            any := self.packAny()
+            switch v := any.(type) {
+                case float32 : return float64(v), nil
+                case float64 : return float64(v), nil
+                default      : return 0, ErrUnsupportType
+            }
         default              : return 0.0, ErrUnsupportType
     }
 }
@@ -371,7 +416,7 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
            return false, ErrNotExist
         }
         p = &pr.Value
-    }else{
+    } else {
         return false, ErrUnsupportType
     }
 
@@ -474,7 +519,7 @@ func (self *Node) Index(idx int) *Node {
         }
         return &pr.Value
 
-    }else{
+    } else {
         return newError(_ERR_UNSUPPORT_TYPE, fmt.Sprintf("unsupported type: %v", self.itype()))
     }
 }
@@ -507,6 +552,14 @@ func (self *Node) IndexOrGet(idx int, key string) *Node {
 
 // Map loads all keys of an object node
 func (self *Node) Map() (map[string]interface{}, error) {
+    if self.isAny() {
+        any := self.packAny()
+        if v, ok := any.(map[string]interface{}); ok {
+            return v, nil
+        } else {
+            return nil, ErrUnsupportType
+        }
+    }
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil, err
     }
@@ -518,6 +571,14 @@ func (self *Node) Map() (map[string]interface{}, error) {
 
 // MapUseNumber loads all keys of an object node, with numeric nodes casted to json.Number
 func (self *Node) MapUseNumber() (map[string]interface{}, error) {
+    if self.isAny() {
+        any := self.packAny()
+        if v, ok := any.(map[string]interface{}); ok {
+            return v, nil
+        } else {
+            return nil, ErrUnsupportType
+        }
+    }
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil, err
     }
@@ -530,6 +591,14 @@ func (self *Node) MapUseNumber() (map[string]interface{}, error) {
 // MapUseNode scans both parsed and non-parsed chidren nodes, 
 // and map them by their keys
 func (self *Node) MapUseNode() (map[string]Node, error) {
+    if self.isAny() {
+        any := self.packAny()
+        if v, ok := any.(map[string]Node); ok {
+            return v, nil
+        } else {
+            return nil, ErrUnsupportType
+        }
+    }
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil, err
     }
@@ -554,6 +623,14 @@ func (self *Node) UnsafeMap() ([]Pair, error) {
 
 // Array loads all indexes of an array node
 func (self *Node) Array() ([]interface{}, error) {
+    if self.isAny() {
+        any := self.packAny()
+        if v, ok := any.([]interface{}); ok {
+            return v, nil
+        } else {
+            return nil, ErrUnsupportType
+        }
+    }
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
@@ -565,6 +642,14 @@ func (self *Node) Array() ([]interface{}, error) {
 
 // ArrayUseNumber loads all indexes of an array node, with numeric nodes casted to json.Number
 func (self *Node) ArrayUseNumber() ([]interface{}, error) {
+    if self.isAny() {
+        any := self.packAny()
+        if v, ok := any.([]interface{}); ok {
+            return v, nil
+        } else {
+            return nil, ErrUnsupportType
+        }
+    }
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
@@ -577,6 +662,14 @@ func (self *Node) ArrayUseNumber() ([]interface{}, error) {
 // ArrayUseNode copys both parsed and non-parsed chidren nodes, 
 // and indexes them by original order
 func (self *Node) ArrayUseNode() ([]Node, error) {
+    if self.isAny() {
+        any := self.packAny()
+        if v, ok := any.([]Node); ok {
+            return v, nil
+        } else {
+            return nil, ErrUnsupportType
+        }
+    }
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
@@ -631,9 +724,17 @@ func (self *Node) Interface() (interface{}, error) {
             }
             return self.toGenericObject()
         case _V_ANY:
-            return (*(*rt.GoEface)(self.p)).Pack(), nil
+            switch v := self.packAny().(type) {
+                case Node : return v.Interface()
+                case *Node: return v.Interface()
+                default   : return v, nil
+            }
         default              : return nil,  ErrUnsupportType
     }
+}
+
+func (self *Node) packAny() interface{} {
+    return *(*interface{})(self.p)
 }
 
 // InterfaceUseNumber works same with Interface()
@@ -661,8 +762,7 @@ func (self *Node) InterfaceUseNumber() (interface{}, error) {
                 return nil, err
             }
             return self.toGenericObjectUseNumber()
-        case _V_ANY:
-            return (*(*rt.GoEface)(self.p)).Pack(), nil
+        case _V_ANY          : return self.packAny(), nil
         default              : return nil, ErrUnsupportType
     }
 }
@@ -686,9 +786,7 @@ func (self *Node) InterfaceUseNode() (interface{}, error) {
                 return nil, err
             }
             return self.toGenericObjectUseNode()
-        case _V_ANY:
-            return (*(*rt.GoEface)(self.p)).Pack(), nil
-        default              : return *self, nil
+        default              : return *self, self.Check()
     }
 }
 
@@ -885,7 +983,7 @@ func (self *Node) skipNextNode() *Node {
     /* skip the value */
     if start, err := parser.skip(); err != 0 {
         return newSyntaxError(parser.syntaxError(err))
-    }else{
+    } else {
         t := switchRawType(parser.s[start])
         if t == _V_NONE {
             return newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))
@@ -968,7 +1066,7 @@ func (self *Node) skipNextPair() (*Pair) {
     /* skip the value */
     if start, err := parser.skip(); err != 0 {
         return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
-    }else{
+    } else {
         t := switchRawType(parser.s[start])
         if t == _V_NONE {
             return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
@@ -1581,7 +1679,7 @@ func unwrapError(err error) *Node {
         return se
     }else if sse, ok := err.(Node); ok {
         return &sse
-    }else{
+    } else {
         msg := err.Error()
         return &Node{
             t: V_ERROR,

@@ -20,12 +20,38 @@ import (
     `encoding/json`
     `fmt`
     `reflect`
+    `runtime`
+    `runtime/debug`
     `strconv`
     `testing`
 
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
     `github.com/stretchr/testify/assert`
 )
+
+//go:noinline
+func stackObj() interface{} {
+    var a int = 1
+    return rt.UnpackEface(a).Pack()
+}
+
+func TestStackAny(t *testing.T) {
+    var obj = stackObj()
+    any := NewAny(obj)
+    fmt.Printf("any: %#v\n", any)
+    runtime.GC()
+    debug.FreeOSMemory()
+    println("finish GC")
+    buf, err := any.MarshalJSON()
+    println("finish marshal")
+    if err != nil {
+        t.Fatal(err)
+    }
+    if string(buf) != `1` {
+        t.Fatal(string(buf))
+    }
+}
 
 func TestLoadAll(t *testing.T) {
     e := Node{}
@@ -151,45 +177,96 @@ func TestTypeCast(t *testing.T) {
         exp interface{}
         err error
     }
+    a1 := NewAny(1)
     lazyArray, _ := NewParser("[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]").Parse()
     lazyObject, _ := NewParser(`{"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16}`).Parse()
     var cases = []tcase{
+        {"Interface", Node{}, interface{}(nil), ErrUnsupportType},
+        {"Interface", NewAny(NewNumber("1")), float64(1), nil},
+        {"Interface", NewAny(int64(1)), int64(1), nil},
+        {"Interface", NewNumber("1"), float64(1), nil},
+        {"InterfaceUseNode", Node{}, Node{}, nil},
+        {"InterfaceUseNode", a1, a1, nil},
+        {"InterfaceUseNode", NewNumber("1"), NewNumber("1"), nil},
+        {"InterfaceUseNumber", Node{}, interface{}(nil), ErrUnsupportType},
+        {"InterfaceUseNumber", NewAny(1), 1, nil},
+        {"InterfaceUseNumber", NewNumber("1"), json.Number("1"), nil},
+        {"Map", Node{}, map[string]interface{}(nil), ErrUnsupportType},
+        {"Map", NewAny(map[string]Node{"a":NewNumber("1")}), map[string]interface{}(nil), ErrUnsupportType},
+        {"Map", NewAny(map[string]interface{}{"a":1}), map[string]interface{}{"a":1}, nil},
+        {"Map", NewObject([]Pair{{"a",NewNumber("1")}}), map[string]interface{}{"a":float64(1.0)}, nil},
+        {"MapUseNode", Node{}, map[string]Node(nil), ErrUnsupportType},
+        {"MapUseNode", NewAny(map[string]interface{}{"a":1}), map[string]Node(nil), ErrUnsupportType},
+        {"MapUseNode", NewAny(map[string]Node{"a":NewNumber("1")}), map[string]Node{"a":NewNumber("1")}, nil},
+        {"MapUseNode", NewObject([]Pair{{"a",NewNumber("1")}}), map[string]Node{"a":NewNumber("1")}, nil},
+        {"MapUseNumber", Node{}, map[string]interface{}(nil), ErrUnsupportType},
+        {"MapUseNumber", NewAny(map[string]interface{}{"a":1}), map[string]interface{}{"a":1}, nil},
+        {"MapUseNumber", NewObject([]Pair{{"a",NewNumber("1")}}), map[string]interface{}{"a":json.Number("1")}, nil},
+        {"Array", Node{}, []interface{}(nil), ErrUnsupportType},
+        {"Array", NewAny([]interface{}{1}), []interface{}{1}, nil},
+        {"Array", NewArray([]Node{NewNumber("1")}), []interface{}{float64(1.0)}, nil},
+        {"ArrayUseNode", Node{}, []Node(nil), ErrUnsupportType},
+        {"ArrayUseNode", NewAny([]interface{}{1}), []Node(nil), ErrUnsupportType},
+        {"ArrayUseNode", NewAny([]Node{NewNumber("1")}), []Node{NewNumber("1")}, nil},
+        {"ArrayUseNode", NewArray([]Node{NewNumber("1")}), []Node{NewNumber("1")}, nil},
+        {"ArrayUseNumber", Node{}, []interface{}(nil), ErrUnsupportType},
+        {"ArrayUseNumber", NewAny([]interface{}{1}), []interface{}{1}, nil},
+        {"ArrayUseNumber", NewAny([]Node{NewNumber("1")}), []interface{}(nil), ErrUnsupportType},
+        {"ArrayUseNumber", NewArray([]Node{NewNumber("1")}), []interface{}{json.Number("1")}, nil},
         {"Raw", Node{}, "", ErrNotExist},
-        {"Raw", newRawNode("[ ]", types.V_ARRAY), "[ ]", nil},
+        {"Raw", NewAny(""), `""`, nil},
+        {"Raw", NewRaw("[ ]"), "[ ]", nil},
         {"Raw", NewBool(true), "true", nil},
         {"Raw", NewNumber("-0.0"), "-0.0", nil},
         {"Raw", NewString(""), `""`, nil},
         {"Raw", NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, nil},
         {"Bool", Node{}, false, ErrUnsupportType},
-        {"Bool", newRawNode("true", types.V_TRUE), true, nil},
-        {"Bool", newRawNode("false", types.V_FALSE), false, nil},
+        {"Bool", NewAny(true), true, nil},
+        {"Bool", NewAny(false), false, nil},
+        {"Bool", NewRaw("true"), true, nil},
+        {"Bool", NewRaw("false"), false, nil},
+        {"Int64", NewAny(int(0)), int64(0), nil},
+        {"Int64", NewAny(int8(0)), int64(0), nil},
+        {"Int64", NewAny(int16(0)), int64(0), nil},
+        {"Int64", NewAny(int32(0)), int64(0), nil},
+        {"Int64", NewAny(int64(0)), int64(0), nil},
+        {"Int64", NewAny(uint(0)), int64(0), nil},
+        {"Int64", NewAny(uint8(0)), int64(0), nil},
+        {"Int64", NewAny(uint32(0)), int64(0), nil},
+        {"Int64", NewAny(uint64(0)), int64(0), nil},
         {"Int64", Node{}, int64(0), ErrUnsupportType},
-        {"Int64", newRawNode("0", _V_NUMBER), int64(0), nil},
+        {"Int64", NewRaw("0"), int64(0), nil},
         {"Float64", Node{}, float64(0), ErrUnsupportType},
-        {"Float64", newRawNode("0.0", _V_NUMBER), float64(0.0), nil},
+        {"Float64", NewAny(float32(0)), float64(0), nil},
+        {"Float64", NewAny(float64(0)), float64(0), nil},
+        {"Float64", NewRaw("0.0"), float64(0.0), nil},
         {"Number", Node{}, json.Number(""), ErrUnsupportType},
-        {"Number", newRawNode("0.0", _V_NUMBER), json.Number("0.0"), nil},
-        {"Number", newRawNode("true", types.V_TRUE), json.Number("1"), nil},
-        {"Number", newRawNode("false", types.V_FALSE), json.Number("0"), nil},
+        {"Number", NewAny(json.Number("0")), json.Number("0"), nil},
+        {"Number", NewRaw("0.0"), json.Number("0.0"), nil},
+        {"Number", NewRaw("true"), json.Number("1"), nil},
+        {"Number", NewRaw("false"), json.Number("0"), nil},
         {"String", Node{}, "", ErrUnsupportType},
-        {"String", newRawNode(`""`, types.V_STRING), ``, nil},
-        {"String", newRawNode(`0.0`, _V_NUMBER), "0.0", nil},
-        {"String", newRawNode(`null`, types.V_NULL), "null", nil},
-        {"String", newRawNode(`true`, types.V_TRUE), "true", nil},
-        {"String", newRawNode(`false`, types.V_FALSE), "false", nil},
+        {"String", NewAny(""), "", nil},
+        {"String", NewRaw(`""`), ``, nil},
+        {"String", NewRaw(`0.0`), "0.0", nil},
+        {"String", NewRaw(`null`), "null", nil},
+        {"String", NewRaw(`true`), "true", nil},
+        {"String", NewRaw(`false`), "false", nil},
         {"Len", Node{}, 0, nil},
+        {"Len", NewAny(0), 0, ErrUnsupportType},
         {"Len", NewNull(), 0, ErrUnsupportType},
-        {"Len", newRawNode(`"1"`, types.V_STRING), 1, nil},
-        {"Len", newRawNode(`[1]`, types.V_ARRAY), 0, nil},
+        {"Len", NewRaw(`"1"`), 1, nil},
+        {"Len", NewRaw(`[1]`), 0, nil},
         {"Len", NewArray([]Node{NewNull()}), 1, nil},
         {"Len", lazyArray, 0, nil},
-        {"Len", newRawNode(`{"a":1}`, types.V_OBJECT), 0, nil},
+        {"Len", NewRaw(`{"a":1}`), 0, nil},
         {"Len", lazyObject, 0, nil},
         {"Cap", Node{}, 0, nil},
+        {"Cap", NewAny(0), 0, ErrUnsupportType},
         {"Cap", NewNull(), 0, ErrUnsupportType},
-        {"Cap", newRawNode(`[1]`, types.V_ARRAY), _DEFAULT_NODE_CAP, nil},
+        {"Cap", NewRaw(`[1]`), _DEFAULT_NODE_CAP, nil},
         {"Cap", NewObject([]Pair{{"",NewNull()}}), 1, nil},
-        {"Cap", newRawNode(`{"a":1}`, types.V_OBJECT), _DEFAULT_NODE_CAP, nil},
+        {"Cap", NewRaw(`{"a":1}`), _DEFAULT_NODE_CAP, nil},
     }
     lazyArray.skipAllIndex()
     lazyObject.skipAllKey()
@@ -201,15 +278,15 @@ func TestTypeCast(t *testing.T) {
     )
 
     for i, c := range cases {
-        fmt.Println(c)
+        fmt.Println(i, c)
         rt := reflect.ValueOf(&c.node)
         m := rt.MethodByName(c.method)
         rets := m.Call([]reflect.Value{})
         if len(rets) != 2 {
             t.Fatal(i, rets)
         }
-        if rets[0].Interface() != c.exp {
-            t.Fatal(i, rets[0].Interface())
+        if !reflect.DeepEqual(rets[0].Interface(), c.exp) {
+            t.Fatal(i, rets[0].Interface(), c.exp)
         }
         if rets[1].Interface() != c.err {
             t.Fatal(i, rets[1].Interface())

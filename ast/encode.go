@@ -195,6 +195,5 @@ func (self *Node) encodeObject(buf *[]byte) error {
 }
 
 func (self *Node) encodeInterface(buf *[]byte) error {
-    val := *(*interface{})(self.p)
-    return encoder.EncodeInto(buf, val, 0)
+    return encoder.EncodeInto(buf, self.packAny(), 0)
 }
