@@ -21,6 +21,7 @@ import (
     `testing`
 
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/stretchr/testify/assert`
 )
 
 func make_err(src string, pos int) SyntaxError {
@@ -48,7 +49,10 @@ func TestErrors_AfterRightEdge(t *testing.T) {
 }
 
 func TestErrors_ShortDescription(t *testing.T) {
-    println(make_err("hello, world", 5).Description())
+    e := make_err("hello, world", 5)
+    println(e.Description())
+    assert.Equal(t, "Syntax error at index 5: invalid char\n\n\thello, world\n\t.....^......\n", e.Description())
+    assert.Equal(t, `"Syntax error at index 5: invalid char\n\n\thello, world\n\t.....^......\n"`, e.Error())
 }
 
 func TestErrors_EmptyDescription(t *testing.T) {
@@ -61,7 +65,7 @@ func TestDecoderErrorStackOverflower(t *testing.T) {
     for i:=0; i<N; i++ {
         var obj map[string]string
         err := NewDecoder(src).Decode(&obj)
-        if err == nil || err.Error() != `Syntax error at index 5: invalid char` {
+        if err == nil {
             t.Fatal(err)
         }
     }
