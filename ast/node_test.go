@@ -254,7 +254,7 @@ func TestTypeCast(t *testing.T) {
         {"String", NewRaw(`false`), "false", nil},
         {"Len", Node{}, 0, nil},
         {"Len", NewAny(0), 0, ErrUnsupportType},
-        {"Len", NewNull(), 0, ErrUnsupportType},
+        {"Len", NewNull(), 0, nil},
         {"Len", NewRaw(`"1"`), 1, nil},
         {"Len", NewRaw(`[1]`), 0, nil},
         {"Len", NewArray([]Node{NewNull()}), 1, nil},
@@ -263,7 +263,7 @@ func TestTypeCast(t *testing.T) {
         {"Len", lazyObject, 0, nil},
         {"Cap", Node{}, 0, nil},
         {"Cap", NewAny(0), 0, ErrUnsupportType},
-        {"Cap", NewNull(), 0, ErrUnsupportType},
+        {"Cap", NewNull(), 0, nil},
         {"Cap", NewRaw(`[1]`), _DEFAULT_NODE_CAP, nil},
         {"Cap", NewObject([]Pair{{"",NewNull()}}), 1, nil},
         {"Cap", NewRaw(`{"a":1}`), _DEFAULT_NODE_CAP, nil},
@@ -782,6 +782,31 @@ func TestNodeSet(t *testing.T) {
         t.Fatal(exist, err)
     }
     empty3 := empty.Index(0)
+    if empty3.Check() != nil {
+        t.Fatal(err)
+    }
+    exist, err = empty3.Set("a", NewNumber("-1"))
+    if exist || err != nil {
+        t.Fatal(exist, err)
+    }
+    if n, e := empty.Index(0).Get("a").Int64(); e != nil || n != -1 {
+        t.Fatal(n, e)
+    }
+
+    empty = NewNull()
+    err = empty.Add(NewNull())
+    if err != nil {
+        t.Fatal(err)
+    }
+    empty2 = empty.Index(0)
+    if empty2.Check() != nil {
+        t.Fatal(err)
+    }
+    exist, err = empty2.SetByIndex(1, NewNull())
+    if exist || err == nil {
+        t.Fatal(exist, err)
+    }
+    empty3 = empty.Index(0)
     if empty3.Check() != nil {
         t.Fatal(err)
     }

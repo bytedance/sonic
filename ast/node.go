@@ -97,7 +97,7 @@ func (self Node) itype() types.ValueType {
     return self.t & _MASK_LAZY & _MASK_RAW
 }
 
-// Exists returns false only if the node is nil or got by invalid path
+// Exists returns false only if the self is nil or empty node V_NONE
 func (self *Node) Exists() bool {
     return self != nil && self.t != _V_NONE
 }
@@ -294,7 +294,7 @@ func (self *Node) Len() (int, error) {
         return int(self.v & _LEN_MASK), nil
     } else if self.t == types.V_STRING {
         return int(self.v), nil
-    } else if self.t == _V_NONE {
+    } else if self.t == _V_NONE || self.t == types.V_NULL {
         return 0, nil
     } else {
         return 0, ErrUnsupportType
@@ -312,7 +312,7 @@ func (self *Node) Cap() (int, error) {
     }
     if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY {
         return int(self.v >> _CAP_BITS), nil
-    } else if self.t == _V_NONE {
+    } else if self.t == _V_NONE || self.t == types.V_NULL {
         return 0, nil
     } else {
         return 0, ErrUnsupportType
@@ -325,9 +325,9 @@ func (self Node) cap() int {
 
 // Set sets the node of given key under self, and reports if the key has existed.
 //
-// If self is V_NONE, it becomes V_OBJECT and sets the node at the key.
+// If self is V_NONE or V_NULL, it becomes V_OBJECT and sets the node at the key.
 func (self *Node) Set(key string, node Node) (bool, error) {
-    if self != nil && self.t == _V_NONE {
+    if self != nil && (self.t == _V_NONE || self.t == types.V_NULL) {
         *self = NewObject([]Pair{{key, node}})
         return false, nil
     }
@@ -434,9 +434,9 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
 
 // Add appends the given node under self.
 //
-// If self is V_NONE, it becomes V_ARRAY and sets the node at index 0.
+// If self is V_NONE or V_NULL, it becomes V_ARRAY and sets the node at index 0.
 func (self *Node) Add(node Node) error {
-    if self != nil && self.t == _V_NONE {
+    if self != nil && (self.t == _V_NONE || self.t == types.V_NULL) {
         *self = NewArray([]Node{node})
         return nil
     }
