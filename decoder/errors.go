@@ -35,7 +35,7 @@ type SyntaxError struct {
 }
 
 func (self SyntaxError) Error() string {
-    return fmt.Sprintf("Syntax error at index %d: %s", self.Pos, self.Code.Message())
+    return fmt.Sprintf("%q", self.Description())
 }
 
 func (self SyntaxError) Description() string {
@@ -45,7 +45,7 @@ func (self SyntaxError) Description() string {
 
     /* check for empty source */
     if self.Src == "" {
-        return self.Error() + " (no sources available)"
+        return fmt.Sprintf("no sources available: %#v", self)
     }
 
     /* prevent slicing before the beginning */
@@ -71,8 +71,9 @@ func (self SyntaxError) Description() string {
 
     /* compose the error description */
     return fmt.Sprintf(
-        "%s\n\n\t%s\n\t%s^%s\n",
-        self.Error(),
+        "Syntax error at index %d: %s\n\n\t%s\n\t%s^%s\n",
+        self.Pos,
+        self.Code.Message(),
         self.Src[p:q],
         strings.Repeat(".", x),
         strings.Repeat(".", y),

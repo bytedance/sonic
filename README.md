@@ -123,26 +123,23 @@ v, err := encoder.Encode(m, encoder.SortMapKeys)
 
 ### Print Syntax Error
 ```go
+import "github.com/bytedance/sonic"
 import "github.com/bytedance/sonic/decoder"
 
 var data interface{}
-dc := decoder.NewDecoder("[[[}]]")
-if err := dc.Decode(&data); err != nil {
+err := sonic.Unmarshal("[[[}]]", &data)
+if err != nil {
+    /*one line by default*/
+    println(e.Error())) // "Syntax error at index 3: invalid char\n\n\t[[[}]]\n\t...^..\n"
+    /*pretty print*/
     if e, ok := err.(decoder.SyntaxError); ok {
-        
         /*Syntax error at index 3: invalid char
 
             [[[}]]
             ...^..
         */
         print(e.Description())
-
-        /*"Syntax error at index 3: invalid char\n\n\t[[[}]]\n\t...^..\n"*/
-        println(fmt.Sprintf("%q", e.Description()))
     }
-
-    /*Decode: Syntax error at index 3: invalid char*/
-    t.Fatalf("Decode: %v", err) 
 }
 ```
 
