@@ -17,15 +17,15 @@
 package ast
 
 import (
-	`fmt`
-	`sync`
+    `fmt`
+    `sync`
     `unsafe`
 
-	`github.com/bytedance/sonic/decoder`
-	`github.com/bytedance/sonic/internal/native`
-	`github.com/bytedance/sonic/internal/native/types`
-	`github.com/bytedance/sonic/internal/rt`
-	`github.com/bytedance/sonic/unquote`
+    `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/unquote`
 )
 
 const _DEFAULT_NODE_CAP int = 16
@@ -36,11 +36,8 @@ const (
 )
 
 var (
-    nodeNotExist = newError(_ERR_NOT_FOUND, "value not exists")
-    nodeUnsupportType = newError(_ERR_UNSUPPORT_TYPE, "unsupported type")
-
-    ErrNotExist error = nodeNotExist
-    ErrUnsupportType error = nodeUnsupportType
+    ErrNotExist error = newError(_ERR_NOT_FOUND, "value not exists")
+    ErrUnsupportType error = newError(_ERR_UNSUPPORT_TYPE, "unsupported type")
 )
 
 type Parser struct {

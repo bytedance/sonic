@@ -16,9 +16,29 @@
 
 package ast
 
+import (
+    `github.com/bytedance/sonic/internal/native/types`
+)
+
 type Pair struct {
     Key   string
     Value Node
+}
+
+// Values returns iterator for array's children traversal
+func (self *Node) Values() (ListIterator, error) {
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return ListIterator{}, err
+    }
+    return ListIterator{Iterator{p: self}}, nil
+}
+
+// Properties returns iterator for object's children traversal
+func (self *Node) Properties() (ObjectIterator, error) {
+    if err := self.should(types.V_OBJECT, "an object"); err != nil {
+        return ObjectIterator{}, err
+    }
+    return ObjectIterator{Iterator{p: self}}, nil
 }
 
 type Iterator struct {
@@ -34,18 +54,30 @@ func (self *Iterator) Len() int {
     return self.p.len()
 }
 
+// HasNext reports if it is the end of iteration or has error.
 func (self *Iterator) HasNext() bool {
-    return self.i < self.p.len() && self.p.Valid()
+    if !self.p.isLazy() {
+        return self.p.Valid() && self.i < self.p.len()
+    } else if self.p.t == _V_ARRAY_LAZY {
+        return self.p.skipNextNode().Valid()
+    } else if self.p.t == _V_OBJECT_LAZY {
+        return self.p.skipNextPair().Value.Valid()
+    }
+    return false
 }
 
+// ListIterator is specialized iterator for V_ARRAY
 type ListIterator struct {
     Iterator
 }
 
+// ObjectIterator is specialized iterator for V_ARRAY
 type ObjectIterator struct {
     Iterator
 }
 
+// Next scans through children of underlying V_ARRAY, 
+// copies each child to v, and returns .HasNext().
 func (self *ListIterator) Next(v *Node) bool {
     if !self.HasNext() {
         return false
@@ -55,6 +87,8 @@ func (self *ListIterator) Next(v *Node) bool {
     }
 }
 
+// Next scans through children of underlying V_OBJECT, 
+// copies each child to v, and returns .HasNext().
 func (self *ObjectIterator) Next(p *Pair) bool {
     if !self.HasNext() {
         return false

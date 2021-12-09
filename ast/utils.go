@@ -30,9 +30,9 @@ func mem2ptr(s []byte) unsafe.Pointer {
 //go:nosplit
 func ptr2slice(s unsafe.Pointer, l int, c int) unsafe.Pointer {
     slice := &rt.GoSlice{
-		Ptr: s,
-		Len: l,
-		Cap: c,
+        Ptr: s,
+        Len: l,
+        Cap: c,
     }
     return unsafe.Pointer(slice)
 }
