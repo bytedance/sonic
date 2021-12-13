@@ -70,7 +70,7 @@ import (
 const (
     _FP_args   = 72     // 72 bytes to pass arguments and return values for this function
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
-    _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
+    _FP_saves  = 160     // 40 bytes for saving the registers before CALL instructions
     _FP_locals = 96    // 96 bytes for local variables
 )
 
@@ -1602,6 +1602,8 @@ var (
 )
 
 func (self *_Assembler) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
+    self.check_ptr(_AX, false)
+    self.check_ptr(rec, true)
     self.Emit("MOVQ", _V_writeBarrier, _R10)
     self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
     self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
@@ -1624,6 +1626,8 @@ func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI 
     if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
         panic("rec contains AX!")
     }
+    self.check_ptr(ptr, false)
+    self.check_ptr(rec, true)
     self.Emit("MOVQ", _V_writeBarrier, _R10)
     self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
     self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
