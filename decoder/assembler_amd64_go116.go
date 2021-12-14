@@ -165,9 +165,11 @@ var (
     _VAR_sr = jit.Ptr(_SP, _FP_fargs + _FP_saves)
 )
 
+const _ST_sv = _FsmOffset + _ST_Vp + _PtrBytes * types.MAX_RECURSE
+
 var (
-    _VAR_sv_p = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
-    _VAR_sv_n = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
+    _VAR_sv_p = jit.Ptr(_ST, _ST_sv)
+    _VAR_sv_n = jit.Ptr(_ST, _ST_sv + 8)
 )
 
 var (
@@ -321,6 +323,9 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", _ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC
     self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ vp<>+32(FP), ST
+    self.print_ptr(1, _ST, false)
+    self.force_gc()
+    self.check_ptr(_VAR_sv, true)
 }
 
 /** Function Calling Helpers **/
@@ -1290,6 +1295,7 @@ func (self *_Assembler) _asm_OP_map_key_str(p *_Instr) {
     self.parse_string()                          // PARSE     STRING
     self.unquote_once(_VAR_sv_p, _VAR_sv_n)      // UNQUOTE   once, sv.p, sv.n
     if vt := p.vt(); !mapfast(vt) {
+        self.print_ptr(1, _VAR_sv_p, true)
         self.mapassign_std(vt, _VAR_sv_p)        // MAPASSIGN string, DI, SI
     } else {
         self.Emit("MOVQ", _VAR_sv_p, _DI)        // MOVQ      sv.p, DI
@@ -1530,6 +1536,24 @@ func (self *_Assembler) _asm_OP_save(_ *_Instr) {
     self.WriteRecNotAX(0 , _VP, jit.Sib(_ST, _CX, 1, 8), false, false) // MOVQ VP, 8(ST)(CX)
     self.Emit("ADDQ", jit.Imm(8), _CX)                  // ADDQ $8, CX
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, 0))             // MOVQ CX, (ST)
+}
+
+func (self *_Assembler) save_sv(ptr obj.Addr) {
+    if ptr.Reg == x86.REG_R10 || ptr.Index ==  x86.REG_R10 {
+        panic("ptr uses register R10!")
+    }
+    self.WriteRecNotAX(0 , ptr, jit.Sib(_ST, _R10, 1, 8), false, false) // MOVQ VP, 8(ST)(R10)
+    self.Emit("ADDQ", jit.Imm(8), _R10)                  // ADDQ $8, R10
+    self.Emit("MOVQ", _R10, jit.Ptr(_ST, 0))             // MOVQ R10, (ST)
+}
+
+func (self *_Assembler) drop_sv() {
+    self.Emit("MOVQ", jit.Ptr(_ST, 0), _R10)             // MOVQ (ST), R10
+    self.Emit("SUBQ", jit.Imm(8), _R10)                  // SUBQ $8, R10
+    self.Emit("MOVQ", jit.Sib(_ST, _R10, 1, 8), _VP)     // MOVQ 8(ST)(R10), VP
+    self.Emit("MOVQ", _R10, jit.Ptr(_ST, 0))             // MOVQ R10, (ST)
+    self.Emit("XORL", _ET, _ET)                         // XORL ET, ET
+    self.Emit("MOVQ", _ET, jit.Sib(_ST, _R10, 1, 8))     // MOVQ ET, 8(ST)(R10)
 }
 
 func (self *_Assembler) _asm_OP_drop(_ *_Instr) {

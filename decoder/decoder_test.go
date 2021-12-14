@@ -17,17 +17,17 @@
 package decoder
 
 import (
-    `encoding/json`
-    `testing`
-    `runtime`
-    `runtime/debug`
-    `sync`
+	"encoding/json"
+	"runtime"
+	"runtime/debug"
+	"sync"
+	"testing"
 
-    `github.com/davecgh/go-spew/spew`
-    gojson `github.com/goccy/go-json`
-    `github.com/json-iterator/go`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/davecgh/go-spew/spew"
+	gojson "github.com/goccy/go-json"
+	"github.com/json-iterator/go"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -120,7 +120,9 @@ func TestDecoder_Binding(t *testing.T) {
 
 func TestDecoder_MapWithIndirectElement(t *testing.T) {
     var v map[string]struct { A [129]byte }
-    _, err := decode(`{"":{"A":[1,2,3,4,5]}}`, &v)
+    data := `{"":{"A":[1,2,3,4,5]}}`
+    // fmt.Printf("go.String: %#v\n", (*rt.GoString)(unsafe.Pointer(&data)))
+    _, err := decode(data, &v)
     if x, ok := err.(SyntaxError); ok {
         println(x.Description())
     }

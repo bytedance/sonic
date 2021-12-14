@@ -18,7 +18,6 @@ package decoder
 
 import (
     `errors`
-    `runtime`
     `sync`
     `unsafe`
 
@@ -50,6 +49,7 @@ type _Stack struct {
     sb [_MaxStack]unsafe.Pointer
     mm types.StateMachine
     vp [types.MAX_RECURSE]unsafe.Pointer
+    sv string
 }
 
 type _Decoder func(
@@ -76,7 +76,7 @@ var errCallShadow = errors.New("DON'T CALL THIS!")
 // Faker func of _Decoder, used to export its stackmap as _Decoder's
 func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) (ret int, err error) {
     // align to assembler_amd64.go: _FP_offs
-    var frame [(_FP_offs-72)/8]unsafe.Pointer
+    var frame [_FP_offs]byte
 
     // keep all args and stacks alive
     _KeepAlive.s = s
@@ -86,7 +86,7 @@ func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) 
     _KeepAlive.fv = fv
     _KeepAlive.ret = ret
     _KeepAlive.err = err
-    runtime.KeepAlive(frame)
+    _ = frame
     return 0, errCallShadow
 }
 
@@ -94,11 +94,11 @@ func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) 
 // Faker func of _Decoder_Generic, used to export its stackmap
 func _Decoder_Generic_Shadow(sb *_Stack) {
     // align to generic_amd64.go: _VD_offs
-    var frame [(_VD_offs-8)/8]unsafe.Pointer
+    var frame [_VD_offs]byte
 
     // must keep sb noticeable to GC
     _KeepAlive.sb = sb
-    runtime.KeepAlive(frame)
+    _ = frame
 }
 
 func newStack() *_Stack {
@@ -111,6 +111,7 @@ func newStack() *_Stack {
 
 func freeStack(p *_Stack) {
     p.sp = 0
+    p.sv = ""
     stackPool.Put(p)
 }
 
