@@ -17,13 +17,14 @@
 package encoder
 
 import (
-    `bytes`
-    `sync`
-    `unsafe`
-    `errors`
+	`bytes`
+	`errors`
+	`sync`
+	`unsafe`
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/internal/caching`
+	`github.com/bytedance/sonic/internal/native/types`
+	`github.com/bytedance/sonic/internal/rt`
 )
 
 const (
@@ -48,6 +49,9 @@ type _State struct {
 type _Stack struct {
     sp uint64
     sb [_MaxStack]_State
+    ri uint64
+    vp [types.MAX_RECURSE] unsafe.Pointer
+    err error
 }
 
 type _Encoder func(
@@ -63,7 +67,6 @@ var _KeepAlive struct {
     sb *_Stack
     fv uint64
     err error
-    frame [_FP_offs]byte
 }
 
 var errCallShadow = errors.New("DON'T CALL THIS!")
@@ -80,8 +83,8 @@ func _Encoder_Shadow(rb *[]byte, vp unsafe.Pointer, sb *_Stack, fv uint64) (err 
     _KeepAlive.sb = sb
     _KeepAlive.fv = fv
     _KeepAlive.err = err
-    _KeepAlive.frame = frame
 
+    _ = frame
     return errCallShadow
 }
 
@@ -116,6 +119,8 @@ func freeBytes(p []byte) {
 
 func freeStack(p *_Stack) {
     p.sp = 0
+    p.ri = 0
+    p.err = nil
     stackPool.Put(p)
 }
 

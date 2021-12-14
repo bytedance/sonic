@@ -84,6 +84,7 @@ const (
 const (
     _INT_SIZE = 32 << (^uint(0) >> 63)
     _PTR_SIZE = 32 << (^uintptr(0) >> 63)
+    _PTR_BYTES = _PTR_SIZE / 8
 )
 
 const (

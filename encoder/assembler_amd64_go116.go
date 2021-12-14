@@ -73,7 +73,7 @@ const (
 const (
     _FP_args   = 48     // 48 bytes for passing arguments to this function
     _FP_fargs  = 64     // 64 bytes for passing arguments to other Go functions
-    _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
+    _FP_saves  = 120     // 64 bytes for saving the registers before CALL instructions
     _FP_locals = 24     // 24 bytes for local variables
 )
 
@@ -280,10 +280,12 @@ func (self *_Assembler) epilogue() {
     self.Emit("XORL", _ET, _ET)
     self.Emit("XORL", _EP, _EP)
     self.Link(_LB_error)
+    self.save_err()
     self.Emit("MOVQ", _ARG_rb, _AX)                 // MOVQ rb<>+0(FP), AX
     self.Emit("MOVQ", _RL, jit.Ptr(_AX, 8))         // MOVQ RL, 8(AX)
     self.Emit("MOVQ", _ET, _RET_et)                 // MOVQ ET, et<>+24(FP)
     self.Emit("MOVQ", _EP, _RET_ep)                 // MOVQ EP, ep<>+32(FP)
+    self.debug_gc()
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -293,6 +295,7 @@ func (self *_Assembler) prologue() {
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
+    self.debug_gc()
     self.load_buffer()                              // LOAD {buf}
     self.Emit("MOVQ", _ARG_vp, _SP_p)               // MOVQ vp<>+8(FP), SP.p
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ sb<>+16(FP), ST
@@ -406,6 +409,10 @@ func (self *_Assembler) slice_grow_ax(ret string) {
 const (
     _StateSize  = int64(unsafe.Sizeof(_State{}))
     _StackLimit = _MaxStack * _StateSize
+    _RecLimit   = types.MAX_RECURSE * _PTR_BYTES
+
+    _ST_ri      = _PTR_BYTES * (_MaxStack + 1)
+    _ST_err     = _ST_ri + _PTR_BYTES * (types.MAX_RECURSE + 1)
 )
 
 func (self *_Assembler) save_state() {
@@ -431,6 +438,28 @@ func (self *_Assembler) drop_state(decr int64) {
     self.Emit("PXOR" , _X0, _X0)                            // PXOR  X0, X0
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))        // MOVOU X0, 8(ST)(AX)
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 24))       // MOVOU X0, 24(ST)(AX)
+}
+
+func (self *_Assembler) save_vp_ax(vp obj.Addr) {
+    self.Emit("MOVQ", jit.Ptr(_ST, _ST_ri), _CX)                   // MOVQ (ST), CX
+    self.Emit("LEAQ", jit.Ptr(_CX, 8), _R8)                        // LEAQ 8(CX), R8
+    self.Emit("CMPQ", _R8, jit.Imm(_RecLimit))                     // CMPQ R8, $_RecLimit
+    self.Sjmp("JA"  , _LB_error_too_deep)                          // JA   _error_too_deep
+    self.WriteRecNotAX(0, vp, jit.Sib(_ST, _CX, 1, _ST_ri + 8))    // MOVQ vp, _ST_ri(CX)(ST)
+    self.Emit("MOVQ", _R8, jit.Ptr(_ST, _ST_ri))                   // MOVQ R8, (ST)
+    self.Emit("LEAQ", jit.Sib(_ST, _CX, 1, _ST_ri + 8), _AX)       // LEAQ _ST_ri(CX)(ST), _AX
+}
+
+func (self *_Assembler) drop_vp() {
+    self.Emit("MOVQ" , jit.Ptr(_ST, _ST_ri), _AX)                        // MOVQ  _ST_ri(ST), AX
+    self.Emit("SUBQ" , jit.Imm(8), _AX)                                  // SUBQ  $8, AX
+    self.Emit("MOVQ" , jit.Imm(0), jit.Sib(_ST, _AX, 1, _ST_ri + 8))     // MOVOU $0, _ST_ri(_AX)(ST)
+    self.Emit("MOVQ" , _AX, jit.Ptr(_ST, _ST_ri))                        // MOVQ  AX, _ST_ri(ST)
+}
+
+func (self *_Assembler) save_err() {
+    self.Emit("MOVQ" , _ET, jit.Ptr(_ST, _ST_err))                  // MOVQ  ET, _ST_err(ST)
+    self.Emit("MOVQ" , _EP, jit.Ptr(_ST, _ST_err + 8))              // MOVQ  EP, _ST_err(ST)
 }
 
 /** Buffer Helpers **/
@@ -967,16 +996,17 @@ func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     if (p.vf() & rt.F_direct) != 0 {
         self.Emit("MOVQ", _SP_p, _AX)               // MOVQ SP.p, AX
     } else {
-        self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, 48(SP)
-        self.Emit("LEAQ", _VAR_vp, _AX)    // LEAQ 48(SP), AX
+        self.save_vp_ax(_SP_p)           
     }
 
     /* call the encoder */
+    self.debug_gc()
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 16))   // MOVQ  AX, 16(SP)
     self.Emit("MOVQ" , _ST, jit.Ptr(_SP, 24))   // MOVQ  ST, 24(SP)
     self.Emit("MOVQ" , _ARG_fv, _AX)            // MOVQ  fv, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 32))   // MOVQ  AX, 32(SP)
     self.call_encoder(_F_encodeTypedPointer)    // CALL  encodeTypedPointer
+    self.drop_vp()
     self.Emit("MOVQ" , jit.Ptr(_SP, 40), _ET)   // MOVQ  40(SP), ET
     self.Emit("MOVQ" , jit.Ptr(_SP, 48), _EP)   // MOVQ  48(SP), EP
     self.Emit("TESTQ", _ET, _ET)                // TESTQ ET, ET
@@ -1131,6 +1161,8 @@ func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr) {
     if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
         panic("rec contains AX!")
     }
+    self.check_ptr(ptr, false)
+    self.check_ptr(rec, true)
     self.Emit("MOVQ", _V_writeBarrier, _R10)
     self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
     self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")

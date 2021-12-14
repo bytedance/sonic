@@ -66,6 +66,9 @@ func encodeString(buf *[]byte, val string) error {
 }
 
 func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv uint64) error {
+    //DEBUG only
+    gc()
+    
     if vt == nil {
         return encodeNil(buf)
     } else if fn, err := findOrCompile(vt); err != nil {

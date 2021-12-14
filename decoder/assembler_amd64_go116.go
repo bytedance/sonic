@@ -70,7 +70,7 @@ import (
 const (
     _FP_args   = 72     // 72 bytes to pass arguments and return values for this function
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
-    _FP_saves  = 160     // 40 bytes for saving the registers before CALL instructions
+    _FP_saves  = 120     // 40 bytes for saving the registers before CALL instructions
     _FP_locals = 96    // 96 bytes for local variables
 )
 
@@ -309,6 +309,7 @@ func (self *_Assembler) epilogue() {
     self.Emit("MOVQ", _IC, _RET_rc)                 // MOVQ IC, rc<>+40(FP)
     self.Emit("MOVQ", _ET, _RET_et)                 // MOVQ ET, et<>+48(FP)
     self.Emit("MOVQ", _EP, _RET_ep)                 // MOVQ EP, ep<>+56(FP)
+    self.debug_gc()
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -318,14 +319,13 @@ func (self *_Assembler) prologue() {
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
+    self.debug_gc()
     self.Emit("MOVQ", _ARG_sp, _IP)                 // MOVQ s.p<>+0(FP), IP
     self.Emit("MOVQ", _ARG_sl, _IL)                 // MOVQ s.l<>+8(FP), IL
     self.Emit("MOVQ", _ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC
     self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ vp<>+32(FP), ST
     self.print_ptr(1, _ST, false)
-    self.force_gc()
-    self.check_ptr(_VAR_sv, true)
 }
 
 /** Function Calling Helpers **/

@@ -30,16 +30,15 @@ import (
 
 
 var (
-    debugSyncGC  = os.Getenv("SONIC_SYNC_GC") == ""
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC") != ""
     debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
-    debugCheckPtr = os.Getenv("SONIC_CHECK_POINTER") == ""
+    debugCheckPtr = os.Getenv("SONIC_CHECK_POINTER") != ""
 )
 
 var (
     _Instr_End _Instr = newInsOp(_OP_nil_1)
 
-    _F_gc       = jit.Func(runtime.GC)
-    _F_force_gc = jit.Func(debug.FreeOSMemory)
+    _F_gc       = jit.Func(gc)
     _F_println  = jit.Func(println_wrapper)
     _F_print    = jit.Func(print)
 )
@@ -52,11 +51,21 @@ func print(i int){
     println(i)
 }
 
-func (self *_Assembler) force_gc() {
-    self.save(_REG_go...)
+func gc() {
+    if !debugSyncGC {
+        return
+    }
+    runtime.GC()
+    debug.FreeOSMemory()
+}
+
+func (self *_Assembler) debug_gc() {
+    if !debugSyncGC {
+        return
+    }
+    self.save(_REG_checkptr...)
     self.call(_F_gc)
-    self.call(_F_force_gc)
-    self.load(_REG_go...)
+    self.load(_REG_checkptr...)
 }
 
 func (self *_Assembler) debug_instr(i int, v *_Instr) {
@@ -71,7 +80,7 @@ func (self *_Assembler) debug_instr(i int, v *_Instr) {
                 return
             }
         }
-        self.force_gc()
+        self.debug_gc()
     }
 }
 
@@ -88,7 +97,7 @@ var (
     _F_printptr = jit.Func(printptr)
 )
 
-var _REG_checkptr = []obj.Addr { _ST, _VP, _IP, _IL, _IC, _AX, _CX, _DX, _DI, _SI, _R8, _R9, _R10}
+var _REG_checkptr = []obj.Addr { _ST, _VP, _IP, _IL, _IC, _ET, _EP, _AX, _CX, _DX, _DI, _SI, _R8, _R9, _R10}
 
 func checkptr(ptr uintptr) {
     if ptr == 0 {

@@ -17,17 +17,18 @@
 package encoder
 
 import (
-    `encoding/hex`
-    `encoding/json`
-    `math`
-    `reflect`
-    `runtime`
-    `testing`
-    `unsafe`
+	`encoding/hex`
+	// `fmt`
+	`encoding/json`
+	`math`
+	`reflect`
+	`runtime`
+	`testing`
+	`unsafe`
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/stretchr/testify/assert`
+	`github.com/bytedance/sonic/internal/rt`
+	`github.com/davecgh/go-spew/spew`
+	`github.com/stretchr/testify/assert`
 )
 
 func TestAssembler_CompileAndLoad(t *testing.T) {
@@ -119,6 +120,68 @@ func TestAssembler_OpCode(t *testing.T) {
     var jval = new(JsonMarshalerValue)
     var jifv json.Marshaler = JsonMarshalerValue(0)
     var jifp json.Marshaler = jval
+    // rec0 := RecursiveValue {
+    //         A: 333,
+    // }
+    // println("&rec0", &rec0)
+    // runtime.SetFinalizer(&rec0, func(rec *RecursiveValue){
+    //     fmt.Printf("rec0(%x) got dropped!\n", unsafe.Pointer(rec))
+    // })
+    // m0 := map[string]RecursiveValue {
+    //     "xxx": rec0,
+    // }
+    // m := *(**rt.GoMap)(unsafe.Pointer(&m0))
+    // println("&m",m)
+    // it := new(rt.GoMapIterator)
+    // typ := rt.MapType(rt.UnpackType(reflect.TypeOf(m0)))
+    // mapiterinit(typ, m, it)
+    // for i:=0; it.K != nil; mapiternext(it) {
+    //     fmt.Printf("it.K%d(%x)\n", i, unsafe.Pointer(it.K))
+    //     // runtime.SetFinalizer((*string)(it.K), func(K *string){
+    //     //     fmt.Printf("it.K(%x) got dropped!\n", unsafe.Pointer(K))
+    //     // })
+    //     fmt.Printf("it.V%d(%x)\n", i, unsafe.Pointer(it.V))
+    //     // runtime.SetFinalizer((*RecursiveValue)(it.V), func(V *RecursiveValue){
+    //     //     fmt.Printf("it.V(%x) got dropped!\n", unsafe.Pointer(V))
+    //     // })
+    //     i++
+    // }
+    // runtime.SetFinalizer(m, func(m *rt.GoMap){
+    //     fmt.Printf("m(%x) got dropped!\n", unsafe.Pointer(m))
+    // })
+    // rec1 := RecursiveValue{
+    //     A: 999,
+    //     Z: 222,
+    //     R: m0,
+    // }
+    // println("&rec1",&rec1)
+    // runtime.SetFinalizer(&rec1, func(rec *RecursiveValue){
+    //     fmt.Printf("rec1(%x) got dropped!\n", unsafe.Pointer(rec))
+    // })
+    // rec2 := RecursiveValue{
+    //     A: 777,
+    //     Z: 888,
+    //     Q: []RecursiveValue{rec1},
+    // }
+    // println("&rec2",&rec2)
+    // runtime.SetFinalizer(&rec2, func(rec *RecursiveValue){
+    //     fmt.Printf("rec2(%x) got dropped!\n", unsafe.Pointer(rec))
+    // })
+    // rec3 := RecursiveValue {
+    //     A: 789,
+    //     Z: 666,
+    //     P: &rec2, 
+    // }
+    // println("&rec3",&rec3)
+    // runtime.SetFinalizer(&rec3, func(rec *RecursiveValue){
+    //     fmt.Printf("rec3(%x) got dropped!\n", unsafe.Pointer(rec))
+    // })
+    // var rec = &RecursiveValue {
+    //     A: 123,
+    //     Z: 456,
+    //     P: &rec3,
+    // }
+    // println("&rec",&rec)
     var rec = &RecursiveValue {
         A: 123,
         Z: 456,
@@ -140,7 +203,8 @@ func TestAssembler_OpCode(t *testing.T) {
             },
         },
     }
-    tests := []testOps {{
+    tests := []testOps {
+    {
         key: "_OP_null",
         ins: []_Instr{newInsOp(_OP_null)},
         exp: "null",
@@ -270,17 +334,20 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsOp(_OP_number)},
         exp: "1.2345",
         val: "1.2345",
-    }, {
+    }, 
+    {
         key: "_OP_number/invalid",
         ins: []_Instr{newInsOp(_OP_number)},
         err: error_number("not a number"),
         val: "not a number",
-    }, {
+    }, 
+    {
         key: "_OP_eface",
         ins: []_Instr{newInsOp(_OP_eface)},
         exp: `12345`,
         val: &eface,
-    }, {
+    }, 
+    {
         key: "_OP_iface",
         ins: []_Instr{newInsOp(_OP_iface)},
         exp: `12345`,
@@ -325,14 +392,16 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsVt(_OP_marshal, jsonMarshalerType)},
         exp: "123456789",
         val: &jifp,
-    }, {
+    }, 
+    {
         key: "_OP_recurse",
         ins: mustCompile(rec),
         exp: `{"a":123,"p":{"a":789,"p":{"a":777,"q":[{"a":999,"q":null,"r":{"` +
              `xxx":{"a":333,"q":null,"r":null,"z":0}},"z":222}],"r":null,"z":8` +
              `88},"q":null,"r":null,"z":666},"q":null,"r":null,"z":456}`,
         val: &rec,
-    }}
+    },
+}
     for _, tv := range tests {
         t.Run(tv.key, func(t *testing.T) {
             testOpCode(t, tv.val, tv.exp, tv.err, tv.ins)

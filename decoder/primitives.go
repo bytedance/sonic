@@ -25,6 +25,9 @@ import (
 )
 
 func decodeTypedPointer(s string, i int, vt *rt.GoType, vp unsafe.Pointer, sb *_Stack, fv uint64) (int, error) {
+    //DEBUG only
+    gc()
+
     if fn, err := findOrCompile(vt); err != nil {
         return 0, err
     } else {
