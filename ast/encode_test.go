@@ -72,6 +72,10 @@ func TestEncodeValue(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
+    quote, err := encoder.Encode(_TwitterJson, 0)
+    if err != nil {
+        t.Fatal(err)
+    }
     type Case struct {
         node Node
         exp string
@@ -83,9 +87,12 @@ func TestEncodeValue(t *testing.T) {
         {NewBool(false), "false", false},
         {NewNumber("0.0"), "0.0", false},
         {NewString(""), `""`, false},
+        {NewString("\"\""), `"\"\""`, false},
+        {NewString(_TwitterJson), string(quote), false},
         {NewArray([]Node{}), "[]", false},
-        {NewArray([]Node{NewBool(true), NewString("true")}), `[true,"true"]`, false},
+        {NewArray([]Node{NewBool(true), NewString("true"), NewString("\t")}), `[true,"true","\t"]`, false},
         {NewObject([]Pair{Pair{"a", NewNull()}, Pair{"b", NewNumber("0")}}), `{"a":null,"b":0}`, false},
+        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}), `{"\ta":"\t","\bb":"\b","\nb":"\n","\ra":"\r"}`, false},
         {NewObject([]Pair{}), `{}`, false},
         {NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, false},
         {NewAny(obj), string(buf), false},
@@ -145,6 +152,10 @@ func BenchmarkEncodeRaw(b *testing.B) {
     if e != nil {
         b.Fatal(root)
     }
+    _, err := root.MarshalJSON()
+    if err != nil {
+        b.Fatal(err)
+    }
     b.SetBytes(int64(len(data)))
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
@@ -160,6 +171,11 @@ func BenchmarkEncodeSkip(b *testing.B) {
     root, e := NewParser(data).Parse()
     if e != 0 {
         b.Fatal(root)
+    }
+    root.skipAllKey()
+    _, err := root.MarshalJSON()
+    if err != nil {
+        b.Fatal(err)
     }
     b.SetBytes(int64(len(data)))
     b.ResetTimer()
@@ -178,6 +194,10 @@ func BenchmarkEncodeLoad(b *testing.B) {
         b.Fatal(root)
     }
     root.loadAllKey()
+    _, err := root.MarshalJSON()
+    if err != nil {
+        b.Fatal(err)
+    }
     b.SetBytes(int64(len(data)))
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
