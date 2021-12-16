@@ -18,7 +18,6 @@ package decoder
 
 import (
     `errors`
-    `runtime`
     `sync`
     `unsafe`
 
@@ -58,6 +57,7 @@ type _Decoder func(
     vp unsafe.Pointer,
     sb *_Stack,
     fv uint64,
+    sv string, // DO NOT pass value to this arguement, since it is only used for local _VAR_sv
 ) (int, error)
 
 var _KeepAlive struct {
@@ -66,16 +66,20 @@ var _KeepAlive struct {
     vp unsafe.Pointer
     sb *_Stack
     fv uint64
+    sv string
+
     ret int
     err error
-    frame [_FP_offs]byte
+
+    frame_decoder [_FP_offs]byte
+    frame_generic [_VD_offs]byte
 }
 
 var errCallShadow = errors.New("DON'T CALL THIS!")
 
 //go:nosplit
 // Faker func of _Decoder, used to export its stackmap as _Decoder's
-func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) (ret int, err error) {
+func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64, sv string) (ret int, err error) {
     // align to assembler_amd64.go: _FP_offs
     var frame [_FP_offs]byte
 
@@ -87,8 +91,9 @@ func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) 
     _KeepAlive.fv = fv
     _KeepAlive.ret = ret
     _KeepAlive.err = err
-    _KeepAlive.frame = frame
-
+    _KeepAlive.sv = sv
+    _KeepAlive.frame_decoder = frame
+    
     return 0, errCallShadow
 }
 
@@ -96,11 +101,11 @@ func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64) 
 // Faker func of _Decoder_Generic, used to export its stackmap
 func _Decoder_Generic_Shadow(sb *_Stack) {
     // align to generic_amd64.go: _VD_offs
-    var stacks [_VD_offs]byte
-    runtime.KeepAlive(stacks)
+    var frame [_VD_offs]byte
 
     // must keep sb noticeable to GC
-    runtime.KeepAlive(sb)
+    _KeepAlive.sb = sb
+    _KeepAlive.frame_generic = frame
 }
 
 func newStack() *_Stack {

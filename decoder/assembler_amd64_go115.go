@@ -52,7 +52,7 @@
  
  /** Function Prototype & Stack Map
   *
-  *  func (s string, ic int, vp unsafe.Pointer, sb *_Stack, fv uint64) (rc int, err error)
+  *  func (s string, ic int, vp unsafe.Pointer, sb *_Stack, fv uint64, sv string) (rc int, err error)
   *
   *  s.buf  :   (FP)
   *  s.len  :  8(FP)
@@ -61,12 +61,13 @@
   *  sb     : 32(FP)
   *  fv     : 40(FP)
   *  rc     : 48(FP)
-  *  err.vt : 56(FP)
-  *  err.vp : 64(FP)
+  *  sv     : 56(FP)
+  *  err.vt : 72(FP)
+  *  err.vp : 80(FP)
   */
  
  const (
-     _FP_args   = 72     // 72 bytes to pass arguments and return values for this function
+     _FP_args   = 88     // 88 bytes to pass arguments and return values for this function
      _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
      _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
      _FP_locals = 96     // 96 bytes for local variables
@@ -151,20 +152,20 @@
  )
  
  var (
-     _RET_rc = jit.Ptr(_SP, _FP_base + 48)
-     _RET_et = jit.Ptr(_SP, _FP_base + 56)
-     _RET_ep = jit.Ptr(_SP, _FP_base + 64)
+     _VAR_sv_p = jit.Ptr(_SP, _FP_base + 48)
+     _VAR_sv_n = jit.Ptr(_SP, _FP_base + 56)
  )
  
+ var (
+     _RET_rc = jit.Ptr(_SP, _FP_base + 64)
+     _RET_et = jit.Ptr(_SP, _FP_base + 72)
+     _RET_ep = jit.Ptr(_SP, _FP_base + 80)
+ )
+  
  var (
      _VAR_sv = _VAR_sv_p
      _VAR_st = _VAR_st_Vt
      _VAR_sr = jit.Ptr(_SP, _FP_fargs + _FP_saves)
- )
- 
- var (
-     _VAR_sv_p = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
-     _VAR_sv_n = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
  )
  
  var (
@@ -1283,7 +1284,10 @@
      self.parse_string()                          // PARSE     STRING
      self.unquote_once(_VAR_sv_p, _VAR_sv_n)      // UNQUOTE   once, sv.p, sv.n
      if vt := p.vt(); !mapfast(vt) {
-         self.mapassign_std(vt, _VAR_sv_p)        // MAPASSIGN string, DI, SI
+         self.valloc(vt.Key(), _DI)
+         self.Emit("MOVOU", _VAR_sv, _X0)
+         self.Emit("MOVOU", _X0, jit.Ptr(_DI, 0))
+         self.mapassign_std(vt, jit.Ptr(_DI, 0)) 
      } else {
          self.Emit("MOVQ", _VAR_sv_p, _DI)        // MOVQ      sv.p, DI
          self.Emit("MOVQ", _VAR_sv_n, _SI)        // MOVQ      sv.n, SI
