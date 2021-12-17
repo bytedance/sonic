@@ -169,7 +169,7 @@ var (
     _REG_ffi = []obj.Addr{ _RP, _RL, _RC}
     _REG_b64 = []obj.Addr{_SP_p, _SP_q}
 
-    _REG_go  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
+    _REG_all  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
     _REG_ms  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _LR}
     _REG_enc = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q}
 )
@@ -506,9 +506,9 @@ func (self *_Assembler) call_c(pc obj.Addr) {
 }
 
 func (self *_Assembler) call_go(pc obj.Addr) {
-    self.xsave(_REG_go...)     // SAVE $REG_all
+    self.xsave(_REG_all...)     // SAVE $REG_all
     self.call(pc)               // CALL $pc
-    self.xload(_REG_go...)     // LOAD $REG_all
+    self.xload(_REG_all...)     // LOAD $REG_all
 }
 
 func (self *_Assembler) call_more_space(pc obj.Addr) {

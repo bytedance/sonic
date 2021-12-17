@@ -33,7 +33,7 @@ import (
 
 func TestAssembler_PrologueAndEpilogue(t *testing.T) {
     a := newAssembler(nil)
-    _, e := a.Load()("", 0, nil, nil, 0, "")
+    _, e := a.Load()("", 0, nil, nil, 0, "", nil)
     assert.Nil(t, e)
 }
 
@@ -117,7 +117,7 @@ func testOpCode(t *testing.T, ops *testOps) {
     k := new(_Stack)
     a := newAssembler(p)
     f := a.Load()
-    i, e := f(ops.src, ops.pos, rt.UnpackEface(ops.val).Value, k, ops.opt, "")
+    i, e := f(ops.src, ops.pos, rt.UnpackEface(ops.val).Value, k, ops.opt, "", nil)
     if ops.err != nil {
         assert.EqualError(t, e, ops.err.Error())
     } else {
@@ -684,7 +684,7 @@ func TestAssembler_DecodeStruct(t *testing.T) {
     k := new(_Stack)
     a := newAssembler(p)
     f := a.Load()
-    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "")
+    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
     assert.Equal(t, len(s), pos)
     assert.Equal(t, JsonStruct{
@@ -707,7 +707,7 @@ func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
     k := new(_Stack)
     a := newAssembler(p)
     f := a.Load()
-    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "")
+    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
     assert.Equal(t, len(s), pos)
     assert.Equal(t, Tx{}, v)
@@ -721,7 +721,7 @@ func TestAssembler_DecodeByteSlice_Bin(t *testing.T) {
     k := new(_Stack)
     a := newAssembler(p)
     f := a.Load()
-    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "")
+    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
     assert.Equal(t, len(s), pos)
     assert.Equal(t, []byte("hello, world"), v)
@@ -735,7 +735,7 @@ func TestAssembler_DecodeByteSlice_List(t *testing.T) {
     k := new(_Stack)
     a := newAssembler(p)
     f := a.Load()
-    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "")
+    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
     assert.Equal(t, len(s), pos)
     assert.Equal(t, []byte("hello, world"), v)

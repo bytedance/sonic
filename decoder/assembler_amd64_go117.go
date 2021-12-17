@@ -68,10 +68,10 @@ import (
  */
 
 const (
-    _FP_args   = 88     // 88 bytes to pass arguments and return values for this function
+    _FP_args   = 72     // 72 bytes to pass and spill register arguements
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
-    _FP_locals = 96     // 96 bytes for local variables
+    _FP_locals = 72     // 72 bytes for local variables
 )
 
 const (
@@ -143,9 +143,11 @@ var (
     _EP = jit.Reg("BX")
 )
 
+
+
 var (
     _ARG_s  = _ARG_sp
-    _ARG_sp = jit.Ptr(_SP, _FP_base)
+    _ARG_sp = jit.Ptr(_SP, _FP_base + 0)
     _ARG_sl = jit.Ptr(_SP, _FP_base + 8)
     _ARG_ic = jit.Ptr(_SP, _FP_base + 16)
     _ARG_vp = jit.Ptr(_SP, _FP_base + 24)
@@ -154,35 +156,30 @@ var (
 )
 
 var (
+    _VAR_sv = _VAR_sv_p
     _VAR_sv_p = jit.Ptr(_SP, _FP_base + 48)
     _VAR_sv_n = jit.Ptr(_SP, _FP_base + 56)
+    _VAR_vk   = jit.Ptr(_SP, _FP_base + 64)
 )
 
 var (
-    _RET_rc = jit.Ptr(_SP, _FP_base + 64)
-    _RET_et = jit.Ptr(_SP, _FP_base + 72)
-    _RET_ep = jit.Ptr(_SP, _FP_base + 80)
-)
-
-var (
-    _VAR_sv = _VAR_sv_p
     _VAR_st = _VAR_st_Vt
     _VAR_sr = jit.Ptr(_SP, _FP_fargs + _FP_saves)
 )
 
 var (
-    _VAR_st_Vt = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
-    _VAR_st_Dv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
-    _VAR_st_Iv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
-    _VAR_st_Ep = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
+    _VAR_st_Vt = jit.Ptr(_SP, _FP_fargs + _FP_saves + 0)
+    _VAR_st_Dv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
+    _VAR_st_Iv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
+    _VAR_st_Ep = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
 )
 
 var (
-    _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
-    _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
-    _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 72)
-    _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 80)
-    _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 88)
+    _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
+    _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
+    _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
+    _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
+    _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
 )
 
 type _Assembler struct {
@@ -834,14 +831,16 @@ func (self *_Assembler) mapassign_utext(t reflect.Type, addressable bool) {
 
     /* allocate the key, and call the unmarshaler */
     self.valloc(vk, _BX)                        // VALLOC  ${vk}, BX
-    self.Emit("MOVQ" , _BX, jit.Ptr(_SP, 8))    // MOVQ    BX, 8(SP)
+    // must spill vk pointer since next call_go may invoke GC
+    self.Emit("MOVQ" , _BX, _VAR_vk)
     self.Emit("MOVQ" , jit.Type(tk), _AX)       // MOVQ    ${tk}, AX
     self.Emit("MOVQ" , _VAR_sv_p, _CX)          // MOVQ    sv.p, CX
     self.Emit("MOVQ" , _VAR_sv_n, _DI)          // MOVQ    sv.n, DI
     self.call_go(_F_decodeTextUnmarshaler)      // CALL_GO decodeTextUnmarshaler
     self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
-    self.Emit("MOVQ" , jit.Ptr(_SP, 8), _AX)    // MOVQ    8(SP), AX
+    self.Emit("MOVQ" , _VAR_vk, _AX)            // MOVQ    VAR.vk, AX
+    self.Emit("MOVQ", jit.Imm(0), _VAR_vk)
 
     /* select the correct assignment function */
     if !pv {
