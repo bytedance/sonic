@@ -18,7 +18,6 @@ package ast
 
 import (
     `runtime`
-    `runtime/debug`
     `sync`
     `testing`
 
@@ -57,7 +56,6 @@ func TestGC_Encode(t *testing.T) {
                 t.Fatal(err)
             }
             runtime.GC()
-            debug.FreeOSMemory()
         }(wg)
     }
     wg.Wait()

@@ -34,6 +34,7 @@ const (
 const (
     _PtrBytes  = _PTR_SIZE / 8
     _FsmOffset = (_MaxStack + 1) * _PtrBytes
+    _StackSize = unsafe.Sizeof(_Stack{})
 )
 
 var (
@@ -117,6 +118,10 @@ func newStack() *_Stack {
     } else {
         return ret.(*_Stack)
     }
+}
+
+func resetStack(p *_Stack) {
+    memclrNoHeapPointers(unsafe.Pointer(p), _StackSize)
 }
 
 func freeStack(p *_Stack) {

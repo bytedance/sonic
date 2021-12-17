@@ -21,6 +21,7 @@ import (
     `runtime`
     `runtime/debug`
     `testing`
+    `time`
 )
 
 var debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
@@ -36,5 +37,6 @@ func TestMain(m *testing.M) {
             debug.FreeOSMemory() 
         }
     }()
+    time.Sleep(time.Millisecond)
     m.Run()
 }
