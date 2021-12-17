@@ -71,7 +71,7 @@ const (
 )
 
 const (
-    _FP_args   = 48     // 48 bytes for passing arguments to this function
+    _FP_args   = 32     // 32 bytes for spill registers of arguments
     _FP_fargs  = 40     // 40 bytes for passing arguments to other Go functions
     _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
     _FP_locals = 24     // 24 bytes for local variables
