@@ -286,6 +286,9 @@ func (self *_Assembler) epilogue() {
     self.Link(_LB_error)
     self.Emit("MOVQ", _ARG_rb, _CX)                 // MOVQ rb<>+0(FP), CX
     self.Emit("MOVQ", _RL, jit.Ptr(_CX, 8))         // MOVQ RL, 8(CX)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_rb)                 // MOVQ AX, rb<>+0(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vp)                 // MOVQ BX, vp<>+8(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sb)                 // MOVQ CX, sb<>+16(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET

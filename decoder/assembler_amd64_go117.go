@@ -304,6 +304,10 @@ func (self *_Assembler) epilogue() {
     self.Emit("MOVQ", _EP, _CX)                     // MOVQ BX, CX
     self.Emit("MOVQ", _ET, _BX)                     // MOVQ AX, BX
     self.Emit("MOVQ", _IC, _AX)                     // MOVQ IC, AX
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sp)        // MOVQ $0, sv.p<>+48(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vp)        // MOVQ $0, sv.p<>+48(FP)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -999,6 +1003,7 @@ func (self *_Assembler) _asm_OP_any(_ *_Instr) {
     self.Emit("MOVQ"   , _ARG_fv, _DF)                      // MOVQ    fv, DF
     self.Emit("MOVQ"   , _ST, jit.Ptr(_SP, 0))              // MOVQ    _ST, (SP)
     self.call(_F_decodeValue)                               // CALL    decodeValue
+    self.Emit("MOVQ"   , jit.Imm(0), jit.Ptr(_SP, 0))              // MOVQ    _ST, (SP)
     self.Emit("TESTQ"  , _EP, _EP)                          // TESTQ   EP, EP
     self.Sjmp("JNZ"    , _LB_parsing_error)                 // JNZ     _parsing_error
     self.Link("_decode_end_{n}")                            // _decode_end_{n}:
