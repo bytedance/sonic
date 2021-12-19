@@ -423,7 +423,7 @@ func (self *_Assembler) save_state() {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
     self.Emit("LEAQ", jit.Ptr(_CX, _StateSize), _R9)    // LEAQ _StateSize(CX), R9
     self.Emit("CMPQ", _R9, jit.Imm(_StackLimit))        // CMPQ R9, $_StackLimit
-    self.Sjmp("JA"  , _LB_error_too_deep)               // JA   _error_too_deep
+    self.Sjmp("JAE" , _LB_error_too_deep)               // JA   _error_too_deep
     self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _CX, 1, 8))   // MOVQ SP.x, 8(ST)(CX)
     self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16))  // MOVQ SP.f, 16(ST)(CX)
     self.WriteRecNotAX(0, _SP_p, jit.Sib(_ST, _CX, 1, 24))  // MOVQ SP.p, 24(ST)(CX)

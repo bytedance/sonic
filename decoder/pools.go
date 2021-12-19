@@ -29,6 +29,7 @@ import (
 const (
     _MinSlice = 16
     _MaxStack = 65536 // 64k slots
+    _MaxStackBytes = _MaxStack * _PtrBytes
 )
 
 const (

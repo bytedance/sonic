@@ -1526,8 +1526,8 @@
  
  func (self *_Assembler) _asm_OP_save(_ *_Instr) {
      self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
-     self.Emit("CMPQ", _AX, jit.Imm(_MaxStack))          // CMPQ AX, ${_MaxStack}
-     self.Sjmp("JA"  , _LB_stack_error)                  // JA   _stack_error
+     self.Emit("CMPQ", _AX, jit.Imm(_MaxStackBytes))          // CMPQ AX, ${_MaxStackBytes}
+     self.Sjmp("JAE"  , _LB_stack_error)                 // JA   _stack_error
      self.Emit("MOVQ", _VP, jit.Sib(_ST, _AX, 1, 8))     // MOVQ VP, 8(ST)(AX)
      self.Emit("ADDQ", jit.Imm(8), _AX)                  // ADDQ $8, AX
      self.Emit("MOVQ", _AX, jit.Ptr(_ST, 0))             // MOVQ AX, (ST)
