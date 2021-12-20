@@ -71,7 +71,7 @@ const (
     _FP_args   = 72     // 72 bytes to pass and spill register arguements
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
-    _FP_locals = 72     // 72 bytes for local variables
+    _FP_locals = 80     // 80 bytes for local variables
 )
 
 const (
@@ -180,6 +180,7 @@ var (
     _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
     _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
     _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
+    _VAR_ss_ut = jit.Ptr(_SP, _FP_fargs + _FP_saves + 72)
 )
 
 type _Assembler struct {
@@ -1393,12 +1394,17 @@ func (self *_Assembler) _asm_OP_object_next(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     assert_eq(caching.FieldEntrySize, 32, "invalid field entry size")
+    self.Emit("MOVB" , jit.Imm(0), _VAR_ss_ut)
     self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
     self.parse_string()                                         // PARSE   STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true)                     // UNQUOTE once, sv.p, sv.n
-    self.Emit("LEAQ" , _VAR_sv, _AX)                            // LEAQ    sv, AX
-    self.Emit("XORL" , _BX, _BX)                                // XORL    BX, BX
+    // fast path: try search key in map first
+    self.slice_from(_VAR_st_Iv, -1)                             // SLICE  st.Iv, $-1
+    self.Emit("MOVQ", _DI, _VAR_sv_p)
+    self.Emit("MOVQ", _SI, _VAR_sv_n)
+    self.Emit("LEAQ", _VAR_sv, _AX)
+    self.Link("_map_search_{n}")
+    self.Emit("XORQ", _BX, _BX)
     self.call_go(_F_strhash)                                    // CALL_GO strhash
     self.Emit("MOVQ" , _AX, _R9)                                // MOVQ    AX, R9
     self.Emit("MOVQ" , jit.Imm(freezeFields(p.vf())), _CX)      // MOVQ    ${p.vf()}, CX
@@ -1449,6 +1455,14 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, _VAR_sr
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ   AX, AX
     self.Sjmp("JNS"  , "_end_{n}")                              // JNS     _end_{n}
+    // slow path: unquote the key and search it in map again
+    self.Emit("CMPB", _VAR_ss_ut, jit.Imm(0))
+    self.Sjmp("JNE", "_not_found_{n}")
+    self.Emit("MOVB", jit.Imm(1), _VAR_ss_ut)
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true)               // UNQUOTE once, sv.p, sv.n
+    self.Emit("LEAQ" , _VAR_sv, _AX)                            // LEAQ    sv, AX
+    self.Sjmp("JMP", "_map_search_{n}")
+    self.Link("_not_found_{n}")
     self.Emit("BTQ"  , jit.Imm(_F_disable_unknown), _ARG_fv)    // BTQ     ${_F_disable_unknown}, fv
     self.Sjmp("JC"   , _LB_field_error)                         // JC      _field_error
     self.Link("_end_{n}")                                       // _end_{n}:
