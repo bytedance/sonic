@@ -19,7 +19,6 @@ package ast
 import (
     `testing`
     `runtime`
-    `runtime/debug`
     `sync`
     `fmt`
     `math`
@@ -53,7 +52,6 @@ func TestGC_Search(t *testing.T) {
                 t.Fatal(err)
             }
             runtime.GC()
-            debug.FreeOSMemory()
         }(wg)
     }
     wg.Wait()

@@ -332,7 +332,7 @@ func (self *_ValueDecoder) compile() {
     /* add a new slot for the first element */
     self.Emit("ADDQ", jit.Imm(1), _CX)                                  // ADDQ $1, CX
     self.Emit("CMPQ", _CX, jit.Imm(types.MAX_RECURSE))                  // CMPQ CX, ${types.MAX_RECURSE}
-    self.Sjmp("JA"  , "_stack_overflow")                                // JA   _stack_overflow
+    self.Sjmp("JAE"  , "_stack_overflow")                                // JA   _stack_overflow
     self.Emit("MOVQ", jit.Ptr(_R8, 0), _AX)                             // MOVQ (R8), AX
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                        // MOVQ CX, ST.Sp
     self.WritePtrAX(3, jit.Sib(_ST, _CX, 8, _ST_Vp), false)                // MOVQ AX, ST.Vp[CX]
@@ -401,7 +401,7 @@ func (self *_ValueDecoder) compile() {
     /* add a new delimiter */
     self.Emit("ADDQ", jit.Imm(1), _CX)                                      // ADDQ $1, CX
     self.Emit("CMPQ", _CX, jit.Imm(types.MAX_RECURSE))                      // CMPQ CX, ${types.MAX_RECURSE}
-    self.Sjmp("JA"  , "_stack_overflow")                                    // JA   _stack_overflow
+    self.Sjmp("JAE"  , "_stack_overflow")                                    // JA   _stack_overflow
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                            // MOVQ CX, ST.Sp
     self.Emit("MOVQ", jit.Imm(_S_obj_delim), jit.Sib(_ST, _CX, 8, _ST_Vt))  // MOVQ _S_obj_delim, ST.Vt[CX]
 
@@ -537,6 +537,8 @@ func (self *_ValueDecoder) compile() {
     self.Emit("ADDQ", jit.Imm(1), jit.Ptr(_SI, 8))                      // ADDQ $1, 8(SI)
     self.Emit("MOVQ", jit.Ptr(_SI, 0), _SI)                             // MOVQ (SI), SI
     self.Emit("ADDQ", jit.Imm(1), _CX)                                  // ADDQ $1, CX
+    self.Emit("CMPQ", _CX, jit.Imm(types.MAX_RECURSE))                  // CMPQ CX, ${types.MAX_RECURSE}
+    self.Sjmp("JAE"  , "_stack_overflow") 
     self.Emit("SHLQ", jit.Imm(1), _DX)                                  // SHLQ $1, DX
     self.Emit("LEAQ", jit.Sib(_SI, _DX, 8, 0), _SI)                     // LEAQ (SI)(DX*8), SI
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                        // MOVQ CX, ST.Sp

@@ -57,6 +57,11 @@ func mapiterinit(t *rt.GoMapType, m *rt.GoMap, it *rt.GoMapIterator)
 //goland:noinspection GoUnusedParameter
 func isValidNumber(s string) bool
 
+//go:noescape
+//go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
+//goland:noinspection GoUnusedParameter
+func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
+
 var (
     _F_assertI2I = jit.Func(assertI2I2)
 )

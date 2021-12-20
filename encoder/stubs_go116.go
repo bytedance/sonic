@@ -56,6 +56,11 @@ func mapiterinit(t *rt.GoMapType, m *rt.GoMap, it *rt.GoMapIterator)
 //goland:noinspection GoUnusedParameter
 func isValidNumber(s string) bool
 
+//go:noescape
+//go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
+//goland:noinspection GoUnusedParameter
+func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
+
 func asText(v unsafe.Pointer) (string, error) {
     text := assertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(v))
     r, e := (*(*encoding.TextMarshaler)(unsafe.Pointer(&text))).MarshalText()
