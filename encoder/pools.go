@@ -29,6 +29,8 @@ import (
 const (
     _MaxStack  = 65536      // 64k states
     _MaxBuffer = 1048576    // 1MB buffer size
+
+    _StackSize = unsafe.Sizeof(_Stack{})
 )
 
 var (
@@ -99,6 +101,10 @@ func newStack() *_Stack {
     } else {
         return ret.(*_Stack)
     }
+}
+
+func resetStack(p *_Stack) {
+    memclrNoHeapPointers(unsafe.Pointer(p), _StackSize)
 }
 
 func newBuffer() *bytes.Buffer {

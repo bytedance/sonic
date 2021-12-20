@@ -52,7 +52,7 @@
  
  /** Function Prototype & Stack Map
   *
-  *  func (s string, ic int, vp unsafe.Pointer, sb *_Stack, fv uint64) (rc int, err error)
+  *  func (s string, ic int, vp unsafe.Pointer, sb *_Stack, fv uint64, sv string) (rc int, err error)
   *
   *  s.buf  :   (FP)
   *  s.len  :  8(FP)
@@ -61,15 +61,16 @@
   *  sb     : 32(FP)
   *  fv     : 40(FP)
   *  rc     : 48(FP)
-  *  err.vt : 56(FP)
-  *  err.vp : 64(FP)
+  *  sv     : 56(FP)
+  *  err.vt : 72(FP)
+  *  err.vp : 80(FP)
   */
  
  const (
-     _FP_args   = 72     // 72 bytes to pass arguments and return values for this function
+     _FP_args   = 96     // 96 bytes to pass arguments and return values for this function
      _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
      _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
-     _FP_locals = 96     // 96 bytes for local variables
+     _FP_locals = 72     // 72 bytes for local variables
  )
  
  const (
@@ -151,35 +152,36 @@
  )
  
  var (
-     _RET_rc = jit.Ptr(_SP, _FP_base + 48)
-     _RET_et = jit.Ptr(_SP, _FP_base + 56)
-     _RET_ep = jit.Ptr(_SP, _FP_base + 64)
+     _VAR_sv = _VAR_sv_p
+     _VAR_sv_p = jit.Ptr(_SP, _FP_base + 48)
+     _VAR_sv_n = jit.Ptr(_SP, _FP_base + 56)
+     _VAR_vk   = jit.Ptr(_SP, _FP_base + 64)
  )
  
  var (
-     _VAR_sv = _VAR_sv_p
+     _RET_rc = jit.Ptr(_SP, _FP_base + 72)
+     _RET_et = jit.Ptr(_SP, _FP_base + 80)
+     _RET_ep = jit.Ptr(_SP, _FP_base + 88)
+ )
+  
+ var (
      _VAR_st = _VAR_st_Vt
      _VAR_sr = jit.Ptr(_SP, _FP_fargs + _FP_saves)
  )
  
  var (
-     _VAR_sv_p = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
-     _VAR_sv_n = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
+     _VAR_st_Vt = jit.Ptr(_SP, _FP_fargs + _FP_saves + 0)
+     _VAR_st_Dv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
+     _VAR_st_Iv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
+     _VAR_st_Ep = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
  )
  
  var (
-     _VAR_st_Vt = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
-     _VAR_st_Dv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
-     _VAR_st_Iv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
-     _VAR_st_Ep = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
- )
- 
- var (
-     _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
-     _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
-     _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 72)
-     _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 80)
-     _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 88)
+     _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
+     _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
+     _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
+     _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
+     _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
  )
  
  type _Assembler struct {
@@ -816,6 +818,8 @@
  
      /* allocate the key, and call the unmarshaler */
      self.valloc(vk, _DI)                        // VALLOC  ${vk}, DI
+     // must spill vk pointer since next call_go may invoke GC
+     self.Emit("MOVQ" , _DI, _VAR_vk)
      self.Emit("MOVQ" , jit.Type(tk), _AX)       // MOVQ    ${tk}, AX
      self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))    // MOVQ    AX, (SP)
      self.Emit("MOVQ" , _DI, jit.Ptr(_SP, 8))    // MOVQ    DI, 8(SP)
@@ -826,6 +830,7 @@
      self.Emit("MOVQ" , jit.Ptr(_SP, 40), _EP)   // MOVQ    40(SP), EP
      self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
      self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
+     self.Emit("MOVQ" , _VAR_vk, _AX)            // MOVQ    VAR.vk, AX
      self.Emit("MOVQ" , jit.Ptr(_SP, 8), _AX)    // MOVQ    8(SP), AX
  
      /* select the correct assignment function */
@@ -1283,7 +1288,10 @@
      self.parse_string()                          // PARSE     STRING
      self.unquote_once(_VAR_sv_p, _VAR_sv_n)      // UNQUOTE   once, sv.p, sv.n
      if vt := p.vt(); !mapfast(vt) {
-         self.mapassign_std(vt, _VAR_sv_p)        // MAPASSIGN string, DI, SI
+         self.valloc(vt.Key(), _DI)
+         self.Emit("MOVOU", _VAR_sv, _X0)
+         self.Emit("MOVOU", _X0, jit.Ptr(_DI, 0))
+         self.mapassign_std(vt, jit.Ptr(_DI, 0)) 
      } else {
          self.Emit("MOVQ", _VAR_sv_p, _DI)        // MOVQ      sv.p, DI
          self.Emit("MOVQ", _VAR_sv_n, _SI)        // MOVQ      sv.n, SI
@@ -1518,8 +1526,8 @@
  
  func (self *_Assembler) _asm_OP_save(_ *_Instr) {
      self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
-     self.Emit("CMPQ", _AX, jit.Imm(_MaxStack))          // CMPQ AX, ${_MaxStack}
-     self.Sjmp("JA"  , _LB_stack_error)                  // JA   _stack_error
+     self.Emit("CMPQ", _AX, jit.Imm(_MaxStackBytes))          // CMPQ AX, ${_MaxStackBytes}
+     self.Sjmp("JAE"  , _LB_stack_error)                 // JA   _stack_error
      self.Emit("MOVQ", _VP, jit.Sib(_ST, _AX, 1, 8))     // MOVQ VP, 8(ST)(AX)
      self.Emit("ADDQ", jit.Imm(8), _AX)                  // ADDQ $8, AX
      self.Emit("MOVQ", _AX, jit.Ptr(_ST, 0))             // MOVQ AX, (ST)

@@ -103,6 +103,9 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
 
     /* return the stack into pool */
+    if err != nil {
+        resetStack(stk)
+    }
     freeStack(stk)
 
     /* avoid GC ahead */

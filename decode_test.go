@@ -2345,7 +2345,7 @@ func TestUnmarshalMaxDepth(t *testing.T) {
 	}{
 		{
 			name:        "ArrayUnderMaxNestingDepth",
-			data:        `{"a":` + strings.Repeat(`[`, 65535) + `0` + strings.Repeat(`]`, 65535) + `}`,
+			data:        `{"a":` + strings.Repeat(`[`, 65534) + `0` + strings.Repeat(`]`, 65534) + `}`,
 			errMaxDepth: false,
 		},
 		{

@@ -71,7 +71,7 @@ const (
 )
 
 const (
-    _FP_args   = 48     // 48 bytes for passing arguments to this function
+    _FP_args   = 32     // 32 bytes for spill registers of arguments
     _FP_fargs  = 40     // 40 bytes for passing arguments to other Go functions
     _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
     _FP_locals = 24     // 24 bytes for local variables
@@ -169,7 +169,7 @@ var (
     _REG_ffi = []obj.Addr{ _RP, _RL, _RC}
     _REG_b64 = []obj.Addr{_SP_p, _SP_q}
 
-    _REG_go  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
+    _REG_all  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
     _REG_ms  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _LR}
     _REG_enc = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q}
 )
@@ -286,6 +286,9 @@ func (self *_Assembler) epilogue() {
     self.Link(_LB_error)
     self.Emit("MOVQ", _ARG_rb, _CX)                 // MOVQ rb<>+0(FP), CX
     self.Emit("MOVQ", _RL, jit.Ptr(_CX, 8))         // MOVQ RL, 8(CX)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_rb)                 // MOVQ AX, rb<>+0(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vp)                 // MOVQ BX, vp<>+8(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sb)                 // MOVQ CX, sb<>+16(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -420,7 +423,7 @@ func (self *_Assembler) save_state() {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
     self.Emit("LEAQ", jit.Ptr(_CX, _StateSize), _R9)    // LEAQ _StateSize(CX), R9
     self.Emit("CMPQ", _R9, jit.Imm(_StackLimit))        // CMPQ R9, $_StackLimit
-    self.Sjmp("JA"  , _LB_error_too_deep)               // JA   _error_too_deep
+    self.Sjmp("JAE" , _LB_error_too_deep)               // JA   _error_too_deep
     self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _CX, 1, 8))   // MOVQ SP.x, 8(ST)(CX)
     self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16))  // MOVQ SP.f, 16(ST)(CX)
     self.WriteRecNotAX(0, _SP_p, jit.Sib(_ST, _CX, 1, 24))  // MOVQ SP.p, 24(ST)(CX)
@@ -506,9 +509,9 @@ func (self *_Assembler) call_c(pc obj.Addr) {
 }
 
 func (self *_Assembler) call_go(pc obj.Addr) {
-    self.xsave(_REG_go...)     // SAVE $REG_all
+    self.xsave(_REG_all...)     // SAVE $REG_all
     self.call(pc)               // CALL $pc
-    self.xload(_REG_go...)     // LOAD $REG_all
+    self.xload(_REG_all...)     // LOAD $REG_all
 }
 
 func (self *_Assembler) call_more_space(pc obj.Addr) {
