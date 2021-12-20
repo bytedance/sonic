@@ -463,7 +463,7 @@ func (self *_Assembler) prep_buffer_c() {
 
 func (self *_Assembler) save_buffer() {
     self.Emit("MOVQ", _ARG_rb, _CX)             // MOVQ rb<>+0(FP), CX
-    self.WriteRecNotAX(2, _RP, jit.Ptr(_CX,  0))    // MOVQ RP, (CX)
+    self.Emit("MOVQ", _RP, jit.Ptr(_CX,  0))    // MOVQ RP, (CX)
     self.Emit("MOVQ", _RL, jit.Ptr(_CX,  8))    // MOVQ RL, 8(CX)
     self.Emit("MOVQ", _RC, jit.Ptr(_CX, 16))    // MOVQ RC, 16(CX)
 }
