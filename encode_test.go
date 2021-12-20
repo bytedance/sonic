@@ -30,6 +30,7 @@ import (
     `runtime/debug`
 	`strconv`
 	`testing`
+	`time`
 	`unsafe`
 
 	`github.com/bytedance/sonic/encoder`
@@ -49,7 +50,8 @@ func TestMain(m *testing.M) {
             debug.FreeOSMemory() 
         }
         println("stop GC looping!")
-    }()
+	}()
+	time.Sleep(time.Millisecond)
     m.Run()
 }
 

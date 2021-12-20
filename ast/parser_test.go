@@ -20,6 +20,7 @@ import (
     `os`
     `encoding/json`
     `testing`
+    `time`
     `runtime`
     `runtime/debug`
     `sync`
@@ -46,6 +47,7 @@ func TestMain(m *testing.M) {
         }
         println("stop GC looping!")
     }()
+    time.Sleep(time.Millisecond)
     m.Run()
 }
 
@@ -68,7 +70,6 @@ func TestGC_Parse(t *testing.T) {
                 t.Fatal(err)
             }
             runtime.GC()
-            debug.FreeOSMemory()
         }(wg)
     }
     wg.Wait()

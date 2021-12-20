@@ -411,7 +411,7 @@
      self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
      self.Emit("LEAQ", jit.Ptr(_AX, _StateSize), _R8)    // LEAQ _StateSize(AX), R8
      self.Emit("CMPQ", _R8, jit.Imm(_StackLimit))        // CMPQ R8, $_StackLimit
-     self.Sjmp("JA"  , _LB_error_too_deep)               // JA   _error_too_deep
+     self.Sjmp("JAE" , _LB_error_too_deep)               // JA   _error_too_deep
      self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _AX, 1, 8))   // MOVQ SP.x, 8(ST)(AX)
      self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _AX, 1, 16))  // MOVQ SP.f, 16(ST)(AX)
      self.Emit("MOVQ", _SP_p, jit.Sib(_ST, _AX, 1, 24))  // MOVQ SP.p, 24(ST)(AX)

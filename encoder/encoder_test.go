@@ -23,6 +23,7 @@ import (
     `strconv`
     `sync`
     `testing`
+    `time`
 
     gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
@@ -41,6 +42,7 @@ func TestMain(m *testing.M) {
         }
         println("stop GC looping!")
     }()
+    time.Sleep(time.Millisecond)
     m.Run()
 }
 
@@ -67,7 +69,6 @@ func TestGC(t *testing.T) {
                 t.Fatal(len(out), size)
             }
             runtime.GC()
-            debug.FreeOSMemory()
         }(wg, n)
     }
     wg.Wait()

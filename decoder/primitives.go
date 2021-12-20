@@ -28,7 +28,7 @@ func decodeTypedPointer(s string, i int, vt *rt.GoType, vp unsafe.Pointer, sb *_
     if fn, err := findOrCompile(vt); err != nil {
         return 0, err
     } else {
-        return fn(s, i, vp, sb, fv)
+        return fn(s, i, vp, sb, fv, "", nil)
     }
 }
 
