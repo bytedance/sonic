@@ -14,16 +14,16 @@ var (
     _subr__lspace      = __native_entry__() + 301
     _subr__lzero       = __native_entry__() + 13
     _subr__quote       = __native_entry__() + 4955
-    _subr__skip_array  = __native_entry__() + 17298
-    _subr__skip_object = __native_entry__() + 17333
-    _subr__skip_one    = __native_entry__() + 15505
+    _subr__skip_array  = __native_entry__() + 17304
+    _subr__skip_object = __native_entry__() + 17339
+    _subr__skip_one    = __native_entry__() + 15525
     _subr__u64toa      = __native_entry__() + 3735
     _subr__unquote     = __native_entry__() + 5888
     _subr__value       = __native_entry__() + 10928
-    _subr__vnumber     = __native_entry__() + 13704
-    _subr__vsigned     = __native_entry__() + 14977
-    _subr__vstring     = __native_entry__() + 12691
-    _subr__vunsigned   = __native_entry__() + 15236
+    _subr__vnumber     = __native_entry__() + 13724
+    _subr__vsigned     = __native_entry__() + 14997
+    _subr__vstring     = __native_entry__() + 12689
+    _subr__vunsigned   = __native_entry__() + 15256
 )
 
 var (
