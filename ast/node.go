@@ -673,7 +673,7 @@ func (self *Node) ArrayUseNode() ([]Node, error) {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
-    if err := self.loadAllIndex(); err != nil {
+    if err := self.skipAllIndex(); err != nil {
         return nil, err
     }
     return self.toGenericArrayUseNode()
@@ -685,7 +685,7 @@ func (self *Node) UnsafeArray() ([]Node, error) {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
-    if err := self.loadAllIndex(); err != nil {
+    if err := self.skipAllIndex(); err != nil {
         return nil, err
     }
     s := ptr2slice(self.p, self.len(), self.cap())

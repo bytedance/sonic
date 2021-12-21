@@ -17,7 +17,9 @@
 package ast
 
 import (
-    `github.com/bytedance/sonic/internal/native/types`
+	"fmt"
+
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 type Pair struct {
@@ -96,4 +98,48 @@ func (self *ObjectIterator) Next(p *Pair) bool {
         *p, self.i = *self.p.pairAt(self.i), self.i + 1
         return true
     }
+}
+
+type Sequence struct {
+    Index int 
+    Key *string
+    // Level int
+}
+
+func (s Sequence) String() string {
+    k := ""
+    if s.Key != nil {
+        k = *s.Key
+    }
+    return fmt.Sprintf("(%q, %d)", k, s.Index)
+}
+
+type Scanner func(path Sequence, node *Node) bool
+
+func (self *Node) ForEach(sc Scanner) error {
+    switch self.itype() {
+    case types.V_ARRAY:
+        ns, err := self.UnsafeArray()
+        if err != nil {
+            return err
+        }
+        for i := range ns {
+            if !sc(Sequence{i, nil}, &ns[i]) {
+                return err
+            }
+        }
+    case types.V_OBJECT:
+        ns, err := self.UnsafeMap()
+        if err != nil {
+            return err
+        }
+        for i := range ns {
+            if !sc(Sequence{i, &ns[i].Key}, &ns[i].Value) {
+                return err
+            }
+        }
+    default:
+        sc(Sequence{-1, nil}, self)
+    }
+    return self.Check()
 }

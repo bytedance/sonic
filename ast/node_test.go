@@ -17,18 +17,20 @@
 package ast
 
 import (
-    `encoding/json`
-    `fmt`
-    `reflect`
-    `runtime`
-    `runtime/debug`
-    `strconv`
-    `testing`
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"testing"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
 )
+
+
 
 //go:noinline
 func stackObj() interface{} {
@@ -451,7 +453,7 @@ func TestUnset(t *testing.T) {
 }
 
 func TestUnsafeNode(t *testing.T) {
-    str, loop := getTestIteratorSample()
+    str, loop := getTestIteratorSample(_DEFAULT_NODE_CAP)
 
     root, err := NewSearcher(str).GetByPath("array")
     if err != nil {
@@ -490,7 +492,7 @@ func TestUnsafeNode(t *testing.T) {
 }
 
 func TestUseNode(t *testing.T) {
-    str, loop := getTestIteratorSample()
+    str, loop := getTestIteratorSample(_DEFAULT_NODE_CAP)
     root, e := NewParser(str).Parse()
     if e != 0 {
         t.Fatal(e)
@@ -576,7 +578,7 @@ func TestUseNode(t *testing.T) {
 }
 
 func TestUseNumber(t *testing.T) {
-    str, _ := getTestIteratorSample()
+    str, _ := getTestIteratorSample(_DEFAULT_NODE_CAP)
     root, e := NewParser(str).Parse()
     if e != 0 {
         t.Fatal(e)
