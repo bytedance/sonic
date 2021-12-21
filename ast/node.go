@@ -621,6 +621,34 @@ func (self *Node) UnsafeMap() ([]Pair, error) {
     return *(*[]Pair)(s), nil
 }
 
+// SortKeys sorts children of a V_OBJECT node in ascending key-order.
+// If recurse is true, it recursively sorts children's children as long as a V_OBJECT node is found.
+func (self *Node) SortKeys(recurse bool) (err error) {
+    ps, err := self.UnsafeMap()
+    if err != nil {
+        return err
+    }
+    PairSlice(ps).Sort()
+    if recurse {
+        var sc Scanner
+        sc = func(path Sequence, node *Node) bool {
+            if node.itype() == types.V_OBJECT {
+                if err := node.SortKeys(recurse); err != nil {
+                    return false
+                }
+            }
+            if node.itype() == types.V_ARRAY {
+                if err := node.ForEach(sc); err != nil {
+                    return false
+                }
+            }
+            return true
+        }
+        self.ForEach(sc)
+    }
+    return nil
+}
+
 // Array loads all indexes of an array node
 func (self *Node) Array() ([]interface{}, error) {
     if self.isAny() {
@@ -806,7 +834,9 @@ func (self *Node) LoadAll() error {
         }
         for i := 0; i < e; i++ {
             n := self.nodeAt(i)
-            n.parseRaw(true)
+            if n.IsRaw() {
+                n.parseRaw(true)
+            }
             if err := n.Check(); err != nil {
                 return err
             }
@@ -819,7 +849,9 @@ func (self *Node) LoadAll() error {
         }
         for i := 0; i < e; i++ {
             n := self.pairAt(i)
-            n.Value.parseRaw(true)
+            if n.Value.IsRaw() {
+                n.Value.parseRaw(true)
+            }
             if err := n.Value.Check(); err != nil {
                 return err
             }

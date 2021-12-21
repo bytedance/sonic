@@ -17,20 +17,59 @@
 package ast
 
 import (
-	"encoding/json"
-	"fmt"
-	"reflect"
-	"runtime"
-	"runtime/debug"
-	"strconv"
-	"testing"
+    `encoding/json`
+    `fmt`
+    `reflect`
+    `runtime`
+    `runtime/debug`
+    `strconv`
+    `testing`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/stretchr/testify/assert"
+    `github.com/bytedance/sonic/encoder`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/stretchr/testify/assert`
 )
 
 
+func TestNodeSortKeys(t *testing.T) {
+    root, err := NewSearcher(_TwitterJson).GetByPath()
+    if err != nil {
+        t.Fatal(err)
+    }
+    obj, err := root.MapUseNumber()
+    if err != nil {
+        t.Fatal(err)
+    }
+    exp, err := encoder.Encode(obj, encoder.SortMapKeys)
+    if err != nil {
+        t.Fatal(err)
+    }
+    if err := root.SortKeys(true); err != nil {
+        t.Fatal(err)
+    }
+    act, err := root.MarshalJSON()
+    if err != nil {
+        t.Fatal(err)
+    }
+    assert.Equal(t, len(exp), len(act))
+    assert.Equal(t, string(exp), string(act))
+}
+
+func BenchmarkNodeSortKeys(b *testing.B) {
+    root, err := NewSearcher(_TwitterJson).GetByPath()
+    if err != nil {
+        b.Fatal(err)
+    }
+    if err := root.LoadAll(); err != nil {
+        b.Fatal(err)
+    }
+    b.SetBytes(int64(len(_TwitterJson)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        _ = root.SortKeys(true)
+    }
+}
 
 //go:noinline
 func stackObj() interface{} {
