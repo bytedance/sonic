@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
 
@@ -20,10 +20,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Check License Header
-        uses: apache/skywalking-eyes@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Unit Test
-        run: go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
+        run: GOMAXPROCS=4 go test -v -race -covermode=atomic -coverprofile=coverage.out ./...

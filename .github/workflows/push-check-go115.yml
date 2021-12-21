@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
 
@@ -21,4 +21,4 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Unit Test
-        run: go test -v -covermode=atomic -coverprofile=coverage.out ./...
+        run: GOMAXPROCS=4 go test -v -covermode=atomic -coverprofile=coverage.out ./...
