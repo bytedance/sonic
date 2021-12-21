@@ -107,6 +107,11 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     uint64_t m1;
     uint64_t cr = 0;
 
+    /* prevent out-of-bounds accessing */
+    if (unlikely(src->len == p)) {
+        return -ERR_EOF;
+    }
+
     /* buffer pointers */
     size_t       nb = src->len;
     const char * sp = src->buf;
@@ -318,7 +323,7 @@ long value(const char *s, size_t n, long p, JsonState *ret, int allow_control) {
     long     q = p;
     GoString m = {.buf = s, .len = n};
 
-    /* parse the next identifier */
+    /* parse the next identifier, q is UNSAFE, may cause out-of-bounds accessing */
     switch (advance_ns(&m, &q)) {
         case '-' : /* fallthrough */
         case '0' : /* fallthrough */

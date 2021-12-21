@@ -43,6 +43,16 @@ func TestNative_Value(t *testing.T) {
     assert.Equal(t, 3, v.Ep)
 }
 
+func TestNative_Value_OutOfBound(t *testing.T) {
+    var v types.JsonState
+    mem := []byte{'"', '"'}
+    s := rt.Mem2Str(mem[:1])
+    p := (*rt.GoString)(unsafe.Pointer(&s))
+    x := __value(p.Ptr, p.Len, 0, &v, 0)
+    assert.Equal(t, 1, x)
+    assert.Equal(t, -int(types.ERR_EOF), int(v.Vt))
+}
+
 func TestNative_Quote(t *testing.T) {
     s := "hello\b\f\n\r\t\\\"\u666fworld"
     d := make([]byte, 256)
