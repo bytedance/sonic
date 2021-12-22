@@ -310,6 +310,19 @@ func (self *_Assembler) prologue() {
     self.Emit("XORL", _SP_x, _SP_x)                 // XORL R10, R12
     self.Emit("XORL", _SP_f, _SP_f)                 // XORL R11, R13
     self.Emit("XORL", _SP_q, _SP_q)                 // XORL R13, R11
+    self.check_stack()
+}
+
+var _F_morestack = jit.Func(morestack)
+
+func (self *_Assembler) check_stack() {
+    self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
+    self.Emit("NOTQ", _AX)
+    self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
+    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
+    self.Sjmp("JA", "_no_split")
+    self.call_go(_F_morestack)
+    self.Link("_no_split")
 }
 
 /** Assembler Inline Functions **/

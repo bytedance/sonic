@@ -72,3 +72,6 @@ func asJson(v unsafe.Pointer) (string, error) {
     r, e := (*(*json.Marshaler)(unsafe.Pointer(&text))).MarshalJSON()
     return rt.Mem2Str(r), e
 }
+
+//go:linkname morestack runtime.morestack
+func morestack() 

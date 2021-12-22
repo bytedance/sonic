@@ -52,11 +52,14 @@ const (
 const (
     _VD_offs = _VD_fargs + _VD_saves + _VD_locals
     _VD_size = _VD_offs + 8     // 8 bytes for the parent frame pointer
+    _VD_base = _VD_size + 8     // 8 bytes for the parent frame pointer
 )
+
+var _ARG_st = jit.Ptr(_SP, _VD_base)
 
 var (
     _VAR_ss = _VAR_ss_Vt
-    _VAR_df = jit.Ptr(_SP, _VD_fargs + _VD_saves)
+    _VAR_df = jit.Ptr(_SP, _VD_fargs + _VD_size)
 )
 
 var (
@@ -174,14 +177,29 @@ var _R_tab = map[int]string {
     '}': "_decode_V_OBJECT_END",
 }
 
+func (self *_ValueDecoder) check_stack() {
+    self.save(_REG_go...)
+    self.Byte([]byte{0x65, 0x4c, 0x8b, 0x34, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), R14
+    self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
+    self.Emit("NOTQ", _AX)
+    self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
+    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
+    self.Sjmp("JA", "_no_split")
+    self.call(_F_morestack)
+    self.Link("_no_split")
+    self.load(_REG_go...)
+}
+
 func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
+    self.Emit("MOVQ", _DF, _VAR_df)                 // MOVQ DF, df
+    self.Emit("MOVQ", _ST, _ARG_st)                 // MOVQ DF, df
+    self.check_stack()
 
     /* initialize the state machine */
     self.Emit("XORL", _CX, _CX)                                 // XORL CX, CX
-    self.Emit("MOVQ", _DF, _VAR_df)                             // MOVQ DF, df
     self.Emit("ADDQ", jit.Imm(_FsmOffset), _ST)                 // ADDQ _FsmOffset, _ST
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                // MOVQ CX, ST.Sp
     self.WriteRecNotAX(0, _VP, jit.Ptr(_ST, _ST_Vp), false)                // MOVQ VP, ST.Vp[0]

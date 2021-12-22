@@ -318,11 +318,25 @@ func (self *_Assembler) prologue() {
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
+    self.check_stack()
     self.Emit("MOVQ", _ARG_sp, _IP)                 // MOVQ s.p<>+0(FP), IP
     self.Emit("MOVQ", _ARG_sl, _IL)                 // MOVQ s.l<>+8(FP), IL
     self.Emit("MOVQ", _ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC
     self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ vp<>+32(FP), ST
+}
+
+var _F_morestack = jit.Func(morestack)
+
+func (self *_Assembler) check_stack() {
+    self.Byte([]byte{0x65, 0x4c, 0x8b, 0x34, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), R14
+    self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
+    self.Emit("NOTQ", _AX)
+    self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
+    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
+    self.Sjmp("JA", "_no_split")
+    self.call(_F_morestack)
+    self.Link("_no_split")
 }
 
 /** Function Calling Helpers **/

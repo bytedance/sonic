@@ -331,6 +331,19 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
+    self.check_stack()
+}
+
+var _F_morestack = jit.Func(morestack)
+
+func (self *_Assembler) check_stack() {
+    self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
+    self.Emit("NOTQ", _AX)
+    self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
+    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
+    self.Sjmp("JA", "_no_split")
+    self.call_go(_F_morestack)
+    self.Link("_no_split")
 }
 
 /** Function Calling Helpers **/

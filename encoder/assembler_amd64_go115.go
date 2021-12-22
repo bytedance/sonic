@@ -298,6 +298,20 @@
      self.Emit("XORL", _SP_x, _SP_x)                 // XORL SP.x, SP.x
      self.Emit("XORL", _SP_f, _SP_f)                 // XORL SP.f, SP.f
      self.Emit("XORL", _SP_q, _SP_q)                 // XORL SP.q, SP.q
+     self.check_stack()
+ }
+
+ var _F_morestack = jit.Func(morestack)
+
+ func (self *_Assembler) check_stack() {
+     self.Byte([]byte{0x65, 0x4c, 0x8b, 0x34, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), R14
+     self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
+     self.Emit("NOTQ", _AX)
+     self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
+     self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
+     self.Sjmp("JA", "_no_split")
+     self.call_go(_F_morestack)
+     self.Link("_no_split")
  }
  
  /** Assembler Inline Functions **/

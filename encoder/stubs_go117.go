@@ -83,3 +83,6 @@ var _runtime_writeBarrier uintptr
 
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
 func gcWriteBarrierAX()
+
+//go:linkname morestack runtime.morestack
+func morestack() 
