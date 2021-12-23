@@ -178,25 +178,24 @@ var _R_tab = map[int]string {
 }
 
 func (self *_ValueDecoder) check_stack() {
-    self.save(_REG_go...)
-    self.Byte([]byte{0x65, 0x4c, 0x8b, 0x34, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), R14
-    self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
+    self.Byte([]byte{0x65, 0x48, 0x8b, 0x04, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), AX
+    self.Emit("MOVQ", jit.Ptr(_AX, 0), _AX)
     self.Emit("NOTQ", _AX)
     self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
-    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
+    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize + _VD_size))
     self.Sjmp("JA", "_no_split")
-    self.call(_F_morestack)
+    self.call_go(_F_morestack)
     self.Link("_no_split")
-    self.load(_REG_go...)
 }
 
 func (self *_ValueDecoder) compile() {
+    self.check_stack()
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
+    self.SetHead()
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
     self.Emit("MOVQ", _DF, _VAR_df)                 // MOVQ DF, df
     self.Emit("MOVQ", _ST, _ARG_st)                 // MOVQ DF, df
-    self.check_stack()
 
     /* initialize the state machine */
     self.Emit("XORL", _CX, _CX)                                 // XORL CX, CX
@@ -607,6 +606,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)     // SUBQ _FsmOffset, _ST
     self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_VD_size), _SP)       // ADDQ $_VD_size, SP
+    self.SetTail()
     self.Emit("RET")                                // RET
 
     /* array expand */

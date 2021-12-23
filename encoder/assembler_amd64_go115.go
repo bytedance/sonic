@@ -304,8 +304,8 @@
  var _F_morestack = jit.Func(morestack)
 
  func (self *_Assembler) check_stack() {
-     self.Byte([]byte{0x65, 0x4c, 0x8b, 0x34, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), R14
-     self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
+     self.Byte([]byte{0x65, 0x48, 0x8b, 0x04, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), AX
+     self.Emit("MOVQ", jit.Ptr(_AX, 0), _AX)
      self.Emit("NOTQ", _AX)
      self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
      self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))

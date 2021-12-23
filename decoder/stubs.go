@@ -104,5 +104,5 @@ func memclrHasPointers(ptr unsafe.Pointer, n uintptr)
 //goland:noinspection GoUnusedParameter
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
-//go:linkname morestack runtime.morestack
-func morestack() 
+//go:linkname morestack_noctxt runtime.morestack_noctxt
+func morestack_noctxt() 

@@ -19,7 +19,9 @@
 package loader
 
 import (
-    `unsafe`
+	"unsafe"
+
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type _Func struct {
@@ -35,6 +37,7 @@ type _Func struct {
     funcID      uint8   // set for certain special runtime functions
     _           [2]byte // pad
     nfuncdata   uint8   // must be last
+    pcdata      [2]uint32
     argptrs     uintptr
     localptrs   uintptr
 }
@@ -122,24 +125,91 @@ var findFuncTab = &_FindFuncBucket {
     idx: 1,
 }
 
-func makePCtab(fp int) []byte {
-    return append([]byte{0}, encodeVariant((fp + 1) << 1)...)
-}
+// func registerFunction(name string, pc uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
+//     minpc := pc
+//     maxpc := pc + size
 
-func registerFunction(name string, pc uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
+//     /* function entry */
+//     lnt := []_Func {{
+//         entry     : pc,
+//         nameoff   : 1,
+//         args      : int32(args),
+//         pcsp      : 1,
+//         nfuncdata : 2,
+//         argptrs   : argptrs,
+//         localptrs : localptrs,
+//     }}
+
+//     /* function table */
+//     tab := []_FuncTab {
+//         {entry: pc},
+//         {entry: pc},
+//         {entry: maxpc},
+//     }
+
+//     /* module data */
+//     mod := &_ModuleData {
+//         pcHeader    : modHeader,
+//         funcnametab : append(append([]byte{0}, name...), 0),
+//         pctab       : append(makePCtab(fp), encodeVariant(int(size))...),
+//         pclntable   : lnt,
+//         ftab        : tab,
+//         findfunctab : findFuncTab,
+//         minpc       : minpc,
+//         maxpc       : maxpc,
+//         modulename  : name,
+//     }
+
+//     /* verify and register the new module */
+//     moduledataverify1(mod)
+//     registerModule(mod)
+// }
+
+func registerFunction(name string, pc uintptr, size uintptr, frame rt.Frame) {
     minpc := pc
     maxpc := pc + size
+    pctab := []byte{0}
+
+    /* mark the entire section with the same FP */
+    pctab = append(pctab, encodeFirst(0)...)
+    pctab = append(pctab, encodeVariant(frame.Head)...)
+    pctab = append(pctab, encodeValue(frame.Size)...)
+    pctab = append(pctab, encodeVariant(frame.Tail - frame.Head)...)
+    pctab = append(pctab, encodeValue(-frame.Size)...)
+    pctab = append(pctab, encodeVariant(int(size) - frame.Tail)...)
+    pctab = append(pctab, 0)
 
     /* function entry */
-    lnt := []_Func {{
+    fn := _Func {
         entry     : pc,
         nameoff   : 1,
-        args      : int32(args),
+        args      : int32(frame.ArgSize),
         pcsp      : 1,
+        npcdata   : 2,
         nfuncdata : 2,
-        argptrs   : argptrs,
-        localptrs : localptrs,
-    }}
+        cuOffset  : 1,
+        argptrs   : frame.ArgPtrs,
+        localptrs : frame.LocalPtrs,
+    }
+
+    /* mark the entire function as a single line of code */
+    fn.pcln = uint32(len(pctab))
+    fn.pcfile = uint32(len(pctab))
+    pctab = append(pctab, encodeFirst(1)...)
+    pctab = append(pctab, encodeVariant(int(size))...)
+    pctab = append(pctab, 0)
+
+    /* set the entire function to use stack map 0 */
+    fn.pcdata[_PCDATA_StackMapIndex] = uint32(len(pctab))
+    pctab = append(pctab, encodeFirst(0)...)
+    pctab = append(pctab, encodeVariant(int(size))...)
+    pctab = append(pctab, 0)
+
+    /* mark the entire function as unsafe to async-preempt */
+    fn.pcdata[_PCDATA_UnsafePoint] = uint32(len(pctab))
+    pctab = append(pctab, encodeFirst(_PCDATA_UnsafePointUnsafe)...)
+    pctab = append(pctab, encodeVariant(int(size))...)
+    pctab = append(pctab, 0)
 
     /* function table */
     tab := []_FuncTab {
@@ -152,8 +222,10 @@ func registerFunction(name string, pc uintptr, fp int, args int, size uintptr, a
     mod := &_ModuleData {
         pcHeader    : modHeader,
         funcnametab : append(append([]byte{0}, name...), 0),
-        pctab       : append(makePCtab(fp), encodeVariant(int(size))...),
-        pclntable   : lnt,
+        cutab       : []uint32{0, 0, 1},
+        filetab     : []byte("\x00(jit-generated)\x00"),
+        pctab       : pctab,
+        pclntable   : []_Func{fn},
         ftab        : tab,
         findfunctab : findFuncTab,
         minpc       : minpc,

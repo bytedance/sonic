@@ -41,6 +41,8 @@ type BaseAssembler struct {
     xrefs    map[string][]*obj.Prog
     labels   map[string]*obj.Prog
     pendings map[string][]*obj.Prog
+    head *obj.Prog
+    tail *obj.Prog
 }
 
 /** Instruction Encoders **/
@@ -82,6 +84,20 @@ func (self *BaseAssembler) Byte(v ...byte) {
 func (self *BaseAssembler) Mark(pc int) {
     self.i++
     self.Link(_LB_jump_pc + strconv.Itoa(pc))
+}
+
+func (self *BaseAssembler) SetHead() {
+    if self.head != nil {
+        panic("head prog has been set!")
+    }
+    self.head = self.NOP()
+}
+
+func (self *BaseAssembler) SetTail() {
+    if self.tail != nil {
+        panic("tail prog has been set!")
+    }
+    self.tail = self.NOP()
 }
 
 func (self *BaseAssembler) Link(to string) {
@@ -202,14 +218,23 @@ func (self *BaseAssembler) Init(f func()) {
     self.o = sync.Once{}
 }
 
-func (self *BaseAssembler) Load(fn string, fp int, args int) loader.Function {
+func (self *BaseAssembler) Load(fn string, frame rt.Frame) loader.Function {
     self.build()
-    return loader.Loader(self.c).Load(fn, fp, args)
+    return loader.Loader(self.c).Load(fn, frame)
 }
 
 func (self *BaseAssembler) LoadWithFaker(fn string, fp int, args int, faker interface{}) loader.Function {
     self.build()
-    return loader.Loader(self.c).LoadWithFaker(fn, fp, args, faker)
+    head := self.head.Pc
+    tail := self.tail.Pc
+    self.head = nil
+    self.tail = nil
+    return loader.Loader(self.c).LoadWithFaker(fn, rt.Frame{
+        Head: int(head),
+        Tail: int(tail),
+        Size: fp,
+        ArgSize: args,
+    }, faker)
 }
 
 /** Assembler Stages **/
@@ -252,6 +277,12 @@ func (self *BaseAssembler) resolve() {
                 binary.LittleEndian.PutUint32(self.c[prog.Pc:], uint32(off))
             }
         }
+    }
+    if self.head == nil && len(self.pb.Prog) > 0 {
+        self.head = self.pb.Prog[0]
+    }
+    if self.tail == nil && len(self.pb.Prog) > 0 {
+        self.tail = self.pb.Prog[len(self.pb.Prog)-1]
     }
 }
 

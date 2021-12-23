@@ -22,13 +22,6 @@ import (
     `reflect`
 )
 
-//go:linkname lastmoduledatap runtime.lastmoduledatap
-//goland:noinspection GoUnusedGlobalVariable
-var lastmoduledatap *_ModuleData
-
-//go:linkname moduledataverify1 runtime.moduledataverify1
-func moduledataverify1(_ *_ModuleData)
-
 // PCDATA and FUNCDATA table indexes.
 //
 // See funcdata.h and $GROOT/src/cmd/internal/objabi/funcdata.go.
@@ -48,10 +41,35 @@ func findfunc(pc uintptr) funcInfo
 //go:linkname funcdata runtime.funcdata
 func funcdata(f funcInfo, i uint8) unsafe.Pointer
 
+const (
+    _PCDATA_UnsafePoint       = 0
+    _PCDATA_StackMapIndex     = 1
+    _PCDATA_UnsafePointUnsafe = -2
+)
+
+//go:linkname lastmoduledatap runtime.lastmoduledatap
+//goland:noinspection GoUnusedGlobalVariable
+var lastmoduledatap *_ModuleData
+
+//go:linkname moduledataverify1 runtime.moduledataverify1
+func moduledataverify1(_ *_ModuleData)
+
 var (
     modLock sync.Mutex
     modList []*_ModuleData
 )
+
+func toZigzag(v int) int {
+    return (v << 1) ^ (v >> 31)
+}
+
+func encodeFirst(v int) []byte {
+    return encodeValue(v + 1)
+}
+
+func encodeValue(v int) []byte {
+    return encodeVariant(toZigzag(v))
+}
 
 func encodeVariant(v int) []byte {
     var u int

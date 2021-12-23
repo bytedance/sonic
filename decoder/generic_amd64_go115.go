@@ -171,8 +171,20 @@
      ']': "_decode_V_ARRAY_END",
      '}': "_decode_V_OBJECT_END",
  }
+
+ func (self *_ValueDecoder) check_stack() {
+    self.Byte([]byte{0x65, 0x48, 0x8b, 0x04, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), AX
+    self.Emit("MOVQ", jit.Ptr(_AX, 0), _AX)
+    self.Emit("NOTQ", _AX)
+    self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
+    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
+    self.Sjmp("JA", "_no_split")
+    self.call_go(_F_morestack)
+    self.Link("_no_split")
+}
  
  func (self *_ValueDecoder) compile() {
+     self.check_stack()
      self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
      self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
      self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
