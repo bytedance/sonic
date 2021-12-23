@@ -77,11 +77,6 @@ func __vnumber(s *string, p *int, v *types.JsonState)
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func __atof_native(sp unsafe.Pointer, nb int, dbuf unsafe.Pointer, cap int, v *types.JsonState)
-
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
 func __vsigned(s *string, p *int, v *types.JsonState)
 
 //go:nosplit

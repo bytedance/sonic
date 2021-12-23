@@ -70,7 +70,7 @@
      _FP_args   = 96     // 96 bytes to pass arguments and return values for this function
      _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
      _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
-     _FP_locals = 72     // 72 bytes for local variables
+     _FP_locals = 88     // 88 bytes for local variables
  )
  
  const (
@@ -174,14 +174,16 @@
      _VAR_st_Dv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
      _VAR_st_Iv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
      _VAR_st_Ep = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
+     _VAR_st_Db = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
+     _VAR_st_Dc = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
  )
  
  var (
-     _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
-     _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
-     _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
-     _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
-     _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
+     _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
+     _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
+     _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
+     _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 72)
+     _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 80)
  )
  
  type _Assembler struct {
@@ -320,6 +322,10 @@
      self.Emit("MOVQ", _ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC
      self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
      self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ vp<>+32(FP), ST
+     // initialize digital buffer first
+     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
+     self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)        // LEAQ _DbufOffset(ST), AX
+     self.Emit("MOVQ", _AX, _VAR_st_Db)                       // MOVQ AX, ss.Dbuf
  }
  
  /** Function Calling Helpers **/
@@ -553,7 +559,6 @@
      _F_vnumber   = jit.Imm(int64(native.S_vnumber))
      _F_vsigned   = jit.Imm(int64(native.S_vsigned))
      _F_vunsigned = jit.Imm(int64(native.S_vunsigned))
-     _F_atof_native = jit.Imm(int64(native.S_atof_native))
  )
  
  func (self *_Assembler) check_err() {
@@ -579,20 +584,7 @@
  }
  
  func (self *_Assembler) parse_number() {
-    self.Emit("MOVQ", _ARG_ic, _CX)                        // MOVQ  ic<>+16(FP), CX
     self.call_vf(_F_vnumber)                               // call  vnumber
-    // CMPBQ st.Vt, ${types.V_ATOF_NEED_FALLBACK}
-    self.Emit("CMPQ", _VAR_st_Vt, jit.Imm(int64(types.V_ATOF_NEED_FALLBACK)))
-    self.Sjmp("JNE", "_atof_finish_{n}")                   // JNE   _atof_finish_{n}
-    self.Emit("MOVQ", _IP, _DI)                            // LEAQ  sp, DI
-    self.Emit("ADDQ", _CX, _DI)                            // ADDQ  CX, DI
-    self.Emit("MOVQ", _IC, _SI)                            // MOVQ  IC, SI
-    self.Emit("SUBQ", _CX, _SI)                            // SUBQ  CX, SI
-    self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _DX)      // LEAQ _DbufOffset(ST), DX
-    self.Emit("MOVQ", jit.Imm(int64(_MaxDigitNums)), _CX)  // MOVQ $_MaxDigitNums, CX
-    self.Emit("LEAQ", _VAR_st, _R8)                        // LEAQ st, R8
-    self.call(_F_atof_native)                              // CALL   atof_native
-    self.Link("_atof_finish_{n}")                          // _atof_finish_{n}:
     self.check_err()
  }
  
