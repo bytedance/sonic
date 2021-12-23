@@ -36,6 +36,7 @@ var (
     S_vnumber   = _subr__vnumber
     S_vsigned   = _subr__vsigned
     S_vunsigned = _subr__vunsigned
+    S_atof_native = _subr__atof_native
 )
 
 var (

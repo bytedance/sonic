@@ -43,6 +43,7 @@ var (
     S_vnumber   uintptr
     S_vsigned   uintptr
     S_vunsigned uintptr
+    S_atof_native uintptr
 )
 
 var (
@@ -101,6 +102,7 @@ func useAVX() {
     S_skip_one    = avx.S_skip_one
     S_skip_array  = avx.S_skip_array
     S_skip_object = avx.S_skip_object
+    S_atof_native = avx.S_atof_native
 }
 
 func useAVX2() {
@@ -118,6 +120,7 @@ func useAVX2() {
     S_skip_one    = avx2.S_skip_one
     S_skip_array  = avx2.S_skip_array
     S_skip_object = avx2.S_skip_object
+    S_atof_native = avx2.S_atof_native
 }
 
 func init() {

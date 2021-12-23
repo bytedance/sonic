@@ -553,6 +553,7 @@
      _F_vnumber   = jit.Imm(int64(native.S_vnumber))
      _F_vsigned   = jit.Imm(int64(native.S_vsigned))
      _F_vunsigned = jit.Imm(int64(native.S_vunsigned))
+     _F_atof_native = jit.Imm(int64(native.S_atof_native))
  )
  
  func (self *_Assembler) check_err() {
@@ -578,8 +579,21 @@
  }
  
  func (self *_Assembler) parse_number() {
-     self.call_vf(_F_vnumber)
-     self.check_err()
+    self.Emit("MOVQ", _ARG_ic, _CX)                        // MOVQ  ic<>+16(FP), CX
+    self.call_vf(_F_vnumber)                               // call  vnumber
+    // CMPBQ st.Vt, ${types.V_ATOF_NEED_FALLBACK}
+    self.Emit("CMPQ", _VAR_st_Vt, jit.Imm(int64(types.V_ATOF_NEED_FALLBACK)))
+    self.Sjmp("JNE", "_atof_finish_{n}")                   // JNE   _atof_finish_{n}
+    self.Emit("MOVQ", _IP, _DI)                            // LEAQ  sp, DI
+    self.Emit("ADDQ", _CX, _DI)                            // ADDQ  CX, DI
+    self.Emit("MOVQ", _IC, _SI)                            // MOVQ  IC, SI
+    self.Emit("SUBQ", _CX, _SI)                            // SUBQ  CX, SI
+    self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _DX)      // LEAQ _DbufOffset(ST), DX
+    self.Emit("MOVQ", jit.Imm(int64(_MaxDigitNums)), _CX)  // MOVQ $_MaxDigitNums, CX
+    self.Emit("LEAQ", _VAR_st, _R8)                        // LEAQ st, R8
+    self.call(_F_atof_native)                              // CALL   atof_native
+    self.Link("_atof_finish_{n}")                          // _atof_finish_{n}:
+    self.check_err()
  }
  
  func (self *_Assembler) parse_signed() {

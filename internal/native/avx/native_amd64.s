@@ -15,89 +15,75 @@ _lzero:
 	BYTE $0x55               // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
 	CMPQ SI, $32
-	JB   LBB0_5
-	LEAQ -32(SI), AX
-	MOVQ AX, CX
-	ANDQ $-32, CX
-	LEAQ 32(CX)(DI*1), CX
-	ANDL $31, AX
+	JB   LBB0_3
 
-LBB0_2:
+LBB0_1:
 	LONG $0x076ffec5             // vmovdqu      (%rdi), %ymm0
 	LONG $0x177de2c4; BYTE $0xc0 // vptest       %ymm0, %ymm0
-	JNE  LBB0_13
+	JNE  LBB0_9
 	ADDQ $32, DI
 	ADDQ $-32, SI
 	CMPQ SI, $31
-	JA   LBB0_2
-	MOVQ AX, SI
-	MOVQ CX, DI
+	JA   LBB0_1
 
-LBB0_5:
+LBB0_3:
 	WORD $0xf8c5; BYTE $0x77 // vzeroupper
 	CMPQ SI, $16
-	JB   LBB0_10
-	LEAQ -16(SI), AX
-	MOVQ AX, CX
-	ANDQ $-16, CX
-	LEAQ 16(CX)(DI*1), CX
-	ANDL $15, AX
+	JB   LBB0_6
 
-LBB0_7:
+LBB0_4:
 	LONG $0x076ffac5             // vmovdqu      (%rdi), %xmm0
 	LONG $0x1779e2c4; BYTE $0xc0 // vptest       %xmm0, %xmm0
-	JNE  LBB0_14
+	JNE  LBB0_10
 	ADDQ $16, DI
 	ADDQ $-16, SI
 	CMPQ SI, $15
-	JA   LBB0_7
-	MOVQ AX, SI
-	MOVQ CX, DI
+	JA   LBB0_4
 
-LBB0_10:
+LBB0_6:
 	CMPQ SI, $8
-	JB   LBB0_16
+	JB   LBB0_12
 	MOVL $1, AX
 	CMPQ 0(DI), $0
-	JNE  LBB0_12
+	JNE  LBB0_8
 	ADDQ $8, DI
 	ADDQ $-8, SI
 
-LBB0_16:
+LBB0_12:
 	CMPQ SI, $4
-	JB   LBB0_19
+	JB   LBB0_15
 	MOVL $1, AX
 	CMPL 0(DI), $0
-	JNE  LBB0_12
+	JNE  LBB0_8
 	ADDQ $4, DI
 	ADDQ $-4, SI
 
-LBB0_19:
+LBB0_15:
 	CMPQ SI, $2
-	JB   LBB0_22
+	JB   LBB0_18
 	MOVL $1, AX
 	CMPW 0(DI), $0
-	JNE  LBB0_12
+	JNE  LBB0_8
 	ADDQ $2, DI
 	ADDQ $-2, SI
 
-LBB0_22:
+LBB0_18:
 	XORL  AX, AX
 	TESTQ SI, SI
-	JE    LBB0_12
+	JE    LBB0_8
 	CMPB  0(DI), $0
 	SETNE AX
 	BYTE  $0x5d     // popq         %rbp
 	RET
 
-LBB0_12:
+LBB0_8:
 	BYTE $0x5d // popq         %rbp
 	RET
 
-LBB0_13:
+LBB0_9:
 	WORD $0xf8c5; BYTE $0x77 // vzeroupper
 
-LBB0_14:
+LBB0_10:
 	MOVL $1, AX
 	BYTE $0x5d  // popq         %rbp
 	RET
@@ -117,110 +103,107 @@ LCPI1_3:
 _lspace:
 	BYTE  $0x55               // pushq        %rbp
 	WORD  $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	LEAQ  0(DI)(DX*1), AX
-	SUBQ  DX, SI
+	MOVQ  DX, AX
+	LEAQ  0(DI)(DX*1), R10
+	MOVQ  SI, DX
+	SUBQ  AX, DX
 	JE    LBB1_7
-	MOVL  AX, CX
+	MOVL  R10, CX
 	ANDL  $15, CX
 	TESTQ CX, CX
 	JE    LBB1_7
-	LEAQ  -1(SI), R9
-	XORL  DX, DX
+	LEAQ  1(DI), R9
+	LEAQ  -1(SI), CX
 	MOVQ  $4294977024, R8
 
 LBB1_3:
-	MOVBLSX 0(AX)(DX*1), CX
-	CMPL    CX, $32
-	JA      LBB1_5
-	BTQ     CX, R8
-	JAE     LBB1_5
-	LEAQ    1(DX), R10
-	CMPQ    R9, DX
+	MOVBLSX 0(DI)(AX*1), DX
+	CMPL    DX, $32
+	JA      LBB1_22
+	BTQ     DX, R8
+	JAE     LBB1_22
+	LEAQ    1(AX), DX
+	CMPQ    CX, AX
 	JE      LBB1_6
-	LEAQ    1(AX)(DX*1), CX
-	ANDL    $15, CX
-	MOVQ    R10, DX
-	TESTQ   CX, CX
+	ADDL    R9, AX
+	ANDL    $15, AX
+	TESTQ   AX, AX
+	MOVQ    DX, AX
 	JNE     LBB1_3
 
 LBB1_6:
-	ADDQ R10, AX
-	SUBQ R10, SI
+	LEAQ 0(DI)(DX*1), R10
+	SUBQ DX, SI
+	MOVQ SI, DX
 
 LBB1_7:
-	CMPQ SI, $16
+	CMPQ DX, $16
 	JB   LBB1_13
-	LEAQ -16(SI), CX
-	MOVQ CX, DX
-	ANDQ $-16, DX
-	LEAQ 16(DX)(AX*1), R8
-	ANDL $15, CX
-	QUAD $0xffffff42056ffac5 // vmovdqu      $-190(%rip), %xmm0  /* LCPI1_0(%rip) */
-	QUAD $0xffffff4a0d6ffac5 // vmovdqu      $-182(%rip), %xmm1  /* LCPI1_1(%rip) */
-	QUAD $0xffffff52156ffac5 // vmovdqu      $-174(%rip), %xmm2  /* LCPI1_2(%rip) */
-	QUAD $0xffffff5a1d6ffac5 // vmovdqu      $-166(%rip), %xmm3  /* LCPI1_3(%rip) */
+	MOVQ DI, SI
+	SUBQ R10, SI
+	QUAD $0xffffff44056ffac5 // vmovdqu      $-188(%rip), %xmm0  /* LCPI1_0(%rip) */
+	QUAD $0xffffff4c0d6ffac5 // vmovdqu      $-180(%rip), %xmm1  /* LCPI1_1(%rip) */
+	QUAD $0xffffff54156ffac5 // vmovdqu      $-172(%rip), %xmm2  /* LCPI1_2(%rip) */
+	QUAD $0xffffff5c1d6ffac5 // vmovdqu      $-164(%rip), %xmm3  /* LCPI1_3(%rip) */
 
 LBB1_9:
-	LONG $0x206ff9c5 // vmovdqa      (%rax), %xmm4
-	LONG $0xe874d9c5 // vpcmpeqb     %xmm0, %xmm4, %xmm5
-	LONG $0xf174d9c5 // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG $0xeeebd1c5 // vpor         %xmm6, %xmm5, %xmm5
-	LONG $0xf274d9c5 // vpcmpeqb     %xmm2, %xmm4, %xmm6
-	LONG $0xe374d9c5 // vpcmpeqb     %xmm3, %xmm4, %xmm4
-	LONG $0xe6ebd9c5 // vpor         %xmm6, %xmm4, %xmm4
-	LONG $0xe5ebd9c5 // vpor         %xmm5, %xmm4, %xmm4
-	LONG $0xd4d7f9c5 // vpmovmskb    %xmm4, %edx
-	CMPW DX, $-1
+	LONG $0x6f79c1c4; BYTE $0x22 // vmovdqa      (%r10), %xmm4
+	LONG $0xe874d9c5             // vpcmpeqb     %xmm0, %xmm4, %xmm5
+	LONG $0xf174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xeeebd1c5             // vpor         %xmm6, %xmm5, %xmm5
+	LONG $0xf274d9c5             // vpcmpeqb     %xmm2, %xmm4, %xmm6
+	LONG $0xe374d9c5             // vpcmpeqb     %xmm3, %xmm4, %xmm4
+	LONG $0xe6ebd9c5             // vpor         %xmm6, %xmm4, %xmm4
+	LONG $0xe5ebd9c5             // vpor         %xmm5, %xmm4, %xmm4
+	LONG $0xc4d7f9c5             // vpmovmskb    %xmm4, %eax
+	CMPW AX, $-1
 	JNE  LBB1_10
-	ADDQ $16, AX
+	ADDQ $16, R10
+	ADDQ $-16, DX
 	ADDQ $-16, SI
-	CMPQ SI, $15
+	CMPQ DX, $15
 	JA   LBB1_9
-	MOVQ CX, SI
-	MOVQ R8, AX
 
 LBB1_13:
-	TESTQ SI, SI
-	JE    LBB1_22
-	LEAQ  0(AX)(SI*1), R8
-	INCQ  AX
-	MOVQ  $4294977024, DX
+	TESTQ DX, DX
+	JE    LBB1_20
+	LEAQ  0(R10)(DX*1), R8
+	XORL  AX, AX
+	MOVQ  $4294977024, R9
 
 LBB1_15:
-	MOVBLSX -1(AX), CX
-	CMPL    CX, $32
+	MOVBLSX 0(R10)(AX*1), SI
+	CMPL    SI, $32
 	JA      LBB1_17
-	BTQ     CX, DX
+	BTQ     SI, R9
 	JAE     LBB1_17
-	DECQ    SI
-	INCQ    AX
-	TESTQ   SI, SI
+	ADDQ    $1, AX
+	CMPQ    DX, AX
 	JNE     LBB1_15
-	MOVQ    R8, AX
-	JMP     LBB1_22
+	MOVQ    R8, R10
+
+LBB1_20:
+	SUBQ DI, R10
+
+LBB1_21:
+	MOVQ R10, AX
+
+LBB1_22:
+	BYTE $0x5d // popq         %rbp
+	RET
 
 LBB1_10:
-	MOVWLZX DX, CX
-	SUBQ    DI, AX
-	NOTL    CX
-	BSFL    CX, CX
-	ADDQ    CX, AX
+	MOVWLZX AX, AX
+	NOTL    AX
+	BSFL    AX, AX
+	SUBQ    SI, AX
 	BYTE    $0x5d  // popq         %rbp
 	RET
 
-LBB1_5:
-	ADDQ DX, AX
-
-LBB1_22:
-	SUBQ DI, AX
-	BYTE $0x5d  // popq         %rbp
-	RET
-
 LBB1_17:
-	NOTQ DI
-	ADDQ DI, AX
-	BYTE $0x5d  // popq         %rbp
-	RET
+	SUBQ DI, R10
+	ADDQ AX, R10
+	JMP  LBB1_21
 
 LCPI2_0:
 	QUAD $0x3030303030303030; QUAD $0x3030303030303030 // .space 16, '0000000000000000'
@@ -239,24 +222,24 @@ _f64toa:
 	LONG  $0x7ef9e1c4; BYTE $0xc0 // vmovq        %xmm0, %rax
 	XORL  R9, R9
 	TESTQ AX, AX
-	JS    LBB2_108
+	JS    LBB2_113
 	TESTQ AX, AX
-	JE    LBB2_109
+	JE    LBB2_114
 
 LBB2_2:
 	MOVQ  AX, DX
 	SHRQ  $52, DX
 	XORL  BX, BX
 	CMPL  DX, $2047
-	JE    LBB2_107
+	JE    LBB2_112
 	MOVQ  $4503599627370495, DI
 	ANDQ  DI, AX
-	INCQ  DI
+	ADDQ  $1, DI
 	ORQ   AX, DI
 	LEAL  -1023(DX), CX
 	CMPL  CX, $52
 	MOVL  R9, -44(BP)
-	MOVQ  R13, -64(BP)
+	MOVQ  R13, -56(BP)
 	JA    LBB2_5
 	MOVL  $1075, CX
 	SUBQ  DX, CX
@@ -272,14 +255,14 @@ LBB2_5:
 	LEAL    -1077(DX), CX
 	MOVL    $-1076, R11
 	LONG    $0xd9450f44                           // cmovnel      %ecx, %r11d
-	MOVQ    DI, -72(BP)
+	MOVQ    DI, -64(BP)
 	LEAQ    0(DI*4), R8
 	TESTQ   AX, AX
 	SETNE   AX
 	CMPL    DX, $2
 	SETCS   R13
 	ORB     AX, R13
-	MOVBLZX R13, R9
+	MOVBLZX R13, R14
 	TESTL   R11, R11
 	JS      LBB2_12
 	LONG    $0x41e36945; WORD $0x0134; BYTE $0x00 // imull        $78913, %r11d, %r12d
@@ -291,16 +274,16 @@ LBB2_5:
 	LONG    $0x4fdc6941; WORD $0x1293; BYTE $0x00 // imull        $1217359, %r12d, %ebx
 	MOVQ    R12, AX
 	SHLQ    $4, AX
-	LONG    $0x060d8d48; WORD $0x0076; BYTE $0x00 // leaq         $30214(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
+	LONG    $0x600d8d48; WORD $0x0071; BYTE $0x00 // leaq         $29024(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
 	MOVQ    R8, DI
 	ORQ     $2, DI
 	MOVQ    0(AX)(CX*1), R10
-	MOVQ    8(AX)(CX*1), R14
+	MOVQ    8(AX)(CX*1), R9
 	MOVQ    R10, AX
 	MULQ    DI
 	MOVQ    DX, CX
-	MOVQ    R14, AX
-	MOVQ    R14, -56(BP)
+	MOVQ    R9, AX
+	MOVQ    R9, -72(BP)
 	MULQ    DI
 	MOVQ    AX, R13
 	MOVQ    DX, SI
@@ -313,23 +296,23 @@ LBB2_5:
 	ADDB    $61, CX
 	LONG    $0xf5ad0f49                           // shrdq        %cl, %rsi, %r13
 	SHRQ    CX, SI
-	NOTQ    R9
-	ADDQ    R8, R9
+	NOTQ    R14
+	ADDQ    R8, R14
 	MOVQ    R10, AX
-	MULQ    R9
+	MULQ    R14
 	MOVQ    DX, R15
-	MOVQ    R14, AX
-	MULQ    R9
-	MOVQ    DX, R14
+	MOVQ    R9, AX
+	MULQ    R14
+	MOVQ    DX, R9
 	MOVQ    AX, BX
 	ADDQ    R15, BX
-	ADCQ    $0, R14
-	LONG    $0xf3ad0f4c                           // shrdq        %cl, %r14, %rbx
-	SHRQ    CX, R14
+	ADCQ    $0, R9
+	LONG    $0xcbad0f4c                           // shrdq        %cl, %r9, %rbx
+	SHRQ    CX, R9
 	MOVQ    R10, AX
 	MULQ    R8
 	MOVQ    DX, R11
-	MOVQ    -56(BP), AX
+	MOVQ    -72(BP), AX
 	MULQ    R8
 	MOVQ    DX, R10
 	ADDQ    R11, AX
@@ -338,7 +321,7 @@ LBB2_5:
 	SHRQ    CX, R10
 	TESTB   $64, CX
 	LONG    $0xf5440f49                           // cmoveq       %r13, %rsi
-	LONG    $0xf3440f4c                           // cmoveq       %rbx, %r14
+	LONG    $0xcb440f4c                           // cmoveq       %rbx, %r9
 	LONG    $0xd0440f4c                           // cmoveq       %rax, %r10
 	CMPL    R12, $21
 	JA      LBB2_23
@@ -348,14 +331,14 @@ LBB2_5:
 	IMULQ   AX, DX
 	CMPQ    DX, CX
 	JBE     LBB2_17
-	TESTB   $1, -72(BP)
+	TESTB   $1, -64(BP)
 	JNE     LBB2_20
 	MOVL    $-1, DX
 
 LBB2_10:
-	IMULQ AX, R9
-	INCL  DX
-	CMPQ  R9, CX
+	IMULQ AX, R14
+	ADDL  $1, DX
+	CMPQ  R14, CX
 	JBE   LBB2_10
 	CMPL  DX, R12
 	SETCC R13
@@ -378,15 +361,15 @@ LBB2_12:
 	SHRL    $19, BX
 	MOVLQSX AX, SI
 	SHLQ    $4, SI
-	LONG    $0x31158d4c; WORD $0x008a; BYTE $0x00 // leaq         $35377(%rip), %r10  /* _DOUBLE_POW5_SPLIT(%rip) */
+	LONG    $0x8a0d8d4c; WORD $0x0085; BYTE $0x00 // leaq         $34186(%rip), %r9  /* _DOUBLE_POW5_SPLIT(%rip) */
 	MOVQ    R8, DI
 	ORQ     $2, DI
-	MOVQ    0(SI)(R10*1), R14
-	MOVQ    R14, AX
-	MOVQ    R14, -56(BP)
+	MOVQ    0(SI)(R9*1), R15
+	MOVQ    R15, AX
+	MOVQ    R15, -72(BP)
 	MULQ    DI
 	MOVQ    DX, CX
-	MOVQ    8(SI)(R10*1), R10
+	MOVQ    8(SI)(R9*1), R10
 	MOVQ    R10, AX
 	MULQ    DI
 	MOVQ    DX, DI
@@ -398,20 +381,20 @@ LBB2_12:
 	ADDB    $60, CX
 	LONG    $0xfead0f48                           // shrdq        %cl, %rdi, %rsi
 	SHRQ    CX, DI
-	NOTQ    R9
-	ADDQ    R8, R9
-	MOVQ    R14, AX
-	MULQ    R9
+	NOTQ    R14
+	ADDQ    R8, R14
+	MOVQ    R15, AX
+	MULQ    R14
 	MOVQ    DX, R15
 	MOVQ    R10, AX
-	MULQ    R9
-	MOVQ    DX, R14
+	MULQ    R14
+	MOVQ    DX, R9
 	MOVQ    AX, BX
 	ADDQ    R15, BX
-	ADCQ    $0, R14
-	LONG    $0xf3ad0f4c                           // shrdq        %cl, %r14, %rbx
-	SHRQ    CX, R14
-	MOVQ    -56(BP), AX
+	ADCQ    $0, R9
+	LONG    $0xcbad0f4c                           // shrdq        %cl, %r9, %rbx
+	SHRQ    CX, R9
+	MOVQ    -72(BP), AX
 	MULQ    R8
 	MOVQ    DX, R15
 	MOVQ    R10, AX
@@ -424,20 +407,19 @@ LBB2_12:
 	TESTB   $64, CX
 	LONG    $0xfe440f48                           // cmoveq       %rsi, %rdi
 	MOVQ    DI, SI
-	LONG    $0xf3440f4c                           // cmoveq       %rbx, %r14
+	LONG    $0xcb440f4c                           // cmoveq       %rbx, %r9
 	LONG    $0xd0440f4c                           // cmoveq       %rax, %r10
 	CMPL    R12, $1
 	JA      LBB2_15
-	MOVQ    -72(BP), AX
+	MOVQ    -64(BP), AX
 	ANDL    $1, AX
 	TESTQ   AX, AX
 	SETEQ   CX
 	ANDB    CX, R13
 	SUBQ    AX, SI
 	MOVB    $1, R15
-	MOVL    R11, AX
-	MOVQ    AX, -56(BP)
-	JMP     LBB2_30
+	MOVL    R11, R12
+	JMP     LBB2_29
 
 LBB2_14:
 	MOVL CX, CX
@@ -445,8 +427,8 @@ LBB2_14:
 	XORL R12, R12
 	MOVL $1, R15
 	CMPQ DI, $10
-	JAE  LBB2_46
-	JMP  LBB2_61
+	JAE  LBB2_45
+	JMP  LBB2_60
 
 LBB2_15:
 	CMPL  R12, $62
@@ -464,7 +446,7 @@ LBB2_17:
 
 LBB2_18:
 	IMULQ AX, R8
-	INCL  DX
+	ADDL  $1, DX
 	CMPQ  R8, CX
 	JBE   LBB2_18
 	CMPL  DX, R12
@@ -479,13 +461,11 @@ LBB2_20:
 
 LBB2_21:
 	IMULQ AX, DI
-	INCL  DX
+	ADDL  $1, DX
 	CMPQ  DI, CX
 	JBE   LBB2_21
-	XORL  AX, AX
 	CMPL  DX, R12
-	SETCC AX
-	SUBQ  AX, SI
+	ADCQ  $-1, SI
 
 LBB2_23:
 	XORL  R15, R15
@@ -513,13 +493,13 @@ LBB2_26:
 	MULQ  DI
 	MOVQ  DX, CX
 	SHRQ  $2, CX
-	MOVQ  R14, AX
+	MOVQ  R9, AX
 	SHRQ  $2, AX
 	MULQ  DI
 	MOVQ  DX, SI
 	SHRQ  $2, SI
 	CMPQ  CX, SI
-	JBE   LBB2_39
+	JBE   LBB2_37
 	MOVQ  R10, AX
 	SHRQ  $2, AX
 	MULQ  DI
@@ -530,150 +510,144 @@ LBB2_26:
 	CMPL  AX, $49
 	SETHI DI
 	MOVL  $2, R11
-	MOVQ  SI, R14
+	MOVQ  SI, R9
 	MOVQ  CX, AX
 	MOVQ  DX, R10
-	MOVQ  -64(BP), R13
-	JMP   LBB2_40
+	MOVQ  -56(BP), R13
+	JMP   LBB2_38
 
 LBB2_29:
-	MOVQ R12, -56(BP)
-
-LBB2_30:
-	MOVQ $-3689348814741910323, BX
+	MOVQ $-3689348814741910323, R14
 	MOVQ SI, AX
-	MULQ BX
-	MOVQ DX, R12
-	MOVQ R14, AX
-	MULQ BX
-	SHRQ $3, R12
+	MULQ R14
+	MOVQ DX, SI
+	MOVQ R9, AX
+	MULQ R14
+	SHRQ $3, SI
 	SHRQ $3, DX
-	XORL SI, SI
+	XORL DI, DI
 	XORL R11, R11
-	CMPQ R12, DX
-	JBE  LBB2_37
+	CMPQ SI, DX
+	JBE  LBB2_35
 	XORL CX, CX
 
-LBB2_32:
+LBB2_31:
 	MOVQ  DX, R8
 	LEAL  0(DX)(DX*1), DI
 	MOVQ  R10, AX
-	MULQ  BX
-	MOVQ  DX, R9
+	MULQ  R14
+	MOVQ  DX, BX
 	LEAL  0(DI)(DI*4), AX
-	SHRQ  $3, R9
-	LEAL  0(R9)(R9*1), DX
-	LEAL  0(DX)(DX*4), SI
-	NEGL  SI
-	ADDB  R10, SI
-	CMPL  R14, AX
+	SHRQ  $3, BX
+	LEAL  0(BX)(BX*1), DX
+	LEAL  0(DX)(DX*4), DI
+	NEGL  DI
+	ADDB  R10, DI
+	CMPL  AX, R9
 	SETEQ AX
 	ANDB  AX, R13
 	TESTB CX, CX
 	SETEQ AX
 	ANDB  AX, R15
-	INCL  R11
-	MOVQ  R12, AX
-	MULQ  BX
-	MOVQ  DX, R12
-	SHRQ  $3, R12
+	ADDL  $1, R11
+	MOVQ  SI, AX
+	MULQ  R14
+	MOVQ  DX, SI
+	SHRQ  $3, SI
 	MOVQ  R8, AX
-	MULQ  BX
+	MULQ  R14
 	SHRQ  $3, DX
-	MOVQ  R9, R10
-	MOVQ  R8, R14
-	MOVL  SI, CX
-	CMPQ  R12, DX
-	JA    LBB2_32
+	MOVQ  BX, R10
+	MOVQ  R8, R9
+	MOVL  DI, CX
+	CMPQ  SI, DX
+	JA    LBB2_31
 	TESTB R13, R13
-	JE    LBB2_38
+	JE    LBB2_36
 
-LBB2_34:
+LBB2_33:
 	MOVQ R8, AX
-	MULQ BX
+	MULQ R14
 	MOVQ DX, CX
 	SHRQ $3, CX
 	LEAL 0(CX)(CX*1), AX
 	LEAL 0(AX)(AX*4), AX
-	CMPL R8, AX
-	MOVQ -72(BP), DI
-	MOVQ -56(BP), R12
-	JNE  LBB2_44
-	MOVQ BX, R14
+	CMPL AX, R8
+	MOVQ -64(BP), R10
+	JNE  LBB2_42
 
-LBB2_36:
-	MOVQ  R9, AX
+LBB2_34:
+	MOVQ  BX, AX
 	MULQ  R14
-	MOVQ  DX, R10
+	MOVQ  DX, R9
 	MOVQ  CX, R8
-	SHRQ  $3, R10
-	LEAL  0(R10)(R10*1), AX
-	LEAL  0(AX)(AX*4), BX
-	NEGL  BX
-	ADDB  R9, BX
-	TESTB SI, SI
+	SHRQ  $3, R9
+	LEAL  0(R9)(R9*1), AX
+	LEAL  0(AX)(AX*4), SI
+	NEGL  SI
+	ADDB  BX, SI
+	TESTB DI, DI
 	SETEQ AX
 	ANDB  AX, R15
-	INCL  R11
+	ADDL  $1, R11
 	MOVQ  CX, AX
 	MULQ  R14
 	MOVQ  DX, CX
 	SHRQ  $3, CX
 	LEAL  0(CX)(CX*1), AX
 	LEAL  0(AX)(AX*4), AX
-	MOVQ  R10, R9
-	MOVL  BX, SI
-	CMPL  R8, AX
-	JE    LBB2_36
-	JMP   LBB2_45
+	MOVQ  R9, BX
+	MOVL  SI, DI
+	CMPL  AX, R8
+	JE    LBB2_34
+	JMP   LBB2_43
+
+LBB2_35:
+	MOVQ  R9, R8
+	MOVQ  R10, BX
+	TESTB R13, R13
+	JNE   LBB2_33
+
+LBB2_36:
+	MOVL DI, SI
+	MOVQ BX, R9
+	MOVQ -64(BP), R10
+	JMP  LBB2_43
 
 LBB2_37:
-	MOVQ  R14, R8
-	MOVQ  R10, R9
-	TESTB R13, R13
-	JNE   LBB2_34
-
-LBB2_38:
-	MOVL SI, BX
-	MOVQ R9, R10
-	MOVQ -72(BP), DI
-	MOVQ -56(BP), R12
-	JMP  LBB2_45
-
-LBB2_39:
 	XORL R11, R11
 	XORL DI, DI
-	MOVQ -64(BP), R13
+	MOVQ -56(BP), R13
 	MOVQ BX, AX
 
-LBB2_40:
+LBB2_38:
 	MOVQ $-3689348814741910323, BX
 	MULQ BX
 	MOVQ DX, CX
 	SHRQ $3, CX
-	MOVQ R14, AX
+	MOVQ R9, AX
 	MULQ BX
 	SHRQ $3, DX
 	CMPQ CX, DX
-	JBE  LBB2_43
+	JBE  LBB2_41
 
-LBB2_41:
+LBB2_39:
 	MOVQ  R10, SI
-	MOVQ  DX, R14
+	MOVQ  DX, R9
 	MOVQ  R10, AX
 	MULQ  BX
 	MOVQ  DX, R10
 	SHRQ  $3, R10
-	INCL  R11
+	ADDL  $1, R11
 	MOVQ  CX, AX
 	MULQ  BX
 	MOVQ  DX, CX
 	SHRQ  $3, CX
-	MOVQ  R14, AX
+	MOVQ  R9, AX
 	MULQ  BX
 	SHRQ  $3, DX
 	CMPQ  CX, DX
-	JA    LBB2_41
+	JA    LBB2_39
 	LEAL  0(R10)(R10*1), AX
 	LEAL  0(AX)(AX*4), AX
 	SUBL  AX, SI
@@ -681,9 +655,9 @@ LBB2_41:
 	CMPL  SI, $4
 	SETHI DI
 
-LBB2_43:
+LBB2_41:
 	XORL  AX, AX
-	CMPQ  R10, R14
+	CMPQ  R10, R9
 	SETEQ AX
 	ORQ   DI, AX
 	ADDQ  R10, AX
@@ -691,128 +665,129 @@ LBB2_43:
 	ADDL  R11, R12
 	MOVL  $1, R15
 	CMPQ  DI, $10
-	JAE   LBB2_46
-	JMP   LBB2_61
+	JB    LBB2_60
+	JMP   LBB2_45
 
-LBB2_44:
-	MOVL SI, BX
-	MOVQ R9, R10
+LBB2_42:
+	MOVL DI, SI
+	MOVQ BX, R9
 
-LBB2_45:
+LBB2_43:
 	TESTB   R13, R13
-	SETEQ   SI
+	SETEQ   AX
 	TESTB   R15, R15
-	SETNE   AX
-	CMPB    BX, $5
+	SETNE   CX
+	CMPB    SI, $5
 	SETEQ   DX
-	TESTB   $1, R10
+	TESTB   $1, R9
+	SETEQ   BX
+	ANDB    CX, BX
+	ANDB    DX, BX
+	CMPQ    R9, R8
 	SETEQ   CX
-	ANDB    AX, CX
-	ANDB    DX, CX
-	CMPQ    R10, R8
-	SETEQ   DX
-	ORB     SI, DI
-	CMPB    BX, $4
+	ORB     AX, R10
+	ANDB    CX, R10
+	CMPB    SI, $4
 	SETHI   AX
-	XORB    CX, AX
-	ANDB    DX, DI
-	ORB     AX, DI
-	MOVBLZX DI, DI
-	ADDQ    R10, DI
-	MOVQ    -64(BP), R13
+	XORB    BX, AX
+	ORB     R10, AX
+	MOVBLZX AX, DI
+	ADDQ    R9, DI
+	MOVQ    -56(BP), R13
 	ADDL    R11, R12
 	MOVL    $1, R15
 	CMPQ    DI, $10
-	JB      LBB2_61
+	JB      LBB2_60
 
-LBB2_46:
+LBB2_45:
 	MOVL $2, R15
 	CMPQ DI, $100
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $3, R15
 	CMPQ DI, $1000
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $4, R15
 	CMPQ DI, $10000
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $5, R15
 	CMPQ DI, $100000
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $6, R15
 	CMPQ DI, $1000000
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $7, R15
 	CMPQ DI, $10000000
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $8, R15
 	CMPQ DI, $100000000
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $9, R15
 	CMPQ DI, $1000000000
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVQ $8589934464, AX
 	ADDQ $1410065536, AX
 	MOVL $10, R15
 	CMPQ DI, AX
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVQ DI, AX
 	SHRQ $11, AX
 	MOVL $11, R15
 	CMPQ AX, $48828125
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVQ DI, AX
 	SHRQ $12, AX
 	MOVL $12, R15
 	CMPQ AX, $244140625
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVQ DI, AX
 	SHRQ $13, AX
 	MOVL $13, R15
 	CMPQ AX, $1220703125
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $14, R15
 	MOVQ $100000000000000, AX
 	CMPQ DI, AX
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVL $15, R15
 	MOVQ $1000000000000000, AX
 	CMPQ DI, AX
-	JB   LBB2_61
+	JB   LBB2_60
 	MOVQ $10000000000000000, AX
 	CMPQ DI, AX
 	MOVL $17, R15
 	SBBL $0, R15
 
-LBB2_61:
+LBB2_60:
 	LEAL 0(R15)(R12*1), R14
-	LEAL 5(R15)(R12*1), AX
+	LEAL 0(R15)(R12*1), AX
+	ADDL $5, AX
 	CMPL AX, $27
-	JB   LBB2_67
+	JB   LBB2_66
 	LEAQ 1(R13), BX
 	MOVQ BX, SI
 	MOVL R15, DX
-	LONG $0x003f14e8; BYTE $0x00 // callq        _print_mantissa
+	LONG $0x003a65e8; BYTE $0x00 // callq        _print_mantissa
 	MOVB 1(R13), AX
 	MOVB AX, 0(R13)
 	MOVL $1, AX
 	CMPL R15, $2
-	JB   LBB2_64
+	JB   LBB2_63
 	MOVB $46, 0(BX)
-	INCL R15
+	ADDL $1, R15
 	MOVL R15, AX
 
-LBB2_64:
+LBB2_63:
 	MOVL  AX, BX
 	MOVB  $101, 0(R13)(BX*1)
-	INCQ  BX
+	ADDQ  $1, BX
 	TESTL R14, R14
-	JLE   LBB2_69
-	DECL  R14
+	JLE   LBB2_68
+	ADDL  $-1, R14
 	MOVL  -44(BP), R9
 	CMPL  R14, $100
-	JL    LBB2_70
+	JL    LBB2_69
 
-LBB2_66:
+LBB2_65:
 	MOVL    R14, AX
 	MOVL    $3435973837, CX
 	IMULQ   AX, CX
@@ -820,28 +795,27 @@ LBB2_66:
 	LEAL    0(CX)(CX*1), AX
 	LEAL    0(AX)(AX*4), AX
 	SUBL    AX, R14
-	LONG    $0x03058d48; WORD $0x0099; BYTE $0x00 // leaq         $39171(%rip), %rax  /* _Digits(%rip) */
+	LONG    $0x69058d48; WORD $0x0094; BYTE $0x00 // leaq         $37993(%rip), %rax  /* _Digits(%rip) */
 	MOVWLZX 0(AX)(CX*2), AX
 	MOVL    BX, CX
 	MOVW    AX, 0(R13)(CX*1)
 	ORB     $48, R14
-	MOVLQSX BX, AX
-	MOVB    R14, 2(AX)(R13*1)
+	MOVB    R14, 2(R13)(CX*1)
 	ADDL    $3, BX
-	JMP     LBB2_107
+	JMP     LBB2_112
 
-LBB2_67:
+LBB2_66:
 	TESTL R14, R14
-	JLE   LBB2_72
+	JLE   LBB2_71
 	MOVL  R12, R13
 	SARL  $31, R13
 	ANDL  R14, R13
 	XORL  BX, BX
 	TESTL R12, R12
 	LONG  $0xe3480f44 // cmovsl       %ebx, %r12d
-	JMP   LBB2_74
+	JMP   LBB2_73
 
-LBB2_69:
+LBB2_68:
 	ADDL $2, AX
 	MOVB $45, 0(R13)(BX*1)
 	MOVL $1, CX
@@ -850,182 +824,192 @@ LBB2_69:
 	MOVL AX, BX
 	MOVL -44(BP), R9
 	CMPL R14, $100
-	JGE  LBB2_66
+	JGE  LBB2_65
 
-LBB2_70:
+LBB2_69:
 	CMPL    R14, $10
-	JL      LBB2_85
+	JL      LBB2_84
 	MOVLQSX R14, AX
-	LONG    $0x950d8d48; WORD $0x0098; BYTE $0x00 // leaq         $39061(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0xfe0d8d48; WORD $0x0093; BYTE $0x00 // leaq         $37886(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
 	MOVL    BX, CX
 	MOVW    AX, 0(R13)(CX*1)
 	ADDL    $2, BX
-	JMP     LBB2_107
+	JMP     LBB2_112
 
-LBB2_72:
+LBB2_71:
 	MOVW  $11824, 0(R13)
 	TESTL R14, R14
-	JS    LBB2_86
+	JS    LBB2_85
 	XORL  R13, R13
 	MOVL  $2, BX
 	XORL  R12, R12
 
-LBB2_74:
+LBB2_73:
 	MOVL  BX, SI
-	ADDQ  -64(BP), SI
+	ADDQ  -56(BP), SI
 	MOVL  R15, DX
-	LONG  $0x003e10e8; BYTE $0x00 // callq        _print_mantissa
+	LONG  $0x003961e8; BYTE $0x00 // callq        _print_mantissa
 	TESTL R13, R13
-	JE    LBB2_78
-	LEAL  0(R13)(BX*1), AX
+	JE    LBB2_77
+	LEAL  0(BX)(R13*1), AX
 	CMPL  R13, R15
-	JGE   LBB2_80
+	JGE   LBB2_79
 	LEAL  0(BX)(R15*1), CX
 	MOVL  AX, AX
-	MOVQ  -64(BP), R10
+	MOVQ  -56(BP), R10
 
-LBB2_77:
+LBB2_76:
 	MOVBLZX -1(R10)(CX*1), DX
 	MOVB    DX, 0(R10)(CX*1)
-	DECQ    CX
-	CMPQ    CX, AX
-	JG      LBB2_77
-	JMP     LBB2_81
+	LEAQ    -1(CX), DX
+	MOVQ    DX, CX
+	CMPQ    DX, AX
+	JG      LBB2_76
+	JMP     LBB2_80
 
-LBB2_78:
-	MOVQ  -64(BP), R10
+LBB2_77:
+	MOVQ  -56(BP), R10
 	ADDL  R15, BX
 	TESTL R12, R12
-	JNE   LBB2_82
-	JMP   LBB2_106
+	JNE   LBB2_81
+	JMP   LBB2_111
+
+LBB2_79:
+	MOVL AX, AX
+	MOVQ -56(BP), R10
 
 LBB2_80:
-	MOVL AX, AX
-	MOVQ -64(BP), R10
-
-LBB2_81:
 	MOVB  $46, 0(R10)(AX*1)
 	ORL   $1, BX
 	ADDL  R15, BX
 	TESTL R12, R12
-	JE    LBB2_106
+	JE    LBB2_111
 
-LBB2_82:
+LBB2_81:
 	MOVLQSX BX, BX
 	LEAL    -1(R12), R8
 	XORL    AX, AX
 	CMPL    R8, $127
 	MOVL    -44(BP), R9
-	JB      LBB2_95
-	INCQ    R8
+	JB      LBB2_94
+	ADDQ    $1, R8
 	MOVQ    R8, AX
 	ANDQ    $-128, AX
-	LEAQ    -128(AX), DX
-	MOVQ    DX, SI
+	LEAQ    -128(AX), CX
+	MOVQ    CX, SI
 	SHRQ    $7, SI
-	INCQ    SI
-	MOVL    SI, CX
-	ANDL    $3, CX
-	CMPQ    DX, $384
-	JAE     LBB2_89
-	XORL    SI, SI
-	JMP     LBB2_91
+	ADDQ    $1, SI
+	MOVL    SI, DX
+	ANDL    $3, DX
+	CMPQ    CX, $384
+	JAE     LBB2_88
+	XORL    DI, DI
+	JMP     LBB2_90
 
-LBB2_85:
+LBB2_84:
 	ADDB $48, R14
 	MOVL BX, AX
-	INCL BX
+	ADDL $1, BX
 	MOVB R14, 0(R13)(AX*1)
-	JMP  LBB2_107
+	JMP  LBB2_112
 
-LBB2_86:
+LBB2_85:
 	MOVL $2, BX
 	SUBL R14, BX
 	LEAQ -2(BX), R8
-	MOVL $2, AX
+	MOVL $2, DX
+	CMPQ R8, $4
+	JB   LBB2_109
 	CMPQ R8, $128
-	JB   LBB2_104
-	MOVQ R8, AX
-	ANDQ $-128, AX
-	LEAQ -128(AX), DX
-	MOVQ DX, SI
-	SHRQ $7, SI
-	INCQ SI
-	MOVL SI, CX
-	ANDL $3, CX
-	CMPQ DX, $384
-	JAE  LBB2_97
-	XORL SI, SI
-	JMP  LBB2_99
+	JAE  LBB2_96
+	XORL CX, CX
+	JMP  LBB2_105
+
+LBB2_88:
+	LEAQ 0(BX)(R10*1), CX
+	ADDQ $480, CX
+	ANDQ $-4, SI
+	NEGQ SI
+	XORL DI, DI
+	QUAD $0xfffff68e056ffec5 // vmovdqu      $-2418(%rip), %ymm0  /* LCPI2_0(%rip) */
 
 LBB2_89:
-	LEAQ 480(BX)(R10*1), DI
-	MOVQ CX, DX
-	SUBQ SI, DX
-	XORL SI, SI
-	QUAD $0xfffff66d056ffec5 // vmovdqu      $-2451(%rip), %ymm0  /* LCPI2_0(%rip) */
+	QUAD $0xfffe2039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-480(%rcx,%rdi)
+	QUAD $0xfffe4039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-448(%rcx,%rdi)
+	QUAD $0xfffe6039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-416(%rcx,%rdi)
+	QUAD $0xfffe8039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-384(%rcx,%rdi)
+	QUAD $0xfffea039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-352(%rcx,%rdi)
+	QUAD $0xfffec039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-320(%rcx,%rdi)
+	QUAD $0xfffee039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-288(%rcx,%rdi)
+	QUAD $0xffff0039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-256(%rcx,%rdi)
+	QUAD $0xffff2039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-224(%rcx,%rdi)
+	QUAD $0xffff4039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-192(%rcx,%rdi)
+	QUAD $0xffff6039847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-160(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0x8039       // vmovdqu      %ymm0, $-128(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0xa039       // vmovdqu      %ymm0, $-96(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0xc039       // vmovdqu      %ymm0, $-64(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0xe039       // vmovdqu      %ymm0, $-32(%rcx,%rdi)
+	LONG $0x047ffec5; BYTE $0x39         // vmovdqu      %ymm0, (%rcx,%rdi)
+	ADDQ $512, DI
+	ADDQ $4, SI
+	JNE  LBB2_89
 
 LBB2_90:
-	QUAD $0xfffe2037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-480(%rdi,%rsi)
-	QUAD $0xfffe4037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-448(%rdi,%rsi)
-	QUAD $0xfffe6037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-416(%rdi,%rsi)
-	QUAD $0xfffe8037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-384(%rdi,%rsi)
-	QUAD $0xfffea037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-352(%rdi,%rsi)
-	QUAD $0xfffec037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-320(%rdi,%rsi)
-	QUAD $0xfffee037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-288(%rdi,%rsi)
-	QUAD $0xffff0037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-256(%rdi,%rsi)
-	QUAD $0xffff2037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-224(%rdi,%rsi)
-	QUAD $0xffff4037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-192(%rdi,%rsi)
-	QUAD $0xffff6037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-160(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0x8037       // vmovdqu      %ymm0, $-128(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0xa037       // vmovdqu      %ymm0, $-96(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0xc037       // vmovdqu      %ymm0, $-64(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0xe037       // vmovdqu      %ymm0, $-32(%rdi,%rsi)
-	LONG $0x047ffec5; BYTE $0x37         // vmovdqu      %ymm0, (%rdi,%rsi)
-	ADDQ $512, SI
-	ADDQ $4, DX
-	JNE  LBB2_90
+	TESTQ DX, DX
+	JE    LBB2_93
+	ADDQ  BX, DI
+	LEAQ  0(R10)(DI*1), CX
+	ADDQ  $96, CX
+	SHLQ  $7, DX
+	XORL  SI, SI
+	QUAD  $0xfffff5df056ffec5 // vmovdqu      $-2593(%rip), %ymm0  /* LCPI2_0(%rip) */
 
-LBB2_91:
-	TESTQ CX, CX
-	JE    LBB2_94
-	ADDQ  BX, SI
-	LEAQ  96(R10)(SI*1), DX
-	NEGQ  CX
-	QUAD  $0xfffff5c4056ffec5 // vmovdqu      $-2620(%rip), %ymm0  /* LCPI2_0(%rip) */
+LBB2_92:
+	LONG $0x447ffec5; WORD $0xa031 // vmovdqu      %ymm0, $-96(%rcx,%rsi)
+	LONG $0x447ffec5; WORD $0xc031 // vmovdqu      %ymm0, $-64(%rcx,%rsi)
+	LONG $0x447ffec5; WORD $0xe031 // vmovdqu      %ymm0, $-32(%rcx,%rsi)
+	LONG $0x047ffec5; BYTE $0x31   // vmovdqu      %ymm0, (%rcx,%rsi)
+	SUBQ $-128, SI
+	CMPQ DX, SI
+	JNE  LBB2_92
 
 LBB2_93:
-	LONG $0x427ffec5; BYTE $0xa0 // vmovdqu      %ymm0, $-96(%rdx)
-	LONG $0x427ffec5; BYTE $0xc0 // vmovdqu      %ymm0, $-64(%rdx)
-	LONG $0x427ffec5; BYTE $0xe0 // vmovdqu      %ymm0, $-32(%rdx)
-	LONG $0x027ffec5             // vmovdqu      %ymm0, (%rdx)
-	SUBQ $-128, DX
-	INCQ CX
-	JNE  LBB2_93
-
-LBB2_94:
 	ADDQ AX, BX
 	CMPQ R8, AX
-	JE   LBB2_107
+	JE   LBB2_112
 
-LBB2_95:
+LBB2_94:
 	SUBL AX, R12
 
-LBB2_96:
+LBB2_95:
 	MOVB $48, 0(R10)(BX*1)
-	INCQ BX
-	DECL R12
-	JNE  LBB2_96
-	JMP  LBB2_107
+	ADDQ $1, BX
+	ADDL $-1, R12
+	JNE  LBB2_95
+	JMP  LBB2_112
 
-LBB2_97:
-	MOVQ CX, DX
-	SUBQ SI, DX
+LBB2_96:
+	MOVQ R8, CX
+	ANDQ $-128, CX
+	LEAQ -128(CX), SI
+	MOVQ SI, DX
+	SHRQ $7, DX
+	ADDQ $1, DX
+	MOVL DX, AX
+	ANDL $3, AX
+	CMPQ SI, $384
+	JAE  LBB2_98
 	XORL SI, SI
-	QUAD $0xfffff577056ffec5 // vmovdqu      $-2697(%rip), %ymm0  /* LCPI2_0(%rip) */
+	JMP  LBB2_100
 
 LBB2_98:
+	ANDQ $-4, DX
+	NEGQ DX
+	XORL SI, SI
+	QUAD $0xfffff560056ffec5 // vmovdqu      $-2720(%rip), %ymm0  /* LCPI2_0(%rip) */
+
+LBB2_99:
 	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x02 // vmovdqu      %ymm0, $2(%r13,%rsi)
 	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x22 // vmovdqu      %ymm0, $34(%r13,%rsi)
 	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x42 // vmovdqu      %ymm0, $66(%r13,%rsi)
@@ -1044,15 +1028,15 @@ LBB2_98:
 	QUAD $0x01e235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $482(%r13,%rsi)
 	ADDQ $512, SI
 	ADDQ $4, DX
-	JNE  LBB2_98
+	JNE  LBB2_99
 
-LBB2_99:
-	TESTQ CX, CX
-	JE    LBB2_102
-	NEGQ  CX
-	QUAD  $0xfffff4c2056ffec5 // vmovdqu      $-2878(%rip), %ymm0  /* LCPI2_0(%rip) */
+LBB2_100:
+	TESTQ AX, AX
+	JE    LBB2_103
+	NEGQ  AX
+	QUAD  $0xfffff4ab056ffec5 // vmovdqu      $-2901(%rip), %ymm0  /* LCPI2_0(%rip) */
 
-LBB2_101:
+LBB2_102:
 	MOVQ SI, DX
 	ORQ  $2, DX
 	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x00 // vmovdqu      %ymm0, (%r13,%rdx)
@@ -1060,51 +1044,70 @@ LBB2_101:
 	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x40 // vmovdqu      %ymm0, $64(%r13,%rdx)
 	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x60 // vmovdqu      %ymm0, $96(%r13,%rdx)
 	SUBQ $-128, SI
-	INCQ CX
-	JNE  LBB2_101
-
-LBB2_102:
-	CMPQ R8, AX
-	JE   LBB2_105
-	ORQ  $2, AX
-
-LBB2_104:
-	MOVB $48, 0(R13)(AX*1)
 	INCQ AX
-	CMPQ BX, AX
-	JNE  LBB2_104
+	JNE  LBB2_102
+
+LBB2_103:
+	CMPQ  R8, CX
+	JE    LBB2_110
+	TESTB $124, R8
+	JE    LBB2_108
 
 LBB2_105:
+	MOVQ R8, SI
+	ANDQ $-4, SI
+	LEAQ 2(SI), DX
+
+LBB2_106:
+	MOVL $808464432, 2(R13)(CX*1)
+	ADDQ $4, CX
+	CMPQ SI, CX
+	JNE  LBB2_106
+	CMPQ R8, SI
+	JNE  LBB2_109
+	JMP  LBB2_110
+
+LBB2_108:
+	ORQ  $2, CX
+	MOVQ CX, DX
+
+LBB2_109:
+	MOVB $48, 0(R13)(DX*1)
+	ADDQ $1, DX
+	CMPQ BX, DX
+	JNE  LBB2_109
+
+LBB2_110:
 	ADDQ BX, R13
 	MOVQ R13, SI
 	MOVL R15, DX
 	WORD $0xf8c5; BYTE $0x77     // vzeroupper
-	LONG $0x003afee8; BYTE $0x00 // callq        _print_mantissa
+	LONG $0x0035fce8; BYTE $0x00 // callq        _print_mantissa
 	ADDL BX, R15
 	MOVL R15, BX
 
-LBB2_106:
+LBB2_111:
 	MOVL -44(BP), R9
 
-LBB2_107:
+LBB2_112:
 	ADDL R9, BX
-	JMP  LBB2_110
+	JMP  LBB2_115
 
-LBB2_108:
+LBB2_113:
 	MOVQ  $9223372036854775807, CX
 	ANDQ  CX, AX
 	MOVB  $45, 0(R13)
-	INCQ  R13
+	ADDQ  $1, R13
 	MOVL  $1, R9
 	TESTQ AX, AX
 	JNE   LBB2_2
 
-LBB2_109:
+LBB2_114:
 	MOVB $48, 0(R13)
-	INCL R9
+	ADDL $1, R9
 	MOVL R9, BX
 
-LBB2_110:
+LBB2_115:
 	MOVL BX, AX
 	ADDQ $40, SP
 	BYTE $0x5b               // popq         %rbx
@@ -1125,10 +1128,10 @@ LBB3_1:
 	BYTE $0x55                   // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
 	MOVB $45, 0(DI)
-	INCQ DI
+	ADDQ $1, DI
 	NEGQ SI
-	LONG $0x000044e8; BYTE $0x00 // callq        _u64toa
-	INCL AX
+	LONG $0x000045e8; BYTE $0x00 // callq        _u64toa
+	ADDL $1, AX
 	BYTE $0x5d                   // popq         %rbp
 	RET
 
@@ -1172,7 +1175,7 @@ _u64toa:
 	ADDQ    AX, AX
 	CMPL    SI, $1000
 	JB      LBB4_3
-	LONG    $0x570d8d48; WORD $0x0094; BYTE $0x00 // leaq         $37975(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0x690d8d48; WORD $0x008f; BYTE $0x00 // leaq         $36713(%rip), %rcx  /* _Digits(%rip) */
 	MOVB    0(DX)(CX*1), CX
 	MOVB    CX, 0(DI)
 	MOVL    $1, CX
@@ -1186,26 +1189,26 @@ LBB4_3:
 LBB4_4:
 	MOVWLZX DX, DX
 	ORQ     $1, DX
-	LONG    $0x36358d48; WORD $0x0094; BYTE $0x00 // leaq         $37942(%rip), %rsi  /* _Digits(%rip) */
+	LONG    $0x48358d48; WORD $0x008f; BYTE $0x00 // leaq         $36680(%rip), %rsi  /* _Digits(%rip) */
 	MOVB    0(DX)(SI*1), DX
 	MOVL    CX, SI
-	INCL    CX
+	ADDL    $1, CX
 	MOVB    DX, 0(DI)(SI*1)
 
 LBB4_6:
-	LONG $0x25158d48; WORD $0x0094; BYTE $0x00 // leaq         $37925(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0x36158d48; WORD $0x008f; BYTE $0x00 // leaq         $36662(%rip), %rdx  /* _Digits(%rip) */
 	MOVB 0(AX)(DX*1), DX
 	MOVL CX, SI
-	INCL CX
+	ADDL $1, CX
 	MOVB DX, 0(DI)(SI*1)
 
 LBB4_7:
 	MOVWLZX AX, AX
 	ORQ     $1, AX
-	LONG    $0x0d158d48; WORD $0x0094; BYTE $0x00 // leaq         $37901(%rip), %rdx  /* _Digits(%rip) */
+	LONG    $0x1d158d48; WORD $0x008f; BYTE $0x00 // leaq         $36637(%rip), %rdx  /* _Digits(%rip) */
 	MOVB    0(AX)(DX*1), AX
 	MOVL    CX, DX
-	INCL    CX
+	ADDL    $1, CX
 	MOVB    AX, 0(DI)(DX*1)
 	MOVL    CX, AX
 	BYTE    $0x5d                                 // popq         %rbp
@@ -1249,7 +1252,7 @@ LBB4_8:
 	ADDQ    R11, R11
 	CMPL    SI, $10000000
 	JB      LBB4_11
-	LONG    $0x76058d48; WORD $0x0093; BYTE $0x00 // leaq         $37750(%rip), %rax  /* _Digits(%rip) */
+	LONG    $0x85058d48; WORD $0x008e; BYTE $0x00 // leaq         $36485(%rip), %rax  /* _Digits(%rip) */
 	MOVB    0(R10)(AX*1), AX
 	MOVB    AX, 0(DI)
 	MOVL    $1, CX
@@ -1263,39 +1266,39 @@ LBB4_11:
 LBB4_12:
 	MOVL R10, AX
 	ORQ  $1, AX
-	LONG $0x51358d48; WORD $0x0093; BYTE $0x00 // leaq         $37713(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0x60358d48; WORD $0x008e; BYTE $0x00 // leaq         $36448(%rip), %rsi  /* _Digits(%rip) */
 	MOVB 0(AX)(SI*1), AX
 	MOVL CX, SI
-	INCL CX
+	ADDL $1, CX
 	MOVB AX, 0(DI)(SI*1)
 
 LBB4_14:
-	LONG $0x40058d48; WORD $0x0093; BYTE $0x00 // leaq         $37696(%rip), %rax  /* _Digits(%rip) */
+	LONG $0x4e058d48; WORD $0x008e; BYTE $0x00 // leaq         $36430(%rip), %rax  /* _Digits(%rip) */
 	MOVB 0(R9)(AX*1), AX
 	MOVL CX, SI
-	INCL CX
+	ADDL $1, CX
 	MOVB AX, 0(DI)(SI*1)
 
 LBB4_15:
 	MOVWLZX R9, AX
 	ORQ     $1, AX
-	LONG    $0x26358d48; WORD $0x0093; BYTE $0x00 // leaq         $37670(%rip), %rsi  /* _Digits(%rip) */
+	LONG    $0x33358d48; WORD $0x008e; BYTE $0x00 // leaq         $36403(%rip), %rsi  /* _Digits(%rip) */
 	MOVB    0(AX)(SI*1), AX
 	MOVL    CX, DX
-	MOVB    AX, 0(DX)(DI*1)
+	MOVB    AX, 0(DI)(DX*1)
 	MOVB    0(R8)(SI*1), AX
-	MOVB    AX, 1(DX)(DI*1)
+	MOVB    AX, 1(DI)(DX*1)
 	MOVWLZX R8, AX
 	ORQ     $1, AX
 	MOVB    0(AX)(SI*1), AX
-	MOVB    AX, 2(DX)(DI*1)
+	MOVB    AX, 2(DI)(DX*1)
 	MOVB    0(R11)(SI*1), AX
-	MOVB    AX, 3(DX)(DI*1)
+	MOVB    AX, 3(DI)(DX*1)
 	MOVWLZX R11, AX
 	ORQ     $1, AX
 	MOVB    0(AX)(SI*1), AX
 	ADDL    $5, CX
-	MOVB    AX, 4(DX)(DI*1)
+	MOVB    AX, 4(DI)(DX*1)
 	MOVL    CX, AX
 	BYTE    $0x5d                                 // popq         %rbp
 	RET
@@ -1317,7 +1320,7 @@ LBB4_16:
 	LONG $0xe100c269; WORD $0x05f5             // imull        $100000000, %edx, %eax
 	SUBL AX, SI
 	LONG $0xc26ef9c5                           // vmovd        %edx, %xmm0
-	QUAD $0xfffffdcb0d6ffac5                   // vmovdqu      $-565(%rip), %xmm1  /* LCPI4_0(%rip) */
+	QUAD $0xfffffdc60d6ffac5                   // vmovdqu      $-570(%rip), %xmm1  /* LCPI4_0(%rip) */
 	LONG $0xd1f4f9c5                           // vpmuludq     %xmm1, %xmm0, %xmm2
 	LONG $0xd273e9c5; BYTE $0x2d               // vpsrlq       $45, %xmm2, %xmm2
 	MOVL $10000, AX
@@ -1328,11 +1331,11 @@ LBB4_16:
 	LONG $0xf073f9c5; BYTE $0x02               // vpsllq       $2, %xmm0, %xmm0
 	LONG $0xc070fbc5; BYTE $0x50               // vpshuflw     $80, %xmm0, %xmm0
 	LONG $0xc070f9c5; BYTE $0x50               // vpshufd      $80, %xmm0, %xmm0
-	QUAD $0xfffffdc51512fbc5                   // vmovddup     $-571(%rip), %xmm2  /* LCPI4_1(%rip) */
+	QUAD $0xfffffdc01512fbc5                   // vmovddup     $-576(%rip), %xmm2  /* LCPI4_1(%rip) */
 	LONG $0xc2e4f9c5                           // vpmulhuw     %xmm2, %xmm0, %xmm0
-	QUAD $0xfffffdc12512fbc5                   // vmovddup     $-575(%rip), %xmm4  /* LCPI4_2(%rip) */
+	QUAD $0xfffffdbc2512fbc5                   // vmovddup     $-580(%rip), %xmm4  /* LCPI4_2(%rip) */
 	LONG $0xc4e4f9c5                           // vpmulhuw     %xmm4, %xmm0, %xmm0
-	QUAD $0xfffffd8d2d6ffac5                   // vmovdqu      $-627(%rip), %xmm5  /* LCPI4_3(%rip) */
+	QUAD $0xfffffd882d6ffac5                   // vmovdqu      $-632(%rip), %xmm5  /* LCPI4_3(%rip) */
 	LONG $0xf5d5f9c5                           // vpmullw      %xmm5, %xmm0, %xmm6
 	LONG $0xf673c9c5; BYTE $0x10               // vpsllq       $16, %xmm6, %xmm6
 	LONG $0xc6f9f9c5                           // vpsubw       %xmm6, %xmm0, %xmm0
@@ -1351,17 +1354,17 @@ LBB4_16:
 	LONG $0xf273e9c5; BYTE $0x10               // vpsllq       $16, %xmm2, %xmm2
 	LONG $0xcaf9f1c5                           // vpsubw       %xmm2, %xmm1, %xmm1
 	LONG $0xc167f9c5                           // vpackuswb    %xmm1, %xmm0, %xmm0
-	QUAD $0xfffffd470dfcf9c5                   // vpaddb       $-697(%rip), %xmm0, %xmm1  /* LCPI4_4(%rip) */
+	QUAD $0xfffffd420dfcf9c5                   // vpaddb       $-702(%rip), %xmm0, %xmm1  /* LCPI4_4(%rip) */
 	LONG $0xd2efe9c5                           // vpxor        %xmm2, %xmm2, %xmm2
 	LONG $0xc274f9c5                           // vpcmpeqb     %xmm2, %xmm0, %xmm0
 	LONG $0xc0d7f9c5                           // vpmovmskb    %xmm0, %eax
+	NOTL AX
 	ORL  $32768, AX
-	XORL $-32769, AX
 	BSFL AX, AX
 	MOVL $16, CX
 	SUBL AX, CX
 	SHLQ $4, AX
-	LONG $0x9b158d48; WORD $0x0092; BYTE $0x00 // leaq         $37531(%rip), %rdx  /* _VecShiftShuffles(%rip) */
+	LONG $0xab158d48; WORD $0x008d; BYTE $0x00 // leaq         $36267(%rip), %rdx  /* _VecShiftShuffles(%rip) */
 	LONG $0x0071e2c4; WORD $0x1004             // vpshufb      (%rax,%rdx), %xmm1, %xmm0
 	LONG $0x077ffac5                           // vmovdqu      %xmm0, (%rdi)
 	MOVL CX, AX
@@ -1387,7 +1390,7 @@ LBB4_20:
 	CMPL DX, $99
 	JA   LBB4_22
 	MOVL DX, AX
-	LONG $0x7e0d8d48; WORD $0x0091; BYTE $0x00 // leaq         $37246(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x8e0d8d48; WORD $0x008c; BYTE $0x00 // leaq         $35982(%rip), %rcx  /* _Digits(%rip) */
 	MOVB 0(CX)(AX*2), DX
 	MOVB 1(CX)(AX*2), AX
 	MOVB DX, 0(DI)
@@ -1412,7 +1415,7 @@ LBB4_22:
 	WORD    $0xc96b; BYTE $0x64                   // imull        $100, %ecx, %ecx
 	SUBL    CX, AX
 	MOVWLZX AX, AX
-	LONG    $0x2d0d8d48; WORD $0x0091; BYTE $0x00 // leaq         $37165(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0x3d0d8d48; WORD $0x008c; BYTE $0x00 // leaq         $35901(%rip), %rcx  /* _Digits(%rip) */
 	MOVB    0(CX)(AX*2), DX
 	MOVB    1(CX)(AX*2), AX
 	MOVB    DX, 1(DI)
@@ -1424,7 +1427,7 @@ LBB4_24:
 	WORD    $0xc86b; BYTE $0x64                   // imull        $100, %eax, %ecx
 	SUBL    CX, DX
 	MOVWLZX AX, AX
-	LONG    $0x0a058d4c; WORD $0x0091; BYTE $0x00 // leaq         $37130(%rip), %r8  /* _Digits(%rip) */
+	LONG    $0x1a058d4c; WORD $0x008c; BYTE $0x00 // leaq         $35866(%rip), %r8  /* _Digits(%rip) */
 	MOVB    0(R8)(AX*2), CX
 	MOVB    1(R8)(AX*2), AX
 	MOVB    CX, 0(DI)
@@ -1445,7 +1448,7 @@ LBB4_25:
 	MULQ DX
 	SHRQ $26, DX
 	LONG $0xc26ef9c5               // vmovd        %edx, %xmm0
-	QUAD $0xfffffbe60d6ffac5       // vmovdqu      $-1050(%rip), %xmm1  /* LCPI4_0(%rip) */
+	QUAD $0xfffffbe40d6ffac5       // vmovdqu      $-1052(%rip), %xmm1  /* LCPI4_0(%rip) */
 	LONG $0xd1f4f9c5               // vpmuludq     %xmm1, %xmm0, %xmm2
 	LONG $0xd273e9c5; BYTE $0x2d   // vpsrlq       $45, %xmm2, %xmm2
 	MOVL $10000, AX
@@ -1456,11 +1459,11 @@ LBB4_25:
 	LONG $0xf073f9c5; BYTE $0x02   // vpsllq       $2, %xmm0, %xmm0
 	LONG $0xc070fbc5; BYTE $0x50   // vpshuflw     $80, %xmm0, %xmm0
 	LONG $0xc070f9c5; BYTE $0x50   // vpshufd      $80, %xmm0, %xmm0
-	QUAD $0xfffffbe01512fbc5       // vmovddup     $-1056(%rip), %xmm2  /* LCPI4_1(%rip) */
+	QUAD $0xfffffbde1512fbc5       // vmovddup     $-1058(%rip), %xmm2  /* LCPI4_1(%rip) */
 	LONG $0xc2e4f9c5               // vpmulhuw     %xmm2, %xmm0, %xmm0
-	QUAD $0xfffffbdc2512fbc5       // vmovddup     $-1060(%rip), %xmm4  /* LCPI4_2(%rip) */
+	QUAD $0xfffffbda2512fbc5       // vmovddup     $-1062(%rip), %xmm4  /* LCPI4_2(%rip) */
 	LONG $0xc4e4f9c5               // vpmulhuw     %xmm4, %xmm0, %xmm0
-	QUAD $0xfffffba82d6ffac5       // vmovdqu      $-1112(%rip), %xmm5  /* LCPI4_3(%rip) */
+	QUAD $0xfffffba62d6ffac5       // vmovdqu      $-1114(%rip), %xmm5  /* LCPI4_3(%rip) */
 	LONG $0xf5d5f9c5               // vpmullw      %xmm5, %xmm0, %xmm6
 	LONG $0xf673c9c5; BYTE $0x10   // vpsllq       $16, %xmm6, %xmm6
 	LONG $0xc6f9f9c5               // vpsubw       %xmm6, %xmm0, %xmm0
@@ -1481,7 +1484,7 @@ LBB4_25:
 	LONG $0xf273e9c5; BYTE $0x10   // vpsllq       $16, %xmm2, %xmm2
 	LONG $0xcaf9f1c5               // vpsubw       %xmm2, %xmm1, %xmm1
 	LONG $0xc167f9c5               // vpackuswb    %xmm1, %xmm0, %xmm0
-	QUAD $0xfffffb5a05fcf9c5       // vpaddb       $-1190(%rip), %xmm0, %xmm0  /* LCPI4_4(%rip) */
+	QUAD $0xfffffb5805fcf9c5       // vpaddb       $-1192(%rip), %xmm0, %xmm0  /* LCPI4_4(%rip) */
 	MOVL CX, AX
 	LONG $0x047ffac5; BYTE $0x07   // vmovdqu      %xmm0, (%rdi,%rax)
 	ORL  $16, CX
@@ -1506,312 +1509,340 @@ _quote:
 	WORD  $0x5541                               // pushq        %r13
 	WORD  $0x5441                               // pushq        %r12
 	BYTE  $0x53                                 // pushq        %rbx
-	SUBQ  $16, SP
-	MOVQ  CX, R12
+	SUBQ  $32, SP
+	MOVQ  DI, R10
 	TESTB $1, R8
-	LONG  $0x0c058d48; WORD $0x0091; BYTE $0x00 // leaq         $37132(%rip), %rax  /* __SingleQuoteTab(%rip) */
-	LONG  $0x05158d4c; WORD $0x00a1; BYTE $0x00 // leaq         $41221(%rip), %r10  /* __DoubleQuoteTab(%rip) */
-	LONG  $0xd0440f4c                           // cmoveq       %rax, %r10
+	LONG  $0x1c3d8d48; WORD $0x008c; BYTE $0x00 // leaq         $35868(%rip), %rdi  /* __SingleQuoteTab(%rip) */
+	LONG  $0x15058d48; WORD $0x009c; BYTE $0x00 // leaq         $39957(%rip), %rax  /* __DoubleQuoteTab(%rip) */
+	LONG  $0xc7440f48                           // cmoveq       %rdi, %rax
 	MOVQ  DX, R8
-	MOVQ  DI, AX
+	MOVQ  R10, DI
 	TESTQ SI, SI
-	JE    LBB5_51
-	MOVQ  SI, CX
-	MOVQ  0(R12), R9
+	JE    LBB5_61
+	MOVQ  CX, -56(BP)
+	MOVQ  0(CX), R11
 	QUAD  $0xffffff88056ffac5                   // vmovdqu      $-120(%rip), %xmm0  /* LCPI5_0(%rip) */
 	QUAD  $0xffffff900d6ffac5                   // vmovdqu      $-112(%rip), %xmm1  /* LCPI5_1(%rip) */
 	QUAD  $0xffffff98156ffac5                   // vmovdqu      $-104(%rip), %xmm2  /* LCPI5_2(%rip) */
 	LONG  $0xdb76e1c5                           // vpcmpeqd     %xmm3, %xmm3, %xmm3
-	MOVQ  DI, AX
+	MOVQ  R10, BX
 	MOVQ  DX, R8
-	MOVQ  DX, -56(BP)
-	MOVQ  R12, -48(BP)
 
 LBB5_2:
-	CMPQ  CX, $15
-	SETGT R13
-	MOVQ  R9, R11
-	MOVQ  R8, R15
-	MOVQ  CX, SI
-	MOVQ  AX, R14
-	CMPQ  R9, $16
-	JL    LBB5_8
-	CMPQ  CX, $16
-	JL    LBB5_8
-	MOVQ  AX, R14
-	MOVQ  CX, SI
-	MOVQ  R8, R15
-	MOVQ  R9, R12
+	MOVQ  BX, DI
+	CMPQ  SI, $15
+	SETGT R9
+	CMPQ  R11, $16
+	MOVQ  SI, -48(BP)
+	MOVQ  R11, R15
+	MOVQ  R8, R12
+	JL    LBB5_3
+	MOVQ  SI, R13
+	MOVQ  DI, R14
+	CMPQ  SI, $16
+	JL    LBB5_11
+	XORL  R12, R12
+	MOVQ  -48(BP), BX
+	MOVQ  R11, R14
 
-LBB5_5:
-	LONG  $0x6f7ac1c4; BYTE $0x26 // vmovdqu      (%r14), %xmm4
-	LONG  $0xec64f9c5             // vpcmpgtb     %xmm4, %xmm0, %xmm5
-	LONG  $0xf174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG  $0xfa74d9c5             // vpcmpeqb     %xmm2, %xmm4, %xmm7
-	LONG  $0xf6ebc1c5             // vpor         %xmm6, %xmm7, %xmm6
-	LONG  $0x7f7ac1c4; BYTE $0x27 // vmovdqu      %xmm4, (%r15)
-	LONG  $0xe364d9c5             // vpcmpgtb     %xmm3, %xmm4, %xmm4
-	LONG  $0xe5dbd9c5             // vpand        %xmm5, %xmm4, %xmm4
-	LONG  $0xe4ebc9c5             // vpor         %xmm4, %xmm6, %xmm4
-	LONG  $0xdcd7f9c5             // vpmovmskb    %xmm4, %ebx
-	TESTW BX, BX
-	JNE   LBB5_18
-	ADDQ  $16, R14
-	ADDQ  $16, R15
-	LEAQ  -16(R12), R11
-	CMPQ  SI, $31
-	SETGT R13
-	CMPQ  SI, $32
-	LEAQ  -16(SI), SI
-	JL    LBB5_8
-	CMPQ  R12, $31
-	MOVQ  R11, R12
-	JG    LBB5_5
+LBB5_6:
+	LONG  $0x6f7aa1c4; WORD $0x2724 // vmovdqu      (%rdi,%r12), %xmm4
+	LONG  $0xec64f9c5               // vpcmpgtb     %xmm4, %xmm0, %xmm5
+	LONG  $0xf174d9c5               // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG  $0xfa74d9c5               // vpcmpeqb     %xmm2, %xmm4, %xmm7
+	LONG  $0xf6ebc1c5               // vpor         %xmm6, %xmm7, %xmm6
+	LONG  $0x7f7a81c4; WORD $0x2024 // vmovdqu      %xmm4, (%r8,%r12)
+	LONG  $0xe364d9c5               // vpcmpgtb     %xmm3, %xmm4, %xmm4
+	LONG  $0xe4dbd1c5               // vpand        %xmm4, %xmm5, %xmm4
+	LONG  $0xe4ebc9c5               // vpor         %xmm4, %xmm6, %xmm4
+	LONG  $0xccd7f9c5               // vpmovmskb    %xmm4, %ecx
+	TESTW CX, CX
+	JNE   LBB5_7
+	LEAQ  -16(BX), R13
+	LEAQ  -16(R14), R15
+	CMPQ  BX, $31
+	SETGT R9
+	ADDQ  $16, R12
+	CMPQ  BX, $32
+	JL    LBB5_10
+	MOVQ  R13, BX
+	CMPQ  R14, $31
+	MOVQ  R15, R14
+	JG    LBB5_6
 
-LBB5_8:
-	TESTB R13, R13
+LBB5_10:
+	LEAQ 0(DI)(R12*1), R14
+	ADDQ R8, R12
+
+LBB5_11:
+	TESTB R9, R9
 	JE    LBB5_12
-	LONG  $0x6f7ac1c4; BYTE $0x26 // vmovdqu      (%r14), %xmm4
-	LONG  $0xec64f9c5             // vpcmpgtb     %xmm4, %xmm0, %xmm5
-	LONG  $0xf174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG  $0xfa74d9c5             // vpcmpeqb     %xmm2, %xmm4, %xmm7
-	LONG  $0xf6ebc1c5             // vpor         %xmm6, %xmm7, %xmm6
-	LONG  $0xfb64d9c5             // vpcmpgtb     %xmm3, %xmm4, %xmm7
-	LONG  $0xeddbc1c5             // vpand        %xmm5, %xmm7, %xmm5
-	LONG  $0xedebc9c5             // vpor         %xmm5, %xmm6, %xmm5
-	LONG  $0xf5d7f9c5             // vpmovmskb    %xmm5, %esi
-	ORL   $65536, SI
-	BSFL  SI, R13
-	LONG  $0x7ef9e1c4; BYTE $0xe3 // vmovq        %xmm4, %rbx
-	CMPQ  R11, R13
-	JGE   LBB5_19
-	CMPQ  R11, $8
-	JB    LBB5_22
-	MOVQ  BX, 0(R15)
-	LEAQ  8(R14), R13
-	ADDQ  $8, R15
-	LEAQ  -8(R11), BX
-	MOVQ  -48(BP), R12
-	MOVQ  -56(BP), DX
-	CMPQ  BX, $4
-	JAE   LBB5_23
-	JMP   LBB5_24
-
-LBB5_12:
-	TESTQ R11, R11
-	JLE   LBB5_17
-	TESTQ SI, SI
-	LONG  $0xb9158d48; WORD $0x008f; BYTE $0x00 // leaq         $36793(%rip), %rdx  /* __SingleQuoteTab(%rip) */
-	JLE   LBB5_17
-
-LBB5_14:
-	MOVBLZX 0(R14), R12
-	MOVQ    R12, BX
-	SHLQ    $4, BX
-	CMPQ    0(BX)(DX*1), $0
-	JNE     LBB5_21
-	INCQ    R14
-	MOVB    R12, 0(R15)
-	CMPQ    SI, $2
-	LEAQ    -1(SI), SI
-	JL      LBB5_17
-	INCQ    R15
-	CMPQ    R11, $1
-	LEAQ    -1(R11), R11
-	JG      LBB5_14
 
 LBB5_17:
-	SUBQ AX, R14
-	NEGQ SI
-	SBBQ R11, R11
-	XORQ R14, R11
-	JMP  LBB5_35
+	LONG $0x6f7ac1c4; BYTE $0x26 // vmovdqu      (%r14), %xmm4
+	LONG $0xec64f9c5             // vpcmpgtb     %xmm4, %xmm0, %xmm5
+	LONG $0xf174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xfa74d9c5             // vpcmpeqb     %xmm2, %xmm4, %xmm7
+	LONG $0xf6ebc1c5             // vpor         %xmm6, %xmm7, %xmm6
+	LONG $0xfb64d9c5             // vpcmpgtb     %xmm3, %xmm4, %xmm7
+	LONG $0xefdbd1c5             // vpand        %xmm7, %xmm5, %xmm5
+	LONG $0xedebc9c5             // vpor         %xmm5, %xmm6, %xmm5
+	LONG $0xcdd7f9c5             // vpmovmskb    %xmm5, %ecx
+	ORL  $65536, CX
+	BSFL CX, R13
+	LONG $0x7ef9e1c4; BYTE $0xe3 // vmovq        %xmm4, %rbx
+	CMPQ R15, R13
+	JGE  LBB5_18
+	CMPQ R15, $8
+	JB   LBB5_29
+	MOVQ BX, 0(R12)
+	LEAQ 8(R14), R13
+	ADDQ $8, R12
+	LEAQ -8(R15), BX
+	CMPQ BX, $4
+	JAE  LBB5_32
+	JMP  LBB5_33
+
+LBB5_7:
+	MOVWLZX CX, CX
+	BSFL    CX, R14
+	ADDQ    R12, R14
+	JMP     LBB5_44
+
+LBB5_3:
+	MOVQ  SI, R13
+	MOVQ  DI, R14
+	TESTB R9, R9
+	JNE   LBB5_17
+
+LBB5_12:
+	TESTQ R15, R15
+	JLE   LBB5_41
+	TESTQ R13, R13
+	JLE   LBB5_41
+	MOVQ  DX, -72(BP)
+	MOVQ  R10, -64(BP)
+	XORL  R9, R9
+	XORL  BX, BX
+
+LBB5_15:
+	MOVBLZX 0(R14)(R9*1), DX
+	MOVQ    DX, CX
+	SHLQ    $4, CX
+	LONG    $0x8f358d48; WORD $0x008a; BYTE $0x00 // leaq         $35471(%rip), %rsi  /* __SingleQuoteTab(%rip) */
+	CMPQ    0(CX)(SI*1), $0
+	JNE     LBB5_16
+	LEAQ    0(BX)(R13*1), CX
+	MOVB    DX, 0(R12)(R9*1)
+	LEAQ    -1(BX), R10
+	CMPQ    CX, $2
+	JL      LBB5_40
+	ADDQ    R15, BX
+	ADDQ    $1, R9
+	CMPQ    BX, $1
+	MOVQ    R10, BX
+	JG      LBB5_15
+
+LBB5_40:
+	SUBQ R10, R14
+	ADDQ R10, R13
+	MOVQ -64(BP), R10
+	MOVQ -72(BP), DX
+
+LBB5_41:
+	TESTQ R13, R13
+	JE    LBB5_42
+	NOTQ  R14
+	ADDQ  DI, R14
+	JMP   LBB5_44
 
 LBB5_18:
-	MOVWLZX BX, SI
-	SUBQ    AX, R14
-	BSFL    SI, R11
-	ADDQ    R14, R11
-	JMP     LBB5_35
-
-LBB5_19:
 	CMPL R13, $8
-	JB   LBB5_28
-	MOVQ BX, 0(R15)
-	LEAQ 8(R14), R12
-	ADDQ $8, R15
+	JB   LBB5_19
+	MOVQ BX, 0(R12)
+	LEAQ 8(R14), R15
+	ADDQ $8, R12
 	LEAQ -8(R13), BX
 	CMPQ BX, $4
-	JAE  LBB5_29
-	JMP  LBB5_30
+	JAE  LBB5_22
+	JMP  LBB5_23
 
-LBB5_21:
-	SUBQ AX, R14
-	JMP  LBB5_34
+LBB5_42:
+	SUBQ DI, R14
+	JMP  LBB5_44
 
-LBB5_22:
+LBB5_16:
+	SUBQ DI, R14
+	SUBQ BX, R14
+	MOVQ -64(BP), R10
+	MOVQ -72(BP), DX
+	JMP  LBB5_44
+
+LBB5_29:
 	MOVQ R14, R13
-	MOVQ R11, BX
-	MOVQ -48(BP), R12
-	MOVQ -56(BP), DX
+	MOVQ R15, BX
 	CMPQ BX, $4
-	JB   LBB5_24
+	JB   LBB5_33
 
-LBB5_23:
-	MOVL 0(R13), SI
-	MOVL SI, 0(R15)
+LBB5_32:
+	MOVL 0(R13), CX
+	MOVL CX, 0(R12)
 	ADDQ $4, R13
-	ADDQ $4, R15
+	ADDQ $4, R12
 	ADDQ $-4, BX
 
-LBB5_24:
-	CMPQ    BX, $2
-	JB      LBB5_25
-	MOVWLZX 0(R13), SI
-	MOVW    SI, 0(R15)
-	ADDQ    $2, R13
+LBB5_33:
+	CMPQ  BX, $2
+	JAE   LBB5_34
+	TESTQ BX, BX
+	JE    LBB5_37
+
+LBB5_36:
+	MOVB 0(R13), CX
+	MOVB CX, 0(R12)
+
+LBB5_37:
+	NOTQ R15
+	ADDQ DI, R15
+	SUBQ R14, R15
+	MOVQ R15, R14
+	JMP  LBB5_44
+
+LBB5_19:
+	MOVQ R14, R15
+	MOVQ R13, BX
+	CMPQ BX, $4
+	JB   LBB5_23
+
+LBB5_22:
+	MOVL 0(R15), CX
+	MOVL CX, 0(R12)
+	ADDQ $4, R15
+	ADDQ $4, R12
+	ADDQ $-4, BX
+
+LBB5_23:
+	CMPQ  BX, $2
+	JAE   LBB5_24
+	TESTQ BX, BX
+	JE    LBB5_27
+
+LBB5_26:
+	MOVB 0(R15), CX
+	MOVB CX, 0(R12)
+
+LBB5_27:
+	SUBQ DI, R14
+	ADDQ R13, R14
+
+LBB5_44:
+	MOVQ  -48(BP), SI
+	TESTQ R14, R14
+	JS    LBB5_45
+	ADDQ  R14, R8
+	CMPQ  SI, R14
+	JE    LBB5_60
+	SUBQ  R14, R11
+	JMP   LBB5_48
+
+LBB5_58:
+	ADDQ R13, R8
+	ADDQ $1, R14
+	MOVQ -48(BP), SI
+	CMPQ SI, R14
+	JE   LBB5_60
+
+LBB5_48:
+	MOVBLZX 0(DI)(R14*1), BX
+	SHLQ    $4, BX
+	MOVQ    0(AX)(BX*1), CX
+	TESTL   CX, CX
+	JE      LBB5_59
+	MOVLQSX CX, R13
+	SUBQ    R13, R11
+	JL      LBB5_50
+	LEAQ    0(AX)(BX*1), R15
+	ADDQ    $8, R15
+	CMPQ    R13, $4
+	JB      LBB5_52
+	MOVL    0(R15), CX
+	MOVL    CX, 0(R8)
+	LEAQ    0(AX)(BX*1), R15
+	ADDQ    $12, R15
+	LEAQ    4(R8), R12
+	LEAQ    -4(R13), R9
+	CMPQ    R9, $2
+	JAE     LBB5_55
+	JMP     LBB5_56
+
+LBB5_52:
+	MOVQ R8, R12
+	MOVQ R13, R9
+	CMPQ R9, $2
+	JB   LBB5_56
+
+LBB5_55:
+	MOVWLZX 0(R15), CX
+	MOVW    CX, 0(R12)
 	ADDQ    $2, R15
+	ADDQ    $2, R12
+	ADDQ    $-2, R9
+
+LBB5_56:
+	TESTQ   R9, R9
+	JE      LBB5_58
+	MOVBLZX 0(R15), CX
+	MOVB    CX, 0(R12)
+	JMP     LBB5_58
+
+LBB5_59:
+	LEAQ 0(DI)(R14*1), BX
+	SUBQ R14, SI
+	JNE  LBB5_2
+	JMP  LBB5_60
+
+LBB5_34:
+	MOVWLZX 0(R13), CX
+	MOVW    CX, 0(R12)
+	ADDQ    $2, R13
+	ADDQ    $2, R12
+	ADDQ    $-2, BX
+	TESTQ   BX, BX
+	JNE     LBB5_36
+	JMP     LBB5_37
+
+LBB5_24:
+	MOVWLZX 0(R15), CX
+	MOVW    CX, 0(R12)
+	ADDQ    $2, R15
+	ADDQ    $2, R12
 	ADDQ    $-2, BX
 	TESTQ   BX, BX
 	JNE     LBB5_26
 	JMP     LBB5_27
 
-LBB5_25:
-	TESTQ BX, BX
-	JE    LBB5_27
+LBB5_60:
+	ADDQ R14, DI
+	MOVQ -56(BP), CX
 
-LBB5_26:
-	MOVB 0(R13), BX
-	MOVB BX, 0(R15)
-
-LBB5_27:
-	SUBQ AX, R11
-	ADDQ R14, R11
-	NOTQ R11
-	JMP  LBB5_36
-
-LBB5_28:
-	MOVQ R14, R12
-	MOVQ R13, BX
-	CMPQ BX, $4
-	JB   LBB5_30
-
-LBB5_29:
-	MOVL 0(R12), SI
-	MOVL SI, 0(R15)
-	ADDQ $4, R12
-	ADDQ $4, R15
-	ADDQ $-4, BX
-
-LBB5_30:
-	CMPQ    BX, $2
-	JB      LBB5_31
-	MOVWLZX 0(R12), SI
-	MOVW    SI, 0(R15)
-	ADDQ    $2, R12
-	ADDQ    $2, R15
-	ADDQ    $-2, BX
-	TESTQ   BX, BX
-	JNE     LBB5_32
-	JMP     LBB5_33
-
-LBB5_31:
-	TESTQ BX, BX
-	JE    LBB5_33
-
-LBB5_32:
-	MOVB 0(R12), BX
-	MOVB BX, 0(R15)
-
-LBB5_33:
-	SUBQ AX, R14
-	ADDQ R13, R14
-
-LBB5_34:
-	MOVQ R14, R11
-
-LBB5_35:
-	MOVQ -48(BP), R12
-	MOVQ -56(BP), DX
-
-LBB5_36:
-	TESTQ R11, R11
-	JS    LBB5_54
-	ADDQ  R11, AX
-	ADDQ  R11, R8
-	CMPQ  CX, R11
-	JE    LBB5_51
-	SUBQ  R11, R9
-	SUBQ  CX, R11
-	JMP   LBB5_40
-
-LBB5_39:
-	INCQ AX
-	ADDQ SI, R8
-	INCQ R11
-	JE   LBB5_51
-
-LBB5_40:
-	MOVBLZX 0(AX), BX
-	SHLQ    $4, BX
-	MOVQ    0(R10)(BX*1), SI
-	TESTL   SI, SI
-	JE      LBB5_48
-	MOVLQSX SI, SI
-	SUBQ    SI, R9
-	JL      LBB5_52
-	LEAQ    8(R10)(BX*1), R15
-	CMPQ    SI, $4
-	JB      LBB5_44
-	MOVL    0(R15), CX
-	MOVL    CX, 0(R8)
-	LEAQ    12(R10)(BX*1), R15
-	LEAQ    4(R8), R14
-	LEAQ    -4(SI), BX
-	CMPQ    BX, $2
-	JAE     LBB5_45
-	JMP     LBB5_46
-
-LBB5_44:
-	MOVQ R8, R14
-	MOVQ SI, BX
-	CMPQ BX, $2
-	JB   LBB5_46
-
-LBB5_45:
-	MOVWLZX 0(R15), CX
-	MOVW    CX, 0(R14)
-	ADDQ    $2, R15
-	ADDQ    $2, R14
-	ADDQ    $-2, BX
-
-LBB5_46:
-	TESTQ   BX, BX
-	JE      LBB5_39
-	MOVBLZX 0(R15), CX
-	MOVB    CX, 0(R14)
-	JMP     LBB5_39
-
-LBB5_48:
-	MOVQ  R11, CX
-	NEGQ  CX
-	TESTQ R11, R11
-	JNE   LBB5_2
-
-LBB5_51:
+LBB5_61:
 	SUBQ DX, R8
-	MOVQ R8, 0(R12)
-	SUBQ DI, AX
-	JMP  LBB5_53
+	MOVQ R8, 0(CX)
+	SUBQ R10, DI
+	JMP  LBB5_62
 
-LBB5_52:
+LBB5_50:
 	SUBQ DX, R8
-	MOVQ R8, 0(R12)
-	NOTQ AX
-	ADDQ DI, AX
+	MOVQ -56(BP), AX
+	MOVQ R8, 0(AX)
+	SUBQ DI, R10
+	NOTQ R14
+	ADDQ R10, R14
+	MOVQ R14, DI
 
-LBB5_53:
-	ADDQ $16, SP
+LBB5_62:
+	MOVQ DI, AX
+	ADDQ $32, SP
 	BYTE $0x5b   // popq         %rbx
 	WORD $0x5c41 // popq         %r12
 	WORD $0x5d41 // popq         %r13
@@ -1820,15 +1851,17 @@ LBB5_53:
 	BYTE $0x5d   // popq         %rbp
 	RET
 
-LBB5_54:
+LBB5_45:
 	SUBQ DX, R8
-	NOTQ R11
-	ADDQ R11, R8
-	MOVQ R8, 0(R12)
-	SUBQ DI, AX
-	ADDQ R11, AX
-	NOTQ AX
-	JMP  LBB5_53
+	MOVQ R14, CX
+	NOTQ CX
+	ADDQ R8, CX
+	MOVQ -56(BP), AX
+	MOVQ CX, 0(AX)
+	SUBQ DI, R10
+	ADDQ R14, R10
+	MOVQ R10, DI
+	JMP  LBB5_62
 
 LCPI6_0:
 	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
@@ -1841,308 +1874,326 @@ _unquote:
 	WORD  $0x5541                               // pushq        %r13
 	WORD  $0x5441                               // pushq        %r12
 	BYTE  $0x53                                 // pushq        %rbx
-	SUBQ  $40, SP
+	SUBQ  $32, SP
 	TESTQ SI, SI
-	JE    LBB6_82
-	MOVQ  SI, R11
-	MOVQ  CX, -56(BP)
-	MOVQ  R8, AX
-	MOVQ  R8, -72(BP)
+	JE    LBB6_1
+	MOVQ  CX, -48(BP)
 	MOVL  R8, R10
 	ANDL  $1, R10
-	LONG  $0x50058d4c; WORD $0x00ad; BYTE $0x00 // leaq         $44368(%rip), %r8  /* __UnquoteTab(%rip) */
-	QUAD  $0xffffffb2056ffac5                   // vmovdqu      $-78(%rip), %xmm0  /* LCPI6_0(%rip) */
+	LONG  $0xf30d8d48; WORD $0x00a7; BYTE $0x00 // leaq         $42995(%rip), %rcx  /* __UnquoteTab(%rip) */
+	QUAD  $0xffffffbc056ffac5                   // vmovdqu      $-68(%rip), %xmm0  /* LCPI6_0(%rip) */
 	MOVQ  DI, R9
 	MOVQ  SI, R13
 	MOVQ  DX, AX
 
-LBB6_2:
+LBB6_3:
 	CMPB 0(R9), $92
-	JNE  LBB6_4
-	XORL SI, SI
-	JMP  LBB6_13
-
-LBB6_4:
-	MOVQ R13, R15
-	MOVQ AX, SI
-	MOVQ R9, R14
-	CMPQ R13, $16
-	JL   LBB6_7
+	JNE  LBB6_5
+	XORL R14, R14
+	JMP  LBB6_17
 
 LBB6_5:
-	LONG  $0x6f7ac1c4; BYTE $0x0e // vmovdqu      (%r14), %xmm1
-	LONG  $0x0e7ffac5             // vmovdqu      %xmm1, (%rsi)
-	LONG  $0xc874f1c5             // vpcmpeqb     %xmm0, %xmm1, %xmm1
-	LONG  $0xd9d7f9c5             // vpmovmskb    %xmm1, %ebx
-	TESTW BX, BX
-	JNE   LBB6_12
-	ADDQ  $16, R14
-	ADDQ  $16, SI
-	CMPQ  R15, $31
-	LEAQ  -16(R15), R15
-	JG    LBB6_5
+	MOVQ R13, R15
+	MOVQ AX, R12
+	MOVQ R9, R14
+	CMPQ R13, $16
+	JL   LBB6_11
+	XORL R12, R12
+	MOVQ R13, R14
 
 LBB6_7:
-	TESTQ R15, R15
-	JE    LBB6_83
-	XORL  BX, BX
-
-LBB6_9:
-	MOVBLZX 0(R14)(BX*1), CX
-	CMPB    CX, $92
-	JE      LBB6_11
-	MOVB    CX, 0(SI)(BX*1)
-	INCQ    BX
-	CMPQ    R15, BX
-	JNE     LBB6_9
-	JMP     LBB6_83
+	LONG  $0x6f7a81c4; WORD $0x210c // vmovdqu      (%r9,%r12), %xmm1
+	LONG  $0x7f7aa1c4; WORD $0x200c // vmovdqu      %xmm1, (%rax,%r12)
+	LONG  $0xc874f1c5               // vpcmpeqb     %xmm0, %xmm1, %xmm1
+	LONG  $0xd9d7f9c5               // vpmovmskb    %xmm1, %ebx
+	TESTW BX, BX
+	JNE   LBB6_8
+	LEAQ  -16(R14), R15
+	ADDQ  $16, R12
+	CMPQ  R14, $31
+	MOVQ  R15, R14
+	JG    LBB6_7
+	LEAQ  0(R9)(R12*1), R14
+	ADDQ  AX, R12
 
 LBB6_11:
-	ADDQ BX, R14
-	SUBQ R9, R14
-	MOVQ R14, SI
-	CMPQ SI, $-1
-	JNE  LBB6_13
-	JMP  LBB6_83
-
-LBB6_12:
-	MOVWLZX BX, CX
-	SUBQ    R9, R14
-	BSFQ    CX, SI
-	ADDQ    R14, SI
-	CMPQ    SI, $-1
-	JE      LBB6_83
+	TESTQ R15, R15
+	JE    LBB6_115
+	XORL  BX, BX
 
 LBB6_13:
-	LEAQ  2(SI), CX
-	SUBQ  CX, R13
-	JS    LBB6_94
-	LEAQ  2(R9)(SI*1), R9
-	TESTQ R10, R10
-	JNE   LBB6_58
+	MOVBLZX 0(R14)(BX*1), R11
+	CMPB    R11, $92
+	JE      LBB6_15
+	MOVB    R11, 0(R12)(BX*1)
+	ADDQ    $1, BX
+	CMPQ    R15, BX
+	JNE     LBB6_13
+	JMP     LBB6_115
 
 LBB6_15:
-	ADDQ    SI, AX
-	MOVBLZX -1(R9), CX
-	MOVB    0(CX)(R8*1), CX
-	CMPB    CX, $-1
-	JE      LBB6_18
-	TESTB   CX, CX
-	JE      LBB6_95
-	MOVB    CX, 0(AX)
-	INCQ    AX
-	JMP     LBB6_57
+	SUBQ R9, R14
+	ADDQ BX, R14
+	CMPQ R14, $-1
+	JNE  LBB6_17
+	JMP  LBB6_115
 
-LBB6_18:
+LBB6_8:
+	MOVWLZX BX, BX
+	BSFQ    BX, R14
+	ADDQ    R12, R14
+	CMPQ    R14, $-1
+	JE      LBB6_115
+
+LBB6_17:
+	LEAQ  2(R14), BX
+	SUBQ  BX, R13
+	JS    LBB6_18
+	ADDQ  R14, R9
+	ADDQ  $2, R9
+	TESTQ R10, R10
+	JNE   LBB6_20
+
+LBB6_31:
+	ADDQ    R14, AX
+	MOVBLZX -1(R9), BX
+	MOVB    0(BX)(CX*1), BX
+	CMPB    BX, $-1
+	JE      LBB6_35
+	TESTB   BX, BX
+	JE      LBB6_33
+	MOVB    BX, 0(AX)
+	ADDQ    $1, AX
+	TESTQ   R13, R13
+	JNE     LBB6_3
+	JMP     LBB6_114
+
+LBB6_35:
 	CMPQ    R13, $3
-	JLE     LBB6_94
-	MOVL    0(R9), SI
-	MOVL    SI, CX
-	NOTL    CX
-	LEAL    -808464432(SI), BX
-	ANDL    $-2139062144, CX
-	TESTL   BX, CX
-	JNE     LBB6_85
-	LEAL    421075225(SI), BX
-	ORL     SI, BX
+	JLE     LBB6_18
+	MOVL    0(R9), R14
+	MOVL    R14, R15
+	NOTL    R15
+	LEAL    -808464432(R14), BX
+	ANDL    $-2139062144, R15
+	TESTL   BX, R15
+	JNE     LBB6_40
+	LEAL    421075225(R14), BX
+	ORL     R14, BX
 	TESTL   $-2139062144, BX
-	JNE     LBB6_85
-	MOVL    SI, BX
+	JNE     LBB6_40
+	MOVQ    CX, R12
+	MOVL    R14, BX
 	ANDL    $2139062143, BX
-	MOVL    $-1061109568, R14
-	SUBL    BX, R14
-	LEAL    1179010630(BX), R15
-	ANDL    CX, R14
-	TESTL   R15, R14
-	JNE     LBB6_85
-	MOVL    $-522133280, R14
-	SUBL    BX, R14
+	MOVL    $-1061109568, CX
+	SUBL    BX, CX
+	LEAL    1179010630(BX), R11
+	ANDL    R15, CX
+	TESTL   R11, CX
+	JNE     LBB6_40
+	MOVL    $-522133280, CX
+	SUBL    BX, CX
 	ADDL    $960051513, BX
-	ANDL    R14, CX
-	TESTL   BX, CX
-	JNE     LBB6_85
-	BSWAPL  SI
-	MOVL    SI, CX
+	ANDL    CX, R15
+	TESTL   BX, R15
+	JNE     LBB6_40
+	BSWAPL  R14
+	MOVL    R14, CX
 	SHRL    $4, CX
 	NOTL    CX
 	ANDL    $16843009, CX
 	LEAL    0(CX)(CX*8), CX
-	ANDL    $252645135, SI
-	ADDL    CX, SI
-	MOVL    SI, CX
+	ANDL    $252645135, R14
+	ADDL    CX, R14
+	MOVL    R14, CX
 	SHRL    $4, CX
-	ORL     SI, CX
+	ORL     R14, CX
 	MOVBLZX CX, R15
 	SHRL    $8, CX
 	ANDL    $65280, CX
 	ORL     CX, R15
 	LEAQ    -4(R13), R14
 	CMPL    R15, $128
-	JB      LBB6_66
-	XORL    R12, R12
+	JB      LBB6_50
+	XORL    R11, R11
 	TESTQ   R10, R10
-	JE      LBB6_40
+	JNE     LBB6_52
 
-LBB6_25:
+LBB6_54:
 	CMPL    R15, $2048
-	JB      LBB6_68
+	JB      LBB6_53
 	MOVL    R15, CX
 	ANDL    $-2048, CX
 	CMPL    CX, $55296
-	JNE     LBB6_54
-	TESTQ   R14, R14
-	JLE     LBB6_72
-	CMPB    4(R9)(R12*1), $92
-	JNE     LBB6_73
+	JNE     LBB6_69
 	CMPL    R15, $56319
-	JA      LBB6_70
-	CMPQ    R14, $7
-	JL      LBB6_70
-	CMPB    5(R9)(R12*1), $92
-	JNE     LBB6_70
-	CMPB    6(R9)(R12*1), $117
-	JNE     LBB6_70
-	MOVL    7(R9)(R12*1), SI
-	MOVL    SI, CX
-	NOTL    CX
-	LEAL    -808464432(SI), BX
-	ANDL    $-2139062144, CX
-	TESTL   BX, CX
-	JNE     LBB6_99
-	LEAL    421075225(SI), BX
-	ORL     SI, BX
-	TESTL   $-2139062144, BX
-	JNE     LBB6_99
-	MOVL    SI, BX
-	ANDL    $2139062143, BX
-	MOVL    $-1061109568, -44(BP)
-	SUBL    BX, -44(BP)
-	MOVQ    SI, -80(BP)
-	LEAL    1179010630(BX), SI
-	MOVL    SI, -60(BP)
-	ANDL    CX, -44(BP)
-	MOVL    -60(BP), SI
-	TESTL   SI, -44(BP)
-	MOVQ    -80(BP), SI
-	JNE     LBB6_99
-	MOVL    $-522133280, -44(BP)
-	SUBL    BX, -44(BP)
-	ADDL    $960051513, BX
-	ANDL    -44(BP), CX
-	TESTL   BX, CX
-	JNE     LBB6_99
-	BSWAPL  SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	NOTL    CX
-	ANDL    $16843009, CX
-	LEAL    0(CX)(CX*8), CX
-	ANDL    $252645135, SI
-	ADDL    CX, SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	ORL     SI, CX
-	MOVL    CX, SI
-	SHRL    $8, SI
-	ANDL    $65280, SI
-	MOVBLZX CX, BX
-	ORL     SI, BX
-	ANDL    $16515072, CX
-	CMPL    CX, $14417920
-	JE      LBB6_77
-	TESTB   $2, -72(BP)
-	JE      LBB6_114
-	ADDQ    $-7, R14
-	MOVW    $-16401, 0(AX)
-	MOVB    $-67, 2(AX)
-	ADDQ    $3, AX
-	ADDQ    $7, R12
-	MOVL    BX, R15
-	CMPL    BX, $127
-	JA      LBB6_25
-	JMP     LBB6_53
-
-LBB6_40:
-	CMPL    R15, $2048
-	JB      LBB6_68
-	MOVL    R15, CX
-	ANDL    $-2048, CX
-	CMPL    CX, $55296
-	JNE     LBB6_54
-	CMPL    R15, $56319
-	JA      LBB6_69
+	JA      LBB6_84
 	CMPQ    R14, $6
-	JL      LBB6_69
-	CMPB    4(R9)(R12*1), $92
-	JNE     LBB6_69
-	CMPB    5(R9)(R12*1), $117
-	JNE     LBB6_69
-	MOVL    6(R9)(R12*1), SI
-	MOVL    SI, CX
-	NOTL    CX
-	LEAL    -808464432(SI), BX
-	ANDL    $-2139062144, CX
-	TESTL   BX, CX
-	JNE     LBB6_98
-	LEAL    421075225(SI), BX
-	ORL     SI, BX
-	TESTL   $-2139062144, BX
-	JNE     LBB6_98
-	MOVL    SI, BX
+	JL      LBB6_84
+	CMPB    4(R9)(R11*1), $92
+	JNE     LBB6_84
+	CMPB    5(R9)(R11*1), $117
+	JNE     LBB6_84
+	MOVL    6(R9)(R11*1), CX
+	MOVL    CX, BX
+	NOTL    BX
+	MOVQ    CX, -64(BP)
+	ADDL    $-808464432, CX
+	ANDL    $-2139062144, BX
+	MOVL    BX, -68(BP)
+	TESTL   CX, BX
+	JNE     LBB6_117
+	MOVQ    -64(BP), BX
+	LEAL    421075225(BX), CX
+	ORL     BX, CX
+	TESTL   $-2139062144, CX
+	JNE     LBB6_117
+	MOVQ    -64(BP), BX
 	ANDL    $2139062143, BX
-	MOVL    $-1061109568, -44(BP)
-	SUBL    BX, -44(BP)
-	MOVQ    SI, -80(BP)
-	LEAL    1179010630(BX), SI
-	MOVL    SI, -60(BP)
-	ANDL    CX, -44(BP)
-	MOVL    -60(BP), SI
-	TESTL   SI, -44(BP)
-	MOVQ    -80(BP), SI
-	JNE     LBB6_98
-	MOVL    $-522133280, -44(BP)
-	SUBL    BX, -44(BP)
+	MOVL    $-1061109568, CX
+	SUBL    BX, CX
+	MOVL    CX, -72(BP)
+	LEAL    1179010630(BX), CX
+	MOVL    CX, -52(BP)
+	MOVL    -72(BP), CX
+	ANDL    -68(BP), CX
+	TESTL   CX, -52(BP)
+	JNE     LBB6_117
+	MOVL    $-522133280, CX
+	SUBL    BX, CX
+	MOVL    CX, -52(BP)
 	ADDL    $960051513, BX
-	ANDL    -44(BP), CX
+	MOVL    -68(BP), CX
+	ANDL    -52(BP), CX
 	TESTL   BX, CX
-	JNE     LBB6_98
-	BSWAPL  SI
-	MOVL    SI, CX
+	JNE     LBB6_117
+	MOVQ    -64(BP), BX
+	BSWAPL  BX
+	MOVL    BX, CX
 	SHRL    $4, CX
 	NOTL    CX
 	ANDL    $16843009, CX
 	LEAL    0(CX)(CX*8), CX
-	ANDL    $252645135, SI
-	ADDL    CX, SI
-	MOVL    SI, CX
+	ANDL    $252645135, BX
+	ADDL    CX, BX
+	MOVL    BX, CX
 	SHRL    $4, CX
-	ORL     SI, CX
-	MOVL    CX, SI
-	SHRL    $8, SI
-	ANDL    $65280, SI
+	ORL     BX, CX
+	MOVL    CX, BX
+	SHRL    $8, BX
+	ANDL    $65280, BX
+	MOVL    BX, -64(BP)
 	MOVBLZX CX, BX
-	ORL     SI, BX
+	ADDL    -64(BP), BX
 	ANDL    $16515072, CX
 	CMPL    CX, $14417920
-	JE      LBB6_76
-	TESTB   $2, -72(BP)
-	JE      LBB6_113
+	JE      LBB6_109
+	TESTB   $2, R8
+	JE      LBB6_118
 	ADDQ    $-6, R14
 	MOVW    $-16401, 0(AX)
 	MOVB    $-67, 2(AX)
 	ADDQ    $3, AX
-	ADDQ    $6, R12
+	ADDQ    $6, R11
 	MOVL    BX, R15
-	CMPL    BX, $128
-	JAE     LBB6_40
+	CMPL    BX, $127
+	JA      LBB6_54
+	JMP     LBB6_67
 
-LBB6_53:
-	LEAQ 4(R9)(R12*1), R9
+LBB6_52:
+	CMPL    R15, $2048
+	JB      LBB6_53
+	MOVL    R15, CX
+	ANDL    $-2048, CX
+	CMPL    CX, $55296
+	JNE     LBB6_69
+	TESTQ   R14, R14
+	JLE     LBB6_72
+	CMPB    4(R9)(R11*1), $92
+	JNE     LBB6_80
+	CMPL    R15, $56319
+	JA      LBB6_79
+	CMPQ    R14, $7
+	JL      LBB6_79
+	CMPB    5(R9)(R11*1), $92
+	JNE     LBB6_79
+	CMPB    6(R9)(R11*1), $117
+	JNE     LBB6_79
+	MOVL    7(R9)(R11*1), CX
+	MOVL    CX, BX
+	NOTL    BX
+	MOVQ    CX, -64(BP)
+	ADDL    $-808464432, CX
+	ANDL    $-2139062144, BX
+	MOVL    BX, -68(BP)
+	TESTL   CX, BX
+	JNE     LBB6_94
+	MOVQ    -64(BP), BX
+	LEAL    421075225(BX), CX
+	ORL     BX, CX
+	TESTL   $-2139062144, CX
+	JNE     LBB6_94
+	MOVQ    -64(BP), BX
+	ANDL    $2139062143, BX
+	MOVL    $-1061109568, CX
+	SUBL    BX, CX
+	MOVL    CX, -72(BP)
+	LEAL    1179010630(BX), CX
+	MOVL    CX, -52(BP)
+	MOVL    -72(BP), CX
+	ANDL    -68(BP), CX
+	TESTL   CX, -52(BP)
+	JNE     LBB6_94
+	MOVL    $-522133280, CX
+	SUBL    BX, CX
+	MOVL    CX, -52(BP)
+	ADDL    $960051513, BX
+	MOVL    -68(BP), CX
+	ANDL    -52(BP), CX
+	TESTL   BX, CX
+	JNE     LBB6_94
+	MOVQ    -64(BP), BX
+	BSWAPL  BX
+	MOVL    BX, CX
+	SHRL    $4, CX
+	NOTL    CX
+	ANDL    $16843009, CX
+	LEAL    0(CX)(CX*8), CX
+	ANDL    $252645135, BX
+	ADDL    CX, BX
+	MOVL    BX, CX
+	SHRL    $4, CX
+	ORL     BX, CX
+	MOVL    CX, BX
+	SHRL    $8, BX
+	ANDL    $65280, BX
+	MOVL    BX, -64(BP)
+	MOVBLZX CX, BX
+	ADDL    -64(BP), BX
+	ANDL    $16515072, CX
+	CMPL    CX, $14417920
+	JE      LBB6_110
+	TESTB   $2, R8
+	JE      LBB6_106
+	ADDQ    $-7, R14
+	MOVW    $-16401, 0(AX)
+	MOVB    $-67, 2(AX)
+	ADDQ    $3, AX
+	ADDQ    $7, R11
+	MOVQ    BX, CX
+	MOVL    CX, R15
+	CMPL    CX, $128
+	JAE     LBB6_52
+
+LBB6_67:
+	ADDQ R11, R9
+	ADDQ $4, R9
 	MOVL BX, R15
-	JMP  LBB6_67
+	JMP  LBB6_68
 
-LBB6_54:
-	LEAQ 4(R9)(R12*1), R9
+LBB6_69:
+	ADDQ R11, R9
+	ADDQ $4, R9
 	MOVL R15, CX
 	SHRL $12, CX
 	ORB  $-32, CX
@@ -2156,147 +2207,146 @@ LBB6_54:
 	ORB  $-128, R15
 	MOVB R15, 2(AX)
 
-LBB6_55:
-	ADDQ $3, AX
-
-LBB6_56:
-	MOVQ R14, R13
-
-LBB6_57:
+LBB6_87:
+	ADDQ  $3, AX
+	MOVQ  R14, R13
+	MOVQ  R12, CX
 	TESTQ R13, R13
-	JNE   LBB6_2
-	JMP   LBB6_96
+	JNE   LBB6_3
+	JMP   LBB6_114
 
-LBB6_58:
+LBB6_20:
 	TESTL R13, R13
-	JE    LBB6_94
+	JE    LBB6_18
 	CMPB  -1(R9), $92
-	JNE   LBB6_97
+	JNE   LBB6_22
 	CMPB  0(R9), $92
-	JNE   LBB6_65
+	JNE   LBB6_30
 	CMPL  R13, $1
-	JLE   LBB6_94
-	MOVB  1(R9), CX
-	CMPB  CX, $34
-	JE    LBB6_64
-	CMPB  CX, $92
-	JNE   LBB6_109
+	JLE   LBB6_18
+	MOVB  1(R9), BX
+	CMPB  BX, $34
+	JE    LBB6_29
+	CMPB  BX, $92
+	JNE   LBB6_28
 
-LBB6_64:
-	INCQ R9
-	DECQ R13
+LBB6_29:
+	ADDQ $1, R9
+	ADDQ $-1, R13
 
-LBB6_65:
-	INCQ R9
-	DECQ R13
-	JMP  LBB6_15
+LBB6_30:
+	ADDQ $1, R9
+	ADDQ $-1, R13
+	JMP  LBB6_31
 
-LBB6_66:
+LBB6_50:
 	ADDQ $4, R9
 
-LBB6_67:
-	MOVB R15, 0(AX)
-	INCQ AX
-	JMP  LBB6_56
-
 LBB6_68:
-	LEAQ 4(R9)(R12*1), R9
-	MOVL R15, CX
-	SHRL $6, CX
-	ORB  $-64, CX
-	MOVB CX, 0(AX)
-	ANDB $63, R15
-	ORB  $-128, R15
-	MOVB R15, 1(AX)
-	ADDQ $2, AX
-	JMP  LBB6_56
+	MOVQ  R12, CX
+	MOVB  R15, 0(AX)
+	ADDQ  $1, AX
+	MOVQ  R14, R13
+	TESTQ R13, R13
+	JNE   LBB6_3
+	JMP   LBB6_114
 
-LBB6_69:
-	LEAQ 4(R9)(R12*1), R9
-	JMP  LBB6_71
+LBB6_53:
+	ADDQ  R11, R9
+	ADDQ  $4, R9
+	MOVL  R15, CX
+	SHRL  $6, CX
+	ORB   $-64, CX
+	MOVB  CX, 0(AX)
+	ANDB  $63, R15
+	ORB   $-128, R15
+	MOVB  R15, 1(AX)
+	ADDQ  $2, AX
+	MOVQ  R14, R13
+	MOVQ  R12, CX
+	TESTQ R13, R13
+	JNE   LBB6_3
+	JMP   LBB6_114
 
-LBB6_70:
-	LEAQ 5(R9)(R12*1), R9
-	SUBQ R12, R13
+LBB6_84:
+	ADDQ R11, R9
+	ADDQ $4, R9
+	JMP  LBB6_85
+
+LBB6_79:
+	ADDQ R11, R9
+	ADDQ $5, R9
+	SUBQ R11, R13
 	ADDQ $-5, R13
 	MOVQ R13, R14
 
-LBB6_71:
-	TESTB $2, -72(BP)
-	JNE   LBB6_75
-	JMP   LBB6_116
+LBB6_85:
+	TESTB $2, R8
+	JE    LBB6_89
 
-LBB6_72:
-	TESTB $2, -72(BP)
-	JNE   LBB6_74
-	JMP   LBB6_94
-
-LBB6_73:
-	TESTB $2, -72(BP)
-	JE    LBB6_117
-
-LBB6_74:
-	LEAQ 4(R9)(R12*1), R9
-
-LBB6_75:
+LBB6_86:
 	MOVW $-16401, 0(AX)
 	MOVB $-67, 2(AX)
-	JMP  LBB6_55
+	JMP  LBB6_87
 
-LBB6_76:
-	LEAQ 10(R9)(R12*1), R9
-	SUBQ R12, R13
+LBB6_80:
+	TESTB $2, R8
+	JE    LBB6_82
+	ADDQ  R11, R9
+	ADDQ  $4, R9
+	JMP   LBB6_86
+
+LBB6_109:
+	ADDQ R11, R9
+	ADDQ $10, R9
+	SUBQ R11, R13
 	ADDQ $-10, R13
-	JMP  LBB6_78
+	JMP  LBB6_111
 
-LBB6_77:
-	LEAQ 11(R9)(R12*1), R9
-	SUBQ R12, R13
+LBB6_110:
+	ADDQ R11, R9
+	ADDQ $11, R9
+	SUBQ R11, R13
 	ADDQ $-11, R13
 
-LBB6_78:
+LBB6_111:
 	SHLL  $10, R15
-	LEAL  -56613888(R15)(BX*1), CX
-	CMPL  CX, $1114112
-	JB    LBB6_81
-	TESTB $2, -72(BP)
-	JE    LBB6_111
-	MOVW  $-16401, 0(AX)
-	MOVB  $-67, 2(AX)
-	ADDQ  $3, AX
-	JMP   LBB6_57
+	MOVL  BX, R14
+	ADDL  R15, R14
+	LEAL  0(BX)(R15*1), R11
+	ADDL  $-56613888, R11
+	MOVL  R11, BX
+	SHRL  $18, BX
+	ORB   $-16, BX
+	MOVB  BX, 0(AX)
+	MOVL  R11, CX
+	SHRL  $12, CX
+	ANDB  $63, CX
+	ORB   $-128, CX
+	MOVB  CX, 1(AX)
+	SHRL  $6, R11
+	ANDB  $63, R11
+	ORB   $-128, R11
+	MOVB  R11, 2(AX)
+	ANDB  $63, R14
+	ORB   $-128, R14
+	MOVB  R14, 3(AX)
+	ADDQ  $4, AX
+	MOVQ  R12, CX
+	TESTQ R13, R13
+	JNE   LBB6_3
+	JMP   LBB6_114
 
-LBB6_81:
-	MOVL CX, SI
-	SHRL $18, SI
-	ORB  $-16, SI
-	MOVB SI, 0(AX)
-	MOVL CX, SI
-	SHRL $12, SI
-	ANDB $63, SI
-	ORB  $-128, SI
-	MOVB SI, 1(AX)
-	MOVL CX, SI
-	SHRL $6, SI
-	ANDB $63, SI
-	ORB  $-128, SI
-	MOVB SI, 2(AX)
-	ANDB $63, CX
-	ORB  $-128, CX
-	MOVB CX, 3(AX)
-	ADDQ $4, AX
-	JMP  LBB6_57
-
-LBB6_82:
+LBB6_1:
 	XORL R13, R13
 	MOVQ DX, AX
 
-LBB6_83:
+LBB6_115:
 	ADDQ R13, AX
 	SUBQ DX, AX
 
-LBB6_84:
-	ADDQ $40, SP
+LBB6_116:
+	ADDQ $32, SP
 	BYTE $0x5b   // popq         %rbx
 	WORD $0x5c41 // popq         %r12
 	WORD $0x5d41 // popq         %r13
@@ -2305,197 +2355,204 @@ LBB6_84:
 	BYTE $0x5d   // popq         %rbp
 	RET
 
-LBB6_85:
+LBB6_40:
 	MOVQ R9, DX
 	SUBQ DI, DX
-	MOVQ -56(BP), DI
+	MOVQ -48(BP), DI
 	MOVQ DX, 0(DI)
-	MOVB 0(R9), CX
-	LEAL -48(CX), SI
+	MOVB 0(R9), SI
+	LEAL -48(SI), CX
 	MOVQ $-2, AX
-	CMPB SI, $10
-	JB   LBB6_87
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	CMPB CX, $10
+	JB   LBB6_42
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA   LBB6_116
 
-LBB6_87:
+LBB6_42:
 	LEAQ 1(DX), CX
 	MOVQ CX, 0(DI)
-	MOVB 1(R9), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_89
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	MOVB 1(R9), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB   LBB6_44
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA   LBB6_116
 
-LBB6_89:
+LBB6_44:
 	LEAQ 2(DX), CX
 	MOVQ CX, 0(DI)
-	MOVB 2(R9), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_91
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	MOVB 2(R9), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB   LBB6_46
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA   LBB6_116
 
-LBB6_91:
+LBB6_46:
 	LEAQ 3(DX), CX
 	MOVQ CX, 0(DI)
-	MOVB 3(R9), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_93
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	MOVB 3(R9), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB   LBB6_48
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA   LBB6_116
 
-LBB6_93:
+LBB6_48:
 	ADDQ $4, DX
 	MOVQ DX, 0(DI)
-	JMP  LBB6_84
+	JMP  LBB6_116
 
-LBB6_94:
-	MOVQ -56(BP), AX
-	MOVQ R11, 0(AX)
-	MOVQ $-1, AX
-	JMP  LBB6_84
-
-LBB6_95:
+LBB6_33:
 	NOTQ DI
 	ADDQ DI, R9
-	MOVQ -56(BP), AX
+	MOVQ -48(BP), AX
 	MOVQ R9, 0(AX)
 	MOVQ $-3, AX
-	JMP  LBB6_84
+	JMP  LBB6_116
 
-LBB6_96:
-	XORL R13, R13
-	JMP  LBB6_83
-
-LBB6_97:
+LBB6_22:
 	NOTQ DI
 	ADDQ DI, R9
-	JMP  LBB6_110
 
-LBB6_98:
-	LEAQ 4(R9)(R12*1), SI
-	JMP  LBB6_100
+LBB6_23:
+	MOVQ -48(BP), AX
+	MOVQ R9, 0(AX)
+	MOVQ $-2, AX
+	JMP  LBB6_116
 
-LBB6_99:
-	LEAQ 5(R9)(R12*1), SI
+LBB6_117:
+	LEAQ 0(R9)(R11*1), SI
+	ADDQ $4, SI
+	JMP  LBB6_95
 
-LBB6_100:
+LBB6_94:
+	LEAQ 0(R9)(R11*1), SI
+	ADDQ $5, SI
+
+LBB6_95:
 	MOVQ SI, DX
 	SUBQ DI, DX
 	ADDQ $2, DX
-	MOVQ -56(BP), AX
+	MOVQ -48(BP), AX
 	MOVQ DX, 0(AX)
-	MOVB 2(SI), CX
-	LEAL -48(CX), DI
+	MOVB 2(SI), DI
+	LEAL -48(DI), CX
 	MOVQ $-2, AX
-	CMPB DI, $10
-	JB   LBB6_102
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	CMPB CX, $10
+	JB   LBB6_97
+	ANDB $-33, DI
+	ADDB $-65, DI
+	CMPB DI, $5
+	JA   LBB6_116
 
-LBB6_102:
+LBB6_97:
 	LEAQ 1(DX), CX
-	MOVQ -56(BP), DI
+	MOVQ -48(BP), DI
 	MOVQ CX, 0(DI)
-	MOVB 3(SI), CX
-	LEAL -48(CX), DI
-	CMPB DI, $10
-	JB   LBB6_104
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	MOVB 3(SI), DI
+	LEAL -48(DI), CX
+	CMPB CX, $10
+	JB   LBB6_99
+	ANDB $-33, DI
+	ADDB $-65, DI
+	CMPB DI, $5
+	JA   LBB6_116
 
-LBB6_104:
+LBB6_99:
 	LEAQ 2(DX), CX
-	MOVQ -56(BP), DI
+	MOVQ -48(BP), DI
 	MOVQ CX, 0(DI)
-	MOVB 4(SI), CX
-	LEAL -48(CX), DI
-	CMPB DI, $10
-	JB   LBB6_106
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	MOVB 4(SI), DI
+	LEAL -48(DI), CX
+	CMPB CX, $10
+	JB   LBB6_101
+	ANDB $-33, DI
+	ADDB $-65, DI
+	CMPB DI, $5
+	JA   LBB6_116
+
+LBB6_101:
+	LEAQ 3(DX), CX
+	MOVQ -48(BP), DI
+	MOVQ CX, 0(DI)
+	MOVB 5(SI), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB   LBB6_103
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA   LBB6_116
+
+LBB6_103:
+	ADDQ $4, DX
+	MOVQ -48(BP), CX
+	MOVQ DX, 0(CX)
+	JMP  LBB6_116
+
+LBB6_28:
+	SUBQ DI, R9
+	ADDQ $1, R9
+	JMP  LBB6_23
+
+LBB6_72:
+	TESTB $2, R8
+	JE    LBB6_18
+	MOVW  $-16401, 0(AX)
+	MOVB  $-67, 2(AX)
+	ADDQ  $3, AX
+
+LBB6_114:
+	XORL R13, R13
+	JMP  LBB6_115
+
+LBB6_18:
+	MOVQ -48(BP), AX
+	MOVQ SI, 0(AX)
+	MOVQ $-1, AX
+	JMP  LBB6_116
+
+LBB6_118:
+	LEAQ 0(R9)(R11*1), AX
+	ADDQ $10, AX
+	JMP  LBB6_107
 
 LBB6_106:
-	LEAQ 3(DX), CX
-	MOVQ -56(BP), DI
-	MOVQ CX, 0(DI)
-	MOVB 5(SI), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_108
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
+	LEAQ 0(R9)(R11*1), AX
+	ADDQ $11, AX
 
-LBB6_108:
-	ADDQ $4, DX
-	MOVQ -56(BP), CX
-	MOVQ DX, 0(CX)
-	JMP  LBB6_84
+LBB6_107:
+	SUBQ DI, AX
+	ADDQ $-4, AX
+	MOVQ -48(BP), CX
+	MOVQ AX, 0(CX)
+	MOVQ $-4, AX
+	JMP  LBB6_116
 
-LBB6_109:
-	SUBQ DI, R9
-	INCQ R9
-
-LBB6_110:
-	MOVQ -56(BP), AX
-	MOVQ R9, 0(AX)
-	MOVQ $-2, AX
-	JMP  LBB6_84
-
-LBB6_111:
+LBB6_89:
+	ADDQ R10, DI
 	SUBQ DI, R9
 	ADDQ $-4, R9
 
-LBB6_112:
-	MOVQ -56(BP), AX
+LBB6_83:
+	MOVQ -48(BP), AX
 	MOVQ R9, 0(AX)
 	MOVQ $-4, AX
-	JMP  LBB6_84
+	JMP  LBB6_116
 
-LBB6_113:
-	LEAQ 10(R9)(R12*1), AX
-	JMP  LBB6_115
-
-LBB6_114:
-	LEAQ 11(R9)(R12*1), AX
-
-LBB6_115:
-	SUBQ DI, AX
-	ADDQ $-4, AX
-	MOVQ -56(BP), CX
-	MOVQ AX, 0(CX)
-	MOVQ $-4, AX
-	JMP  LBB6_84
-
-LBB6_116:
-	LEAQ 4(R10)(DI*1), AX
-	SUBQ AX, R9
-	JMP  LBB6_112
-
-LBB6_117:
-	ADDQ R12, R9
+LBB6_82:
 	SUBQ DI, R9
-	JMP  LBB6_112
+	ADDQ R11, R9
+	JMP  LBB6_83
 
 _atof_eisel_lemire64:
 	BYTE $0x55                                 // pushq        %rbp
@@ -2513,32 +2570,32 @@ _atof_eisel_lemire64:
 	MOVQ CX, R14
 	MOVL DX, R15
 	MOVQ DI, R13
-	LONG $0x002b18e8; BYTE $0x00               // callq        _count_len_u64
+	LONG $0x00250ee8; BYTE $0x00               // callq        _count_len_u64
 	MOVL AX, R8
 	MOVL AX, CX
 	NEGL CX
 	SHLQ CX, R13
 	MOVL BX, CX
 	SHLQ $4, CX
-	LONG $0x45158d4c; WORD $0x002e; BYTE $0x00 // leaq         $11845(%rip), %r10  /* _POW10_M128_TAB(%rip) */
+	LONG $0x53158d4c; WORD $0x0028; BYTE $0x00 // leaq         $10323(%rip), %r10  /* _POW10_M128_TAB(%rip) */
 	MOVQ R13, AX
 	MULQ 8(CX)(R10*1)
 	MOVQ AX, R9
-	MOVQ DX, SI
+	MOVQ DX, DI
 	ANDL $511, DX
-	MOVQ R13, DI
-	NOTQ DI
-	CMPQ AX, DI
+	MOVQ R13, SI
+	NOTQ SI
+	CMPQ AX, SI
 	JBE  LBB7_8
 	CMPL DX, $511
 	JNE  LBB7_8
 	MOVQ R13, AX
 	MULQ 0(CX)(R10*1)
 	ADDQ DX, R9
-	ADCQ $0, SI
-	MOVL SI, DX
+	ADCQ $0, DI
+	MOVL DI, DX
 	ANDL $511, DX
-	CMPQ AX, DI
+	CMPQ AX, SI
 	JBE  LBB7_8
 	CMPQ R9, $-1
 	JNE  LBB7_8
@@ -2546,13 +2603,13 @@ _atof_eisel_lemire64:
 	JE   LBB7_1
 
 LBB7_8:
-	MOVQ SI, AX
+	MOVQ DI, AX
 	SHRQ $63, AX
 	LEAL 9(AX), CX
-	SHRQ CX, SI
+	SHRQ CX, DI
 	ORQ  R9, DX
 	JNE  LBB7_11
-	MOVL SI, CX
+	MOVL DI, CX
 	ANDL $3, CX
 	CMPL CX, $1
 	JE   LBB7_1
@@ -2560,23 +2617,22 @@ LBB7_8:
 LBB7_11:
 	MOVL    $64, CX
 	SUBL    R8, CX
-	LONG    $0x6ad46941; WORD $0x0352; BYTE $0x00 // imull        $217706, %r12d, %edx
-	SARL    $16, DX
-	ADDL    $1087, DX
-	MOVLQSX DX, DX
-	MOVLQSX CX, CX
-	SUBQ    CX, DX
-	XORQ    $1, AX
-	SUBQ    AX, DX
-	MOVL    SI, AX
-	ANDL    $1, AX
-	ADDQ    SI, AX
+	LONG    $0x6af46941; WORD $0x0352; BYTE $0x00 // imull        $217706, %r12d, %esi
+	SARL    $16, SI
+	MOVLQSX CX, BX
+	MOVL    DI, DX
+	ANDL    $1, DX
+	ADDQ    DI, DX
 	MOVQ    $126100789566373888, CX
-	ANDQ    AX, CX
+	ANDQ    DX, CX
+	ADDL    $1086, SI
+	MOVLQSX SI, SI
+	SUBQ    BX, SI
+	ADDQ    AX, SI
 	CMPQ    CX, $1
-	SBBQ    $-1, DX
-	LEAQ    -1(DX), SI
-	CMPQ    SI, $2045
+	SBBQ    $-1, SI
+	LEAQ    -1(SI), AX
+	CMPQ    AX, $2045
 	JBE     LBB7_13
 
 LBB7_1:
@@ -2596,16 +2652,16 @@ LBB7_13:
 	CMPQ CX, $1
 	MOVB $2, CX
 	SBBB $0, CX
-	SHRQ CX, AX
-	SHLQ $52, DX
-	MOVQ $4503599627370495, CX
-	ANDQ AX, CX
-	ORQ  DX, CX
-	MOVQ $-9223372036854775808, AX
-	ORQ  CX, AX
+	SHRQ CX, DX
+	SHLQ $52, SI
+	MOVQ $4503599627370495, AX
+	ANDQ DX, AX
+	ORQ  SI, AX
+	MOVQ $-9223372036854775808, CX
+	ORQ  AX, CX
 	CMPL R15, $-1
-	LONG $0xc1450f48               // cmovneq      %rcx, %rax
-	MOVQ AX, 0(R14)
+	LONG $0xc8450f48               // cmovneq      %rax, %rcx
+	MOVQ CX, 0(R14)
 	MOVB $1, AX
 	JMP  LBB7_14
 
@@ -2617,704 +2673,280 @@ _decimal_to_f64:
 	WORD $0x5541                   // pushq        %r13
 	WORD $0x5441                   // pushq        %r12
 	BYTE $0x53                     // pushq        %rbx
-	SUBQ $24, SP
-	MOVQ SI, R15
-	MOVQ DI, R12
-	MOVQ $4503599627370496, BX
-	CMPL 800(DI), $0
+	BYTE $0x50                     // pushq        %rax
+	MOVQ SI, BX
+	MOVQ DI, R15
+	MOVQ $4503599627370496, R13
+	CMPL 16(DI), $0
 	JE   LBB8_4
-	MOVQ $9218868437227405312, R13
-	MOVL 804(R12), AX
-	XORL CX, CX
+	MOVQ $9218868437227405312, R14
+	MOVL 20(R15), AX
+	XORL R12, R12
 	CMPL AX, $310
-	JG   LBB8_150
+	JG   LBB8_64
 	CMPL AX, $-330
 	JGE  LBB8_5
-	XORL R13, R13
-	JMP  LBB8_150
+	XORL R14, R14
+	JMP  LBB8_64
 
 LBB8_4:
-	XORL R13, R13
-	XORL CX, CX
-	JMP  LBB8_150
+	XORL R14, R14
+	XORL R12, R12
+	JMP  LBB8_64
 
 LBB8_5:
-	MOVQ  R15, -48(BP)
-	MOVQ  $1152921504606846975, R13
 	TESTL AX, AX
-	JLE   LBB8_46
-	XORL  CX, CX
-	JMP   LBB8_9
+	MOVQ  BX, -48(BP)
+	JLE   LBB8_12
+	XORL  R12, R12
+	LONG  $0x71358d4c; WORD $0x0052; BYTE $0x00 // leaq         $21105(%rip), %r14  /* _POW_TAB(%rip) */
+	JMP   LBB8_8
 
-LBB8_7:
-	NEGL R15
-	MOVQ R12, DI
-	MOVL R15, SI
-	LONG $0x002b26e8; BYTE $0x00 // callq        _right_shift
-	MOVQ -56(BP), CX
-
-LBB8_8:
-	ADDL  R14, CX
-	MOVL  804(R12), AX
-	TESTL AX, AX
-	JLE   LBB8_46
-
-LBB8_9:
-	MOVL $27, R14
-	CMPL AX, $8
-	JG   LBB8_11
+LBB8_10:
 	MOVL AX, AX
-	LONG $0x15158d48; WORD $0x0058; BYTE $0x00 // leaq         $22549(%rip), %rdx  /* _POW_TAB(%rip) */
-	MOVL 0(DX)(AX*4), R14
+	MOVL 0(R14)(AX*4), BX
+	CMPL 16(R15), $0
+	JE   LBB8_7
 
 LBB8_11:
-	TESTL R14, R14
-	JE    LBB8_8
-	MOVL  800(R12), AX
+	MOVQ R15, DI
+	MOVL BX, SI
+	LONG $0x00255ee8; BYTE $0x00 // callq        _right_shift
+
+LBB8_7:
+	ADDL  BX, R12
+	MOVL  20(R15), AX
 	TESTL AX, AX
-	JE    LBB8_8
-	MOVL  R14, R15
-	NEGL  R15
-	TESTL R14, R14
-	JS    LBB8_40
-	MOVQ  CX, -56(BP)
-	CMPL  R14, $61
-	JGE   LBB8_17
-	JMP   LBB8_7
+	JLE   LBB8_12
 
-LBB8_15:
-	MOVL $0, 800(R12)
-	XORL AX, AX
+LBB8_8:
+	CMPL AX, $8
+	JLE  LBB8_10
+	MOVL $27, BX
+	CMPL 16(R15), $0
+	JNE  LBB8_11
+	JMP  LBB8_7
 
-LBB8_16:
-	LEAL 60(R15), CX
-	CMPL R15, $-120
-	MOVL CX, R15
-	JGE  LBB8_7
-
-LBB8_17:
-	MOVLQSX AX, SI
-	XORL    DX, DX
-	XORL    CX, CX
+LBB8_12:
+	LONG $0x33358d4c; WORD $0x0052; BYTE $0x00 // leaq         $21043(%rip), %r14  /* _POW_TAB(%rip) */
+	JMP  LBB8_14
 
 LBB8_18:
-	CMPQ    DX, SI
-	JGE     LBB8_20
-	LEAQ    0(CX)(CX*4), CX
-	MOVBQSX 0(R12)(DX*1), DI
-	LEAQ    -48(DI)(CX*2), CX
-	INCQ    DX
-	LEAQ    1(R13), DI
-	CMPQ    CX, DI
-	JB      LBB8_18
-	JMP     LBB8_22
+	MOVL $27, BX
+	CMPL 16(R15), $0
+	JE   LBB8_13
 
 LBB8_20:
-	TESTQ CX, CX
-	JE    LBB8_15
+	MOVQ R15, DI
+	MOVL BX, SI
+	LONG $0x002391e8; BYTE $0x00 // callq        _left_shift
+	MOVL 20(R15), AX
+
+LBB8_13:
+	SUBL BX, R12
+
+LBB8_14:
+	TESTL AX, AX
+	JS    LBB8_17
+	JNE   LBB8_21
+	MOVQ  0(R15), CX
+	CMPB  0(CX), $53
+	JL    LBB8_19
+	JMP   LBB8_21
+
+LBB8_17:
+	CMPL AX, $-8
+	JL   LBB8_18
+
+LBB8_19:
+	MOVL    AX, CX
+	NEGL    CX
+	MOVLQSX CX, CX
+	MOVL    0(R14)(CX*4), BX
+	CMPL    16(R15), $0
+	JNE     LBB8_20
+	JMP     LBB8_13
 
 LBB8_21:
-	ADDQ CX, CX
-	LEAQ 0(CX)(CX*4), CX
-	INCL DX
-	LEAQ 1(R13), SI
-	CMPQ CX, SI
-	JB   LBB8_21
+	CMPL R12, $-1022
+	JG   LBB8_27
+	CMPL 16(R15), $0
+	MOVQ -48(BP), BX
+	JE   LBB8_29
+	CMPL R12, $-1082
+	JG   LBB8_30
+	ADDL $961, R12
 
-LBB8_22:
-	MOVL    804(R12), SI
-	SUBL    DX, SI
-	INCL    SI
-	MOVL    SI, 804(R12)
-	XORL    SI, SI
-	CMPL    DX, AX
-	JGE     LBB8_27
-	MOVLQSX DX, DX
-	LEAQ    0(R12)(DX*1), SI
-	XORL    AX, AX
-
-LBB8_24:
-	MOVQ    CX, DI
-	SHRQ    $60, DI
-	ANDQ    R13, CX
-	ORB     $48, DI
-	MOVB    DI, 0(R12)(AX*1)
-	LEAQ    0(CX)(CX*4), CX
-	MOVBQSX 0(SI)(AX*1), DI
-	LEAQ    -48(DI)(CX*2), CX
-	MOVLQSX 800(R12), DI
-	LEAQ    1(DX)(AX*1), BX
-	INCQ    AX
-	CMPQ    BX, DI
-	JL      LBB8_24
-	TESTQ   CX, CX
-	JE      LBB8_33
-	MOVL    AX, SI
+LBB8_25:
+	MOVQ R15, DI
+	MOVL $60, SI
+	LONG $0x0024c0e8; BYTE $0x00 // callq        _right_shift
+	ADDL $60, R12
+	CMPL R12, $-120
+	JL   LBB8_25
+	ADDL $60, R12
+	JMP  LBB8_31
 
 LBB8_27:
-	MOVL SI, AX
-	JMP  LBB8_30
-
-LBB8_28:
-	ORB     $48, DX
-	MOVLQSX AX, SI
-	MOVB    DX, 0(R12)(SI*1)
-	INCL    AX
+	CMPL R12, $1024
+	MOVQ -48(BP), BX
+	JG   LBB8_61
+	ADDL $-1, R12
+	MOVL R12, R14
+	JMP  LBB8_32
 
 LBB8_29:
-	ADDQ  CX, CX
-	LEAQ  0(CX)(CX*4), CX
-	TESTQ CX, CX
-	JE    LBB8_33
+	MOVL $-1022, R14
+	JMP  LBB8_34
 
 LBB8_30:
-	MOVQ  CX, DX
-	SHRQ  $60, DX
-	ANDQ  R13, CX
-	CMPL  AX, $799
-	JLE   LBB8_28
-	TESTQ DX, DX
-	JE    LBB8_29
-	MOVL  $1, 812(R12)
-	JMP   LBB8_29
+	ADDL $1021, R12
 
-LBB8_33:
-	MOVL  AX, 800(R12)
+LBB8_31:
+	NEGL R12
+	MOVQ R15, DI
+	MOVL R12, SI
+	LONG $0x002479e8; BYTE $0x00 // callq        _right_shift
+	MOVL $-1022, R14
+
+LBB8_32:
+	CMPL 16(R15), $0
+	JE   LBB8_34
+	MOVQ R15, DI
+	MOVL $53, SI
+	LONG $0x0022cfe8; BYTE $0x00 // callq        _left_shift
+
+LBB8_34:
+	MOVL  20(R15), AX
+	MOVQ  $-1, R12
+	CMPL  AX, $20
+	JG    LBB8_63
 	TESTL AX, AX
-	JLE   LBB8_38
-	MOVL  AX, CX
-	CMPB  -1(CX)(R12*1), $48
-	JNE   LBB8_16
-
-LBB8_35:
-	LEAL -1(CX), AX
-	MOVL AX, 800(R12)
-	CMPQ CX, $1
-	JLE  LBB8_37
-	LEAQ -1(CX), AX
-	CMPB -2(R12)(CX*1), $48
-	MOVQ AX, CX
-	JE   LBB8_35
-	JMP  LBB8_16
+	JLE   LBB8_40
+	MOVL  16(R15), DX
+	XORL  SI, SI
+	TESTL DX, DX
+	WORD  $0x480f; BYTE $0xd6 // cmovsl       %esi, %edx
+	LEAQ  -1(AX), R9
+	CMPQ  R9, DX
+	LONG  $0xca430f44         // cmovael      %edx, %r9d
+	LEAL  1(R9), R8
+	XORL  R12, R12
 
 LBB8_37:
-	DECL CX
-	MOVL CX, AX
-
-LBB8_38:
-	TESTL AX, AX
-	JNE   LBB8_16
-	MOVL  $0, 804(R12)
-	JMP   LBB8_16
+	CMPQ    DX, SI
+	JE      LBB8_41
+	LEAQ    0(R12)(R12*4), DI
+	MOVQ    0(R15), CX
+	MOVBQSX 0(CX)(SI*1), CX
+	LEAQ    0(CX)(DI*2), R12
+	ADDQ    $-48, R12
+	ADDQ    $1, SI
+	CMPQ    AX, SI
+	JNE     LBB8_37
+	MOVL    R8, R9
+	JMP     LBB8_41
 
 LBB8_40:
-	MOVQ CX, BX
-	CMPL R14, $-61
-	JG   LBB8_42
+	XORL R9, R9
+	XORL R12, R12
 
 LBB8_41:
-	MOVQ R12, DI
-	MOVL $60, SI
-	LONG $0x0027f5e8; BYTE $0x00 // callq        _left_shift
-	LEAL -60(R15), SI
-	CMPL R15, $120
-	MOVL SI, R15
-	JG   LBB8_41
-	JMP  LBB8_43
-
-LBB8_42:
-	MOVL R15, SI
-
-LBB8_43:
-	MOVQ R12, DI
-	LONG $0x0027dbe8; BYTE $0x00 // callq        _left_shift
-	MOVQ BX, CX
-	JMP  LBB8_8
+	CMPL AX, R9
+	JLE  LBB8_49
+	MOVL AX, SI
+	SUBL R9, SI
+	MOVL R9, DX
+	NOTL DX
+	ADDL AX, DX
+	ANDL $7, SI
+	JE   LBB8_46
+	NEGL SI
+	XORL DI, DI
 
 LBB8_44:
-	MOVQ R12, DI
-	LONG $0x0027cbe8; BYTE $0x00 // callq        _left_shift
-	MOVQ BX, CX
-
-LBB8_45:
-	SUBL R14, CX
-	MOVL 804(R12), AX
+	ADDQ R12, R12
+	LEAQ 0(R12)(R12*4), R12
+	ADDL $-1, DI
+	CMPL SI, DI
+	JNE  LBB8_44
+	SUBL DI, R9
 
 LBB8_46:
-	TESTL AX, AX
-	JS    LBB8_49
-	JNE   LBB8_84
-	CMPB  0(R12), $53
-	JL    LBB8_50
-	JMP   LBB8_84
+	CMPL DX, $7
+	JB   LBB8_49
+	MOVL AX, DX
+	SUBL R9, DX
+
+LBB8_48:
+	IMUL3Q $100000000, R12, R12
+	ADDL   $-8, DX
+	JNE    LBB8_48
 
 LBB8_49:
-	MOVL $27, R14
-	CMPL AX, $-8
-	JL   LBB8_51
-
-LBB8_50:
-	NEGL AX
-	WORD $0x9848                               // cltq
-	LONG $0x12158d48; WORD $0x0056; BYTE $0x00 // leaq         $22034(%rip), %rdx  /* _POW_TAB(%rip) */
-	MOVL 0(DX)(AX*4), R14
-
-LBB8_51:
-	TESTL R14, R14
-	JE    LBB8_45
-	MOVL  800(R12), AX
 	TESTL AX, AX
-	JE    LBB8_45
-	TESTL R14, R14
+	JS    LBB8_57
+	MOVL  16(R15), SI
+	CMPL  SI, AX
 	JLE   LBB8_57
-	MOVQ  CX, BX
-	MOVL  R14, SI
-	CMPL  R14, $61
-	JL    LBB8_44
-	MOVL  R14, R15
-
-LBB8_56:
-	MOVQ R12, DI
-	MOVL $60, SI
-	LONG $0x00275be8; BYTE $0x00 // callq        _left_shift
-	LEAL -60(R15), SI
-	CMPL R15, $120
-	MOVL SI, R15
-	JG   LBB8_56
-	JMP  LBB8_44
+	MOVQ  0(R15), DX
+	MOVB  0(DX)(AX*1), CX
+	LEAL  1(AX), DI
+	CMPL  DI, SI
+	JNE   LBB8_58
+	CMPB  CX, $53
+	JNE   LBB8_58
+	CMPL  28(R15), $0
+	SETNE CX
+	JNE   LBB8_59
+	TESTL AX, AX
+	JLE   LBB8_59
+	ADDL  $-1, AX
+	MOVB  0(DX)(AX*1), CX
+	ANDB  $1, CX
+	JMP   LBB8_59
 
 LBB8_57:
-	MOVQ CX, R15
-	MOVL R14, SI
-	CMPL R14, $-61
-	JLE  LBB8_61
-
-LBB8_58:
-	NEGL SI
-	MOVQ R12, DI
-	LONG $0x00289ae8; BYTE $0x00 // callq        _right_shift
-	MOVQ R15, CX
-	JMP  LBB8_45
+	XORL CX, CX
 
 LBB8_59:
-	MOVL $0, 800(R12)
-	XORL AX, AX
-
-LBB8_60:
-	LEAL 60(SI), CX
-	CMPL SI, $-120
-	MOVL CX, SI
-	JGE  LBB8_58
+	MOVBLZX CX, AX
+	ADDQ    AX, R12
+	MOVQ    $9007199254740992, AX
+	CMPQ    R12, AX
+	JNE     LBB8_63
+	CMPL    R14, $1022
+	JLE     LBB8_62
 
 LBB8_61:
-	MOVLQSX AX, DI
-	XORL    DX, DX
-	XORL    CX, CX
+	XORL R12, R12
+	MOVQ $9218868437227405312, R14
+	JMP  LBB8_64
 
 LBB8_62:
-	CMPQ    DX, DI
-	JGE     LBB8_64
-	LEAQ    0(CX)(CX*4), CX
-	MOVBQSX 0(R12)(DX*1), BX
-	LEAQ    -48(BX)(CX*2), CX
-	INCQ    DX
-	LEAQ    1(R13), BX
-	CMPQ    CX, BX
-	JB      LBB8_62
-	JMP     LBB8_66
+	ADDL $1, R14
+	MOVQ R13, R12
 
-LBB8_64:
-	TESTQ CX, CX
-	JE    LBB8_59
-
-LBB8_65:
-	ADDQ CX, CX
-	LEAQ 0(CX)(CX*4), CX
-	INCL DX
-	LEAQ 1(R13), DI
-	CMPQ CX, DI
-	JB   LBB8_65
-
-LBB8_66:
-	MOVL    804(R12), DI
-	SUBL    DX, DI
-	INCL    DI
-	MOVL    DI, 804(R12)
-	XORL    DI, DI
-	CMPL    DX, AX
-	JGE     LBB8_71
-	MOVLQSX DX, DX
-	LEAQ    0(R12)(DX*1), R8
-	XORL    AX, AX
-
-LBB8_68:
-	MOVQ    CX, BX
-	SHRQ    $60, BX
-	ANDQ    R13, CX
-	ORB     $48, BX
-	MOVB    BX, 0(R12)(AX*1)
-	LEAQ    0(CX)(CX*4), CX
-	MOVBQSX 0(R8)(AX*1), BX
-	LEAQ    -48(BX)(CX*2), CX
-	MOVLQSX 800(R12), BX
-	LEAQ    1(DX)(AX*1), DI
-	INCQ    AX
-	CMPQ    DI, BX
-	JL      LBB8_68
-	TESTQ   CX, CX
-	JE      LBB8_77
-	MOVL    AX, DI
-
-LBB8_71:
-	MOVL DI, AX
-	JMP  LBB8_74
-
-LBB8_72:
-	ORB     $48, DX
-	MOVLQSX AX, DI
-	MOVB    DX, 0(R12)(DI*1)
-	INCL    AX
-
-LBB8_73:
-	ADDQ  CX, CX
-	LEAQ  0(CX)(CX*4), CX
-	TESTQ CX, CX
-	JE    LBB8_77
-
-LBB8_74:
-	MOVQ  CX, DX
-	SHRQ  $60, DX
-	ANDQ  R13, CX
-	CMPL  AX, $799
-	JLE   LBB8_72
-	TESTQ DX, DX
-	JE    LBB8_73
-	MOVL  $1, 812(R12)
-	JMP   LBB8_73
-
-LBB8_77:
-	MOVL  AX, 800(R12)
-	TESTL AX, AX
-	JLE   LBB8_82
-	MOVL  AX, CX
-	CMPB  -1(CX)(R12*1), $48
-	JNE   LBB8_60
-
-LBB8_79:
-	LEAL -1(CX), AX
-	MOVL AX, 800(R12)
-	CMPQ CX, $1
-	JLE  LBB8_81
-	LEAQ -1(CX), AX
-	CMPB -2(R12)(CX*1), $48
-	MOVQ AX, CX
-	JE   LBB8_79
-	JMP  LBB8_60
-
-LBB8_81:
-	DECL CX
-	MOVL CX, AX
-
-LBB8_82:
-	TESTL AX, AX
-	JNE   LBB8_60
-	MOVL  $0, 804(R12)
-	JMP   LBB8_60
-
-LBB8_84:
-	CMPL  CX, $-1022
-	JG    LBB8_113
-	MOVL  800(R12), DX
-	TESTL DX, DX
-	JE    LBB8_116
-	LEAL  1021(CX), R8
-	CMPL  CX, $-1082
-	JG    LBB8_117
-	LEAQ  1(R13), R9
-	JMP   LBB8_90
-
-LBB8_88:
-	MOVL $0, 800(R12)
-	XORL DX, DX
-
-LBB8_89:
-	LEAL 60(R8), SI
-	CMPL R8, $-120
-	MOVL SI, R8
-	JGE  LBB8_118
-
-LBB8_90:
-	MOVLQSX DX, AX
-	XORL    DI, DI
-	XORL    SI, SI
-
-LBB8_91:
-	CMPQ    DI, AX
-	JGE     LBB8_93
-	LEAQ    0(SI)(SI*4), SI
-	MOVBQSX 0(R12)(DI*1), BX
-	LEAQ    -48(BX)(SI*2), SI
-	INCQ    DI
-	CMPQ    SI, R9
-	JB      LBB8_91
-	JMP     LBB8_95
-
-LBB8_93:
-	TESTQ SI, SI
-	JE    LBB8_88
-
-LBB8_94:
-	ADDQ SI, SI
-	LEAQ 0(SI)(SI*4), SI
-	INCL DI
-	CMPQ SI, R9
-	JB   LBB8_94
-
-LBB8_95:
-	MOVL    804(R12), AX
-	SUBL    DI, AX
-	INCL    AX
-	MOVL    AX, 804(R12)
-	XORL    AX, AX
-	CMPL    DI, DX
-	JGE     LBB8_100
-	MOVLQSX DI, DI
-	LEAQ    0(R12)(DI*1), AX
-	XORL    DX, DX
-
-LBB8_97:
-	MOVQ    SI, BX
-	SHRQ    $60, BX
-	ANDQ    R13, SI
-	ORB     $48, BX
-	MOVB    BX, 0(R12)(DX*1)
-	LEAQ    0(SI)(SI*4), SI
-	MOVBQSX 0(AX)(DX*1), BX
-	LEAQ    -48(BX)(SI*2), SI
-	MOVLQSX 800(R12), BX
-	LEAQ    1(DI)(DX*1), CX
-	INCQ    DX
-	CMPQ    CX, BX
-	JL      LBB8_97
-	TESTQ   SI, SI
-	JE      LBB8_106
-	MOVL    DX, AX
-
-LBB8_100:
-	MOVL AX, DX
-	JMP  LBB8_103
-
-LBB8_101:
-	ORB     $48, AX
-	MOVLQSX DX, CX
-	MOVB    AX, 0(R12)(CX*1)
-	INCL    DX
-
-LBB8_102:
-	ADDQ  SI, SI
-	LEAQ  0(SI)(SI*4), SI
-	TESTQ SI, SI
-	JE    LBB8_106
-
-LBB8_103:
-	MOVQ  SI, AX
-	SHRQ  $60, AX
-	ANDQ  R13, SI
-	CMPL  DX, $799
-	JLE   LBB8_101
-	TESTQ AX, AX
-	JE    LBB8_102
-	MOVL  $1, 812(R12)
-	JMP   LBB8_102
-
-LBB8_106:
-	MOVL  DX, 800(R12)
-	TESTL DX, DX
-	JLE   LBB8_111
-	MOVL  DX, AX
-	CMPB  -1(AX)(R12*1), $48
-	JNE   LBB8_89
-
-LBB8_108:
-	LEAL -1(AX), CX
-	MOVL CX, 800(R12)
-	CMPQ AX, $1
-	JLE  LBB8_110
-	LEAQ -1(AX), DX
-	CMPB -2(R12)(AX*1), $48
-	MOVQ DX, AX
-	JE   LBB8_108
-	JMP  LBB8_89
-
-LBB8_110:
-	DECL AX
-	MOVL AX, DX
-
-LBB8_111:
-	TESTL DX, DX
-	JNE   LBB8_89
-	MOVL  $0, 804(R12)
-	JMP   LBB8_89
-
-LBB8_113:
-	CMPL CX, $1024
-	JLE  LBB8_115
-	XORL CX, CX
-	MOVQ -48(BP), R15
-	MOVQ $4503599627370496, BX
-	MOVQ $9218868437227405312, R13
-	JMP  LBB8_150
-
-LBB8_115:
-	DECL CX
-	MOVL CX, R14
-	JMP  LBB8_119
-
-LBB8_116:
-	MOVL $-1022, R14
-	MOVQ -48(BP), R15
-	MOVQ $4503599627370496, BX
-	MOVQ $9218868437227405312, R13
-	JMP  LBB8_121
-
-LBB8_117:
-	MOVL R8, SI
-
-LBB8_118:
-	NEGL SI
-	MOVQ R12, DI
-	LONG $0x002561e8; BYTE $0x00 // callq        _right_shift
-	MOVL $-1022, R14
-
-LBB8_119:
-	MOVQ -48(BP), R15
-	MOVQ $4503599627370496, BX
-	MOVQ $9218868437227405312, R13
-	CMPL 800(R12), $0
-	JE   LBB8_121
-	MOVQ R12, DI
-	MOVL $53, SI
-	LONG $0x0023c4e8; BYTE $0x00   // callq        _left_shift
-
-LBB8_121:
-	MOVLQSX 804(R12), R8
-	MOVQ    $-1, CX
-	CMPQ    R8, $20
-	JG      LBB8_149
-	MOVL    R8, R9
-	TESTL   R9, R9
-	JLE     LBB8_126
-	MOVLQSX 800(R12), SI
-	XORL    DX, DX
-	XORL    CX, CX
-
-LBB8_124:
-	CMPQ    DX, SI
-	JGE     LBB8_127
-	LEAQ    0(CX)(CX*4), AX
-	MOVBQSX 0(R12)(DX*1), DI
-	LEAQ    -48(DI)(AX*2), CX
-	INCQ    DX
-	CMPQ    R9, DX
-	JNE     LBB8_124
-	JMP     LBB8_127
-
-LBB8_126:
-	XORL DX, DX
-	XORL CX, CX
-
-LBB8_127:
-	CMPL R8, DX
-	JLE  LBB8_135
-	MOVL R9, DI
-	SUBL DX, DI
-	MOVL DX, SI
-	NOTL SI
-	ADDL R8, SI
-	ANDL $7, DI
-	JE   LBB8_132
-	NEGL DI
-	XORL AX, AX
-
-LBB8_130:
-	ADDQ CX, CX
-	LEAQ 0(CX)(CX*4), CX
-	DECL AX
-	CMPL DI, AX
-	JNE  LBB8_130
-	SUBL AX, DX
-
-LBB8_132:
-	CMPL SI, $7
-	JB   LBB8_135
-	MOVL R9, AX
-	SUBL DX, AX
-
-LBB8_134:
-	IMUL3Q $100000000, CX, CX
-	ADDL   $-8, AX
-	JNE    LBB8_134
-
-LBB8_135:
-	TESTL R9, R9
-	JS    LBB8_143
-	MOVL  800(R12), DX
-	CMPL  DX, R8
-	JLE   LBB8_143
-	MOVB  0(R12)(R9*1), AX
-	LEAL  1(R9), SI
-	CMPL  SI, DX
-	JNE   LBB8_144
-	CMPB  AX, $53
-	JNE   LBB8_144
-	CMPL  812(R12), $0
-	SETNE DX
-	JNE   LBB8_145
-	TESTL R9, R9
-	JLE   LBB8_145
-	MOVB  -1(R8)(R12*1), DX
-	ANDB  $1, DX
-	JMP   LBB8_145
-
-LBB8_143:
-	XORL DX, DX
-
-LBB8_145:
-	MOVBLZX DX, AX
-	ADDQ    AX, CX
-	MOVQ    $9007199254740992, AX
-	CMPQ    CX, AX
-	JNE     LBB8_149
-	CMPL    R14, $1022
-	JLE     LBB8_148
-	XORL    CX, CX
-	JMP     LBB8_150
-
-LBB8_148:
-	INCL R14
-	MOVQ BX, CX
-
-LBB8_149:
-	MOVQ  CX, AX
-	ANDQ  BX, AX
+LBB8_63:
+	MOVQ  R12, AX
+	ANDQ  R13, AX
 	ADDL  $1023, R14
 	ANDL  $2047, R14
 	SHLQ  $52, R14
 	TESTQ AX, AX
 	LONG  $0xf0440f4c // cmoveq       %rax, %r14
-	MOVQ  R14, R13
 
-LBB8_150:
-	DECQ BX
-	ANDQ CX, BX
-	ORQ  R13, BX
+LBB8_64:
+	ADDQ $-1, R13
+	ANDQ R12, R13
+	ORQ  R14, R13
 	MOVQ $-9223372036854775808, AX
-	ORQ  BX, AX
-	CMPL 808(R12), $0
-	LONG $0xc3440f48               // cmoveq       %rbx, %rax
-	MOVQ AX, 0(R15)
+	ORQ  R13, AX
+	CMPL 24(R15), $0
+	LONG $0xc5440f49               // cmoveq       %r13, %rax
+	MOVQ AX, 0(BX)
 	XORL AX, AX
-	ADDQ $24, SP
+	ADDQ $8, SP
 	BYTE $0x5b                     // popq         %rbx
 	WORD $0x5c41                   // popq         %r12
 	WORD $0x5d41                   // popq         %r13
@@ -3323,196 +2955,209 @@ LBB8_150:
 	BYTE $0x5d                     // popq         %rbp
 	RET
 
-LBB8_144:
-	CMPB  AX, $52
-	SETGT DX
-	JMP   LBB8_145
+LBB8_58:
+	CMPB  CX, $52
+	SETGT CX
+	JMP   LBB8_59
 
-_atof_native_decimal:
-	BYTE $0x55                   // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	WORD $0x5641                 // pushq        %r14
-	BYTE $0x53                   // pushq        %rbx
-	SUBQ $832, SP
-	MOVQ $0, -24(BP)
-	LONG $0xc057f8c5             // vxorps       %xmm0, %xmm0, %xmm0
-	QUAD $0xfffffcb88511fcc5     // vmovups      %ymm0, $-840(%rbp)
-	QUAD $0xfffffcd88511fcc5     // vmovups      %ymm0, $-808(%rbp)
-	QUAD $0xfffffcf88511fcc5     // vmovups      %ymm0, $-776(%rbp)
-	QUAD $0xfffffd188511fcc5     // vmovups      %ymm0, $-744(%rbp)
-	QUAD $0xfffffd388511fcc5     // vmovups      %ymm0, $-712(%rbp)
-	QUAD $0xfffffd588511fcc5     // vmovups      %ymm0, $-680(%rbp)
-	QUAD $0xfffffd788511fcc5     // vmovups      %ymm0, $-648(%rbp)
-	QUAD $0xfffffd988511fcc5     // vmovups      %ymm0, $-616(%rbp)
-	QUAD $0xfffffdb88511fcc5     // vmovups      %ymm0, $-584(%rbp)
-	QUAD $0xfffffdd88511fcc5     // vmovups      %ymm0, $-552(%rbp)
-	QUAD $0xfffffdf88511fcc5     // vmovups      %ymm0, $-520(%rbp)
-	QUAD $0xfffffe188511fcc5     // vmovups      %ymm0, $-488(%rbp)
-	QUAD $0xfffffe388511fcc5     // vmovups      %ymm0, $-456(%rbp)
-	QUAD $0xfffffe588511fcc5     // vmovups      %ymm0, $-424(%rbp)
-	QUAD $0xfffffe788511fcc5     // vmovups      %ymm0, $-392(%rbp)
-	QUAD $0xfffffe988511fcc5     // vmovups      %ymm0, $-360(%rbp)
-	QUAD $0xfffffeb88511fcc5     // vmovups      %ymm0, $-328(%rbp)
-	QUAD $0xfffffed88511fcc5     // vmovups      %ymm0, $-296(%rbp)
-	QUAD $0xfffffef88511fcc5     // vmovups      %ymm0, $-264(%rbp)
-	QUAD $0xffffff188511fcc5     // vmovups      %ymm0, $-232(%rbp)
-	QUAD $0xffffff388511fcc5     // vmovups      %ymm0, $-200(%rbp)
-	QUAD $0xffffff588511fcc5     // vmovups      %ymm0, $-168(%rbp)
-	QUAD $0xffffff788511fcc5     // vmovups      %ymm0, $-136(%rbp)
-	LONG $0x4511fcc5; BYTE $0x98 // vmovups      %ymm0, $-104(%rbp)
-	LONG $0x4511fcc5; BYTE $0xb8 // vmovups      %ymm0, $-72(%rbp)
-	LONG $0xc057f8c5             // vxorps       %xmm0, %xmm0, %xmm0
-	LONG $0x4511f8c5; BYTE $0xd8 // vmovups      %xmm0, $-40(%rbp)
-	XORL AX, AX
-	CMPB 0(DI), $45
-	JNE  LBB9_2
-	MOVL $1, -32(BP)
-	MOVL $1, AX
+_atof_native:
+	BYTE  $0x55               // pushq        %rbp
+	WORD  $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	WORD  $0x5641             // pushq        %r14
+	BYTE  $0x53               // pushq        %rbx
+	SUBQ  $48, SP
+	MOVQ  R8, R14
+	MOVQ  $0, -56(BP)
+	MOVQ  DX, -48(BP)
+	MOVQ  CX, -40(BP)
+	TESTQ CX, CX
+	JE    LBB9_5
+	MOVB  $0, 0(DX)
+	CMPQ  CX, $1
+	JE    LBB9_5
+	MOVB  $0, 1(DX)
+	CMPQ  -40(BP), $3
+	JB    LBB9_5
+	MOVL  $2, AX
 
-LBB9_2:
-	CMPL    AX, SI
-	JGE     LBB9_3
-	MOVL    SI, R10
-	MOVL    AX, AX
-	MOVLQSX SI, R11
-	MOVB    $1, CX
-	XORL    R9, R9
-	XORL    R14, R14
-	XORL    R8, R8
-	JMP     LBB9_5
-
-LBB9_8:
-	DECL -36(BP)
-	XORL R14, R14
-
-LBB9_15:
-	INCQ  AX
-	CMPQ  AX, R11
-	SETLT CX
-	CMPQ  R10, AX
-	JE    LBB9_16
+LBB9_4:
+	MOVQ -48(BP), CX
+	MOVB $0, 0(CX)(AX*1)
+	ADDQ $1, AX
+	CMPQ -40(BP), AX
+	JA   LBB9_4
 
 LBB9_5:
-	MOVBLZX 0(DI)(AX*1), BX
-	LEAL    -48(BX), DX
-	CMPB    DX, $9
-	JA      LBB9_13
-	TESTL   R14, R14
-	JNE     LBB9_9
-	CMPB    BX, $48
-	JE      LBB9_8
+	LONG $0xc057f8c5             // vxorps       %xmm0, %xmm0, %xmm0
+	LONG $0x4511f8c5; BYTE $0xe0 // vmovups      %xmm0, $-32(%rbp)
+	CMPB 0(DI), $45
+	JNE  LBB9_8
+	MOVL $1, -24(BP)
+	MOVL $1, AX
+	CMPQ AX, SI
+	JL   LBB9_9
+
+LBB9_7:
+	MOVL $0, -28(BP)
+	JMP  LBB9_40
+
+LBB9_8:
+	XORL AX, AX
+	CMPQ AX, SI
+	JGE  LBB9_7
 
 LBB9_9:
-	CMPL    R14, $799
-	JG      LBB9_11
-	MOVLQSX R14, CX
-	MOVB    BX, -840(BP)(CX*1)
-	MOVL    -40(BP), R9
-	INCL    R9
-	MOVL    R9, -40(BP)
-	MOVL    R9, R14
-	JMP     LBB9_15
+	MOVB $1, DX
+	XORL R9, R9
+	XORL R10, R10
+	XORL R8, R8
+	JMP  LBB9_13
+
+LBB9_21:
+	MOVL $1, -20(BP)
+
+LBB9_12:
+	ADDQ  $1, AX
+	CMPQ  AX, SI
+	SETLT DX
+	CMPQ  SI, AX
+	JE    LBB9_23
 
 LBB9_13:
-	CMPB BX, $46
-	JNE  LBB9_17
-	MOVL R14, -36(BP)
-	MOVL $1, R8
-	JMP  LBB9_15
-
-LBB9_11:
-	CMPB BX, $48
-	JE   LBB9_15
-	MOVL $1, -28(BP)
-	JMP  LBB9_15
-
-LBB9_3:
-	MOVL $0, -36(BP)
-	JMP  LBB9_33
-
-LBB9_16:
-	MOVL R10, AX
-
-LBB9_17:
-	TESTL R8, R8
-	JE    LBB9_18
-	TESTB $1, CX
-	JNE   LBB9_20
-	JMP   LBB9_33
-
-LBB9_18:
-	MOVL  R9, -36(BP)
-	TESTB $1, CX
-	JE    LBB9_33
-
-LBB9_20:
-	MOVL AX, DX
-	MOVB 0(DI)(DX*1), CX
-	ORB  $32, CX
-	CMPB CX, $101
-	JNE  LBB9_33
-	MOVB 1(DI)(DX*1), BX
-	CMPB BX, $45
-	JE   LBB9_25
-	MOVL $1, R8
-	CMPB BX, $43
-	JNE  LBB9_23
-	ADDL $2, AX
-	MOVL AX, DX
-	XORL AX, AX
-	CMPL DX, SI
-	JL   LBB9_28
-	JMP  LBB9_32
-
-LBB9_25:
-	ADDL $2, AX
-	MOVL $-1, R8
-	MOVL AX, DX
-	XORL AX, AX
-	CMPL DX, SI
-	JL   LBB9_28
-	JMP  LBB9_32
-
-LBB9_23:
-	INCQ DX
-	XORL AX, AX
-	CMPL DX, SI
-	JGE  LBB9_32
-
-LBB9_28:
-	MOVLQSX DX, AX
-	SUBL    DX, SI
-	ADDQ    AX, DI
-	XORL    DX, DX
-	XORL    AX, AX
-
-LBB9_29:
-	CMPL    AX, $9999
-	JG      LBB9_32
-	MOVBLZX 0(DI)(DX*1), BX
+	MOVBLZX 0(DI)(AX*1), BX
 	LEAL    -48(BX), CX
 	CMPB    CX, $9
-	JA      LBB9_32
-	LEAL    0(AX)(AX*4), AX
-	LEAL    -48(BX)(AX*2), AX
-	INCQ    DX
-	CMPL    SI, DX
-	JNE     LBB9_29
+	JA      LBB9_18
+	CMPB    BX, $48
+	JNE     LBB9_20
+	TESTL   R10, R10
+	JE      LBB9_22
+	MOVLQSX R9, DX
+	CMPQ    -40(BP), DX
+	JA      LBB9_10
+	JMP     LBB9_11
+
+LBB9_18:
+	CMPB BX, $46
+	JNE  LBB9_30
+	MOVL R10, -28(BP)
+	MOVL $1, R8
+	JMP  LBB9_12
+
+LBB9_20:
+	MOVLQSX R10, DX
+	CMPQ    -40(BP), DX
+	JBE     LBB9_21
+
+LBB9_10:
+	MOVQ -48(BP), CX
+	MOVB BX, 0(CX)(DX*1)
+	MOVL -32(BP), R9
+	ADDL $1, R9
+	MOVL R9, -32(BP)
+
+LBB9_11:
+	MOVL R9, R10
+	JMP  LBB9_12
+
+LBB9_22:
+	ADDL $-1, -28(BP)
+	XORL R10, R10
+	JMP  LBB9_12
+
+LBB9_23:
+	MOVL  SI, CX
+	MOVQ  SI, AX
+	TESTL R8, R8
+	JNE   LBB9_25
+
+LBB9_24:
+	MOVL R9, -28(BP)
+
+LBB9_25:
+	TESTB $1, DX
+	JE    LBB9_40
+	MOVB  0(DI)(CX*1), CX
+	ORB   $32, CX
+	CMPB  CX, $101
+	JNE   LBB9_40
+	MOVL  AX, DX
+	MOVB  1(DI)(DX*1), BX
+	CMPB  BX, $45
+	JE    LBB9_31
+	MOVL  $1, CX
+	CMPB  BX, $43
+	JNE   LBB9_33
+	ADDL  $2, AX
+	JMP   LBB9_32
+
+LBB9_30:
+	MOVQ  AX, CX
+	TESTL R8, R8
+	JNE   LBB9_25
+	JMP   LBB9_24
+
+LBB9_31:
+	ADDL $2, AX
+	MOVL $-1, CX
 
 LBB9_32:
-	IMULL R8, AX
-	ADDL  AX, -36(BP)
+	MOVL    AX, DX
+	MOVLQSX DX, DX
+	XORL    AX, AX
+	CMPQ    DX, SI
+	JL      LBB9_34
+	JMP     LBB9_39
 
 LBB9_33:
-	LEAQ -840(BP), DI
-	LEAQ -24(BP), SI
-	WORD $0xf8c5; BYTE $0x77     // vzeroupper
-	LONG $0xfff5e1e8; BYTE $0xff // callq        _decimal_to_f64
-	LONG $0x4510fbc5; BYTE $0xe8 // vmovsd       $-24(%rbp), %xmm0
-	ADDQ $832, SP
-	BYTE $0x5b                   // popq         %rbx
-	WORD $0x5e41                 // popq         %r14
-	BYTE $0x5d                   // popq         %rbp
+	ADDQ    $1, DX
+	MOVLQSX DX, DX
+	XORL    AX, AX
+	CMPQ    DX, SI
+	JGE     LBB9_39
+
+LBB9_34:
+	XORL AX, AX
+
+LBB9_35:
+	MOVBLSX 0(DI)(DX*1), BX
+	CMPL    BX, $48
+	JL      LBB9_39
+	CMPL    AX, $9999
+	JG      LBB9_39
+	CMPB    BX, $57
+	JG      LBB9_39
+	LEAL    0(AX)(AX*4), AX
+	LEAL    0(BX)(AX*2), AX
+	ADDL    $-48, AX
+	ADDQ    $1, DX
+	CMPQ    SI, DX
+	JNE     LBB9_35
+
+LBB9_39:
+	IMULL CX, AX
+	ADDL  AX, -28(BP)
+
+LBB9_40:
+	LEAQ -48(BP), DI
+	LEAQ -56(BP), SI
+	LONG $0xfffb61e8; BYTE $0xff  // callq        _decimal_to_f64
+	MOVQ -56(BP), AX
+	MOVQ $9223372036854775807, DX
+	ANDQ AX, DX
+	MOVQ $-8, CX
+	MOVQ $9218868437227405312, SI
+	CMPQ DX, SI
+	JE   LBB9_42
+	MOVQ AX, 8(R14)
+	MOVL $8, CX
+
+LBB9_42:
+	MOVQ CX, 0(R14)
+	ADDQ $48, SP
+	BYTE $0x5b      // popq         %rbx
+	WORD $0x5e41    // popq         %r14
+	BYTE $0x5d      // popq         %rbp
 	RET
 
 _value:
@@ -3531,21 +3176,21 @@ _value:
 	MOVQ    DI, -64(BP)
 	MOVQ    SI, -56(BP)
 	LEAQ    -40(BP), DX
-	LONG    $0x00049ae8; BYTE $0x00               // callq        _advance_ns
+	LONG    $0x0004b6e8; BYTE $0x00               // callq        _advance_ns
 	MOVBLSX AX, AX
 	CMPL    AX, $125
 	JA      LBB10_4
-	LONG    $0x530d8d48; WORD $0x0002; BYTE $0x00 // leaq         $595(%rip), %rcx  /* LJTI10_0(%rip) */
+	LONG    $0x6f0d8d48; WORD $0x0002; BYTE $0x00 // leaq         $623(%rip), %rcx  /* LJTI10_0(%rip) */
 	MOVLQSX 0(CX)(AX*4), AX
 	ADDQ    CX, AX
 	JMP     AX
 
 LBB10_2:
-	DECQ -40(BP)
+	ADDQ $-1, -40(BP)
 	LEAQ -64(BP), DI
 	LEAQ -40(BP), SI
 	MOVQ R14, DX
-	LONG $0x000a90e8; BYTE $0x00 // callq        _vnumber
+	LONG $0x000a7ee8; BYTE $0x00 // callq        _vnumber
 	MOVQ -40(BP), BX
 	JMP  LBB10_18
 
@@ -3557,7 +3202,7 @@ LBB10_3:
 LBB10_4:
 	MOVQ $-2, 0(R14)
 	MOVQ -40(BP), BX
-	DECQ BX
+	ADDQ $-1, BX
 	JMP  LBB10_18
 
 LBB10_5:
@@ -3566,7 +3211,7 @@ LBB10_5:
 	LEAQ  -64(BP), DI
 	LEAQ  -48(BP), DX
 	MOVQ  R15, SI
-	LONG  $0x0006cce8; BYTE $0x00 // callq        _advance_string
+	LONG  $0x0006ade8; BYTE $0x00 // callq        _advance_string
 	TESTQ AX, AX
 	JS    LBB10_25
 	MOVQ  AX, -40(BP)
@@ -3584,13 +3229,15 @@ LBB10_5:
 LBB10_7:
 	XORL  AX, AX
 	TESTL R12, R12
-	MOVL  $11, CX
+	MOVQ  $-2, CX
+	MOVL  $11, DX
 	JMP   LBB10_17
 
 LBB10_8:
 	XORL  AX, AX
 	TESTL R12, R12
-	MOVL  $10, CX
+	MOVQ  $-2, CX
+	MOVL  $10, DX
 	JMP   LBB10_17
 
 LBB10_9:
@@ -3627,17 +3274,18 @@ LBB10_12:
 LBB10_15:
 	XORL  AX, AX
 	TESTL R12, R12
-	MOVL  $13, CX
+	MOVQ  $-2, CX
+	MOVL  $13, DX
 	JMP   LBB10_17
 
 LBB10_16:
 	XORL  AX, AX
 	TESTL R12, R12
-	MOVL  $12, CX
+	MOVQ  $-2, CX
+	MOVL  $12, DX
 
 LBB10_17:
-	MOVQ  $-2, DX
-	LONG  $0xd1450f48 // cmovneq      %rcx, %rdx
+	LONG  $0xd1440f48 // cmoveq       %rcx, %rdx
 	SETEQ AX
 	MOVQ  DX, 0(R14)
 	MOVQ  -40(BP), BX
@@ -3676,7 +3324,7 @@ LBB10_25:
 	JMP  LBB10_18
 
 LBB10_26:
-	DECQ AX
+	ADDQ $-1, AX
 	MOVQ AX, -40(BP)
 	MOVQ $-2, CX
 	CMPB DX, $110
@@ -3686,14 +3334,14 @@ LBB10_26:
 LBB10_28:
 	SHRL    $8, DX
 	MOVBLSX 1(R15)(AX*1), SI
-	INCQ    AX
+	ADDQ    $1, AX
 	MOVBLZX DX, DI
 	CMPL    DI, SI
 	JE      LBB10_28
 	JMP     LBB10_29
 
 LBB10_31:
-	DECQ AX
+	ADDQ $-1, AX
 	MOVQ AX, -40(BP)
 	MOVQ $-2, CX
 	CMPB DX, $116
@@ -3703,7 +3351,7 @@ LBB10_31:
 LBB10_33:
 	SHRL    $8, DX
 	MOVBLSX 1(R15)(AX*1), SI
-	INCQ    AX
+	ADDQ    $1, AX
 	MOVBLZX DX, DI
 	CMPL    DI, SI
 	JE      LBB10_33
@@ -3718,7 +3366,7 @@ LBB10_35:
 LBB10_37:
 	SHRL    $8, DX
 	MOVBLSX 1(R15)(AX*1), SI
-	INCQ    AX
+	ADDQ    $1, AX
 	MOVBLZX DX, DI
 	CMPL    DI, SI
 	JE      LBB10_37
@@ -3754,132 +3402,132 @@ LBB10_18:
 // .set L10_0_set_22, LBB10_22-LJTI10_0
 // .set L10_0_set_15, LBB10_15-LJTI10_0
 LJTI10_0:
-	LONG $0xfffffdd3 // .long L10_0_set_3
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffdf6 // .long L10_0_set_5
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffe49 // .long L10_0_set_7
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffdb6 // .long L10_0_set_2
-	LONG $0xfffffe58 // .long L10_0_set_8
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffe67 // .long L10_0_set_9
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffee7 // .long L10_0_set_16
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xffffff0e // .long L10_0_set_19
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffe77 // .long L10_0_set_10
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffeab // .long L10_0_set_12
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xffffff2e // .long L10_0_set_22
-	LONG $0xfffffde3 // .long L10_0_set_4
-	LONG $0xfffffedb // .long L10_0_set_15
+	LONG $0xfffffdb8 // .long L10_0_set_3
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffddc // .long L10_0_set_5
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffe2f // .long L10_0_set_7
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffd9a // .long L10_0_set_2
+	LONG $0xfffffe45 // .long L10_0_set_8
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffe5b // .long L10_0_set_9
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffee2 // .long L10_0_set_16
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xffffff09 // .long L10_0_set_19
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffe6b // .long L10_0_set_10
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffe9f // .long L10_0_set_12
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xffffff29 // .long L10_0_set_22
+	LONG $0xfffffdc8 // .long L10_0_set_4
+	LONG $0xfffffecf // .long L10_0_set_15
 
 LCPI11_0:
 	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
@@ -3896,7 +3544,6 @@ LCPI11_3:
 _advance_ns:
 	BYTE $0x55               // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	BYTE $0x53               // pushq        %rbx
 	MOVQ 0(DX), R8
 	CMPQ R8, SI
 	JAE  LBB11_6
@@ -3908,14 +3555,14 @@ _advance_ns:
 	ADDB $-9, AX
 	CMPB AX, $1
 	JBE  LBB11_6
-	MOVQ R8, R10
+	MOVQ R8, AX
 	JMP  LBB11_5
 
 LBB11_6:
-	LEAQ 1(R8), R10
-	CMPQ R10, SI
+	LEAQ 1(R8), AX
+	CMPQ AX, SI
 	JAE  LBB11_10
-	MOVB 0(DI)(R10*1), CX
+	MOVB 0(DI)(AX*1), CX
 	CMPB CX, $13
 	JE   LBB11_10
 	CMPB CX, $32
@@ -3925,10 +3572,10 @@ LBB11_6:
 	JA   LBB11_5
 
 LBB11_10:
-	LEAQ 2(R8), R10
-	CMPQ R10, SI
+	LEAQ 2(R8), AX
+	CMPQ AX, SI
 	JAE  LBB11_14
-	MOVB 0(DI)(R10*1), CX
+	MOVB 0(DI)(AX*1), CX
 	CMPB CX, $13
 	JE   LBB11_14
 	CMPB CX, $32
@@ -3938,10 +3585,10 @@ LBB11_10:
 	JA   LBB11_5
 
 LBB11_14:
-	LEAQ 3(R8), R10
-	CMPQ R10, SI
+	LEAQ 3(R8), AX
+	CMPQ AX, SI
 	JAE  LBB11_18
-	MOVB 0(DI)(R10*1), CX
+	MOVB 0(DI)(AX*1), CX
 	CMPB CX, $13
 	JE   LBB11_18
 	CMPB CX, $32
@@ -3951,59 +3598,55 @@ LBB11_14:
 	JA   LBB11_5
 
 LBB11_18:
-	LEAQ  4(R8), R9
-	CMPQ  R9, SI
+	ADDQ  $4, R8
+	CMPQ  R8, SI
 	JAE   LBB11_19
-	LEAQ  0(DI)(R9*1), R10
-	MOVQ  SI, BX
-	SUBQ  R9, BX
+	LEAQ  0(DI)(R8*1), R9
+	MOVQ  SI, R11
+	SUBQ  R8, R11
 	JE    LBB11_27
-	MOVL  R10, AX
+	MOVL  R9, AX
 	ANDL  $15, AX
 	TESTQ AX, AX
 	JE    LBB11_27
-	LEAQ  0(DI)(R8*1), R10
-	MOVQ  SI, BX
-	SUBQ  R8, BX
-	LEAQ  -5(BX), R8
-	XORL  AX, AX
+	MOVL  $5, R10
+	SUBQ  SI, R10
 	MOVQ  $4294977024, R9
 
 LBB11_23:
-	MOVBLSX 4(R10)(AX*1), CX
+	MOVBLSX 0(DI)(R8*1), CX
 	CMPL    CX, $32
-	JA      LBB11_25
+	JA      LBB11_42
 	BTQ     CX, R9
-	JAE     LBB11_25
-	LEAQ    1(AX), R11
-	CMPQ    R8, AX
+	JAE     LBB11_42
+	LEAQ    0(R10)(R8*1), AX
+	LEAQ    1(R8), CX
+	CMPQ    AX, $4
 	JE      LBB11_26
-	LEAQ    5(R10)(AX*1), CX
-	ANDL    $15, CX
-	MOVQ    R11, AX
-	TESTQ   CX, CX
+	LEAL    0(DI)(R8*1), AX
+	ADDL    $1, AX
+	ANDL    $15, AX
+	MOVQ    CX, R8
+	TESTQ   AX, AX
 	JNE     LBB11_23
 
 LBB11_26:
-	LEAQ 4(R11)(R10*1), R10
-	SUBQ R11, BX
-	ADDQ $-4, BX
+	LEAQ 0(DI)(CX*1), R9
+	MOVQ SI, R11
+	SUBQ CX, R11
 
 LBB11_27:
-	CMPQ BX, $16
+	CMPQ R11, $16
 	JB   LBB11_33
-	LEAQ -16(BX), R8
-	MOVQ R8, AX
-	ANDQ $-16, AX
-	LEAQ 16(AX)(R10*1), R9
-	ANDL $15, R8
-	QUAD $0xfffffe92056ffac5 // vmovdqu      $-366(%rip), %xmm0  /* LCPI11_0(%rip) */
-	QUAD $0xfffffe9a0d6ffac5 // vmovdqu      $-358(%rip), %xmm1  /* LCPI11_1(%rip) */
-	QUAD $0xfffffea2156ffac5 // vmovdqu      $-350(%rip), %xmm2  /* LCPI11_2(%rip) */
-	QUAD $0xfffffeaa1d6ffac5 // vmovdqu      $-342(%rip), %xmm3  /* LCPI11_3(%rip) */
+	MOVQ DI, CX
+	SUBQ R9, CX
+	QUAD $0xfffffea7056ffac5 // vmovdqu      $-345(%rip), %xmm0  /* LCPI11_0(%rip) */
+	QUAD $0xfffffeaf0d6ffac5 // vmovdqu      $-337(%rip), %xmm1  /* LCPI11_1(%rip) */
+	QUAD $0xfffffeb7156ffac5 // vmovdqu      $-329(%rip), %xmm2  /* LCPI11_2(%rip) */
+	QUAD $0xfffffebf1d6ffac5 // vmovdqu      $-321(%rip), %xmm3  /* LCPI11_3(%rip) */
 
 LBB11_29:
-	LONG $0x6f79c1c4; BYTE $0x22 // vmovdqa      (%r10), %xmm4
+	LONG $0x6f79c1c4; BYTE $0x21 // vmovdqa      (%r9), %xmm4
 	LONG $0xe874d9c5             // vpcmpeqb     %xmm0, %xmm4, %xmm5
 	LONG $0xf174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm6
 	LONG $0xeeebd1c5             // vpor         %xmm6, %xmm5, %xmm5
@@ -4014,82 +3657,70 @@ LBB11_29:
 	LONG $0xc4d7f9c5             // vpmovmskb    %xmm4, %eax
 	CMPW AX, $-1
 	JNE  LBB11_30
-	ADDQ $16, R10
-	ADDQ $-16, BX
-	CMPQ BX, $15
+	ADDQ $16, R9
+	ADDQ $-16, R11
+	ADDQ $-16, CX
+	CMPQ R11, $15
 	JA   LBB11_29
-	MOVQ R8, BX
-	MOVQ R9, R10
 
 LBB11_33:
-	TESTQ BX, BX
-	JE    LBB11_42
-	LEAQ  0(R10)(BX*1), R8
-	INCQ  R10
-	MOVQ  $4294977024, R9
+	TESTQ R11, R11
+	JE    LBB11_40
+	LEAQ  0(R9)(R11*1), R8
+	XORL  CX, CX
+	MOVQ  $4294977024, R10
 
 LBB11_35:
-	MOVBLSX -1(R10), AX
+	MOVBLSX 0(R9)(CX*1), AX
 	CMPL    AX, $32
 	JA      LBB11_37
-	BTQ     AX, R9
+	BTQ     AX, R10
 	JAE     LBB11_37
-	DECQ    BX
-	INCQ    R10
-	TESTQ   BX, BX
+	ADDQ    $1, CX
+	CMPQ    R11, CX
 	JNE     LBB11_35
-	MOVQ    R8, R10
+	MOVQ    R8, R9
 
-LBB11_42:
-	SUBQ DI, R10
-	CMPQ R10, SI
-	JB   LBB11_5
-	JMP  LBB11_44
+LBB11_40:
+	SUBQ DI, R9
+
+LBB11_41:
+	MOVQ R9, R8
+	JMP  LBB11_42
 
 LBB11_19:
-	MOVQ R9, 0(DX)
-	JMP  LBB11_44
+	MOVQ R8, 0(DX)
+	JMP  LBB11_43
 
 LBB11_30:
 	MOVWLZX AX, AX
-	SUBQ    DI, R10
 	NOTL    AX
-	BSFL    AX, AX
-	ADDQ    AX, R10
-	CMPQ    R10, SI
-	JB      LBB11_5
-	JMP     LBB11_44
+	BSFL    AX, R8
+	SUBQ    CX, R8
 
-LBB11_25:
-	ADDQ AX, R10
-	MOVQ DI, AX
-	NOTQ AX
-	LEAQ 5(AX)(R10*1), R10
-	CMPQ R10, SI
-	JAE  LBB11_44
+LBB11_42:
+	MOVQ R8, AX
+	CMPQ R8, SI
+	JAE  LBB11_43
 
 LBB11_5:
-	LEAQ    1(R10), AX
-	MOVQ    AX, 0(DX)
-	MOVB    0(DI)(R10*1), AX
+	LEAQ    1(AX), CX
+	MOVQ    CX, 0(DX)
+	MOVB    0(DI)(AX*1), AX
 	MOVBLSX AX, AX
-	BYTE    $0x5b            // popq         %rbx
-	BYTE    $0x5d            // popq         %rbp
+	BYTE    $0x5d           // popq         %rbp
+	RET
+
+LBB11_43:
+	XORL    AX, AX
+	MOVBLSX AX, AX
+	BYTE    $0x5d  // popq         %rbp
 	RET
 
 LBB11_37:
-	MOVQ DI, AX
-	NOTQ AX
-	ADDQ AX, R10
-	CMPQ R10, SI
-	JB   LBB11_5
-
-LBB11_44:
-	XORL    AX, AX
-	MOVBLSX AX, AX
-	BYTE    $0x5b  // popq         %rbx
-	BYTE    $0x5d  // popq         %rbp
-	RET
+	SUBQ DI, R9
+	ADDQ CX, R9
+	JMP  LBB11_41
 
 _vstring:
 	BYTE  $0x55                   // pushq        %rbp
@@ -4147,156 +3778,115 @@ _advance_string:
 	WORD $0x5541             // pushq        %r13
 	WORD $0x5441             // pushq        %r12
 	BYTE $0x53               // pushq        %rbx
-	SUBQ $16, SP
-	MOVQ 8(DI), R12
-	SUBQ SI, R12
-	JE   LBB13_17
-	MOVQ 0(DI), AX
-	MOVQ AX, -48(BP)
-	ADDQ AX, SI
-	MOVQ DX, -56(BP)
+	BYTE $0x50               // pushq        %rax
+	MOVQ 8(DI), R15
+	SUBQ SI, R15
+	JE   LBB13_18
+	MOVQ 0(DI), R9
+	MOVQ DX, -48(BP)
 	MOVQ $-1, 0(DX)
-	CMPQ R12, $64
-	JB   LBB13_18
-	MOVL R12, R9
-	ANDL $63, R9
-	MOVQ $-1, R14
-	XORL R15, R15
-	QUAD $0xffffff8a056ffac5 // vmovdqu      $-118(%rip), %xmm0  /* LCPI13_0(%rip) */
-	QUAD $0xffffff920d6ffac5 // vmovdqu      $-110(%rip), %xmm1  /* LCPI13_1(%rip) */
-	MOVQ -48(BP), DX
+	CMPQ R15, $64
+	JB   LBB13_19
+	MOVQ SI, R12
+	NOTQ R12
+	MOVQ $-1, DX
+	XORL R14, R14
+	QUAD $0xffffff95056ffac5 // vmovdqu      $-107(%rip), %xmm0  /* LCPI13_0(%rip) */
+	QUAD $0xffffff9d0d6ffac5 // vmovdqu      $-99(%rip), %xmm1  /* LCPI13_1(%rip) */
 
 LBB13_3:
-	LONG $0x166ffac5             // vmovdqu      (%rsi), %xmm2
-	LONG $0x5e6ffac5; BYTE $0x10 // vmovdqu      $16(%rsi), %xmm3
-	LONG $0x666ffac5; BYTE $0x20 // vmovdqu      $32(%rsi), %xmm4
-	LONG $0x6e6ffac5; BYTE $0x30 // vmovdqu      $48(%rsi), %xmm5
-	LONG $0xf074e9c5             // vpcmpeqb     %xmm0, %xmm2, %xmm6
-	LONG $0xded7f9c5             // vpmovmskb    %xmm6, %ebx
-	LONG $0xf074e1c5             // vpcmpeqb     %xmm0, %xmm3, %xmm6
-	LONG $0xced7f9c5             // vpmovmskb    %xmm6, %ecx
-	LONG $0xf074d9c5             // vpcmpeqb     %xmm0, %xmm4, %xmm6
-	LONG $0xc6d7f9c5             // vpmovmskb    %xmm6, %eax
-	LONG $0xf074d1c5             // vpcmpeqb     %xmm0, %xmm5, %xmm6
-	LONG $0xeed779c5             // vpmovmskb    %xmm6, %r13d
-	LONG $0xd174e9c5             // vpcmpeqb     %xmm1, %xmm2, %xmm2
-	LONG $0xfad7f9c5             // vpmovmskb    %xmm2, %edi
-	LONG $0xd174e1c5             // vpcmpeqb     %xmm1, %xmm3, %xmm2
-	LONG $0xd2d779c5             // vpmovmskb    %xmm2, %r10d
-	LONG $0xd174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm2
-	LONG $0xdad779c5             // vpmovmskb    %xmm2, %r11d
-	LONG $0xd174d1c5             // vpcmpeqb     %xmm1, %xmm5, %xmm2
-	LONG $0xc2d779c5             // vpmovmskb    %xmm2, %r8d
+	LONG $0x6f7ac1c4; WORD $0x3114             // vmovdqu      (%r9,%rsi), %xmm2
+	LONG $0x6f7ac1c4; WORD $0x315c; BYTE $0x10 // vmovdqu      $16(%r9,%rsi), %xmm3
+	LONG $0x6f7ac1c4; WORD $0x3164; BYTE $0x20 // vmovdqu      $32(%r9,%rsi), %xmm4
+	LONG $0x6f7ac1c4; WORD $0x316c; BYTE $0x30 // vmovdqu      $48(%r9,%rsi), %xmm5
+	LONG $0xf074e9c5                           // vpcmpeqb     %xmm0, %xmm2, %xmm6
+	LONG $0xded7f9c5                           // vpmovmskb    %xmm6, %ebx
+	LONG $0xf074e1c5                           // vpcmpeqb     %xmm0, %xmm3, %xmm6
+	LONG $0xfed7f9c5                           // vpmovmskb    %xmm6, %edi
+	LONG $0xf074d9c5                           // vpcmpeqb     %xmm0, %xmm4, %xmm6
+	LONG $0xced7f9c5                           // vpmovmskb    %xmm6, %ecx
+	LONG $0xf074d1c5                           // vpcmpeqb     %xmm0, %xmm5, %xmm6
+	LONG $0xeed779c5                           // vpmovmskb    %xmm6, %r13d
+	LONG $0xd174e9c5                           // vpcmpeqb     %xmm1, %xmm2, %xmm2
+	LONG $0xc2d7f9c5                           // vpmovmskb    %xmm2, %eax
+	LONG $0xd174e1c5                           // vpcmpeqb     %xmm1, %xmm3, %xmm2
+	LONG $0xd2d779c5                           // vpmovmskb    %xmm2, %r10d
+	LONG $0xd174d9c5                           // vpcmpeqb     %xmm1, %xmm4, %xmm2
+	LONG $0xdad779c5                           // vpmovmskb    %xmm2, %r11d
+	LONG $0xd174d1c5                           // vpcmpeqb     %xmm1, %xmm5, %xmm2
+	LONG $0xc2d779c5                           // vpmovmskb    %xmm2, %r8d
 	SHLQ $48, R13
-	SHLQ $32, AX
-	SHLQ $16, CX
+	SHLQ $32, CX
+	SHLQ $16, DI
+	ORQ  DI, BX
 	ORQ  CX, BX
-	ORQ  AX, BX
 	SHLQ $48, R8
 	SHLQ $32, R11
 	SHLQ $16, R10
-	ORQ  R10, DI
-	ORQ  R11, DI
-	ORQ  R8, DI
+	ORQ  R10, AX
+	ORQ  R11, AX
+	ORQ  R8, AX
 	JE   LBB13_5
-	CMPQ R14, $-1
+	CMPQ DX, $-1
 	JE   LBB13_8
 
 LBB13_5:
 	ORQ  R13, BX
-	MOVQ DI, AX
-	ORQ  R15, AX
+	MOVQ AX, CX
+	ORQ  R14, CX
 	JNE  LBB13_9
 
 LBB13_6:
 	TESTQ BX, BX
-	JNE   LBB13_15
+	JNE   LBB13_10
 
 LBB13_7:
-	ADDQ $64, SI
+	ADDQ $-64, R15
 	ADDQ $-64, R12
-	CMPQ R12, $63
+	ADDQ $64, SI
+	CMPQ R15, $63
 	JA   LBB13_3
-	JMP  LBB13_10
+	JMP  LBB13_12
 
 LBB13_8:
-	MOVQ SI, AX
-	SUBQ DX, AX
-	BSFQ DI, R14
-	ADDQ AX, R14
-	MOVQ -56(BP), AX
-	MOVQ R14, 0(AX)
+	BSFQ AX, DX
+	ADDQ SI, DX
+	MOVQ -48(BP), CX
+	MOVQ DX, 0(CX)
 	ORQ  R13, BX
-	MOVQ DI, AX
-	ORQ  R15, AX
+	MOVQ AX, CX
+	ORQ  R14, CX
 	JE   LBB13_6
 
 LBB13_9:
-	MOVQ  R15, AX
-	NOTQ  AX
-	ANDQ  DI, AX
-	LEAQ  0(AX)(AX*1), R8
-	ORQ   R15, R8
-	MOVQ  R8, CX
+	MOVQ  R14, CX
 	NOTQ  CX
-	ANDQ  DI, CX
-	MOVQ  $-6148914691236517206, DI
-	ANDQ  DI, CX
-	XORL  R15, R15
-	ADDQ  AX, CX
-	SETCS R15
-	ADDQ  CX, CX
+	ANDQ  AX, CX
+	LEAQ  0(CX)(CX*1), R8
+	ORQ   R14, R8
+	MOVQ  R8, DI
+	NOTQ  DI
+	ANDQ  AX, DI
+	MOVQ  $-6148914691236517206, AX
+	ANDQ  AX, DI
+	XORL  R14, R14
+	ADDQ  CX, DI
+	SETCS R14
+	ADDQ  DI, DI
 	MOVQ  $6148914691236517205, AX
-	XORQ  AX, CX
-	ANDQ  R8, CX
-	NOTQ  CX
-	ANDQ  CX, BX
+	XORQ  AX, DI
+	ANDQ  R8, DI
+	NOTQ  DI
+	ANDQ  DI, BX
 	TESTQ BX, BX
 	JE    LBB13_7
-	JMP   LBB13_15
 
 LBB13_10:
-	MOVQ R9, R12
-	CMPQ R12, $32
-	JB   LBB13_22
+	BSFQ BX, AX
+	SUBQ R12, AX
 
 LBB13_11:
-	LONG $0x066ffac5             // vmovdqu      (%rsi), %xmm0
-	LONG $0x4e6ffac5; BYTE $0x10 // vmovdqu      $16(%rsi), %xmm1
-	QUAD $0xfffffe43156ffac5     // vmovdqu      $-445(%rip), %xmm2  /* LCPI13_0(%rip) */
-	QUAD $0xfffffe4b1d6ffac5     // vmovdqu      $-437(%rip), %xmm3  /* LCPI13_1(%rip) */
-	LONG $0xe274f9c5             // vpcmpeqb     %xmm2, %xmm0, %xmm4
-	LONG $0xfcd7f9c5             // vpmovmskb    %xmm4, %edi
-	LONG $0xd274f1c5             // vpcmpeqb     %xmm2, %xmm1, %xmm2
-	LONG $0xdad7f9c5             // vpmovmskb    %xmm2, %ebx
-	LONG $0xc374f9c5             // vpcmpeqb     %xmm3, %xmm0, %xmm0
-	LONG $0xc0d7f9c5             // vpmovmskb    %xmm0, %eax
-	LONG $0xc374f1c5             // vpcmpeqb     %xmm3, %xmm1, %xmm0
-	LONG $0xc8d7f9c5             // vpmovmskb    %xmm0, %ecx
-	SHLQ $16, BX
-	SHLQ $16, CX
-	ORQ  CX, AX
-	JE   LBB13_13
-	CMPQ R14, $-1
-	JE   LBB13_19
-
-LBB13_13:
-	ORQ  DI, BX
-	MOVQ AX, CX
-	ORQ  R15, CX
-	JNE  LBB13_20
-
-LBB13_14:
-	TESTQ BX, BX
-	JE    LBB13_21
-
-LBB13_15:
-	BSFQ BX, AX
-	SUBQ DX, SI
-	LEAQ 1(SI)(AX*1), AX
-
-LBB13_16:
-	ADDQ $16, SP
+	ADDQ $8, SP
 	BYTE $0x5b   // popq         %rbx
 	WORD $0x5c41 // popq         %r12
 	WORD $0x5d41 // popq         %r13
@@ -4305,123 +3895,178 @@ LBB13_16:
 	BYTE $0x5d   // popq         %rbp
 	RET
 
-LBB13_18:
-	MOVQ $-1, R14
-	XORL R15, R15
-	MOVQ -48(BP), DX
-	CMPQ R12, $32
-	JAE  LBB13_11
-	JMP  LBB13_22
+LBB13_12:
+	ADDQ R9, SI
+	CMPQ R15, $32
+	JB   LBB13_23
+
+LBB13_13:
+	LONG $0x066ffac5             // vmovdqu      (%rsi), %xmm0
+	LONG $0x4e6ffac5; BYTE $0x10 // vmovdqu      $16(%rsi), %xmm1
+	QUAD $0xfffffe40156ffac5     // vmovdqu      $-448(%rip), %xmm2  /* LCPI13_0(%rip) */
+	QUAD $0xfffffe481d6ffac5     // vmovdqu      $-440(%rip), %xmm3  /* LCPI13_1(%rip) */
+	LONG $0xe274f9c5             // vpcmpeqb     %xmm2, %xmm0, %xmm4
+	LONG $0xccd7f9c5             // vpmovmskb    %xmm4, %ecx
+	LONG $0xd274f1c5             // vpcmpeqb     %xmm2, %xmm1, %xmm2
+	LONG $0xfad7f9c5             // vpmovmskb    %xmm2, %edi
+	LONG $0xc374f9c5             // vpcmpeqb     %xmm3, %xmm0, %xmm0
+	LONG $0xc0d7f9c5             // vpmovmskb    %xmm0, %eax
+	LONG $0xc374f1c5             // vpcmpeqb     %xmm3, %xmm1, %xmm0
+	LONG $0xd8d7f9c5             // vpmovmskb    %xmm0, %ebx
+	SHLQ $16, DI
+	SHLQ $16, BX
+	ORQ  BX, AX
+	JE   LBB13_15
+	CMPQ DX, $-1
+	JE   LBB13_20
+
+LBB13_15:
+	ORQ  CX, DI
+	MOVQ AX, CX
+	ORQ  R14, CX
+	JNE  LBB13_21
+
+LBB13_16:
+	TESTQ DI, DI
+	JE    LBB13_22
+
+LBB13_17:
+	BSFQ DI, AX
+	SUBQ R9, SI
+	ADDQ SI, AX
+	ADDQ $1, AX
+	JMP  LBB13_11
 
 LBB13_19:
-	MOVQ SI, CX
-	SUBQ DX, CX
-	BSFQ AX, R14
-	ADDQ CX, R14
-	MOVQ -56(BP), CX
-	MOVQ R14, 0(CX)
-	ORQ  DI, BX
-	MOVQ AX, CX
-	ORQ  R15, CX
-	JE   LBB13_14
+	ADDQ R9, SI
+	MOVQ $-1, DX
+	XORL R14, R14
+	CMPQ R15, $32
+	JAE  LBB13_13
+	JMP  LBB13_23
 
 LBB13_20:
-	MOVL  R15, CX
+	MOVQ SI, BX
+	SUBQ R9, BX
+	BSFQ AX, DX
+	ADDQ BX, DX
+	MOVQ -48(BP), BX
+	MOVQ DX, 0(BX)
+	ORQ  CX, DI
+	MOVQ AX, CX
+	ORQ  R14, CX
+	JE   LBB13_16
+
+LBB13_21:
+	MOVL  R14, CX
 	NOTL  CX
 	ANDL  AX, CX
 	LEAL  0(CX)(CX*1), R8
-	ORL   R15, R8
-	MOVL  R8, DI
-	NOTL  DI
-	ANDL  AX, DI
-	ANDL  $-1431655766, DI
-	XORL  R15, R15
-	ADDL  CX, DI
-	SETCS R15
-	ADDL  DI, DI
-	XORL  $1431655765, DI
-	ANDL  R8, DI
-	NOTL  DI
-	ANDL  DI, BX
-	TESTQ BX, BX
-	JNE   LBB13_15
-
-LBB13_21:
-	ADDQ $32, SI
-	ADDQ $-32, R12
+	ORL   R14, R8
+	MOVL  R8, BX
+	NOTL  BX
+	ANDL  AX, BX
+	ANDL  $-1431655766, BX
+	XORL  R14, R14
+	ADDL  CX, BX
+	SETCS R14
+	ADDL  BX, BX
+	XORL  $1431655765, BX
+	ANDL  R8, BX
+	NOTL  BX
+	ANDL  BX, DI
+	TESTQ DI, DI
+	JNE   LBB13_17
 
 LBB13_22:
-	TESTQ R15, R15
-	JNE   LBB13_33
-	MOVQ  $-1, AX
-	TESTQ R12, R12
-	JE    LBB13_16
+	ADDQ $32, SI
+	ADDQ $-32, R15
 
-LBB13_24:
-	MOVQ DX, R9
-	NOTQ R9
-	MOVQ -56(BP), CX
+LBB13_23:
+	TESTQ R14, R14
+	JNE   LBB13_38
+	TESTQ R15, R15
+	JE    LBB13_35
 
 LBB13_25:
-	LEAQ    1(SI), DI
-	MOVBLZX 0(SI), BX
+	MOVQ R9, DI
+	NEGQ DI
+	MOVQ $-1, AX
+
+LBB13_26:
+	XORL CX, CX
+
+LBB13_27:
+	MOVBLZX 0(SI)(CX*1), BX
 	CMPB    BX, $34
-	JE      LBB13_32
-	LEAQ    -1(R12), R10
+	JE      LBB13_34
 	CMPB    BX, $92
-	JE      LBB13_28
-	MOVQ    R10, R12
-	MOVQ    DI, SI
-	TESTQ   R10, R10
-	JNE     LBB13_25
-	JMP     LBB13_16
+	JE      LBB13_30
+	ADDQ    $1, CX
+	CMPQ    R15, CX
+	JNE     LBB13_27
+	JMP     LBB13_36
 
-LBB13_28:
-	TESTQ R10, R10
-	JE    LBB13_16
-	CMPQ  R14, $-1
-	JNE   LBB13_31
-	ADDQ  R9, DI
-	MOVQ  DI, 0(CX)
-	MOVQ  DI, R14
-
-LBB13_31:
-	ADDQ  $2, SI
-	ADDQ  $-2, R12
-	MOVQ  R12, R10
-	MOVQ  -48(BP), DX
-	TESTQ R10, R10
-	JNE   LBB13_25
-	JMP   LBB13_16
-
-LBB13_32:
-	SUBQ DX, DI
-	MOVQ DI, AX
-	JMP  LBB13_16
+LBB13_30:
+	LEAQ -1(R15), BX
+	CMPQ BX, CX
+	JE   LBB13_11
+	CMPQ DX, $-1
+	JNE  LBB13_33
+	LEAQ 0(DI)(SI*1), DX
+	ADDQ CX, DX
+	MOVQ -48(BP), BX
+	MOVQ DX, 0(BX)
 
 LBB13_33:
-	TESTQ R12, R12
-	JE    LBB13_17
-	CMPQ  R14, $-1
-	JNE   LBB13_36
-	MOVQ  -48(BP), R14
-	NOTQ  R14
-	ADDQ  SI, R14
-	MOVQ  -56(BP), AX
-	MOVQ  R14, 0(AX)
+	ADDQ CX, SI
+	ADDQ $2, SI
+	MOVQ R15, BX
+	SUBQ CX, BX
+	ADDQ $-2, BX
+	ADDQ $-2, R15
+	CMPQ R15, CX
+	MOVQ BX, R15
+	JNE  LBB13_26
+	JMP  LBB13_11
+
+LBB13_34:
+	ADDQ CX, SI
+	ADDQ $1, SI
+
+LBB13_35:
+	SUBQ R9, SI
+	MOVQ SI, AX
+	JMP  LBB13_11
 
 LBB13_36:
-	INCQ  SI
-	DECQ  R12
-	MOVQ  -48(BP), DX
-	MOVQ  $-1, AX
-	TESTQ R12, R12
-	JNE   LBB13_24
-	JMP   LBB13_16
-
-LBB13_17:
 	MOVQ $-1, AX
-	JMP  LBB13_16
+	CMPB BX, $34
+	JNE  LBB13_11
+	ADDQ CX, SI
+	JMP  LBB13_35
+
+LBB13_38:
+	TESTQ R15, R15
+	JE    LBB13_18
+	CMPQ  DX, $-1
+	JNE   LBB13_41
+	MOVQ  R9, DX
+	NOTQ  DX
+	ADDQ  SI, DX
+	MOVQ  -48(BP), AX
+	MOVQ  DX, 0(AX)
+
+LBB13_41:
+	ADDQ  $1, SI
+	ADDQ  $-1, R15
+	TESTQ R15, R15
+	JNE   LBB13_25
+	JMP   LBB13_35
+
+LBB13_18:
+	MOVQ $-1, AX
+	JMP  LBB13_11
 
 LCPI14_0:
 	LONG $0x43300000 // .long 1127219200
@@ -4430,14 +4075,14 @@ LCPI14_0:
 	LONG $0x00000000 // .long 0
 
 LCPI14_1:
-	QUAD $0x4330000000000000 // .quad 4841369599423283200
-	QUAD $0x4530000000000000 // .quad 4985484787499139072
+	QUAD $0x4330000000000000 // .quad 0x4330000000000000
+	QUAD $0x4530000000000000 // .quad 0x4530000000000000
 
 LCPI14_2:
-	QUAD $0x430c6bf526340000 // .quad 4831355200913801216
+	QUAD $0x430c6bf526340000 // .quad 0x430c6bf526340000
 
 LCPI14_3:
-	QUAD $0xc30c6bf526340000 // .quad -4392016835940974592
+	QUAD $0xc30c6bf526340000 // .quad 0xc30c6bf526340000
 
 _vnumber:
 	BYTE $0x55                   // pushq        %rbp
@@ -4447,47 +4092,46 @@ _vnumber:
 	WORD $0x5541                 // pushq        %r13
 	WORD $0x5441                 // pushq        %r12
 	BYTE $0x53                   // pushq        %rbx
-	SUBQ $56, SP
-	MOVQ DX, R13
+	SUBQ $24, SP
+	MOVQ DX, R12
 	MOVQ SI, R14
-	MOVQ 0(SI), R10
-	MOVQ 0(DI), R11
+	MOVQ 0(SI), AX
+	MOVQ 0(DI), CX
 	MOVQ 8(DI), R15
 	MOVQ $9, 0(DX)
 	LONG $0xc057f9c5             // vxorpd       %xmm0, %xmm0, %xmm0
 	LONG $0x4211f9c5; BYTE $0x08 // vmovupd      %xmm0, $8(%rdx)
-	MOVQ 0(SI), AX
-	MOVQ AX, 24(DX)
-	CMPQ R10, R15
-	JAE  LBB14_51
-	MOVB 0(R11)(R10*1), CX
-	MOVL $1, R9
-	MOVQ R10, AX
-	CMPB CX, $45
-	JNE  LBB14_4
-	LEAQ 1(R10), AX
+	MOVQ 0(SI), DX
+	MOVQ DX, 24(R12)
 	CMPQ AX, R15
-	JAE  LBB14_51
-	MOVB 0(R11)(AX*1), CX
-	MOVL $-1, R9
+	JAE  LBB14_52
+	MOVB 0(CX)(AX*1), DX
+	MOVL $1, R11
+	CMPB DX, $45
+	JNE  LBB14_4
+	ADDQ $1, AX
+	CMPQ AX, R15
+	JAE  LBB14_52
+	MOVB 0(CX)(AX*1), DX
+	MOVL $-1, R11
 
 LBB14_4:
-	LEAL -48(CX), DX
-	CMPB DX, $10
+	LEAL -48(DX), SI
+	CMPB SI, $10
 	JB   LBB14_6
 
 LBB14_5:
 	MOVQ AX, 0(R14)
-	MOVQ $-2, 0(R13)
-	JMP  LBB14_52
+	MOVQ $-2, 0(R12)
+	JMP  LBB14_53
 
 LBB14_6:
-	CMPB    CX, $48
+	CMPB    DX, $48
 	JNE     LBB14_10
-	LEAQ    1(AX), SI
+	LEAQ    1(AX), DI
 	CMPQ    AX, R15
 	JAE     LBB14_19
-	MOVB    0(R11)(SI*1), BX
+	MOVB    0(CX)(DI*1), BX
 	ADDB    $-46, BX
 	CMPB    BX, $55
 	JA      LBB14_19
@@ -4497,179 +4141,178 @@ LBB14_6:
 	JAE     LBB14_19
 
 LBB14_10:
+	MOVB $1, R8
 	CMPQ AX, R15
 	JAE  LBB14_18
-	CMPB DX, $9
+	CMPB SI, $9
 	JA   LBB14_20
-	LEAQ -1(R15), R8
+	MOVL $4294967248, R9
+	LEAQ -1(R15), R10
 	XORL BX, BX
 	XORL SI, SI
-	XORL R12, R12
+	XORL R13, R13
 
 LBB14_13:
 	CMPL    SI, $18
 	JG      LBB14_15
-	MOVBQSX CX, CX
-	LEAQ    0(R12)(R12*4), DX
-	LEAQ    -48(CX)(DX*2), R12
-	INCL    SI
+	LEAQ    0(R13*4), DI
+	ADDQ    R13, DI
+	MOVBLSX DX, DX
+	ADDL    R9, DX
+	LEAQ    0(DX)(DI*2), R13
+	ADDL    $1, SI
 	JMP     LBB14_16
 
 LBB14_15:
-	INCL BX
+	ADDL $1, BX
 
 LBB14_16:
-	CMPQ    R8, AX
-	JE      LBB14_24
-	MOVBLZX 1(R11)(AX*1), CX
-	INCQ    AX
-	LEAL    -48(CX), DX
-	CMPB    DX, $10
+	CMPQ    R10, AX
+	JE      LBB14_25
+	MOVBLZX 1(CX)(AX*1), DX
+	ADDQ    $1, AX
+	LEAL    -48(DX), DI
+	CMPB    DI, $10
 	JB      LBB14_13
 	JMP     LBB14_21
 
 LBB14_18:
 	XORL BX, BX
 	XORL SI, SI
-	XORL R12, R12
-	JMP  LBB14_25
+	XORL R13, R13
+	JMP  LBB14_26
 
 LBB14_19:
-	MOVQ SI, 0(R14)
-	JMP  LBB14_52
+	MOVQ DI, 0(R14)
+	JMP  LBB14_53
 
 LBB14_20:
-	XORL R12, R12
+	XORL R13, R13
 	XORL SI, SI
 	XORL BX, BX
 
 LBB14_21:
-	XORL  DX, DX
-	TESTL BX, BX
-	SETGT DX
-	MOVL  DX, -44(BP)
-	MOVL  $9, R8
-	CMPB  CX, $46
-	JNE   LBB14_26
-	INCQ  AX
-	MOVQ  $8, 0(R13)
-	CMPQ  AX, R15
-	JAE   LBB14_51
-	MOVB  0(R11)(AX*1), DX
-	ADDB  $-48, DX
-	MOVL  $8, R8
-	CMPB  DX, $10
-	JAE   LBB14_5
-	JMP   LBB14_26
-
-LBB14_24:
-	MOVQ R15, AX
+	CMPB DX, $46
+	JNE  LBB14_26
+	ADDQ $1, AX
+	MOVQ $8, 0(R12)
+	CMPQ AX, R15
+	JAE  LBB14_52
+	MOVB 0(CX)(AX*1), DX
+	ADDB $-48, DX
+	CMPB DX, $10
+	JAE  LBB14_5
+	XORL R8, R8
+	JMP  LBB14_26
 
 LBB14_25:
-	XORL  CX, CX
-	TESTL BX, BX
-	SETGT CX
-	MOVL  CX, -44(BP)
-	MOVL  $9, R8
+	MOVQ R15, AX
 
 LBB14_26:
 	TESTL BX, BX
+	SETGT R9
 	JNE   LBB14_34
-	TESTQ R12, R12
+	TESTQ R13, R13
 	JNE   LBB14_34
-	MOVQ  AX, DX
+	MOVQ  AX, DI
 	CMPQ  AX, R15
 	JAE   LBB14_33
-	MOVQ  AX, DX
+	MOVQ  AX, DI
 
 LBB14_30:
-	CMPB 0(R11)(DX*1), $48
+	CMPB 0(CX)(DI*1), $48
 	JNE  LBB14_33
-	INCQ DX
-	CMPQ R15, DX
+	ADDQ $1, DI
+	CMPQ R15, DI
 	JNE  LBB14_30
-	MOVQ R15, DX
+	MOVQ R15, DI
 
 LBB14_33:
-	MOVL AX, BX
-	SUBL DX, BX
+	SUBL DI, AX
 	XORL SI, SI
-	MOVQ DX, AX
-	XORL R12, R12
+	MOVL AX, BX
+	MOVQ DI, AX
+	XORL R13, R13
 
 LBB14_34:
 	CMPQ AX, R15
-	JAE  LBB14_39
+	JAE  LBB14_40
 	CMPL SI, $18
-	JG   LBB14_39
+	JG   LBB14_40
+	MOVL $4294967248, R10
 
-LBB14_36:
-	MOVBLZX 0(R11)(AX*1), CX
-	LEAL    -48(CX), DX
-	CMPB    DX, $9
-	JA      LBB14_39
-	LEAQ    0(R12)(R12*4), DX
-	LEAQ    -48(CX)(DX*2), R12
-	DECL    BX
-	INCQ    AX
+LBB14_37:
+	MOVBLZX 0(CX)(AX*1), DX
+	LEAL    -48(DX), DI
+	CMPB    DI, $9
+	JA      LBB14_40
+	LEAQ    0(R13*4), DI
+	ADDQ    R13, DI
+	ADDL    R10, DX
+	LEAQ    0(DX)(DI*2), R13
+	ADDL    $-1, BX
+	ADDQ    $1, AX
 	CMPQ    AX, R15
-	JAE     LBB14_39
+	JAE     LBB14_40
 	LEAL    1(SI), DX
 	CMPL    SI, $18
 	MOVL    DX, SI
-	JL      LBB14_36
+	JL      LBB14_37
 
-LBB14_39:
+LBB14_40:
+	XORL R10, R10
+	MOVB R9, R10
 	CMPQ AX, R15
-	JAE  LBB14_55
-	MOVB 0(R11)(AX*1), SI
-	LEAL -48(SI), DX
-	CMPB DX, $9
-	JA   LBB14_45
-	LEAQ -1(R15), CX
+	JAE  LBB14_56
+	MOVB 0(CX)(AX*1), DX
+	LEAL -48(DX), SI
+	CMPB SI, $9
+	JA   LBB14_46
+	LEAQ -1(R15), SI
 
-LBB14_42:
-	CMPQ    CX, AX
-	JE      LBB14_54
-	MOVBLZX 1(R11)(AX*1), SI
-	INCQ    AX
-	LEAL    -48(SI), DX
-	CMPB    DX, $9
-	JBE     LBB14_42
-	MOVL    $1, -44(BP)
+LBB14_43:
+	CMPQ    SI, AX
+	JE      LBB14_55
+	MOVBLZX 1(CX)(AX*1), DX
+	ADDQ    $1, AX
+	LEAL    -48(DX), DI
+	CMPB    DI, $9
+	JBE     LBB14_43
+	MOVL    $1, R10
 
-LBB14_45:
-	ORB  $32, SI
-	CMPB SI, $101
-	JNE  LBB14_55
+LBB14_46:
+	ORB  $32, DX
+	CMPB DX, $101
+	JNE  LBB14_56
 	LEAQ 1(AX), DX
-	MOVQ $8, 0(R13)
+	MOVQ $8, 0(R12)
 	CMPQ DX, R15
-	JAE  LBB14_51
-	MOVB 0(R11)(DX*1), SI
+	JAE  LBB14_52
+	MOVB 0(CX)(DX*1), SI
 	CMPB SI, $45
-	JE   LBB14_49
+	JE   LBB14_50
 	MOVL $1, R8
 	CMPB SI, $43
-	JNE  LBB14_84
+	JNE  LBB14_87
 
-LBB14_49:
+LBB14_50:
 	ADDQ  $2, AX
 	CMPQ  AX, R15
-	JAE   LBB14_51
+	JAE   LBB14_52
 	XORL  DX, DX
 	CMPB  SI, $43
 	SETEQ DX
-	LEAL  -1(DX)(DX*1), R8
-	MOVB  0(R11)(AX*1), SI
-	JMP   LBB14_85
-
-LBB14_51:
-	MOVQ R15, 0(R14)
-	MOVQ $-1, 0(R13)
+	LEAL  0(DX)(DX*1), R8
+	ADDL  $-1, R8
+	MOVB  0(CX)(AX*1), SI
+	JMP   LBB14_88
 
 LBB14_52:
-	ADDQ $56, SP
+	MOVQ R15, 0(R14)
+	MOVQ $-1, 0(R12)
+
+LBB14_53:
+	ADDQ $24, SP
 	BYTE $0x5b   // popq         %rbx
 	WORD $0x5c41 // popq         %r12
 	WORD $0x5d41 // popq         %r13
@@ -4678,241 +4321,234 @@ LBB14_52:
 	BYTE $0x5d   // popq         %rbp
 	RET
 
-LBB14_55:
-	MOVQ AX, R15
-	CMPL R8, $9
-	JNE  LBB14_61
+LBB14_56:
+	MOVQ  AX, R15
+	TESTB R8, R8
+	JE    LBB14_62
 
-LBB14_57:
+LBB14_58:
 	TESTL   BX, BX
-	JNE     LBB14_60
+	JNE     LBB14_61
 	MOVQ    $-9223372036854775808, AX
-	MOVLQSX R9, CX
-	TESTQ   R12, R12
-	JNS     LBB14_75
-	MOVQ    R12, DX
+	MOVLQSX R11, CX
+	TESTQ   R13, R13
+	JNS     LBB14_70
+	MOVQ    R13, DX
 	ANDQ    CX, DX
 	CMPQ    DX, AX
-	JE      LBB14_75
-
-LBB14_60:
-	MOVQ $8, 0(R13)
+	JE      LBB14_70
 
 LBB14_61:
-	MOVQ $0, -72(BP)
-	LONG $0x6ef9c1c4; BYTE $0xc4   // vmovq        %r12, %xmm0
-	QUAD $0xfffffd110562f9c5       // vpunpckldq   $-751(%rip), %xmm0, %xmm0  /* LCPI14_0(%rip) */
-	QUAD $0xfffffd19055cf9c5       // vsubpd       $-743(%rip), %xmm0, %xmm0  /* LCPI14_1(%rip) */
-	LONG $0x0579e3c4; WORD $0x01c8 // vpermilpd    $1, %xmm0, %xmm1
-	LONG $0xc058f3c5               // vaddsd       %xmm0, %xmm1, %xmm0
-	LONG $0x4511fbc5; BYTE $0xc8   // vmovsd       %xmm0, $-56(%rbp)
-	MOVQ R12, AX
-	SHRQ $52, AX
-	JE   LBB14_67
+	MOVQ $8, 0(R12)
 
 LBB14_62:
-	MOVQ  DI, -80(BP)
-	MOVQ  R10, -88(BP)
-	LEAQ  -56(BP), CX
-	MOVQ  R12, DI
-	MOVL  BX, SI
-	MOVL  R9, -60(BP)
-	MOVL  R9, DX
-	LONG  $0xffe693e8; BYTE $0xff // callq        _atof_eisel_lemire64
-	TESTB AX, AX
-	JE    LBB14_66
-	CMPL  -44(BP), $0
-	JE    LBB14_74
-	INCQ  R12
-	LEAQ  -72(BP), CX
-	MOVQ  R12, DI
-	MOVL  BX, SI
-	MOVL  -60(BP), DX
-	LONG  $0xffe671e8; BYTE $0xff // callq        _atof_eisel_lemire64
-	TESTB AX, AX
-	JE    LBB14_66
-	LONG  $0x4d10fbc5; BYTE $0xb8 // vmovsd       $-72(%rbp), %xmm1
-	LONG  $0x4510fbc5; BYTE $0xc8 // vmovsd       $-56(%rbp), %xmm0
-	LONG  $0xc82ef9c5             // vucomisd     %xmm0, %xmm1
-	JNE   LBB14_66
-	JNP   LBB14_81
+	MOVQ  $0, -64(BP)
+	LONG  $0x6ef9c1c4; BYTE $0xc5               // vmovq        %r13, %xmm0
+	QUAD  $0xfffffd040562f9c5                   // vpunpckldq   $-764(%rip), %xmm0, %xmm0  /* LCPI14_0(%rip) */
+	QUAD  $0xfffffd0c055cf9c5                   // vsubpd       $-756(%rip), %xmm0, %xmm0  /* LCPI14_1(%rip) */
+	LONG  $0x0579e3c4; WORD $0x01c8             // vpermilpd    $1, %xmm0, %xmm1
+	LONG  $0xc058f3c5                           // vaddsd       %xmm0, %xmm1, %xmm0
+	LONG  $0x4511fbc5; BYTE $0xd0               // vmovsd       %xmm0, $-48(%rbp)
+	MOVQ  R13, AX
+	SHRQ  $52, AX
+	JNE   LBB14_76
+	LONG  $0x7ef9e1c4; BYTE $0xc0               // vmovq        %xmm0, %rax
+	MOVL  R11, CX
+	SHRL  $31, CX
+	SHLQ  $63, CX
+	ORQ   AX, CX
+	MOVQ  CX, -48(BP)
+	LONG  $0x6ef9e1c4; BYTE $0xc1               // vmovq        %rcx, %xmm0
+	TESTQ R13, R13
+	JE    LBB14_82
+	TESTL BX, BX
+	JE    LBB14_82
+	LEAL  -1(BX), AX
+	CMPL  AX, $36
+	JA    LBB14_68
+	CMPL  BX, $23
+	JL    LBB14_71
+	LEAL  -22(BX), AX
+	LONG  $0xf40d8d48; WORD $0x00a5; BYTE $0x00 // leaq         $42484(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG  $0x0459fbc5; BYTE $0xc1               // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
+	LONG  $0x4511fbc5; BYTE $0xd0               // vmovsd       %xmm0, $-48(%rbp)
+	MOVL  $22, AX
+	JMP   LBB14_72
 
-LBB14_66:
-	MOVQ -80(BP), CX
-	MOVQ 0(CX), DI
-	MOVQ -88(BP), AX
-	ADDQ AX, DI
-	MOVL 8(CX), SI
-	SUBL AX, SI
-	LONG $0xffef7ae8; BYTE $0xff // callq        _atof_native_decimal
-	JMP  LBB14_81
+LBB14_55:
+	MOVL  $1, R10
+	TESTB R8, R8
+	JE    LBB14_62
+	JMP   LBB14_58
 
-LBB14_67:
-	LONG    $0x7ef9e1c4; BYTE $0xc0               // vmovq        %xmm0, %rax
-	MOVL    R9, CX
-	SHRL    $31, CX
-	SHLQ    $63, CX
-	ORQ     AX, CX
-	MOVQ    CX, -56(BP)
-	LONG    $0x6ef9e1c4; BYTE $0xc1               // vmovq        %rcx, %xmm0
-	TESTQ   R12, R12
-	JE      LBB14_81
-	TESTL   BX, BX
-	JE      LBB14_81
-	LEAL    -1(BX), AX
-	CMPL    AX, $36
-	JA      LBB14_72
-	CMPL    BX, $23
-	JL      LBB14_76
-	MOVLQSX BX, AX
-	LONG    $0xe20d8d48; WORD $0x014c; BYTE $0x00 // leaq         $85218(%rip), %rcx  /* _P10_TAB(%rip) */
-	QUAD    $0xffff50c18459fbc5; BYTE $0xff       // vmulsd       $-176(%rcx,%rax,8), %xmm0, %xmm0
-	LONG    $0x4511fbc5; BYTE $0xc8               // vmovsd       %xmm0, $-56(%rbp)
-	MOVL    $22, AX
-	JMP     LBB14_77
+LBB14_68:
+	CMPL BX, $-22
+	JB   LBB14_76
+	NEGL BX
+	LONG $0xc1058d48; WORD $0x00a5; BYTE $0x00 // leaq         $42433(%rip), %rax  /* _P10_TAB(%rip) */
+	LONG $0x045efbc5; BYTE $0xd8               // vdivsd       (%rax,%rbx,8), %xmm0, %xmm0
+	JMP  LBB14_75
 
-LBB14_54:
-	MOVL $1, -44(BP)
-	CMPL R8, $9
-	JNE  LBB14_61
-	JMP  LBB14_57
-
-LBB14_72:
-	CMPL    BX, $-22
-	JB      LBB14_62
-	NEGL    BX
-	MOVLQSX BX, AX
-	LONG    $0xa20d8d48; WORD $0x014c; BYTE $0x00 // leaq         $85154(%rip), %rcx  /* _P10_TAB(%rip) */
-	LONG    $0x045efbc5; BYTE $0xc1               // vdivsd       (%rcx,%rax,8), %xmm0, %xmm0
-	JMP     LBB14_80
-
-LBB14_74:
-	LONG $0x4510fbc5; BYTE $0xc8 // vmovsd       $-56(%rbp), %xmm0
-	JMP  LBB14_81
-
-LBB14_75:
-	LONG  $0x6ef9c1c4; BYTE $0xc4   // vmovq        %r12, %xmm0
-	IMULQ CX, R12
-	QUAD  $0xfffffbd50562f9c5       // vpunpckldq   $-1067(%rip), %xmm0, %xmm0  /* LCPI14_0(%rip) */
-	QUAD  $0xfffffbdd055cf9c5       // vsubpd       $-1059(%rip), %xmm0, %xmm0  /* LCPI14_1(%rip) */
-	MOVQ  R12, 16(R13)
+LBB14_70:
+	LONG  $0x6ef9c1c4; BYTE $0xc5   // vmovq        %r13, %xmm0
+	IMULQ CX, R13
+	QUAD  $0xfffffc4e0562f9c5       // vpunpckldq   $-946(%rip), %xmm0, %xmm0  /* LCPI14_0(%rip) */
+	QUAD  $0xfffffc56055cf9c5       // vsubpd       $-938(%rip), %xmm0, %xmm0  /* LCPI14_1(%rip) */
+	MOVQ  R13, 16(R12)
 	LONG  $0x0579e3c4; WORD $0x01c8 // vpermilpd    $1, %xmm0, %xmm1
 	LONG  $0xc058f3c5               // vaddsd       %xmm0, %xmm1, %xmm0
 	ANDQ  CX, AX
 	LONG  $0x7ef9e1c4; BYTE $0xc1   // vmovq        %xmm0, %rcx
 	ORQ   AX, CX
-	MOVQ  CX, 8(R13)
-	JMP   LBB14_83
+	MOVQ  CX, 8(R12)
+	JMP   LBB14_86
 
-LBB14_76:
+LBB14_71:
 	MOVL BX, AX
 
-LBB14_77:
-	QUAD $0xfffffbc4052ef9c5                   // vucomisd     $-1084(%rip), %xmm0  /* LCPI14_2(%rip) */
-	JA   LBB14_62
-	QUAD $0xfffffbbe0d10fbc5                   // vmovsd       $-1090(%rip), %xmm1  /* LCPI14_3(%rip) */
+LBB14_72:
+	QUAD $0xfffffc38052ef9c5                   // vucomisd     $-968(%rip), %xmm0  /* LCPI14_2(%rip) */
+	JA   LBB14_76
+	QUAD $0xfffffc360d10fbc5                   // vmovsd       $-970(%rip), %xmm1  /* LCPI14_3(%rip) */
 	LONG $0xc82ef9c5                           // vucomisd     %xmm0, %xmm1
-	JA   LBB14_62
+	JA   LBB14_76
 	MOVL AX, AX
-	LONG $0x310d8d48; WORD $0x014c; BYTE $0x00 // leaq         $85041(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0x5a0d8d48; WORD $0x00a5; BYTE $0x00 // leaq         $42330(%rip), %rcx  /* _P10_TAB(%rip) */
 	LONG $0x0459fbc5; BYTE $0xc1               // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
 
+LBB14_75:
+	LONG $0x4511fbc5; BYTE $0xd0 // vmovsd       %xmm0, $-48(%rbp)
+	JMP  LBB14_82
+
+LBB14_76:
+	MOVL  R10, -56(BP)
+	LEAQ  -48(BP), CX
+	MOVQ  R13, DI
+	MOVL  BX, SI
+	MOVL  R11, -52(BP)
+	MOVL  R11, DX
+	LONG  $0xffeb04e8; BYTE $0xff // callq        _atof_eisel_lemire64
+	TESTB AX, AX
+	JE    LBB14_80
+	CMPL  -56(BP), $0
+	JE    LBB14_81
+	ADDQ  $1, R13
+	LEAQ  -64(BP), CX
+	MOVQ  R13, DI
+	MOVL  BX, SI
+	MOVL  -52(BP), DX
+	LONG  $0xffeae5e8; BYTE $0xff // callq        _atof_eisel_lemire64
+	TESTB AX, AX
+	JE    LBB14_80
+	LONG  $0x4d10fbc5; BYTE $0xc0 // vmovsd       $-64(%rbp), %xmm1
+	LONG  $0x4510fbc5; BYTE $0xd0 // vmovsd       $-48(%rbp), %xmm0
+	LONG  $0xc82ef9c5             // vucomisd     %xmm0, %xmm1
+	JNE   LBB14_80
+	JNP   LBB14_82
+
 LBB14_80:
-	LONG $0x4511fbc5; BYTE $0xc8 // vmovsd       %xmm0, $-56(%rbp)
+	MOVQ $14, 0(R12)
+	MOVQ 8(R12), AX
+	JMP  LBB14_83
 
 LBB14_81:
-	LONG $0x117bc1c4; WORD $0x0845 // vmovsd       %xmm0, $8(%r13)
-	LONG $0x7ef9e1c4; BYTE $0xc0   // vmovq        %xmm0, %rax
+	LONG $0x4510fbc5; BYTE $0xd0 // vmovsd       $-48(%rbp), %xmm0
+
+LBB14_82:
+	LONG $0x117bc1c4; WORD $0x2444; BYTE $0x08 // vmovsd       %xmm0, $8(%r12)
+	LONG $0x7ef9e1c4; BYTE $0xc0               // vmovq        %xmm0, %rax
+
+LBB14_83:
 	MOVQ $-9223372036854775808, CX
-	DECQ CX
+	ADDQ $-1, CX
 	ANDQ AX, CX
 	MOVQ $9218868437227405312, AX
 	CMPQ CX, AX
-	JNE  LBB14_83
-	MOVQ $-8, 0(R13)
+	JNE  LBB14_86
+	CMPQ 0(R12), $14
+	JE   LBB14_86
+	MOVQ $-8, 0(R12)
 
-LBB14_83:
+LBB14_86:
 	MOVQ R15, 0(R14)
-	JMP  LBB14_52
+	JMP  LBB14_53
 
-LBB14_84:
+LBB14_87:
 	MOVQ DX, AX
 
-LBB14_85:
+LBB14_88:
 	LEAL -48(SI), DX
 	CMPB DX, $9
 	JA   LBB14_5
-	XORL CX, CX
+	XORL DI, DI
 	CMPQ AX, R15
-	MOVL R9, -60(BP)
-	JAE  LBB14_92
+	JAE  LBB14_95
 	CMPB DX, $9
-	JA   LBB14_92
+	JA   LBB14_95
 	LEAQ -1(R15), R9
-	XORL CX, CX
-
-LBB14_89:
-	MOVL    CX, DX
-	CMPL    CX, $10000
-	LEAL    0(DX)(DX*4), CX
-	MOVBLZX SI, SI
-	LEAL    -48(SI)(CX*2), CX
-	WORD    $0x4d0f; BYTE $0xca // cmovgel      %edx, %ecx
-	CMPQ    R9, AX
-	JE      LBB14_91
-	MOVBLZX 1(R11)(AX*1), SI
-	INCQ    AX
-	LEAL    -48(SI), DX
-	CMPB    DX, $10
-	JB      LBB14_89
-	JMP     LBB14_92
-
-LBB14_91:
-	MOVQ R15, AX
+	XORL DI, DI
 
 LBB14_92:
-	IMULL R8, CX
-	ADDL  CX, BX
+	MOVL    DI, DX
+	MOVBLZX SI, SI
+	CMPL    DI, $10000
+	LEAL    0(DX)(DX*4), DI
+	LEAL    -48(SI)(DI*2), DI
+	WORD    $0x4d0f; BYTE $0xfa // cmovgel      %edx, %edi
+	CMPQ    R9, AX
+	JE      LBB14_94
+	MOVBLZX 1(CX)(AX*1), SI
+	ADDQ    $1, AX
+	LEAL    -48(SI), DX
+	CMPB    DX, $10
+	JB      LBB14_92
+	JMP     LBB14_95
+
+LBB14_94:
+	MOVQ R15, AX
+
+LBB14_95:
+	IMULL R8, DI
+	ADDL  DI, BX
 	MOVQ  AX, R15
-	MOVL  -60(BP), R9
-	JMP   LBB14_61
+	JMP   LBB14_62
 
 _vsigned:
 	BYTE $0x55                   // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
 	BYTE $0x53                   // pushq        %rbx
-	MOVQ 0(SI), BX
+	MOVQ 0(SI), AX
 	MOVQ 0(DI), R8
-	MOVQ 8(DI), R10
+	MOVQ 8(DI), R11
 	MOVQ $9, 0(DX)
 	LONG $0xc057f8c5             // vxorps       %xmm0, %xmm0, %xmm0
 	LONG $0x4211f8c5; BYTE $0x08 // vmovups      %xmm0, $8(%rdx)
 	MOVQ 0(SI), CX
 	MOVQ CX, 24(DX)
-	CMPQ BX, R10
+	CMPQ AX, R11
 	JAE  LBB15_1
-	MOVB 0(R8)(BX*1), CX
+	MOVB 0(R8)(AX*1), CX
 	MOVL $1, R9
 	CMPB CX, $45
 	JNE  LBB15_5
-	INCQ BX
-	CMPQ BX, R10
+	ADDQ $1, AX
+	CMPQ AX, R11
 	JAE  LBB15_1
-	MOVB 0(R8)(BX*1), CX
+	MOVB 0(R8)(AX*1), CX
 	MOVQ $-1, R9
 
 LBB15_5:
 	LEAL -48(CX), DI
 	CMPB DI, $10
 	JB   LBB15_7
-	MOVQ BX, 0(SI)
+	MOVQ AX, 0(SI)
 	MOVQ $-2, 0(DX)
 	BYTE $0x5b       // popq         %rbx
 	BYTE $0x5d       // popq         %rbp
 	RET
 
 LBB15_1:
-	MOVQ R10, 0(SI)
+	MOVQ R11, 0(SI)
 	MOVQ $-1, 0(DX)
 	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
@@ -4920,68 +4556,76 @@ LBB15_1:
 
 LBB15_7:
 	CMPB    CX, $48
-	JNE     LBB15_8
-	LEAQ    1(BX), DI
-	CMPQ    BX, R10
-	JAE     LBB15_17
+	JNE     LBB15_12
+	LEAQ    1(AX), DI
+	CMPQ    AX, R11
+	JAE     LBB15_11
 	MOVB    0(R8)(DI*1), CX
 	ADDB    $-46, CX
 	CMPB    CX, $55
-	JA      LBB15_17
-	MOVBLZX CX, R11
+	JA      LBB15_11
+	MOVBLZX CX, R10
 	MOVQ    $36028797027352577, CX
-	BTQ     R11, CX
-	JAE     LBB15_17
+	BTQ     R10, CX
+	JAE     LBB15_11
 
-LBB15_8:
+LBB15_12:
+	CMPQ AX, R11
+	MOVQ R11, R10
+	LONG $0xd0470f4c // cmovaq       %rax, %r10
 	XORL DI, DI
 
-LBB15_9:
-	CMPQ    BX, R10
-	JAE     LBB15_22
-	MOVBQSX 0(R8)(BX*1), CX
-	LEAL    -48(CX), AX
-	CMPB    AX, $9
+LBB15_13:
+	CMPQ    R10, AX
+	JE      LBB15_23
+	MOVBQSX 0(R8)(AX*1), CX
+	LEAL    -48(CX), BX
+	CMPB    BX, $9
 	JA      LBB15_18
 	IMUL3Q  $10, DI, DI
-	JO      LBB15_13
-	INCQ    BX
-	ADDQ    $-48, CX
+	JO      LBB15_17
+	ADDQ    $1, AX
+	ADDL    $-48, CX
 	IMULQ   R9, CX
 	ADDQ    CX, DI
-	JNO     LBB15_9
+	JNO     LBB15_13
 
-LBB15_13:
-	DECQ BX
-	MOVQ BX, 0(SI)
+LBB15_17:
+	ADDQ $-1, AX
+	MOVQ AX, 0(SI)
 	MOVQ $-5, 0(DX)
 	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
 	RET
 
-LBB15_17:
+LBB15_11:
 	MOVQ DI, 0(SI)
 	BYTE $0x5b     // popq         %rbx
 	BYTE $0x5d     // popq         %rbp
 	RET
 
 LBB15_18:
-	CMPB CX, $101
-	JE   LBB15_21
-	CMPB CX, $69
-	JE   LBB15_21
+	CMPQ AX, R11
+	JAE  LBB15_22
 	CMPB CX, $46
+	JE   LBB15_25
+	CMPB CX, $69
+	JE   LBB15_25
+	CMPB CX, $101
 	JNE  LBB15_22
 
-LBB15_21:
-	MOVQ BX, 0(SI)
+LBB15_25:
+	MOVQ AX, 0(SI)
 	MOVQ $-6, 0(DX)
 	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
 	RET
 
 LBB15_22:
-	MOVQ BX, 0(SI)
+	MOVQ AX, R10
+
+LBB15_23:
+	MOVQ R10, 0(SI)
 	MOVQ DI, 16(DX)
 	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
@@ -4990,6 +4634,7 @@ LBB15_22:
 _vunsigned:
 	BYTE $0x55                   // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
+	BYTE $0x53                   // pushq        %rbx
 	MOVQ DX, R8
 	MOVQ 0(SI), CX
 	MOVQ 0(DI), R9
@@ -5008,12 +4653,14 @@ _vunsigned:
 LBB16_3:
 	MOVQ CX, 0(SI)
 	MOVQ $-6, 0(R8)
+	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
 	RET
 
 LBB16_1:
 	MOVQ R11, 0(SI)
 	MOVQ $-1, 0(R8)
+	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
 	RET
 
@@ -5023,6 +4670,7 @@ LBB16_4:
 	JB   LBB16_6
 	MOVQ CX, 0(SI)
 	MOVQ $-2, 0(R8)
+	BYTE $0x5b       // popq         %rbx
 	BYTE $0x5d       // popq         %rbp
 	RET
 
@@ -5043,53 +4691,58 @@ LBB16_7:
 	MOVL $10, R10
 
 LBB16_8:
-	CMPQ    CX, R11
-	JAE     LBB16_20
+	CMPQ    R11, CX
+	JE      LBB16_22
 	MOVBLSX 0(R9)(CX*1), DI
 	LEAL    -48(DI), DX
 	CMPB    DX, $9
 	JA      LBB16_17
 	MULQ    R10
 	JO      LBB16_13
-	INCQ    CX
+	ADDQ    $1, CX
 	ADDL    $-48, DI
-	MOVLQSX DI, DX
-	MOVQ    DX, DI
-	SARQ    $63, DI
-	ADDQ    DX, AX
-	ADCQ    $0, DI
-	MOVL    DI, DX
-	ANDL    $1, DX
+	XORL    BX, BX
+	ADDQ    DI, AX
+	SETCS   BX
+	MOVQ    BX, DX
 	NEGQ    DX
-	XORQ    DX, DI
+	XORQ    DX, BX
 	JNE     LBB16_13
 	TESTQ   DX, DX
 	JNS     LBB16_8
 
 LBB16_13:
-	DECQ CX
+	ADDQ $-1, CX
 	MOVQ CX, 0(SI)
 	MOVQ $-5, 0(R8)
+	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
 	RET
 
 LBB16_17:
-	CMPB DI, $101
+	CMPQ CX, R11
+	JAE  LBB16_21
+	CMPB DI, $46
 	JE   LBB16_3
 	CMPB DI, $69
 	JE   LBB16_3
-	CMPB DI, $46
+	CMPB DI, $101
 	JE   LBB16_3
 
-LBB16_20:
-	MOVQ CX, 0(SI)
+LBB16_21:
+	MOVQ CX, R11
+
+LBB16_22:
+	MOVQ R11, 0(SI)
 	MOVQ AX, 16(R8)
+	BYTE $0x5b      // popq         %rbx
 	BYTE $0x5d      // popq         %rbp
 	RET
 
 LBB16_16:
-	INCQ CX
+	ADDQ $1, CX
 	MOVQ CX, 0(SI)
+	BYTE $0x5b     // popq         %rbx
 	BYTE $0x5d     // popq         %rbp
 	RET
 
@@ -5143,20 +4796,20 @@ LBB18_4:
 	MOVQ    8(R15), SI
 	MOVQ    -56(BP), BX
 	MOVQ    BX, DX
-	LONG    $0xfff250e8; BYTE $0xff // callq        _advance_ns
+	LONG    $0xfff278e8; BYTE $0xff // callq        _advance_ns
 	MOVLQSX 0(R13), DX
 	LEAQ    -1(DX), CX
-	MOVL    0(R13)(DX*4), SI
 	CMPQ    R14, $-1
 	JNE     LBB18_6
 	MOVQ    0(BX), R14
-	DECQ    R14
+	ADDQ    $-1, R14
 
 LBB18_6:
-	DECL    SI
+	MOVL    0(R13)(DX*4), SI
+	ADDL    $-1, SI
 	CMPL    SI, $5
 	JA      LBB18_11
-	LONG    $0x3f3d8d48; WORD $0x0004; BYTE $0x00 // leaq         $1087(%rip), %rdi  /* LJTI18_0(%rip) */
+	LONG    $0x4f3d8d48; WORD $0x0004; BYTE $0x00 // leaq         $1103(%rip), %rdi  /* LJTI18_0(%rip) */
 	MOVLQSX 0(DI)(SI*4), SI
 	ADDQ    DI, SI
 	JMP     SI
@@ -5203,7 +4856,7 @@ LBB18_15:
 LBB18_17:
 	MOVQ  R12, SI
 	LEAQ  -64(BP), DX
-	LONG  $0xfff43de8; BYTE $0xff // callq        _advance_string
+	LONG  $0xfff42ae8; BYTE $0xff // callq        _advance_string
 	MOVQ  AX, BX
 	TESTQ AX, AX
 	JS    LBB18_52
@@ -5235,6 +4888,7 @@ LBB18_23:
 	CMPL    AX, $125
 	JNE     LBB18_59
 	MOVL    CX, 0(R13)
+	MOVQ    -48(BP), R15
 	MOVQ    R14, BX
 	TESTL   CX, CX
 	JNE     LBB18_4
@@ -5248,7 +4902,7 @@ LBB18_26:
 
 LBB18_27:
 	MOVQ    $-1, BX
-	LONG    $0x2a0d8d48; WORD $0x0003; BYTE $0x00 // leaq         $810(%rip), %rcx  /* LJTI18_1(%rip) */
+	LONG    $0x360d8d48; WORD $0x0003; BYTE $0x00 // leaq         $822(%rip), %rcx  /* LJTI18_1(%rip) */
 	MOVLQSX 0(CX)(AX*4), AX
 	ADDQ    CX, AX
 	JMP     AX
@@ -5263,16 +4917,16 @@ LBB18_28:
 	MOVQ  -48(BP), AX
 	MOVQ  8(AX), SI
 	SUBQ  BX, SI
-	LONG  $0x00062ce8; BYTE $0x00 // callq        _skip_number
-	MOVQ  $-2, CX
-	SUBQ  AX, CX
+	LONG  $0x00063ae8; BYTE $0x00 // callq        _skip_number
+	LEAQ  -1(AX), CX
+	MOVQ  $-2, DX
+	SUBQ  AX, DX
 	TESTQ AX, AX
-	LEAQ  -1(AX), AX
-	LONG  $0xc1480f48             // cmovsq       %rcx, %rax
-	MOVQ  $-2, CX
-	LONG  $0xd9480f48             // cmovsq       %rcx, %rbx
-	ADDQ  R12, AX
-	MOVQ  AX, 0(R15)
+	LONG  $0xd1490f48             // cmovnsq      %rcx, %rdx
+	MOVQ  $-2, AX
+	LONG  $0xd8480f48             // cmovsq       %rax, %rbx
+	ADDQ  R12, DX
+	MOVQ  DX, 0(R15)
 	MOVQ  -48(BP), R15
 	TESTQ BX, BX
 	JNS   LBB18_37
@@ -5296,12 +4950,12 @@ LBB18_31:
 
 LBB18_33:
 	MOVL    $2, 0(R13)(DX*4)
-	MOVQ    R15, DI
 	MOVQ    BX, R15
 	MOVQ    0(BX), R12
+	MOVQ    -48(BP), DI
 	MOVQ    R12, SI
 	LEAQ    -64(BP), DX
-	LONG    $0xfff2dbe8; BYTE $0xff // callq        _advance_string
+	LONG    $0xfff2c3e8; BYTE $0xff // callq        _advance_string
 	MOVQ    AX, BX
 	TESTQ   AX, AX
 	JS      LBB18_52
@@ -5330,7 +4984,7 @@ LBB18_39:
 	ADDQ  BX, DI
 	MOVQ  8(R15), SI
 	SUBQ  BX, SI
-	LONG  $0x00052ae8; BYTE $0x00 // callq        _skip_number
+	LONG  $0x000537e8; BYTE $0x00 // callq        _skip_number
 	TESTQ AX, AX
 	JS    LBB18_58
 	ADDQ  BX, AX
@@ -5375,7 +5029,7 @@ LBB18_46:
 	MOVQ 0(R15), CX
 	CMPL -1(CX)(AX*1), $1819047278
 	JE   LBB18_3
-	JMP  LBB18_73
+	JMP  LBB18_68
 
 LBB18_48:
 	MOVQ -56(BP), SI
@@ -5387,7 +5041,7 @@ LBB18_48:
 	MOVQ 0(R15), CX
 	CMPL -1(CX)(AX*1), $1702195828
 	JE   LBB18_3
-	JMP  LBB18_69
+	JMP  LBB18_72
 
 LBB18_50:
 	MOVLQSX 0(R13), AX
@@ -5409,7 +5063,7 @@ LBB18_52:
 	JMP  LBB18_60
 
 LBB18_53:
-	DECQ R12
+	ADDQ $-1, R12
 	MOVQ R12, BX
 	JMP  LBB18_60
 
@@ -5418,7 +5072,7 @@ LBB18_67:
 	JMP  LBB18_60
 
 LBB18_57:
-	DECQ AX
+	ADDQ $-1, AX
 	MOVQ AX, BX
 	JMP  LBB18_60
 
@@ -5442,14 +5096,14 @@ LBB18_60:
 	RET
 
 LBB18_61:
-	DECQ BX
+	ADDQ $-1, BX
 	JMP  LBB18_60
 
 LBB18_64:
 	MOVQ $-2, BX
 	CMPB DX, $97
 	JNE  LBB18_60
-	INCQ AX
+	ADDQ $1, AX
 	MOVL $1702063201, DX
 
 LBB18_66:
@@ -5457,30 +5111,12 @@ LBB18_66:
 	MOVQ    AX, 0(SI)
 	MOVBLSX 0(CX)(AX*1), R8
 	MOVBLZX DX, DI
-	INCQ    AX
+	ADDQ    $1, AX
 	CMPL    DI, R8
 	JE      LBB18_66
 	JMP     LBB18_60
 
-LBB18_69:
-	LEAQ -1(AX), DX
-	MOVQ DX, 0(SI)
-	MOVQ $-2, BX
-	CMPB -1(CX)(AX*1), $116
-	JNE  LBB18_60
-	MOVL $1702195828, DX
-
-LBB18_71:
-	SHRL    $8, DX
-	MOVQ    AX, 0(SI)
-	MOVBLSX 0(CX)(AX*1), R8
-	MOVBLZX DX, DI
-	INCQ    AX
-	CMPL    DI, R8
-	JE      LBB18_71
-	JMP     LBB18_60
-
-LBB18_73:
+LBB18_68:
 	LEAQ -1(AX), DX
 	MOVQ DX, 0(SI)
 	MOVQ $-2, BX
@@ -5488,14 +5124,32 @@ LBB18_73:
 	JNE  LBB18_60
 	MOVL $1819047278, DX
 
-LBB18_75:
+LBB18_70:
 	SHRL    $8, DX
 	MOVQ    AX, 0(SI)
 	MOVBLSX 0(CX)(AX*1), R8
 	MOVBLZX DX, DI
-	INCQ    AX
+	ADDQ    $1, AX
 	CMPL    DI, R8
-	JE      LBB18_75
+	JE      LBB18_70
+	JMP     LBB18_60
+
+LBB18_72:
+	LEAQ -1(AX), DX
+	MOVQ DX, 0(SI)
+	MOVQ $-2, BX
+	CMPB -1(CX)(AX*1), $116
+	JNE  LBB18_60
+	MOVL $1702195828, DX
+
+LBB18_74:
+	SHRL    $8, DX
+	MOVQ    AX, 0(SI)
+	MOVBLSX 0(CX)(AX*1), R8
+	MOVBLZX DX, DI
+	ADDQ    $1, AX
+	CMPL    DI, R8
+	JE      LBB18_74
 	JMP     LBB18_60
 
 // .set L18_0_set_8, LBB18_8-LJTI18_0
@@ -5505,12 +5159,12 @@ LBB18_75:
 // .set L18_0_set_21, LBB18_21-LJTI18_0
 // .set L18_0_set_23, LBB18_23-LJTI18_0
 LJTI18_0:
-	LONG $0xfffffbca // .long L18_0_set_8
-	LONG $0xfffffc04 // .long L18_0_set_12
-	LONG $0xfffffc2d // .long L18_0_set_15
-	LONG $0xfffffc74 // .long L18_0_set_19
-	LONG $0xfffffc8a // .long L18_0_set_21
-	LONG $0xfffffca2 // .long L18_0_set_23
+	LONG $0xfffffbba // .long L18_0_set_8
+	LONG $0xfffffbf4 // .long L18_0_set_12
+	LONG $0xfffffc1d // .long L18_0_set_15
+	LONG $0xfffffc64 // .long L18_0_set_19
+	LONG $0xfffffc7a // .long L18_0_set_21
+	LONG $0xfffffc92 // .long L18_0_set_23
 
 	// .set L18_1_set_60, LBB18_60-LJTI18_1
 	// .set L18_1_set_59, LBB18_59-LJTI18_1
@@ -5523,130 +5177,130 @@ LJTI18_0:
 	// .set L18_1_set_48, LBB18_48-LJTI18_1
 	// .set L18_1_set_50, LBB18_50-LJTI18_1
 LJTI18_1:
-	LONG $0xffffff3a // .long L18_1_set_60
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffdde // .long L18_1_set_38
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffded // .long L18_1_set_39
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xfffffcdf // .long L18_1_set_28
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffe25 // .long L18_1_set_41
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffe4a // .long L18_1_set_43
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffe89 // .long L18_1_set_46
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffeb3 // .long L18_1_set_48
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xffffff33 // .long L18_1_set_59
-	LONG $0xfffffedd // .long L18_1_set_50
+	LONG $0xffffff35 // .long L18_1_set_60
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffdd3 // .long L18_1_set_38
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffde2 // .long L18_1_set_39
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xfffffcd3 // .long L18_1_set_28
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffe1a // .long L18_1_set_41
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffe3f // .long L18_1_set_43
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffe7e // .long L18_1_set_46
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffeac // .long L18_1_set_48
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xffffff2e // .long L18_1_set_59
+	LONG $0xfffffed6 // .long L18_1_set_50
 
 _skip_array:
 	BYTE $0x55               // pushq        %rbp
@@ -5684,10 +5338,10 @@ _skip_string:
 	MOVQ  0(SI), BX
 	LEAQ  -32(BP), DX
 	MOVQ  BX, SI
-	LONG  $0xffee23e8; BYTE $0xff // callq        _advance_string
+	LONG  $0xffee00e8; BYTE $0xff // callq        _advance_string
 	TESTQ AX, AX
 	JS    LBB21_2
-	DECQ  BX
+	ADDQ  $-1, BX
 	MOVQ  AX, CX
 	MOVQ  BX, AX
 	JMP   LBB21_3
@@ -5716,12 +5370,12 @@ _skip_negative:
 	MOVQ  8(DI), SI
 	SUBQ  BX, SI
 	MOVQ  AX, DI
-	LONG  $0x000098e8; BYTE $0x00 // callq        _skip_number
+	LONG  $0x000099e8; BYTE $0x00 // callq        _skip_number
 	TESTQ AX, AX
 	JS    LBB22_1
 	ADDQ  BX, AX
 	MOVQ  AX, 0(R14)
-	DECQ  BX
+	ADDQ  $-1, BX
 	JMP   LBB22_3
 
 LBB22_1:
@@ -5750,317 +5404,279 @@ LCPI23_3:
 	QUAD $0x2d2d2d2d2d2d2d2d; QUAD $0x2d2d2d2d2d2d2d2d // .space 16, '----------------'
 
 LCPI23_4:
-	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
+	QUAD $0xdfdfdfdfdfdfdfdf; QUAD $0xdfdfdfdfdfdfdfdf // .space 16, '\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf'
 
 LCPI23_5:
 	QUAD $0x2e2e2e2e2e2e2e2e; QUAD $0x2e2e2e2e2e2e2e2e // .space 16, '................'
 
 LCPI23_6:
-	QUAD $0x6565656565656565; QUAD $0x6565656565656565 // .space 16, 'eeeeeeeeeeeeeeee'
+	QUAD $0x4545454545454545; QUAD $0x4545454545454545 // .space 16, 'EEEEEEEEEEEEEEEE'
 
 _skip_number:
 	BYTE    $0x55                  // pushq        %rbp
 	WORD    $0x8948; BYTE $0xe5    // movq         %rsp, %rbp
 	WORD    $0x5741                // pushq        %r15
 	WORD    $0x5641                // pushq        %r14
-	WORD    $0x5441                // pushq        %r12
 	BYTE    $0x53                  // pushq        %rbx
 	TESTQ   SI, SI
-	JE      LBB23_32
+	JE      LBB23_34
 	CMPB    0(DI), $48
 	JNE     LBB23_5
 	MOVL    $1, AX
 	CMPQ    SI, $1
-	JE      LBB23_48
+	JE      LBB23_53
 	MOVB    1(DI), CX
 	ADDB    $-46, CX
 	CMPB    CX, $55
-	JA      LBB23_48
+	JA      LBB23_53
 	MOVBLZX CX, CX
 	MOVQ    $36028797027352577, DX
 	BTQ     CX, DX
-	JAE     LBB23_48
+	JAE     LBB23_53
 
 LBB23_5:
-	CMPQ SI, $15
-	JBE  LBB23_52
-	MOVQ SI, R11
-	ANDQ $-16, R11
-	ADDQ DI, R11
-	MOVQ $-1, R10
-	QUAD $0xffffff1f056f7ac5 // vmovdqu      $-225(%rip), %xmm8  /* LCPI23_0(%rip) */
-	QUAD $0xffffff270d6f7ac5 // vmovdqu      $-217(%rip), %xmm9  /* LCPI23_1(%rip) */
-	QUAD $0xffffff2f156f7ac5 // vmovdqu      $-209(%rip), %xmm10  /* LCPI23_2(%rip) */
-	QUAD $0xffffff371d6f7ac5 // vmovdqu      $-201(%rip), %xmm11  /* LCPI23_3(%rip) */
-	QUAD $0xffffff3f256ffac5 // vmovdqu      $-193(%rip), %xmm4  /* LCPI23_4(%rip) */
-	QUAD $0xffffff472d6ffac5 // vmovdqu      $-185(%rip), %xmm5  /* LCPI23_5(%rip) */
-	QUAD $0xffffff4f356ffac5 // vmovdqu      $-177(%rip), %xmm6  /* LCPI23_6(%rip) */
-	MOVL $4294967295, R14
+	MOVQ $-1, R11
+	CMPQ SI, $16
+	JB   LBB23_54
+	XORL AX, AX
+	QUAD $0xffffff29056f7ac5 // vmovdqu      $-215(%rip), %xmm8  /* LCPI23_0(%rip) */
+	QUAD $0xffffff310d6f7ac5 // vmovdqu      $-207(%rip), %xmm9  /* LCPI23_1(%rip) */
+	QUAD $0xffffff39156f7ac5 // vmovdqu      $-199(%rip), %xmm10  /* LCPI23_2(%rip) */
+	QUAD $0xffffff411d6f7ac5 // vmovdqu      $-191(%rip), %xmm11  /* LCPI23_3(%rip) */
+	QUAD $0xffffff49256ffac5 // vmovdqu      $-183(%rip), %xmm4  /* LCPI23_4(%rip) */
+	QUAD $0xffffff512d6ffac5 // vmovdqu      $-175(%rip), %xmm5  /* LCPI23_5(%rip) */
+	QUAD $0xffffff59356ffac5 // vmovdqu      $-167(%rip), %xmm6  /* LCPI23_6(%rip) */
+	MOVL $4294967295, R10
 	MOVQ $-1, R8
 	MOVQ $-1, R9
-	MOVQ DI, DX
 
 LBB23_7:
-	LONG $0x3a6ffac5             // vmovdqu      (%rdx), %xmm7
+	LONG $0x3c6ffac5; BYTE $0x07 // vmovdqu      (%rdi,%rax), %xmm7
 	LONG $0x6441c1c4; BYTE $0xc0 // vpcmpgtb     %xmm8, %xmm7, %xmm0
 	LONG $0xcf64b1c5             // vpcmpgtb     %xmm7, %xmm9, %xmm1
 	LONG $0xc1dbf9c5             // vpand        %xmm1, %xmm0, %xmm0
 	LONG $0xcf74a9c5             // vpcmpeqb     %xmm7, %xmm10, %xmm1
 	LONG $0xd774a1c5             // vpcmpeqb     %xmm7, %xmm11, %xmm2
 	LONG $0xc9ebe9c5             // vpor         %xmm1, %xmm2, %xmm1
-	LONG $0xd4ebc1c5             // vpor         %xmm4, %xmm7, %xmm2
+	LONG $0xd4dbc1c5             // vpand        %xmm4, %xmm7, %xmm2
 	LONG $0xd674e9c5             // vpcmpeqb     %xmm6, %xmm2, %xmm2
 	LONG $0xfd74c1c5             // vpcmpeqb     %xmm5, %xmm7, %xmm7
 	LONG $0xdfebe9c5             // vpor         %xmm7, %xmm2, %xmm3
 	LONG $0xc0ebf1c5             // vpor         %xmm0, %xmm1, %xmm0
 	LONG $0xc0ebe1c5             // vpor         %xmm0, %xmm3, %xmm0
-	LONG $0xc7d7f9c5             // vpmovmskb    %xmm7, %eax
-	LONG $0xe2d779c5             // vpmovmskb    %xmm2, %r12d
-	LONG $0xf9d779c5             // vpmovmskb    %xmm1, %r15d
+	LONG $0xd7d7f9c5             // vpmovmskb    %xmm7, %edx
+	LONG $0xfad779c5             // vpmovmskb    %xmm2, %r15d
+	LONG $0xf1d779c5             // vpmovmskb    %xmm1, %r14d
 	LONG $0xc8d7f9c5             // vpmovmskb    %xmm0, %ecx
-	XORQ R14, CX
+	XORQ R10, CX
 	BSFQ CX, CX
 	CMPL CX, $16
 	JE   LBB23_9
 	MOVL $-1, BX
 	SHLL CX, BX
 	NOTL BX
-	ANDL BX, AX
-	ANDL BX, R12
-	ANDL R15, BX
-	MOVL BX, R15
+	ANDL BX, DX
+	ANDL BX, R15
+	ANDL R14, BX
+	MOVL BX, R14
 
 LBB23_9:
-	LEAL  -1(AX), BX
-	ANDL  AX, BX
-	JNE   LBB23_46
-	LEAL  -1(R12), BX
-	ANDL  R12, BX
-	JNE   LBB23_46
+	LEAL  -1(DX), BX
+	ANDL  DX, BX
+	JNE   LBB23_48
 	LEAL  -1(R15), BX
 	ANDL  R15, BX
-	JNE   LBB23_46
-	TESTL AX, AX
+	JNE   LBB23_48
+	LEAL  -1(R14), BX
+	ANDL  R14, BX
+	JNE   LBB23_48
+	TESTL DX, DX
 	JE    LBB23_15
-	MOVQ  DX, BX
-	SUBQ  DI, BX
-	BSFL  AX, AX
-	ADDQ  BX, AX
+	BSFL  DX, DX
 	CMPQ  R9, $-1
-	JNE   LBB23_47
-	MOVQ  AX, R9
+	JNE   LBB23_49
+	ADDQ  AX, DX
+	MOVQ  DX, R9
 
 LBB23_15:
-	TESTL R12, R12
+	TESTL R15, R15
 	JE    LBB23_18
-	MOVQ  DX, BX
-	SUBQ  DI, BX
-	BSFL  R12, AX
-	ADDQ  BX, AX
+	BSFL  R15, DX
 	CMPQ  R8, $-1
-	JNE   LBB23_47
-	MOVQ  AX, R8
+	JNE   LBB23_49
+	ADDQ  AX, DX
+	MOVQ  DX, R8
 
 LBB23_18:
-	TESTL R15, R15
+	TESTL R14, R14
 	JE    LBB23_21
-	MOVQ  DX, BX
-	SUBQ  DI, BX
-	BSFL  R15, AX
-	ADDQ  BX, AX
-	CMPQ  R10, $-1
-	JNE   LBB23_47
-	MOVQ  AX, R10
+	BSFL  R14, DX
+	CMPQ  R11, $-1
+	JNE   LBB23_49
+	ADDQ  AX, DX
+	MOVQ  DX, R11
 
 LBB23_21:
 	CMPL CX, $16
-	JNE  LBB23_33
-	ADDQ $16, DX
+	JNE  LBB23_35
 	ADDQ $-16, SI
+	ADDQ $16, AX
 	CMPQ SI, $15
 	JA   LBB23_7
-
-LBB23_23:
-	LONG $0x040d8d48; WORD $0x0001; BYTE $0x00 // leaq         $260(%rip), %rcx  /* LJTI23_0(%rip) */
+	ADDQ DI, AX
+	MOVQ AX, CX
 
 LBB23_24:
-	MOVQ    R11, DX
-	MOVBLSX 0(R11), AX
-	ADDL    $-43, AX
-	CMPL    AX, $58
-	JA      LBB23_34
-	LEAQ    1(DX), R11
-	MOVLQSX 0(CX)(AX*4), AX
-	ADDQ    CX, AX
-	JMP     AX
+	SUBQ DI, AX
+	LONG $0xe6158d48; WORD $0x0000; BYTE $0x00 // leaq         $230(%rip), %rdx  /* LJTI23_0(%rip) */
+	JMP  LBB23_28
+
+LBB23_25:
+	CMPL SI, $101
+	JNE  LBB23_36
 
 LBB23_26:
-	MOVQ R11, AX
-	SUBQ DI, AX
-	CMPQ R10, $-1
-	JNE  LBB23_51
-	DECQ AX
-	MOVQ AX, R10
-	JMP  LBB23_24
+	CMPQ R8, $-1
+	MOVQ AX, R8
+	JNE  LBB23_52
+
+LBB23_27:
+	ADDQ $1, CX
+	ADDQ $1, AX
 
 LBB23_28:
-	MOVQ R11, AX
-	SUBQ DI, AX
-	CMPQ R8, $-1
-	JNE  LBB23_51
-	DECQ AX
-	MOVQ AX, R8
-	JMP  LBB23_24
+	MOVBLSX 0(CX), SI
+	LEAL    -48(SI), BX
+	CMPL    BX, $10
+	JB      LBB23_27
+	LEAL    -43(SI), BX
+	CMPL    BX, $26
+	JA      LBB23_25
+	MOVLQSX 0(DX)(BX*4), SI
+	ADDQ    DX, SI
+	JMP     SI
 
-LBB23_30:
-	MOVQ R11, AX
-	SUBQ DI, AX
-	CMPQ R9, $-1
-	JNE  LBB23_51
-	DECQ AX
-	MOVQ AX, R9
-	JMP  LBB23_24
+LBB23_31:
+	CMPQ R11, $-1
+	MOVQ AX, R11
+	JE   LBB23_27
+	JMP  LBB23_52
 
 LBB23_32:
-	MOVQ $-1, AX
-	JMP  LBB23_48
+	CMPQ R9, $-1
+	MOVQ AX, R9
+	JE   LBB23_27
 
-LBB23_33:
-	ADDQ CX, DX
+LBB23_52:
+	NOTQ AX
+	JMP  LBB23_53
 
 LBB23_34:
-	MOVQ  $-1, AX
-	TESTQ R10, R10
-	JE    LBB23_48
-	TESTQ R9, R9
-	JE    LBB23_48
-	TESTQ R10, R10
-	JLE   LBB23_39
-	LEAQ  -1(R10), AX
-	CMPQ  R8, AX
-	JE    LBB23_39
-	NOTQ  R10
-	MOVQ  R10, AX
-	JMP   LBB23_48
+	MOVQ $-1, AX
+	JMP  LBB23_53
 
-LBB23_39:
+LBB23_35:
+	ADDQ AX, CX
+	ADDQ DI, CX
+
+LBB23_36:
+	MOVQ  $-1, AX
+	TESTQ R11, R11
+	JE    LBB23_53
+	TESTQ R9, R9
+	JE    LBB23_53
+	TESTQ R11, R11
+	JLE   LBB23_41
+	LEAQ  -1(R11), AX
+	CMPQ  R8, AX
+	JE    LBB23_41
+	NOTQ  R11
+	MOVQ  R11, AX
+	JMP   LBB23_53
+
+LBB23_41:
 	MOVQ  R9, AX
 	ORQ   R8, AX
 	CMPQ  R9, R8
-	JL    LBB23_42
+	JL    LBB23_44
 	TESTQ AX, AX
-	JS    LBB23_42
+	JS    LBB23_44
 	NOTQ  R9
 	MOVQ  R9, AX
-	JMP   LBB23_48
+	JMP   LBB23_53
 
-LBB23_42:
-	LEAQ  -1(R8), CX
-	CMPQ  R9, CX
-	JNE   LBB23_45
+LBB23_44:
+	LEAQ  -1(R8), DX
+	CMPQ  R9, DX
+	JNE   LBB23_47
 	TESTQ AX, AX
-	JS    LBB23_45
+	JS    LBB23_47
 	NOTQ  R8
 	MOVQ  R8, AX
-	JMP   LBB23_48
-
-LBB23_45:
-	SUBQ DI, DX
-	MOVQ DX, AX
-	JMP  LBB23_48
-
-LBB23_46:
-	SUBQ DI, DX
-	BSFL BX, AX
-	ADDQ DX, AX
+	JMP   LBB23_53
 
 LBB23_47:
-	NOTQ AX
+	SUBQ DI, CX
+	MOVQ CX, AX
+	JMP  LBB23_53
 
 LBB23_48:
+	BSFL BX, CX
+	JMP  LBB23_50
+
+LBB23_49:
+	MOVL DX, CX
+
+LBB23_50:
+	NOTQ AX
+	SUBQ CX, AX
+
+LBB23_53:
 	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
 	WORD $0x5e41 // popq         %r14
 	WORD $0x5f41 // popq         %r15
 	BYTE $0x5d   // popq         %rbp
 	RET
 
-LBB23_51:
-	NEGQ AX
-	JMP  LBB23_48
-
-LBB23_52:
-	MOVQ $-1, R10
+LBB23_54:
 	MOVQ $-1, R8
 	MOVQ $-1, R9
-	MOVQ DI, R11
-	JMP  LBB23_23
+	MOVQ DI, CX
+	MOVQ DI, AX
+	JMP  LBB23_24
 
+// .set L23_0_set_31, LBB23_31-LJTI23_0
+// .set L23_0_set_36, LBB23_36-LJTI23_0
+// .set L23_0_set_32, LBB23_32-LJTI23_0
 // .set L23_0_set_26, LBB23_26-LJTI23_0
-// .set L23_0_set_34, LBB23_34-LJTI23_0
-// .set L23_0_set_30, LBB23_30-LJTI23_0
-// .set L23_0_set_24, LBB23_24-LJTI23_0
-// .set L23_0_set_28, LBB23_28-LJTI23_0
 LJTI23_0:
-	LONG $0xffffff18 // .long L23_0_set_26
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff18 // .long L23_0_set_26
-	LONG $0xffffff48 // .long L23_0_set_30
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xfffffefc // .long L23_0_set_24
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff30 // .long L23_0_set_28
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff6c // .long L23_0_set_34
-	LONG $0xffffff30 // .long L23_0_set_28
+	LONG $0xffffff4e // .long L23_0_set_31
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff4e // .long L23_0_set_31
+	LONG $0xffffff59 // .long L23_0_set_32
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff76 // .long L23_0_set_36
+	LONG $0xffffff21 // .long L23_0_set_26
 
 _skip_positive:
 	BYTE  $0x55                   // pushq        %rbp
@@ -6077,16 +5693,16 @@ _skip_positive:
 	MOVQ  8(DI), SI
 	SUBQ  BX, SI
 	MOVQ  AX, DI
-	LONG  $0xfffc27e8; BYTE $0xff // callq        _skip_number
+	LONG  $0xfffcdfe8; BYTE $0xff // callq        _skip_number
+	LEAQ  -1(AX), DX
 	MOVQ  $-2, CX
-	MOVQ  $-2, DX
-	SUBQ  AX, DX
+	MOVQ  $-2, SI
+	SUBQ  AX, SI
 	TESTQ AX, AX
-	LEAQ  -1(AX), AX
-	LONG  $0xc2480f48             // cmovsq       %rdx, %rax
+	LONG  $0xf2490f48             // cmovnsq      %rdx, %rsi
 	LONG  $0xcb490f48             // cmovnsq      %rbx, %rcx
-	ADDQ  R15, AX
-	MOVQ  AX, 0(R14)
+	ADDQ  R15, SI
+	MOVQ  SI, 0(R14)
 	MOVQ  CX, AX
 	ADDQ  $8, SP
 	BYTE  $0x5b                   // popq         %rbx
@@ -6100,7 +5716,7 @@ _print_mantissa:
 	WORD    $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
 	WORD    $0x5641                               // pushq        %r14
 	BYTE    $0x53                                 // pushq        %rbx
-	MOVLQSX DX, R14
+	MOVL    DX, R14
 	ADDQ    SI, R14
 	MOVQ    DI, AX
 	SHRQ    $32, AX
@@ -6136,7 +5752,7 @@ _print_mantissa:
 	LONG    $0x64fa6b41                           // imull        $100, %r10d, %edi
 	SUBL    DI, AX
 	MOVWLZX AX, R11
-	LONG    $0xa43d8d48; WORD $0x0059; BYTE $0x00 // leaq         $22948(%rip), %rdi  /* _Digits(%rip) */
+	LONG    $0xbc3d8d48; WORD $0x0059; BYTE $0x00 // leaq         $22972(%rip), %rdi  /* _Digits(%rip) */
 	MOVWLZX 0(DI)(R8*2), AX
 	MOVW    AX, -2(R14)
 	MOVWLZX 0(DI)(R9*2), AX
@@ -6152,7 +5768,7 @@ LBB25_2:
 	CMPL DI, $10000
 	JB   LBB25_3
 	MOVL $3518437209, R8
-	LONG $0x5c0d8d4c; WORD $0x0059; BYTE $0x00 // leaq         $22876(%rip), %r9  /* _Digits(%rip) */
+	LONG $0x740d8d4c; WORD $0x0059; BYTE $0x00 // leaq         $22900(%rip), %r9  /* _Digits(%rip) */
 
 LBB25_5:
 	MOVL    DI, AX
@@ -6183,7 +5799,7 @@ LBB25_7:
 	WORD    $0xd16b; BYTE $0x64                   // imull        $100, %ecx, %edx
 	SUBL    DX, AX
 	MOVWLZX AX, AX
-	LONG    $0xf5158d48; WORD $0x0058; BYTE $0x00 // leaq         $22773(%rip), %rdx  /* _Digits(%rip) */
+	LONG    $0x0d158d48; WORD $0x0059; BYTE $0x00 // leaq         $22797(%rip), %rdx  /* _Digits(%rip) */
 	MOVWLZX 0(DX)(AX*2), AX
 	MOVW    AX, -2(R14)
 	ADDQ    $-2, R14
@@ -6193,7 +5809,7 @@ LBB25_8:
 	CMPL    AX, $10
 	JB      LBB25_10
 	MOVL    AX, AX
-	LONG    $0xd80d8d48; WORD $0x0058; BYTE $0x00 // leaq         $22744(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0xf00d8d48; WORD $0x0058; BYTE $0x00 // leaq         $22768(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
 	MOVW    AX, -2(R14)
 	BYTE    $0x5b                                 // popq         %rbx
@@ -6216,103 +5832,102 @@ LBB25_10:
 	RET
 
 _count_len_u64:
-	BYTE $0x55                   // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	MOVQ DI, AX
-	SHRQ $32, AX
-	JE   LBB26_1
-	MOVQ AX, DI
-	LONG $0xffffebe8; BYTE $0xff // callq        _count_len_u64
-	ADDL $32, AX
-	BYTE $0x5d                   // popq         %rbp
-	RET
+	BYTE $0x55               // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	BYTE $0x53               // pushq        %rbx
+	BYTE $0x50               // pushq        %rax
+	MOVL $-32, BX
 
 LBB26_1:
-	MOVQ DI, AX
-	SHRQ $16, AX
-	JE   LBB26_2
-	MOVQ AX, DI
-	LONG $0xffffd5e8; BYTE $0xff // callq        _count_len_u64
-	ADDL $16, AX
-	BYTE $0x5d                   // popq         %rbp
+	MOVQ  DI, AX
+	SHRQ  $32, DI
+	ADDL  $32, BX
+	TESTQ DI, DI
+	JNE   LBB26_1
+	MOVQ  AX, DI
+	SHRQ  $16, DI
+	JE    LBB26_4
+	LONG  $0xffffd8e8; BYTE $0xff // callq        _count_len_u64
+	ADDL  BX, AX
+	ADDL  $16, AX
+	ADDQ  $8, SP
+	BYTE  $0x5b                   // popq         %rbx
+	BYTE  $0x5d                   // popq         %rbp
 	RET
 
-LBB26_2:
-	MOVQ DI, AX
-	SHRQ $8, AX
-	JE   LBB26_3
+LBB26_4:
 	MOVQ AX, DI
-	LONG $0xffffbfe8; BYTE $0xff // callq        _count_len_u64
+	SHRQ $8, DI
+	JE   LBB26_6
+	LONG $0xffffbee8; BYTE $0xff // callq        _count_len_u64
+	ADDL BX, AX
 	ADDL $8, AX
+	ADDQ $8, SP
+	BYTE $0x5b                   // popq         %rbx
 	BYTE $0x5d                   // popq         %rbp
 	RET
 
-LBB26_3:
-	LONG    $0xc3058d48; WORD $0x007a; BYTE $0x00 // leaq         $31427(%rip), %rax  /* _U8_LEN_TAB(%rip) */
-	MOVBLZX 0(DI)(AX*1), AX
+LBB26_6:
+	LONG    $0xd30d8d48; WORD $0x007a; BYTE $0x00 // leaq         $31443(%rip), %rcx  /* _U8_LEN_TAB(%rip) */
+	MOVBLZX 0(AX)(CX*1), AX
+	ADDL    BX, AX
+	ADDQ    $8, SP
+	BYTE    $0x5b                                 // popq         %rbx
 	BYTE    $0x5d                                 // popq         %rbp
 	RET
 
 _left_shift:
 	BYTE    $0x55                                 // pushq        %rbp
 	WORD    $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD    $0x5741                               // pushq        %r15
 	WORD    $0x5641                               // pushq        %r14
 	BYTE    $0x53                                 // pushq        %rbx
 	MOVL    SI, CX
-	IMUL3Q  $804, CX, DX
-	LONG    $0xa4358d48; WORD $0x007b; BYTE $0x00 // leaq         $31652(%rip), %rsi  /* _LSHIFT_TAB(%rip) */
-	MOVL    0(DX)(SI*1), R8
-	MOVLQSX 800(DI), R9
-	MOVB    4(DX)(SI*1), AX
+	IMUL3Q  $104, CX, R11
+	LONG    $0xb2158d48; WORD $0x007b; BYTE $0x00 // leaq         $31666(%rip), %rdx  /* _LSHIFT_TAB(%rip) */
+	MOVL    0(R11)(DX*1), R8
+	MOVQ    0(DI), R10
+	MOVLQSX 16(DI), R9
 	TESTQ   R9, R9
-	JE      LBB27_6
-	LEAQ    5(DX)(SI*1), DX
-	XORL    SI, SI
+	JE      LBB27_1
+	LEAQ    0(R11)(DX*1), SI
+	ADDQ    $4, SI
+	XORL    BX, BX
 
-LBB27_3:
+LBB27_4:
+	MOVBLZX 0(SI)(BX*1), AX
 	TESTB   AX, AX
-	JE      LBB27_8
-	CMPB    0(DI)(SI*1), AX
-	JNE     LBB27_5
-	MOVBLZX 0(DX)(SI*1), AX
-	INCQ    SI
-	CMPQ    R9, SI
-	JNE     LBB27_3
-
-LBB27_6:
-	TESTB AX, AX
-	JE    LBB27_8
-
-LBB27_7:
-	DECL R8
-
-LBB27_8:
-	TESTL   R9, R9
-	JLE     LBB27_22
-	LEAL    0(R8)(R9*1), AX
-	MOVLQSX AX, BX
-	MOVQ    BX, R10
-	SHLQ    $32, R10
-	INCQ    R9
-	XORL    DX, DX
-	MOVQ    $-3689348814741910323, R11
-	MOVQ    $-4294967296, R14
+	JE      LBB27_10
+	CMPB    0(R10)(BX*1), AX
+	JNE     LBB27_6
+	ADDQ    $1, BX
+	CMPQ    R9, BX
+	JNE     LBB27_4
+	MOVL    R9, SI
+	ADDQ    R11, DX
+	CMPB    4(SI)(DX*1), $0
+	JNE     LBB27_9
 	JMP     LBB27_10
 
-LBB27_11:
-	ADDB $48, AX
-	MOVB AX, -1(DI)(BX*1)
+LBB27_1:
+	XORL SI, SI
+	ADDQ R11, DX
+	CMPB 4(SI)(DX*1), $0
+	JE   LBB27_10
 
-LBB27_18:
-	DECQ BX
-	ADDQ R14, R10
-	DECQ R9
-	CMPQ R9, $1
-	JLE  LBB27_12
+LBB27_9:
+	ADDL $-1, R8
 
 LBB27_10:
-	MOVBQSX -2(DI)(R9*1), SI
+	TESTL   R9, R9
+	JLE     LBB27_25
+	LEAL    0(R8)(R9*1), AX
+	MOVLQSX AX, R14
+	ADDQ    $-1, R14
+	XORL    DX, DX
+	MOVQ    $-3689348814741910323, R11
+
+LBB27_12:
+	MOVBQSX -1(R10)(R9*1), SI
 	ADDQ    $-48, SI
 	SHLQ    CX, SI
 	ADDQ    DX, SI
@@ -6320,227 +5935,256 @@ LBB27_10:
 	MULQ    R11
 	SHRQ    $3, DX
 	LEAQ    0(DX)(DX*1), AX
-	LEAQ    0(AX)(AX*4), R15
+	LEAQ    0(AX)(AX*4), BX
 	MOVQ    SI, AX
-	SUBQ    R15, AX
-	CMPQ    BX, $800
-	JLE     LBB27_11
-	TESTQ   AX, AX
-	JE      LBB27_18
-	MOVL    $1, 812(DI)
-	JMP     LBB27_18
+	SUBQ    BX, AX
+	CMPQ    8(DI), R14
+	JBE     LBB27_18
+	ADDB    $48, AX
+	MOVB    AX, 0(R10)(R14*1)
+	JMP     LBB27_20
 
-LBB27_12:
-	CMPQ SI, $10
-	JAE  LBB27_13
+LBB27_18:
+	TESTQ AX, AX
+	JE    LBB27_20
+	MOVL  $1, 28(DI)
 
-LBB27_22:
-	MOVL 800(DI), AX
-	ADDL R8, AX
-	CMPL AX, $801
-	MOVL $800, CX
-	WORD $0x4c0f; BYTE $0xc8 // cmovll       %eax, %ecx
-	MOVL CX, 800(DI)
-	ADDL R8, 804(DI)
-	BYTE $0x5b               // popq         %rbx
-	WORD $0x5e41             // popq         %r14
-	WORD $0x5f41             // popq         %r15
-	BYTE $0x5d               // popq         %rbp
-	JMP  _trim
-
-LBB27_13:
-	SARQ $32, R10
-	JMP  LBB27_14
-
-LBB27_15:
-	ADDB $48, AX
-	MOVB AX, -1(DI)(R10*1)
-
-LBB27_21:
-	DECQ R10
-	CMPQ CX, $9
-	JBE  LBB27_22
+LBB27_20:
+	CMPQ R9, $2
+	JL   LBB27_14
+	ADDQ $-1, R9
+	MOVQ 0(DI), R10
+	ADDQ $-1, R14
+	JMP  LBB27_12
 
 LBB27_14:
+	CMPQ SI, $10
+	JAE  LBB27_15
+
+LBB27_25:
+	MOVLQSX 16(DI), CX
+	MOVLQSX R8, AX
+	ADDQ    CX, AX
+	MOVL    AX, 16(DI)
+	MOVQ    8(DI), CX
+	CMPQ    CX, AX
+	JA      LBB27_27
+	MOVL    CX, 16(DI)
+	MOVL    CX, AX
+
+LBB27_27:
+	ADDL  R8, 20(DI)
+	TESTL AX, AX
+	JLE   LBB27_31
+	MOVQ  0(DI), CX
+	MOVL  AX, DX
+	ADDQ  $1, DX
+	ADDL  $-1, AX
+
+LBB27_29:
+	MOVL AX, SI
+	CMPB 0(CX)(SI*1), $48
+	JNE  LBB27_33
+	MOVL AX, 16(DI)
+	ADDQ $-1, DX
+	ADDL $-1, AX
+	CMPQ DX, $1
+	JG   LBB27_29
+	JMP  LBB27_32
+
+LBB27_31:
+	JE LBB27_32
+
+LBB27_33:
+	BYTE $0x5b   // popq         %rbx
+	WORD $0x5e41 // popq         %r14
+	BYTE $0x5d   // popq         %rbp
+	RET
+
+LBB27_32:
+	MOVL $0, 20(DI)
+	BYTE $0x5b      // popq         %rbx
+	WORD $0x5e41    // popq         %r14
+	BYTE $0x5d      // popq         %rbp
+	RET
+
+LBB27_15:
+	MOVLQSX R14, SI
+	ADDQ    $-1, SI
+	JMP     LBB27_16
+
+LBB27_17:
+	ADDB $48, AX
+	MOVQ 0(DI), BX
+	MOVB AX, 0(BX)(SI*1)
+
+LBB27_24:
+	ADDQ $-1, SI
+	CMPQ CX, $9
+	JBE  LBB27_25
+
+LBB27_16:
 	MOVQ  DX, CX
 	MOVQ  DX, AX
 	MULQ  R11
 	SHRQ  $3, DX
 	LEAQ  0(DX)(DX*1), AX
-	LEAQ  0(AX)(AX*4), SI
+	LEAQ  0(AX)(AX*4), BX
 	MOVQ  CX, AX
-	SUBQ  SI, AX
-	CMPQ  R10, $800
-	JLE   LBB27_15
+	SUBQ  BX, AX
+	CMPQ  8(DI), SI
+	JA    LBB27_17
 	TESTQ AX, AX
-	JE    LBB27_21
-	MOVL  $1, 812(DI)
-	JMP   LBB27_21
+	JE    LBB27_24
+	MOVL  $1, 28(DI)
+	JMP   LBB27_24
 
-LBB27_5:
-	JL  LBB27_7
-	JMP LBB27_8
+LBB27_6:
+	JL  LBB27_9
+	JMP LBB27_10
 
 _right_shift:
-	BYTE    $0x55               // pushq        %rbp
-	WORD    $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	BYTE    $0x53               // pushq        %rbx
-	MOVL    SI, CX
-	MOVLQSX 800(DI), R9
-	XORL    SI, SI
-	XORL    AX, AX
+	BYTE  $0x55               // pushq        %rbp
+	WORD  $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	BYTE  $0x53               // pushq        %rbx
+	MOVL  SI, CX
+	MOVL  16(DI), R8
+	XORL  DX, DX
+	TESTL R8, R8
+	MOVL  $0, R11
+	LONG  $0xd8490f45         // cmovnsl      %r8d, %r11d
+	XORL  AX, AX
 
 LBB28_1:
-	CMPQ    SI, R9
-	JGE     LBB28_2
+	CMPQ    R11, DX
+	JE      LBB28_2
 	LEAQ    0(AX)(AX*4), AX
-	MOVBQSX 0(DI)(SI*1), DX
-	LEAQ    -48(DX)(AX*2), AX
-	INCQ    SI
-	MOVQ    AX, DX
-	SHRQ    CX, DX
-	TESTQ   DX, DX
-	JE      LBB28_1
-
-LBB28_6:
-	MOVL    804(DI), DX
-	SUBL    SI, DX
-	INCL    DX
-	MOVQ    $-1, R8
-	SHLQ    CX, R8
-	MOVL    DX, 804(DI)
-	NOTQ    R8
-	XORL    BX, BX
-	CMPL    SI, R9
-	JGE     LBB28_9
-	MOVLQSX SI, R10
-	LEAQ    0(DI)(R10*1), R9
-	XORL    BX, BX
-
-LBB28_8:
+	MOVQ    0(DI), SI
+	MOVBQSX 0(SI)(DX*1), SI
+	LEAQ    0(SI)(AX*2), AX
+	ADDQ    $-48, AX
+	ADDQ    $1, DX
 	MOVQ    AX, SI
 	SHRQ    CX, SI
-	ANDQ    R8, AX
-	ADDB    $48, SI
-	MOVB    SI, 0(DI)(BX*1)
+	TESTQ   SI, SI
+	JE      LBB28_1
+	MOVL    DX, R11
+
+LBB28_7:
+	MOVL    20(DI), DX
+	SUBL    R11, DX
+	ADDL    $1, DX
+	MOVQ    $-1, R9
+	SHLQ    CX, R9
+	MOVL    DX, 20(DI)
+	NOTQ    R9
+	XORL    R10, R10
+	CMPL    R11, R8
+	JGE     LBB28_10
+	MOVLQSX R11, R8
+	MOVQ    0(DI), SI
+	XORL    R10, R10
+
+LBB28_9:
+	MOVQ    AX, DX
+	SHRQ    CX, DX
+	ANDQ    R9, AX
+	ADDB    $48, DX
+	MOVB    DX, 0(SI)(R10*1)
+	MOVQ    0(DI), SI
+	LEAQ    0(SI)(R8*1), DX
+	MOVBQSX 0(R10)(DX*1), R11
+	LEAQ    1(R8)(R10*1), BX
+	ADDQ    $1, R10
 	LEAQ    0(AX)(AX*4), AX
-	MOVBQSX 0(R9)(BX*1), SI
-	LEAQ    -48(SI)(AX*2), AX
-	MOVLQSX 800(DI), R11
-	LEAQ    1(R10)(BX*1), SI
-	INCQ    BX
-	CMPQ    SI, R11
-	JL      LBB28_8
-	JMP     LBB28_9
+	LEAQ    0(R11)(AX*2), AX
+	ADDQ    $-48, AX
+	MOVLQSX 16(DI), DX
+	CMPQ    BX, DX
+	JL      LBB28_9
+	JMP     LBB28_10
 
-LBB28_11:
-	ADDB    $48, SI
-	MOVLQSX BX, DX
-	MOVB    SI, 0(DI)(DX*1)
-	INCL    BX
+LBB28_12:
+	ADDB $48, SI
+	MOVQ 0(DI), BX
+	MOVB SI, 0(BX)(DX*1)
+	ADDL $1, DX
+	MOVL DX, R10
 
-LBB28_14:
+LBB28_15:
 	ADDQ AX, AX
 	LEAQ 0(AX)(AX*4), AX
 
-LBB28_9:
-	TESTQ AX, AX
-	JE    LBB28_15
-	MOVQ  AX, SI
-	SHRQ  CX, SI
-	ANDQ  R8, AX
-	CMPL  BX, $799
-	JLE   LBB28_11
-	TESTQ SI, SI
-	JE    LBB28_14
-	MOVL  $1, 812(DI)
-	JMP   LBB28_14
+LBB28_10:
+	TESTQ   AX, AX
+	JE      LBB28_16
+	MOVQ    AX, SI
+	SHRQ    CX, SI
+	ANDQ    R9, AX
+	MOVLQSX R10, DX
+	CMPQ    8(DI), DX
+	JA      LBB28_12
+	TESTQ   SI, SI
+	JE      LBB28_15
+	MOVL    $1, 28(DI)
+	JMP     LBB28_15
 
-LBB28_15:
-	MOVL  BX, 800(DI)
-	TESTL BX, BX
-	JLE   LBB28_19
-	MOVL  BX, BX
+LBB28_16:
+	MOVL  R10, 16(DI)
+	TESTL R10, R10
+	JLE   LBB28_20
+	MOVQ  0(DI), AX
+	MOVL  R10, CX
+	ADDQ  $1, CX
+	ADDL  $-1, R10
 
-LBB28_17:
-	CMPB -1(DI)(BX*1), $48
-	JNE  LBB28_21
-	MOVL BX, AX
-	DECQ BX
-	DECL AX
-	MOVL AX, 800(DI)
-	LEAQ 1(BX), AX
-	CMPQ AX, $1
-	JG   LBB28_17
-
-LBB28_19:
-	TESTL BX, BX
-	JE    LBB28_20
-
-LBB28_21:
-	BYTE $0x5b // popq         %rbx
-	BYTE $0x5d // popq         %rbp
-	RET
+LBB28_18:
+	MOVL R10, DX
+	CMPB 0(AX)(DX*1), $48
+	JNE  LBB28_22
+	MOVL R10, 16(DI)
+	ADDQ $-1, CX
+	ADDL $-1, R10
+	CMPQ CX, $1
+	JG   LBB28_18
+	JMP  LBB28_21
 
 LBB28_2:
 	TESTQ AX, AX
-	JE    LBB28_22
+	JE    LBB28_23
 	MOVQ  AX, DX
 	SHRQ  CX, DX
 	TESTQ DX, DX
-	JNE   LBB28_6
+	JNE   LBB28_7
 
 LBB28_4:
 	ADDQ  AX, AX
 	LEAQ  0(AX)(AX*4), AX
-	INCL  SI
+	ADDL  $1, R11
 	MOVQ  AX, DX
 	SHRQ  CX, DX
 	TESTQ DX, DX
 	JE    LBB28_4
-	JMP   LBB28_6
+	JMP   LBB28_7
 
 LBB28_20:
-	MOVL $0, 804(DI)
-	BYTE $0x5b       // popq         %rbx
-	BYTE $0x5d       // popq         %rbp
-	RET
+	JE LBB28_21
 
 LBB28_22:
-	MOVL $0, 800(DI)
-	BYTE $0x5b       // popq         %rbx
-	BYTE $0x5d       // popq         %rbp
-	RET
-
-_trim:
-	BYTE  $0x55               // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	MOVL  800(DI), AX
-	TESTL AX, AX
-	JLE   LBB29_3
-
-LBB29_1:
-	CMPB -1(DI)(AX*1), $48
-	JNE  LBB29_5
-	MOVL AX, CX
-	DECQ AX
-	DECL CX
-	MOVL CX, 800(DI)
-	LEAQ 1(AX), CX
-	CMPQ CX, $1
-	JG   LBB29_1
-
-LBB29_3:
-	TESTL AX, AX
-	JE    LBB29_4
-
-LBB29_5:
+	BYTE $0x5b // popq         %rbx
 	BYTE $0x5d // popq         %rbp
 	RET
 
-LBB29_4:
-	MOVL $0, 804(DI)
-	BYTE $0x5d       // popq         %rbp
+LBB28_21:
+	MOVL $0, 20(DI)
+	BYTE $0x5b      // popq         %rbx
+	BYTE $0x5d      // popq         %rbp
+	RET
+
+LBB28_23:
+	MOVL $0, 16(DI)
+	BYTE $0x5b      // popq         %rbx
+	BYTE $0x5d      // popq         %rbp
 	RET
 
 _POW10_M128_TAB:
@@ -9942,51 +9586,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .space 4, '\x00\x00\x00\x00'
+	QUAD $0x0000000000000000                           // .space 8, '\x00\x00\x00\x00\x00\x00\x00\x00'
 	LONG $0x00000001                                   // .long 1
 	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -9994,50 +9594,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000001                                   // .long 1
 	QUAD $0x0000000000003532; QUAD $0x0000000000000000 // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10045,50 +9602,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000001                                   // .long 1
 	QUAD $0x0000000000353231; QUAD $0x0000000000000000 // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10096,50 +9610,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000002                                   // .long 2
 	QUAD $0x0000000000353236; QUAD $0x0000000000000000 // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10147,50 +9618,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000002                                   // .long 2
 	QUAD $0x0000000035323133; QUAD $0x0000000000000000 // .asciz 16, '3125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10198,50 +9626,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000002                                   // .long 2
 	QUAD $0x0000003532363531; QUAD $0x0000000000000000 // .asciz 16, '15625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10249,50 +9634,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000003                                   // .long 3
 	QUAD $0x0000003532313837; QUAD $0x0000000000000000 // .asciz 16, '78125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10300,50 +9642,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000003                                   // .long 3
 	QUAD $0x0000353236303933; QUAD $0x0000000000000000 // .asciz 16, '390625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10351,50 +9650,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000003                                   // .long 3
 	QUAD $0x0035323133353931; QUAD $0x0000000000000000 // .asciz 16, '1953125\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10402,50 +9658,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000004                                   // .long 4
 	QUAD $0x0035323635363739; QUAD $0x0000000000000000 // .asciz 16, '9765625\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10453,50 +9666,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000004                                   // .long 4
 	QUAD $0x3532313832383834; QUAD $0x0000000000000000 // .asciz 16, '48828125\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10504,50 +9674,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000004                                   // .long 4
 	QUAD $0x3236303431343432; QUAD $0x0000000000000035 // .asciz 16, '244140625\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10555,50 +9682,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000004                                   // .long 4
 	QUAD $0x3133303730323231; QUAD $0x0000000000003532 // .asciz 16, '1220703125\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10606,50 +9690,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000005                                   // .long 5
 	QUAD $0x3635313533303136; QUAD $0x0000000000003532 // .asciz 16, '6103515625\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10657,50 +9698,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000005                                   // .long 5
 	QUAD $0x3837353731353033; QUAD $0x0000000000353231 // .asciz 16, '30517578125\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10708,50 +9706,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000005                                   // .long 5
 	QUAD $0x3938373835323531; QUAD $0x0000000035323630 // .asciz 16, '152587890625\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10759,50 +9714,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000006                                   // .long 6
 	QUAD $0x3534393339323637; QUAD $0x0000000035323133 // .asciz 16, '762939453125\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10810,50 +9722,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000006                                   // .long 6
 	QUAD $0x3237393634313833; QUAD $0x0000003532363536 // .asciz 16, '3814697265625\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10861,50 +9730,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000006                                   // .long 6
 	QUAD $0x3638343337303931; QUAD $0x0000353231383233 // .asciz 16, '19073486328125\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10912,50 +9738,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000007                                   // .long 7
 	QUAD $0x3133343736333539; QUAD $0x0000353236303436 // .asciz 16, '95367431640625\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10963,50 +9746,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000007                                   // .long 7
 	QUAD $0x3531373338363734; QUAD $0x0035323133303238 // .asciz 16, '476837158203125\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11014,50 +9754,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000007                                   // .long 7
 	QUAD $0x3735383134383332; QUAD $0x3532363531303139 // .asciz 16, '2384185791015625'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11065,50 +9762,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000007                                   // .long 7
 	QUAD $0x3832393032393131; QUAD $0x3231383730353539 // .asciz 16, '1192092895507812'
 	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11116,50 +9770,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000008                                   // .long 8
 	QUAD $0x3434363430363935; QUAD $0x3236303933353737 // .asciz 16, '5960464477539062'
 	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11167,50 +9778,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000008                                   // .long 8
 	QUAD $0x3232333230383932; QUAD $0x3133353936373833 // .asciz 16, '2980232238769531'
 	QUAD $0x0000000000003532; QUAD $0x0000000000000000 // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11218,50 +9786,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000008                                   // .long 8
 	QUAD $0x3136313130393431; QUAD $0x3536373438333931 // .asciz 16, '1490116119384765'
 	QUAD $0x0000000000353236; QUAD $0x0000000000000000 // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11269,50 +9794,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000009                                   // .long 9
 	QUAD $0x3530383530353437; QUAD $0x3832383332393639 // .asciz 16, '7450580596923828'
 	QUAD $0x0000000000353231; QUAD $0x0000000000000000 // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11320,50 +9802,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000009                                   // .long 9
 	QUAD $0x3230393235323733; QUAD $0x3431393136343839 // .asciz 16, '3725290298461914'
 	QUAD $0x0000000035323630; QUAD $0x0000000000000000 // .asciz 16, '0625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11371,50 +9810,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000009                                   // .long 9
 	QUAD $0x3135343632363831; QUAD $0x3735393033323934 // .asciz 16, '1862645149230957'
 	QUAD $0x0000003532313330; QUAD $0x0000000000000000 // .asciz 16, '03125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11422,50 +9818,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000a                                   // .long 10
 	QUAD $0x3735323233313339; QUAD $0x3538373435313634 // .asciz 16, '9313225746154785'
 	QUAD $0x0000003532363531; QUAD $0x0000000000000000 // .asciz 16, '15625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11473,50 +9826,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000a                                   // .long 10
 	QUAD $0x3832313636353634; QUAD $0x3239333737303337 // .asciz 16, '4656612873077392'
 	QUAD $0x0000353231383735; QUAD $0x0000000000000000 // .asciz 16, '578125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11524,50 +9834,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000a                                   // .long 10
 	QUAD $0x3436303338323332; QUAD $0x3639363833353633 // .asciz 16, '2328306436538696'
 	QUAD $0x0035323630393832; QUAD $0x0000000000000000 // .asciz 16, '2890625\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11575,50 +9842,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000a                                   // .long 10
 	QUAD $0x3233353134363131; QUAD $0x3834333936323831 // .asciz 16, '1164153218269348'
 	QUAD $0x3532313335343431; QUAD $0x0000000000000000 // .asciz 16, '14453125\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11626,50 +9850,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000b                                   // .long 11
 	QUAD $0x3036363730323835; QUAD $0x3034373634333139 // .asciz 16, '5820766091346740'
 	QUAD $0x3532363536323237; QUAD $0x0000000000000000 // .asciz 16, '72265625\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11677,50 +9858,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000b                                   // .long 11
 	QUAD $0x3033383330313932; QUAD $0x3037333337363534 // .asciz 16, '2910383045673370'
 	QUAD $0x3231383233313633; QUAD $0x0000000000000035 // .asciz 16, '361328125\x00\x00\x00\x00\x00\x00\x00'
@@ -11728,50 +9866,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000b                                   // .long 11
 	QUAD $0x3531393135353431; QUAD $0x3538363633383232 // .asciz 16, '1455191522836685'
 	QUAD $0x3630343636303831; QUAD $0x0000000000003532 // .asciz 16, '1806640625\x00\x00\x00\x00\x00\x00'
@@ -11779,50 +9874,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000c                                   // .long 12
 	QUAD $0x3637353935373237; QUAD $0x3532343338313431 // .asciz 16, '7275957614183425'
 	QUAD $0x3133303233333039; QUAD $0x0000000000003532 // .asciz 16, '9033203125\x00\x00\x00\x00\x00\x00'
@@ -11830,50 +9882,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000c                                   // .long 12
 	QUAD $0x3838373937333633; QUAD $0x3231373139303730 // .asciz 16, '3637978807091712'
 	QUAD $0x3531303636313539; QUAD $0x0000000000353236 // .asciz 16, '95166015625\x00\x00\x00\x00\x00'
@@ -11881,50 +9890,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000c                                   // .long 12
 	QUAD $0x3439383938313831; QUAD $0x3635383534353330 // .asciz 16, '1818989403545856'
 	QUAD $0x3730303338353734; QUAD $0x0000000035323138 // .asciz 16, '475830078125\x00\x00\x00\x00'
@@ -11932,50 +9898,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000d                                   // .long 13
 	QUAD $0x3037343934393039; QUAD $0x3238323932373731 // .asciz 16, '9094947017729282'
 	QUAD $0x3933303531393733; QUAD $0x0000000035323630 // .asciz 16, '379150390625\x00\x00\x00\x00'
@@ -11983,50 +9906,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000d                                   // .long 13
 	QUAD $0x3533373437343534; QUAD $0x3134363436383830 // .asciz 16, '4547473508864641'
 	QUAD $0x3931353735393831; QUAD $0x0000003532313335 // .asciz 16, '1895751953125\x00\x00\x00'
@@ -12034,50 +9914,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000d                                   // .long 13
 	QUAD $0x3736333733373232; QUAD $0x3032333233343435 // .asciz 16, '2273736754432320'
 	QUAD $0x3935373837343935; QUAD $0x0000353236353637 // .asciz 16, '59478759765625\x00\x00'
@@ -12085,50 +9922,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000d                                   // .long 13
 	QUAD $0x3338363836333131; QUAD $0x3036313631323737 // .asciz 16, '1136868377216160'
 	QUAD $0x3937333933373932; QUAD $0x0035323138323838 // .asciz 16, '297393798828125\x00'
@@ -12136,50 +9930,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000e                                   // .long 14
 	QUAD $0x3831343334383635; QUAD $0x3130383038303638 // .asciz 16, '5684341886080801'
 	QUAD $0x3939383639363834; QUAD $0x0035323630343134 // .asciz 16, '486968994140625\x00'
@@ -12187,50 +9938,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000e                                   // .long 14
 	QUAD $0x3930373132343832; QUAD $0x3030343034303334 // .asciz 16, '2842170943040400'
 	QUAD $0x3934343834333437; QUAD $0x3532313330373037 // .asciz 16, '7434844970703125'
@@ -12238,50 +9946,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000e                                   // .long 14
 	QUAD $0x3435383031323431; QUAD $0x3030323032353137 // .asciz 16, '1421085471520200'
 	QUAD $0x3432323437313733; QUAD $0x3236353135333538 // .asciz 16, '3717422485351562'
@@ -12289,50 +9954,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000f                                   // .long 15
 	QUAD $0x3337323435303137; QUAD $0x3130303130363735 // .asciz 16, '7105427357601001'
 	QUAD $0x3432313137383538; QUAD $0x3231383735373632 // .asciz 16, '8587112426757812'
@@ -12340,50 +9962,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000f                                   // .long 15
 	QUAD $0x3633313732353533; QUAD $0x3030353030383837 // .asciz 16, '3552713678800500'
 	QUAD $0x3236353533393239; QUAD $0x3630393837333331 // .asciz 16, '9293556213378906'
@@ -12391,50 +9970,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x0000000f                                   // .long 15
 	QUAD $0x3836353336373731; QUAD $0x3035323030343933 // .asciz 16, '1776356839400250'
 	QUAD $0x3138373736343634; QUAD $0x3335343938363630 // .asciz 16, '4646778106689453'
@@ -12442,50 +9978,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000010                                   // .long 16
 	QUAD $0x3134383731383838; QUAD $0x3235323130303739 // .asciz 16, '8881784197001252'
 	QUAD $0x3530393833333233; QUAD $0x3536323734343333 // .asciz 16, '3233890533447265'
@@ -12493,50 +9986,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000010                                   // .long 16
 	QUAD $0x3032393830343434; QUAD $0x3632363030353839 // .asciz 16, '4440892098500626'
 	QUAD $0x3235343936313631; QUAD $0x3233363332373636 // .asciz 16, '1616945266723632'
@@ -12544,50 +9994,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000010                                   // .long 16
 	QUAD $0x3036343430323232; QUAD $0x3331333035323934 // .asciz 16, '2220446049250313'
 	QUAD $0x3632373438303830; QUAD $0x3631383136333333 // .asciz 16, '0808472633361816'
@@ -12595,50 +10002,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000010                                   // .long 16
 	QUAD $0x3033323230313131; QUAD $0x3635313532363432 // .asciz 16, '1110223024625156'
 	QUAD $0x3336333234303435; QUAD $0x3830393038363631 // .asciz 16, '5404236316680908'
@@ -12646,50 +10010,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000011                                   // .long 17
 	QUAD $0x3135313131353535; QUAD $0x3238373532313332 // .asciz 16, '5551115123125782'
 	QUAD $0x3531383131323037; QUAD $0x3134353430343338 // .asciz 16, '7021181583404541'
@@ -12697,50 +10018,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000011                                   // .long 17
 	QUAD $0x3537353535373732; QUAD $0x3139383236353136 // .asciz 16, '2775557561562891'
 	QUAD $0x3730393530313533; QUAD $0x3037323230373139 // .asciz 16, '3510590791702270'
@@ -12748,50 +10026,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000011                                   // .long 17
 	QUAD $0x3738373737383331; QUAD $0x3534343138373038 // .asciz 16, '1387778780781445'
 	QUAD $0x3335393235353736; QUAD $0x3533313135383539 // .asciz 16, '6755295395851135'
@@ -12799,50 +10034,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000012                                   // .long 18
 	QUAD $0x3933393838333936; QUAD $0x3832323730393330 // .asciz 16, '6938893903907228'
 	QUAD $0x3936373436373733; QUAD $0x3637363535323937 // .asciz 16, '3776476979255676'
@@ -12850,50 +10042,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000012                                   // .long 18
 	QUAD $0x3936343439363433; QUAD $0x3431363335393135 // .asciz 16, '3469446951953614'
 	QUAD $0x3438333238383831; QUAD $0x3833383732363938 // .asciz 16, '1888238489627838'
@@ -12901,50 +10050,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000012                                   // .long 18
 	QUAD $0x3433323734333731; QUAD $0x3730383637393537 // .asciz 16, '1734723475976807'
 	QUAD $0x3239313134343930; QUAD $0x3931393331383434 // .asciz 16, '0944119244813919'
@@ -12952,50 +10058,7 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 	LONG $0x00000013                                   // .long 19
 	QUAD $0x3337313633373638; QUAD $0x3533303438383937 // .asciz 16, '8673617379884035'
 	QUAD $0x3236393530323734; QUAD $0x3539353936303432 // .asciz 16, '4720596224069595'
@@ -13003,87 +10066,53 @@ _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
 
 _P10_TAB:
-	QUAD $0x3ff0000000000000 // .quad 4607182418800017408
-	QUAD $0x4024000000000000 // .quad 4621819117588971520
-	QUAD $0x4059000000000000 // .quad 4636737291354636288
-	QUAD $0x408f400000000000 // .quad 4652007308841189376
-	QUAD $0x40c3880000000000 // .quad 4666723172467343360
-	QUAD $0x40f86a0000000000 // .quad 4681608360884174848
-	QUAD $0x412e848000000000 // .quad 4696837146684686336
-	QUAD $0x416312d000000000 // .quad 4711630319722168320
-	QUAD $0x4197d78400000000 // .quad 4726483295884279808
-	QUAD $0x41cdcd6500000000 // .quad 4741671816366391296
-	QUAD $0x4202a05f20000000 // .quad 4756540486875873280
-	QUAD $0x42374876e8000000 // .quad 4771362005757984768
-	QUAD $0x426d1a94a2000000 // .quad 4786511204640096256
-	QUAD $0x42a2309ce5400000 // .quad 4801453603149578240
-	QUAD $0x42d6bcc41e900000 // .quad 4816244402031689728
-	QUAD $0x430c6bf526340000 // .quad 4831355200913801216
-	QUAD $0x4341c37937e08000 // .quad 4846369599423283200
-	QUAD $0x4376345785d8a000 // .quad 4861130398305394688
-	QUAD $0x43abc16d674ec800 // .quad 4876203697187506176
-	QUAD $0x43e158e460913d00 // .quad 4891288408196988160
-	QUAD $0x4415af1d78b58c40 // .quad 4906019910204099648
-	QUAD $0x444b1ae4d6e2ef50 // .quad 4921056587992461136
-	QUAD $0x4480f0cf064dd592 // .quad 4936209963552724370
+	QUAD $0x3ff0000000000000 // .quad 0x3ff0000000000000
+	QUAD $0x4024000000000000 // .quad 0x4024000000000000
+	QUAD $0x4059000000000000 // .quad 0x4059000000000000
+	QUAD $0x408f400000000000 // .quad 0x408f400000000000
+	QUAD $0x40c3880000000000 // .quad 0x40c3880000000000
+	QUAD $0x40f86a0000000000 // .quad 0x40f86a0000000000
+	QUAD $0x412e848000000000 // .quad 0x412e848000000000
+	QUAD $0x416312d000000000 // .quad 0x416312d000000000
+	QUAD $0x4197d78400000000 // .quad 0x4197d78400000000
+	QUAD $0x41cdcd6500000000 // .quad 0x41cdcd6500000000
+	QUAD $0x4202a05f20000000 // .quad 0x4202a05f20000000
+	QUAD $0x42374876e8000000 // .quad 0x42374876e8000000
+	QUAD $0x426d1a94a2000000 // .quad 0x426d1a94a2000000
+	QUAD $0x42a2309ce5400000 // .quad 0x42a2309ce5400000
+	QUAD $0x42d6bcc41e900000 // .quad 0x42d6bcc41e900000
+	QUAD $0x430c6bf526340000 // .quad 0x430c6bf526340000
+	QUAD $0x4341c37937e08000 // .quad 0x4341c37937e08000
+	QUAD $0x4376345785d8a000 // .quad 0x4376345785d8a000
+	QUAD $0x43abc16d674ec800 // .quad 0x43abc16d674ec800
+	QUAD $0x43e158e460913d00 // .quad 0x43e158e460913d00
+	QUAD $0x4415af1d78b58c40 // .quad 0x4415af1d78b58c40
+	QUAD $0x444b1ae4d6e2ef50 // .quad 0x444b1ae4d6e2ef50
+	QUAD $0x4480f0cf064dd592 // .quad 0x4480f0cf064dd592
+
+TEXT ·__atof_native(SB), NOSPLIT, $0 - 40
+	MOVQ sp+0(FP), DI
+	MOVQ nb+8(FP), SI
+	MOVQ dbuf+16(FP), DX
+	MOVQ cap+24(FP), CX
+	MOVQ v+32(FP), R8
+	LEAQ ·__native_entry__+9350(SB), AX // _atof_native
+	JMP  AX
 
 TEXT ·__f64toa(SB), NOSPLIT, $0 - 24
 	MOVQ  out+0(FP), DI
 	MOVSD val+8(FP), X0
-	CALL  ·__native_entry__+630(SB) // _f64toa
+	CALL  ·__native_entry__+570(SB) // _f64toa
 	MOVQ  AX, ret+16(FP)
 	RET
 
 TEXT ·__i64toa(SB), NOSPLIT, $0 - 24
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__native_entry__+3642(SB) // _i64toa
+	CALL ·__native_entry__+3653(SB) // _i64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -13091,7 +10120,7 @@ TEXT ·__lspace(SB), NOSPLIT, $0 - 32
 	MOVQ sp+0(FP), DI
 	MOVQ nb+8(FP), SI
 	MOVQ off+16(FP), DX
-	CALL ·__native_entry__+301(SB) // _lspace
+	CALL ·__native_entry__+251(SB) // _lspace
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -13108,7 +10137,7 @@ TEXT ·__quote(SB), NOSPLIT, $0 - 48
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+4955(SB) // _quote
+	CALL ·__native_entry__+4970(SB) // _quote
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -13116,7 +10145,7 @@ TEXT ·__skip_array(SB), NOSPLIT, $0 - 32
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+17304(SB) // _skip_array
+	CALL ·__native_entry__+16213(SB) // _skip_array
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -13124,7 +10153,7 @@ TEXT ·__skip_object(SB), NOSPLIT, $0 - 32
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+17339(SB) // _skip_object
+	CALL ·__native_entry__+16248(SB) // _skip_object
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -13132,14 +10161,14 @@ TEXT ·__skip_one(SB), NOSPLIT, $0 - 32
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+15525(SB) // _skip_one
+	CALL ·__native_entry__+14416(SB) // _skip_one
 	MOVQ AX, ret+24(FP)
 	RET
 
 TEXT ·__u64toa(SB), NOSPLIT, $0 - 24
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__native_entry__+3735(SB) // _u64toa
+	CALL ·__native_entry__+3748(SB) // _u64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -13149,7 +10178,7 @@ TEXT ·__unquote(SB), NOSPLIT, $0 - 48
 	MOVQ dp+16(FP), DX
 	MOVQ ep+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+5888(SB) // _unquote
+	CALL ·__native_entry__+6022(SB) // _unquote
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -13159,7 +10188,7 @@ TEXT ·__value(SB), NOSPLIT, $0 - 48
 	MOVQ p+16(FP), DX
 	MOVQ v+24(FP), CX
 	MOVQ allow_control+32(FP), R8
-	CALL ·__native_entry__+10928(SB) // _value
+	CALL ·__native_entry__+9831(SB) // _value
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -13167,26 +10196,26 @@ TEXT ·__vnumber(SB), NOSPLIT, $0 - 24
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+13724(SB), AX // _vnumber
+	LEAQ ·__native_entry__+12610(SB), AX // _vnumber
 	JMP  AX
 
 TEXT ·__vsigned(SB), NOSPLIT, $0 - 24
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+14997(SB), AX // _vsigned
+	LEAQ ·__native_entry__+13860(SB), AX // _vsigned
 	JMP  AX
 
 TEXT ·__vstring(SB), NOSPLIT, $0 - 24
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+12689(SB), AX // _vstring
+	LEAQ ·__native_entry__+11563(SB), AX // _vstring
 	JMP  AX
 
 TEXT ·__vunsigned(SB), NOSPLIT, $0 - 24
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+15256(SB), AX // _vunsigned
+	LEAQ ·__native_entry__+14140(SB), AX // _vunsigned
 	JMP  AX

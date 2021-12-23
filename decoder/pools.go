@@ -30,12 +30,14 @@ const (
     _MinSlice = 16
     _MaxStack = 65536 // 64k slots
     _MaxStackBytes = _MaxStack * _PtrBytes
+    _MaxDigitNums = 800  // used in atof fallback algorithm
 )
 
 const (
-    _PtrBytes  = _PTR_SIZE / 8
-    _FsmOffset = (_MaxStack + 1) * _PtrBytes
-    _StackSize = unsafe.Sizeof(_Stack{})
+    _PtrBytes   = _PTR_SIZE / 8
+    _FsmOffset  = (_MaxStack + 1) * _PtrBytes
+    _DbufOffset = _FsmOffset + int64(unsafe.Sizeof(types.StateMachine{})) + types.MAX_RECURSE * _PtrBytes
+    _StackSize  = unsafe.Sizeof(_Stack{})
 )
 
 var (
@@ -51,6 +53,7 @@ type _Stack struct {
     sb [_MaxStack]unsafe.Pointer
     mm types.StateMachine
     vp [types.MAX_RECURSE]unsafe.Pointer
+    dp [_MaxDigitNums]byte
 }
 
 type _Decoder func(
