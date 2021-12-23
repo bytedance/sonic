@@ -272,7 +272,7 @@ static inline f64_d f64tod(const uint64_t man,const uint32_t exp) {
 }
 
 /* Print the decimal DIGs from mantissa */
-static inline void print_mantissa(uint64_t man, char *out, int mlen) {
+static always_inline void print_mantissa(uint64_t man, char *out, int mlen) {
     /* We have at most 17 DIGs, and uint32_t can store 9 DIGs.
      * If man doesn't fit into uint32_t, we cut off 8 DIGs,
      * so the rest will fit into uint32_t.

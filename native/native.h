@@ -57,6 +57,7 @@
 
 #define likely(v)       (__builtin_expect((v), 1))
 #define unlikely(v)     (__builtin_expect((v), 0))
+#define always_inline   inline __attribute__((always_inline)) 
 
 #define as_m128p(v)     ((__m128i *)(v))
 #define as_m128c(v)     ((const __m128i *)(v))
@@ -84,15 +85,11 @@ typedef struct {
 
 typedef struct {
     long    vt;
-    union {
-        double  dv;
-        char*   dbuf;
-    };
-    union {
-        int64_t iv;
-        ssize_t dcap;
-    };
+    double  dv;
+    int64_t iv;
     int64_t ep;
+    char*   dbuf;
+    ssize_t dcap;
 } JsonState;
 
 typedef struct {
