@@ -56,7 +56,7 @@ static inline void vdigits(const GoString *src, long *p, JsonState *ret) {
     vnumber(src, p, ret);
 }
 
-static always_inline char advance_ns(const GoString *src, long *p) {
+static inline char advance_ns(const GoString *src, long *p) {
     size_t       vi = *p;
     size_t       nb = src->len;
     const char * sp = src->buf;
@@ -98,7 +98,7 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
     }
 }
 
-static always_inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
+static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t es;
     uint64_t fe;
@@ -724,7 +724,7 @@ static inline long fsm_push(StateMachine *self, int vt) {
     }
 }
 
-static always_inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
+static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
     int  vt;
     char ch;
     long vi = -1;
@@ -868,7 +868,7 @@ static always_inline long fsm_exec(StateMachine *self, const GoString *src, long
         }                                               \
     }
 
-static always_inline long skip_number(const char *sp, size_t nb) {
+static inline long skip_number(const char *sp, size_t nb) {
     long         di = -1;
     long         ei = -1;
     long         si = -1;

@@ -137,7 +137,7 @@ static inline void trim(Decimal *d) {
 }
 
 /* Binary shift right (/ 2) by k bits.  k <= maxShift to avoid overflow */
-static always_inline void right_shift(Decimal *d, uint32_t k) {
+static inline void right_shift(Decimal *d, uint32_t k) {
     int      r = 0; // read pointer
     int      w = 0; // write pointer
     uint64_t n = 0;
@@ -204,7 +204,7 @@ static inline bool prefix_is_less(const char *b, const char *s, uint64_t bn) {
 }
 
 /* Binary shift left (* 2) by k bits.  k <= maxShift to avoid overflow */
-static always_inline void left_shift(Decimal *d, uint32_t k) {
+static inline void left_shift(Decimal *d, uint32_t k) {
     int delta = LSHIFT_TAB[k].delta;
 
     if (prefix_is_less(d->d, LSHIFT_TAB[k].cutoff, d->nd)){
@@ -254,7 +254,7 @@ static always_inline void left_shift(Decimal *d, uint32_t k) {
     trim(d);
 }
 
-static always_inline void decimal_shift(Decimal *d, int k) {
+static inline void decimal_shift(Decimal *d, int k) {
     if (d->nd == 0 || k == 0) {
         return;
     }
