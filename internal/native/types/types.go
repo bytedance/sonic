@@ -38,7 +38,6 @@ const (
     _         ValueType = 11    // V_ELEM_SEP
     _         ValueType = 12    // V_ARRAY_END
     _         ValueType = 13    // V_OBJECT_END
-    V_ATOF_NEED_FALLBACK ValueType = 14   
     V_MAX
 )
 
