@@ -286,11 +286,16 @@ func (self *_Assembler) epilogue() {
     self.Emit("MOVQ", _EP, _RET_ep)                 // MOVQ EP, ep<>+32(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
+    self.SetTail(self.Link("_tail"))
     self.Emit("RET")                                // RET
+    self.more_stack()
 }
 
 func (self *_Assembler) prologue() {
+    self.Link("_entry")
+    self.check_stack()
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
+    self.SetHead(self.Link("_head")) 
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
     self.load_buffer()                              // LOAD {buf}
@@ -299,20 +304,22 @@ func (self *_Assembler) prologue() {
     self.Emit("XORL", _SP_x, _SP_x)                 // XORL SP.x, SP.x
     self.Emit("XORL", _SP_f, _SP_f)                 // XORL SP.f, SP.f
     self.Emit("XORL", _SP_q, _SP_q)                 // XORL SP.q, SP.q
-    self.check_stack()
 }
 
-var _F_morestack = jit.Func(morestack)
+var _F_morestack_noctxt = jit.Func(morestack_noctxt)
 
 func (self *_Assembler) check_stack() {
     self.Byte([]byte{0x65, 0x48, 0x8b, 0x04, 0x25, 0x30, 0x00, 0x00, 0x00}...) //MOVQ 0x30(GS), AX
-    self.Emit("MOVQ", jit.Ptr(_AX, 0), _AX)
-    self.Emit("NOTQ", _AX)
-    self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
-    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
-    self.Sjmp("JA", "_no_split")
-    self.call_go(_F_morestack)
-    self.Link("_no_split")
+    self.Emit("MOVQ", _SP, _CX)
+    self.Emit("SUBQ", jit.Imm(native.NativeEntrySize + _FP_size), _CX)
+    self.Emit("CMPQ", jit.Ptr(_AX, 16), _CX)
+    self.Sjmp("JA", "_more_stack")
+}
+
+func (self *_Assembler) more_stack() {
+    self.Link("_more_stack")
+    self.call(_F_morestack_noctxt)
+    self.Sjmp("JMP" , "_entry")
 }
 
 /** Assembler Inline Functions **/

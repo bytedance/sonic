@@ -189,8 +189,36 @@ var _R_tab = map[int]string {
     '}': "_decode_V_OBJECT_END",
 }
 
+func (self *_ValueDecoder) check_stack() {
+    self.Emit("MOVQ", _SP, jit.Reg("R12"))
+    self.Emit("SUBQ", jit.Imm(native.NativeEntrySize + _VD_size), jit.Reg("R12"))
+    self.Emit("CMPQ", jit.Ptr(jit.Reg("R14"), 16), jit.Reg("R12"))
+    self.Sjmp("JA", "_more_stack")
+}
+
+func (self *_ValueDecoder) more_stack() {
+    self.Link("_more_stack")
+    self.Emit("MOVQ", _IP, jit.Ptr(_SP, 8))         
+    self.Emit("MOVQ", _IC, jit.Ptr(_SP, 16))                 
+    self.Emit("MOVQ", _IL, jit.Ptr(_SP, 24))                 
+    self.Emit("MOVQ", _ST, jit.Ptr(_SP, 32))                 
+    self.Emit("MOVQ", _VP, jit.Ptr(_SP, 40))                 
+    self.Emit("MOVQ", _DF, jit.Ptr(_SP, 48))                 
+    self.call(_F_morestack_noctxt)
+    self.Emit("MOVQ", jit.Ptr(_SP, 8 ), _IP)         
+    self.Emit("MOVQ", jit.Ptr(_SP, 16), _IC)                 
+    self.Emit("MOVQ", jit.Ptr(_SP, 24), _IL)                 
+    self.Emit("MOVQ", jit.Ptr(_SP, 32), _ST)  
+    self.Emit("MOVQ", jit.Ptr(_SP, 40), _VP)  
+    self.Emit("MOVQ", jit.Ptr(_SP, 48), _DF)  
+    self.Sjmp("JMP" , "_entry")
+}
+
 func (self *_ValueDecoder) compile() {
+    self.Link("_entry")
+    self.check_stack()
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
+    self.SetHead(self.Link("_head")) 
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
 
@@ -594,7 +622,9 @@ func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ", jit.Imm(_FsmOffset), _ST)     // SUBQ _FsmOffset, _ST
     self.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)  // MOVQ _VD_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_VD_size), _SP)       // ADDQ $_VD_size, SP
+    self.SetTail(self.Link("_tail"))
     self.Emit("RET")                                // RET
+    self.more_stack()
 
     /* array expand */
     self.Link("_array_more")                    // _array_more:

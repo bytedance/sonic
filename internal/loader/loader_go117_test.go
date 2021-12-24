@@ -19,15 +19,16 @@
 package loader
 
 import (
-    `errors`
-    `fmt`
-    `reflect`
-    `runtime`
-    `runtime/debug`
-    `testing`
-    `unsafe`
+	"errors"
+	"fmt"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"testing"
+	"unsafe"
 
-    `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoader_Load(t *testing.T) {
@@ -36,7 +37,7 @@ func TestLoader_Load(t *testing.T) {
         0xc3,                                       // RET
     }
     v0 := 0
-    fn := Loader(bc).Load("test", 0, 8)
+    fn := Loader(bc).Load("test", rt.Frame{0, 0, 0, 8, 0, 0})
     (*(*func(*int))(unsafe.Pointer(&fn)))(&v0)
     assert.Equal(t, 1234, v0)
     println(runtime.FuncForPC(*(*uintptr)(fn)).Name())
@@ -101,7 +102,7 @@ func TestLoadWithStackMap(t *testing.T) {
         0x48, 0xc7, 0x00, 0xd2, 0x04, 0x00, 0x00,   // MOVQ  $1234, (%rax)
         0xc3,                                       // RET
     }
-    fn := Loader(bc).LoadWithFaker("test", 0, 8, f)
+    fn := Loader(bc).LoadWithFaker("test", rt.Frame{0, 0, 0, 8, 0, 0}, f)
     f2 := (*(*func(*int))(unsafe.Pointer(&fn)))
     v2 := funcWrap(f2)
 

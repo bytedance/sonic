@@ -310,15 +310,13 @@ func (self *_Assembler) epilogue() {
     self.Emit("MOVQ", _ET, _RET_et)                 // MOVQ ET, et<>+48(FP)
     self.Emit("MOVQ", _EP, _RET_ep)                 // MOVQ EP, ep<>+56(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
-    self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
-    self.SetTail()
+    self.SetTail(self.Emit("ADDQ", jit.Imm(_FP_size), _SP)) // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
 }
 
 func (self *_Assembler) prologue() {
     self.check_stack()
-    self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
-    self.SetHead()
+    self.SetHead(self.Emit("SUBQ", jit.Imm(_FP_size), _SP)) // SUBQ $_FP_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
     self.Emit("MOVQ", _ARG_sp, _IP)                 // MOVQ s.p<>+0(FP), IP

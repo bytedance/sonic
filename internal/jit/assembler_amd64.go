@@ -86,21 +86,15 @@ func (self *BaseAssembler) Mark(pc int) {
     self.Link(_LB_jump_pc + strconv.Itoa(pc))
 }
 
-func (self *BaseAssembler) SetHead() {
-    if self.head != nil {
-        panic("head prog has been set!")
-    }
-    self.head = self.NOP()
+func (self *BaseAssembler) SetHead(p *obj.Prog) {
+    self.head = p
 }
 
-func (self *BaseAssembler) SetTail() {
-    if self.tail != nil {
-        panic("tail prog has been set!")
-    }
-    self.tail = self.NOP()
+func (self *BaseAssembler) SetTail(p *obj.Prog) {
+    self.tail = p
 }
 
-func (self *BaseAssembler) Link(to string) {
+func (self *BaseAssembler) Link(to string) *obj.Prog {
     var p *obj.Prog
     var v []*obj.Prog
 
@@ -126,6 +120,7 @@ func (self *BaseAssembler) Link(to string) {
     /* mark the label as resolved */
     self.labels[to] = p
     delete(self.pendings, to)
+    return p
 }
 
 func (self *BaseAssembler) Xref(pc int, d int64) {
@@ -225,13 +220,18 @@ func (self *BaseAssembler) Load(fn string, frame rt.Frame) loader.Function {
 
 func (self *BaseAssembler) LoadWithFaker(fn string, fp int, args int, faker interface{}) loader.Function {
     self.build()
-    head := self.head.Pc
-    tail := self.tail.Pc
-    self.head = nil
-    self.tail = nil
+    var head, tail int
+    if self.head != nil {
+        head = int(self.head.Pc)
+        self.head = nil
+    }
+    if self.tail != nil {
+        tail = int(self.tail.Pc)
+        self.tail = nil
+    }
     return loader.Loader(self.c).LoadWithFaker(fn, rt.Frame{
-        Head: int(head),
-        Tail: int(tail),
+        Head: head,
+        Tail: tail,
         Size: fp,
         ArgSize: args,
     }, faker)
@@ -278,11 +278,11 @@ func (self *BaseAssembler) resolve() {
             }
         }
     }
-    if self.head == nil && len(self.pb.Prog) > 0 {
-        self.head = self.pb.Prog[0]
+    if self.head == nil && self.pb.Head != nil {
+        self.head = self.pb.Head
     }
-    if self.tail == nil && len(self.pb.Prog) > 0 {
-        self.tail = self.pb.Prog[len(self.pb.Prog)-1]
+    if self.tail == nil && self.pb.Tail != nil {
+        self.tail = self.pb.Tail
     }
 }
 

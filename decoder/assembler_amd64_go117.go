@@ -310,11 +310,16 @@ func (self *_Assembler) epilogue() {
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
+    self.SetTail(self.Link("_tail"))
     self.Emit("RET")                                // RET
+    self.more_stack()
 }
 
 func (self *_Assembler) prologue() {
+    self.Link("_entry")
+    self.check_stack()
     self.Emit("SUBQ", jit.Imm(_FP_size), _SP)       // SUBQ $_FP_size, SP
+    self.SetHead(self.Link("_head")) 
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _FP_offs))  // MOVQ BP, _FP_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _FP_offs), _BP)  // LEAQ _FP_offs(SP), BP
     self.Emit("MOVQ", _AX, _ARG_sp)                 // MOVQ AX, s.p<>+0(FP)
@@ -331,19 +336,33 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
-    self.check_stack()
 }
 
-var _F_morestack = jit.Func(morestack)
+var _F_morestack_noctxt = jit.Func(morestack_noctxt)
 
 func (self *_Assembler) check_stack() {
-    self.Emit("MOVQ", jit.Ptr(jit.Reg("R14"), 0), _AX)
-    self.Emit("NOTQ", _AX)
-    self.Emit("LEAQ", jit.Sib(_SP, _AX, 1, 0), _AX)
-    self.Emit("CMPQ", _AX, jit.Imm(native.NativeEntrySize))
-    self.Sjmp("JA", "_no_split")
-    self.call_go(_F_morestack)
-    self.Link("_no_split")
+    self.Emit("MOVQ", _SP, jit.Reg("R12"))
+    self.Emit("SUBQ", jit.Imm(native.NativeEntrySize + _FP_size), jit.Reg("R12"))
+    self.Emit("CMPQ", jit.Ptr(jit.Reg("R14"), 16), jit.Reg("R12"))
+    self.Sjmp("JA", "_more_stack")
+}
+
+func (self *_Assembler) more_stack() {
+    self.Link("_more_stack")
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))         
+    self.Emit("MOVQ", _BX, jit.Ptr(_SP, 16))                 
+    self.Emit("MOVQ", _CX, jit.Ptr(_SP, 24))                 
+    self.Emit("MOVQ", _DI, jit.Ptr(_SP, 32))                 
+    self.Emit("MOVQ", _SI, jit.Ptr(_SP, 40))                 
+    self.Emit("MOVQ", _R8, jit.Ptr(_SP, 48))                 
+    self.call(_F_morestack_noctxt)
+    self.Emit("MOVQ", jit.Ptr(_SP, 8 ), _AX)         
+    self.Emit("MOVQ", jit.Ptr(_SP, 16), _BX)                 
+    self.Emit("MOVQ", jit.Ptr(_SP, 24), _CX)                 
+    self.Emit("MOVQ", jit.Ptr(_SP, 32), _DI)  
+    self.Emit("MOVQ", jit.Ptr(_SP, 40), _SI)  
+    self.Emit("MOVQ", jit.Ptr(_SP, 48), _R8)  
+    self.Sjmp("JMP" , "_entry")
 }
 
 /** Function Calling Helpers **/
