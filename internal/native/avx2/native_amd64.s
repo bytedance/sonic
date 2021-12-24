@@ -10949,21 +10949,56 @@ _P10_TAB:
 	QUAD $0x444b1ae4d6e2ef50 // .quad 4921056587992461136
 	QUAD $0x4480f0cf064dd592 // .quad 4936209963552724370
 
-TEXT ·__f64toa(SB), NOSPLIT, $0 - 24
+TEXT ·__f64toa(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -120(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_f64toa:
 	MOVQ  out+0(FP), DI
 	MOVSD val+8(FP), X0
 	CALL  ·__native_entry__+903(SB) // _f64toa
 	MOVQ  AX, ret+16(FP)
 	RET
 
-TEXT ·__i64toa(SB), NOSPLIT, $0 - 24
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__i64toa(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -24(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_i64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
 	CALL ·__native_entry__+3915(SB) // _i64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
-TEXT ·__lspace(SB), NOSPLIT, $0 - 32
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__lspace(SB), NOSPLIT | NOFRAME, $0 - 32
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -8(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_lspace:
 	MOVQ sp+0(FP), DI
 	MOVQ nb+8(FP), SI
 	MOVQ off+16(FP), DX
@@ -10971,14 +11006,40 @@ TEXT ·__lspace(SB), NOSPLIT, $0 - 32
 	MOVQ AX, ret+24(FP)
 	RET
 
-TEXT ·__lzero(SB), NOSPLIT, $0 - 24
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__lzero(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -8(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_lzero:
 	MOVQ p+0(FP), DI
 	MOVQ n+8(FP), SI
 	CALL ·__native_entry__+13(SB) // _lzero
 	MOVQ AX, ret+16(FP)
 	RET
 
-TEXT ·__quote(SB), NOSPLIT, $0 - 48
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__quote(SB), NOSPLIT | NOFRAME, $0 - 48
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -80(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_quote:
 	MOVQ sp+0(FP), DI
 	MOVQ nb+8(FP), SI
 	MOVQ dp+16(FP), DX
@@ -10988,7 +11049,20 @@ TEXT ·__quote(SB), NOSPLIT, $0 - 48
 	MOVQ AX, ret+40(FP)
 	RET
 
-TEXT ·__skip_array(SB), NOSPLIT, $0 - 32
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__skip_array(SB), NOSPLIT | NOFRAME, $0 - 32
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -128(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_skip_array:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
@@ -10996,7 +11070,20 @@ TEXT ·__skip_array(SB), NOSPLIT, $0 - 32
 	MOVQ AX, ret+24(FP)
 	RET
 
-TEXT ·__skip_object(SB), NOSPLIT, $0 - 32
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__skip_object(SB), NOSPLIT | NOFRAME, $0 - 32
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -128(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_skip_object:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
@@ -11004,7 +11091,20 @@ TEXT ·__skip_object(SB), NOSPLIT, $0 - 32
 	MOVQ AX, ret+24(FP)
 	RET
 
-TEXT ·__skip_one(SB), NOSPLIT, $0 - 32
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__skip_one(SB), NOSPLIT | NOFRAME, $0 - 32
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -128(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_skip_one:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
@@ -11012,14 +11112,40 @@ TEXT ·__skip_one(SB), NOSPLIT, $0 - 32
 	MOVQ AX, ret+24(FP)
 	RET
 
-TEXT ·__u64toa(SB), NOSPLIT, $0 - 24
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__u64toa(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -8(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_u64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
 	CALL ·__native_entry__+4008(SB) // _u64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
-TEXT ·__unquote(SB), NOSPLIT, $0 - 48
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__unquote(SB), NOSPLIT | NOFRAME, $0 - 48
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -72(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_unquote:
 	MOVQ sp+0(FP), DI
 	MOVQ nb+8(FP), SI
 	MOVQ dp+16(FP), DX
@@ -11029,7 +11155,20 @@ TEXT ·__unquote(SB), NOSPLIT, $0 - 48
 	MOVQ AX, ret+40(FP)
 	RET
 
-TEXT ·__value(SB), NOSPLIT, $0 - 48
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__value(SB), NOSPLIT | NOFRAME, $0 - 48
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -392(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_value:
 	MOVQ s+0(FP), DI
 	MOVQ n+8(FP), SI
 	MOVQ p+16(FP), DX
@@ -11039,30 +11178,86 @@ TEXT ·__value(SB), NOSPLIT, $0 - 48
 	MOVQ AX, ret+40(FP)
 	RET
 
-TEXT ·__vnumber(SB), NOSPLIT, $0 - 24
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__vnumber(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -312(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_vnumber:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
 	LEAQ ·__native_entry__+14464(SB), AX // _vnumber
 	JMP  AX
 
-TEXT ·__vsigned(SB), NOSPLIT, $0 - 24
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__vsigned(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -16(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_vsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
 	LEAQ ·__native_entry__+15778(SB), AX // _vsigned
 	JMP  AX
 
-TEXT ·__vstring(SB), NOSPLIT, $0 - 24
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__vstring(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -112(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_vstring:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
 	LEAQ ·__native_entry__+13587(SB), AX // _vstring
 	JMP  AX
 
-TEXT ·__vunsigned(SB), NOSPLIT, $0 - 24
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry
+
+TEXT ·__vunsigned(SB), NOSPLIT | NOFRAME, $0 - 24
+	NO_LOCAL_POINTERS
+
+_entry:
+	MOVQ (TLS), R14
+	LEAQ -8(SP), R12
+	CMPQ R12, 16(R14)
+	JBE  _stack_grow
+
+_vunsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
 	LEAQ ·__native_entry__+16037(SB), AX // _vunsigned
 	JMP  AX
+
+_stack_grow:
+	CALL runtime·morestack_noctxt<>(SB)
+	JMP  _entry

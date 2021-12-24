@@ -26,6 +26,24 @@ var (
     _subr__vunsigned   = __native_entry__() + 16037
 )
 
+const (
+    _stack__f64toa = 120
+    _stack__i64toa = 24
+    _stack__lspace = 8
+    _stack__lzero = 8
+    _stack__quote = 80
+    _stack__skip_array = 128
+    _stack__skip_object = 128
+    _stack__skip_one = 128
+    _stack__u64toa = 8
+    _stack__unquote = 72
+    _stack__value = 392
+    _stack__vnumber = 312
+    _stack__vsigned = 16
+    _stack__vstring = 112
+    _stack__vunsigned = 8
+)
+
 var (
     _ = _subr__f64toa
     _ = _subr__i64toa
@@ -42,4 +60,22 @@ var (
     _ = _subr__vsigned
     _ = _subr__vstring
     _ = _subr__vunsigned
+)
+
+const (
+    _ = _stack__f64toa
+    _ = _stack__i64toa
+    _ = _stack__lspace
+    _ = _stack__lzero
+    _ = _stack__quote
+    _ = _stack__skip_array
+    _ = _stack__skip_object
+    _ = _stack__skip_one
+    _ = _stack__u64toa
+    _ = _stack__unquote
+    _ = _stack__value
+    _ = _stack__vnumber
+    _ = _stack__vsigned
+    _ = _stack__vstring
+    _ = _stack__vunsigned
 )
