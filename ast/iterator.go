@@ -17,9 +17,9 @@
 package ast
 
 import (
-	"fmt"
+    `fmt`
 
-	"github.com/bytedance/sonic/internal/native/types"
+    `github.com/bytedance/sonic/internal/native/types`
 )
 
 type Pair struct {
@@ -111,7 +111,7 @@ func (s Sequence) String() string {
     if s.Key != nil {
         k = *s.Key
     }
-    return fmt.Sprintf("(%q, %d)", k, s.Index)
+    return fmt.Sprintf("Sequence(%d, %q)", s.Index, k)
 }
 
 type Scanner func(path Sequence, node *Node) bool

@@ -64,11 +64,25 @@ func BenchmarkNodeSortKeys(b *testing.B) {
     if err := root.LoadAll(); err != nil {
         b.Fatal(err)
     }
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    for i:=0; i<b.N; i++ {
-        _ = root.SortKeys(true)
-    }
+    
+    b.Run("single", func(b *testing.B) {
+        r := root.Get("statuses")
+        if r.Check() != nil {
+            b.Fatal(r.Error())
+        }
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            _ = root.SortKeys(false)
+        }
+    })
+    b.Run("recurse", func(b *testing.B) {
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            _ = root.SortKeys(true)
+        }
+    })
 }
 
 //go:noinline
