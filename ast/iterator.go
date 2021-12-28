@@ -100,12 +100,16 @@ func (self *ObjectIterator) Next(p *Pair) bool {
     }
 }
 
+// Sequence represents scanning path of single-layer nodes.
+// Index indicates the value's order in both V_ARRAY and V_OBJECT json.
+// Key is the value's key (for V_OBJECT json only, otherwise it will be nil).
 type Sequence struct {
     Index int 
     Key *string
     // Level int
 }
 
+// String is string representation of one Sequence
 func (s Sequence) String() string {
     k := ""
     if s.Key != nil {
@@ -116,6 +120,11 @@ func (s Sequence) String() string {
 
 type Scanner func(path Sequence, node *Node) bool
 
+// ForEach scans one V_OBJECT node's children from JSON head to tail, 
+// and pass the Sequence and Node of corresponding JSON value.
+//
+// Especailly, if the node is not V_ARRAY or V_OBJECT, 
+// the node itself will be returned and Sequence.Index == -1.
 func (self *Node) ForEach(sc Scanner) error {
     switch self.itype() {
     case types.V_ARRAY:
