@@ -17,7 +17,6 @@
 package decoder
 
 import (
-    `runtime`
     `testing`
 
     `github.com/bytedance/sonic/internal/native/types`
@@ -61,7 +60,7 @@ func TestErrors_EmptyDescription(t *testing.T) {
 
 func TestDecoderErrorStackOverflower(t *testing.T) {
     src := `{"a":[]}`
-    N := _MaxStack * runtime.GOMAXPROCS(0)
+    N := _MaxStack
     for i:=0; i<N; i++ {
         var obj map[string]string
         err := NewDecoder(src).Decode(&obj)
