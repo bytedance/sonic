@@ -24,7 +24,6 @@ import (
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
-    `github.com/bytedance/sonic/unquote`
     `github.com/chenzhuoyu/base64x`
 )
 
@@ -621,6 +620,34 @@ func (self *Node) UnsafeMap() ([]Pair, error) {
     return *(*[]Pair)(s), nil
 }
 
+// SortKeys sorts children of a V_OBJECT node in ascending key-order.
+// If recurse is true, it recursively sorts children's children as long as a V_OBJECT node is found.
+func (self *Node) SortKeys(recurse bool) (err error) {
+    ps, err := self.UnsafeMap()
+    if err != nil {
+        return err
+    }
+    PairSlice(ps).Sort()
+    if recurse {
+        var sc Scanner
+        sc = func(path Sequence, node *Node) bool {
+            if node.itype() == types.V_OBJECT {
+                if err := node.SortKeys(recurse); err != nil {
+                    return false
+                }
+            }
+            if node.itype() == types.V_ARRAY {
+                if err := node.ForEach(sc); err != nil {
+                    return false
+                }
+            }
+            return true
+        }
+        self.ForEach(sc)
+    }
+    return nil
+}
+
 // Array loads all indexes of an array node
 func (self *Node) Array() ([]interface{}, error) {
     if self.isAny() {
@@ -673,7 +700,7 @@ func (self *Node) ArrayUseNode() ([]Node, error) {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
-    if err := self.loadAllIndex(); err != nil {
+    if err := self.skipAllIndex(); err != nil {
         return nil, err
     }
     return self.toGenericArrayUseNode()
@@ -685,7 +712,7 @@ func (self *Node) UnsafeArray() ([]Node, error) {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
-    if err := self.loadAllIndex(); err != nil {
+    if err := self.skipAllIndex(); err != nil {
         return nil, err
     }
     s := ptr2slice(self.p, self.len(), self.cap())
@@ -806,7 +833,9 @@ func (self *Node) LoadAll() error {
         }
         for i := 0; i < e; i++ {
             n := self.nodeAt(i)
-            n.parseRaw(true)
+            if n.IsRaw() {
+                n.parseRaw(true)
+            }
             if err := n.Check(); err != nil {
                 return err
             }
@@ -819,7 +848,9 @@ func (self *Node) LoadAll() error {
         }
         for i := 0; i < e; i++ {
             n := self.pairAt(i)
-            n.Value.parseRaw(true)
+            if n.Value.IsRaw() {
+                n.Value.parseRaw(true)
+            }
             if err := n.Value.Check(); err != nil {
                 return err
             }
@@ -955,147 +986,6 @@ func (self *Node) skipAllKey() error {
         return parser.ExportError(err)
     }
     return nil
-}
-
-func (self *Node) skipNextNode() *Node {
-    if !self.isLazy() {
-        return nil
-    }
-
-    parser, stack := self.getParserAndArrayStack()
-    ret := stack.v
-    sp := parser.p
-    ns := len(parser.s)
-
-    /* check for EOF */
-    if parser.p = parser.lspace(sp); parser.p >= ns {
-        return newSyntaxError(parser.syntaxError(types.ERR_EOF))
-    }
-
-    /* check for empty array */
-    if parser.s[parser.p] == ']' {
-        parser.p++
-        self.setArray(ret)
-        return nil
-    }
-
-    var val Node
-    /* skip the value */
-    if start, err := parser.skip(); err != 0 {
-        return newSyntaxError(parser.syntaxError(err))
-    } else {
-        t := switchRawType(parser.s[start])
-        if t == _V_NONE {
-            return newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))
-        }
-        val = newRawNode(parser.s[start:parser.p], t)
-    }
-
-    /* add the value to result */
-    ret = append(ret, val)
-    parser.p = parser.lspace(parser.p)
-
-    /* check for EOF */
-    if parser.p >= ns {
-        return newSyntaxError(parser.syntaxError(types.ERR_EOF))
-    }
-
-    /* check for the next character */
-    switch parser.s[parser.p] {
-    case ',':
-        parser.p++
-        self.setLazyArray(parser, ret)
-        return &ret[len(ret)-1]
-    case ']':
-        parser.p++
-        self.setArray(ret)
-        return &ret[len(ret)-1]
-    default:
-        return newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))
-    }
-}
-
-func (self *Node) skipNextPair() (*Pair) {
-    if !self.isLazy() {
-        return nil
-    }
-
-    parser, stack := self.getParserAndObjectStack()
-    ret := stack.v
-    sp := parser.p
-    ns := len(parser.s)
-
-    /* check for EOF */
-    if parser.p = parser.lspace(sp); parser.p >= ns {
-        return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_EOF))}
-    }
-
-    /* check for empty object */
-    if parser.s[parser.p] == '}' {
-        parser.p++
-        self.setObject(ret)
-        return nil
-    }
-
-    /* decode one pair */
-    var val Node
-    var njs types.JsonState
-    var err types.ParsingError
-
-    /* decode the key */
-    if njs = parser.decodeValue(); njs.Vt != types.V_STRING {
-        return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
-    }
-
-    /* extract the key */
-    idx := parser.p - 1
-    key := parser.s[njs.Iv:idx]
-
-    /* check for escape sequence */
-    if njs.Ep != -1 {
-        if key, err = unquote.String(key); err != 0 {
-            return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
-        }
-    }
-
-    /* expect a ':' delimiter */
-    if err = parser.delim(); err != 0 {
-        return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
-    }
-
-    /* skip the value */
-    if start, err := parser.skip(); err != 0 {
-        return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
-    } else {
-        t := switchRawType(parser.s[start])
-        if t == _V_NONE {
-            return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
-        }
-        val = newRawNode(parser.s[start:parser.p], t)
-    }
-
-    /* add the value to result */
-    ret = append(ret, Pair{Key: key, Value: val})
-    parser.p = parser.lspace(parser.p)
-
-    /* check for EOF */
-    if parser.p >= ns {
-        return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_EOF))}
-    }
-
-    /* check for the next character */
-    switch parser.s[parser.p] {
-    case ',':
-        parser.p++
-        self.setLazyObject(parser, ret)
-        return &ret[len(ret)-1]
-    case '}':
-        parser.p++
-        self.setObject(ret)
-        return &ret[len(ret)-1]
-    default:
-        return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
-    }
 }
 
 func (self *Node) skipKey(key string) (*Node, int) {

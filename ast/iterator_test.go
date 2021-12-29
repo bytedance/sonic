@@ -20,13 +20,14 @@ import (
     `fmt`
     `strconv`
     `testing`
+
+    `github.com/stretchr/testify/assert`
 )
 
-func getTestIteratorSample() (string, int) {
+func getTestIteratorSample(loop int) (string, int) {
     var data []int
     var v1 = ""
     var v2 = ""
-    loop := _DEFAULT_NODE_CAP+1
     for i:=0;i<loop;i++{
         data = append(data, i*i)
         v1 += strconv.Itoa(i)
@@ -39,8 +40,57 @@ func getTestIteratorSample() (string, int) {
     return `{"array":[`+v1+`], "object":{`+v2+`}}`, loop
 }
 
+func TestForEach(t *testing.T) {
+    pathes := []Sequence{}
+    values := []*Node{}
+    sc := func(path Sequence, node *Node) bool {
+        pathes = append(pathes, path)
+        values = append(values, node)
+        if path.Key != nil && *path.Key == "array" {
+            node.ForEach(func(path Sequence, node *Node)bool{
+                pathes = append(pathes, path)
+                values = append(values, node)
+                return true
+            })
+        }
+        return true
+    }
+
+    str, _ := getTestIteratorSample(3)
+    fmt.Println(str)
+    root, err := NewSearcher(str).GetByPath()
+    if err != nil {
+        t.Fatal(err)
+    }
+    err = root.ForEach(sc)
+    if err != nil {
+        t.Fatal(err)
+    }
+    eObjKey := "object"
+    eArrKey := "array"
+    expPath := []Sequence{
+        {0, &eArrKey},
+        {0, nil},
+        {1, nil},
+        {2, nil},
+        {1, &eObjKey},
+    }
+    expValue := []*Node{
+        root.Get("array"),
+        root.GetByPath("array", 0),
+        root.GetByPath("array", 1),
+        root.GetByPath("array", 2),
+        root.Get("object"),
+    }
+    // fmt.Printf("pathes:%+v\n", pathes)
+    // fmt.Printf("values:%+v\n", values)
+    assert.Equal(t, expPath, pathes)
+    assert.Equal(t, expValue, values)
+    
+}
+
 func TestRawIterator(t *testing.T) {
-    str, loop := getTestIteratorSample()
+    str, loop := getTestIteratorSample(_DEFAULT_NODE_CAP)
     fmt.Println(str)
     
     root, err := NewSearcher(str).GetByPath("array")
@@ -94,7 +144,7 @@ func TestRawIterator(t *testing.T) {
 }
 
 func TestIterator(t *testing.T) {
-    str, loop := getTestIteratorSample()
+    str, loop := getTestIteratorSample(_DEFAULT_NODE_CAP)
     fmt.Println(str)
 
     root, err := NewParser(str).Parse()

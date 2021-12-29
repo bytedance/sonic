@@ -335,6 +335,266 @@ func (self *Parser) skip() (int, types.ParsingError) {
     return start, 0
 }
 
+func (self *Parser) searchKey(match string) types.ParsingError {
+    ns := len(self.s)
+    if err := self.object(); err != 0 {
+        return err
+    }
+
+    /* check for EOF */
+    if self.p = self.lspace(self.p); self.p >= ns {
+        return types.ERR_EOF
+    }
+
+    /* check for empty object */
+    if self.s[self.p] == '}' {
+        self.p++
+        return _ERR_NOT_FOUND
+    }
+
+    var njs types.JsonState
+    var err types.ParsingError
+    /* decode each pair */
+    for {
+
+        /* decode the key */
+        if njs = self.decodeValue(); njs.Vt != types.V_STRING {
+            return types.ERR_INVALID_CHAR
+        }
+
+        /* extract the key */
+        idx := self.p - 1
+        key := self.s[njs.Iv:idx]
+
+        /* check for escape sequence */
+        if njs.Ep != -1 {
+            if key, err = unquote.String(key); err != 0 {
+                return err
+            }
+        }
+
+        /* expect a ':' delimiter */
+        if err = self.delim(); err != 0 {
+            return err
+        }
+
+        /* skip value */
+        if key != match {
+            if _, err = self.skip(); err != 0 {
+                return err
+            }
+        } else {
+            return 0
+        }
+
+        /* check for EOF */
+        self.p = self.lspace(self.p)
+        if self.p >= ns {
+            return types.ERR_EOF
+        }
+
+        /* check for the next character */
+        switch self.s[self.p] {
+        case ',':
+            self.p++
+        case '}':
+            self.p++
+            return _ERR_NOT_FOUND
+        default:
+            return types.ERR_INVALID_CHAR
+        }
+    }
+}
+
+func (self *Parser) searchIndex(idx int) types.ParsingError {
+    ns := len(self.s)
+    if err := self.array(); err != 0 {
+        return err
+    }
+
+    /* check for EOF */
+    if self.p = self.lspace(self.p); self.p >= ns {
+        return types.ERR_EOF
+    }
+
+    /* check for empty array */
+    if self.s[self.p] == ']' {
+        self.p++
+        return _ERR_NOT_FOUND
+    }
+
+    var err types.ParsingError
+    /* allocate array space and parse every element */
+    for i := 0; i < idx; i++ {
+
+        /* decode the value */
+        if _, err = self.skip(); err != 0 {
+            return err
+        }
+
+        /* check for EOF */
+        self.p = self.lspace(self.p)
+        if self.p >= ns {
+            return types.ERR_EOF
+        }
+
+        /* check for the next character */
+        switch self.s[self.p] {
+        case ',':
+            self.p++
+        case ']':
+            self.p++
+            return _ERR_NOT_FOUND
+        default:
+            return types.ERR_INVALID_CHAR
+        }
+    }
+
+    return 0
+}
+
+func (self *Node) skipNextNode() *Node {
+    if !self.isLazy() {
+        return nil
+    }
+
+    parser, stack := self.getParserAndArrayStack()
+    ret := stack.v
+    sp := parser.p
+    ns := len(parser.s)
+
+    /* check for EOF */
+    if parser.p = parser.lspace(sp); parser.p >= ns {
+        return newSyntaxError(parser.syntaxError(types.ERR_EOF))
+    }
+
+    /* check for empty array */
+    if parser.s[parser.p] == ']' {
+        parser.p++
+        self.setArray(ret)
+        return nil
+    }
+
+    var val Node
+    /* skip the value */
+    if start, err := parser.skip(); err != 0 {
+        return newSyntaxError(parser.syntaxError(err))
+    } else {
+        t := switchRawType(parser.s[start])
+        if t == _V_NONE {
+            return newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))
+        }
+        val = newRawNode(parser.s[start:parser.p], t)
+    }
+
+    /* add the value to result */
+    ret = append(ret, val)
+    parser.p = parser.lspace(parser.p)
+
+    /* check for EOF */
+    if parser.p >= ns {
+        return newSyntaxError(parser.syntaxError(types.ERR_EOF))
+    }
+
+    /* check for the next character */
+    switch parser.s[parser.p] {
+    case ',':
+        parser.p++
+        self.setLazyArray(parser, ret)
+        return &ret[len(ret)-1]
+    case ']':
+        parser.p++
+        self.setArray(ret)
+        return &ret[len(ret)-1]
+    default:
+        return newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))
+    }
+}
+
+func (self *Node) skipNextPair() (*Pair) {
+    if !self.isLazy() {
+        return nil
+    }
+
+    parser, stack := self.getParserAndObjectStack()
+    ret := stack.v
+    sp := parser.p
+    ns := len(parser.s)
+
+    /* check for EOF */
+    if parser.p = parser.lspace(sp); parser.p >= ns {
+        return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_EOF))}
+    }
+
+    /* check for empty object */
+    if parser.s[parser.p] == '}' {
+        parser.p++
+        self.setObject(ret)
+        return nil
+    }
+
+    /* decode one pair */
+    var val Node
+    var njs types.JsonState
+    var err types.ParsingError
+
+    /* decode the key */
+    if njs = parser.decodeValue(); njs.Vt != types.V_STRING {
+        return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
+    }
+
+    /* extract the key */
+    idx := parser.p - 1
+    key := parser.s[njs.Iv:idx]
+
+    /* check for escape sequence */
+    if njs.Ep != -1 {
+        if key, err = unquote.String(key); err != 0 {
+            return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
+        }
+    }
+
+    /* expect a ':' delimiter */
+    if err = parser.delim(); err != 0 {
+        return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
+    }
+
+    /* skip the value */
+    if start, err := parser.skip(); err != 0 {
+        return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
+    } else {
+        t := switchRawType(parser.s[start])
+        if t == _V_NONE {
+            return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
+        }
+        val = newRawNode(parser.s[start:parser.p], t)
+    }
+
+    /* add the value to result */
+    ret = append(ret, Pair{Key: key, Value: val})
+    parser.p = parser.lspace(parser.p)
+
+    /* check for EOF */
+    if parser.p >= ns {
+        return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_EOF))}
+    }
+
+    /* check for the next character */
+    switch parser.s[parser.p] {
+    case ',':
+        parser.p++
+        self.setLazyObject(parser, ret)
+        return &ret[len(ret)-1]
+    case '}':
+        parser.p++
+        self.setObject(ret)
+        return &ret[len(ret)-1]
+    default:
+        return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
+    }
+}
+
+
 /** Parser Factory **/
 
 // Loads parse all json into interface{}

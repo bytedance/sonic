@@ -17,6 +17,8 @@
 package ast
 
 import (
+    `fmt`
+
     `github.com/bytedance/sonic/internal/native/types`
 )
 
@@ -96,4 +98,63 @@ func (self *ObjectIterator) Next(p *Pair) bool {
         *p, self.i = *self.p.pairAt(self.i), self.i + 1
         return true
     }
+}
+
+// Sequence represents scanning path of single-layer nodes.
+// Index indicates the value's order in both V_ARRAY and V_OBJECT json.
+// Key is the value's key (for V_OBJECT json only, otherwise it will be nil).
+type Sequence struct {
+    Index int 
+    Key *string
+    // Level int
+}
+
+// String is string representation of one Sequence
+func (s Sequence) String() string {
+    k := ""
+    if s.Key != nil {
+        k = *s.Key
+    }
+    return fmt.Sprintf("Sequence(%d, %q)", s.Index, k)
+}
+
+type Scanner func(path Sequence, node *Node) bool
+
+// ForEach scans one V_OBJECT node's children from JSON head to tail, 
+// and pass the Sequence and Node of corresponding JSON value.
+//
+// Especailly, if the node is not V_ARRAY or V_OBJECT, 
+// the node itself will be returned and Sequence.Index == -1.
+func (self *Node) ForEach(sc Scanner) error {
+    switch self.itype() {
+    case types.V_ARRAY:
+        ns, err := self.UnsafeArray()
+        if err != nil {
+            return err
+        }
+        for i := range ns {
+            if !sc(Sequence{i, nil}, &ns[i]) {
+                return err
+            }
+        }
+    case types.V_OBJECT:
+        ns, err := self.UnsafeMap()
+        if err != nil {
+            return err
+        }
+        for i := range ns {
+            if !sc(Sequence{i, &ns[i].Key}, &ns[i].Value) {
+                return err
+            }
+        }
+    default:
+        sc(Sequence{-1, nil}, self)
+    }
+    return self.Check()
+}
+
+type PairSlice []Pair
+
+func (self PairSlice) Sort() {
+    radixQsort(self, 0, maxDepth(len(self)))
 }
