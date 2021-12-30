@@ -25,6 +25,8 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
 )
 
+const MaxFrameSize uintptr = 400
+
 var (
     S_f64toa uintptr
     S_i64toa uintptr

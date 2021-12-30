@@ -46,7 +46,7 @@ const (
     _VD_args   = 8      // 8 bytes  for passing arguments to this functions
     _VD_fargs  = 64     // 64 bytes for passing arguments to other Go functions
     _VD_saves  = 48     // 48 bytes for saving the registers before CALL instructions
-    _VD_locals = 40     // 40 bytes for local variables
+    _VD_locals = 64     // 64 bytes for local variables
 )
 
 const (
@@ -64,10 +64,12 @@ var (
     _VAR_ss_Dv = jit.Ptr(_SP, _VD_fargs + _VD_saves + 16)
     _VAR_ss_Iv = jit.Ptr(_SP, _VD_fargs + _VD_saves + 24)
     _VAR_ss_Ep = jit.Ptr(_SP, _VD_fargs + _VD_saves + 32)
+    _VAR_ss_Db = jit.Ptr(_SP, _VD_fargs + _VD_saves + 40)
+    _VAR_ss_Dc = jit.Ptr(_SP, _VD_fargs + _VD_saves + 48)
 )
 
 var (
-    _VAR_R9 = jit.Ptr(_SP, _VD_fargs + _VD_saves +40)
+    _VAR_R9 = jit.Ptr(_SP, _VD_fargs + _VD_saves + 56)
 )
 type _ValueDecoder struct {
     jit.BaseAssembler
@@ -197,6 +199,11 @@ func (self *_ValueDecoder) compile() {
     /* initialize the state machine */
     self.Emit("XORL", _CX, _CX)                                 // XORL CX, CX
     self.Emit("MOVQ", _DF, _VAR_df)                             // MOVQ DF, df
+    /* initialize digital buffer first */
+    self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_ss_Dc)       // MOVQ $_MaxDigitNums, ss.Dcap
+    self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)           // LEAQ _DbufOffset(ST), AX
+    self.Emit("MOVQ", _AX, _VAR_ss_Db)                          // MOVQ AX, ss.Dbuf
+    /* add ST offset */
     self.Emit("ADDQ", jit.Imm(_FsmOffset), _ST)                 // ADDQ _FsmOffset, _ST
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                // MOVQ CX, ST.Sp
     self.WriteRecNotAX(0, _VP, jit.Ptr(_ST, _ST_Vp), false)                // MOVQ VP, ST.Vp[0]

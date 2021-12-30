@@ -17,17 +17,19 @@
 package decoder
 
 import (
-	`encoding`
-	`encoding/json`
-	`unsafe`
+    `encoding`
+    `encoding/json`
+    `unsafe`
 
-	`github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 func decodeTypedPointer(s string, i int, vt *rt.GoType, vp unsafe.Pointer, sb *_Stack, fv uint64) (int, error) {
     if fn, err := findOrCompile(vt); err != nil {
         return 0, err
     } else {
+        rt.MoreStack(_FP_size + _VD_size + native.MaxFrameSize)
         return fn(s, i, vp, sb, fv, "", nil)
     }
 }

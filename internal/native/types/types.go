@@ -92,9 +92,11 @@ func (self ParsingError) Message() string {
 
 type JsonState struct {
     Vt ValueType
-    Dv float64
-    Iv int64
-    Ep int
+    Dv   float64
+    Iv   int64
+    Ep   int
+    Dbuf *byte
+    Dcap int
 }
 
 type StateMachine struct {

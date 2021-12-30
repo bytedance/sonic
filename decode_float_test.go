@@ -149,7 +149,7 @@ var atoftests = []atofTest{
 func TestDecodeFloat(t *testing.T) {
 	for i, tt := range atoftests {
 		// default float64
-		var sonicout, stdout interface{}
+		var sonicout, stdout float64
 		sonicerr := decoder.NewDecoder(tt.in).Decode(&sonicout)
 		stderr := json.NewDecoder(strings.NewReader(tt.in)).Decode(&stdout)
 		if !reflect.DeepEqual(sonicout, stdout) {

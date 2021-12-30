@@ -14,16 +14,34 @@ var (
     _subr__lspace      = __native_entry__() + 301
     _subr__lzero       = __native_entry__() + 13
     _subr__quote       = __native_entry__() + 4955
-    _subr__skip_array  = __native_entry__() + 17304
-    _subr__skip_object = __native_entry__() + 17339
-    _subr__skip_one    = __native_entry__() + 15525
+    _subr__skip_array  = __native_entry__() + 16074
+    _subr__skip_object = __native_entry__() + 16109
+    _subr__skip_one    = __native_entry__() + 14295
     _subr__u64toa      = __native_entry__() + 3735
     _subr__unquote     = __native_entry__() + 5888
-    _subr__value       = __native_entry__() + 10928
-    _subr__vnumber     = __native_entry__() + 13724
-    _subr__vsigned     = __native_entry__() + 14997
-    _subr__vstring     = __native_entry__() + 12689
-    _subr__vunsigned   = __native_entry__() + 15256
+    _subr__value       = __native_entry__() + 9657
+    _subr__vnumber     = __native_entry__() + 12453
+    _subr__vsigned     = __native_entry__() + 13767
+    _subr__vstring     = __native_entry__() + 11418
+    _subr__vunsigned   = __native_entry__() + 14026
+)
+
+const (
+    _stack__f64toa = 120
+    _stack__i64toa = 24
+    _stack__lspace = 8
+    _stack__lzero = 8
+    _stack__quote = 64
+    _stack__skip_array = 136
+    _stack__skip_object = 136
+    _stack__skip_one = 136
+    _stack__u64toa = 8
+    _stack__unquote = 88
+    _stack__value = 400
+    _stack__vnumber = 312
+    _stack__vsigned = 16
+    _stack__vstring = 128
+    _stack__vunsigned = 8
 )
 
 var (
@@ -42,4 +60,22 @@ var (
     _ = _subr__vsigned
     _ = _subr__vstring
     _ = _subr__vunsigned
+)
+
+const (
+    _ = _stack__f64toa
+    _ = _stack__i64toa
+    _ = _stack__lspace
+    _ = _stack__lzero
+    _ = _stack__quote
+    _ = _stack__skip_array
+    _ = _stack__skip_object
+    _ = _stack__skip_one
+    _ = _stack__u64toa
+    _ = _stack__unquote
+    _ = _stack__value
+    _ = _stack__vnumber
+    _ = _stack__vsigned
+    _ = _stack__vstring
+    _ = _stack__vunsigned
 )

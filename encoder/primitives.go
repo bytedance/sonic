@@ -71,8 +71,10 @@ func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Sta
     } else if fn, err := findOrCompile(vt); err != nil {
         return err
     } else if (vt.KindFlags & rt.F_direct) == 0 {
+        rt.MoreStack(_FP_size + native.MaxFrameSize)
         return fn(buf, *vp, sb, fv)
     } else {
+        rt.MoreStack(_FP_size + native.MaxFrameSize)
         return fn(buf, unsafe.Pointer(vp), sb, fv)
     }
 }

@@ -49,3 +49,6 @@ func Str2Mem(s string) (v []byte) {
     (*GoSlice)(unsafe.Pointer(&v)).Ptr = (*GoString)(unsafe.Pointer(&s)).Ptr
     return
 }
+
+//go:nosplit
+func MoreStack(size uintptr)
