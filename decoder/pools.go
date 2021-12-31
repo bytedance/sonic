@@ -84,7 +84,6 @@ var _KeepAlive struct {
 
 var errCallShadow = errors.New("DON'T CALL THIS!")
 
-//go:nosplit
 // Faker func of _Decoder, used to export its stackmap as _Decoder's
 func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64, sv string, vk unsafe.Pointer) (ret int, err error) {
     // align to assembler_amd64.go: _FP_offs
@@ -105,7 +104,6 @@ func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64, 
     return 0, errCallShadow
 }
 
-//go:nosplit
 // Faker func of _Decoder_Generic, used to export its stackmap
 func _Decoder_Generic_Shadow(sb *_Stack) {
     // align to generic_amd64.go: _VD_offs

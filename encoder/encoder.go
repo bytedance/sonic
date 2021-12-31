@@ -109,6 +109,7 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     freeStack(stk)
 
     /* avoid GC ahead */
+    runtime.KeepAlive(buf)
     runtime.KeepAlive(efv)
     return err
 }
