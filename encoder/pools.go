@@ -71,7 +71,6 @@ var _KeepAlive struct {
 var errCallShadow = errors.New("DON'T CALL THIS!")
 
 // Faker func of _Encoder, used to export its stackmap as _Encoder's
-//go:nosplit
 func _Encoder_Shadow(rb *[]byte, vp unsafe.Pointer, sb *_Stack, fv uint64) (err error) {
     // align to assembler_amd64.go: _FP_offs
     var frame [_FP_offs]byte
