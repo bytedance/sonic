@@ -16,7 +16,6 @@
 
 #include "native.h"
 
-#define DECIMAL_MAX_DNUM 800
 /* decimical shift witout overflow, e.g. 9 << 61 overflow */
 #define MAX_SHIFT 60
 
@@ -26,11 +25,12 @@
  * example 3: 999   {"999", 3, 3, 0}
  */
 typedef struct Decimal {
-    char  d[DECIMAL_MAX_DNUM];
-    int   nd;
-    int   dp;
-    int   neg;
-    int   trunc;
+    char*  d;
+    size_t cap;
+    int    nd;
+    int    dp;
+    int    neg;
+    int    trunc;
 } Decimal;
 
 /* decimal power of ten to binary power of two.
@@ -44,7 +44,7 @@ static const int POW_TAB[9] = {1, 3, 6, 9, 13, 16, 19, 23, 26};
  */
 typedef struct lshift_cheat  {
     int   delta;                             // number of added digits when left shift
-    const char  cutoff[DECIMAL_MAX_DNUM];    // minus one digit if under the half(cutoff).
+    const char  cutoff[100];                 // minus one digit if under the half(cutoff).
 } lshift_cheat;
 
 /* Look up for the decimal shift information by binary shift bits.
@@ -56,8 +56,10 @@ typedef struct lshift_cheat  {
  */
 const static lshift_cheat LSHIFT_TAB[61];
 
-static inline void decimal_init(Decimal *d) {
-    for (int i = 0; i < DECIMAL_MAX_DNUM; ++i) {
+static inline void decimal_init(Decimal *d, char *dbuf, size_t cap) {
+    d->d = dbuf;
+    d->cap = cap;
+    for (int i = 0; i < d->cap; ++i) {
         d->d[i] = 0;
     }
     d->dp    = 0;
@@ -66,10 +68,10 @@ static inline void decimal_init(Decimal *d) {
     d->trunc = 0;
 }
 
-static inline void decimal_set(Decimal *d, const char *s, int len) {
+static inline void decimal_set(Decimal *d, const char *s, ssize_t len, char *dbuf, ssize_t cap) {
     int i = 0;
 
-    decimal_init(d);
+    decimal_init(d, dbuf, cap);
     if (s[i] == '-') {
         i++;
         d->neg = 1;
@@ -82,7 +84,7 @@ static inline void decimal_set(Decimal *d, const char *s, int len) {
                 d->dp--;
                 continue;
             }
-            if (d->nd < DECIMAL_MAX_DNUM) {
+            if (d->nd < d->cap) {
                 d->d[d->nd] = s[i];
                 d->nd++;
             } else if (s[i] != '0') {
@@ -173,7 +175,7 @@ static inline void right_shift(Decimal *d, uint32_t k) {
     while (n > 0) {
         dig = n >> k;
         n &= mask;
-        if (w < DECIMAL_MAX_DNUM) {
+        if (w < d->cap) {
             d->d[w] = (char)(dig + '0');
             w++;
         } else if (dig > 0) {
@@ -221,7 +223,7 @@ static inline void left_shift(Decimal *d, uint32_t k) {
         quo = n / 10;
         rem = n - 10 * quo;
         w--;
-        if (w < DECIMAL_MAX_DNUM) {
+        if (w < d->cap) {
             d->d[w] = (char)(rem + '0');
         } else if (rem != 0) {
             /* truncated */
@@ -235,7 +237,7 @@ static inline void left_shift(Decimal *d, uint32_t k) {
         quo = n / 10;
         rem = n - 10 * quo;
         w--;
-        if (w < DECIMAL_MAX_DNUM) {
+        if (w < d->cap) {
             d->d[w] = (char)(rem + '0');
         } else if (rem != 0) {
             /* truncated */
@@ -245,8 +247,8 @@ static inline void left_shift(Decimal *d, uint32_t k) {
     }
 
     d->nd += delta;
-    if (d->nd >= DECIMAL_MAX_DNUM) {
-        d->nd = DECIMAL_MAX_DNUM;
+    if (d->nd >= d->cap) {
+        d->nd = d->cap;
     }
     d->dp += delta;
     trim(d);
@@ -413,15 +415,14 @@ out:
     return 0;
 }
 
-double atof_native_decimal(const char *buf, int len) {
+double atof_native(const char *sp, ssize_t nb, char* dbuf, ssize_t cap) {
     Decimal d;
     double val = 0;
-    decimal_set(&d, buf, len);
+    decimal_set(&d, sp, nb, dbuf, cap);
     decimal_to_f64(&d, &val);
     return val;
 }
 
-#undef DECIMAL_MAX_DNUM
 #undef MAX_SHIFT
 
 const static lshift_cheat LSHIFT_TAB[61] = {

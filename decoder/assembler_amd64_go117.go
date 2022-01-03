@@ -71,7 +71,7 @@ const (
     _FP_args   = 72     // 72 bytes to pass and spill register arguements
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
-    _FP_locals = 72     // 72 bytes for local variables
+    _FP_locals = 88     // 88 bytes for local variables
 )
 
 const (
@@ -172,14 +172,16 @@ var (
     _VAR_st_Dv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
     _VAR_st_Iv = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
     _VAR_st_Ep = jit.Ptr(_SP, _FP_fargs + _FP_saves + 24)
+    _VAR_st_Db = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
+    _VAR_st_Dc = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
 )
 
 var (
-    _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 32)
-    _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 40)
-    _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
-    _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
-    _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
+    _VAR_ss_AX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 48)
+    _VAR_ss_CX = jit.Ptr(_SP, _FP_fargs + _FP_saves + 56)
+    _VAR_ss_SI = jit.Ptr(_SP, _FP_fargs + _FP_saves + 64)
+    _VAR_ss_R8 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 72)
+    _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 80)
 )
 
 type _Assembler struct {
@@ -331,6 +333,10 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
+    // initialize digital buffer first
+    self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
+    self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)        // LEAQ _DbufOffset(ST), AX
+    self.Emit("MOVQ", _AX, _VAR_st_Db)                       // MOVQ AX, ss.Dbuf
 }
 
 /** Function Calling Helpers **/

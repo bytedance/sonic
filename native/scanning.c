@@ -528,27 +528,22 @@ static inline bool is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
     return false;
 }
 
-static inline double parse_float64(uint64_t man, int exp, int sgn, int trunc, const GoString *src, long idx) {
-    double val    = 0.0;
+static inline double atof_fast(uint64_t man, int exp, int sgn, int trunc, double *val) {
     double val_up = 0.0;
 
     /* look-up for fast atof if the conversion can be exactly */
-    if (is_atof_exact(man, exp, sgn, &val)) {
-        return val;
+    if (is_atof_exact(man, exp, sgn, val)) {
+        return true;
     }
 
     /* A fast atof algorithm for high percison */
-    if (atof_eisel_lemire64(man, exp, sgn, &val)) {
-        if (!trunc) {
-            return val;
-        }
-        if (atof_eisel_lemire64(man+1, exp, sgn, &val_up) && val_up == val) {
-            return val;
+    if (atof_eisel_lemire64(man, exp, sgn, val)) {
+        if (!trunc || (atof_eisel_lemire64(man+1, exp, sgn, &val_up) && val_up == *val)) {
+            return true;
         }
     }
 
-    /* when above algorithms failed, fallback. It is slow. */
-    return atof_native_decimal(src->buf + idx, src->len - idx);
+    return false;
 }
 
 static bool inline is_overflow(uint64_t man, int sgn, int exp10) {
@@ -564,12 +559,14 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
     int   man_nd = 0; // # digits of mantissa, 10 ^ 19 fits uint64_t
     int    exp10 = 0; // val = sgn * man * 10 ^ exp10
     int    trunc = 0;
+    double   val = 0;
 
     /* initial buffer pointers */
     long         i = *p;
     size_t       n = src->len;
     const char * s = src->buf;
-    long        si = *p; // record the idx for fall-back when parsing float.
+    char     *dbuf = ret->dbuf;
+    ssize_t   dcap = ret->dcap;
 
     /* initialize the result, and check for EOF */
     init_ret(V_INTEGER)
@@ -600,11 +597,10 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
 
     /* skip the leading zeros of 0.000xxxx */
     if (man == 0 && exp10 == 0) {
-        int idx = i;
         while (i < n && s[i] == '0') {
             i++;
+            exp10--;
         }
-        exp10 = idx - i;
         man = 0;
         man_nd = 0;
     }
@@ -657,12 +653,18 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
     }
 
 parse_float:
-    ret->dv = parse_float64(man, exp10, sgn, trunc, src, si);
-    /* if the float number is infinity */
-    if (((*(uint64_t *)&ret->dv) << 1) == 0xFFE0000000000000) {
+    /* when fast algorithms failed, use slow fallback.*/
+    if(!atof_fast(man, exp10, sgn, trunc, &val)) {
+        val = atof_native(s + *p, i - *p, dbuf, dcap);
+    }
+
+    /* check parsed double val */
+    if (is_infinity(val)) {
         ret->vt = -ERR_FLOAT_INF;
     }
+
     /* update the result */
+    ret->dv = val;
     *p = i;
 }
 

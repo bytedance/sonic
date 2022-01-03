@@ -35,6 +35,7 @@
 #define V_ELEM_SEP      11
 #define V_ARRAY_END     12
 #define V_OBJECT_END    13
+#define V_ATOF_NEED_FALLBACK 14
 
 #define F_DBLUNQ        (1 << 0)
 #define F_UNIREP        (1 << 1)
@@ -56,11 +57,14 @@
 
 #define likely(v)       (__builtin_expect((v), 1))
 #define unlikely(v)     (__builtin_expect((v), 0))
+#define always_inline   inline __attribute__((always_inline)) 
 
 #define as_m128p(v)     ((__m128i *)(v))
 #define as_m128c(v)     ((const __m128i *)(v))
 #define as_m256c(v)     ((const __m256i *)(v))
 #define as_m128v(v)     (*(const __m128i *)(v))
+#define as_uint64v(p)   (*(uint64_t *)(p))
+#define is_infinity(v)  ((as_uint64v(&v) << 1) == 0xFFE0000000000000)
 
 typedef struct {
     char * buf;
@@ -84,6 +88,8 @@ typedef struct {
     double  dv;
     int64_t iv;
     int64_t ep;
+    char*   dbuf;
+    ssize_t dcap;
 } JsonState;
 
 typedef struct {
@@ -116,6 +122,6 @@ long skip_negative(const GoString *src, long *p);
 long skip_positive(const GoString *src, long *p);
 
 bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
-double atof_native_decimal(const char *buf, int len);
+double atof_native(const char *sp, ssize_t nb, char* dbuf, ssize_t cap);
 
 #endif
