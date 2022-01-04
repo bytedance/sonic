@@ -30,14 +30,24 @@ import (
 type Options uint64
 
 const (
-    bitSortMapKeys = iota
+    bitSortMapKeys          = iota
+    bitNoCompactMarshaler
+    NoQuteTextMarshaler
 )
 
 const (
-    // SortMapKeys indicate that the keys of a map needs to be sorted before
+    // SortMapKeys indicates that the keys of a map needs to be sorted before
     // serializing into JSON.
     // WARNING: This hurts performance A LOT, USE WITH CARE.
-    SortMapKeys Options = 1 << bitSortMapKeys
+    SortMapKeys            Options = 1 << bitSortMapKeys
+
+    // NoCompactMarshaler indicates that the output JSON from json.Marshaler 
+    // is always compact and needs no validation 
+    NoCompactMarshaler    Options = 1 << bitNoCompactMarshaler
+
+    // NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler 
+    // is always escaped string and needs no quoting
+    NoQuoteTextMarshaler Options = 1 << NoQuteTextMarshaler
 )
 
 // Encoder represents a specific set of encoder configurations.
