@@ -79,18 +79,26 @@ func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Sta
     }
 }
 
-func encodeJsonMarshaler(buf *[]byte, val json.Marshaler) error {
+func encodeJsonMarshaler(buf *[]byte, val json.Marshaler, opt Options) error {
     if ret, err := val.MarshalJSON(); err != nil {
         return err
     } else {
+        if opt & NoCompactMarshaler != 0 {
+            *buf = append(*buf, ret...)
+            return nil
+        }
         return compact(buf, ret)
     }
 }
 
-func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler) error {
+func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler, opt Options) error {
     if ret, err := val.MarshalText(); err != nil {
         return err
     } else {
-        return encodeString(buf, rt.Mem2Str(ret))
+        if opt & NoQuoteTextMarshaler != 0 {
+            *buf = append(*buf, ret...)
+            return nil
+        }
+        return encodeString(buf, rt.Mem2Str(ret) )
     }
 }

@@ -547,6 +547,7 @@ func (self *_Assembler) call_marshaler_i(fn obj.Addr, it *rt.GoType) {
     self.Emit("MOVQ", _BX, _CX)                                     // MOVQ   BX, CX
     self.Emit("MOVQ", _AX, _BX)                                     // MOVQ   AX, BX
     self.prep_buffer_AX()
+    self.Emit("MOVQ", _ARG_fv, _DI)                                 // MOVQ   ARG.fv, DI
     self.call_go(fn)                                                // CALL    $fn
     self.Emit("TESTQ", _ET, _ET)                                    // TESTQ ET, ET
     self.Sjmp("JNZ"  , _LB_error)                                   // JNZ   _error
@@ -571,7 +572,8 @@ func (self *_Assembler) call_marshaler_v(fn obj.Addr, it *rt.GoType, vt reflect.
     }
 
     /* call the encoder, and perform error checks */
-    self.call_go(fn)                                  // CALL  $fn
+    self.Emit("MOVQ", _ARG_fv, _DI)                 // MOVQ   ARG.fv, DI
+    self.call_go(fn)                                // CALL  $fn
     self.Emit("TESTQ", _ET, _ET)                // TESTQ ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ   _error
     self.load_buffer_AX()
