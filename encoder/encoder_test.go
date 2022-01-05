@@ -180,6 +180,16 @@ func TestEncoder_TextMarshaler(t *testing.T) {
     require.Equal(t, `{"V":{"X":"{\"a\"}"}}`, string(ret3))
 }
 
+func TestEncoder_EscapeHTML(t *testing.T) {
+    v := map[string]TextMarshalerImpl{"&&":{"<>"}}
+    ret, err := Encode(v, EscapeHTML)
+    require.NoError(t, err)
+    require.Equal(t, `{"\u0026\u0026":{"X":"\u003c\u003e"}}`, string(ret))
+    ret, err = Encode(v, 0)
+    require.NoError(t, err)
+    require.Equal(t, `{"&&":{"X":"<>"}}`, string(ret))
+}
+
 var _GenericValue interface{}
 var _BindingValue TwitterStruct
 
