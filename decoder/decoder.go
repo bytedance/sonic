@@ -77,6 +77,7 @@ func (self *Decoder) Decode(val interface{}) error {
     freeStack(sb)
 
     /* avoid GC ahead */
+    runtime.KeepAlive(self.s)
     runtime.KeepAlive(vv)
     return err
 }
