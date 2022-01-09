@@ -528,9 +528,11 @@
      self.prep_buffer()                                              // MOVE    {buf}, (SP)
      self.Emit("MOVOU", jit.Ptr(_SP, 24), _X0)                       // MOVOU   24(SP), X0
      self.Emit("MOVOU", _X0, jit.Ptr(_SP, 8))                        // MOVOU   X0, 8(SP)
+     self.Emit("MOVQ", _ARG_fv,  _CX)                                // MOVQ   ARG.fv, CX
+     self.Emit("MOVQ", _CX,  jit.Ptr(_SP, 24))                       // MOVQ   CX, 24(SP)
      self.call_encoder(fn)                                           // CALL    $fn
-     self.Emit("MOVQ" , jit.Ptr(_SP, 24), _ET)                       // MOVQ    24(SP), ET
-     self.Emit("MOVQ" , jit.Ptr(_SP, 32), _EP)                       // MOVQ    32(SP), EP
+     self.Emit("MOVQ" , jit.Ptr(_SP, 32), _ET)                       // MOVQ    32(SP), ET
+     self.Emit("MOVQ" , jit.Ptr(_SP, 40), _EP)                       // MOVQ    40(SP), EP
      self.Emit("TESTQ", _ET, _ET)                                    // TESTQ   ET, ET
      self.Sjmp("JNZ"  , _LB_error)                                   // JNZ     _error
      self.Sjmp("JMP"  , "_done_{n}")                                 // JMP     _done_{n}
@@ -555,9 +557,11 @@
      }
  
      /* call the encoder, and perform error checks */
+     self.Emit("MOVQ", _ARG_fv,  _CX)            // MOVQ   ARG.fv, CX
+     self.Emit("MOVQ", _CX,  jit.Ptr(_SP, 24))   // MOVQ   CX, 24(SP)
      self.call_encoder(fn)                       // CALL  $fn
-     self.Emit("MOVQ" , jit.Ptr(_SP, 24), _ET)   // MOVQ  24(SP), ET
-     self.Emit("MOVQ" , jit.Ptr(_SP, 32), _EP)   // MOVQ  32(SP), EP
+     self.Emit("MOVQ" , jit.Ptr(_SP, 32), _ET)   // MOVQ  32(SP), ET
+     self.Emit("MOVQ" , jit.Ptr(_SP, 40), _EP)   // MOVQ  40(SP), EP
      self.Emit("TESTQ", _ET, _ET)                // TESTQ ET, ET
      self.Sjmp("JNZ"  , _LB_error)               // JNZ   _error
  }

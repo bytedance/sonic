@@ -30,14 +30,30 @@ import (
 type Options uint64
 
 const (
-    bitSortMapKeys = iota
+    bitSortMapKeys          = iota
+    bitEscapeHTML          
+    bitNoCompactMarshaler
+    bitNoQuoteTextMarshaler
 )
 
 const (
-    // SortMapKeys indicate that the keys of a map needs to be sorted before
-    // serializing into JSON.
+    // SortMapKeys indicates that the keys of a map needs to be sorted 
+    // before serializing into JSON.
     // WARNING: This hurts performance A LOT, USE WITH CARE.
-    SortMapKeys Options = 1 << bitSortMapKeys
+    SortMapKeys          Options = 1 << bitSortMapKeys
+
+    // EscapeHTML indicates encoder to escape all HTML characters 
+    // after serializing into JSON (see https://pkg.go.dev/encoding/json#HTMLEscape).
+    // WARNING: This hurts performance A LOT, USE WITH CARE.
+    EscapeHTML           Options = 1 << bitEscapeHTML
+
+    // NoCompactMarshaler indicates that the output JSON from json.Marshaler 
+    // is always compact and needs no validation 
+    NoCompactMarshaler   Options = 1 << bitNoCompactMarshaler
+
+    // NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler 
+    // is always escaped string and needs no quoting
+    NoQuoteTextMarshaler Options = 1 << bitNoQuoteTextMarshaler
 )
 
 // Encoder represents a specific set of encoder configurations.
@@ -86,12 +102,17 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
         return nil, err
     }
 
+    /* EscapeHTML has already returned a new buffer*/
+    if opts & EscapeHTML != 0 {
+        return buf, nil
+    }
+
     /* make a copy of the result */
     ret := make([]byte, len(buf))
     copy(ret, buf)
 
-    /* return the buffer into pool */
     freeBytes(buf)
+    /* return the buffer into pool */
     return ret, nil
 }
 
@@ -107,6 +128,14 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
         resetStack(stk)
     }
     freeStack(stk)
+
+    /* EscapeHTML needs to allocate a new buffer*/
+    if opts & EscapeHTML != 0 {
+        dst := bytes.NewBuffer(make([]byte, 0, len(*buf)))
+        json.HTMLEscape(dst, *buf)
+        freeBytes(*buf)
+        *buf = dst.Bytes()
+    }
 
     /* avoid GC ahead */
     runtime.KeepAlive(buf)
