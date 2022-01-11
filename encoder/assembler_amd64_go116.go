@@ -277,6 +277,7 @@ func (self *_Assembler) builtins() {
 
 func (self *_Assembler) epilogue() {
     self.Mark(len(self.p))
+    self.drop_state(_StateSize)
     self.Emit("XORL", _ET, _ET)
     self.Emit("XORL", _EP, _EP)
     self.Link(_LB_error)
@@ -296,6 +297,8 @@ func (self *_Assembler) prologue() {
     self.load_buffer()                              // LOAD {buf}
     self.Emit("MOVQ", _ARG_vp, _SP_p)               // MOVQ vp<>+8(FP), SP.p
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ sb<>+16(FP), ST
+    self.Emit("MOVQ", _ARG_rb, _SP_q)               // MOVQ rb<>+16(FP), SP.q
+    self.save_state()    
     self.Emit("XORL", _SP_x, _SP_x)                 // XORL SP.x, SP.x
     self.Emit("XORL", _SP_f, _SP_f)                 // XORL SP.f, SP.f
     self.Emit("XORL", _SP_q, _SP_q)                 // XORL SP.q, SP.q
