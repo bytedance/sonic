@@ -306,7 +306,7 @@ func (self *_Assembler) instrs() {
 func (self *_Assembler) epilogue() {
     self.Mark(len(self.p))
     // drop input buffer pointer
-    self._asm_OP_drop(nil)
+    self._asm_OP_drop_2(nil)
     self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
     self.Link(_LB_error)                            // _error:
@@ -328,8 +328,9 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ vp<>+32(FP), ST
     // keep input buffer alive
     self.Emit("MOVQ", _ARG_sp, _VP)                 // MOVQ s.p<>+0(FP), VP
-    self._asm_OP_save(nil)
+    self.save_state(0)
     self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
+    self.save_state(1)
     // initialize digital buffer first
     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
     self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)           // LEAQ _DbufOffset(ST), AX
@@ -1553,10 +1554,14 @@ func (self *_Assembler) _asm_OP_load(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_save(_ *_Instr) {
+    self.save_state(0)
+}
+
+func (self *_Assembler) save_state(i int) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
     self.Emit("CMPQ", _CX, jit.Imm(_MaxStackBytes))          // CMPQ CX, ${_MaxStackBytes}
     self.Sjmp("JAE"  , _LB_stack_error)                 // JA   _stack_error
-    self.WriteRecNotAX(0 , _VP, jit.Sib(_ST, _CX, 1, 8), false, false) // MOVQ VP, 8(ST)(CX)
+    self.WriteRecNotAX(i , _VP, jit.Sib(_ST, _CX, 1, 8), false, false) // MOVQ VP, 8(ST)(CX)
     self.Emit("ADDQ", jit.Imm(8), _CX)                  // ADDQ $8, CX
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, 0))             // MOVQ CX, (ST)
 }
