@@ -78,7 +78,6 @@ func (self *Decoder) Decode(val interface{}) error {
 
     /* avoid GC ahead */
     runtime.KeepAlive(self.s)
-    runtime.KeepAlive(vv)
     return err
 }
 

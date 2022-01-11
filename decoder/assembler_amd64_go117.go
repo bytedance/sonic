@@ -300,14 +300,16 @@ func (self *_Assembler) instrs() {
 
 func (self *_Assembler) epilogue() {
     self.Mark(len(self.p))
+    // drop input buffer pointer
+    self._asm_OP_drop(nil)
     self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
     self.Link(_LB_error)                            // _error:
-    self.Emit("MOVQ", _EP, _CX)                     // MOVQ BX, CX
-    self.Emit("MOVQ", _ET, _BX)                     // MOVQ AX, BX
+    self.Emit("MOVQ", _EP, _CX)                     // MOVQ EP, CX
+    self.Emit("MOVQ", _ET, _BX)                     // MOVQ ET, BX
     self.Emit("MOVQ", _IC, _AX)                     // MOVQ IC, AX
-    self.Emit("MOVQ", jit.Imm(0), _ARG_sp)        // MOVQ $0, sv.p<>+48(FP)
-    self.Emit("MOVQ", jit.Imm(0), _ARG_vp)        // MOVQ $0, sv.p<>+48(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sp)          // MOVQ $0, sv.p<>+48(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vp)          // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
@@ -325,11 +327,14 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", _BX, _IL)                     // MOVQ BX, IL
     self.Emit("MOVQ", _CX, _ARG_ic)                 // MOVQ CX, ic<>+16(FP)
     self.Emit("MOVQ", _CX, _IC)                     // MOVQ CX, IC
-    self.Emit("MOVQ", _DI, _ARG_vp)                 // MOVQ DI, vp<>+24(FP)
-    self.Emit("MOVQ", _DI, _VP)                     // MOVQ DI, VP
+    self.Emit("MOVQ", _SI, _ST)                     // MOVQ vp<>+32(FP), ST
     self.Emit("MOVQ", _SI, _ARG_sb)                 // MOVQ SI, sb<>+32(FP)
-    self.Emit("MOVQ", _SI, _ST)                     // MOVQ SI, ST
     self.Emit("MOVQ", _R8, _ARG_fv)                 // MOVQ R8, fv<>+40(FP)
+    self.Emit("MOVQ", _DI, _ARG_vp)                 // MOVQ DI, vp<>+24(FP)
+    // keep input buffer alive
+    self.Emit("MOVQ", _ARG_sp, _VP)                 // MOVQ s.p<>+0(FP), VP
+    self._asm_OP_save(nil)
+    self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)

@@ -305,6 +305,8 @@ func (self *_Assembler) instrs() {
 
 func (self *_Assembler) epilogue() {
     self.Mark(len(self.p))
+    // drop input buffer pointer
+    self._asm_OP_drop(nil)
     self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
     self.Link(_LB_error)                            // _error:
@@ -323,12 +325,16 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", _ARG_sp, _IP)                 // MOVQ s.p<>+0(FP), IP
     self.Emit("MOVQ", _ARG_sl, _IL)                 // MOVQ s.l<>+8(FP), IL
     self.Emit("MOVQ", _ARG_ic, _IC)                 // MOVQ ic<>+16(FP), IC
-    self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
     self.Emit("MOVQ", _ARG_sb, _ST)                 // MOVQ vp<>+32(FP), ST
+    // keep input buffer alive
+    self.Emit("MOVQ", _ARG_sp, _VP)                 // MOVQ s.p<>+0(FP), VP
+    self._asm_OP_save(nil)
+    self.Emit("MOVQ", _ARG_vp, _VP)                 // MOVQ vp<>+24(FP), VP
     // initialize digital buffer first
     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
     self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)           // LEAQ _DbufOffset(ST), AX
     self.Emit("MOVQ", _AX, _VAR_st_Db)                          // MOVQ AX, ss.Dbuf
+    
 }
 
 /** Function Calling Helpers **/
