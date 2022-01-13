@@ -24,20 +24,25 @@ import (
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/option`
 )
 
 const (
     _MinSlice = 16
-    _MaxStack = 65536 // 64k slots
-    _MaxStackBytes = _MaxStack * _PtrBytes
     _MaxDigitNums = 800  // used in atof fallback algorithm
 )
 
 const (
     _PtrBytes   = _PTR_SIZE / 8
-    _FsmOffset  = (_MaxStack + 1) * _PtrBytes
+    _FsmOffset  = _PtrBytes + int64(unsafe.Sizeof([]unsafe.Pointer{}))
     _DbufOffset = _FsmOffset + int64(unsafe.Sizeof(types.StateMachine{})) + types.MAX_RECURSE * _PtrBytes
     _StackSize  = unsafe.Sizeof(_Stack{})
+)
+
+const (
+    _ST_Sp = 0
+    _ST_Vt = _PtrBytes
+    _ST_Vp = _PtrBytes * (types.MAX_RECURSE + 1)
 )
 
 var (
@@ -50,7 +55,7 @@ var (
 
 type _Stack struct {
     sp uintptr
-    sb [_MaxStack]unsafe.Pointer
+    sb []unsafe.Pointer
     mm types.StateMachine
     vp [types.MAX_RECURSE]unsafe.Pointer
     dp [_MaxDigitNums]byte
@@ -116,14 +121,16 @@ func _Decoder_Generic_Shadow(sb *_Stack) {
 
 func newStack() *_Stack {
     if ret := stackPool.Get(); ret == nil {
-        return new(_Stack)
+        st := new(_Stack)
+        st.sb = make([]unsafe.Pointer, 0, option.MaxDecodeStackSize)
+        return st
     } else {
         return ret.(*_Stack)
     }
 }
 
 func resetStack(p *_Stack) {
-    memclrNoHeapPointers(unsafe.Pointer(p), _StackSize)
+    memclrNoHeapPointers(*(*unsafe.Pointer)(unsafe.Pointer(&p.sb)), uintptr(option.MaxDecodeStackSize)*_PtrBytes)
 }
 
 func freeStack(p *_Stack) {

@@ -129,12 +129,6 @@
      _A_init_cap = 16
  )
  
- const (
-     _ST_Sp = 0
-     _ST_Vt = _PtrBytes
-     _ST_Vp = _PtrBytes * (types.MAX_RECURSE + 1)
- )
- 
  var (
      _V_true  = jit.Imm(int64(pbool(true)))
      _V_false = jit.Imm(int64(pbool(false)))

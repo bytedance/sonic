@@ -17,12 +17,12 @@
 package decoder
 
 import (
-	`os`
-	`runtime`
-	`runtime/debug`
-	`strings`
+    `os`
+    `runtime`
+    `runtime/debug`
+    `strings`
 
-	`github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/jit`
 )
 
 

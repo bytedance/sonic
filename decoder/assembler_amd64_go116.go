@@ -26,6 +26,7 @@ import (
     `strconv`
     `unsafe`
     
+    `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
@@ -753,15 +754,15 @@ func (self *_Assembler) mem_clear_fn(ptrfree bool) {
 }
 
 func (self *_Assembler) mem_clear_rem(size int64, ptrfree bool) {
-    self.Emit("MOVQ", jit.Imm(size), _CX)               // MOVQ    ${size}, CX
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ    (ST), AX
-    self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 0), _AX)     // MOVQ    (ST)(AX), AX
+    self.Emit("MOVQ", jit.Ptr(_ST, 8), _CX)             // MOVQ    (ST), CX
+    self.Emit("MOVQ", jit.Sib(_CX, _AX, 1, -8), _AX)    // MOVQ   -8(ST)(AX), AX
     self.Emit("SUBQ", _VP, _AX)                         // SUBQ    VP, AX
-    self.Emit("ADDQ", _AX, _CX)                         // ADDQ    AX, CX
+    self.Emit("LEAQ", jit.Ptr(_AX, size), _AX)          // LEAQ    $size(AX), AX
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))             // MOVQ    AX, 8(SP)
     self.Emit("MOVQ", _VP, jit.Ptr(_SP, 0))             // MOVQ    VP, (SP)
-    self.Emit("MOVQ", _CX, jit.Ptr(_SP, 8))             // MOVQ    CX, 8(SP)
     self.mem_clear_fn(ptrfree)                          // CALL_GO memclr{Has,NoHeap}Pointers
-}
+ }
 
 /** Map Assigning Routines **/
 
@@ -1543,34 +1544,37 @@ func (self *_Assembler) _asm_OP_check_char(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_load(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
-    self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 0), _VP)     // MOVQ (ST)(AX), VP
+    self.Emit("MOVQ", jit.Ptr(_ST, 8), _CX)             // MOVQ (ST), CX
+    self.Emit("MOVQ", jit.Sib(_CX, _AX, 1, -_PtrBytes), _VP)    // MOVQ (ST)(AX), VP
 }
 
 func (self *_Assembler) _asm_OP_save(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
-    self.Emit("CMPQ", _CX, jit.Imm(_MaxStackBytes))          // CMPQ CX, ${_MaxStackBytes}
-    self.Sjmp("JAE"  , _LB_stack_error)                 // JA   _stack_error
-    self.WriteRecNotAX(0 , _VP, jit.Sib(_ST, _CX, 1, 8), false, false) // MOVQ VP, 8(ST)(CX)
-    self.Emit("ADDQ", jit.Imm(8), _CX)                  // ADDQ $8, CX
-    self.Emit("MOVQ", _CX, jit.Ptr(_ST, 0))             // MOVQ CX, (ST)
+    self.Emit("LEAQ", jit.Ptr(_CX, _PtrBytes), _R8)     // ADDQ $8, R8
+    self.Emit("CMPQ", _R8, jit.Imm(int64(option.MaxDecodeStackSize)*_PtrBytes))     // CMPQ CX, ${_MaxStackBytes}
+    self.Sjmp("JA"  , _LB_stack_error)                  // JA   _stack_error
+    self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
+    self.Emit("MOVQ", jit.Ptr(_ST, 8), _R8)             // MOVQ 8(ST), R8
+    self.WriteRecNotAX(0, _VP, jit.Sib(_R8, _CX, 1, 0), false, false) // MOVQ VP, (ST)(CX)
 }
 
 func (self *_Assembler) _asm_OP_drop(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)             // MOVQ (ST), AX
-    self.Emit("SUBQ", jit.Imm(8), _AX)                  // SUBQ $8, AX
-    self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 8), _VP)     // MOVQ 8(ST)(AX), VP
+    self.Emit("SUBQ" , jit.Imm(_PtrBytes), _AX)         // SUBQ  $decr, AX
     self.Emit("MOVQ", _AX, jit.Ptr(_ST, 0))             // MOVQ AX, (ST)
-    self.Emit("XORL", _ET, _ET)                         // XORL ET, ET
-    self.Emit("MOVQ", _ET, jit.Sib(_ST, _AX, 1, 8))     // MOVQ ET, 8(ST)(AX)
+    self.Emit("MOVQ", jit.Ptr(_ST, 8), _R8)             // MOVQ 8(ST), R8
+    self.Emit("MOVQ", jit.Sib(_R8, _AX, 1, 0), _VP)     // MOVQ 0(ST)(AX), VP
+    self.Emit("MOVQ", jit.Imm(0), jit.Sib(_R8, _AX, 1, 0))     // MOVQ R8, 0(ST)(AX)
 }
 
 func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
     self.Emit("MOVQ" , jit.Ptr(_ST, 0), _AX)            // MOVQ  (ST), AX
-    self.Emit("SUBQ" , jit.Imm(16), _AX)                // SUBQ  $16, AX
-    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 8), _VP)    // MOVQ  8(ST)(AX), VP
+    self.Emit("SUBQ" , jit.Imm(_PtrBytes*2), _AX)       // SUBQ  $16, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_ST, 0))            // MOVQ  AX, (ST)
+    self.Emit("MOVQ", jit.Ptr(_ST, 8), _R8)             // MOVQ 8(ST), R8
+    self.Emit("MOVQ" , jit.Sib(_R8, _AX, 1, 0), _VP)    // MOVQ  8(ST)(AX), VP
     self.Emit("PXOR" , _X0, _X0)                        // PXOR  X0, X0
-    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))    // MOVOU X0, 8(ST)(AX)
+    self.Emit("MOVOU", _X0, jit.Sib(_R8, _AX, 1, 0))    // MOVOU X0, 8(ST)(AX)
 }
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {

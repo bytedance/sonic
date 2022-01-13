@@ -114,7 +114,7 @@ type testOps struct {
 
 func testOpCode(t *testing.T, ops *testOps) {
     p := ops.ins
-    k := new(_Stack)
+    k := newStack()
     a := newAssembler(p)
     f := a.Load()
     i, e := f(ops.src, ops.pos, rt.UnpackEface(ops.val).Value, k, ops.opt, "", nil)
@@ -681,7 +681,7 @@ func TestAssembler_DecodeStruct(t *testing.T) {
     s := `{"A": 123, "B": "asdf", "C": {"qwer": 4567}, "D": [1, 2, 3, 4, 5]}`
     p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
-    k := new(_Stack)
+    k := newStack()
     a := newAssembler(p)
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
@@ -704,7 +704,7 @@ func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
     s := `{"x": 1}`
     p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
-    k := new(_Stack)
+    k := newStack()
     a := newAssembler(p)
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
@@ -718,7 +718,7 @@ func TestAssembler_DecodeByteSlice_Bin(t *testing.T) {
     s := `"aGVsbG8sIHdvcmxk"`
     p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
-    k := new(_Stack)
+    k := newStack()
     a := newAssembler(p)
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
@@ -732,7 +732,7 @@ func TestAssembler_DecodeByteSlice_List(t *testing.T) {
     s := `[104, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100]`
     p, err := newCompiler().compile(reflect.TypeOf(v))
     require.NoError(t, err)
-    k := new(_Stack)
+    k := newStack()
     a := newAssembler(p)
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)

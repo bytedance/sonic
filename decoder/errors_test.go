@@ -19,6 +19,7 @@ package decoder
 import (
     `testing`
 
+    `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/stretchr/testify/assert`
 )
@@ -60,7 +61,7 @@ func TestErrors_EmptyDescription(t *testing.T) {
 
 func TestDecoderErrorStackOverflower(t *testing.T) {
     src := `{"a":[]}`
-    N := _MaxStack
+    N := int(option.MaxDecodeStackSize * _PtrBytes)
     for i:=0; i<N; i++ {
         var obj map[string]string
         err := NewDecoder(src).Decode(&obj)

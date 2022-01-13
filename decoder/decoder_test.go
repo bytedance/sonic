@@ -19,7 +19,6 @@ package decoder
 import (
     `encoding/json`
     `testing`
-    `time`
     `runtime`
     `runtime/debug`
     `sync`
@@ -28,7 +27,6 @@ import (
     gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
 )
 
 func TestMain(m *testing.M) {
@@ -43,7 +41,7 @@ func TestMain(m *testing.M) {
         }
         println("stop GC looping!")
     }()
-    time.Sleep(time.Millisecond)
+    runtime.Gosched()
     m.Run()
 }
 
@@ -117,16 +115,6 @@ func TestDecoder_Binding(t *testing.T) {
     assert.Equal(t, len(TwitterJson), pos)
     assert.Equal(t, _BindingValue, v, 0)
     spew.Dump(v)
-}
-
-func TestDecoder_MapWithIndirectElement(t *testing.T) {
-    var v map[string]struct { A [129]byte }
-    _, err := decode(`{"":{"A":[1,2,3,4,5]}}`, &v)
-    if x, ok := err.(SyntaxError); ok {
-        println(x.Description())
-    }
-    require.NoError(t, err)
-    assert.Equal(t, [129]byte{1, 2, 3, 4, 5}, v[""].A)
 }
 
 func BenchmarkDecoder_Generic_Sonic(b *testing.B) {

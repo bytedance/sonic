@@ -32,11 +32,6 @@ const (
     _StateSize  = int64(unsafe.Sizeof(_State{}))
 )
 
-var  (
-    _MaxBuffer = uintptr(option.DefaultEncodeBufferSize) 
-    // _MaxStack  = int64(option.MaxEncodeStackSize)      
-)
-
 var (
     bytesPool    = sync.Pool{}
     stackPool    = sync.Pool{}
@@ -94,7 +89,7 @@ func newBytes() []byte {
     if ret := bytesPool.Get(); ret != nil {
         return ret.([]byte)
     } else {
-        return make([]byte, 0, _MaxBuffer)
+        return make([]byte, 0, option.DefaultEncodeBufferSize)
     }
 }
 
@@ -116,7 +111,7 @@ func newBuffer() *bytes.Buffer {
     if ret := bufferPool.Get(); ret != nil {
         return ret.(*bytes.Buffer)
     } else {
-        return bytes.NewBuffer(make([]byte, 0, _MaxBuffer))
+        return bytes.NewBuffer(make([]byte, 0, option.DefaultEncodeBufferSize))
     }
 }
 
