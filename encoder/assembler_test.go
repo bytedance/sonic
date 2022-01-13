@@ -75,7 +75,7 @@ type testOps struct {
 func testOpCode(t *testing.T, v interface{}, ex string, err error, ins _Program) {
     p := ins
     m := []byte(nil)
-    s := new(_Stack)
+    s := newStack()
     a := newAssembler(p)
     f := a.Load()
     e := f(&m, rt.UnpackEface(v).Value, s, 0)
@@ -140,7 +140,8 @@ func TestAssembler_OpCode(t *testing.T) {
             },
         },
     }
-    tests := []testOps {{
+    tests := []testOps {
+    {
         key: "_OP_null",
         ins: []_Instr{newInsOp(_OP_null)},
         exp: "null",
@@ -325,7 +326,8 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsVt(_OP_marshal, jsonMarshalerType)},
         exp: "123456789",
         val: &jifp,
-    }, {
+    }, 
+    {
         key: "_OP_recurse",
         ins: mustCompile(rec),
         exp: `{"a":123,"p":{"a":789,"p":{"a":777,"q":[{"a":999,"q":null,"r":{"` +
@@ -343,7 +345,7 @@ func TestAssembler_OpCode(t *testing.T) {
 func TestAssembler_StringMoreSpace(t *testing.T) {
     p := _Program{newInsOp(_OP_str)}
     m := make([]byte, 0, 8)
-    s := new(_Stack)
+    s := newStack()
     a := newAssembler(p)
     f := a.Load()
     v := "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010"
@@ -355,7 +357,7 @@ func TestAssembler_StringMoreSpace(t *testing.T) {
 func TestAssembler_TwitterJSON_Generic(t *testing.T) {
     p := mustCompile(&_GenericValue)
     m := []byte(nil)
-    s := new(_Stack)
+    s := newStack()
     a := newAssembler(p)
     f := a.Load()
     v := &_GenericValue
@@ -367,7 +369,7 @@ func TestAssembler_TwitterJSON_Generic(t *testing.T) {
 func TestAssembler_TwitterJSON_Structure(t *testing.T) {
     p := mustCompile(_BindingValue)
     m := []byte(nil)
-    s := new(_Stack)
+    s := newStack()
     a := newAssembler(p)
     f := a.Load()
     e := f(&m, unsafe.Pointer(&_BindingValue), s, 0)

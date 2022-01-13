@@ -42,4 +42,11 @@ func WithCompileRecursiveDepth(depth int) CompileOption {
             o.RecursiveDepth = depth
         }
 }
- 
+
+// DefaultEncodeBufferSize sets the initial buffer size for sonic/encoder
+var DefaultEncodeBufferSize uint = 4 * 1024
+
+// MaxEncodeStackSize sets the max stack depth that encoder can reach, 
+// which must be larger than max encoded struct's depth * 2
+var MaxEncodeStackSize uint = 4 * 1024
+

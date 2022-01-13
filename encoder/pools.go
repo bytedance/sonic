@@ -18,19 +18,23 @@ package encoder
 
 import (
     `bytes`
+    `errors`
     `sync`
     `unsafe`
-    `errors`
 
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/option`
 )
 
 const (
-    _MaxStack  = 65536      // 64k states
-    _MaxBuffer = 1048576    // 1MB buffer size
-
     _StackSize = unsafe.Sizeof(_Stack{})
+    _StateSize  = int64(unsafe.Sizeof(_State{}))
+)
+
+var  (
+    _MaxBuffer = uintptr(option.DefaultEncodeBufferSize) 
+    // _MaxStack  = int64(option.MaxEncodeStackSize)      
 )
 
 var (
@@ -49,7 +53,7 @@ type _State struct {
 
 type _Stack struct {
     sp uint64
-    sb [_MaxStack]_State
+    sb []_State
 }
 
 type _Encoder func(
@@ -96,14 +100,16 @@ func newBytes() []byte {
 
 func newStack() *_Stack {
     if ret := stackPool.Get(); ret == nil {
-        return new(_Stack)
+        st := new(_Stack)
+        st.sb = make([]_State, 0, option.MaxEncodeStackSize)
+        return st
     } else {
         return ret.(*_Stack)
     }
 }
 
 func resetStack(p *_Stack) {
-    memclrNoHeapPointers(unsafe.Pointer(p), _StackSize)
+    memclrNoHeapPointers(*(*unsafe.Pointer)(unsafe.Pointer(&p.sb)), uintptr(option.MaxEncodeStackSize * uint(_StateSize)))
 }
 
 func newBuffer() *bytes.Buffer {

@@ -24,6 +24,7 @@ import (
     `strconv`
     `unsafe`
 
+    `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native/types`
@@ -403,34 +404,31 @@ func (self *_Assembler) slice_grow_ax(ret string) {
 
 /** State Stack Helpers **/
 
-const (
-    _StateSize  = int64(unsafe.Sizeof(_State{}))
-    _StackLimit = _MaxStack * _StateSize
-)
-
 func (self *_Assembler) save_state() {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
     self.Emit("LEAQ", jit.Ptr(_CX, _StateSize), _R8)    // LEAQ _StateSize(CX), R8
-    self.Emit("CMPQ", _R8, jit.Imm(_StackLimit))        // CMPQ R8, $_StackLimit
-    self.Sjmp("JAE" , _LB_error_too_deep)               // JA   _error_too_deep
-    self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _CX, 1, 8))   // MOVQ SP.x, 8(ST)(CX)
-    self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16))  // MOVQ SP.f, 16(ST)(CX)
-    self.WriteRecNotAX(0, _SP_p, jit.Sib(_ST, _CX, 1, 24)) // MOVQ SP.p, 24(ST)(CX)
-    self.WriteRecNotAX(1, _SP_q, jit.Sib(_ST, _CX, 1, 32)) // MOVQ SP.q, 32(ST)(CX)
+    self.Emit("CMPQ", _R8, jit.Imm(int64(option.MaxEncodeStackSize)*_StateSize))        // CMPQ R8, $_StackLimit
+    self.Sjmp("JA" , _LB_error_too_deep)               // JA   _error_too_deep
     self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
+    self.Emit("MOVQ", jit.Ptr(_ST, 8), _R8)             // MOVQ 8(ST), R8
+    self.Emit("MOVQ", _SP_x, jit.Sib(_R8, _CX, 1, 0))   // MOVQ SP.x, 8(ST)(CX)
+    self.Emit("MOVQ", _SP_f, jit.Sib(_R8, _CX, 1, 8))  // MOVQ SP.f, 16(ST)(CX)
+    self.WriteRecNotAX(0, _SP_p, jit.Sib(_R8, _CX, 1, 16)) // MOVQ SP.p, 24(ST)(CX)
+    self.WriteRecNotAX(1, _SP_q, jit.Sib(_R8, _CX, 1, 24)) // MOVQ SP.q, 32(ST)(CX)
 }
 
 func (self *_Assembler) drop_state(decr int64) {
     self.Emit("MOVQ" , jit.Ptr(_ST, 0), _AX)                // MOVQ  (ST), AX
     self.Emit("SUBQ" , jit.Imm(decr), _AX)                  // SUBQ  $decr, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_ST, 0))                // MOVQ  AX, (ST)
-    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 8), _SP_x)      // MOVQ  8(ST)(AX), SP.x
-    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 16), _SP_f)     // MOVQ  16(ST)(AX), SP.f
-    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 24), _SP_p)     // MOVQ  24(ST)(AX), SP.p
-    self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 32), _SP_q)     // MOVQ  32(ST)(AX), SP.q
+    self.Emit("MOVQ" , jit.Ptr(_ST, 8), _CX)                // MOVQ  8(ST), CX
+    self.Emit("MOVQ" , jit.Sib(_CX, _AX, 1, 0), _SP_x)      // MOVQ  0(ST)(AX), SP.x
+    self.Emit("MOVQ" , jit.Sib(_CX, _AX, 1, 8), _SP_f)      // MOVQ  8(ST)(AX), SP.f
+    self.Emit("MOVQ" , jit.Sib(_CX, _AX, 1, 16), _SP_p)     // MOVQ  16(ST)(AX), SP.p
+    self.Emit("MOVQ" , jit.Sib(_CX, _AX, 1, 24), _SP_q)     // MOVQ  24(ST)(AX), SP.q
     self.Emit("PXOR" , _X0, _X0)                            // PXOR  X0, X0
-    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 8))        // MOVOU X0, 8(ST)(AX)
-    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 24))       // MOVOU X0, 24(ST)(AX)
+    self.Emit("MOVOU", _X0, jit.Sib(_CX, _AX, 1, 0))        // MOVOU X0, 0(ST)(AX)
+    self.Emit("MOVOU", _X0, jit.Sib(_CX, _AX, 1, 16))       // MOVOU X0, 16(ST)(AX)
 }
 
 /** Buffer Helpers **/
@@ -944,9 +942,10 @@ func (self *_Assembler) _asm_OP_index(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_load(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)                 // MOVQ (ST), AX
-    self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, -24), _SP_x)     // MOVQ -24(ST)(AX), SP.x
-    self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, -8), _SP_p)      // MOVQ -8(ST)(AX), SP.p
-    self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 0), _SP_q)       // MOVQ (ST)(AX), SP.q
+    self.Emit("MOVQ", jit.Ptr(_ST, 8), _CX)                 // MOVQ (ST), CX
+    self.Emit("MOVQ", jit.Sib(_CX, _AX, 1, -32), _SP_x)     // MOVQ -32(ST)(AX), SP.x
+    self.Emit("MOVQ", jit.Sib(_CX, _AX, 1, -16), _SP_p)     // MOVQ -16(ST)(AX), SP.p
+    self.Emit("MOVQ", jit.Sib(_CX, _AX, 1, -8), _SP_q)      // MOVQ -8(ST)(AX), SP.q
 }
 
 func (self *_Assembler) _asm_OP_save(_ *_Instr) {
@@ -959,7 +958,8 @@ func (self *_Assembler) _asm_OP_drop(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
     self.drop_state(_StateSize * 2)                     // DROP  $(_StateSize * 2)
-    self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 56))   // MOVOU X0, 56(ST)(AX)
+    self.Emit("MOVOU", _X0, jit.Sib(_CX, _AX, 1, 32))   // MOVOU X0, 32(ST)(AX)
+    self.Emit("MOVOU", _X0, jit.Sib(_CX, _AX, 1, 48))   // MOVOU X0, 48(ST)(AX)
 }
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {

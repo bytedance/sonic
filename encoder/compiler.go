@@ -300,7 +300,7 @@ func (self _Program) pc() int {
 }
 
 func (self _Program) tag(n int) {
-    if n >= _MaxStack {
+    if n >= int(option.MaxEncodeStackSize) {
         panic("type nesting too deep")
     }
 }
