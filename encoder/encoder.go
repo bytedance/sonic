@@ -21,7 +21,9 @@ import (
     `encoding/json`
     `reflect`
     `runtime`
+    `unsafe`
 
+    `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
 )
@@ -131,16 +133,55 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
 
     /* EscapeHTML needs to allocate a new buffer*/
     if opts & EscapeHTML != 0 {
-        dst := bytes.NewBuffer(make([]byte, 0, len(*buf)))
-        json.HTMLEscape(dst, *buf)
+        dest := make([]byte, 0, len(*buf) * 6 / 5)
+        HTMLEscape(&dest, *buf)
         freeBytes(*buf)
-        *buf = dst.Bytes()
+        *buf = dest
     }
 
     /* avoid GC ahead */
     runtime.KeepAlive(buf)
     runtime.KeepAlive(efv)
     return err
+}
+
+var typeByte = rt.UnpackType(reflect.TypeOf(byte(0)))
+
+// HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
+// characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029
+// so that the JSON will be safe to embed inside HTML <script> tags.
+// For historical reasons, web browsers don't honor standard HTML
+// escaping within <script> tags, so an alternative JSON encoding must
+// be used.
+func HTMLEscape(dest *[]byte, src []byte) {
+
+    d := (*rt.GoSlice)(unsafe.Pointer(dest))
+    sp := (*rt.GoSlice)(unsafe.Pointer(&src)).Ptr
+    nb := len(src)
+
+    // initilize dest buffer
+    ecap := nb * 6 / 5 // expect dest capability
+    d.Len = 0
+    if (d.Cap < ecap) {
+        *d = growslice(typeByte, *d, ecap)
+    }
+
+    for nb > 0 {
+        dp := unsafe.Pointer(uintptr(d.Ptr) + uintptr(d.Len))
+        dn := d.Cap - d.Len
+
+        ret := native.HTMLEscape(sp, nb, dp, &dn)
+        d.Len += dn
+
+        if ret >= 0 {
+            break
+        }
+        ret = ^ret
+        nb -= ret
+
+        *d = growslice(typeByte, *d, d.Cap * 2)
+        sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
+    }
 }
 
 // EncodeIndented is like Encode but applies Indent to format the output.

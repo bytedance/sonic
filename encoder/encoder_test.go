@@ -17,6 +17,7 @@
 package encoder
 
 import (
+    `bytes`
     `encoding/json`
     `runtime`
     `runtime/debug`
@@ -188,6 +189,15 @@ func TestEncoder_EscapeHTML(t *testing.T) {
     ret, err = Encode(v, 0)
     require.NoError(t, err)
     require.Equal(t, `{"&&":{"X":"<>"}}`, string(ret))
+}
+
+func TestEncoder_EscapeHTML_LargeJson(t *testing.T) {
+    jsonByte := []byte(TwitterJson)
+    stdOut := bytes.NewBuffer(make([]byte, 0, len(TwitterJson)))
+    json.HTMLEscape(stdOut, jsonByte)
+    sonicOut := make([]byte, 0, len(TwitterJson))
+    HTMLEscape(&sonicOut, jsonByte)
+    require.Equal(t, stdOut.String(), string(sonicOut))
 }
 
 var _GenericValue interface{}
@@ -422,4 +432,24 @@ func BenchmarkEncoder_Parallel_Binding_StdLib(b *testing.B) {
             _, _ = json.Marshal(&_BindingValue)
         }
     })
+}
+
+func BenchmarkHTMLEscape_Sonic(b *testing.B) {
+    jsonByte := []byte(TwitterJson)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        sonicOut := make([]byte, 0, len(TwitterJson) * 6 / 5)
+        HTMLEscape(&sonicOut, jsonByte)
+    }
+}
+
+func BenchmarkHTMLEscape_StdLib(b *testing.B) {
+    jsonByte := []byte(TwitterJson)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        stdOut := bytes.NewBuffer(make([]byte, 0, len(TwitterJson) * 6 / 5))
+        json.HTMLEscape(stdOut, jsonByte)
+    }
 }
