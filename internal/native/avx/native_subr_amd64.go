@@ -9,41 +9,41 @@ package avx
 func __native_entry__() uintptr
 
 var (
-    _subr__f64toa      = __native_entry__() + 570
-    _subr__html_escape = __native_entry__() + 9287
-    _subr__i64toa      = __native_entry__() + 3653
-    _subr__lspace      = __native_entry__() + 251
+    _subr__f64toa      = __native_entry__() + 630
+    _subr__html_escape = __native_entry__() + 8160
+    _subr__i64toa      = __native_entry__() + 3642
+    _subr__lspace      = __native_entry__() + 301
     _subr__lzero       = __native_entry__() + 13
-    _subr__quote       = __native_entry__() + 5953
-    _subr__skip_array  = __native_entry__() + 18396
-    _subr__skip_object = __native_entry__() + 18431
-    _subr__skip_one    = __native_entry__() + 16599
-    _subr__u64toa      = __native_entry__() + 3748
-    _subr__unquote     = __native_entry__() + 6993
-    _subr__value       = __native_entry__() + 11834
-    _subr__vnumber     = __native_entry__() + 14613
-    _subr__vsigned     = __native_entry__() + 16043
-    _subr__vstring     = __native_entry__() + 13566
-    _subr__vunsigned   = __native_entry__() + 16323
+    _subr__quote       = __native_entry__() + 4955
+    _subr__skip_array  = __native_entry__() + 17223
+    _subr__skip_object = __native_entry__() + 17258
+    _subr__skip_one    = __native_entry__() + 15444
+    _subr__u64toa      = __native_entry__() + 3735
+    _subr__unquote     = __native_entry__() + 6005
+    _subr__value       = __native_entry__() + 10806
+    _subr__vnumber     = __native_entry__() + 13602
+    _subr__vsigned     = __native_entry__() + 14916
+    _subr__vstring     = __native_entry__() + 12567
+    _subr__vunsigned   = __native_entry__() + 15175
 )
 
 const (
     _stack__f64toa = 120
-    _stack__html_escape = 64
+    _stack__html_escape = 72
     _stack__i64toa = 24
     _stack__lspace = 8
     _stack__lzero = 8
     _stack__quote = 80
-    _stack__skip_array = 128
-    _stack__skip_object = 128
-    _stack__skip_one = 128
+    _stack__skip_array = 136
+    _stack__skip_object = 136
+    _stack__skip_one = 136
     _stack__u64toa = 8
-    _stack__unquote = 80
-    _stack__value = 408
-    _stack__vnumber = 320
+    _stack__unquote = 88
+    _stack__value = 400
+    _stack__vnumber = 312
     _stack__vsigned = 16
-    _stack__vstring = 120
-    _stack__vunsigned = 16
+    _stack__vstring = 128
+    _stack__vunsigned = 8
 )
 
 var (
