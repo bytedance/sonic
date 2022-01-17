@@ -104,7 +104,6 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
         return nil, err
     }
 
-    /* EscapeHTML has already returned a new buffer*/
     if opts & EscapeHTML != 0 {
         return buf, nil
     }
@@ -133,9 +132,8 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
 
     /* EscapeHTML needs to allocate a new buffer*/
     if opts & EscapeHTML != 0 {
-        dest := make([]byte, 0, len(*buf) * 6 / 5)
-        HTMLEscape(&dest, *buf)
-        freeBytes(*buf)
+        dest := HTMLEscape(nil, *buf)
+        freeBytes(*buf) // free origin used buffer
         *buf = dest
     }
 
@@ -153,25 +151,27 @@ var typeByte = rt.UnpackType(reflect.TypeOf(byte(0)))
 // For historical reasons, web browsers don't honor standard HTML
 // escaping within <script> tags, so an alternative JSON encoding must
 // be used.
-func HTMLEscape(dest *[]byte, src []byte) {
-
-    d := (*rt.GoSlice)(unsafe.Pointer(dest))
-    sp := (*rt.GoSlice)(unsafe.Pointer(&src)).Ptr
+func HTMLEscape(dest []byte, src []byte) []byte {
     nb := len(src)
 
     // initilize dest buffer
-    ecap := nb * 6 / 5 // expect dest capability
-    d.Len = 0
-    if (d.Cap < ecap) {
-        *d = growslice(typeByte, *d, ecap)
+    cap := nb * 6 / 5
+    if dest == nil {
+        dest = make([]byte, 0, cap)
+    }
+    ds := (*rt.GoSlice)(unsafe.Pointer(&dest))
+    sp := (*rt.GoSlice)(unsafe.Pointer(&src)).Ptr
+    ds.Len = 0
+    if (ds.Cap < cap) {
+        *ds = growslice(typeByte, *ds, cap)
     }
 
     for nb > 0 {
-        dp := unsafe.Pointer(uintptr(d.Ptr) + uintptr(d.Len))
-        dn := d.Cap - d.Len
+        dp := unsafe.Pointer(uintptr(ds.Ptr) + uintptr(ds.Len))
+        dn := ds.Cap - ds.Len
 
         ret := native.HTMLEscape(sp, nb, dp, &dn)
-        d.Len += dn
+        ds.Len += dn
 
         if ret >= 0 {
             break
@@ -179,9 +179,10 @@ func HTMLEscape(dest *[]byte, src []byte) {
         ret = ^ret
         nb -= ret
 
-        *d = growslice(typeByte, *d, d.Cap * 2)
+        *ds = growslice(typeByte, *ds, ds.Cap * 2)
         sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
     }
+    return dest
 }
 
 // EncodeIndented is like Encode but applies Indent to format the output.
