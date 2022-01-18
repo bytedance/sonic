@@ -206,6 +206,31 @@ func TestNative_UnquoteUnicodeReplacement(t *testing.T) {
     assert.Equal(t, "hello\ufffd\ufffdworld", string(d))
 }
 
+func TestNative_HTMLEscape(t *testing.T) {
+    s := "hello\u2029\u2028<&>world"
+    d := make([]byte, 256)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __html_escape(sp.Ptr, sp.Len, dp.Ptr, &dp.Len)
+    if rv < 0 {
+        require.NoError(t, types.ParsingError(-rv))
+    }
+    assert.Equal(t, len(s), rv)
+    assert.Equal(t, 40, len(d))
+    assert.Equal(t, `hello\u2029\u2028\u003c\u0026\u003eworld`, string(d))
+}
+
+func TestNative_HTMLEscapeNoMem(t *testing.T) {
+    s := "hello\u2029\u2028<&>world"
+    d := make([]byte, 10)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __html_escape(sp.Ptr, sp.Len, dp.Ptr, &dp.Len)
+    assert.Equal(t, -8, rv)
+    assert.Equal(t, 5, len(d))
+    assert.Equal(t, `hello`, string(d))
+}
+
 func TestNative_Vstring(t *testing.T) {
     var v types.JsonState
     i := 0
