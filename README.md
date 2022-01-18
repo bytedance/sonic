@@ -73,7 +73,7 @@ See [INTRODUCTION.md](INTRODUCTION.md).
 
 ### Marshal/Unmarshal
 
-Their behaviors are mostly consistent with `encoding/json`, except two escaping form (see [issue4](https://github.com/bytedance/sonic/issues/4)) that is **NOT** in conformity to [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
+Default behaviors are mostly consistent with `encoding/json`, except HTML escaping form (see [Escape HTML](https://github.com/bytedance/sonic/blob/main/README.md#escape-html)) and `SortKeys` feature (optional support see [Sort Keys](https://github.com/bytedance/sonic/blob/main/README.md#sort-keys)) that is **NOT** in conformity to [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
  ```go
 import "github.com/bytedance/sonic"
 
@@ -111,14 +111,28 @@ jm := root.InterfaceUseNumber().(json.Number) // jn == jm
 fn := root.Float64()
 fm := root.Interface().(float64) // jn == jm
  ```
-
+ 
 ### Sort Keys
 On account of the performance loss from sorting (roughly 10%), sonic doesn't enable this feature by default. If your component depends on it to work (like [zstd](https://github.com/facebook/zstd)), Use it like this:
 ```go
+import "github.com/bytedance/sonic"
 import "github.com/bytedance/sonic/encoder"
 
+// Binding map only
 m := map[string]interface{}{}
 v, err := encoder.Encode(m, encoder.SortMapKeys)
+
+// Or ast.Node.SortKeys() before marshal
+var root := sonic.Get(JSON)
+err := root.SortKeys()
+```
+### Escape HTML
+On account of the performance loss (roughly 15%), sonic doesn't enable this feature by default. You can use `encoder.EscapeHTML` option to open this feature (align with `encoding/json.HTMLEscape`).
+```go
+import "github.com/bytedance/sonic"
+
+v := map[string]string{"&&":{"<>"}}
+ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
 ```
 
 ### Print Syntax Error
@@ -198,8 +212,8 @@ println(string(buf) == string(exp)) // true
 - searching: `Index()`, `Get()`, `IndexPair()`, `IndexOrGet()`, `GetByPath()`
 - go-type casting: `Int64()`, `Float64()`, `String()`, `Number()`, `Bool()`, `Map[UseNumber|UseNode]()`, `Array[UseNumber|UseNode]()`, `Interface[UseNumber|UseNode]()`
 - go-type packing: `NewRaw()`, `NewNumber()`, `NewNull()`, `NewBool()`, `NewString()`, `NewObject()`, `NewArray()`
-- iteration: `Values()`, `Properties()`
-- modification: `Set()`, `SetByIndex()`, `Add()`, `Cap()`, `Len()`
+- iteration: `Values()`, `Properties()`, `ForEach()`, `SortKeys()`
+- modification: `Set()`, `SetByIndex()`, `Add()`
 
 ## Tips
 
@@ -220,6 +234,8 @@ import (
     // you can set compile recursive depth in Pretouch for better stability in JIT.
     err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
 ```
+### Accelerate `json.RawMessage\json.Marshaler\encoding.TextMarshaler`
+To ensure data security, sonic.Encoder validates and escapes JSON values from these interfaces by default, which may degrades performance much if the most of your data is in form of them. We provide two options `encoder.NoCompactMarshaler` (for `json.RawMessage\json.Marshaler`) and `encoder.NoQuoteTextMarshaler` (for `encoding.TextMarshaler`) to avoid validating and escaping operations, which means you **MUST** ensure the validity of JSON values from these interfaces by your own.
 
 ### Pass string or []byte?
 For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString` and `GetFromString` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte.
@@ -245,8 +261,8 @@ err = user.Check()
 go someFunc(user)
 ```
 Why? Because `ast.Node` stores its children using `array`: 
-- `Map`'s performance degrades a lot once rehashing triggered, but `ast.Node` doesn't have this concern;
+- `Array`'s performance is **much better** than `Map` when Inserting (Deserialize) and Scanning (Serialize) data;
 - **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**.
-- Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while in most cases you don't need them all;
+- Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while `ast.Node` can parse them **on demand**.
 
 **CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}` 
