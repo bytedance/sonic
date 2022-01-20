@@ -55,6 +55,11 @@ func __quote(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
+func __html_escape(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) (ret int)
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
 func __unquote(sp unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) (ret int)
 
 //go:nosplit

@@ -71,6 +71,11 @@ func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64)
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
+func HTMLEscape(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
 func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, allow_control int) int
 
 //go:nosplit

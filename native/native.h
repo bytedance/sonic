@@ -106,6 +106,7 @@ size_t lspace(const char *sp, size_t nb, size_t p);
 
 ssize_t quote(const char *sp, ssize_t nb, char *dp, ssize_t *dn, uint64_t flags);
 ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flags);
+ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn);
 
 long value(const char *s, size_t n, long p, JsonState *ret, int allow_control);
 void vstring(const GoString *src, long *p, JsonState *ret);

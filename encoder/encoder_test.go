@@ -17,6 +17,7 @@
 package encoder
 
 import (
+    `bytes`
     `encoding/json`
     `runtime`
     `runtime/debug`
@@ -190,6 +191,14 @@ func TestEncoder_EscapeHTML(t *testing.T) {
     require.Equal(t, `{"&&":{"X":"<>"}}`, string(ret))
 }
 
+func TestEncoder_EscapeHTML_LargeJson(t *testing.T) {
+    buf1, err1 := Encode(&_BindingValue, SortMapKeys | EscapeHTML)
+    require.NoError(t, err1)
+    buf2, err2 :=json.Marshal(&_BindingValue)
+    require.NoError(t, err2)
+    require.Equal(t, buf1, buf2)
+}
+
 var _GenericValue interface{}
 var _BindingValue TwitterStruct
 
@@ -285,6 +294,17 @@ func BenchmarkEncoder_Binding_SonicSorted(b *testing.B) {
     for i := 0; i < b.N; i++ {
         _, _ = Encode(&_BindingValue, SortMapKeys)
     }
+}
+
+func BenchmarkEncoder_Binding_Sonic_Std(b *testing.B) {
+    _, _ = Encode(&_BindingValue, 0)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    var buf []byte
+    for i := 0; i < b.N; i++ {
+        buf, _ = Encode(&_BindingValue,  SortMapKeys | EscapeHTML)
+    }
+    _ = buf
 }
 
 func BenchmarkEncoder_Binding_JsonIter(b *testing.B) {
@@ -422,4 +442,28 @@ func BenchmarkEncoder_Parallel_Binding_StdLib(b *testing.B) {
             _, _ = json.Marshal(&_BindingValue)
         }
     })
+}
+
+func BenchmarkHTMLEscape_Sonic(b *testing.B) {
+    jsonByte := []byte(TwitterJson)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    var buf []byte
+    for i := 0; i < b.N; i++ {
+        buf = HTMLEscape(nil, jsonByte)
+    }
+    _ = buf
+}
+
+func BenchmarkHTMLEscape_StdLib(b *testing.B) {
+    jsonByte := []byte(TwitterJson)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    var buf []byte
+    for i := 0; i < b.N; i++ {
+        out := bytes.NewBuffer(make([]byte, 0, len(TwitterJson) * 6 / 5))
+        json.HTMLEscape(out, jsonByte)
+        buf = out.Bytes()
+    }
+    _ = buf
 }
