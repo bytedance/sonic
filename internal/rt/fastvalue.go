@@ -183,10 +183,23 @@ func UnpackType(t reflect.Type) *GoType {
 }
 
 func UnpackEface(v interface{}) GoEface {
+    escapes(v)
     return *(*GoEface)(unsafe.Pointer(&v))
 }
 
 func findReflectRtypeItab() *GoItab {
     v := reflect.TypeOf(struct{}{})
     return (*GoIface)(unsafe.Pointer(&v)).Itab
+}
+
+// Dummy annotation marking that the value x escapes,
+func escapes(x interface{}) {
+	if dummy.b {
+		dummy.x = x
+	}
+}
+
+var dummy struct {
+	b bool
+	x interface{}
 }

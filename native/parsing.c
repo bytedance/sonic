@@ -97,7 +97,17 @@ static const quoted_t _DoubleQuoteTab[256] = {
     ['\\'  ] = { .n = 4, .s = "\\\\\\\\"  },
 };
 
-static inline void memcpy_p8(char *dp, const char *sp, size_t nb) {
+static const quoted_t _HtmlQuoteTab[256] = {
+    ['<'] = { .n = 6, .s = "\\u003c" },
+    ['>'] = { .n = 6, .s = "\\u003e" },
+    ['&'] = { .n = 6, .s = "\\u0026" },
+    // \u2028 and \u2029 is [E2 80 A8] and [E2 80 A9]
+    [0xe2] = { .n = 0, .s = {0} },
+    [0xa8] = { .n = 6, .s = "\\u2028" },
+    [0xa9] = { .n = 6, .s = "\\u2029" },
+};
+
+static inline void memcpy_p8(char *dp, const char *sp, ssize_t nb) {
     if (nb >= 4) { *(uint32_t *)dp = *(const uint32_t *)sp; sp += 4, dp += 4, nb -= 4; }
     if (nb >= 2) { *(uint16_t *)dp = *(const uint16_t *)sp; sp += 2, dp += 2, nb -= 2; }
     if (nb >= 1) { *dp = *sp; }
@@ -620,4 +630,184 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
 
     /* calculate the result length */
     return dp + nb - p;
+}
+
+static inline __m128i _mm_find_html(__m128i vv) {
+    __m128i e1 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('<'));
+    __m128i e2 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('>'));
+    __m128i e3 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('&'));
+    __m128i e4 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('\xe2'));
+    __m128i r1 = _mm_or_si128     (e1, e2);
+    __m128i r2 = _mm_or_si128     (e3, e4);
+    __m128i rv = _mm_or_si128     (r1, r2);
+    return rv;
+}
+
+#if USE_AVX2
+static inline __m256i _mm256_find_html(__m256i vv) {
+    __m256i e1 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('<'));
+    __m256i e2 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('>'));
+    __m256i e3 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('&'));
+    __m256i e4 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('\xe2'));
+    __m256i r1 = _mm256_or_si256     (e1, e2);
+    __m256i r2 = _mm256_or_si256     (e3, e4);
+    __m256i rv = _mm256_or_si256     (r1, r2);
+    return rv;
+}
+#endif
+
+static inline ssize_t memcchr_html_quote(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
+    uint32_t     mm;
+    const char * ss = sp;
+
+#if USE_AVX2
+    /* 32-byte loop, full store */
+    while (nb >= 32 && dn >= 32) {
+        __m256i vv = _mm256_loadu_si256  ((const void *)sp);
+        __m256i rv = _mm256_find_html    (vv);
+                     _mm256_storeu_si256 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm256_movemask_epi8(rv)) != 0) {
+            return sp - ss + __builtin_ctz(mm);
+        }
+
+        /* move to next block */
+        sp += 32;
+        dp += 32;
+        nb -= 32;
+        dn -= 32;
+    }
+
+    /* 32-byte test, partial store */
+    if (nb >= 32) {
+        __m256i  vv = _mm256_loadu_si256   ((const void *)sp);
+        __m256i  rv = _mm256_find_html     (vv);
+        uint32_t mv = _mm256_movemask_epi8 (rv);
+        uint32_t fv = __builtin_ctzll      ((uint64_t)mv | 0x0100000000);
+
+        /* copy at most `dn` characters */
+        if (fv <= dn) {
+            memcpy_p32(dp, sp, fv);
+            return sp - ss + fv;
+        } else {
+            memcpy_p32(dp, sp, dn);
+            return -(sp - ss + dn) - 1;
+        }
+    }
+
+    /* clear upper half to avoid AVX-SSE transition penalty */
+    _mm256_zeroupper();
+#endif
+
+    /* 16-byte loop, full store */
+    while (nb >= 16 && dn >= 16) {
+        __m128i vv = _mm_loadu_si128  ((const void *)sp);
+        __m128i rv =  _mm_find_html   (vv);
+                     _mm_storeu_si128 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm_movemask_epi8(rv)) != 0) {
+            return sp - ss + __builtin_ctz(mm);
+        }
+
+        /* move to next block */
+        sp += 16;
+        dp += 16;
+        nb -= 16;
+        dn -= 16;
+    }
+
+    /* 16-byte test, partial store */
+    if (nb >= 16) {
+        __m128i  vv = _mm_loadu_si128   ((const void *)sp);
+        __m128i  rv =  _mm_find_html    (vv);
+        uint32_t mv = _mm_movemask_epi8 (rv);
+        uint32_t fv = __builtin_ctz     (mv | 0x010000);
+
+        /* copy at most `dn` characters */
+        if (fv <= dn) {
+            memcpy_p16(dp, sp, fv);
+            return sp - ss + fv;
+        } else {
+            memcpy_p16(dp, sp, dn);
+            return -(sp - ss + dn) - 1;
+        }
+    }
+
+    /* handle the remaining bytes with scalar code */
+    while (nb > 0 && dn > 0) {
+        if (*sp == '<' || *sp == '>' || *sp == '&' || *sp == '\xe2') {
+            return sp - ss;
+        } else {
+            dn--, nb--;
+            *dp++ = *sp++;
+        }
+    }
+
+    /* check for dest buffer */
+    if (nb == 0) {
+        return sp - ss;
+    } else {
+        return -(sp - ss) - 1;
+    }
+}
+
+ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
+    ssize_t          nd  = *dn;
+    const char     * ds  = dp;
+    const char     * ss  = sp;
+    const quoted_t * tab = _HtmlQuoteTab;
+
+    /* find the special characters, copy on the fly */
+    while (nb != 0) {
+        int     nc = 0;
+        uint8_t ch = 0;
+        ssize_t rb = memcchr_html_quote(sp, nb, dp, nd);
+
+        /* not enough buffer space */
+        if (rb < 0) {
+            *dn = dp - ds - rb - 1;
+            return -(sp - ss - rb - 1) - 1;
+        }
+
+        /* skip already copied bytes */
+        sp += rb;
+        dp += rb;
+        nb -= rb;
+        nd -= rb;
+
+        /* stop if already finished */
+        if (nb <= 0) {
+            break;
+        }
+
+        /* check for \u2028 and \u2029, [e2 80 a8] and [e2 80 a9] */
+        if (nb >= 3 && 0xa880e2 == (*(uint32_t *)sp & 0xfeffff)) {
+            sp += 2;
+            nb -= 2;
+        }
+
+        /* get the escape entry, handle consecutive quotes */
+        ch = * (uint8_t*) sp;
+        nc = tab[ch].n;
+
+
+        /* check for buffer space */
+        if (nd < nc) {
+            *dn = dp - ds;
+            return -(sp - ss) - 1;
+        }
+
+        /* copy the quoted value */
+        memcpy_p8(dp, tab[ch].s, nc);
+        sp++;
+        nb--;
+        dp += nc;
+        nd -= nc;
+    }
+
+    /* all done */
+    *dn = dp - ds;
+    return sp - ss;
 }
