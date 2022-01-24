@@ -15,7 +15,6 @@
  */
 
 #include "native.h"
-#include "xprintf.c"
 
 static const char *CS_ARRAY  = "[]{},\"[]{},\"[]{}";
 static const char *CS_OBJECT = "[]{},:\"[]{}:,\"[]";
