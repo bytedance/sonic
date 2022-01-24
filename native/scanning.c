@@ -15,6 +15,7 @@
  */
 
 #include "native.h"
+#include "xprintf.c"
 
 static const char *CS_ARRAY  = "[]{},\"[]{},\"[]{}";
 static const char *CS_OBJECT = "[]{},:\"[]{}:,\"[]";
@@ -1019,7 +1020,7 @@ static inline long skip_number(const char *sp, size_t nb) {
     }
 
     /* remaining bytes, do with scalar code */
-    while (likely(--nb >= 0)) {
+    while (likely(nb-- > 0)) {
         switch (*sp++) {
             case '0' : /* fallthrough */
             case '1' : /* fallthrough */
@@ -1039,10 +1040,11 @@ static inline long skip_number(const char *sp, size_t nb) {
             default  : sp--; goto check_index;
         }
     }
-
 check_index:
-    if (di == 0 || si == 0) {
+    if (di == 0 || si == 0 || ei == 0) {
         return -1;
+    } else if (di == sp - ss - 1|| si == sp - ss - 1 || ei == sp - ss - 1) {
+        return -(sp - ss);
     } else if (si > 0 && ei != si - 1) {
         return -si - 1;
     } else if (di >= 0 && ei >= 0 && di > ei - 1) {
