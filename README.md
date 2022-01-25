@@ -146,6 +146,13 @@ import "github.com/bytedance/sonic"
 v := map[string]string{"&&":{"<>"}}
 ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
 ```
+### Optimization Options
+- encoder.NoCompactMarshaler
+
+When marshaling `json.RawMessage` or `json.Marshaler`, sonic ensures validating and compacting their output JSON string. The higher the ratio of these kind data is, the much this feature impacts encoding performance. Therefore, we provide option `encoder.NoCompactMarshaler` to skip compacting process, which means your marshaler's outputs **MUST** be valid JSON. If not, **Undocumented Behavior** may happen.
+- encoder.NoQuoteTextMarshaler
+
+We also provides option `encoder.NoQuoteTextMarshaler` to avoid quoting the output string of `encoding.TextMarshaler`.
 
 ### Print Syntax Error
 ```go
@@ -274,7 +281,7 @@ go someFunc(user)
 ```
 Why? Because `ast.Node` stores its children using `array`: 
 - `Array`'s performance is **much better** than `Map` when Inserting (Deserialize) and Scanning (Serialize) data;
-- **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**.
+- **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**;
 - Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while `ast.Node` can parse them **on demand**.
 
 **CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}` 
