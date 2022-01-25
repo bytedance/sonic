@@ -495,6 +495,18 @@ func TestNative_SkipOne(t *testing.T) {
     assert.Equal(t, 41, q)
 }
 
+func TestNative_SkipOne_Error(t *testing.T) {
+    for _, s := range([]string{
+        "-", "+", "0.", "0. ", "+1", "0.0e ", "9e+", "0e-",
+        "tru", "fals", "nul", "trux", "fals ", 
+        `"asdf`, `"\\\"`,
+    }) {
+        p := 0
+        q := __skip_one(&s, &p, &types.StateMachine{})
+        assert.True(t, q < 0)
+    }
+}
+
 func TestNative_SkipArray(t *testing.T) {
     p := 0
     s := `null, true, false, 1, 2.0, -3, {"asdf": "wqer"}],`
