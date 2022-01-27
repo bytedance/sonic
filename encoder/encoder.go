@@ -120,7 +120,8 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
 // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating
 // a new one.
 func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
-    rt.Escape(val)
+    // ensure val's pointer escape
+    _ = reflect.ValueOf(val)
 
     stk := newStack()
     efv := rt.UnpackEface(val)

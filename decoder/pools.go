@@ -42,6 +42,7 @@ const (
 
 var (
     stackPool     = sync.Pool{}
+    stringPool    = sync.Pool{}
     valueCache    = []unsafe.Pointer(nil)
     fieldCache    = []*caching.FieldMap(nil)
     fieldCacheMux = sync.Mutex{}
