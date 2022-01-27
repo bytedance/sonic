@@ -190,15 +190,3 @@ func findReflectRtypeItab() *GoItab {
     v := reflect.TypeOf(struct{}{})
     return (*GoIface)(unsafe.Pointer(&v)).Itab
 }
-
-// Dummy annotation marking that the value x Escape
-func Escape(x interface{}) {
-	if dummy.b {
-		dummy.x = &x
-	}
-}
-
-var dummy struct {
-	b bool
-	x *interface{}
-}

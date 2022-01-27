@@ -125,6 +125,7 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
 
     stk := newStack()
     efv := rt.UnpackEface(val)
+    stk.sb[_MaxStack-1].p = efv.Value
     err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
 
     /* return the stack into pool */

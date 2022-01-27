@@ -70,6 +70,7 @@ func (self *Decoder) Decode(val interface{}) error {
 
     /* create a new stack, and call the decoder */
     sb, etp := newStack(), rt.PtrElem(vv.Type)
+    sb.sb[_MaxStack-1] = vp
     nb, err := decodeTypedPointer(self.s, self.i, etp, vp, sb, self.f)
 
     /* return the stack back */
@@ -81,7 +82,6 @@ func (self *Decoder) Decode(val interface{}) error {
 
     /* avoid GC ahead */
     runtime.KeepAlive(vv)
-    stringPool.Put(self.s)
     return err
 }
 
