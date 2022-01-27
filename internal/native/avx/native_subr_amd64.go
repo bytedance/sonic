@@ -34,9 +34,9 @@ const (
     _stack__lspace = 8
     _stack__lzero = 8
     _stack__quote = 80
-    _stack__skip_array = 136
-    _stack__skip_object = 136
-    _stack__skip_one = 136
+    _stack__skip_array = 144
+    _stack__skip_object = 144
+    _stack__skip_one = 144
     _stack__u64toa = 8
     _stack__unquote = 88
     _stack__value = 400
