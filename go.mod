@@ -12,4 +12,5 @@ require (
 	github.com/tidwall/gjson v1.13.0
 	github.com/tidwall/sjson v1.2.4
 	github.com/twitchyliquid64/golang-asm v0.15.1
+	golang.org/x/arch v0.0.0-20210923205945-b76863e36670
 )

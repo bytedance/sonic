@@ -1,4 +1,4 @@
-// +build go1.16,!go1.17
+// +build go1.15,!go1.17
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -73,8 +73,7 @@ func asJson(v unsafe.Pointer) (string, error) {
     return rt.Mem2Str(r), e
 }
 
-//go:linkname _runtime_writeBarrier runtime.writeBarrier
-var _runtime_writeBarrier uintptr
+var _runtime_writeBarrier uintptr = rt.GcwbAddr()
 
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
 func gcWriteBarrierAX()

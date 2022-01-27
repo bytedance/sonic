@@ -1,4 +1,4 @@
-// +build go1.16,!go1.17
+// +build go1.15,!go1.17
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -1612,14 +1612,13 @@ func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
     self.call_go(_F_println)
 }
 
-//go:linkname _runtime_writeBarrier runtime.writeBarrier
-var _runtime_writeBarrier uintptr
+var _runtime_writeBarrier uintptr = rt.GcwbAddr()
 
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
 func gcWriteBarrierAX()
 
 var (
-    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+    _V_writeBarrier = jit.Imm(int64(_runtime_writeBarrier))
 
     _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
 )
