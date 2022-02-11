@@ -74,7 +74,7 @@ const (
     _FP_args   = 48     // 48 bytes for passing arguments to this function
     _FP_fargs  = 64     // 64 bytes for passing arguments to other Go functions
     _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
-    _FP_locals = 24     // 24 bytes for local variables
+    _FP_locals = 16     // 16 bytes for local variables
 )
 
 const (
@@ -160,7 +160,6 @@ var (
 var (
     _VAR_sp = jit.Ptr(_SP, _FP_fargs + _FP_saves)
     _VAR_dn = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
-    _VAR_vp = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
 )
 
 var (
@@ -963,20 +962,20 @@ func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
+    /* check for indirection */
+    flag := (p.vf() & rt.F_direct) != 0
+    if flag {
+        self.Emit("MOVQ", _SP_p, _AX)                       // MOVQ SP.p, AX
+    } else {
+        self.save_state()
+        self.Emit("LEAQ" , jit.Sib(_ST, _CX, 1, 24), _AX)   // LEAQ  24(ST)(CX), SP.x
+    }
+    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 16))   // MOVQ  AX, 16(SP)
+
+    /* call the encoder */
     self.prep_buffer()                          // MOVE {buf}, (SP)
     self.Emit("MOVQ", jit.Type(p.vt()), _AX)    // MOVQ $(type(p.vt())), AX
     self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))     // MOVQ AX, 8(SP)
-
-    /* check for indirection */
-    if (p.vf() & rt.F_direct) != 0 {
-        self.Emit("MOVQ", _SP_p, _AX)               // MOVQ SP.p, AX
-    } else {
-        self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, 48(SP)
-        self.Emit("LEAQ", _VAR_vp, _AX)    // LEAQ 48(SP), AX
-    }
-
-    /* call the encoder */
-    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 16))   // MOVQ  AX, 16(SP)
     self.Emit("MOVQ" , _ST, jit.Ptr(_SP, 24))   // MOVQ  ST, 24(SP)
     self.Emit("MOVQ" , _ARG_fv, _AX)            // MOVQ  fv, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 32))   // MOVQ  AX, 32(SP)
@@ -985,6 +984,9 @@ func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     self.Emit("MOVQ" , jit.Ptr(_SP, 48), _EP)   // MOVQ  48(SP), EP
     self.Emit("TESTQ", _ET, _ET)                // TESTQ ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ   _error
+    if !flag {
+        self.drop_state(_StateSize)
+    }
 }
 
 func (self *_Assembler) _asm_OP_is_nil(p *_Instr) {

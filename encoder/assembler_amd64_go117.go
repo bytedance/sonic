@@ -74,7 +74,7 @@ const (
     _FP_args   = 32     // 32 bytes for spill registers of arguments
     _FP_fargs  = 40     // 40 bytes for passing arguments to other Go functions
     _FP_saves  = 64     // 64 bytes for saving the registers before CALL instructions
-    _FP_locals = 24     // 24 bytes for local variables
+    _FP_locals = 16     // 16 bytes for local variables
 )
 
 const (
@@ -162,14 +162,13 @@ var (
 var (
     _VAR_sp = jit.Ptr(_SP, _FP_fargs + _FP_saves)
     _VAR_dn = jit.Ptr(_SP, _FP_fargs + _FP_saves + 8)
-    _VAR_vp = jit.Ptr(_SP, _FP_fargs + _FP_saves + 16)
 )
 
 var (
     _REG_ffi = []obj.Addr{ _RP, _RL, _RC}
     _REG_b64 = []obj.Addr{_SP_p, _SP_q}
 
-    _REG_all  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
+    _REG_all = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
     _REG_ms  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _LR}
     _REG_enc = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q}
 )
@@ -966,23 +965,26 @@ func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
-    self.prep_buffer_AX()                       // MOVE {buf}, (SP)
-    self.Emit("MOVQ", jit.Type(p.vt()), _BX)    // MOVQ $(type(p.vt())), BX
-
     /* check for indirection */
-    if (p.vf() & rt.F_direct) != 0 {
-        self.Emit("MOVQ", _SP_p, _CX)           // MOVQ SP.p, CX
+    flag := (p.vf() & rt.F_direct) != 0
+    if flag {
+        self.Emit("MOVQ", _SP_p, _CX)                       // MOVQ SP.p, CX
     } else {
-        self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, VAR.vp
-        self.Emit("LEAQ", _VAR_vp, _CX)    // LEAQ VAR.vp, CX
+        self.save_state()
+        self.Emit("LEAQ" , jit.Sib(_ST, _CX, 1, 24), _CX)   // LEAQ  24(ST)(CX), SP.x
     }
 
     /* call the encoder */
+    self.prep_buffer_AX()                       // MOVE {buf}, (SP)
+    self.Emit("MOVQ", jit.Type(p.vt()), _BX)    // MOVQ $(type(p.vt())), BX
     self.Emit("MOVQ" , _ST, _DI)                // MOVQ  ST, DI
     self.Emit("MOVQ" , _ARG_fv, _SI)            // MOVQ  $fv, SI
     self.call_encoder(_F_encodeTypedPointer)    // CALL  encodeTypedPointer
     self.Emit("TESTQ", _ET, _ET)                // TESTQ ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ   _error
+    if !flag {
+        self.drop_state(_StateSize)
+    }
     self.load_buffer_AX()
 }
 

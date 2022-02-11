@@ -46,3 +46,4 @@ junit.xml
 *.out
 ast/test.out
 ast/bench.sh
+.tmp
