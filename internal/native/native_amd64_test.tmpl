@@ -255,6 +255,25 @@ func TestNative_VstringEscapeEOF(t *testing.T) {
     assert.Equal(t, int64(0), v.Iv)
 }
 
+func TestNative_VstringUnEscapedControlChars(t *testing.T) {
+    {
+        var v types.JsonState
+        i := 0
+        s := "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\bxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
+        __vstring(&s, &i, &v)
+        assert.Equal(t, 63, i) // Error Postion
+        assert.Equal(t, types.ValueType(-int(types.ERR_INVALID_CHAR)), v.Vt)
+    }
+    {
+        var v types.JsonState
+        i := 0
+        s := "\x00\"x"
+        __vstring(&s, &i, &v)
+        assert.Equal(t, 0, i) // Error Postion
+        assert.Equal(t, types.ValueType(-int(types.ERR_INVALID_CHAR)), v.Vt)
+    }
+}
+
 func TestNative_VstringHangUpOnRandomData(t *testing.T) {
     v, e := hex.DecodeString(
         "228dc61efd54ef80a908fb6026b7f2d5f92a257ba8b347c995f259eb8685376a" +

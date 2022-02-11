@@ -98,6 +98,42 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
     }
 }
 
+static inline int _mm_get_mask(__m128i v0, __m128i t) {
+    return _mm_movemask_epi8(_mm_cmpeq_epi8(v0, t));
+}
+
+// contrl char: 0x00 ~ 0x1F
+static inline int _mm_cchars_mask(__m128i vv) {
+    __m128i e1 = _mm_cmpgt_epi8 (vv, _mm_set1_epi8(-1));
+    __m128i e2 = _mm_cmpgt_epi8 (vv, _mm_set1_epi8(31));
+    return    _mm_movemask_epi8 (_mm_andnot_si128 (e2, e1));
+}
+
+// ascii: 0x00 ~ 0x7F
+static inline int _mm_ascii_mask(__m128i vv) {
+    return _mm_movemask_epi8(vv);
+}
+
+#if USE_AVX2
+
+static inline int _mm256_get_mask(__m256i v0, __m256i t) {
+    return _mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, t));
+}
+
+// contrl char: 0x00 ~ 0x1F
+static inline int _mm256_cchars_mask(__m256i vv) {
+    __m256i e1 = _mm256_cmpgt_epi8 (vv, _mm256_set1_epi8(-1));
+    __m256i e2 = _mm256_cmpgt_epi8 (vv, _mm256_set1_epi8(31));
+    return    _mm256_movemask_epi8 (_mm256_andnot_si256 (e2, e1));
+}
+
+// ascii: 0x00 ~ 0x7F
+static inline int _mm256_ascii_mask(__m256i vv) {
+    return _mm256_movemask_epi8(vv);
+}
+
+#endif
+
 static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t es;
@@ -105,7 +141,10 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     uint64_t os;
     uint64_t m0;
     uint64_t m1;
+    uint64_t m2;
     uint64_t cr = 0;
+    long     qp = 0;
+    long     np = 0;
 
     /* prevent out-of-bounds accessing */
     if (unlikely(src->len == p)) {
@@ -130,44 +169,26 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     /* initialize vectors */
     __m256i v0;
     __m256i v1;
-    __m256i q0;
-    __m256i q1;
-    __m256i x0;
-    __m256i x1;
     __m256i cq = _mm256_set1_epi8('"');
     __m256i cx = _mm256_set1_epi8('\\');
 
     /* partial masks */
-    uint32_t s0;
-    uint32_t s1;
-    uint32_t t0;
-    uint32_t t1;
+    uint32_t s0, s1;
+    uint32_t t0, t1;
+    uint32_t c0, c1;
 #else
     /* initialize vectors */
     __m128i v0;
     __m128i v1;
     __m128i v2;
     __m128i v3;
-    __m128i q0;
-    __m128i q1;
-    __m128i q2;
-    __m128i q3;
-    __m128i x0;
-    __m128i x1;
-    __m128i x2;
-    __m128i x3;
     __m128i cq = _mm_set1_epi8('"');
     __m128i cx = _mm_set1_epi8('\\');
 
     /* partial masks */
-    uint32_t s0;
-    uint32_t s1;
-    uint32_t s2;
-    uint32_t s3;
-    uint32_t t0;
-    uint32_t t1;
-    uint32_t t2;
-    uint32_t t3;
+    uint32_t s0, s1, s2, s3;
+    uint32_t t0, t1, t2, t3;
+    uint32_t c0, c1, c2, c3;
 #endif
 
 #define m0_mask(add)                \
@@ -182,39 +203,36 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
 #if USE_AVX2
         v0 = _mm256_loadu_si256   ((const void *)(sp +  0));
         v1 = _mm256_loadu_si256   ((const void *)(sp + 32));
-        q0 = _mm256_cmpeq_epi8    (v0, cq);
-        q1 = _mm256_cmpeq_epi8    (v1, cq);
-        x0 = _mm256_cmpeq_epi8    (v0, cx);
-        x1 = _mm256_cmpeq_epi8    (v1, cx);
-        s0 = _mm256_movemask_epi8 (q0);
-        s1 = _mm256_movemask_epi8 (q1);
-        t0 = _mm256_movemask_epi8 (x0);
-        t1 = _mm256_movemask_epi8 (x1);
+        s0 = _mm256_get_mask(v0, cq);
+        s1 = _mm256_get_mask(v1, cq);
+        t0 = _mm256_get_mask(v0, cx);
+        t1 = _mm256_get_mask(v1, cx);
+        c0 = _mm256_cchars_mask(v0);
+        c1 = _mm256_cchars_mask(v1);
         m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
+        m2 = ((uint64_t)c1 << 32) | (uint64_t)c0;
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
         v2 = _mm_loadu_si128   ((const void *)(sp + 32));
         v3 = _mm_loadu_si128   ((const void *)(sp + 48));
-        q0 = _mm_cmpeq_epi8    (v0, cq);
-        q1 = _mm_cmpeq_epi8    (v1, cq);
-        q2 = _mm_cmpeq_epi8    (v2, cq);
-        q3 = _mm_cmpeq_epi8    (v3, cq);
-        x0 = _mm_cmpeq_epi8    (v0, cx);
-        x1 = _mm_cmpeq_epi8    (v1, cx);
-        x2 = _mm_cmpeq_epi8    (v2, cx);
-        x3 = _mm_cmpeq_epi8    (v3, cx);
-        s0 = _mm_movemask_epi8 (q0);
-        s1 = _mm_movemask_epi8 (q1);
-        s2 = _mm_movemask_epi8 (q2);
-        s3 = _mm_movemask_epi8 (q3);
-        t0 = _mm_movemask_epi8 (x0);
-        t1 = _mm_movemask_epi8 (x1);
-        t2 = _mm_movemask_epi8 (x2);
-        t3 = _mm_movemask_epi8 (x3);
+        s0 = _mm_get_mask(v0, cq);
+        s1 = _mm_get_mask(v1, cq);
+        s2 = _mm_get_mask(v2, cq);
+        s3 = _mm_get_mask(v3, cq);
+        t0 = _mm_get_mask(v0, cx);
+        t1 = _mm_get_mask(v1, cx);
+        t2 = _mm_get_mask(v2, cx);
+        t3 = _mm_get_mask(v3, cx);
+        c0 = _mm_cchars_mask(v0);
+        c1 = _mm_cchars_mask(v1);
+        c2 = _mm_cchars_mask(v2);
+        c3 = _mm_cchars_mask(v3);
         m0 = ((uint64_t)s3 << 48) | ((uint64_t)s2 << 32) | ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t3 << 48) | ((uint64_t)t2 << 32) | ((uint64_t)t1 << 16) | (uint64_t)t0;
+        m2 = ((uint64_t)c3 << 48) | ((uint64_t)c2 << 32) | ((uint64_t)c1 << 16) | (uint64_t)c0;
+
 #endif
 
         /** update first quote position */
@@ -227,9 +245,21 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
             m0_mask(add64)
         }
 
-        /* check for end quote */
+        /* get the position of end quote */
         if (m0 != 0) {
-            return sp - ss + __builtin_ctzll(m0) + 1;
+            qp = sp - ss + __builtin_ctzll(m0) + 1;
+            /* check control chars in JSON string */
+            if (unlikely(m2 !=0 && (np = sp - ss + __builtin_ctzll(m2)) < qp)) {
+                ep_setx(np) // set error position
+                return -ERR_INVAL;
+            }
+            return qp;
+        }
+
+        /* check control chars in JSON string */
+        if (unlikely(m2 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m2))
+            return -ERR_INVAL;
         }
 
         /* move to the next block */
@@ -241,25 +271,24 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     if (likely(nb >= 32)) {
 #if USE_AVX2
         v0 = _mm256_loadu_si256   ((const void *)sp);
-        q0 = _mm256_cmpeq_epi8    (v0, cq);
-        x0 = _mm256_cmpeq_epi8    (v0, cx);
-        s0 = _mm256_movemask_epi8 (q0);
-        t0 = _mm256_movemask_epi8 (x0);
+        s0 = _mm256_get_mask (v0, cq);
+        t0 = _mm256_get_mask (v0, cx);
+        c0 = _mm256_cchars_mask(v0);
         m0 = (uint64_t)s0;
         m1 = (uint64_t)t0;
+        m2 = (uint64_t)c0;
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
-        q0 = _mm_cmpeq_epi8    (v0, cq);
-        q1 = _mm_cmpeq_epi8    (v1, cq);
-        x0 = _mm_cmpeq_epi8    (v0, cx);
-        x1 = _mm_cmpeq_epi8    (v1, cx);
-        s0 = _mm_movemask_epi8 (q0);
-        s1 = _mm_movemask_epi8 (q1);
-        t0 = _mm_movemask_epi8 (x0);
-        t1 = _mm_movemask_epi8 (x1);
+        s0 = _mm_get_mask(v0, cq);
+        s1 = _mm_get_mask(v1, cq);
+        t0 = _mm_get_mask(v0, cx);
+        t1 = _mm_get_mask(v1, cx);
+        c0 = _mm_cchars_mask(v0);
+        c1 = _mm_cchars_mask(v1);
         m0 = ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 16) | (uint64_t)t0;
+        m2 = ((uint64_t)c1 << 16) | (uint64_t)c0;
 #endif
 
         /** update first quote position */
@@ -272,9 +301,21 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
             m0_mask(add32)
         }
 
-        /* check for end quote */
+        /* get the position of end quote */
         if (m0 != 0) {
-            return sp - ss + __builtin_ctzll(m0) + 1;
+            qp = sp - ss + __builtin_ctzll(m0) + 1;
+            /* check control chars in JSON string */
+            if (unlikely(m2 !=0 && (np = sp - ss + __builtin_ctzll(m2)) < qp)) {
+                ep_setx(np) // set error position
+                return -ERR_INVAL;
+            }
+            return qp;
+        }
+
+        /* check control chars in JSON string */
+        if (unlikely(m2 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m2))
+            return -ERR_INVAL;
         }
 
         /* move to the next block */
@@ -301,6 +342,9 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
                 ep_setc()
                 sp++, nb--;
             }
+        } else if (unlikely( ch >= 0 && ch <= 0x1f)) {
+            ep_setc()
+            return -ERR_INVAL;
         }
     }
 
@@ -1084,7 +1128,7 @@ long skip_string(const GoString *src, long *p) {
         *p = e;
         return q;
     } else {
-        *p = src->len;
+        *p = e == -ERR_EOF ? src->len : v;
         return e;
     }
 }
