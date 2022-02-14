@@ -20,6 +20,7 @@ import (
     `encoding/json`
     `reflect`
     `runtime`
+    `unsafe`
 
     `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
@@ -67,6 +68,7 @@ func (self *Decoder) Decode(val interface{}) error {
 
     /* create a new stack, and call the decoder */
     sb, etp := newStack(), rt.PtrElem(vv.Type)
+    sb.sb[_MaxStack-1] = unsafe.Pointer(&self.s)
     nb, err := decodeTypedPointer(self.s, self.i, etp, vp, sb, self.f)
 
     /* return the stack back */

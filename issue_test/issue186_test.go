@@ -17,14 +17,13 @@
 package issue_test
 
 import (
-	"math/rand"
-	"runtime"
-	"sync"
-	"testing"
-	"time"
-	"unsafe"
+    `math/rand`
+    `runtime`
+    `sync`
+    `testing`
+    `time`
 
-	"github.com/bytedance/sonic"
+    `github.com/bytedance/sonic`
 )
 
 
@@ -52,28 +51,28 @@ func IntSlide2Map(l []int64) map[int64]bool {
 func Reload(t *testing.T, rawData string) (tmp GlobalConfig) {
     buf := []byte(rawData)
     runtime.GC()
-    t.Logf("got bytes %x\n", unsafe.Pointer(&buf[0]))
+    // t.Logf("got bytes %x\n", unsafe.Pointer(&buf[0]))
     // runtime.SetFinalizer(&buf[0], func(x *byte){
-    //     t.Logf("&byte %x got free\n", x)
+        // t.Logf("&byte %x got free\n", x)
     // })
     err := sonic.Unmarshal(buf, &tmp) // better use sonic.UnmarshalString()!
     if err != nil {
         t.Fatalf("failed to unmarshal json, raw data: %v, err: %v", rawData, err)
     }
     runtime.GC()
-    t.Log("unmarshal done")
+    // t.Log("unmarshal done")
     for index, conf := range tmp {
         tmp[index].B.Map = IntSlide2Map(conf.B.Slice)
     }
     runtime.GC()
-    t.Log("calc done")
+    // t.Log("calc done")
     return
 }
 
 func TestIssue186(t *testing.T) {
     t.Parallel()
     var data = `[{"A":"xxx","B":{"Slice":[111]}},{"A":"yyy","B":{"Slice":[222]},"C":["extra"]},{"A":"zzz","B":{"Slice":[333]},"C":["extra"]},{"A":"zzz","B":{"Slice":[333]},"C":["extra"]},{"A":"zzz","B":{"Slice":[1111111111,2222222222,3333333333,44444444444,55555555555]},"C":["extra","aaaaaaaaaaaa","bbbbbbbbbbbbb","ccccccccccccc","ddddddddddddd"]}]`
-
+    var obj interface{}
     for k:=0; k<100; k++ {
         wg := sync.WaitGroup{}
         for i:=0; i<1000; i++ {
@@ -83,11 +82,14 @@ func TestIssue186(t *testing.T) {
                 time.Sleep(time.Duration(rand.Intn(100)+1000))
                 tmp := Reload(t, data)
                 runtime.GC()
-                t.Log(tmp)
+                // t.Log(tmp)
                 runtime.GC()
+                obj = tmp
             }()
         }
         runtime.GC()
+        // t.Log(obj)
+        _ = obj
         wg.Wait()
     }
 }
