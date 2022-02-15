@@ -72,7 +72,7 @@ func Reload(t *testing.T, rawData string) (tmp GlobalConfig) {
 func TestIssue186(t *testing.T) {
     t.Parallel()
     var data = `[{"A":"xxx","B":{"Slice":[111]}},{"A":"yyy","B":{"Slice":[222]},"C":["extra"]},{"A":"zzz","B":{"Slice":[333]},"C":["extra"]},{"A":"zzz","B":{"Slice":[333]},"C":["extra"]},{"A":"zzz","B":{"Slice":[1111111111,2222222222,3333333333,44444444444,55555555555]},"C":["extra","aaaaaaaaaaaa","bbbbbbbbbbbbb","ccccccccccccc","ddddddddddddd"]}]`
-    var obj interface{}
+    // var obj interface{}
     for k:=0; k<100; k++ {
         wg := sync.WaitGroup{}
         for i:=0; i<1000; i++ {
@@ -82,14 +82,13 @@ func TestIssue186(t *testing.T) {
                 time.Sleep(time.Duration(rand.Intn(100)+1000))
                 tmp := Reload(t, data)
                 runtime.GC()
-                // t.Log(tmp)
+                _ = tmp[0].A
                 runtime.GC()
-                obj = tmp
+                // obj = tmp
             }()
         }
         runtime.GC()
         // t.Log(obj)
-        _ = obj
         wg.Wait()
     }
 }
