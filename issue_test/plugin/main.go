@@ -8,7 +8,7 @@ import (
 
 var V int
 
-var Obj interface{}
+var Obj map[string]string
 
 func init() {
     if err := sonic.UnmarshalString(`{"a":"b"}`, &Obj); err != nil {
