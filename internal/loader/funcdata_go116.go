@@ -20,6 +20,7 @@ package loader
 
 import (
     `unsafe`
+    `sync`
 )
 
 type _Func struct {
@@ -126,7 +127,10 @@ func makePCtab(fp int) []byte {
     return append([]byte{0}, encodeVariant((fp + 1) << 1)...)
 }
 
-var freezedPointers []unsafe.Pointer
+var (
+    freezedPointers []unsafe.Pointer
+    freezeLock sync.Mutex
+)
 
 func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
     minpc := pc
@@ -149,11 +153,14 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         {entry: pc},
         {entry: maxpc},
     }
+
     var gcdatabytes = make([]byte, 1)
     var gcdata = *(*unsafe.Pointer)(unsafe.Pointer(&gcdatabytes))
     var gcbssbytes = make([]byte, 1)
     var gcbss = *(*unsafe.Pointer)(unsafe.Pointer(&gcbssbytes))
+    freezeLock.Lock()
     freezedPointers = append(freezedPointers, gcbss, gcdata)
+    freezeLock.Unlock()
 
     /* module data */
     mod := &_ModuleData {

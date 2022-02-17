@@ -5,12 +5,17 @@ import (
     `fmt`
     `os/exec`
     `plugin`
+    `runtime`
+    `strings`
     `testing`
 
     _ `github.com/bytedance/sonic`
 )
 
 func init() {
+    if !strings.Contains(runtime.Version(), "go1.16") {
+        return
+    }
     bin, err := exec.LookPath("go")
     if err != nil {
         panic(err)
@@ -18,7 +23,7 @@ func init() {
     out := bytes.NewBuffer(nil)
     cmd := exec.Cmd{
         Path: bin,
-        Args: []string{"go", "build", "-buildmode", "plugin", "-o", "plugin/plugin.so", "plugin/main.go"},
+        Args: []string{"go", "build", "-buildmode", "plugin", "-o", "plugin/plugin."+runtime.Version()+".so", "plugin/main.go"},
         Stdout: out,
         Stderr: out,
     }
@@ -28,7 +33,10 @@ func init() {
 }
 
 func TestPlugin(t *testing.T) {
-    p, err := plugin.Open("plugin/plugin.so")
+    if !strings.Contains(runtime.Version(), "go1.16") {
+        return
+    }
+    p, err := plugin.Open("plugin/plugin."+runtime.Version()+".so")
     if err != nil {
         panic(err)
     }
