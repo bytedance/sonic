@@ -19,10 +19,12 @@ static inline bool is_ascii(uint8_t ch) {
     return ch < 0x80;
 }
 
-//      code point    | first byte | second byte | thrid byte | fourth byte
+//  UTF-8 code point  | first byte | second byte | thrid byte | fourth byte
 //  U+0000  -  U+007F | 0___ ____
 //  U+0080  -  U+07FF | 110_ ____  | 10__ ____
-//  U+0800  -  U+FFFF | 1110 ____  | 10__ ____   | 10__ ____
+//  U+0800  -  U+D7FF | 1110 ____  | 10__ ____   | 10__ ____
+//  U+D800  -  U+DFFF | reserved for UTF-16 surrogate pairs
+//  U+E000  -  U+FFFF | 1110 ____  | 10__ ____   | 10__ ____
 // U+10000 - U+10FFFF | 1111 0___  | 10__ ____   | 10__ ____  | 10__ ____
 // checks non-ascii characters, and returns the utf-8 length
 static inline ssize_t is_utf8(const uint8_t* noascii, size_t n) {
@@ -37,7 +39,7 @@ static inline ssize_t is_utf8(const uint8_t* noascii, size_t n) {
     if (unlikely(n < 2 || !is_next(b1))) {
         return 0;
     }
-    if (unlikely(b0 < 0xe0 && b0 >= 0xc0)) {
+    if (unlikely(b0 >> 5 == 6)) {
         r = ((uint32_t)(b0 & 0x1f) << 6) | (b1 & 0x3f);
         if (likely(r >= 0x0080 && r <= 0x07ff)) {
             return 2;
@@ -51,7 +53,7 @@ static inline ssize_t is_utf8(const uint8_t* noascii, size_t n) {
     }
     if (likely(b0 < 0xf0)) {
         r = ((uint32_t)(b0 & 0x0f) << 12) | ((uint32_t)(b1 & 0x3f) << 6) | (b2 & 0x3f);
-        if (likely(r >= 0x0800u && r <= 0xffffu)) {
+        if (likely((r >= 0x0800u && r <= 0xd7ffu) || (r >= 0xe000u && r <= 0xffffu))) {
             return 3;
         }
         return 0;

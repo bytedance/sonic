@@ -284,6 +284,13 @@ func TestNative_ValidateOne(t *testing.T) {
         assert.Equal(t, 1, p)
         assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
     }
+    {
+        p := 0
+        s := "\"\xed\xbf\xbf\"x"
+        r := __validate_one(&s, &p, &types.StateMachine{})
+        assert.Equal(t, 1, p)
+        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
+    }
 }
 
 func TestNative_VstringHangUpOnRandomData(t *testing.T) {
