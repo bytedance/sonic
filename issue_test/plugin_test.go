@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-    if !strings.Contains(runtime.Version(), "go1.16") {
+    if !strings.Contains(runtime.Version(), "go1.15") {
         return
     }
     bin, err := exec.LookPath("go")
@@ -34,7 +34,7 @@ func init() {
 }
 
 func TestPlugin(t *testing.T) {
-    if !strings.Contains(runtime.Version(), "go1.16") {
+    if !strings.Contains(runtime.Version(), "go1.15") {
         return
     }
     p, err := plugin.Open("plugin/plugin."+runtime.Version()+".so")
