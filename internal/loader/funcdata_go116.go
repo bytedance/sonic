@@ -126,6 +126,8 @@ func makePCtab(fp int) []byte {
     return append([]byte{0}, encodeVariant((fp + 1) << 1)...)
 }
 
+var freezedPointers []unsafe.Pointer
+
 func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
     minpc := pc
     maxpc := pc + size
@@ -147,6 +149,11 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         {entry: pc},
         {entry: maxpc},
     }
+    var gcdatabytes = make([]byte, 1)
+    var gcdata = *(*unsafe.Pointer)(unsafe.Pointer(&gcdatabytes))
+    var gcbssbytes = make([]byte, 1)
+    var gcbss = *(*unsafe.Pointer)(unsafe.Pointer(&gcbssbytes))
+    freezedPointers = append(freezedPointers, gcbss, gcdata)
 
     /* module data */
     mod := &_ModuleData {
@@ -159,8 +166,8 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         minpc       : minpc,
         maxpc       : maxpc,
         modulename  : name,
-        gcdata: uintptr(*(*unsafe.Pointer)(unsafe.Pointer(&[]byte{0}))),
-        gcbss: uintptr(*(*unsafe.Pointer)(unsafe.Pointer(&[]byte{0}))),
+        gcdata: uintptr(gcdata),
+        gcbss: uintptr(gcbss),
     }
 
     /* verify and register the new module */
