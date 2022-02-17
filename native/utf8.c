@@ -1,7 +1,6 @@
 
 #include "native.h"
 
-
 // ascii: 0x00 ~ 0x7F
 static inline int _mm_ascii_mask(__m128i vv) {
     return _mm_movemask_epi8(vv);
@@ -102,7 +101,7 @@ ssize_t find_non_ascii(const uint8_t*sp, ssize_t nb, ssize_t rb) {
 
     /* remaining bytes, do with scalar code */
     while (nb--) {
-        if (!is_ascii(*sp)) {
+        if (is_ascii(*sp)) {
             sp++;
         } else {
             return sp - ss;
@@ -123,7 +122,7 @@ ssize_t utf8_validate(const char *sp, ssize_t nb, ssize_t rb) {
     ssize_t b;
 
     // Optimize for the continuous non-ascii chars */
-    while (nb > 0 && (n = (is_ascii(*p) ? 0 : find_non_ascii(p, nb, rb))) != -1) {
+    while (nb > 0 && (n = (!is_ascii(*p) ? 0 : find_non_ascii(p, nb, rb))) != -1) {
         /* not found non-ascii in string */
         if (n >= nb) {
             return -1;

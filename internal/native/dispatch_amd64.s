@@ -54,6 +54,12 @@ TEXT ·SkipOne(SB), NOSPLIT, $0 - 32
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__skip_one(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__skip_one(SB)
 
+TEXT ·ValidateOne(SB), NOSPLIT, $0 - 32
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__validate_one(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__validate_one(SB)
+
 TEXT ·I64toa(SB), NOSPLIT, $0 - 32
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
