@@ -19,7 +19,6 @@
 package loader
 
 import (
-    `sync`
     `unsafe`
 
     `github.com/bytedance/sonic/internal/rt`
@@ -99,10 +98,7 @@ var findFuncTab = &_FindFuncBucket {
     idx: 1,
 }
 
-var (
-    freezedPointers []unsafe.Pointer
-    freezeLock sync.Mutex
-)
+var emptyBytes = []byte{0}
 
 func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
     minpc := pc
@@ -153,14 +149,6 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         {entry: maxpc},
     }
 
-    var gcdatabytes = make([]byte, 1)
-    var gcdata = *(*unsafe.Pointer)(unsafe.Pointer(&gcdatabytes))
-    var gcbssbytes = make([]byte, 1)
-    var gcbss = *(*unsafe.Pointer)(unsafe.Pointer(&gcbssbytes))
-    freezeLock.Lock()
-    freezedPointers = append(freezedPointers, gcbss, gcdata)
-    freezeLock.Unlock()
-    
     /* module data */
     mod := &_ModuleData {
         pclntable   : pclnt,
@@ -169,8 +157,8 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         minpc       : minpc,
         maxpc       : maxpc,
         modulename  : name,
-        gcdata      : uintptr(gcdata), 
-        gcbss       : uintptr(gcbss),
+        gcdata: uintptr(*(*unsafe.Pointer)(unsafe.Pointer(&emptyBytes))),
+        gcbss: uintptr(*(*unsafe.Pointer)(unsafe.Pointer(&emptyBytes))),
     }
 
     /* verify and register the new module */
