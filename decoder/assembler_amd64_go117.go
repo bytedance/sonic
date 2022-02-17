@@ -681,18 +681,21 @@ func (self *_Assembler) slice_from_r(p obj.Addr, d int64) {
 
 func (self *_Assembler) unquote_once(p obj.Addr, n obj.Addr, stack bool) {
     self.slice_from(_VAR_st_Iv, -1)                             // SLICE  st.Iv, $-1
-    self.Emit("MOVQ" , _DI, p)                                  // MOVQ   DI, ${p}
     self.Emit("MOVQ" , _SI, n)                                  // MOVQ   SI, ${n}
+    if stack {
+        self.Emit("MOVQ", _DI, p)                               // MOVQ   DI, ${p}
+    } else {
+        self.WriteRecNotAX(10, _DI, p, false, false)
+    }
     self.Emit("CMPQ" , _VAR_st_Ep, jit.Imm(-1))                 // CMPQ   st.Ep, $-1
     self.Sjmp("JE"   , "_noescape_{n}")                         // JE     _noescape_{n}
     self.malloc(_SI, _DX)                                       // MALLOC SI, DX
     self.Emit("MOVQ" , p, _DI)                                  // MOVQ   ${p}, DI
     self.Emit("MOVQ" , n, _SI)                                  // MOVQ   ${n}, SI
     if stack {
-        // no need for writeBarrier
         self.Emit("MOVQ", _DX, p)                               // MOVQ   DX, ${p}
     } else {
-        self.WriteRecNotAX(2, _DX, p, true, true)               // MOVQ   DX, ${p}
+        self.WriteRecNotAX(2, _DX, p, true, false)              // MOVQ   DX, ${p}
     }
     self.Emit("LEAQ" , _VAR_sr, _CX)                            // LEAQ   sr, CX
     self.Emit("XORL" , _R8, _R8)                                // XORL   R8, R8
@@ -716,9 +719,13 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr, stack bool) {
     self.Emit("CMPB" , jit.Sib(_IP, _IC, 1, -2), jit.Imm('"'))      // CMPB   -2(IP)(IC), $'"'
     self.Sjmp("JNE"  , _LB_char_m2_error)                           // JNE    _char_m2_error
     self.slice_from(_VAR_st_Iv, -3)                                 // SLICE  st.Iv, $-3
-    self.Emit("MOVQ" , _DI, p)                                      // MOVQ   DI, ${p}
     self.Emit("MOVQ" , _SI, n)                                      // MOVQ   SI, ${n}
     self.Emit("MOVQ" , _SI, _AX)                                    // MOVQ   SI, AX
+    if stack {
+        self.Emit("MOVQ" , _DI, p)                                  // MOVQ   DI, ${p}
+    } else {
+        self.WriteRecNotAX(9, _DI, p, false, false)
+    }
     self.Emit("ADDQ" , _VAR_st_Iv, _AX)                             // ADDQ   st.Iv, AX
     self.Emit("CMPQ" , _VAR_st_Ep, _AX)                             // CMPQ   st.Ep, AX
     self.Sjmp("JE"   , "_noescape_{n}")                             // JE     _noescape_{n}
@@ -726,10 +733,9 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr, stack bool) {
     self.Emit("MOVQ" , p, _DI)                                      // MOVQ   ${p}, DI
     self.Emit("MOVQ" , n, _SI)                                      // MOVQ   ${n}, SI
     if stack {
-        // no need for writeBarrier
-        self.Emit("MOVQ", _DX, p)                               // MOVQ   DX, ${p}
+        self.Emit("MOVQ", _DX, p)                                   // MOVQ   DX, ${p}
     } else {
-        self.WriteRecNotAX(2, _DX, p, true, true)               // MOVQ   DX, ${p}
+        self.WriteRecNotAX(2, _DX, p, true, false)                  // MOVQ   DX, ${p}
     }
     self.Emit("LEAQ" , _VAR_sr, _CX)                                // LEAQ   sr, CX
     self.Emit("MOVL" , jit.Imm(types.F_DOUBLE_UNQUOTE), _R8)        // MOVL   ${types.F_DOUBLE_UNQUOTE}, R8
