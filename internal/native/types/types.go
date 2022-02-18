@@ -18,6 +18,7 @@ package types
 
 import (
     `fmt`
+    `sync`
 )
 
 type ValueType int
@@ -103,3 +104,18 @@ type StateMachine struct {
     Sp int
     Vt [MAX_RECURSE]int
 }
+
+var stackPool = sync.Pool{
+    New: func()interface{}{
+        return &StateMachine{}
+    },
+}
+
+func NewStateMachine() *StateMachine {
+    return stackPool.Get().(*StateMachine)
+}
+
+func FreeStateMachine(fsm *StateMachine) {
+    stackPool.Put(fsm)
+}
+

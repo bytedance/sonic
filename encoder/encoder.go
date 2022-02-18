@@ -24,6 +24,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
 )
@@ -276,4 +277,23 @@ func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
     }
     opts.RecursiveDepth -= 1
     return pretouchRec(next, opts)
+}
+
+
+func Valid(data []byte) bool {
+    s := rt.Mem2Str(data)
+    p := 0
+    m := types.NewStateMachine()
+    ret := native.ValidateOne(&s, &p, m)
+    types.FreeStateMachine(m) 
+    return ret >= 0
+}
+
+func Skip(data []byte) (start int, end int) {
+    s := rt.Mem2Str(data)
+    p := 0
+    m := types.NewStateMachine()
+    ret := native.SkipOne(&s, &p, m)
+    types.FreeStateMachine(m) 
+    return ret, p
 }

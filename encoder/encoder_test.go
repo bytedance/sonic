@@ -29,6 +29,7 @@ import (
     gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
     `github.com/stretchr/testify/require`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 func TestMain(m *testing.M) {
@@ -455,4 +456,55 @@ func BenchmarkHTMLEscape_StdLib(b *testing.B) {
         buf = out.Bytes()
     }
     _ = buf
+}
+
+
+func BenchmarkValidate_Sonic(b *testing.B) {
+    var data = rt.Str2Mem(TwitterJson)
+    if !Valid(data) {
+        b.Fatal()
+    }
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        _ = Valid(data)
+    }
+}
+
+func BenchmarkSkip_Sonic(b *testing.B) {
+    var data = rt.Str2Mem(TwitterJson)
+    if ret, _ := Skip(data); ret < 0 {
+        b.Fatal()
+    }
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        _, _ = Skip(data)
+    }
+}
+
+func BenchmarkValidate_Std(b *testing.B) {
+    var data = rt.Str2Mem(TwitterJson)
+    if !json.Valid(data) {
+        b.Fatal()
+    }
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        _ = json.Valid(data)
+    }
+}
+
+func BenchmarkCompact_Std(b *testing.B) {
+    var data = rt.Str2Mem(TwitterJson)
+    var dst = bytes.NewBuffer(nil)
+    if err := json.Compact(dst, data); err != nil {
+        b.Fatal(err)
+    }
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        dst.Reset()
+        _ = json.Compact(dst, data)
+    }
 }
