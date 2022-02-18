@@ -111,17 +111,16 @@ static inline ssize_t nonascii_is_utf8(const uint8_t* sp, size_t n) {
     return size;
 }
 
-ssize_t find_non_ascii(const uint8_t*sp, ssize_t nb, ssize_t rb) {
+ssize_t find_non_ascii(const uint8_t*sp, ssize_t nb) {
     const uint8_t* ss = sp;
     int64_t m;
 
 #if USE_AVX2
-    while (rb >= 32 && nb > 0) {
+    while (nb >= 32) {
         __m256i v = _mm256_loadu_si256 ((const void *)(sp));
         if (unlikely((m = _mm256_ascii_mask(v)) != 0)) {
-            return sp - ss + __builtin_ctzll(m);
+            return sp - ss + __builtin_ctzll(m);           
         }
-        rb -= 32;
         nb -= 32;
         sp += 32;
     }
@@ -129,18 +128,18 @@ ssize_t find_non_ascii(const uint8_t*sp, ssize_t nb, ssize_t rb) {
     /* clear spper half to avoid AVX-SSE transition penalty */
      _mm256_zeroupper();
 #endif
-    while (rb >= 16 && nb > 0) {
+
+    while (nb >= 16) {
         __m128i v = _mm_loadu_si128 ((const void *)(sp));
         if (unlikely((m = _mm_ascii_mask(v)) != 0)) {
             return sp - ss + __builtin_ctzll(m);
         }
-        rb -= 16;
         nb -= 16;
         sp += 16;
     }
 
     /* remaining bytes, do with scalar code */
-    while (nb--) {
+    while (nb-- > 0) {
         if (is_ascii(*sp)) {
             sp++;
         } else {
@@ -153,23 +152,21 @@ ssize_t find_non_ascii(const uint8_t*sp, ssize_t nb, ssize_t rb) {
 }
 
 // utf8_validate validates whether the JSON string is valid UTF-8.
-// nb is string length, rb is the remain JSON length
 // return -1 if validate, otherwise, return the error postion.
-ssize_t utf8_validate(const char *sp, ssize_t nb, ssize_t rb) {
+ssize_t utf8_validate(const char *sp, ssize_t nb) {
     const uint8_t* p = (const uint8_t*)sp;
     const uint8_t* s = (const uint8_t*)sp;
     ssize_t n;
     ssize_t b;
 
     // Optimize for the continuous non-ascii chars */
-    while (nb > 0 && (n = (!is_ascii(*p) ? 0 : find_non_ascii(p, nb, rb))) != -1) {
+    while (nb > 0 && (n = (!is_ascii(*p) ? 0 : find_non_ascii(p, nb))) != -1) {
         /* not found non-ascii in string */
         if (n >= nb) {
             return -1;
         }
 
         nb -= n;
-        rb -= n;
         p  += n;
 
         /* validate the non-ascii */
@@ -178,7 +175,6 @@ ssize_t utf8_validate(const char *sp, ssize_t nb, ssize_t rb) {
         }
 
         nb -= b;
-        rb -= b;
         p  += b;
     }
 
