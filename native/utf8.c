@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2009 The Go Authors. All rights reserved.
+ * Modifications Copyright 2021 ByteDance Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "native.h"
 
@@ -19,6 +35,57 @@ static inline bool is_ascii(uint8_t ch) {
     return ch < 0x80;
 }
 
+// The default lowest and highest continuation byte.
+const static uint8_t locb = 0x80;
+const static uint8_t hicb = 0xBF;
+const static uint8_t xx = 0xF1; // invalid: size 1
+const static uint8_t as = 0xF0; // ASCII: size 1
+const static uint8_t s1 = 0x02; // accept 0, size 2
+const static uint8_t s2 = 0x13; // accept 1, size 3
+const static uint8_t s3 = 0x03; // accept 0, size 3
+const static uint8_t s4 = 0x23; // accept 2, size 3
+const static uint8_t s5 = 0x34; // accept 3, size 4
+const static uint8_t s6 = 0x04; // accept 0, size 4
+const static uint8_t s7 = 0x44; // accept 4, size 4
+
+// first is information about the first byte in a UTF-8 sequence.
+static const uint8_t first[256] = {
+	//   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x00-0x0F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x10-0x1F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x20-0x2F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x30-0x3F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x40-0x4F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x50-0x5F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x60-0x6F
+	as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, // 0x70-0x7F
+	//   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+	xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, // 0x80-0x8F
+	xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, // 0x90-0x9F
+	xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, // 0xA0-0xAF
+	xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, // 0xB0-0xBF
+	xx, xx, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, // 0xC0-0xCF
+	s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, s1, // 0xD0-0xDF
+	s2, s3, s3, s3, s3, s3, s3, s3, s3, s3, s3, s3, s3, s4, s3, s3, // 0xE0-0xEF
+	s5, s6, s6, s6, s7, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, xx, // 0xF0-0xFF
+};
+
+// AcceptRange gives the range of valid values for the second byte in a UTF-8
+// sequence.
+struct AcceptRange {
+	uint8_t lo; // lowest value for second byte.
+	uint8_t hi; // highest value for second byte.
+};
+
+// ranges has size 16 to avoid bounds checks in the code that uses it.
+const static struct AcceptRange ranges[5] = {
+    {locb, hicb}, // 0
+    {0xA0, hicb}, // 1
+    {locb, 0x9F}, // 2
+    {0x90, hicb}, // 3
+    {locb, 0x8F}, // 4
+};
+
 //  UTF-8 code point  | first byte | second byte | thrid byte | fourth byte
 //  U+0000  -  U+007F | 0___ ____
 //  U+0080  -  U+07FF | 110_ ____  | 10__ ____
@@ -27,50 +94,21 @@ static inline bool is_ascii(uint8_t ch) {
 //  U+E000  -  U+FFFF | 1110 ____  | 10__ ____   | 10__ ____
 // U+10000 - U+10FFFF | 1111 0___  | 10__ ____   | 10__ ____  | 10__ ____
 // checks non-ascii characters, and returns the utf-8 length
-static inline ssize_t is_utf8(const uint8_t* noascii, size_t n) {
-#define is_next(b) (((b) >> 6) == 2)
-    uint8_t b0 = *noascii;
-    uint8_t b1 = *(noascii + 1);
-    uint8_t b2 = *(noascii + 2);
-    uint8_t b3 = *(noascii + 3);
-    uint32_t r;
-
-    /* 2-byte */
-    if (unlikely(n < 2 || !is_next(b1))) {
+static inline ssize_t nonascii_is_utf8(const uint8_t* sp, size_t n) {
+    uint8_t mask = first[sp[0]];
+    uint8_t size = mask & 7;
+    if (n < size) {
         return 0;
     }
-    if (unlikely(b0 >> 5 == 6)) {
-        r = ((uint32_t)(b0 & 0x1f) << 6) | (b1 & 0x3f);
-        if (likely(r >= 0x0080 && r <= 0x07ff)) {
-            return 2;
-        }
-        return 0;
+    struct AcceptRange accept = ranges[mask >> 4];
+    switch (size) {
+        case 4 : if (sp[3] < locb || hicb < sp[3]) return 0;
+        case 3 : if (sp[2] < locb || hicb < sp[2]) return 0;
+        case 2 : if (sp[1] < accept.lo || accept.hi < sp[1]) return 0;
+        case 1 : // only validate non-ascii chars here
+        default: return 0;
     }
-
-    /* 3-byte */
-    if (unlikely(n < 3 || !is_next(b2))) {
-        return 0;
-    }
-    if (likely(b0 < 0xf0)) {
-        r = ((uint32_t)(b0 & 0x0f) << 12) | ((uint32_t)(b1 & 0x3f) << 6) | (b2 & 0x3f);
-        if (likely((r >= 0x0800u && r <= 0xd7ffu) || (r >= 0xe000u && r <= 0xffffu))) {
-            return 3;
-        }
-        return 0;
-    }
-
-    /* 4-byte */
-    if (unlikely(n < 4 || !is_next(b3))) {
-        return 0;
-    }
-    if (likely(b0 < 0xf8)) {
-        r = ((uint32_t)(b0 & 0x07) << 18) | ((uint32_t)(b1 & 0x3f) << 12) | ((uint32_t)(b2 & 0x3f) << 6) | (b3 & 0x3f);
-        if (likely(r >= 0x10000u && r <= 0x10ffffu)) {
-            return 4;
-        }
-    }
-    return 0;
-#undef is_next
+    return size;
 }
 
 ssize_t find_non_ascii(const uint8_t*sp, ssize_t nb, ssize_t rb) {
@@ -135,7 +173,7 @@ ssize_t utf8_validate(const char *sp, ssize_t nb, ssize_t rb) {
         p  += n;
 
         /* validate the non-ascii */
-        if (unlikely((b = is_utf8(p, nb)) == 0)) {
+        if (unlikely((b = nonascii_is_utf8(p, nb)) == 0)) {
             return p - s;
         }
 
