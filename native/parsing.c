@@ -783,9 +783,19 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
         }
 
         /* check for \u2028 and \u2029, [e2 80 a8] and [e2 80 a9] */
-        if (nb >= 3 && 0xa880e2 == (*(uint32_t *)sp & 0xfeffff)) {
-            sp += 2;
-            nb -= 2;
+        if (unlikely(*sp == '\xe2')) {
+            if (unlikely(nb < 3)) {
+                return -1; // should never happen
+            }
+            /* skip and copy other chars like \xe2... */
+            if ( (*(uint16_t*)(sp + 1) & 0xFEFFu) != 0xa880u) {
+            // equal as if (*(sp+1) != '\x80' || (*(sp+2) != '\xa8' && *(sp+2) != '\xa9'))
+                memcpy_p8(dp, sp, 3);
+                sp += 3, dp += 3;
+                nb -= 3, nd -= 3;
+                continue;
+            }
+            sp += 2, nb -= 2;
         }
 
         /* get the escape entry, handle consecutive quotes */

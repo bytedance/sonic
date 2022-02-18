@@ -189,6 +189,13 @@ func TestEncoder_EscapeHTML(t *testing.T) {
     ret, err = Encode(v, 0)
     require.NoError(t, err)
     require.Equal(t, `{"&&":{"X":"<>"}}`, string(ret))
+
+    // “ is \xe2\x80\x9c, and ” is \xe2\x80\x9d,
+    // similar as HTML escaped chars \u2028(\xe2\x80\xa8) and \u2029(\xe2\x80\xa9)
+    m := map[string]string{"test": "“123”"}
+    ret, err = Encode(m, EscapeHTML)
+    require.Equal(t, string(ret), `{"test":"“123”"}`)
+    require.NoError(t, err)
 }
 
 func TestEncoder_EscapeHTML_LargeJson(t *testing.T) {
