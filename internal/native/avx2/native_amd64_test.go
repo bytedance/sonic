@@ -257,6 +257,44 @@ func TestNative_VstringEscapeEOF(t *testing.T) {
     assert.Equal(t, int64(0), v.Iv)
 }
 
+func TestNative_ValidateOne(t *testing.T) {
+    {
+        p := 0
+        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\bxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
+        r := __validate_one(&s, &p, &types.StateMachine{})
+        assert.Equal(t, 64, p)
+        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
+    }
+    {
+        p := 0
+        s := "\"\x00\"x"
+        r := __validate_one(&s, &p, &types.StateMachine{})
+        assert.Equal(t, 1, p)
+        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
+    }
+    {
+        p := 0
+        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\x80xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
+        r := __validate_one(&s, &p, &types.StateMachine{})
+        assert.Equal(t, 64, p)
+        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
+    }
+    {
+        p := 0
+        s := "\"\x80\"x"
+        r := __validate_one(&s, &p, &types.StateMachine{})
+        assert.Equal(t, 1, p)
+        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
+    }
+    {
+        p := 0
+        s := "\"\xed\xbf\xbf\"x"
+        r := __validate_one(&s, &p, &types.StateMachine{})
+        assert.Equal(t, 1, p)
+        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
+    }
+}
+
 func TestNative_VstringHangUpOnRandomData(t *testing.T) {
     v, e := hex.DecodeString(
         "228dc61efd54ef80a908fb6026b7f2d5f92a257ba8b347c995f259eb8685376a" +
