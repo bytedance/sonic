@@ -10311,7 +10311,7 @@ _VecShiftShuffles:
 	QUAD $0x0e0d0c0b0a090807; QUAD $0xffffffffffffff0f // .ascii 16, '\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff'
 	QUAD $0x0f0e0d0c0b0a0908; QUAD $0xffffffffffffffff // .ascii 16, '\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff\xff'
 
-_LB_0e919b48: // _printhex.tab
+_LB_38f9b54b: // _printhex.tab
 	QUAD $0x3736353433323130; QUAD $0x6665646362613938 // .asciz 16, '0123456789abcdef'
 	BYTE $0x00                                         // .asciz 1, '\x00'
 
