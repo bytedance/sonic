@@ -29,6 +29,7 @@ import (
     `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 func TestMain(m *testing.M) {
@@ -333,3 +334,14 @@ func BenchmarkDecoder_Parallel_Binding_GoJson(b *testing.B) {
     })
 }
 
+func BenchmarkSkip_Sonic(b *testing.B) {
+    var data = rt.Str2Mem(TwitterJson)
+    if ret, _ := Skip(data); ret < 0 {
+        b.Fatal()
+    }
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        _, _ = Skip(data)
+    }
+}

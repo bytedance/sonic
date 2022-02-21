@@ -86,6 +86,11 @@ func SkipOne(s *string, p *int, m *types.StateMachine) int
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
+func ValidateOne(s *string, p *int, m *types.StateMachine) int
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
 func I64toa(out *byte, val int64) (ret int)
 
 //go:nosplit
