@@ -260,6 +260,13 @@ func TestNative_VstringEscapeEOF(t *testing.T) {
 func TestNative_ValidateOne(t *testing.T) {
     {
         p := 0
+        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\n\\r\\b\\f😁ſ景\xef\xbf\xbf\xf4\x8f\xbf\xbf\xc2\x80xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
+        r := __validate_one(&s, &p, &types.StateMachine{})
+        assert.Equal(t, len(s), p)
+        assert.Equal(t, 0, r)
+    }
+    {
+        p := 0
         s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\bxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
         r := __validate_one(&s, &p, &types.StateMachine{})
         assert.Equal(t, 64, p)
