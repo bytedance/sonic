@@ -136,6 +136,21 @@ func TestEncoder_Marshaler(t *testing.T) {
     require.Equal(t, `{"V":{"X":12345}}`, string(ret3))
 }
 
+type MarshalerErrorStruct struct {
+    V MarshalerImpl
+}
+
+func (self *MarshalerErrorStruct) MarshalJSON() ([]byte, error) {
+    return []byte(`[""] {`), nil
+}
+
+func TestMarshalerError(t *testing.T) {
+    v := MarshalerErrorStruct{}
+    ret, err := Encode(&v, 0)
+    require.EqualError(t, err, `invalid Marshaler output json syntax at 5: "[\"\"] {"`)
+    require.Equal(t, []byte(nil), ret)
+}
+
 type RawMessageStruct struct {
     X json.RawMessage
 }
@@ -469,18 +484,6 @@ func BenchmarkValidate_Sonic(b *testing.B) {
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
         _, _ = Valid(data)
-    }
-}
-
-func BenchmarkSkip_Sonic(b *testing.B) {
-    var data = rt.Str2Mem(TwitterJson)
-    if ret, _ := Skip(data); ret < 0 {
-        b.Fatal()
-    }
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    for i:=0; i<b.N; i++ {
-        _, _ = Skip(data)
     }
 }
 

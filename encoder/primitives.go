@@ -87,7 +87,7 @@ func encodeJsonMarshaler(buf *[]byte, val json.Marshaler, opt Options) error {
             return compact(buf, ret)
         }
         if ok, s := Valid(ret); !ok {
-            return error_marshaler(rt.UnpackIface(val).Itab.Vt.Pack(), s)
+            return error_marshaler(ret, s)
         }
         *buf = append(*buf, ret...)
         return nil

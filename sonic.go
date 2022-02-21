@@ -28,10 +28,6 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
-const (
-    _SpaceMask = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
-)
-
 // Marshal returns the JSON encoding of v.
 func Marshal(val interface{}) ([]byte, error) {
     return encoder.Encode(val, 0)
@@ -56,7 +52,7 @@ func UnmarshalString(buf string, val interface{}) error {
 
     /* skip all the trailing spaces */
     if pos != len(buf) {
-        for pos < len(buf) && (_SpaceMask & (1 << buf[pos])) != 0 {
+        for pos < len(buf) && (types.SPACE_MASK & (1 << buf[pos])) != 0 {
             pos++
         }
     }

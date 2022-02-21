@@ -279,24 +279,26 @@ func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
     return pretouchRec(next, opts)
 }
 
-// Valid validates json and tells and returns first non-blank character position if it is ok.
-// Otherwise returns invalid character position (using negative value)
+// Valid validates json and returns first non-blank character position,
+// if it is only one valid json value.
+// Otherwise returns invalid character position using start.
 func Valid(data []byte) (ok bool, start int) {
+    n := len(data)
+    if n == 0 {
+        return false, -1
+    }
     s := rt.Mem2Str(data)
     p := 0
     m := types.NewStateMachine()
     ret := native.ValidateOne(&s, &p, m)
     types.FreeStateMachine(m) 
-    return ret >= 0, ret
-}
-
-// Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
-// Otherwise returns negative start and invalid character position at end
-func Skip(data []byte) (start int, end int) {
-    s := rt.Mem2Str(data)
-    p := 0
-    m := types.NewStateMachine()
-    ret := native.SkipOne(&s, &p, m)
-    types.FreeStateMachine(m) 
-    return ret, p
+    if ret < 0 {
+        return false, p-1
+    }
+    for ;p < n; p++ {
+        if (types.SPACE_MASK & (1 << data[p])) == 0 {
+            return false, p
+        }
+    }
+    return true, ret
 }

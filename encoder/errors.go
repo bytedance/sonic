@@ -18,9 +18,9 @@ package encoder
 
 import (
     `encoding/json`
+    `fmt`
     `reflect`
     `strconv`
-    `errors`
 )
 
 var _ERR_too_deep = &json.UnsupportedValueError {
@@ -44,9 +44,6 @@ func error_number(number json.Number) error {
     }
 }
 
-func error_marshaler(vtype reflect.Type, s int) error {
-    return &json.MarshalerError{
-        Type       :vtype,
-        Err        :errors.New("invalid json syntax at " + strconv.Itoa(s)),
-    }
+func error_marshaler(ret []byte, pos int) error {
+    return fmt.Errorf("invalid Marshaler output json syntax at %d: %q", pos, ret)
 }

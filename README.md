@@ -147,7 +147,7 @@ v := map[string]string{"&&":{"<>"}}
 ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
 ```
 ### Compact Format
-Sonic encods premitive objects (struct/map...) are as compact-format JSON, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting for performance concern. We provide option `encoder.CompactMarshaler` to add compacting process.
+Sonic encodes premitive objects (struct/map...) as compact-format JSON by default, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting them for performance concern. We provide option `encoder.CompactMarshaler` to add compacting process.
 
 ### Print Syntax Error
 ```go
@@ -249,7 +249,7 @@ import (
     err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
 ```
 ### Accelerate `encoding.TextMarshaler`
-To ensure data security, sonic.Encoder quotes and escapes string values from `encoding.TextMarshaler` interfaces by default, which may degrade performance much if most of your data is in form of them. We provide `encoder.NoQuoteTextMarshaler` to avoid these operations, which means you **MUST** ensure their output string quoted and escaped by your own.
+To ensure data security, sonic.Encoder quotes and escapes string values from `encoding.TextMarshaler` interfaces by default, which may degrade performance much if most of your data is in form of them. We provide `encoder.NoQuoteTextMarshaler` to skip these operations, which means you **MUST** ensure their output string escaped and quoted in accordance with [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
 
 ### Pass string or []byte?
 For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString` and `GetFromString` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte.

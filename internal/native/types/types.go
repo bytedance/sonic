@@ -57,6 +57,10 @@ const (
 )
 
 const (
+    SPACE_MASK = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
+)
+
+const (
     ERR_EOF                ParsingError = 1
     ERR_INVALID_CHAR       ParsingError = 2
     ERR_INVALID_ESCAPE     ParsingError = 3
