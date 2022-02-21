@@ -317,27 +317,27 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     }
 }
 
-static inline int _mm_get_mask(__m128i v0, __m128i t) {
-    return _mm_movemask_epi8(_mm_cmpeq_epi8(v0, t));
+static inline int _mm_get_mask(__m128i v, __m128i t) {
+    return _mm_movemask_epi8(_mm_cmpeq_epi8(v, t));
 }
 
 // contrl char: 0x00 ~ 0x1F
-static inline int _mm_cchars_mask(__m128i vv) {
-    __m128i e1 = _mm_cmpgt_epi8 (vv, _mm_set1_epi8(-1));
-    __m128i e2 = _mm_cmpgt_epi8 (vv, _mm_set1_epi8(31));
+static inline int _mm_cchars_mask(__m128i v) {
+    __m128i e1 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(-1));
+    __m128i e2 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(31));
     return    _mm_movemask_epi8 (_mm_andnot_si128 (e2, e1));
 }
 
 #if USE_AVX2
 
-static inline int _mm256_get_mask(__m256i v0, __m256i t) {
-    return _mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, t));
+static inline int _mm256_get_mask(__m256i v, __m256i t) {
+    return _mm256_movemask_epi8(_mm256_cmpeq_epi8(v, t));
 }
 
 // contrl char: 0x00 ~ 0x1F
-static inline int _mm256_cchars_mask(__m256i vv) {
-    __m256i e1 = _mm256_cmpgt_epi8 (vv, _mm256_set1_epi8(-1));
-    __m256i e2 = _mm256_cmpgt_epi8 (vv, _mm256_set1_epi8(31));
+static inline int _mm256_cchars_mask(__m256i v) {
+    __m256i e1 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(-1));
+    __m256i e2 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(31));
     return    _mm256_movemask_epi8 (_mm256_andnot_si256 (e2, e1));
 }
 

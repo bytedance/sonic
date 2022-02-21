@@ -86,7 +86,7 @@ const static struct AcceptRange ranges[5] = {
     {locb, 0x8F}, // 4
 };
 
-//  UTF-8 code point  | first byte | second byte | thrid byte | fourth byte
+//  UTF-8 code point  | first byte | second byte | third byte | fourth byte
 //  U+0000  -  U+007F | 0___ ____
 //  U+0080  -  U+07FF | 110_ ____  | 10__ ____
 //  U+0800  -  U+D7FF | 1110 ____  | 10__ ____   | 10__ ____
@@ -104,8 +104,9 @@ static inline ssize_t nonascii_is_utf8(const uint8_t* sp, size_t n) {
     switch (size) {
         case 4 : if (sp[3] < locb || hicb < sp[3]) return 0;
         case 3 : if (sp[2] < locb || hicb < sp[2]) return 0;
-        case 2 : if (sp[1] < accept.lo || accept.hi < sp[1]) return 0;
-        case 1 : // only validate non-ascii chars here
+        case 2 : if (sp[1] < accept.lo || accept.hi < sp[1]) return 0; break;
+        case 1 : return 0; // invalid chars
+        case 0 : return 1; // ascii chars
         default: return 0;
     }
     return size;
