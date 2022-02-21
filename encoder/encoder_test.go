@@ -212,6 +212,11 @@ func TestEncoder_EscapeHTML(t *testing.T) {
     ret, err = Encode(m, EscapeHTML)
     require.Equal(t, string(ret), `{"test":"“123”"}`)
     require.NoError(t, err)
+
+    m = map[string]string{"K": "\u2028\u2028"}
+    ret, err = Encode(m, EscapeHTML)
+    require.Equal(t, string(ret), `{"K":"\u2028\u2028"}`)
+    require.NoError(t, err)
 }
 
 func TestEncoder_EscapeHTML_LargeJson(t *testing.T) {

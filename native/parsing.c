@@ -15,6 +15,8 @@
  */
 
 #include "native.h"
+#include "xprintf.c"
+#include <stdint.h>
 
 /** String Quoting **/
 
@@ -764,6 +766,7 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
         int     nc = 0;
         uint8_t ch = 0;
         ssize_t rb = memcchr_html_quote(sp, nb, dp, nd);
+        const char * cur = 0;
 
         /* not enough buffer space */
         if (rb < 0) {
@@ -781,6 +784,9 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
         if (nb <= 0) {
             break;
         }
+
+        /* mark cur postion */
+        cur = sp;
 
         /* check for \u2028 and \u2029, [e2 80 a8] and [e2 80 a9] */
         if (unlikely(*sp == '\xe2')) {
@@ -806,7 +812,7 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
         /* check for buffer space */
         if (nd < nc) {
             *dn = dp - ds;
-            return -(sp - ss) - 1;
+            return -(cur - ss) - 1;
         }
 
         /* copy the quoted value */
