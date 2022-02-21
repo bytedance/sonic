@@ -103,3 +103,8 @@ func __skip_array(s *string, p *int, m *types.StateMachine) (ret int)
 //go:noescape
 //goland:noinspection GoUnusedParameter
 func __skip_object(s *string, p *int, m *types.StateMachine) (ret int)
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func __validate_one(s *string, p *int, m *types.StateMachine) (ret int)

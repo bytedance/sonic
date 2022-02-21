@@ -18,6 +18,7 @@ package types
 
 import (
     `fmt`
+    `sync`
 )
 
 type ValueType int
@@ -53,6 +54,10 @@ const (
 
 const (
     MAX_RECURSE = 65536
+)
+
+const (
+    SPACE_MASK = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
 )
 
 const (
@@ -103,3 +108,18 @@ type StateMachine struct {
     Sp int
     Vt [MAX_RECURSE]int
 }
+
+var stackPool = sync.Pool{
+    New: func()interface{}{
+        return &StateMachine{}
+    },
+}
+
+func NewStateMachine() *StateMachine {
+    return stackPool.Get().(*StateMachine)
+}
+
+func FreeStateMachine(fsm *StateMachine) {
+    stackPool.Put(fsm)
+}
+

@@ -90,7 +90,7 @@ type GoMapIterator struct {
 
 type GoItab struct {
     it unsafe.Pointer
-    vt *GoType
+    Vt *GoType
     hv uint32
     _  [4]byte
     fn [1]uintptr
@@ -184,6 +184,10 @@ func UnpackType(t reflect.Type) *GoType {
 
 func UnpackEface(v interface{}) GoEface {
     return *(*GoEface)(unsafe.Pointer(&v))
+}
+
+func UnpackIface(v interface{}) GoIface {
+    return *(*GoIface)(unsafe.Pointer(&v))
 }
 
 func findReflectRtypeItab() *GoItab {

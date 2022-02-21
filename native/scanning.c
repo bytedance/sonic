@@ -317,6 +317,259 @@ static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
     }
 }
 
+static inline int _mm_get_mask(__m128i v, __m128i t) {
+    return _mm_movemask_epi8(_mm_cmpeq_epi8(v, t));
+}
+
+// contrl char: 0x00 ~ 0x1F
+static inline int _mm_cchars_mask(__m128i v) {
+    __m128i e1 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(-1));
+    __m128i e2 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(31));
+    return    _mm_movemask_epi8 (_mm_andnot_si128 (e2, e1));
+}
+
+#if USE_AVX2
+
+static inline int _mm256_get_mask(__m256i v, __m256i t) {
+    return _mm256_movemask_epi8(_mm256_cmpeq_epi8(v, t));
+}
+
+// contrl char: 0x00 ~ 0x1F
+static inline int _mm256_cchars_mask(__m256i v) {
+    __m256i e1 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(-1));
+    __m256i e2 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(31));
+    return    _mm256_movemask_epi8 (_mm256_andnot_si256 (e2, e1));
+}
+
+#endif
+
+static inline ssize_t advance_validate_string(const GoString *src, long p, int64_t *ep) {
+    char     ch;
+    uint64_t es;
+    uint64_t fe;
+    uint64_t os;
+    uint64_t m0;
+    uint64_t m1;
+    uint64_t m2;
+    uint64_t cr = 0;
+    long     qp = 0;
+    long     np = 0;
+
+    /* prevent out-of-bounds accessing */
+    if (unlikely(src->len == p)) {
+        return -ERR_EOF;
+    }
+
+    /* buffer pointers */
+    size_t       nb = src->len;
+    const char * sp = src->buf;
+    const char * ss = src->buf;
+
+#define ep_init()   *ep = -1;
+#define ep_setc()   ep_setx(sp - ss - 1)
+#define ep_setx(x)  if (*ep == -1) { *ep = (x); }
+
+    /* seek to `p` */
+    nb -= p;
+    sp += p;
+    ep_init()
+
+#if USE_AVX2
+    /* initialize vectors */
+    __m256i v0;
+    __m256i v1;
+    __m256i cq = _mm256_set1_epi8('"');
+    __m256i cx = _mm256_set1_epi8('\\');
+
+    /* partial masks */
+    uint32_t s0, s1;
+    uint32_t t0, t1;
+    uint32_t c0, c1;
+#else
+    /* initialize vectors */
+    __m128i v0;
+    __m128i v1;
+    __m128i v2;
+    __m128i v3;
+    __m128i cq = _mm_set1_epi8('"');
+    __m128i cx = _mm_set1_epi8('\\');
+
+    /* partial masks */
+    uint32_t s0, s1, s2, s3;
+    uint32_t t0, t1, t2, t3;
+    uint32_t c0, c1, c2, c3;
+#endif
+
+#define m0_mask(add)                \
+    m1 &= ~cr;                      \
+    fe  = (m1 << 1) | cr;           \
+    os  = (m1 & ~fe) & ODD_MASK;    \
+    es  = add(os, m1, &cr) << 1;    \
+    m0 &= ~(fe & (es ^ EVEN_MASK));
+
+    /* 64-byte SIMD loop */
+    while (likely(nb >= 64)) {
+#if USE_AVX2
+        v0 = _mm256_loadu_si256   ((const void *)(sp +  0));
+        v1 = _mm256_loadu_si256   ((const void *)(sp + 32));
+        s0 = _mm256_get_mask(v0, cq);
+        s1 = _mm256_get_mask(v1, cq);
+        t0 = _mm256_get_mask(v0, cx);
+        t1 = _mm256_get_mask(v1, cx);
+        c0 = _mm256_cchars_mask(v0);
+        c1 = _mm256_cchars_mask(v1);
+        m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
+        m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
+        m2 = ((uint64_t)c1 << 32) | (uint64_t)c0;
+#else
+        v0 = _mm_loadu_si128   ((const void *)(sp +  0));
+        v1 = _mm_loadu_si128   ((const void *)(sp + 16));
+        v2 = _mm_loadu_si128   ((const void *)(sp + 32));
+        v3 = _mm_loadu_si128   ((const void *)(sp + 48));
+        s0 = _mm_get_mask(v0, cq);
+        s1 = _mm_get_mask(v1, cq);
+        s2 = _mm_get_mask(v2, cq);
+        s3 = _mm_get_mask(v3, cq);
+        t0 = _mm_get_mask(v0, cx);
+        t1 = _mm_get_mask(v1, cx);
+        t2 = _mm_get_mask(v2, cx);
+        t3 = _mm_get_mask(v3, cx);
+        c0 = _mm_cchars_mask(v0);
+        c1 = _mm_cchars_mask(v1);
+        c2 = _mm_cchars_mask(v2);
+        c3 = _mm_cchars_mask(v3);
+        m0 = ((uint64_t)s3 << 48) | ((uint64_t)s2 << 32) | ((uint64_t)s1 << 16) | (uint64_t)s0;
+        m1 = ((uint64_t)t3 << 48) | ((uint64_t)t2 << 32) | ((uint64_t)t1 << 16) | (uint64_t)t0;
+        m2 = ((uint64_t)c3 << 48) | ((uint64_t)c2 << 32) | ((uint64_t)c1 << 16) | (uint64_t)c0;
+
+#endif
+
+        /** update first quote position */
+        if (unlikely(m1 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m1))
+        }
+
+        /** mask all the escaped quotes */
+        if (unlikely(m1 != 0 || cr != 0)) {
+            m0_mask(add64)
+        }
+
+        /* get the position of end quote */
+        if (m0 != 0) {
+            qp = sp - ss + __builtin_ctzll(m0) + 1;
+            /* check control chars in JSON string */
+            if (unlikely(m2 !=0 && (np = sp - ss + __builtin_ctzll(m2)) < qp)) {
+                ep_setx(np) // set error position
+                return -ERR_INVAL;
+            }
+            return qp;
+        }
+
+        /* check control chars in JSON string */
+        if (unlikely(m2 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m2))
+            return -ERR_INVAL;
+        }
+
+        /* move to the next block */
+        sp += 64;
+        nb -= 64;
+    }
+
+    /* 32-byte SIMD round */
+    if (likely(nb >= 32)) {
+#if USE_AVX2
+        v0 = _mm256_loadu_si256   ((const void *)sp);
+        s0 = _mm256_get_mask (v0, cq);
+        t0 = _mm256_get_mask (v0, cx);
+        c0 = _mm256_cchars_mask(v0);
+        m0 = (uint64_t)s0;
+        m1 = (uint64_t)t0;
+        m2 = (uint64_t)c0;
+#else
+        v0 = _mm_loadu_si128   ((const void *)(sp +  0));
+        v1 = _mm_loadu_si128   ((const void *)(sp + 16));
+        s0 = _mm_get_mask(v0, cq);
+        s1 = _mm_get_mask(v1, cq);
+        t0 = _mm_get_mask(v0, cx);
+        t1 = _mm_get_mask(v1, cx);
+        c0 = _mm_cchars_mask(v0);
+        c1 = _mm_cchars_mask(v1);
+        m0 = ((uint64_t)s1 << 16) | (uint64_t)s0;
+        m1 = ((uint64_t)t1 << 16) | (uint64_t)t0;
+        m2 = ((uint64_t)c1 << 16) | (uint64_t)c0;
+#endif
+
+        /** update first quote position */
+        if (unlikely(m1 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m1))
+        }
+
+        /** mask all the escaped quotes */
+        if (unlikely(m1 != 0 || cr != 0)) {
+            m0_mask(add32)
+        }
+
+        /* get the position of end quote */
+        if (m0 != 0) {
+            qp = sp - ss + __builtin_ctzll(m0) + 1;
+            /* check control chars in JSON string */
+            if (unlikely(m2 !=0 && (np = sp - ss + __builtin_ctzll(m2)) < qp)) {
+                ep_setx(np) // set error position
+                return -ERR_INVAL;
+            }
+            return qp;
+        }
+
+        /* check control chars in JSON string */
+        if (unlikely(m2 != 0)) {
+            ep_setx(sp - ss + __builtin_ctzll(m2))
+            return -ERR_INVAL;
+        }
+
+        /* move to the next block */
+        sp += 32;
+        nb -= 32;
+    }
+
+    /* check for carry */
+    if (unlikely(cr != 0)) {
+        if (nb == 0) {
+            return -ERR_EOF;
+        } else {
+            ep_setc()
+            sp++, nb--;
+        }
+    }
+
+    /* handle the remaining bytes with scalar code */
+    while (nb-- > 0 && (ch = *sp++) != '"') {
+        if (unlikely(ch == '\\')) {
+            if (nb == 0) {
+                return -ERR_EOF;
+            } else {
+                ep_setc()
+                sp++, nb--;
+            }
+        } else if (unlikely( ch >= 0 && ch <= 0x1f)) { // control chars
+            ep_setc()
+            return -ERR_INVAL;
+        }
+    }
+
+#undef ep_init
+#undef ep_setc
+#undef ep_setx
+#undef m0_mask
+
+    /* check for quotes */
+    if (ch == '"') {
+        return sp - ss;
+    } else {
+        return -ERR_EOF;
+    }
+}
+
 /** Value Scanning Routines **/
 
 long value(const char *s, size_t n, long p, JsonState *ret, int allow_control) {
@@ -724,7 +977,10 @@ static inline long fsm_push(StateMachine *self, int vt) {
     }
 }
 
-static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
+#define VALID_DEFAULT 0 // basic validate, except JSON string.
+#define VALID_FULL    1 // also validate JSON string, including control chars or invalid UTF-8.
+
+static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, int validate_flag) {
     int  vt;
     char ch;
     long vi = -1;
@@ -806,7 +1062,11 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
                     /* the quote of the first key */
                     case '"': {
                         FSM_REPL(self, FSM_OBJ);
-                        FSM_XERR(skip_string(src, p));
+                        if (validate_flag == VALID_DEFAULT) {
+                            FSM_XERR(skip_string(src, p));
+                        } else if (validate_flag == VALID_FULL) {
+                            FSM_XERR(validate_string(src, p));
+                        }
                         FSM_XERR(fsm_push(self, FSM_ELEM));
                         continue;
                     }
@@ -830,9 +1090,16 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
             case 'n' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_NULL)); break;
             case 't' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_TRUE)); break;
             case 'f' : FSM_XERR(advance_dword(src, p, 0, *p - 1, VS_ALSE)); break;
-            case '"' : FSM_XERR(skip_string(src, p));                       break;
             case '[' : FSM_XERR(fsm_push(self, FSM_ARR_0));                 break;
             case '{' : FSM_XERR(fsm_push(self, FSM_OBJ_0));                 break;
+            case '"' : {
+                if (validate_flag == VALID_DEFAULT) {
+                    FSM_XERR(skip_string(src, p));
+                } else if (validate_flag == VALID_FULL) {
+                    FSM_XERR(validate_string(src, p));
+                }
+                break;
+            }
             case  0  : return -ERR_EOF;
             default  : return -ERR_INVAL;
         }
@@ -1061,17 +1328,17 @@ check_index:
 
 long skip_one(const GoString *src, long *p, StateMachine *m) {
     fsm_init(m, FSM_VAL);
-    return fsm_exec(m, src, p);
+    return fsm_exec(m, src, p, VALID_DEFAULT);
 }
 
 long skip_array(const GoString *src, long *p, StateMachine *m) {
     fsm_init(m, FSM_ARR_0);
-    return fsm_exec(m, src, p);
+    return fsm_exec(m, src, p, VALID_DEFAULT);
 }
 
 long skip_object(const GoString *src, long *p, StateMachine *m) {
     fsm_init(m, FSM_OBJ_0);
-    return fsm_exec(m, src, p);
+    return fsm_exec(m, src, p, VALID_DEFAULT);
 }
 
 long skip_string(const GoString *src, long *p) {
@@ -1087,6 +1354,28 @@ long skip_string(const GoString *src, long *p) {
         *p = src->len;
         return e;
     }
+}
+
+long validate_string(const GoString *src, long *p) {
+    int64_t v;
+    ssize_t q = *p - 1;
+    ssize_t e = advance_validate_string(src, *p, &v);
+
+    /* check for errors in string advance */
+    if (e < 0) {
+        *p = e == -ERR_EOF ? src->len : v;
+        return e;
+    }
+
+    /* check for errors in UTF-8 validate */
+    ssize_t nb = e - *p - 1;
+    ssize_t r = utf8_validate(src->buf + *p, nb);
+    if (r >= 0) {
+        *p += r;
+        return -ERR_INVAL;
+    }
+    *p = e;
+    return q;
 }
 
 long skip_negative(const GoString *src, long *p) {
@@ -1117,4 +1406,9 @@ long skip_positive(const GoString *src, long *p) {
     /* update value pointer */
     *p += r - 1;
     return i;
+}
+
+long validate_one(const GoString *src, long *p, StateMachine *m) {
+    fsm_init(m, FSM_VAL);
+    return fsm_exec(m, src, p, VALID_FULL);
 }

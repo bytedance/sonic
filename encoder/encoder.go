@@ -24,6 +24,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
 )
@@ -34,7 +35,7 @@ type Options uint64
 const (
     bitSortMapKeys          = iota
     bitEscapeHTML          
-    bitNoCompactMarshaler
+    bitCompactMarshaler
     bitNoQuoteTextMarshaler
 )
 
@@ -49,9 +50,9 @@ const (
     // WARNING: This hurts performance A LOT, USE WITH CARE.
     EscapeHTML           Options = 1 << bitEscapeHTML
 
-    // NoCompactMarshaler indicates that the output JSON from json.Marshaler 
+    // CompactMarshaler indicates that the output JSON from json.Marshaler 
     // is always compact and needs no validation 
-    NoCompactMarshaler   Options = 1 << bitNoCompactMarshaler
+    CompactMarshaler   Options = 1 << bitCompactMarshaler
 
     // NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler 
     // is always escaped string and needs no quoting
@@ -276,4 +277,28 @@ func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
     }
     opts.RecursiveDepth -= 1
     return pretouchRec(next, opts)
+}
+
+// Valid validates json and returns first non-blank character position,
+// if it is only one valid json value.
+// Otherwise returns invalid character position using start.
+func Valid(data []byte) (ok bool, start int) {
+    n := len(data)
+    if n == 0 {
+        return false, -1
+    }
+    s := rt.Mem2Str(data)
+    p := 0
+    m := types.NewStateMachine()
+    ret := native.ValidateOne(&s, &p, m)
+    types.FreeStateMachine(m) 
+    if ret < 0 {
+        return false, p-1
+    }
+    for ;p < n; p++ {
+        if (types.SPACE_MASK & (1 << data[p])) == 0 {
+            return false, p
+        }
+    }
+    return true, ret
 }

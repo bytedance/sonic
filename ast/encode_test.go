@@ -94,7 +94,7 @@ func TestEncodeValue(t *testing.T) {
         {NewObject([]Pair{}), `{}`, false},
         {NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, false},
         {NewAny(obj), string(buf), false},
-        {NewRaw(`[{ }]`), "[{}]", false},
+        {NewRaw(`[{ }]`), "[{ }]", false},
         {Node{}, "", true},
         {Node{t: types.ValueType(1)}, "", true},
     }

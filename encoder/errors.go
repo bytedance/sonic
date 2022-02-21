@@ -18,6 +18,7 @@ package encoder
 
 import (
     `encoding/json`
+    `fmt`
     `reflect`
     `strconv`
 )
@@ -41,4 +42,8 @@ func error_number(number json.Number) error {
         Str   : "invalid number literal: " + strconv.Quote(string(number)),
         Value : reflect.ValueOf(number),
     }
+}
+
+func error_marshaler(ret []byte, pos int) error {
+    return fmt.Errorf("invalid Marshaler output json syntax at %d: %q", pos, ret)
 }
