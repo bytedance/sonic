@@ -197,7 +197,7 @@ func TestEncoder_TextMarshaler(t *testing.T) {
     require.Equal(t, `{"V":{"X":"{\"a\"}"}}`, string(ret3))
 }
 
-func TestEncoder_EscapeHTML(t *testing.T) {
+func TestEncoder_Marshal_EscapeHTML(t *testing.T) {
     v := map[string]TextMarshalerImpl{"&&":{"<>"}}
     ret, err := Encode(v, EscapeHTML)
     require.NoError(t, err)
@@ -219,7 +219,17 @@ func TestEncoder_EscapeHTML(t *testing.T) {
     require.NoError(t, err)
 }
 
-func TestEncoder_EscapeHTML_LargeJson(t *testing.T) {
+func TestEncoder_EscapeHTML(t *testing.T) {
+    // test data from libfuzzer
+    var data = []byte("&&&&&&&&&&&&&&&&&&&&&&&\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+	var dst bytes.Buffer
+	var sdst []byte
+	json.HTMLEscape(&dst, data)
+	sdst = HTMLEscape(sdst, data)
+    require.Equal(t, string(sdst), dst.String())
+}
+
+func TestEncoder_Marshal_EscapeHTML_LargeJson(t *testing.T) {
     buf1, err1 := Encode(&_BindingValue, SortMapKeys | EscapeHTML)
     require.NoError(t, err1)
     buf2, err2 :=json.Marshal(&_BindingValue)
