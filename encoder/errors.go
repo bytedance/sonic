@@ -20,6 +20,7 @@ import (
     `encoding/json`
     `reflect`
     `strconv`
+    `errors`
 )
 
 var _ERR_too_deep = &json.UnsupportedValueError {
@@ -40,5 +41,12 @@ func error_number(number json.Number) error {
     return &json.UnsupportedValueError {
         Str   : "invalid number literal: " + strconv.Quote(string(number)),
         Value : reflect.ValueOf(number),
+    }
+}
+
+func error_marshaler(vtype reflect.Type, s int) error {
+    return &json.MarshalerError{
+        Type       :vtype,
+        Err        :errors.New("invalid json syntax at " + strconv.Itoa(s)),
     }
 }

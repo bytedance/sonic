@@ -146,13 +146,8 @@ import "github.com/bytedance/sonic"
 v := map[string]string{"&&":{"<>"}}
 ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
 ```
-### Optimization Options
-- encoder.NoCompactMarshaler
-
-When marshaling `json.RawMessage` or `json.Marshaler`, sonic ensures validating and compacting their output JSON string. The higher the ratio of these kinds of data is, the much this feature impacts encoding performance. Therefore, we provide option `encoder.NoCompactMarshaler` to skip the compacting process, which means your marshaler's outputs **MUST** be valid JSON. If not, **Undocumented Behavior** may happen.
-- encoder.NoQuoteTextMarshaler
-
-We also provide option `encoder.NoQuoteTextMarshaler` to avoid quoting the output string of `encoding.TextMarshaler`.
+### Compact Format
+Sonic encods premitive objects (struct/map...) are as compact-format JSON, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting for performance concern. We provide option `encoder.CompactMarshaler` to add compacting process.
 
 ### Print Syntax Error
 ```go
@@ -253,8 +248,8 @@ import (
     // you can set compile recursive depth in Pretouch for better stability in JIT.
     err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
 ```
-### Accelerate `json.RawMessage\json.Marshaler\encoding.TextMarshaler`
-To ensure data security, sonic.Encoder validates and escapes JSON values from these interfaces by default, which may degrade performance much if most of your data is in form of them. We provide two options `encoder.NoCompactMarshaler` (for `json.RawMessage\json.Marshaler`) and `encoder.NoQuoteTextMarshaler` (for `encoding.TextMarshaler`) to avoid validating and escaping operations, which means you **MUST** ensure the validity of JSON values from these interfaces by your own.
+### Accelerate `encoding.TextMarshaler`
+To ensure data security, sonic.Encoder quotes and escapes string values from `encoding.TextMarshaler` interfaces by default, which may degrade performance much if most of your data is in form of them. We provide `encoder.NoQuoteTextMarshaler` to avoid these operations, which means you **MUST** ensure their output string quoted and escaped by your own.
 
 ### Pass string or []byte?
 For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString` and `GetFromString` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte.

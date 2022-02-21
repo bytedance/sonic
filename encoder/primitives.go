@@ -83,11 +83,14 @@ func encodeJsonMarshaler(buf *[]byte, val json.Marshaler, opt Options) error {
     if ret, err := val.MarshalJSON(); err != nil {
         return err
     } else {
-        if opt & NoCompactMarshaler != 0 {
-            *buf = append(*buf, ret...)
-            return nil
+        if opt & CompactMarshaler != 0 {
+            return compact(buf, ret)
         }
-        return compact(buf, ret)
+        if ok, s := Valid(ret); !ok {
+            return error_marshaler(rt.UnpackIface(val).Itab.Vt.Pack(), s)
+        }
+        *buf = append(*buf, ret...)
+        return nil
     }
 }
 

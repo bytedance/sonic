@@ -123,15 +123,15 @@ func TestEncoder_Marshaler(t *testing.T) {
     v := MarshalerStruct{V: MarshalerImpl{X: 12345}}
     ret, err := Encode(&v, 0)
     require.NoError(t, err)
-    require.Equal(t, `{"V":12345}`, string(ret))
+    require.Equal(t, `{"V":12345    }`, string(ret))
     ret, err = Encode(v, 0)
     require.NoError(t, err)
     require.Equal(t, `{"V":{"X":12345}}`, string(ret))
 
-    ret2, err2 := Encode(&v, NoCompactMarshaler)
+    ret2, err2 := Encode(&v, 0)
     require.NoError(t, err2)
     require.Equal(t, `{"V":12345    }`, string(ret2))
-    ret3, err3 := Encode(v, NoCompactMarshaler)
+    ret3, err3 := Encode(v, CompactMarshaler)
     require.NoError(t, err3)
     require.Equal(t, `{"V":{"X":12345}}`, string(ret3))
 }
@@ -146,11 +146,11 @@ func TestEncoder_RawMessage(t *testing.T) {
     }
     ret, err := Encode(&rms, 0)
     require.NoError(t, err)
-    require.Equal(t, `{"X":123456}`, string(ret))
-
-    ret, err = Encode(&rms, NoCompactMarshaler)
-    require.NoError(t, err)
     require.Equal(t, `{"X":123456    }`, string(ret))
+
+    ret, err = Encode(&rms, CompactMarshaler)
+    require.NoError(t, err)
+    require.Equal(t, `{"X":123456}`, string(ret))
 }
 
 type TextMarshalerImpl struct {
@@ -235,11 +235,11 @@ func TestEncoder_MapSortKey(t *testing.T) {
 }
 
 func BenchmarkEncoder_Generic_Sonic(b *testing.B) {
-    _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML)
+    _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML | CompactMarshaler)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML)
+        _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML | CompactMarshaler)
     }
 }
 
@@ -280,20 +280,20 @@ func BenchmarkEncoder_Generic_StdLib(b *testing.B) {
 }
 
 func BenchmarkEncoder_Binding_Sonic(b *testing.B) {
-    _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML)
+    _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML | CompactMarshaler)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML)
+        _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML | CompactMarshaler)
     }
 }
 
 func BenchmarkEncoder_Binding_Sonic_Fast(b *testing.B) {
-    _, _ = Encode(&_BindingValue, NoCompactMarshaler | NoQuoteTextMarshaler)
+    _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        _, _ = Encode(&_BindingValue, NoCompactMarshaler | NoQuoteTextMarshaler)
+        _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
     }
 }
 
@@ -325,23 +325,23 @@ func BenchmarkEncoder_Binding_StdLib(b *testing.B) {
 }
 
 func BenchmarkEncoder_Parallel_Generic_Sonic(b *testing.B) {
-    _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML)
+    _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML | CompactMarshaler)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML)
+            _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML | CompactMarshaler)
         }
     })
 }
 
 func BenchmarkEncoder_Parallel_Generic_Sonic_Fast(b *testing.B) {
-    _, _ = Encode(_GenericValue, NoCompactMarshaler | NoQuoteTextMarshaler)
+    _, _ = Encode(_GenericValue, NoQuoteTextMarshaler)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = Encode(_GenericValue, NoCompactMarshaler | NoQuoteTextMarshaler)
+            _, _ = Encode(_GenericValue, NoQuoteTextMarshaler)
         }
     })
 }
@@ -380,23 +380,23 @@ func BenchmarkEncoder_Parallel_Generic_StdLib(b *testing.B) {
 }
 
 func BenchmarkEncoder_Parallel_Binding_Sonic(b *testing.B) {
-    _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML)
+    _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML | CompactMarshaler)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML)
+            _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML | CompactMarshaler)
         }
     })
 }
 
 func BenchmarkEncoder_Parallel_Binding_Sonic_Fast(b *testing.B) {
-    _, _ = Encode(&_BindingValue, NoCompactMarshaler | NoQuoteTextMarshaler)
+    _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
-            _, _ = Encode(&_BindingValue, NoCompactMarshaler | NoQuoteTextMarshaler)
+            _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
         }
     })
 }
@@ -461,13 +461,14 @@ func BenchmarkHTMLEscape_StdLib(b *testing.B) {
 
 func BenchmarkValidate_Sonic(b *testing.B) {
     var data = rt.Str2Mem(TwitterJson)
-    if !Valid(data) {
-        b.Fatal()
+    ok, s := Valid(data)
+    if !ok {
+        b.Fatal(s)
     }
     b.SetBytes(int64(len(TwitterJson)))
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
-        _ = Valid(data)
+        _, _ = Valid(data)
     }
 }
 

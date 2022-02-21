@@ -35,7 +35,7 @@ type Options uint64
 const (
     bitSortMapKeys          = iota
     bitEscapeHTML          
-    bitNoCompactMarshaler
+    bitCompactMarshaler
     bitNoQuoteTextMarshaler
 )
 
@@ -50,9 +50,9 @@ const (
     // WARNING: This hurts performance A LOT, USE WITH CARE.
     EscapeHTML           Options = 1 << bitEscapeHTML
 
-    // NoCompactMarshaler indicates that the output JSON from json.Marshaler 
+    // CompactMarshaler indicates that the output JSON from json.Marshaler 
     // is always compact and needs no validation 
-    NoCompactMarshaler   Options = 1 << bitNoCompactMarshaler
+    CompactMarshaler   Options = 1 << bitCompactMarshaler
 
     // NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler 
     // is always escaped string and needs no quoting
@@ -279,16 +279,19 @@ func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
     return pretouchRec(next, opts)
 }
 
-
-func Valid(data []byte) bool {
+// Valid validates json and tells and returns first non-blank character position if it is ok.
+// Otherwise returns invalid character position (using negative value)
+func Valid(data []byte) (ok bool, start int) {
     s := rt.Mem2Str(data)
     p := 0
     m := types.NewStateMachine()
     ret := native.ValidateOne(&s, &p, m)
     types.FreeStateMachine(m) 
-    return ret >= 0
+    return ret >= 0, ret
 }
 
+// Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
+// Otherwise returns negative start and invalid character position at end
 func Skip(data []byte) (start int, end int) {
     s := rt.Mem2Str(data)
     p := 0
