@@ -796,10 +796,12 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
         if (unlikely(*sp == '\xe2')) {
             if (nb >= 3 && *(sp+1) == '\x80' && (*(sp+2) == '\xa8' || *(sp+2) == '\xa9')) {
                 sp += 2, nb -= 2;
-            } else {
+            } else if (nd > 0) {
                 *dp++ = *sp++;
                 nb--, nd--;
                 continue;
+            } else {
+                return -(sp - ss) - 1;
             }
         }
 

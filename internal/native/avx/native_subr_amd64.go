@@ -15,22 +15,22 @@ var (
     _subr__lspace       = __native_entry__() + 251
     _subr__lzero        = __native_entry__() + 13
     _subr__quote        = __native_entry__() + 4970
-    _subr__skip_array   = __native_entry__() + 17525
-    _subr__skip_object  = __native_entry__() + 17562
-    _subr__skip_one     = __native_entry__() + 15677
+    _subr__skip_array   = __native_entry__() + 17520
+    _subr__skip_object  = __native_entry__() + 17557
+    _subr__skip_one     = __native_entry__() + 15672
     _subr__u64toa       = __native_entry__() + 3748
     _subr__unquote      = __native_entry__() + 6010
-    _subr__validate_one = __native_entry__() + 20464
-    _subr__value        = __native_entry__() + 10912
-    _subr__vnumber      = __native_entry__() + 13691
-    _subr__vsigned      = __native_entry__() + 15121
-    _subr__vstring      = __native_entry__() + 12644
-    _subr__vunsigned    = __native_entry__() + 15401
+    _subr__validate_one = __native_entry__() + 20459
+    _subr__value        = __native_entry__() + 10907
+    _subr__vnumber      = __native_entry__() + 13686
+    _subr__vsigned      = __native_entry__() + 15116
+    _subr__vstring      = __native_entry__() + 12639
+    _subr__vunsigned    = __native_entry__() + 15396
 )
 
 const (
     _stack__f64toa = 120
-    _stack__html_escape = 72
+    _stack__html_escape = 64
     _stack__i64toa = 24
     _stack__lspace = 8
     _stack__lzero = 8
