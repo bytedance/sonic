@@ -197,7 +197,7 @@ func TestEncoder_TextMarshaler(t *testing.T) {
     require.Equal(t, `{"V":{"X":"{\"a\"}"}}`, string(ret3))
 }
 
-func TestEncoder_EscapeHTML(t *testing.T) {
+func TestEncoder_Marshal_EscapeHTML(t *testing.T) {
     v := map[string]TextMarshalerImpl{"&&":{"<>"}}
     ret, err := Encode(v, EscapeHTML)
     require.NoError(t, err)
@@ -205,9 +205,36 @@ func TestEncoder_EscapeHTML(t *testing.T) {
     ret, err = Encode(v, 0)
     require.NoError(t, err)
     require.Equal(t, `{"&&":{"X":"<>"}}`, string(ret))
+
+    // “ is \xe2\x80\x9c, and ” is \xe2\x80\x9d,
+    // similar as HTML escaped chars \u2028(\xe2\x80\xa8) and \u2029(\xe2\x80\xa9)
+    m := map[string]string{"test": "“123”"}
+    ret, err = Encode(m, EscapeHTML)
+    require.Equal(t, string(ret), `{"test":"“123”"}`)
+    require.NoError(t, err)
+
+    m = map[string]string{"K": "\u2028\u2028\xe2"}
+    ret, err = Encode(m, EscapeHTML)
+    require.Equal(t, string(ret), "{\"K\":\"\\u2028\\u2028\xe2\"}")
+    require.NoError(t, err)
 }
 
-func TestEncoder_EscapeHTML_LargeJson(t *testing.T) {
+func TestEncoder_EscapeHTML(t *testing.T) {
+    // test data from libfuzzer
+    test := []string{
+        "&&&&&&&&&&&&&&&&&&&&&&&\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",
+        "{\"\"\u2028\x94\xe2\x00\x00\x00\x00\x00\x00\x00\x00\u2028\x80\u2028\x80\u2028\xe2\u2028\x8a\u2028⑀\xa8\x8a\xa8\xe2\u2028\xe2\u2028\xe2\u2028\xe2\u2000\x8d\xe2\u2028\xe2\u2028\xe2\xe2\xa8\"}",
+    }
+    for _, s := range(test) {
+        data := []byte(s)
+        sdst := HTMLEscape(nil, data)
+        var dst bytes.Buffer
+        json.HTMLEscape(&dst, data)
+        require.Equal(t, string(sdst), dst.String())
+    }
+}
+
+func TestEncoder_Marshal_EscapeHTML_LargeJson(t *testing.T) {
     buf1, err1 := Encode(&_BindingValue, SortMapKeys | EscapeHTML)
     require.NoError(t, err1)
     buf2, err2 :=json.Marshal(&_BindingValue)

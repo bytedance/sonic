@@ -15,6 +15,7 @@
  */
 
 #include "native.h"
+#include <stdint.h>
 
 /** String Quoting **/
 
@@ -760,13 +761,19 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
     const quoted_t * tab = _HtmlQuoteTab;
 
     /* find the special characters, copy on the fly */
-    while (nb != 0) {
+    while (nb > 0) {
         int     nc = 0;
         uint8_t ch = 0;
-        ssize_t rb = memcchr_html_quote(sp, nb, dp, nd);
+        ssize_t rb = 0;
+        const char * cur = 0;
 
         /* not enough buffer space */
-        if (rb < 0) {
+        if (nd <= 0) {
+            return -(sp - ss) - 1;
+        }
+
+        /* find and copy */
+        if ((rb = memcchr_html_quote(sp, nb, dp, nd)) < 0) {
             *dn = dp - ds - rb - 1;
             return -(sp - ss - rb - 1) - 1;
         }
@@ -782,10 +789,20 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
             break;
         }
 
-        /* check for \u2028 and \u2029, [e2 80 a8] and [e2 80 a9] */
-        if (nb >= 3 && 0xa880e2 == (*(uint32_t *)sp & 0xfeffff)) {
-            sp += 2;
-            nb -= 2;
+        /* mark cur postion */
+        cur = sp;
+
+        /* check for \u2028 and \u2029, binary is \xe2\x80\xa8 and \xe2\x80\xa9 */
+        if (unlikely(*sp == '\xe2')) {
+            if (nb >= 3 && *(sp+1) == '\x80' && (*(sp+2) == '\xa8' || *(sp+2) == '\xa9')) {
+                sp += 2, nb -= 2;
+            } else if (nd > 0) {
+                *dp++ = *sp++;
+                nb--, nd--;
+                continue;
+            } else {
+                return -(sp - ss) - 1;
+            }
         }
 
         /* get the escape entry, handle consecutive quotes */
@@ -796,7 +813,7 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
         /* check for buffer space */
         if (nd < nc) {
             *dn = dp - ds;
-            return -(sp - ss) - 1;
+            return -(cur - ss) - 1;
         }
 
         /* copy the quoted value */
