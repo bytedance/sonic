@@ -32,6 +32,7 @@ const (
     _F_use_number
     _F_disable_urc
     _F_disable_unknown
+    _F_copy_string
 )
 
 // Decoder is the decoder context object
@@ -108,6 +109,11 @@ func (self *Decoder) UseUnicodeErrors() {
 // non-ignored, exported fields in the destination.
 func (self *Decoder) DisallowUnknownFields() {
     self.f |= 1 << _F_disable_unknown
+}
+
+// CopyString causes the Decoder to decode string values by copying instead of referring.
+func (self *Decoder) CopyString() {
+    self.f |= 1 << _F_copy_string
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in

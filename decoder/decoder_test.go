@@ -19,9 +19,9 @@ package decoder
 import (
     `encoding/json`
     `testing`
-    `time`
     `runtime`
     `runtime/debug`
+    `time`
     `sync`
 
     `github.com/davecgh/go-spew/spew`
@@ -93,6 +93,84 @@ func decode(s string, v interface{}) (int, error) {
         return 0, err
     }
     return d.i, err
+}
+
+func TestCopyString(t *testing.T) {
+    var data []byte
+    var dc *Decoder
+    var err error
+    data = []byte(`{"A":"0","B":"1"}`)
+    dc = NewDecoder(rt.Mem2Str(data))
+    dc.UseNumber()
+    dc.CopyString()
+    var obj struct{
+        A string
+        B string
+    }
+    err = dc.Decode(&obj)
+    if err != nil {
+        t.Fatal(err)
+    }
+    data[6] = '1'
+    if obj.A != "0" {
+        t.Fatal(obj)
+    }
+    data[14] = '0'
+    if obj.B != "1" {
+        t.Fatal(obj)
+    }
+
+    data = []byte(`{"A":"0","B":"1"}`)
+    dc = NewDecoder(rt.Mem2Str(data))
+    dc.UseNumber()
+    err = dc.Decode(&obj)
+    if err != nil {
+        t.Fatal(err)
+    }
+    data[6] = '1'
+    if obj.A != "1" {
+        t.Fatal(obj)
+    }
+    data[14] = '0'
+    if obj.B != "0" {
+        t.Fatal(obj)
+    }
+
+    data = []byte(`{"A":"0","B":"1"}`)
+    dc = NewDecoder(rt.Mem2Str(data))
+    dc.UseNumber()
+    dc.CopyString()
+    var m map[string]interface{}
+    err = dc.Decode(&m)
+    if err != nil {
+        t.Fatal(err)
+    }
+    data[2] = 'C'
+    data[6] = '1'
+    if m["A"] != "0" {
+        t.Fatal(m)
+    }
+    data[10] = 'D'
+    data[14] = '0'
+    if m["B"] != "1" {
+        t.Fatal(m)
+    }
+
+    data = []byte(`{"A":"0","B":"1"}`)
+    dc = NewDecoder(rt.Mem2Str(data))
+    dc.UseNumber()
+    err = dc.Decode(&m)
+    if err != nil {
+        t.Fatal(err)
+    }
+    data[6] = '1'
+    if m["A"] != "1" {
+        t.Fatal(m)
+    }
+    data[14] = '0'
+    if m["B"] != "0" {
+        t.Fatal(m)
+    }
 }
 
 func TestDecoder_Basic(t *testing.T) {
