@@ -57,15 +57,3 @@ func TestErrors_ShortDescription(t *testing.T) {
 func TestErrors_EmptyDescription(t *testing.T) {
     println(make_err("", 0).Description())
 }
-
-func TestDecoderErrorStackOverflower(t *testing.T) {
-    src := `{"a":[]}`
-    N := _MaxStack
-    for i:=0; i<N; i++ {
-        var obj map[string]string
-        err := NewDecoder(src).Decode(&obj)
-        if err == nil {
-            t.Fatal(err)
-        }
-    }
-}

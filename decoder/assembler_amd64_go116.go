@@ -71,7 +71,7 @@ const (
     _FP_args   = 96     // 96 bytes to pass arguments and return values for this function
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 40     // 40 bytes for saving the registers before CALL instructions
-    _FP_locals = 112    // 112 bytes for local variables
+    _FP_locals = 120    // 120 bytes for local variables
 )
 
 const (
@@ -194,6 +194,8 @@ var (
     _VAR_bs_n = jit.Ptr(_SP, _FP_fargs + _FP_saves + 96)
     _VAR_bs_LR = jit.Ptr(_SP, _FP_fargs + _FP_saves + 104)
 )
+
+var _VAR_fl = jit.Ptr(_SP, _FP_fargs + _FP_saves + 112)
 
 type _Assembler struct {
     jit.BaseAssembler
@@ -1163,6 +1165,12 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_num(_ *_Instr) {
+    self.Emit("MOVQ", jit.Imm(0), _VAR_fl)
+    self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm('"'))
+    self.Sjmp("JNE", "_parse_number_{n}")
+    self.Emit("MOVQ", jit.Imm(1), _VAR_fl)
+    self.Emit("ADDQ", jit.Imm(1), _IC)
+    self.Link("_parse_number_{n}")
     self.parse_number()                         // PARSE NUMBER
     self.slice_from(_VAR_st_Ep, 0)              // SLICE st.Ep, $0
     self.Emit("BTQ", jit.Imm(_F_copy_string), _ARG_fv)
@@ -1173,8 +1181,13 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.Link("_num_write_{n}")
     self.Emit("MOVQ", _SI, jit.Ptr(_VP, 8))     // MOVQ  SI, 8(VP)
     self.WriteRecNotAX(13, _DI, jit.Ptr(_VP, 0), false, false)            
+    self.Emit("CMPQ", _VAR_fl, jit.Imm(1))
+    self.Sjmp("JNE", "_num_end_{n}")
+    self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm('"'))
+    self.Sjmp("JNE", _LB_char_0_error)
+    self.Emit("ADDQ", jit.Imm(1), _IC)
+    self.Link("_num_end_{n}")
 }
-
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
     self.parse_signed()                                                 // PARSE int8
     self.range_signed(_I_int8, _T_int8, math.MinInt8, math.MaxInt8)     // RANGE int8
