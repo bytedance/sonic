@@ -19,6 +19,7 @@ package issue_test
 import (
     . `github.com/bytedance/sonic`
     `testing`
+    `encoding/json`
 
     `github.com/stretchr/testify/require`
 )
@@ -38,5 +39,9 @@ func TestIssue58_NilPointerOnValueMethod(t *testing.T) {
     }{}
     buf, err := Marshal(v)
     require.NoError(t, err)
-    require.Equal(t, []byte(`{"X":null,"Y":"pointer"}`), buf)
+    require.Equal(t, []byte(`{"X":null,"Y":null}`), buf)
+    buf, err = json.Marshal(v)
+    require.NoError(t, err)
+    require.Equal(t, []byte(`{"X":null,"Y":null}`), buf)
+
 }

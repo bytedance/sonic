@@ -839,7 +839,7 @@ func (self *_Compiler) compileMarshaler(p *_Program, op _Op, vt reflect.Type, mt
     vk := vt.Kind()
 
     /* direct receiver */
-    if vk != reflect.Ptr || !vt.Elem().Implements(mt) {
+    if vk != reflect.Ptr {
         p.rtt(op, vt)
         return
     }
