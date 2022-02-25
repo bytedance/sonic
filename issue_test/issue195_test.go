@@ -17,7 +17,7 @@
 package issue_test
 
 import (
-	`testing`
+    `testing`
     `encoding/json`
     `github.com/stretchr/testify/require`
 
@@ -34,6 +34,16 @@ func TestDecodeStringToJsonNumber(t *testing.T) {
 
 	errs = sonic.UnmarshalString(`"12x4"`, &objs)
 	erre = json.Unmarshal([]byte(`"12x4"`), &obje)
+	require.Error(t, errs)
+	require.Error(t, erre)
+
+	errs = sonic.UnmarshalString(`"1234`, &objs)
+	erre = json.Unmarshal([]byte(`"1234`), &obje)
+	require.Error(t, errs)
+	require.Error(t, erre)
+
+	errs = sonic.UnmarshalString(`1234"`, &objs)
+	erre = json.Unmarshal([]byte(`1234"`), &obje)
 	require.Error(t, errs)
 	require.Error(t, erre)
 }
