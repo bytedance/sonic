@@ -80,3 +80,15 @@ func TestStringReferring(t *testing.T) {
     runtime.KeepAlive(&obj)
     runtime.KeepAlive(&obj2)
 }
+
+func TestDecoderErrorStackOverflower(t *testing.T) {
+    src := `{"a":[]}`
+    N := _MaxStack
+    for i:=0; i<N; i++ {
+        var obj map[string]string
+        err := NewDecoder(src).Decode(&obj)
+        if err == nil {
+            t.Fatal(err)
+        }
+    }
+}
