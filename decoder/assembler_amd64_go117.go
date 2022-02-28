@@ -1474,7 +1474,7 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
     self.parse_string()                                         // PARSE   STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)                     // UNQUOTE once, sv.p, sv.n
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, false)                     // UNQUOTE once, sv.p, sv.n
     self.Emit("LEAQ" , _VAR_sv, _AX)                            // LEAQ    sv, AX
     self.Emit("XORL" , _BX, _BX)                                // XORL    BX, BX
     self.call_go(_F_strhash)                                    // CALL_GO strhash
