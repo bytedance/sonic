@@ -143,7 +143,7 @@ func TestCopyString(t *testing.T) {
     dc = NewDecoder(rt.Mem2Str(data))
     dc.UseNumber()
     dc.CopyString()
-    var m map[string]interface{}
+    m := map[string]interface{}{}
     err = dc.Decode(&m)
     if err != nil {
         t.Fatal(err)
@@ -162,10 +162,50 @@ func TestCopyString(t *testing.T) {
     data = []byte(`{"A":"0","B":"1"}`)
     dc = NewDecoder(rt.Mem2Str(data))
     dc.UseNumber()
+    m = map[string]interface{}{}
     err = dc.Decode(&m)
     if err != nil {
         t.Fatal(err)
     }
+    data[6] = '1'
+    if m["A"] != "1" {
+        t.Fatal(m)
+    }
+    data[14] = '0'
+    if m["B"] != "0" {
+        t.Fatal(m)
+    }
+
+    data = []byte(`{"A":"0","B":"1"}`)
+    dc = NewDecoder(rt.Mem2Str(data))
+    dc.UseNumber()
+    dc.CopyString()
+    var x interface{}
+    err = dc.Decode(&x)
+    if err != nil {
+        t.Fatal(err)
+    }
+    data[2] = 'C'
+    data[6] = '1'
+    m = x.(map[string]interface{})
+    if m["A"] != "0" {
+        t.Fatal(m)
+    }
+    data[10] = 'D'
+    data[14] = '0'
+    if m["B"] != "1" {
+        t.Fatal(m)
+    }
+
+    data = []byte(`{"A":"0","B":"1"}`)
+    dc = NewDecoder(rt.Mem2Str(data))
+    dc.UseNumber()
+    var y interface{}
+    err = dc.Decode(&y)
+    if err != nil {
+        t.Fatal(err)
+    }
+    m = y.(map[string]interface{})
     data[6] = '1'
     if m["A"] != "1" {
         t.Fatal(m)
