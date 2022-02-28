@@ -25,7 +25,6 @@ import (
     `github.com/bytedance/sonic/encoder`
     `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
 )
 
 // Marshal returns the JSON encoding of v.
@@ -35,8 +34,10 @@ func Marshal(val interface{}) ([]byte, error) {
 
 // Unmarshal parses the JSON-encoded data and stores the result in the value
 // pointed to by v.
+// NOTICE: This API copies given buffer by default.
+// if you want to pass JSON more effecient, use UnmarshalString instead.
 func Unmarshal(buf []byte, val interface{}) error {
-    return UnmarshalString(rt.Mem2Str(buf), val)
+    return UnmarshalString(string(buf), val)
 }
 
 // UnmarshalString is like Unmarshal, except buf is a string.

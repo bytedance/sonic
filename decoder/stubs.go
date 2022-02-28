@@ -58,6 +58,11 @@ func convTstring(v string) unsafe.Pointer
 //goland:noinspection GoUnusedParameter
 func memequal(a unsafe.Pointer, b unsafe.Pointer, size uintptr) bool
 
+//go:noescape
+//go:linkname memmove runtime.memmove
+//goland:noinspection GoUnusedParameter
+func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
+
 //go:linkname mallocgc runtime.mallocgc
 //goland:noinspection GoUnusedParameter
 func mallocgc(size uintptr, typ *rt.GoType, needzero bool) unsafe.Pointer

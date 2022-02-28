@@ -41,22 +41,26 @@ BenchmarkEncoder_Parallel_Binding_JsonIter-16           6169 ns/op        2112.8
 BenchmarkEncoder_Parallel_Binding_GoJson-16             3492 ns/op        3733.14 MB/s        9492 B/op          1 allocs/op
 BenchmarkEncoder_Parallel_Binding_StdLib-16             5170 ns/op        2521.50 MB/s        9482 B/op          1 allocs/op
 
-BenchmarkDecoder_Generic_Sonic-16                      69966 ns/op         186.30 MB/s       49543 B/op        313 allocs/op
-BenchmarkDecoder_Generic_StdLib-16                    146902 ns/op          88.73 MB/s       50872 B/op        772 allocs/op
-BenchmarkDecoder_Generic_JsonIter-16                  101592 ns/op         128.31 MB/s       55783 B/op       1068 allocs/op
-BenchmarkDecoder_Generic_GoJson-16                     97865 ns/op         133.19 MB/s       66367 B/op        973 allocs/op
-BenchmarkDecoder_Binding_Sonic-16                      31418 ns/op         414.90 MB/s       24779 B/op         34 allocs/op
-BenchmarkDecoder_Binding_StdLib-16                    131260 ns/op          99.31 MB/s       10576 B/op        208 allocs/op
-BenchmarkDecoder_Binding_JsonIter-16                   39298 ns/op         331.70 MB/s       14673 B/op        385 allocs/op
-BenchmarkDecoder_Binding_GoJson-16                     31852 ns/op         409.24 MB/s       22040 B/op         49 allocs/op
-BenchmarkDecoder_Parallel_Generic_Sonic-16             10525 ns/op        1238.44 MB/s       49470 B/op        313 allocs/op
-BenchmarkDecoder_Parallel_Generic_StdLib-16            60223 ns/op         216.44 MB/s       50875 B/op        772 allocs/op
-BenchmarkDecoder_Parallel_Generic_JsonIter-16          60918 ns/op         213.97 MB/s       55817 B/op       1068 allocs/op
-BenchmarkDecoder_Parallel_Generic_GoJson-16            48386 ns/op         269.39 MB/s       66425 B/op        974 allocs/op
-BenchmarkDecoder_Parallel_Binding_Sonic-16              7319 ns/op        1781.00 MB/s       24889 B/op         34 allocs/op
-BenchmarkDecoder_Parallel_Binding_StdLib-16            40494 ns/op         321.90 MB/s       10575 B/op        208 allocs/op
-BenchmarkDecoder_Parallel_Binding_JsonIter-16          18840 ns/op         691.89 MB/s       14679 B/op        385 allocs/op
-BenchmarkDecoder_Parallel_Binding_GoJson-16            17078 ns/op         763.28 MB/s       22211 B/op         49 allocs/op
+BenchmarkDecoder_Generic_Sonic-16                      71589 ns/op         182.08 MB/s       57531 B/op          723 allocs/op
+BenchmarkDecoder_Generic_Sonic_Fast-16                 57653 ns/op         226.10 MB/s       49743 B/op        313 allocs/op
+BenchmarkDecoder_Generic_StdLib-16                    143584 ns/op          90.78 MB/s       50870 B/op        772 allocs/op
+BenchmarkDecoder_Generic_JsonIter-16                   94775 ns/op         137.54 MB/s       55783 B/op       1068 allocs/op
+BenchmarkDecoder_Generic_GoJson-16                     88647 ns/op         147.04 MB/s       66371 B/op        973 allocs/op
+BenchmarkDecoder_Binding_Sonic-16                      32399 ns/op         402.33 MB/s       27814 B/op        137 allocs/op
+BenchmarkDecoder_Binding_Sonic_Fast-16                 28655 ns/op         454.89 MB/s       25127 B/op         34 allocs/op
+BenchmarkDecoder_Binding_StdLib-16                    116617 ns/op         111.78 MB/s        7344 B/op        103 allocs/op
+BenchmarkDecoder_Binding_JsonIter-16                   36206 ns/op         360.02 MB/s       14673 B/op        385 allocs/op
+BenchmarkDecoder_Binding_GoJson-16                     29396 ns/op         443.43 MB/s       22042 B/op         49 allocs/op
+BenchmarkDecoder_Parallel_Generic_Sonic-16             12243 ns/op        1064.68 MB/s       57135 B/op        723 allocs/op
+BenchmarkDecoder_Parallel_Generic_Sonic_Fast-16        10101 ns/op        1290.48 MB/s       49440 B/op        313 allocs/op
+BenchmarkDecoder_Parallel_Generic_StdLib-16            57352 ns/op         227.28 MB/s       50877 B/op        772 allocs/op
+BenchmarkDecoder_Parallel_Generic_JsonIter-16          58693 ns/op         222.09 MB/s       55814 B/op       1068 allocs/op
+BenchmarkDecoder_Parallel_Generic_GoJson-16            45245 ns/op         288.10 MB/s       66430 B/op        974 allocs/op
+BenchmarkDecoder_Parallel_Binding_Sonic-16              7035 ns/op        1852.89 MB/s       27731 B/op        137 allocs/op
+BenchmarkDecoder_Parallel_Binding_Sonic_Fast-16         6510 ns/op        2002.33 MB/s       24841 B/op         34 allocs/op
+BenchmarkDecoder_Parallel_Binding_StdLib-16            33086 ns/op         393.97 MB/s        7344 B/op        103 allocs/op
+BenchmarkDecoder_Parallel_Binding_JsonIter-16          17827 ns/op         731.18 MB/s       14680 B/op        385 allocs/op
+BenchmarkDecoder_Parallel_Binding_GoJson-16            16813 ns/op         775.29 MB/s       22268 B/op         49 allocs/op
 
 BenchmarkGetOne_Sonic-16                               11328 ns/op        1149.64 MB/s          29 B/op          1 allocs/op
 BenchmarkGetOne_Gjson-16                               12970 ns/op        1004.07 MB/s           0 B/op          0 allocs/op
@@ -247,7 +251,12 @@ import (
     // If the type is too deep nesting (nesting depth > 5),
     // you can set compile recursive depth in Pretouch for better stability in JIT.
     err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
+ }
 ```
+
+### Copy string
+When decoding **string values without any escaped characters**, sonic refers them from origin JSON buffer instead of mallocing a new buffer to copy. This helps a lot for CPU performance, but may leave the whole JSON buffer in memory as long as the decoded objects are being used. In practice, we found the extra memory introduced by referring JSON buffer is usually 20% ~ 80% of decoded objects. Once a application holds these objects for a long time (for example, cache the decoded objects for reusing), its inuse memory on server may go up. We provide option `decoder.CopyString()` for users to choose not to refer the JSON buffer, which may cause the decline of CPU performance in some degree.
+
 ### Accelerate `encoding.TextMarshaler`
 To ensure data security, sonic.Encoder quotes and escapes string values from `encoding.TextMarshaler` interfaces by default, which may degrade performance much if most of your data is in form of them. We provide `encoder.NoQuoteTextMarshaler` to skip these operations, which means you **MUST** ensure their output string escaped and quoted in accordance with [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
 

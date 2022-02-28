@@ -71,7 +71,7 @@ const (
     _FP_args   = 72     // 72 bytes to pass and spill register arguements
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
-    _FP_locals = 88     // 88 bytes for local variables
+    _FP_locals = 112     // 112 bytes for local variables
 )
 
 const (
@@ -184,6 +184,12 @@ var (
     _VAR_ss_R9 = jit.Ptr(_SP, _FP_fargs + _FP_saves + 80)
 )
 
+var (
+    _VAR_bs_p = jit.Ptr(_SP, _FP_fargs + _FP_saves + 88)
+    _VAR_bs_n = jit.Ptr(_SP, _FP_fargs + _FP_saves + 96)
+    _VAR_bs_LR = jit.Ptr(_SP, _FP_fargs + _FP_saves + 104)
+)
+
 type _Assembler struct {
     jit.BaseAssembler
     p _Program
@@ -209,6 +215,9 @@ func (self *_Assembler) compile() {
     self.prologue()
     self.instrs()
     self.epilogue()
+    self.copy_string()
+    self.escape_string()
+    self.escape_string_twice()
     self.type_error()
     self.field_error()
     self.range_error()
@@ -532,7 +541,7 @@ var (
     _F_mallocgc = jit.Func(mallocgc)
 )
 
-func (self *_Assembler) malloc(nb obj.Addr, ret obj.Addr) {
+func (self *_Assembler) malloc_AX(nb obj.Addr, ret obj.Addr) {
     self.Emit("MOVQ", nb, _AX)                  // MOVQ    ${nb}, AX
     self.Emit("MOVQ", _T_byte, _BX)             // MOVQ    ${type(byte)}, BX
     self.Emit("XORL", _CX, _CX)                 // XORL    CX, CX
@@ -611,6 +620,75 @@ func (self *_Assembler) parse_unsigned() {
     self.check_err()
 }
 
+// Pointer: DI, Size: SI, Return: R9  
+func (self *_Assembler) copy_string() {
+    self.Link("_copy_string")
+    self.Emit("MOVQ", _DI, _VAR_bs_p)
+    self.Emit("MOVQ", _SI, _VAR_bs_n)
+    self.Emit("MOVQ", _R9, _VAR_bs_LR)
+    self.malloc_AX(_SI, _VAR_sv_p)                              
+    self.Emit("MOVQ", _VAR_bs_p, _BX)
+    self.Emit("MOVQ", _VAR_bs_n, _CX)
+    self.call_go(_F_memmove)
+    self.Emit("MOVQ", _VAR_sv_p, _DI)
+    self.Emit("MOVQ", _VAR_bs_n, _SI)
+    self.Emit("MOVQ", _VAR_bs_LR, _R9)
+    self.Rjmp("JMP", _R9)
+}
+
+// Pointer: DI, Size: SI, Return: R9
+func (self *_Assembler) escape_string() {
+    self.Link("_escape_string")
+    self.Emit("MOVQ" , _DI, _VAR_bs_p)
+    self.Emit("MOVQ" , _SI, _VAR_bs_n)
+    self.Emit("MOVQ" , _R9, _VAR_bs_LR)
+    self.malloc_AX(_SI, _DX)                                    // MALLOC SI, DX
+    self.Emit("MOVQ" , _DX, _VAR_sv_p)
+    self.Emit("MOVQ" , _VAR_bs_p, _DI)
+    self.Emit("MOVQ" , _VAR_bs_n, _SI)                                  
+    self.Emit("LEAQ" , _VAR_sr, _CX)                            // LEAQ   sr, CX
+    self.Emit("XORL" , _R8, _R8)                                // XORL   R8, R8
+    self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)        // BTQ    ${_F_disable_urc}, fv
+    self.Emit("SETCC", _R8)                                     // SETCC  R8
+    self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _R8)   // SHLQ   ${types.B_UNICODE_REPLACE}, R8
+    self.call_c(_F_unquote)                                       // CALL   unquote
+    self.Emit("MOVQ" , _VAR_bs_n, _SI)                                  // MOVQ   ${n}, SI
+    self.Emit("ADDQ" , jit.Imm(1), _SI)                         // ADDQ   $1, SI
+    self.Emit("TESTQ", _AX, _AX)                                // TESTQ  AX, AX
+    self.Sjmp("JS"   , _LB_unquote_error)                       // JS     _unquote_error
+    self.Emit("MOVQ" , _AX, _SI)
+    self.Emit("MOVQ" , _VAR_sv_p, _DI)
+    self.Emit("MOVQ" , _VAR_bs_LR, _R9)
+    self.Rjmp("JMP", _R9)
+}
+
+func (self *_Assembler) escape_string_twice() {
+    self.Link("_escape_string_twice")
+    self.Emit("MOVQ" , _DI, _VAR_bs_p)
+    self.Emit("MOVQ" , _SI, _VAR_bs_n)
+    self.Emit("MOVQ" , _R9, _VAR_bs_LR)
+    self.malloc_AX(_SI, _DX)                                        // MALLOC SI, DX
+    self.Emit("MOVQ" , _DX, _VAR_sv_p)
+    self.Emit("MOVQ" , _VAR_bs_p, _DI)
+    self.Emit("MOVQ" , _VAR_bs_n, _SI)        
+    self.Emit("LEAQ" , _VAR_sr, _CX)                                // LEAQ   sr, CX
+    self.Emit("MOVL" , jit.Imm(types.F_DOUBLE_UNQUOTE), _R8)        // MOVL   ${types.F_DOUBLE_UNQUOTE}, R8
+    self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)            // BTQ    ${_F_disable_urc}, AX
+    self.Emit("XORL" , _AX, _AX)                                    // XORL   AX, AX
+    self.Emit("SETCC", _AX)                                         // SETCC  AX
+    self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _AX)       // SHLQ   ${types.B_UNICODE_REPLACE}, AX
+    self.Emit("ORQ"  , _AX, _R8)                                    // ORQ    AX, R8
+    self.call_c(_F_unquote)                                         // CALL   unquote
+    self.Emit("MOVQ" , _VAR_bs_n, _SI)                              // MOVQ   ${n}, SI
+    self.Emit("ADDQ" , jit.Imm(3), _SI)                             // ADDQ   $3, SI
+    self.Emit("TESTQ", _AX, _AX)                                    // TESTQ  AX, AX
+    self.Sjmp("JS"   , _LB_unquote_error)                           // JS     _unquote_error
+    self.Emit("MOVQ" , _AX, _SI)
+    self.Emit("MOVQ" , _VAR_sv_p, _DI)
+    self.Emit("MOVQ" , _VAR_bs_LR, _R9)
+    self.Rjmp("JMP", _R9)
+}
+
 /** Range Checking Routines **/
 
 var (
@@ -679,36 +757,28 @@ func (self *_Assembler) slice_from_r(p obj.Addr, d int64) {
     self.Emit("LEAQ", jit.Sib(_IC, p, 1, d), _SI)   // LEAQ d(IC)(${p}), SI
 }
 
-func (self *_Assembler) unquote_once(p obj.Addr, n obj.Addr, stack bool) {
+func (self *_Assembler) unquote_once(p obj.Addr, n obj.Addr, stack bool, copy bool) {
     self.slice_from(_VAR_st_Iv, -1)                             // SLICE  st.Iv, $-1
-    self.Emit("MOVQ" , _SI, n)                                  // MOVQ   SI, ${n}
+    self.Emit("CMPQ", _VAR_st_Ep, jit.Imm(-1))                 // CMPQ   st.Ep, $-1
+    self.Sjmp("JE"  , "_noescape_{n}")                         // JE     _escape_{n}
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Sref("_unquote_once_write_{n}", 4)
+    self.Sjmp("JMP" , "_escape_string")
+    self.Link("_noescape_{n}")
+    if copy {
+        self.Emit("BTQ" , jit.Imm(_F_copy_string), _ARG_fv)    
+        self.Sjmp("JNC", "_unquote_once_write_{n}")
+        self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+        self.Sref("_unquote_once_write_{n}", 4)
+        self.Sjmp("JMP", "_copy_string")
+    }
+    self.Link("_unquote_once_write_{n}")
+    self.Emit("MOVQ", _SI, n)                                  // MOVQ   SI, ${n}
     if stack {
-        self.Emit("MOVQ", _DI, p)                               // MOVQ   DI, ${p}
+        self.Emit("MOVQ", _DI, p) 
     } else {
         self.WriteRecNotAX(10, _DI, p, false, false)
     }
-    self.Emit("CMPQ" , _VAR_st_Ep, jit.Imm(-1))                 // CMPQ   st.Ep, $-1
-    self.Sjmp("JE"   , "_noescape_{n}")                         // JE     _noescape_{n}
-    self.malloc(_SI, _DX)                                       // MALLOC SI, DX
-    self.Emit("MOVQ" , p, _DI)                                  // MOVQ   ${p}, DI
-    self.Emit("MOVQ" , n, _SI)                                  // MOVQ   ${n}, SI
-    if stack {
-        self.Emit("MOVQ", _DX, p)                               // MOVQ   DX, ${p}
-    } else {
-        self.WriteRecNotAX(2, _DX, p, true, false)              // MOVQ   DX, ${p}
-    }
-    self.Emit("LEAQ" , _VAR_sr, _CX)                            // LEAQ   sr, CX
-    self.Emit("XORL" , _R8, _R8)                                // XORL   R8, R8
-    self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)        // BTQ    ${_F_disable_urc}, fv
-    self.Emit("SETCC", _R8)                                     // SETCC  R8
-    self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _R8)   // SHLQ   ${types.B_UNICODE_REPLACE}, R8
-    self.call_c(_F_unquote)                                       // CALL   unquote
-    self.Emit("MOVQ" , n, _SI)                                  // MOVQ   ${n}, SI
-    self.Emit("ADDQ" , jit.Imm(1), _SI)                         // ADDQ   $1, SI
-    self.Emit("TESTQ", _AX, _AX)                                // TESTQ  AX, AX
-    self.Sjmp("JS"   , _LB_unquote_error)                       // JS     _unquote_error
-    self.Emit("MOVQ" , _AX, n)                                  // MOVQ   AX, ${n}
-    self.Link("_noescape_{n}")                                  // _noescape_{n}:
 }
 
 func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr, stack bool) {
@@ -719,38 +789,27 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr, stack bool) {
     self.Emit("CMPB" , jit.Sib(_IP, _IC, 1, -2), jit.Imm('"'))      // CMPB   -2(IP)(IC), $'"'
     self.Sjmp("JNE"  , _LB_char_m2_error)                           // JNE    _char_m2_error
     self.slice_from(_VAR_st_Iv, -3)                                 // SLICE  st.Iv, $-3
-    self.Emit("MOVQ" , _SI, n)                                      // MOVQ   SI, ${n}
     self.Emit("MOVQ" , _SI, _AX)                                    // MOVQ   SI, AX
-    if stack {
-        self.Emit("MOVQ" , _DI, p)                                  // MOVQ   DI, ${p}
-    } else {
-        self.WriteRecNotAX(9, _DI, p, false, false)
-    }
     self.Emit("ADDQ" , _VAR_st_Iv, _AX)                             // ADDQ   st.Iv, AX
     self.Emit("CMPQ" , _VAR_st_Ep, _AX)                             // CMPQ   st.Ep, AX
     self.Sjmp("JE"   , "_noescape_{n}")                             // JE     _noescape_{n}
-    self.malloc(_SI, _DX)                                           // MALLOC SI, DX
-    self.Emit("MOVQ" , p, _DI)                                      // MOVQ   ${p}, DI
-    self.Emit("MOVQ" , n, _SI)                                      // MOVQ   ${n}, SI
-    if stack {
-        self.Emit("MOVQ", _DX, p)                                   // MOVQ   DX, ${p}
-    } else {
-        self.WriteRecNotAX(2, _DX, p, true, false)                  // MOVQ   DX, ${p}
-    }
-    self.Emit("LEAQ" , _VAR_sr, _CX)                                // LEAQ   sr, CX
-    self.Emit("MOVL" , jit.Imm(types.F_DOUBLE_UNQUOTE), _R8)        // MOVL   ${types.F_DOUBLE_UNQUOTE}, R8
-    self.Emit("BTQ"  , jit.Imm(_F_disable_urc), _ARG_fv)            // BTQ    ${_F_disable_urc}, AX
-    self.Emit("XORL" , _AX, _AX)                                    // XORL   AX, AX
-    self.Emit("SETCC", _AX)                                         // SETCC  AX
-    self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _AX)       // SHLQ   ${types.B_UNICODE_REPLACE}, AX
-    self.Emit("ORQ"  , _AX, _R8)                                    // ORQ    AX, R8
-    self.call_c(_F_unquote)                                           // CALL   unquote
-    self.Emit("MOVQ" , n, _SI)                                      // MOVQ   ${n}, SI
-    self.Emit("ADDQ" , jit.Imm(3), _SI)                             // ADDQ   $3, SI
-    self.Emit("TESTQ", _AX, _AX)                                    // TESTQ  AX, AX
-    self.Sjmp("JS"   , _LB_unquote_error)                           // JS     _unquote_error
-    self.Emit("MOVQ" , _AX, n)                                      // MOVQ   AX, ${n}
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Sref("_unquote_twice_write_{n}", 4)
+    self.Sjmp("JMP" , "_escape_string_twice")
     self.Link("_noescape_{n}")                                      // _noescape_{n}:
+    self.Emit("BTQ"  , jit.Imm(_F_copy_string), _ARG_fv)    
+    self.Sjmp("JNC", "_unquote_twice_write_{n}") 
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Sref("_unquote_twice_write_{n}", 4)
+    self.Sjmp("JMP", "_copy_string")
+    self.Link("_unquote_twice_write_{n}")
+    self.Emit("MOVQ" , _SI, n)                                      // MOVQ   SI, ${n}
+    if stack {
+        self.Emit("MOVQ", _DI, p) 
+    } else {
+        self.WriteRecNotAX(12, _DI, p, false, false)
+    }
+    self.Link("_unquote_twice_end_{n}")
 }
 
 /** Memory Clearing Routines **/
@@ -887,7 +946,7 @@ func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool) {
 
 func (self *_Assembler) unmarshal_text(t reflect.Type, deref bool) {
     self.parse_string()                                         // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true)                     // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)        // UNQUOTE   once, sv.p, sv.n
     self.unmarshal_func(t, _F_decodeTextUnmarshaler, deref)     // UNMARSHAL text, ${t}, ${deref}
 }
 
@@ -953,6 +1012,7 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
 
 var (
     _F_memequal         = jit.Func(memequal)
+    _F_memmove          = jit.Func(memmove)
     _F_growslice        = jit.Func(growslice)
     _F_makeslice        = jit.Func(makeslice)
     _F_makemap_small    = jit.Func(makemap_small)
@@ -1038,7 +1098,7 @@ func (self *_Assembler) _asm_OP_dyn(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {
     self.parse_string()                                     // PARSE   STRING
-    self.unquote_once(jit.Ptr(_VP, 0), jit.Ptr(_VP, 8), false)     // UNQUOTE once, (VP), 8(VP)
+    self.unquote_once(jit.Ptr(_VP, 0), jit.Ptr(_VP, 8), false, true)     // UNQUOTE once, (VP), 8(VP)
 }
 
 func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
@@ -1049,7 +1109,7 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
     self.Emit("SHRQ" , jit.Imm(2), _SI)                 // SHRQ   $2, SI
     self.Emit("LEAQ" , jit.Sib(_SI, _SI, 2, 0), _SI)    // LEAQ   (SI)(SI*2), SI
     self.Emit("MOVQ" , _SI, jit.Ptr(_VP, 16))           // MOVQ   SI, 16(VP)
-    self.malloc(_SI, _SI)                               // MALLOC SI, SI
+    self.malloc_AX(_SI, _SI)                               // MALLOC SI, SI
 
     /* check for AVX2 support */
     if !cpu.HasAVX2 {
@@ -1102,8 +1162,14 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.parse_number()                         // PARSE NUMBER
     self.slice_from(_VAR_st_Ep, 0)              // SLICE st.Ep, $0
-    self.WriteRecNotAX(5, _DI, jit.Ptr(_VP, 0), false, false)     // MOVQ  DI, (VP)
+    self.Emit("BTQ", jit.Imm(_F_copy_string), _ARG_fv)
+    self.Sjmp("JNC", "_num_write_{n}")
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Sref("_num_write_{n}", 4)
+    self.Sjmp("JMP", "_copy_string")
+    self.Link("_num_write_{n}")
     self.Emit("MOVQ", _SI, jit.Ptr(_VP, 8))     // MOVQ  SI, 8(VP)
+    self.WriteRecNotAX(13, _DI, jit.Ptr(_VP, 0), false, false)
 }
 
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
@@ -1315,7 +1381,7 @@ func (self *_Assembler) _asm_OP_map_key_f64(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_map_key_str(p *_Instr) {
     self.parse_string()                          // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true)      // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)      // UNQUOTE   once, sv.p, sv.n
     if vt := p.vt(); !mapfast(vt) {
         self.valloc(vt.Key(), _DI)
         self.Emit("MOVOU", _VAR_sv, _X0)
@@ -1328,13 +1394,13 @@ func (self *_Assembler) _asm_OP_map_key_str(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_map_key_utext(p *_Instr) {
     self.parse_string()                         // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true)     // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)     // UNQUOTE   once, sv.p, sv.n
     self.mapassign_utext(p.vt(), false)         // MAPASSIGN utext, ${p.vt()}, false
 }
 
 func (self *_Assembler) _asm_OP_map_key_utext_p(p *_Instr) {
     self.parse_string()                         // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true)     // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)     // UNQUOTE   once, sv.p, sv.n
     self.mapassign_utext(p.vt(), true)          // MAPASSIGN utext, ${p.vt()}, true
 }
 
@@ -1408,7 +1474,7 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
     self.parse_string()                                         // PARSE   STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true)                     // UNQUOTE once, sv.p, sv.n
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, false)                     // UNQUOTE once, sv.p, sv.n
     self.Emit("LEAQ" , _VAR_sv, _AX)                            // LEAQ    sv, AX
     self.Emit("XORL" , _BX, _BX)                                // XORL    BX, BX
     self.call_go(_F_strhash)                                    // CALL_GO strhash
