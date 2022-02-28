@@ -383,7 +383,6 @@ func (self *_ValueDecoder) compile() {
 
     /** V_STRING **/
     self.Link("_decode_V_STRING")       // _decode_V_STRING:
-    self.Emit("XORL", _DX, _DX)         // XORL DX, DX
     self.Emit("MOVQ", _VAR_ss_Iv, _CX)  // MOVQ ss.Iv, CX
     self.Emit("MOVQ", _IC, _AX)         // MOVQ IC, AX
     self.Emit("SUBQ", _CX, _AX)         // SUBQ CX, AX
