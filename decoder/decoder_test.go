@@ -34,7 +34,7 @@ import (
 
 func TestMain(m *testing.M) {
     go func ()  {
-        if debugAsyncGC {
+        if !debugAsyncGC {
             return
         }
         println("Begin GC looping...")
@@ -49,7 +49,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestGC(t *testing.T) {
-    if !debugSyncGC {
+    if debugSyncGC {
         return 
     }
     var w interface{}
