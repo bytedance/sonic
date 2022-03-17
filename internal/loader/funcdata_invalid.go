@@ -23,6 +23,6 @@ const (
 	_ = panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17")
 )
 
-func registerFunction(_ string, _ uintptr, _ int, _ int, _ uintptr) {
+func registerFunction(_ string, _ uintptr, _ int, _ int, _ uintptr, _ uintptr, _ uintptr) {
     panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17")
 }
