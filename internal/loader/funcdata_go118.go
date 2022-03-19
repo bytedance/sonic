@@ -1,4 +1,4 @@
-// +build go1.16,!go1.18
+// +build go1.18,!go1.19
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -40,22 +40,23 @@ type _Func struct {
 }
 
 type _FuncTab struct {
-    entry   uintptr
-    funcoff uintptr
+    entry   uint32
+    funcoff uint32
 }
 
 type _PCHeader struct {
-    magic          uint32  // 0xFFFFFFFA
-    pad1, pad2     uint8   // 0,0
-    minLC          uint8   // min instruction size
-    ptrSize        uint8   // size of a ptr in bytes
-    nfunc          int     // number of functions in the module
-    nfiles         uint    // number of entries in the file tab.
-    funcnameOffset uintptr // offset to the funcnametab variable from _PCHeader
-    cuOffset       uintptr // offset to the cutab variable from _PCHeader
-    filetabOffset  uintptr // offset to the filetab variable from _PCHeader
-    pctabOffset    uintptr // offset to the pctab varible from _PCHeader
-    pclnOffset     uintptr // offset to the pclntab variable from _PCHeader
+	magic          uint32  // 0xFFFFFFF0
+	pad1, pad2     uint8   // 0,0
+	minLC          uint8   // min instruction size
+	ptrSize        uint8   // size of a ptr in bytes
+	nfunc          int     // number of functions in the module
+	nfiles         uint    // number of entries in the file tab
+	textStart      uintptr // base for function entry PC offsets in this module, equal to moduledata.text
+	funcnameOffset uintptr // offset to the funcnametab variable from pcHeader
+	cuOffset       uintptr // offset to the cutab variable from pcHeader
+	filetabOffset  uintptr // offset to the filetab variable from pcHeader
+	pctabOffset    uintptr // offset to the pctab variable from pcHeader
+	pclnOffset     uintptr // offset to the pclntab variable from pcHeader
 }
 
 type _BitVector struct {
@@ -106,16 +107,10 @@ type _ModuleData struct {
     next                  *_ModuleData
 }
 
+
 type _FindFuncBucket struct {
     idx        uint32
     subbuckets [16]byte
-}
-
-var modHeader = &_PCHeader {
-    magic   : 0xfffffffa,
-    minLC   : 1,
-    nfunc   : 1,
-    ptrSize : 4 << (^uintptr(0) >> 63),
 }
 
 var findFuncTab = &_FindFuncBucket {
@@ -130,6 +125,14 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     minpc := pc
     maxpc := pc + size
 
+    modHeader := &_PCHeader {
+        magic   : 0xfffffff0,
+        minLC   : 1,
+        nfunc   : 1,
+        ptrSize : 4 << (^uintptr(0) >> 63),
+        textStart: pc,
+    }
+
     /* function entry */
     lnt := []_Func {{
         entry     : pc,
@@ -142,10 +145,10 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     }}
 
     /* function table */
-    tab := []_FuncTab {
-        {entry: pc},
-        {entry: pc},
-        {entry: maxpc},
+    ftab := []_FuncTab {
+        {entry: 0},
+        {entry: 0},
+        {entry: uint32(size)},
     }
 
     /* module data */
@@ -154,7 +157,9 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         funcnametab : append(append([]byte{0}, name...), 0),
         pctab       : append(makePCtab(fp), encodeVariant(int(size))...),
         pclntable   : lnt,
-        ftab        : tab,
+        ftab        : ftab,
+        text        : pc,
+        etext       : pc+textSize,
         findfunctab : findFuncTab,
         minpc       : minpc,
         maxpc       : maxpc,
