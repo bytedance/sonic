@@ -22,3 +22,6 @@ jobs:
 
       - name: Unit Test
         run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race -covermode=atomic -coverprofile=coverage.out ./...
+      
+      - name: Generic Test
+        run: go test -v -gcflags=-d=checkptr=0 -race -covermode=atomic ./generic_test
