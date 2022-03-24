@@ -273,8 +273,14 @@ func (self *_ValueDecoder) compile() {
     /* check for errors */
     self.Emit("MOVQ" , _VAR_ss_Vt, _AX)     // MOVQ  ss.Vt, AX
     self.Emit("TESTQ", _AX, _AX)            // TESTQ AX, AX
-    self.Sjmp("JS"   , "_parsing_error")    // JS    _parsing_error
     self.Sjmp("JZ"   , "_invalid_vtype")    // JZ    _invalid_vtype
+    self.Sjmp("JNS"  , "_not_sign")        // JNS    
+    self.Emit("CMPQ" , _AX, jit.Imm(-int64(types.ERR_FLOAT_INFINITY)))
+    self.Sjmp("JNE"  , "_parsing_error")
+    self.Emit("BTQ"  , jit.Imm(_F_use_number), _VAR_df)     // BTQ     _F_use_number, df
+    self.Sjmp("JNC"  , "_parsing_error")
+    self.Emit("MOVQ" , jit.Imm(int64(types.V_DOUBLE)), _AX)
+    self.Link("_not_sign")
     self.Emit("CMPQ" , _AX, _V_max)         // CMPQ  AX, _V_max
     self.Sjmp("JA"   , "_invalid_vtype")    // JA    _invalid_vtype
 
