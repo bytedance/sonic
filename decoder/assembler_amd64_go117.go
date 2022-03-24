@@ -591,6 +591,15 @@ func (self *_Assembler) check_err() {
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
 }
 
+func (self *_Assembler) check_err_num() {
+    self.Emit("MOVQ" , _VAR_st_Vt, _AX)         // MOVQ st.Vt, AX
+    self.Emit("TESTQ", _AX, _AX)                // CMPQ AX, ${native.V_STRING}
+    self.Sjmp("JNS"  , "check_err_end_{n}")    
+    self.Emit("CMPQ" , _AX, jit.Imm(-int64(types.ERR_FLOAT_INFINITY)))
+    self.Sjmp("JNE"  , _LB_parsing_error_v)
+    self.Link("check_err_end_{n}")
+}
+
 func (self *_Assembler) check_eof(d int64) {
     if d == 1 {
         self.Emit("CMPQ", _IC, _IL)         // CMPQ IC, IL
@@ -1168,7 +1177,8 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.Emit("MOVQ", jit.Imm(1), _VAR_fl)
     self.Emit("ADDQ", jit.Imm(1), _IC)
     self.Link("_parse_number_{n}")
-    self.parse_number()                         // PARSE NUMBER
+    self.call_vf(_F_vnumber)
+    self.check_err_num()
     self.slice_from(_VAR_st_Ep, 0)              // SLICE st.Ep, $0
     self.Emit("BTQ", jit.Imm(_F_copy_string), _ARG_fv)
     self.Sjmp("JNC", "_num_write_{n}")
