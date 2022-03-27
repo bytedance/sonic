@@ -7,841 +7,754 @@
 
 TEXT ·__native_entry__(SB), NOSPLIT, $0
 	NO_LOCAL_POINTERS
-	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff // leaq         $-7(%rip), %rax
+	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
 	MOVQ AX, 8(SP)
 	RET
-
 _lzero:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	CMPQ SI, $32
-	JB   LBB0_5
-	LEAQ -32(SI), AX
-	MOVQ AX, CX
-	ANDQ $-32, CX
-	LEAQ 32(CX)(DI*1), CX
-	ANDL $31, AX
-
-LBB0_2:
-	LONG $0x076ffec5             // vmovdqu      (%rdi), %ymm0
-	LONG $0x177de2c4; BYTE $0xc0 // vptest       %ymm0, %ymm0
-	JNE  LBB0_13
+	JB LBB0_3
+LBB0_1:
+	LONG $0x076ffec5  // vmovdqu      (%rdi), %ymm0
+	LONG $0x177de2c4; BYTE $0xc0  // vptest       %ymm0, %ymm0
+	JNE LBB0_9
 	ADDQ $32, DI
 	ADDQ $-32, SI
 	CMPQ SI, $31
-	JA   LBB0_2
-	MOVQ AX, SI
-	MOVQ CX, DI
-
-LBB0_5:
-	WORD $0xf8c5; BYTE $0x77 // vzeroupper
+	JA LBB0_1
+LBB0_3:
+	WORD $0xf8c5; BYTE $0x77  // vzeroupper   
 	CMPQ SI, $16
-	JB   LBB0_10
-	LEAQ -16(SI), AX
-	MOVQ AX, CX
-	ANDQ $-16, CX
-	LEAQ 16(CX)(DI*1), CX
-	ANDL $15, AX
-
-LBB0_7:
-	LONG $0x076ffac5             // vmovdqu      (%rdi), %xmm0
-	LONG $0x1779e2c4; BYTE $0xc0 // vptest       %xmm0, %xmm0
-	JNE  LBB0_14
+	JB LBB0_6
+LBB0_4:
+	LONG $0x076ffac5  // vmovdqu      (%rdi), %xmm0
+	LONG $0x1779e2c4; BYTE $0xc0  // vptest       %xmm0, %xmm0
+	JNE LBB0_10
 	ADDQ $16, DI
 	ADDQ $-16, SI
 	CMPQ SI, $15
-	JA   LBB0_7
-	MOVQ AX, SI
-	MOVQ CX, DI
-
-LBB0_10:
+	JA LBB0_4
+LBB0_6:
 	CMPQ SI, $8
-	JB   LBB0_16
+	JB LBB0_12
 	MOVL $1, AX
 	CMPQ 0(DI), $0
-	JNE  LBB0_12
+	JNE LBB0_8
 	ADDQ $8, DI
 	ADDQ $-8, SI
-
-LBB0_16:
+LBB0_12:
 	CMPQ SI, $4
-	JB   LBB0_19
+	JB LBB0_15
 	MOVL $1, AX
 	CMPL 0(DI), $0
-	JNE  LBB0_12
+	JNE LBB0_8
 	ADDQ $4, DI
 	ADDQ $-4, SI
-
-LBB0_19:
+LBB0_15:
 	CMPQ SI, $2
-	JB   LBB0_22
+	JB LBB0_18
 	MOVL $1, AX
 	CMPW 0(DI), $0
-	JNE  LBB0_12
+	JNE LBB0_8
 	ADDQ $2, DI
 	ADDQ $-2, SI
-
-LBB0_22:
-	XORL  AX, AX
+LBB0_18:
+	XORL AX, AX
 	TESTQ SI, SI
-	JE    LBB0_12
-	CMPB  0(DI), $0
+	JE LBB0_8
+	CMPB 0(DI), $0
 	SETNE AX
-	BYTE  $0x5d     // popq         %rbp
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB0_12:
-	BYTE $0x5d // popq         %rbp
+LBB0_8:
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB0_13:
-	WORD $0xf8c5; BYTE $0x77 // vzeroupper
-
-LBB0_14:
+LBB0_9:
+	WORD $0xf8c5; BYTE $0x77  // vzeroupper   
+LBB0_10:
 	MOVL $1, AX
 	BYTE $0x5d  // popq         %rbp
 	RET
-
 LCPI1_0:
-	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
-
+	QUAD $0x2020202020202020; QUAD $0x2020202020202020  // .space 16, '                '
 LCPI1_1:
-	QUAD $0x0909090909090909; QUAD $0x0909090909090909 // .space 16, '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
-
+	QUAD $0x0909090909090909; QUAD $0x0909090909090909  // .space 16, '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
 LCPI1_2:
-	QUAD $0x0a0a0a0a0a0a0a0a; QUAD $0x0a0a0a0a0a0a0a0a // .space 16, '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-
+	QUAD $0x0a0a0a0a0a0a0a0a; QUAD $0x0a0a0a0a0a0a0a0a  // .space 16, '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 LCPI1_3:
-	QUAD $0x0d0d0d0d0d0d0d0d; QUAD $0x0d0d0d0d0d0d0d0d // .space 16, '\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r'
-
+	QUAD $0x0d0d0d0d0d0d0d0d; QUAD $0x0d0d0d0d0d0d0d0d  // .space 16, '\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r'
 _lspace:
-	BYTE  $0x55               // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	LEAQ  0(DI)(DX*1), AX
-	SUBQ  DX, SI
-	JE    LBB1_7
-	MOVL  AX, CX
-	ANDL  $15, CX
-	TESTQ CX, CX
-	JE    LBB1_7
-	LEAQ  -1(SI), R9
-	XORL  DX, DX
-	MOVQ  $4294977024, R8
-
-LBB1_3:
-	MOVBLSX 0(AX)(DX*1), CX
-	CMPL    CX, $32
-	JA      LBB1_5
-	BTQ     CX, R8
-	JAE     LBB1_5
-	LEAQ    1(DX), R10
-	CMPQ    R9, DX
-	JE      LBB1_6
-	LEAQ    1(AX)(DX*1), CX
-	ANDL    $15, CX
-	MOVQ    R10, DX
-	TESTQ   CX, CX
-	JNE     LBB1_3
-
-LBB1_6:
-	ADDQ R10, AX
-	SUBQ R10, SI
-
-LBB1_7:
-	CMPQ SI, $16
-	JB   LBB1_13
-	LEAQ -16(SI), CX
-	MOVQ CX, DX
-	ANDQ $-16, DX
-	LEAQ 16(DX)(AX*1), R8
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	MOVQ DX, AX
+	LEAQ 0(DI)(DX*1), R10
+	MOVQ SI, DX
+	SUBQ AX, DX
+	JE LBB1_7
+	MOVL R10, CX
 	ANDL $15, CX
-	QUAD $0xffffff42056ffac5 // vmovdqu      $-190(%rip), %xmm0  /* LCPI1_0(%rip) */
-	QUAD $0xffffff4a0d6ffac5 // vmovdqu      $-182(%rip), %xmm1  /* LCPI1_1(%rip) */
-	QUAD $0xffffff52156ffac5 // vmovdqu      $-174(%rip), %xmm2  /* LCPI1_2(%rip) */
-	QUAD $0xffffff5a1d6ffac5 // vmovdqu      $-166(%rip), %xmm3  /* LCPI1_3(%rip) */
-
+	TESTQ CX, CX
+	JE LBB1_7
+	LEAQ 1(DI), R9
+	LEAQ -1(SI), CX
+	MOVQ $4294977024, R8
+LBB1_3:
+	MOVBLSX 0(DI)(AX*1), DX
+	CMPL DX, $32
+	JA LBB1_22
+	BTQ DX, R8
+	JAE LBB1_22
+	LEAQ 1(AX), DX
+	CMPQ CX, AX
+	JE LBB1_6
+	ADDL R9, AX
+	ANDL $15, AX
+	TESTQ AX, AX
+	MOVQ DX, AX
+	JNE LBB1_3
+LBB1_6:
+	LEAQ 0(DI)(DX*1), R10
+	SUBQ DX, SI
+	MOVQ SI, DX
+LBB1_7:
+	CMPQ DX, $16
+	JB LBB1_13
+	MOVQ DI, SI
+	SUBQ R10, SI
+	QUAD $0xffffff44056ffac5  // vmovdqu      $-188(%rip), %xmm0  /* LCPI1_0(%rip) */
+	QUAD $0xffffff4c0d6ffac5  // vmovdqu      $-180(%rip), %xmm1  /* LCPI1_1(%rip) */
+	QUAD $0xffffff54156ffac5  // vmovdqu      $-172(%rip), %xmm2  /* LCPI1_2(%rip) */
+	QUAD $0xffffff5c1d6ffac5  // vmovdqu      $-164(%rip), %xmm3  /* LCPI1_3(%rip) */
 LBB1_9:
-	LONG $0x206ff9c5 // vmovdqa      (%rax), %xmm4
-	LONG $0xe874d9c5 // vpcmpeqb     %xmm0, %xmm4, %xmm5
-	LONG $0xf174d9c5 // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG $0xeeebd1c5 // vpor         %xmm6, %xmm5, %xmm5
-	LONG $0xf274d9c5 // vpcmpeqb     %xmm2, %xmm4, %xmm6
-	LONG $0xe374d9c5 // vpcmpeqb     %xmm3, %xmm4, %xmm4
-	LONG $0xe6ebd9c5 // vpor         %xmm6, %xmm4, %xmm4
-	LONG $0xe5ebd9c5 // vpor         %xmm5, %xmm4, %xmm4
-	LONG $0xd4d7f9c5 // vpmovmskb    %xmm4, %edx
-	CMPW DX, $-1
-	JNE  LBB1_10
-	ADDQ $16, AX
+	LONG $0x6f79c1c4; BYTE $0x22  // vmovdqa      (%r10), %xmm4
+	LONG $0xe874d9c5  // vpcmpeqb     %xmm0, %xmm4, %xmm5
+	LONG $0xf174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xeeebd1c5  // vpor         %xmm6, %xmm5, %xmm5
+	LONG $0xf274d9c5  // vpcmpeqb     %xmm2, %xmm4, %xmm6
+	LONG $0xe374d9c5  // vpcmpeqb     %xmm3, %xmm4, %xmm4
+	LONG $0xe6ebd9c5  // vpor         %xmm6, %xmm4, %xmm4
+	LONG $0xe5ebd9c5  // vpor         %xmm5, %xmm4, %xmm4
+	LONG $0xc4d7f9c5  // vpmovmskb    %xmm4, %eax
+	CMPW AX, $-1
+	JNE LBB1_10
+	ADDQ $16, R10
+	ADDQ $-16, DX
 	ADDQ $-16, SI
-	CMPQ SI, $15
-	JA   LBB1_9
-	MOVQ CX, SI
-	MOVQ R8, AX
-
+	CMPQ DX, $15
+	JA LBB1_9
 LBB1_13:
-	TESTQ SI, SI
-	JE    LBB1_22
-	LEAQ  0(AX)(SI*1), R8
-	INCQ  AX
-	MOVQ  $4294977024, DX
-
+	TESTQ DX, DX
+	JE LBB1_20
+	LEAQ 0(R10)(DX*1), R8
+	XORL AX, AX
+	MOVQ $4294977024, R9
 LBB1_15:
-	MOVBLSX -1(AX), CX
-	CMPL    CX, $32
-	JA      LBB1_17
-	BTQ     CX, DX
-	JAE     LBB1_17
-	DECQ    SI
-	INCQ    AX
-	TESTQ   SI, SI
-	JNE     LBB1_15
-	MOVQ    R8, AX
-	JMP     LBB1_22
-
-LBB1_10:
-	MOVWLZX DX, CX
-	SUBQ    DI, AX
-	NOTL    CX
-	BSFL    CX, CX
-	ADDQ    CX, AX
-	BYTE    $0x5d  // popq         %rbp
-	RET
-
-LBB1_5:
-	ADDQ DX, AX
-
+	MOVBLSX 0(R10)(AX*1), SI
+	CMPL SI, $32
+	JA LBB1_17
+	BTQ SI, R9
+	JAE LBB1_17
+	ADDQ $1, AX
+	CMPQ DX, AX
+	JNE LBB1_15
+	MOVQ R8, R10
+LBB1_20:
+	SUBQ DI, R10
+LBB1_21:
+	MOVQ R10, AX
 LBB1_22:
-	SUBQ DI, AX
 	BYTE $0x5d  // popq         %rbp
 	RET
-
+LBB1_10:
+	MOVWLZX AX, AX
+	NOTL AX
+	BSFL AX, AX
+	SUBQ SI, AX
+	BYTE $0x5d  // popq         %rbp
+	RET
 LBB1_17:
-	NOTQ DI
-	ADDQ DI, AX
-	BYTE $0x5d  // popq         %rbp
-	RET
-
+	SUBQ DI, R10
+	ADDQ AX, R10
+	JMP LBB1_21
 LCPI2_0:
-	QUAD $0x3030303030303030; QUAD $0x3030303030303030 // .space 16, '0000000000000000'
-	QUAD $0x3030303030303030; QUAD $0x3030303030303030 // .space 16, '0000000000000000'
-
+	QUAD $0x3030303030303030; QUAD $0x3030303030303030  // .space 16, '0000000000000000'
+	QUAD $0x3030303030303030; QUAD $0x3030303030303030  // .space 16, '0000000000000000'
 _f64toa:
-	BYTE  $0x55                   // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	WORD  $0x5741                 // pushq        %r15
-	WORD  $0x5641                 // pushq        %r14
-	WORD  $0x5541                 // pushq        %r13
-	WORD  $0x5441                 // pushq        %r12
-	BYTE  $0x53                   // pushq        %rbx
-	SUBQ  $40, SP
-	MOVQ  DI, R13
-	LONG  $0x7ef9e1c4; BYTE $0xc0 // vmovq        %xmm0, %rax
-	XORL  R9, R9
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $40, SP
+	MOVQ DI, R13
+	LONG $0x7ef9e1c4; BYTE $0xc0  // vmovq        %xmm0, %rax
+	XORL R9, R9
 	TESTQ AX, AX
-	JS    LBB2_108
+	JS LBB2_113
 	TESTQ AX, AX
-	JE    LBB2_109
-
+	JE LBB2_114
 LBB2_2:
-	MOVQ  AX, DX
-	SHRQ  $52, DX
-	XORL  BX, BX
-	CMPL  DX, $2047
-	JE    LBB2_107
-	MOVQ  $4503599627370495, DI
-	ANDQ  DI, AX
-	INCQ  DI
-	ORQ   AX, DI
-	LEAL  -1023(DX), CX
-	CMPL  CX, $52
-	MOVL  R9, -44(BP)
-	MOVQ  R13, -64(BP)
-	JA    LBB2_5
-	MOVL  $1075, CX
-	SUBQ  DX, CX
-	MOVQ  $-1, SI
-	SHLQ  CX, SI
-	NOTQ  SI
+	MOVQ AX, DX
+	SHRQ $52, DX
+	XORL BX, BX
+	CMPL DX, $2047
+	JE LBB2_112
+	MOVQ $4503599627370495, DI
+	ANDQ DI, AX
+	ADDQ $1, DI
+	ORQ AX, DI
+	LEAL -1023(DX), CX
+	CMPL CX, $52
+	MOVL R9, -44(BP)
+	MOVQ R13, -56(BP)
+	JA LBB2_5
+	MOVL $1075, CX
+	SUBQ DX, CX
+	MOVQ $-1, SI
+	SHLQ CX, SI
+	NOTQ SI
 	TESTQ SI, DI
-	JE    LBB2_14
-
+	JE LBB2_14
 LBB2_5:
-	TESTL   DX, DX
-	LONG    $0xf8440f48                           // cmoveq       %rax, %rdi
-	LEAL    -1077(DX), CX
-	MOVL    $-1076, R11
-	LONG    $0xd9450f44                           // cmovnel      %ecx, %r11d
-	MOVQ    DI, -72(BP)
-	LEAQ    0(DI*4), R8
-	TESTQ   AX, AX
-	SETNE   AX
-	CMPL    DX, $2
-	SETCS   R13
-	ORB     AX, R13
-	MOVBLZX R13, R9
-	TESTL   R11, R11
-	JS      LBB2_12
-	LONG    $0x41e36945; WORD $0x0134; BYTE $0x00 // imull        $78913, %r11d, %r12d
-	SHRL    $18, R12
-	XORL    AX, AX
-	CMPL    R11, $3
-	SETGT   AX
-	SUBL    AX, R12
-	LONG    $0x4fdc6941; WORD $0x1293; BYTE $0x00 // imull        $1217359, %r12d, %ebx
-	MOVQ    R12, AX
-	SHLQ    $4, AX
-	LONG    $0x1b0d8d48; WORD $0x007d; BYTE $0x00 // leaq         $32027(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
-	MOVQ    R8, DI
-	ORQ     $2, DI
-	MOVQ    0(AX)(CX*1), R10
-	MOVQ    8(AX)(CX*1), R14
-	MOVQ    R10, AX
-	MULQ    DI
-	MOVQ    DX, CX
-	MOVQ    R14, AX
-	MOVQ    R14, -56(BP)
-	MULQ    DI
-	MOVQ    AX, R13
-	MOVQ    DX, SI
-	SHRL    $19, BX
-	ADDQ    CX, R13
-	ADCQ    $0, SI
-	MOVL    R12, CX
-	SUBL    R11, CX
-	ADDL    BX, CX
-	ADDB    $61, CX
-	LONG    $0xf5ad0f49                           // shrdq        %cl, %rsi, %r13
-	SHRQ    CX, SI
-	NOTQ    R9
-	ADDQ    R8, R9
-	MOVQ    R10, AX
-	MULQ    R9
-	MOVQ    DX, R15
-	MOVQ    R14, AX
-	MULQ    R9
-	MOVQ    DX, R14
-	MOVQ    AX, BX
-	ADDQ    R15, BX
-	ADCQ    $0, R14
-	LONG    $0xf3ad0f4c                           // shrdq        %cl, %r14, %rbx
-	SHRQ    CX, R14
-	MOVQ    R10, AX
-	MULQ    R8
-	MOVQ    DX, R11
-	MOVQ    -56(BP), AX
-	MULQ    R8
-	MOVQ    DX, R10
-	ADDQ    R11, AX
-	ADCQ    $0, R10
-	LONG    $0xd0ad0f4c                           // shrdq        %cl, %r10, %rax
-	SHRQ    CX, R10
-	TESTB   $64, CX
-	LONG    $0xf5440f49                           // cmoveq       %r13, %rsi
-	LONG    $0xf3440f4c                           // cmoveq       %rbx, %r14
-	LONG    $0xd0440f4c                           // cmoveq       %rax, %r10
-	CMPL    R12, $21
-	JA      LBB2_23
-	MOVQ    $-3689348814741910323, AX
-	MOVQ    $3689348814741910323, CX
-	MOVQ    R8, DX
-	IMULQ   AX, DX
-	CMPQ    DX, CX
-	JBE     LBB2_17
-	TESTB   $1, -72(BP)
-	JNE     LBB2_20
-	MOVL    $-1, DX
-
+	TESTL DX, DX
+	LONG $0xf8440f48  // cmoveq       %rax, %rdi
+	LEAL -1077(DX), CX
+	MOVL $-1076, R11
+	LONG $0xd9450f44  // cmovnel      %ecx, %r11d
+	MOVQ DI, -64(BP)
+	LEAQ 0(DI*4), R8
+	TESTQ AX, AX
+	SETNE AX
+	CMPL DX, $2
+	SETCS R13
+	ORB AX, R13
+	MOVBLZX R13, R14
+	TESTL R11, R11
+	JS LBB2_12
+	LONG $0x41e36945; WORD $0x0134; BYTE $0x00  // imull        $78913, %r11d, %r12d
+	SHRL $18, R12
+	XORL AX, AX
+	CMPL R11, $3
+	SETGT AX
+	SUBL AX, R12
+	LONG $0x4fdc6941; WORD $0x1293; BYTE $0x00  // imull        $1217359, %r12d, %ebx
+	MOVQ R12, AX
+	SHLQ $4, AX
+	LONG $0x8e0d8d48; WORD $0x007d; BYTE $0x00  // leaq         $32142(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
+	MOVQ R8, DI
+	ORQ $2, DI
+	MOVQ 0(AX)(CX*1), R10
+	MOVQ 8(AX)(CX*1), R9
+	MOVQ R10, AX
+	MULQ DI
+	MOVQ DX, CX
+	MOVQ R9, AX
+	MOVQ R9, -72(BP)
+	MULQ DI
+	MOVQ AX, R13
+	MOVQ DX, SI
+	SHRL $19, BX
+	ADDQ CX, R13
+	ADCQ $0, SI
+	MOVL R12, CX
+	SUBL R11, CX
+	ADDL BX, CX
+	ADDB $61, CX
+	LONG $0xf5ad0f49  // shrdq        %cl, %rsi, %r13
+	SHRQ CX, SI
+	NOTQ R14
+	ADDQ R8, R14
+	MOVQ R10, AX
+	MULQ R14
+	MOVQ DX, R15
+	MOVQ R9, AX
+	MULQ R14
+	MOVQ DX, R9
+	MOVQ AX, BX
+	ADDQ R15, BX
+	ADCQ $0, R9
+	LONG $0xcbad0f4c  // shrdq        %cl, %r9, %rbx
+	SHRQ CX, R9
+	MOVQ R10, AX
+	MULQ R8
+	MOVQ DX, R11
+	MOVQ -72(BP), AX
+	MULQ R8
+	MOVQ DX, R10
+	ADDQ R11, AX
+	ADCQ $0, R10
+	LONG $0xd0ad0f4c  // shrdq        %cl, %r10, %rax
+	SHRQ CX, R10
+	TESTB $64, CX
+	LONG $0xf5440f49  // cmoveq       %r13, %rsi
+	LONG $0xcb440f4c  // cmoveq       %rbx, %r9
+	LONG $0xd0440f4c  // cmoveq       %rax, %r10
+	CMPL R12, $21
+	JA LBB2_23
+	MOVQ $-3689348814741910323, AX
+	MOVQ $3689348814741910323, CX
+	MOVQ R8, DX
+	IMULQ AX, DX
+	CMPQ DX, CX
+	JBE LBB2_17
+	TESTB $1, -64(BP)
+	JNE LBB2_20
+	MOVL $-1, DX
 LBB2_10:
-	IMULQ AX, R9
-	INCL  DX
-	CMPQ  R9, CX
-	JBE   LBB2_10
-	CMPL  DX, R12
+	IMULQ AX, R14
+	ADDL $1, DX
+	CMPQ R14, CX
+	JBE LBB2_10
+	CMPL DX, R12
 	SETCC R13
-	XORL  R15, R15
+	XORL R15, R15
 	TESTB R15, R15
-	JE    LBB2_26
-	JMP   LBB2_29
-
+	JE LBB2_26
+	JMP LBB2_29
 LBB2_12:
-	LONG    $0x05e36945; WORD $0xf4d1; BYTE $0xff // imull        $-732923, %r11d, %r12d
-	SHRL    $20, R12
-	XORL    AX, AX
-	CMPL    R11, $-1
-	SETNE   AX
-	SUBL    AX, R12
-	ADDL    R12, R11
-	MOVL    R11, AX
-	NEGL    AX
-	LONG    $0xb1db6941; WORD $0xed6c; BYTE $0xff // imull        $-1217359, %r11d, %ebx
-	SHRL    $19, BX
+	LONG $0x05e36945; WORD $0xf4d1; BYTE $0xff  // imull        $-732923, %r11d, %r12d
+	SHRL $20, R12
+	XORL AX, AX
+	CMPL R11, $-1
+	SETNE AX
+	SUBL AX, R12
+	ADDL R12, R11
+	MOVL R11, AX
+	NEGL AX
+	LONG $0xb1db6941; WORD $0xed6c; BYTE $0xff  // imull        $-1217359, %r11d, %ebx
+	SHRL $19, BX
 	MOVLQSX AX, SI
-	SHLQ    $4, SI
-	LONG    $0x46158d4c; WORD $0x0091; BYTE $0x00 // leaq         $37190(%rip), %r10  /* _DOUBLE_POW5_SPLIT(%rip) */
-	MOVQ    R8, DI
-	ORQ     $2, DI
-	MOVQ    0(SI)(R10*1), R14
-	MOVQ    R14, AX
-	MOVQ    R14, -56(BP)
-	MULQ    DI
-	MOVQ    DX, CX
-	MOVQ    8(SI)(R10*1), R10
-	MOVQ    R10, AX
-	MULQ    DI
-	MOVQ    DX, DI
-	MOVQ    AX, SI
-	ADDQ    CX, SI
-	ADCQ    $0, DI
-	MOVL    R12, CX
-	SUBL    BX, CX
-	ADDB    $60, CX
-	LONG    $0xfead0f48                           // shrdq        %cl, %rdi, %rsi
-	SHRQ    CX, DI
-	NOTQ    R9
-	ADDQ    R8, R9
-	MOVQ    R14, AX
-	MULQ    R9
-	MOVQ    DX, R15
-	MOVQ    R10, AX
-	MULQ    R9
-	MOVQ    DX, R14
-	MOVQ    AX, BX
-	ADDQ    R15, BX
-	ADCQ    $0, R14
-	LONG    $0xf3ad0f4c                           // shrdq        %cl, %r14, %rbx
-	SHRQ    CX, R14
-	MOVQ    -56(BP), AX
-	MULQ    R8
-	MOVQ    DX, R15
-	MOVQ    R10, AX
-	MULQ    R8
-	MOVQ    DX, R10
-	ADDQ    R15, AX
-	ADCQ    $0, R10
-	LONG    $0xd0ad0f4c                           // shrdq        %cl, %r10, %rax
-	SHRQ    CX, R10
-	TESTB   $64, CX
-	LONG    $0xfe440f48                           // cmoveq       %rsi, %rdi
-	MOVQ    DI, SI
-	LONG    $0xf3440f4c                           // cmoveq       %rbx, %r14
-	LONG    $0xd0440f4c                           // cmoveq       %rax, %r10
-	CMPL    R12, $1
-	JA      LBB2_15
-	MOVQ    -72(BP), AX
-	ANDL    $1, AX
-	TESTQ   AX, AX
-	SETEQ   CX
-	ANDB    CX, R13
-	SUBQ    AX, SI
-	MOVB    $1, R15
-	MOVL    R11, AX
-	MOVQ    AX, -56(BP)
-	JMP     LBB2_30
-
+	SHLQ $4, SI
+	LONG $0xb80d8d4c; WORD $0x0091; BYTE $0x00  // leaq         $37304(%rip), %r9  /* _DOUBLE_POW5_SPLIT(%rip) */
+	MOVQ R8, DI
+	ORQ $2, DI
+	MOVQ 0(SI)(R9*1), R15
+	MOVQ R15, AX
+	MOVQ R15, -72(BP)
+	MULQ DI
+	MOVQ DX, CX
+	MOVQ 8(SI)(R9*1), R10
+	MOVQ R10, AX
+	MULQ DI
+	MOVQ DX, DI
+	MOVQ AX, SI
+	ADDQ CX, SI
+	ADCQ $0, DI
+	MOVL R12, CX
+	SUBL BX, CX
+	ADDB $60, CX
+	LONG $0xfead0f48  // shrdq        %cl, %rdi, %rsi
+	SHRQ CX, DI
+	NOTQ R14
+	ADDQ R8, R14
+	MOVQ R15, AX
+	MULQ R14
+	MOVQ DX, R15
+	MOVQ R10, AX
+	MULQ R14
+	MOVQ DX, R9
+	MOVQ AX, BX
+	ADDQ R15, BX
+	ADCQ $0, R9
+	LONG $0xcbad0f4c  // shrdq        %cl, %r9, %rbx
+	SHRQ CX, R9
+	MOVQ -72(BP), AX
+	MULQ R8
+	MOVQ DX, R15
+	MOVQ R10, AX
+	MULQ R8
+	MOVQ DX, R10
+	ADDQ R15, AX
+	ADCQ $0, R10
+	LONG $0xd0ad0f4c  // shrdq        %cl, %r10, %rax
+	SHRQ CX, R10
+	TESTB $64, CX
+	LONG $0xfe440f48  // cmoveq       %rsi, %rdi
+	MOVQ DI, SI
+	LONG $0xcb440f4c  // cmoveq       %rbx, %r9
+	LONG $0xd0440f4c  // cmoveq       %rax, %r10
+	CMPL R12, $1
+	JA LBB2_15
+	MOVQ -64(BP), AX
+	ANDL $1, AX
+	TESTQ AX, AX
+	SETEQ CX
+	ANDB CX, R13
+	SUBQ AX, SI
+	MOVB $1, R15
+	MOVL R11, R12
+	JMP LBB2_29
 LBB2_14:
 	MOVL CX, CX
 	SHRQ CX, DI
 	XORL R12, R12
 	MOVL $1, R15
 	CMPQ DI, $10
-	JAE  LBB2_46
-	JMP  LBB2_61
-
+	JAE LBB2_45
+	JMP LBB2_60
 LBB2_15:
-	CMPL  R12, $62
-	JA    LBB2_24
-	MOVQ  $-1, AX
-	MOVL  R12, CX
-	SHLQ  CX, AX
-	NOTQ  AX
+	CMPL R12, $62
+	JA LBB2_24
+	MOVQ $-1, AX
+	MOVL R12, CX
+	SHLQ CX, AX
+	NOTQ AX
 	TESTQ AX, R8
 	SETEQ R15
-	JMP   LBB2_25
-
+	JMP LBB2_25
 LBB2_17:
 	MOVL $-1, DX
-
 LBB2_18:
 	IMULQ AX, R8
-	INCL  DX
-	CMPQ  R8, CX
-	JBE   LBB2_18
-	CMPL  DX, R12
+	ADDL $1, DX
+	CMPQ R8, CX
+	JBE LBB2_18
+	CMPL DX, R12
 	SETCC R15
-	XORL  R13, R13
+	XORL R13, R13
 	TESTB R15, R15
-	JE    LBB2_26
-	JMP   LBB2_29
-
+	JE LBB2_26
+	JMP LBB2_29
 LBB2_20:
 	MOVL $-1, DX
-
 LBB2_21:
 	IMULQ AX, DI
-	INCL  DX
-	CMPQ  DI, CX
-	JBE   LBB2_21
-	XORL  AX, AX
-	CMPL  DX, R12
-	SETCC AX
-	SUBQ  AX, SI
-
+	ADDL $1, DX
+	CMPQ DI, CX
+	JBE LBB2_21
+	CMPL DX, R12
+	ADCQ $-1, SI
 LBB2_23:
-	XORL  R15, R15
-	XORL  R13, R13
+	XORL R15, R15
+	XORL R13, R13
 	TESTB R15, R15
-	JE    LBB2_26
-	JMP   LBB2_29
-
+	JE LBB2_26
+	JMP LBB2_29
 LBB2_24:
 	XORL R15, R15
-
 LBB2_25:
-	XORL  R13, R13
-	MOVL  R11, R12
+	XORL R13, R13
+	MOVL R11, R12
 	TESTB R15, R15
-	JNE   LBB2_29
-
+	JNE LBB2_29
 LBB2_26:
 	TESTB R13, R13
-	JNE   LBB2_29
-	MOVQ  SI, BX
-	SHRQ  $2, SI
-	MOVQ  $2951479051793528259, DI
-	MOVQ  SI, AX
-	MULQ  DI
-	MOVQ  DX, CX
-	SHRQ  $2, CX
-	MOVQ  R14, AX
-	SHRQ  $2, AX
-	MULQ  DI
-	MOVQ  DX, SI
-	SHRQ  $2, SI
-	CMPQ  CX, SI
-	JBE   LBB2_39
-	MOVQ  R10, AX
-	SHRQ  $2, AX
-	MULQ  DI
-	SHRQ  $2, DX
-	WORD  $0xc26b; BYTE $0x9c      // imull        $-100, %edx, %eax
-	ADDL  R10, AX
-	XORL  DI, DI
-	CMPL  AX, $49
-	SETHI DI
-	MOVL  $2, R11
-	MOVQ  SI, R14
-	MOVQ  CX, AX
-	MOVQ  DX, R10
-	MOVQ  -64(BP), R13
-	JMP   LBB2_40
-
-LBB2_29:
-	MOVQ R12, -56(BP)
-
-LBB2_30:
-	MOVQ $-3689348814741910323, BX
+	JNE LBB2_29
+	MOVQ SI, BX
+	SHRQ $2, SI
+	MOVQ $2951479051793528259, DI
 	MOVQ SI, AX
-	MULQ BX
-	MOVQ DX, R12
-	MOVQ R14, AX
-	MULQ BX
-	SHRQ $3, R12
+	MULQ DI
+	MOVQ DX, CX
+	SHRQ $2, CX
+	MOVQ R9, AX
+	SHRQ $2, AX
+	MULQ DI
+	MOVQ DX, SI
+	SHRQ $2, SI
+	CMPQ CX, SI
+	JBE LBB2_37
+	MOVQ R10, AX
+	SHRQ $2, AX
+	MULQ DI
+	SHRQ $2, DX
+	WORD $0xc26b; BYTE $0x9c  // imull        $-100, %edx, %eax
+	ADDL R10, AX
+	XORL DI, DI
+	CMPL AX, $49
+	SETHI DI
+	MOVL $2, R11
+	MOVQ SI, R9
+	MOVQ CX, AX
+	MOVQ DX, R10
+	MOVQ -56(BP), R13
+	JMP LBB2_38
+LBB2_29:
+	MOVQ $-3689348814741910323, R14
+	MOVQ SI, AX
+	MULQ R14
+	MOVQ DX, SI
+	MOVQ R9, AX
+	MULQ R14
+	SHRQ $3, SI
 	SHRQ $3, DX
-	XORL SI, SI
+	XORL DI, DI
 	XORL R11, R11
-	CMPQ R12, DX
-	JBE  LBB2_37
+	CMPQ SI, DX
+	JBE LBB2_35
 	XORL CX, CX
-
-LBB2_32:
-	MOVQ  DX, R8
-	LEAL  0(DX)(DX*1), DI
-	MOVQ  R10, AX
-	MULQ  BX
-	MOVQ  DX, R9
-	LEAL  0(DI)(DI*4), AX
-	SHRQ  $3, R9
-	LEAL  0(R9)(R9*1), DX
-	LEAL  0(DX)(DX*4), SI
-	NEGL  SI
-	ADDB  R10, SI
-	CMPL  R14, AX
+LBB2_31:
+	MOVQ DX, R8
+	LEAL 0(DX)(DX*1), DI
+	MOVQ R10, AX
+	MULQ R14
+	MOVQ DX, BX
+	LEAL 0(DI)(DI*4), AX
+	SHRQ $3, BX
+	LEAL 0(BX)(BX*1), DX
+	LEAL 0(DX)(DX*4), DI
+	NEGL DI
+	ADDB R10, DI
+	CMPL AX, R9
 	SETEQ AX
-	ANDB  AX, R13
+	ANDB AX, R13
 	TESTB CX, CX
 	SETEQ AX
-	ANDB  AX, R15
-	INCL  R11
-	MOVQ  R12, AX
-	MULQ  BX
-	MOVQ  DX, R12
-	SHRQ  $3, R12
-	MOVQ  R8, AX
-	MULQ  BX
-	SHRQ  $3, DX
-	MOVQ  R9, R10
-	MOVQ  R8, R14
-	MOVL  SI, CX
-	CMPQ  R12, DX
-	JA    LBB2_32
-	TESTB R13, R13
-	JE    LBB2_38
-
-LBB2_34:
+	ANDB AX, R15
+	ADDL $1, R11
+	MOVQ SI, AX
+	MULQ R14
+	MOVQ DX, SI
+	SHRQ $3, SI
 	MOVQ R8, AX
-	MULQ BX
+	MULQ R14
+	SHRQ $3, DX
+	MOVQ BX, R10
+	MOVQ R8, R9
+	MOVL DI, CX
+	CMPQ SI, DX
+	JA LBB2_31
+	TESTB R13, R13
+	JE LBB2_36
+LBB2_33:
+	MOVQ R8, AX
+	MULQ R14
 	MOVQ DX, CX
 	SHRQ $3, CX
 	LEAL 0(CX)(CX*1), AX
 	LEAL 0(AX)(AX*4), AX
-	CMPL R8, AX
-	MOVQ -72(BP), DI
-	MOVQ -56(BP), R12
-	JNE  LBB2_44
-	MOVQ BX, R14
-
-LBB2_36:
-	MOVQ  R9, AX
-	MULQ  R14
-	MOVQ  DX, R10
-	MOVQ  CX, R8
-	SHRQ  $3, R10
-	LEAL  0(R10)(R10*1), AX
-	LEAL  0(AX)(AX*4), BX
-	NEGL  BX
-	ADDB  R9, BX
-	TESTB SI, SI
+	CMPL AX, R8
+	MOVQ -64(BP), R10
+	JNE LBB2_42
+LBB2_34:
+	MOVQ BX, AX
+	MULQ R14
+	MOVQ DX, R9
+	MOVQ CX, R8
+	SHRQ $3, R9
+	LEAL 0(R9)(R9*1), AX
+	LEAL 0(AX)(AX*4), SI
+	NEGL SI
+	ADDB BX, SI
+	TESTB DI, DI
 	SETEQ AX
-	ANDB  AX, R15
-	INCL  R11
-	MOVQ  CX, AX
-	MULQ  R14
-	MOVQ  DX, CX
-	SHRQ  $3, CX
-	LEAL  0(CX)(CX*1), AX
-	LEAL  0(AX)(AX*4), AX
-	MOVQ  R10, R9
-	MOVL  BX, SI
-	CMPL  R8, AX
-	JE    LBB2_36
-	JMP   LBB2_45
-
-LBB2_37:
-	MOVQ  R14, R8
-	MOVQ  R10, R9
+	ANDB AX, R15
+	ADDL $1, R11
+	MOVQ CX, AX
+	MULQ R14
+	MOVQ DX, CX
+	SHRQ $3, CX
+	LEAL 0(CX)(CX*1), AX
+	LEAL 0(AX)(AX*4), AX
+	MOVQ R9, BX
+	MOVL SI, DI
+	CMPL AX, R8
+	JE LBB2_34
+	JMP LBB2_43
+LBB2_35:
+	MOVQ R9, R8
+	MOVQ R10, BX
 	TESTB R13, R13
-	JNE   LBB2_34
-
-LBB2_38:
-	MOVL SI, BX
-	MOVQ R9, R10
-	MOVQ -72(BP), DI
-	MOVQ -56(BP), R12
-	JMP  LBB2_45
-
-LBB2_39:
+	JNE LBB2_33
+LBB2_36:
+	MOVL DI, SI
+	MOVQ BX, R9
+	MOVQ -64(BP), R10
+	JMP LBB2_43
+LBB2_37:
 	XORL R11, R11
 	XORL DI, DI
-	MOVQ -64(BP), R13
+	MOVQ -56(BP), R13
 	MOVQ BX, AX
-
-LBB2_40:
+LBB2_38:
 	MOVQ $-3689348814741910323, BX
 	MULQ BX
 	MOVQ DX, CX
 	SHRQ $3, CX
-	MOVQ R14, AX
+	MOVQ R9, AX
 	MULQ BX
 	SHRQ $3, DX
 	CMPQ CX, DX
-	JBE  LBB2_43
-
-LBB2_41:
-	MOVQ  R10, SI
-	MOVQ  DX, R14
-	MOVQ  R10, AX
-	MULQ  BX
-	MOVQ  DX, R10
-	SHRQ  $3, R10
-	INCL  R11
-	MOVQ  CX, AX
-	MULQ  BX
-	MOVQ  DX, CX
-	SHRQ  $3, CX
-	MOVQ  R14, AX
-	MULQ  BX
-	SHRQ  $3, DX
-	CMPQ  CX, DX
-	JA    LBB2_41
-	LEAL  0(R10)(R10*1), AX
-	LEAL  0(AX)(AX*4), AX
-	SUBL  AX, SI
-	XORL  DI, DI
-	CMPL  SI, $4
+	JBE LBB2_41
+LBB2_39:
+	MOVQ R10, SI
+	MOVQ DX, R9
+	MOVQ R10, AX
+	MULQ BX
+	MOVQ DX, R10
+	SHRQ $3, R10
+	ADDL $1, R11
+	MOVQ CX, AX
+	MULQ BX
+	MOVQ DX, CX
+	SHRQ $3, CX
+	MOVQ R9, AX
+	MULQ BX
+	SHRQ $3, DX
+	CMPQ CX, DX
+	JA LBB2_39
+	LEAL 0(R10)(R10*1), AX
+	LEAL 0(AX)(AX*4), AX
+	SUBL AX, SI
+	XORL DI, DI
+	CMPL SI, $4
 	SETHI DI
-
-LBB2_43:
-	XORL  AX, AX
-	CMPQ  R10, R14
+LBB2_41:
+	XORL AX, AX
+	CMPQ R10, R9
 	SETEQ AX
-	ORQ   DI, AX
-	ADDQ  R10, AX
-	MOVQ  AX, DI
-	ADDL  R11, R12
-	MOVL  $1, R15
-	CMPQ  DI, $10
-	JAE   LBB2_46
-	JMP   LBB2_61
-
-LBB2_44:
-	MOVL SI, BX
-	MOVQ R9, R10
-
+	ORQ DI, AX
+	ADDQ R10, AX
+	MOVQ AX, DI
+	ADDL R11, R12
+	MOVL $1, R15
+	CMPQ DI, $10
+	JB LBB2_60
+	JMP LBB2_45
+LBB2_42:
+	MOVL DI, SI
+	MOVQ BX, R9
+LBB2_43:
+	TESTB R13, R13
+	SETEQ AX
+	TESTB R15, R15
+	SETNE CX
+	CMPB SI, $5
+	SETEQ DX
+	TESTB $1, R9
+	SETEQ BX
+	ANDB CX, BX
+	ANDB DX, BX
+	CMPQ R9, R8
+	SETEQ CX
+	ORB AX, R10
+	ANDB CX, R10
+	CMPB SI, $4
+	SETHI AX
+	XORB BX, AX
+	ORB R10, AX
+	MOVBLZX AX, DI
+	ADDQ R9, DI
+	MOVQ -56(BP), R13
+	ADDL R11, R12
+	MOVL $1, R15
+	CMPQ DI, $10
+	JB LBB2_60
 LBB2_45:
-	TESTB   R13, R13
-	SETEQ   SI
-	TESTB   R15, R15
-	SETNE   AX
-	CMPB    BX, $5
-	SETEQ   DX
-	TESTB   $1, R10
-	SETEQ   CX
-	ANDB    AX, CX
-	ANDB    DX, CX
-	CMPQ    R10, R8
-	SETEQ   DX
-	ORB     SI, DI
-	CMPB    BX, $4
-	SETHI   AX
-	XORB    CX, AX
-	ANDB    DX, DI
-	ORB     AX, DI
-	MOVBLZX DI, DI
-	ADDQ    R10, DI
-	MOVQ    -64(BP), R13
-	ADDL    R11, R12
-	MOVL    $1, R15
-	CMPQ    DI, $10
-	JB      LBB2_61
-
-LBB2_46:
 	MOVL $2, R15
 	CMPQ DI, $100
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $3, R15
 	CMPQ DI, $1000
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $4, R15
 	CMPQ DI, $10000
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $5, R15
 	CMPQ DI, $100000
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $6, R15
 	CMPQ DI, $1000000
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $7, R15
 	CMPQ DI, $10000000
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $8, R15
 	CMPQ DI, $100000000
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $9, R15
 	CMPQ DI, $1000000000
-	JB   LBB2_61
+	JB LBB2_60
 	MOVQ $8589934464, AX
 	ADDQ $1410065536, AX
 	MOVL $10, R15
 	CMPQ DI, AX
-	JB   LBB2_61
+	JB LBB2_60
 	MOVQ DI, AX
 	SHRQ $11, AX
 	MOVL $11, R15
 	CMPQ AX, $48828125
-	JB   LBB2_61
+	JB LBB2_60
 	MOVQ DI, AX
 	SHRQ $12, AX
 	MOVL $12, R15
 	CMPQ AX, $244140625
-	JB   LBB2_61
+	JB LBB2_60
 	MOVQ DI, AX
 	SHRQ $13, AX
 	MOVL $13, R15
 	CMPQ AX, $1220703125
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $14, R15
 	MOVQ $100000000000000, AX
 	CMPQ DI, AX
-	JB   LBB2_61
+	JB LBB2_60
 	MOVL $15, R15
 	MOVQ $1000000000000000, AX
 	CMPQ DI, AX
-	JB   LBB2_61
+	JB LBB2_60
 	MOVQ $10000000000000000, AX
 	CMPQ DI, AX
 	MOVL $17, R15
 	SBBL $0, R15
-
-LBB2_61:
+LBB2_60:
 	LEAL 0(R15)(R12*1), R14
-	LEAL 5(R15)(R12*1), AX
+	LEAL 0(R15)(R12*1), AX
+	ADDL $5, AX
 	CMPL AX, $27
-	JB   LBB2_67
+	JB LBB2_66
 	LEAQ 1(R13), BX
 	MOVQ BX, SI
 	MOVL R15, DX
-	LONG $0x0046b9e8; BYTE $0x00 // callq        _print_mantissa
+	LONG $0x0046f5e8; BYTE $0x00  // callq        _print_mantissa
 	MOVB 1(R13), AX
 	MOVB AX, 0(R13)
 	MOVL $1, AX
 	CMPL R15, $2
-	JB   LBB2_64
+	JB LBB2_63
 	MOVB $46, 0(BX)
-	INCL R15
+	ADDL $1, R15
 	MOVL R15, AX
-
-LBB2_64:
-	MOVL  AX, BX
-	MOVB  $101, 0(R13)(BX*1)
-	INCQ  BX
+LBB2_63:
+	MOVL AX, BX
+	MOVB $101, 0(R13)(BX*1)
+	ADDQ $1, BX
 	TESTL R14, R14
-	JLE   LBB2_69
-	DECL  R14
-	MOVL  -44(BP), R9
-	CMPL  R14, $100
-	JL    LBB2_70
-
-LBB2_66:
-	MOVL    R14, AX
-	MOVL    $3435973837, CX
-	IMULQ   AX, CX
-	SHRQ    $35, CX
-	LEAL    0(CX)(CX*1), AX
-	LEAL    0(AX)(AX*4), AX
-	SUBL    AX, R14
-	LONG    $0x18058d48; WORD $0x00a0; BYTE $0x00 // leaq         $40984(%rip), %rax  /* _Digits(%rip) */
+	JLE LBB2_68
+	ADDL $-1, R14
+	MOVL -44(BP), R9
+	CMPL R14, $100
+	JL LBB2_69
+LBB2_65:
+	MOVL R14, AX
+	MOVL $3435973837, CX
+	IMULQ AX, CX
+	SHRQ $35, CX
+	LEAL 0(CX)(CX*1), AX
+	LEAL 0(AX)(AX*4), AX
+	SUBL AX, R14
+	LONG $0x97058d48; WORD $0x00a0; BYTE $0x00  // leaq         $41111(%rip), %rax  /* _Digits(%rip) */
 	MOVWLZX 0(AX)(CX*2), AX
-	MOVL    BX, CX
-	MOVW    AX, 0(R13)(CX*1)
-	ORB     $48, R14
-	MOVLQSX BX, AX
-	MOVB    R14, 2(AX)(R13*1)
-	ADDL    $3, BX
-	JMP     LBB2_107
-
-LBB2_67:
+	MOVL BX, CX
+	MOVW AX, 0(R13)(CX*1)
+	ORB $48, R14
+	MOVB R14, 2(R13)(CX*1)
+	ADDL $3, BX
+	JMP LBB2_112
+LBB2_66:
 	TESTL R14, R14
-	JLE   LBB2_72
-	MOVL  R12, R13
-	SARL  $31, R13
-	ANDL  R14, R13
-	XORL  BX, BX
+	JLE LBB2_71
+	MOVL R12, R13
+	SARL $31, R13
+	ANDL R14, R13
+	XORL BX, BX
 	TESTL R12, R12
-	LONG  $0xe3480f44 // cmovsl       %ebx, %r12d
-	JMP   LBB2_74
-
-LBB2_69:
+	LONG $0xe3480f44  // cmovsl       %ebx, %r12d
+	JMP LBB2_73
+LBB2_68:
 	ADDL $2, AX
 	MOVB $45, 0(R13)(BX*1)
 	MOVL $1, CX
@@ -850,2077 +763,1945 @@ LBB2_69:
 	MOVL AX, BX
 	MOVL -44(BP), R9
 	CMPL R14, $100
-	JGE  LBB2_66
-
-LBB2_70:
-	CMPL    R14, $10
-	JL      LBB2_85
+	JGE LBB2_65
+LBB2_69:
+	CMPL R14, $10
+	JL LBB2_84
 	MOVLQSX R14, AX
-	LONG    $0xaa0d8d48; WORD $0x009f; BYTE $0x00 // leaq         $40874(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x2c0d8d48; WORD $0x00a0; BYTE $0x00  // leaq         $41004(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
-	MOVL    BX, CX
-	MOVW    AX, 0(R13)(CX*1)
-	ADDL    $2, BX
-	JMP     LBB2_107
-
-LBB2_72:
-	MOVW  $11824, 0(R13)
+	MOVL BX, CX
+	MOVW AX, 0(R13)(CX*1)
+	ADDL $2, BX
+	JMP LBB2_112
+LBB2_71:
+	MOVW $11824, 0(R13)
 	TESTL R14, R14
-	JS    LBB2_86
-	XORL  R13, R13
-	MOVL  $2, BX
-	XORL  R12, R12
-
-LBB2_74:
-	MOVL  BX, SI
-	ADDQ  -64(BP), SI
-	MOVL  R15, DX
-	LONG  $0x0045b5e8; BYTE $0x00 // callq        _print_mantissa
+	JS LBB2_85
+	XORL R13, R13
+	MOVL $2, BX
+	XORL R12, R12
+LBB2_73:
+	MOVL BX, SI
+	ADDQ -56(BP), SI
+	MOVL R15, DX
+	LONG $0x0045f1e8; BYTE $0x00  // callq        _print_mantissa
 	TESTL R13, R13
-	JE    LBB2_78
-	LEAL  0(R13)(BX*1), AX
-	CMPL  R13, R15
-	JGE   LBB2_80
-	LEAL  0(BX)(R15*1), CX
-	MOVL  AX, AX
-	MOVQ  -64(BP), R10
-
-LBB2_77:
-	MOVBLZX -1(R10)(CX*1), DX
-	MOVB    DX, 0(R10)(CX*1)
-	DECQ    CX
-	CMPQ    CX, AX
-	JG      LBB2_77
-	JMP     LBB2_81
-
-LBB2_78:
-	MOVQ  -64(BP), R10
-	ADDL  R15, BX
-	TESTL R12, R12
-	JNE   LBB2_82
-	JMP   LBB2_106
-
-LBB2_80:
+	JE LBB2_77
+	LEAL 0(BX)(R13*1), AX
+	CMPL R13, R15
+	JGE LBB2_79
+	LEAL 0(BX)(R15*1), CX
 	MOVL AX, AX
-	MOVQ -64(BP), R10
-
-LBB2_81:
-	MOVB  $46, 0(R10)(AX*1)
-	ORL   $1, BX
-	ADDL  R15, BX
+	MOVQ -56(BP), R10
+LBB2_76:
+	MOVBLZX -1(R10)(CX*1), DX
+	MOVB DX, 0(R10)(CX*1)
+	LEAQ -1(CX), DX
+	MOVQ DX, CX
+	CMPQ DX, AX
+	JG LBB2_76
+	JMP LBB2_80
+LBB2_77:
+	MOVQ -56(BP), R10
+	ADDL R15, BX
 	TESTL R12, R12
-	JE    LBB2_106
-
-LBB2_82:
+	JNE LBB2_81
+	JMP LBB2_111
+LBB2_79:
+	MOVL AX, AX
+	MOVQ -56(BP), R10
+LBB2_80:
+	MOVB $46, 0(R10)(AX*1)
+	ORL $1, BX
+	ADDL R15, BX
+	TESTL R12, R12
+	JE LBB2_111
+LBB2_81:
 	MOVLQSX BX, BX
-	LEAL    -1(R12), R8
-	XORL    AX, AX
-	CMPL    R8, $127
-	MOVL    -44(BP), R9
-	JB      LBB2_95
-	INCQ    R8
-	MOVQ    R8, AX
-	ANDQ    $-128, AX
-	LEAQ    -128(AX), DX
-	MOVQ    DX, SI
-	SHRQ    $7, SI
-	INCQ    SI
-	MOVL    SI, CX
-	ANDL    $3, CX
-	CMPQ    DX, $384
-	JAE     LBB2_89
-	XORL    SI, SI
-	JMP     LBB2_91
-
-LBB2_85:
+	LEAL -1(R12), R8
+	XORL AX, AX
+	CMPL R8, $127
+	MOVL -44(BP), R9
+	JB LBB2_94
+	ADDQ $1, R8
+	MOVQ R8, AX
+	ANDQ $-128, AX
+	LEAQ -128(AX), CX
+	MOVQ CX, SI
+	SHRQ $7, SI
+	ADDQ $1, SI
+	MOVL SI, DX
+	ANDL $3, DX
+	CMPQ CX, $384
+	JAE LBB2_88
+	XORL DI, DI
+	JMP LBB2_90
+LBB2_84:
 	ADDB $48, R14
 	MOVL BX, AX
-	INCL BX
+	ADDL $1, BX
 	MOVB R14, 0(R13)(AX*1)
-	JMP  LBB2_107
-
-LBB2_86:
+	JMP LBB2_112
+LBB2_85:
 	MOVL $2, BX
 	SUBL R14, BX
 	LEAQ -2(BX), R8
-	MOVL $2, AX
+	MOVL $2, DX
+	CMPQ R8, $4
+	JB LBB2_109
 	CMPQ R8, $128
-	JB   LBB2_104
-	MOVQ R8, AX
-	ANDQ $-128, AX
-	LEAQ -128(AX), DX
-	MOVQ DX, SI
-	SHRQ $7, SI
-	INCQ SI
-	MOVL SI, CX
-	ANDL $3, CX
-	CMPQ DX, $384
-	JAE  LBB2_97
-	XORL SI, SI
-	JMP  LBB2_99
-
+	JAE LBB2_96
+	XORL CX, CX
+	JMP LBB2_105
+LBB2_88:
+	LEAQ 0(BX)(R10*1), CX
+	ADDQ $480, CX
+	ANDQ $-4, SI
+	NEGQ SI
+	XORL DI, DI
+	QUAD $0xfffff68e056ffec5  // vmovdqu      $-2418(%rip), %ymm0  /* LCPI2_0(%rip) */
 LBB2_89:
-	LEAQ 480(BX)(R10*1), DI
-	MOVQ CX, DX
-	SUBQ SI, DX
-	XORL SI, SI
-	QUAD $0xfffff66d056ffec5 // vmovdqu      $-2451(%rip), %ymm0  /* LCPI2_0(%rip) */
-
+	QUAD $0xfffe2039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-480(%rcx,%rdi)
+	QUAD $0xfffe4039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-448(%rcx,%rdi)
+	QUAD $0xfffe6039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-416(%rcx,%rdi)
+	QUAD $0xfffe8039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-384(%rcx,%rdi)
+	QUAD $0xfffea039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-352(%rcx,%rdi)
+	QUAD $0xfffec039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-320(%rcx,%rdi)
+	QUAD $0xfffee039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-288(%rcx,%rdi)
+	QUAD $0xffff0039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-256(%rcx,%rdi)
+	QUAD $0xffff2039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-224(%rcx,%rdi)
+	QUAD $0xffff4039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-192(%rcx,%rdi)
+	QUAD $0xffff6039847ffec5; BYTE $0xff  // vmovdqu      %ymm0, $-160(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0x8039  // vmovdqu      %ymm0, $-128(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0xa039  // vmovdqu      %ymm0, $-96(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0xc039  // vmovdqu      %ymm0, $-64(%rcx,%rdi)
+	LONG $0x447ffec5; WORD $0xe039  // vmovdqu      %ymm0, $-32(%rcx,%rdi)
+	LONG $0x047ffec5; BYTE $0x39  // vmovdqu      %ymm0, (%rcx,%rdi)
+	ADDQ $512, DI
+	ADDQ $4, SI
+	JNE LBB2_89
 LBB2_90:
-	QUAD $0xfffe2037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-480(%rdi,%rsi)
-	QUAD $0xfffe4037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-448(%rdi,%rsi)
-	QUAD $0xfffe6037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-416(%rdi,%rsi)
-	QUAD $0xfffe8037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-384(%rdi,%rsi)
-	QUAD $0xfffea037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-352(%rdi,%rsi)
-	QUAD $0xfffec037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-320(%rdi,%rsi)
-	QUAD $0xfffee037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-288(%rdi,%rsi)
-	QUAD $0xffff0037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-256(%rdi,%rsi)
-	QUAD $0xffff2037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-224(%rdi,%rsi)
-	QUAD $0xffff4037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-192(%rdi,%rsi)
-	QUAD $0xffff6037847ffec5; BYTE $0xff // vmovdqu      %ymm0, $-160(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0x8037       // vmovdqu      %ymm0, $-128(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0xa037       // vmovdqu      %ymm0, $-96(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0xc037       // vmovdqu      %ymm0, $-64(%rdi,%rsi)
-	LONG $0x447ffec5; WORD $0xe037       // vmovdqu      %ymm0, $-32(%rdi,%rsi)
-	LONG $0x047ffec5; BYTE $0x37         // vmovdqu      %ymm0, (%rdi,%rsi)
-	ADDQ $512, SI
-	ADDQ $4, DX
-	JNE  LBB2_90
-
-LBB2_91:
-	TESTQ CX, CX
-	JE    LBB2_94
-	ADDQ  BX, SI
-	LEAQ  96(R10)(SI*1), DX
-	NEGQ  CX
-	QUAD  $0xfffff5c4056ffec5 // vmovdqu      $-2620(%rip), %ymm0  /* LCPI2_0(%rip) */
-
+	TESTQ DX, DX
+	JE LBB2_93
+	ADDQ BX, DI
+	LEAQ 0(R10)(DI*1), CX
+	ADDQ $96, CX
+	SHLQ $7, DX
+	XORL SI, SI
+	QUAD $0xfffff5df056ffec5  // vmovdqu      $-2593(%rip), %ymm0  /* LCPI2_0(%rip) */
+LBB2_92:
+	LONG $0x447ffec5; WORD $0xa031  // vmovdqu      %ymm0, $-96(%rcx,%rsi)
+	LONG $0x447ffec5; WORD $0xc031  // vmovdqu      %ymm0, $-64(%rcx,%rsi)
+	LONG $0x447ffec5; WORD $0xe031  // vmovdqu      %ymm0, $-32(%rcx,%rsi)
+	LONG $0x047ffec5; BYTE $0x31  // vmovdqu      %ymm0, (%rcx,%rsi)
+	SUBQ $-128, SI
+	CMPQ DX, SI
+	JNE LBB2_92
 LBB2_93:
-	LONG $0x427ffec5; BYTE $0xa0 // vmovdqu      %ymm0, $-96(%rdx)
-	LONG $0x427ffec5; BYTE $0xc0 // vmovdqu      %ymm0, $-64(%rdx)
-	LONG $0x427ffec5; BYTE $0xe0 // vmovdqu      %ymm0, $-32(%rdx)
-	LONG $0x027ffec5             // vmovdqu      %ymm0, (%rdx)
-	SUBQ $-128, DX
-	INCQ CX
-	JNE  LBB2_93
-
-LBB2_94:
 	ADDQ AX, BX
 	CMPQ R8, AX
-	JE   LBB2_107
-
-LBB2_95:
+	JE LBB2_112
+LBB2_94:
 	SUBL AX, R12
-
-LBB2_96:
+LBB2_95:
 	MOVB $48, 0(R10)(BX*1)
-	INCQ BX
-	DECL R12
-	JNE  LBB2_96
-	JMP  LBB2_107
-
-LBB2_97:
-	MOVQ CX, DX
-	SUBQ SI, DX
+	ADDQ $1, BX
+	ADDL $-1, R12
+	JNE LBB2_95
+	JMP LBB2_112
+LBB2_96:
+	MOVQ R8, CX
+	ANDQ $-128, CX
+	LEAQ -128(CX), SI
+	MOVQ SI, DX
+	SHRQ $7, DX
+	ADDQ $1, DX
+	MOVL DX, AX
+	ANDL $3, AX
+	CMPQ SI, $384
+	JAE LBB2_98
 	XORL SI, SI
-	QUAD $0xfffff577056ffec5 // vmovdqu      $-2697(%rip), %ymm0  /* LCPI2_0(%rip) */
-
+	JMP LBB2_100
 LBB2_98:
-	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x02 // vmovdqu      %ymm0, $2(%r13,%rsi)
-	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x22 // vmovdqu      %ymm0, $34(%r13,%rsi)
-	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x42 // vmovdqu      %ymm0, $66(%r13,%rsi)
-	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x62 // vmovdqu      %ymm0, $98(%r13,%rsi)
-	QUAD $0x008235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $130(%r13,%rsi)
-	QUAD $0x00a235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $162(%r13,%rsi)
-	QUAD $0x00c235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $194(%r13,%rsi)
-	QUAD $0x00e235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $226(%r13,%rsi)
-	QUAD $0x010235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $258(%r13,%rsi)
-	QUAD $0x012235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $290(%r13,%rsi)
-	QUAD $0x014235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $322(%r13,%rsi)
-	QUAD $0x016235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $354(%r13,%rsi)
-	QUAD $0x018235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $386(%r13,%rsi)
-	QUAD $0x01a235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $418(%r13,%rsi)
-	QUAD $0x01c235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $450(%r13,%rsi)
-	QUAD $0x01e235847f7ec1c4; WORD $0x0000     // vmovdqu      %ymm0, $482(%r13,%rsi)
+	ANDQ $-4, DX
+	NEGQ DX
+	XORL SI, SI
+	QUAD $0xfffff560056ffec5  // vmovdqu      $-2720(%rip), %ymm0  /* LCPI2_0(%rip) */
+LBB2_99:
+	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x02  // vmovdqu      %ymm0, $2(%r13,%rsi)
+	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x22  // vmovdqu      %ymm0, $34(%r13,%rsi)
+	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x42  // vmovdqu      %ymm0, $66(%r13,%rsi)
+	LONG $0x7f7ec1c4; WORD $0x3544; BYTE $0x62  // vmovdqu      %ymm0, $98(%r13,%rsi)
+	QUAD $0x008235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $130(%r13,%rsi)
+	QUAD $0x00a235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $162(%r13,%rsi)
+	QUAD $0x00c235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $194(%r13,%rsi)
+	QUAD $0x00e235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $226(%r13,%rsi)
+	QUAD $0x010235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $258(%r13,%rsi)
+	QUAD $0x012235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $290(%r13,%rsi)
+	QUAD $0x014235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $322(%r13,%rsi)
+	QUAD $0x016235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $354(%r13,%rsi)
+	QUAD $0x018235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $386(%r13,%rsi)
+	QUAD $0x01a235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $418(%r13,%rsi)
+	QUAD $0x01c235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $450(%r13,%rsi)
+	QUAD $0x01e235847f7ec1c4; WORD $0x0000  // vmovdqu      %ymm0, $482(%r13,%rsi)
 	ADDQ $512, SI
 	ADDQ $4, DX
-	JNE  LBB2_98
-
-LBB2_99:
-	TESTQ CX, CX
-	JE    LBB2_102
-	NEGQ  CX
-	QUAD  $0xfffff4c2056ffec5 // vmovdqu      $-2878(%rip), %ymm0  /* LCPI2_0(%rip) */
-
-LBB2_101:
-	MOVQ SI, DX
-	ORQ  $2, DX
-	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x00 // vmovdqu      %ymm0, (%r13,%rdx)
-	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x20 // vmovdqu      %ymm0, $32(%r13,%rdx)
-	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x40 // vmovdqu      %ymm0, $64(%r13,%rdx)
-	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x60 // vmovdqu      %ymm0, $96(%r13,%rdx)
-	SUBQ $-128, SI
-	INCQ CX
-	JNE  LBB2_101
-
+	JNE LBB2_99
+LBB2_100:
+	TESTQ AX, AX
+	JE LBB2_103
+	NEGQ AX
+	QUAD $0xfffff4ab056ffec5  // vmovdqu      $-2901(%rip), %ymm0  /* LCPI2_0(%rip) */
 LBB2_102:
-	CMPQ R8, AX
-	JE   LBB2_105
-	ORQ  $2, AX
-
-LBB2_104:
-	MOVB $48, 0(R13)(AX*1)
+	MOVQ SI, DX
+	ORQ $2, DX
+	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x00  // vmovdqu      %ymm0, (%r13,%rdx)
+	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x20  // vmovdqu      %ymm0, $32(%r13,%rdx)
+	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x40  // vmovdqu      %ymm0, $64(%r13,%rdx)
+	LONG $0x7f7ec1c4; WORD $0x1544; BYTE $0x60  // vmovdqu      %ymm0, $96(%r13,%rdx)
+	SUBQ $-128, SI
 	INCQ AX
-	CMPQ BX, AX
-	JNE  LBB2_104
-
+	JNE LBB2_102
+LBB2_103:
+	CMPQ R8, CX
+	JE LBB2_110
+	TESTB $124, R8
+	JE LBB2_108
 LBB2_105:
+	MOVQ R8, SI
+	ANDQ $-4, SI
+	LEAQ 2(SI), DX
+LBB2_106:
+	MOVL $808464432, 2(R13)(CX*1)
+	ADDQ $4, CX
+	CMPQ SI, CX
+	JNE LBB2_106
+	CMPQ R8, SI
+	JNE LBB2_109
+	JMP LBB2_110
+LBB2_108:
+	ORQ $2, CX
+	MOVQ CX, DX
+LBB2_109:
+	MOVB $48, 0(R13)(DX*1)
+	ADDQ $1, DX
+	CMPQ BX, DX
+	JNE LBB2_109
+LBB2_110:
 	ADDQ BX, R13
 	MOVQ R13, SI
 	MOVL R15, DX
-	WORD $0xf8c5; BYTE $0x77     // vzeroupper
-	LONG $0x0042a3e8; BYTE $0x00 // callq        _print_mantissa
+	WORD $0xf8c5; BYTE $0x77  // vzeroupper   
+	LONG $0x00428ce8; BYTE $0x00  // callq        _print_mantissa
 	ADDL BX, R15
 	MOVL R15, BX
-
-LBB2_106:
+LBB2_111:
 	MOVL -44(BP), R9
-
-LBB2_107:
+LBB2_112:
 	ADDL R9, BX
-	JMP  LBB2_110
-
-LBB2_108:
-	MOVQ  $9223372036854775807, CX
-	ANDQ  CX, AX
-	MOVB  $45, 0(R13)
-	INCQ  R13
-	MOVL  $1, R9
+	JMP LBB2_115
+LBB2_113:
+	MOVQ $9223372036854775807, CX
+	ANDQ CX, AX
+	MOVB $45, 0(R13)
+	ADDQ $1, R13
+	MOVL $1, R9
 	TESTQ AX, AX
-	JNE   LBB2_2
-
-LBB2_109:
+	JNE LBB2_2
+LBB2_114:
 	MOVB $48, 0(R13)
-	INCL R9
+	ADDL $1, R9
 	MOVL R9, BX
-
-LBB2_110:
+LBB2_115:
 	MOVL BX, AX
 	ADDQ $40, SP
-	BYTE $0x5b               // popq         %rbx
-	WORD $0x5c41             // popq         %r12
-	WORD $0x5d41             // popq         %r13
-	WORD $0x5e41             // popq         %r14
-	WORD $0x5f41             // popq         %r15
-	BYTE $0x5d               // popq         %rbp
-	WORD $0xf8c5; BYTE $0x77 // vzeroupper
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
+	WORD $0xf8c5; BYTE $0x77  // vzeroupper   
 	RET
-
 _i64toa:
 	TESTQ SI, SI
-	JS    LBB3_1
-	JMP   _u64toa
-
+	JS LBB3_1
+	JMP _u64toa
 LBB3_1:
-	BYTE $0x55                   // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	MOVB $45, 0(DI)
-	INCQ DI
+	ADDQ $1, DI
 	NEGQ SI
-	LONG $0x000044e8; BYTE $0x00 // callq        _u64toa
-	INCL AX
-	BYTE $0x5d                   // popq         %rbp
+	LONG $0x000045e8; BYTE $0x00  // callq        _u64toa
+	ADDL $1, AX
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LCPI4_0:
-	QUAD $0x00000000d1b71759 // .quad 3518437209
-	QUAD $0x00000000d1b71759 // .quad 3518437209
-
+	QUAD $0x00000000d1b71759  // .quad 3518437209
+	QUAD $0x00000000d1b71759  // .quad 3518437209
 LCPI4_3:
-	WORD $0x000a // .word 10
-	WORD $0x000a // .word 10
-	WORD $0x000a // .word 10
-	WORD $0x000a // .word 10
-	WORD $0x000a // .word 10
-	WORD $0x000a // .word 10
-	WORD $0x000a // .word 10
-	WORD $0x000a // .word 10
-
+	WORD $0x000a  // .word 10
+	WORD $0x000a  // .word 10
+	WORD $0x000a  // .word 10
+	WORD $0x000a  // .word 10
+	WORD $0x000a  // .word 10
+	WORD $0x000a  // .word 10
+	WORD $0x000a  // .word 10
+	WORD $0x000a  // .word 10
 LCPI4_4:
-	QUAD $0x3030303030303030; QUAD $0x3030303030303030 // .space 16, '0000000000000000'
-
+	QUAD $0x3030303030303030; QUAD $0x3030303030303030  // .space 16, '0000000000000000'
 LCPI4_1:
-	QUAD $0x80003334147b20c5 // .quad -9223315738079846203
-
+	QUAD $0x80003334147b20c5  // .quad -9223315738079846203
 LCPI4_2:
-	QUAD $0x8000200008000080 // .quad -9223336852348469120
-
+	QUAD $0x8000200008000080  // .quad -9223336852348469120
 _u64toa:
-	BYTE    $0x55                                 // pushq        %rbp
-	WORD    $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	CMPQ    SI, $9999
-	JA      LBB4_8
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	CMPQ SI, $9999
+	JA LBB4_8
 	MOVWLZX SI, AX
-	SHRL    $2, AX
-	LONG    $0x147bc069; WORD $0x0000             // imull        $5243, %eax, %eax
-	SHRL    $17, AX
-	LEAQ    0(AX)(AX*1), DX
-	WORD    $0xc06b; BYTE $0x64                   // imull        $100, %eax, %eax
-	MOVL    SI, CX
-	SUBL    AX, CX
+	SHRL $2, AX
+	LONG $0x147bc069; WORD $0x0000  // imull        $5243, %eax, %eax
+	SHRL $17, AX
+	LEAQ 0(AX)(AX*1), DX
+	WORD $0xc06b; BYTE $0x64  // imull        $100, %eax, %eax
+	MOVL SI, CX
+	SUBL AX, CX
 	MOVWLZX CX, AX
-	ADDQ    AX, AX
-	CMPL    SI, $1000
-	JB      LBB4_3
-	LONG    $0x6c0d8d48; WORD $0x009b; BYTE $0x00 // leaq         $39788(%rip), %rcx  /* _Digits(%rip) */
-	MOVB    0(DX)(CX*1), CX
-	MOVB    CX, 0(DI)
-	MOVL    $1, CX
-	JMP     LBB4_4
-
+	ADDQ AX, AX
+	CMPL SI, $1000
+	JB LBB4_3
+	LONG $0x970d8d48; WORD $0x009b; BYTE $0x00  // leaq         $39831(%rip), %rcx  /* _Digits(%rip) */
+	MOVB 0(DX)(CX*1), CX
+	MOVB CX, 0(DI)
+	MOVL $1, CX
+	JMP LBB4_4
 LBB4_3:
 	XORL CX, CX
 	CMPL SI, $100
-	JB   LBB4_5
-
+	JB LBB4_5
 LBB4_4:
 	MOVWLZX DX, DX
-	ORQ     $1, DX
-	LONG    $0x4b358d48; WORD $0x009b; BYTE $0x00 // leaq         $39755(%rip), %rsi  /* _Digits(%rip) */
-	MOVB    0(DX)(SI*1), DX
-	MOVL    CX, SI
-	INCL    CX
-	MOVB    DX, 0(DI)(SI*1)
-
+	ORQ $1, DX
+	LONG $0x76358d48; WORD $0x009b; BYTE $0x00  // leaq         $39798(%rip), %rsi  /* _Digits(%rip) */
+	MOVB 0(DX)(SI*1), DX
+	MOVL CX, SI
+	ADDL $1, CX
+	MOVB DX, 0(DI)(SI*1)
 LBB4_6:
-	LONG $0x3a158d48; WORD $0x009b; BYTE $0x00 // leaq         $39738(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0x64158d48; WORD $0x009b; BYTE $0x00  // leaq         $39780(%rip), %rdx  /* _Digits(%rip) */
 	MOVB 0(AX)(DX*1), DX
 	MOVL CX, SI
-	INCL CX
+	ADDL $1, CX
 	MOVB DX, 0(DI)(SI*1)
-
 LBB4_7:
 	MOVWLZX AX, AX
-	ORQ     $1, AX
-	LONG    $0x22158d48; WORD $0x009b; BYTE $0x00 // leaq         $39714(%rip), %rdx  /* _Digits(%rip) */
-	MOVB    0(AX)(DX*1), AX
-	MOVL    CX, DX
-	INCL    CX
-	MOVB    AX, 0(DI)(DX*1)
-	MOVL    CX, AX
-	BYTE    $0x5d                                 // popq         %rbp
+	ORQ $1, AX
+	LONG $0x4b158d48; WORD $0x009b; BYTE $0x00  // leaq         $39755(%rip), %rdx  /* _Digits(%rip) */
+	MOVB 0(AX)(DX*1), AX
+	MOVL CX, DX
+	ADDL $1, CX
+	MOVB AX, 0(DI)(DX*1)
+	MOVL CX, AX
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB4_5:
 	XORL CX, CX
 	CMPL SI, $10
-	JAE  LBB4_6
-	JMP  LBB4_7
-
+	JAE LBB4_6
+	JMP LBB4_7
 LBB4_8:
-	CMPQ    SI, $99999999
-	JA      LBB4_16
-	MOVL    SI, AX
-	MOVL    $3518437209, DX
-	IMULQ   AX, DX
-	SHRQ    $45, DX
-	LONG    $0x10c26944; WORD $0x0027; BYTE $0x00 // imull        $10000, %edx, %r8d
-	MOVL    SI, CX
-	SUBL    R8, CX
-	IMUL3Q  $1125899907, AX, R10
-	SHRQ    $49, R10
-	ANDL    $-2, R10
+	CMPQ SI, $99999999
+	JA LBB4_16
+	MOVL SI, AX
+	MOVL $3518437209, DX
+	IMULQ AX, DX
+	SHRQ $45, DX
+	LONG $0x10c26944; WORD $0x0027; BYTE $0x00  // imull        $10000, %edx, %r8d
+	MOVL SI, CX
+	SUBL R8, CX
+	IMUL3Q $1125899907, AX, R10
+	SHRQ $49, R10
+	ANDL $-2, R10
 	MOVWLZX DX, AX
-	SHRL    $2, AX
-	LONG    $0x147bc069; WORD $0x0000             // imull        $5243, %eax, %eax
-	SHRL    $17, AX
-	WORD    $0xc06b; BYTE $0x64                   // imull        $100, %eax, %eax
-	SUBL    AX, DX
+	SHRL $2, AX
+	LONG $0x147bc069; WORD $0x0000  // imull        $5243, %eax, %eax
+	SHRL $17, AX
+	WORD $0xc06b; BYTE $0x64  // imull        $100, %eax, %eax
+	SUBL AX, DX
 	MOVWLZX DX, R9
-	ADDQ    R9, R9
+	ADDQ R9, R9
 	MOVWLZX CX, AX
-	SHRL    $2, AX
-	LONG    $0x147bc069; WORD $0x0000             // imull        $5243, %eax, %eax
-	SHRL    $17, AX
-	LEAQ    0(AX)(AX*1), R8
-	WORD    $0xc06b; BYTE $0x64                   // imull        $100, %eax, %eax
-	SUBL    AX, CX
+	SHRL $2, AX
+	LONG $0x147bc069; WORD $0x0000  // imull        $5243, %eax, %eax
+	SHRL $17, AX
+	LEAQ 0(AX)(AX*1), R8
+	WORD $0xc06b; BYTE $0x64  // imull        $100, %eax, %eax
+	SUBL AX, CX
 	MOVWLZX CX, R11
-	ADDQ    R11, R11
-	CMPL    SI, $10000000
-	JB      LBB4_11
-	LONG    $0x8b058d48; WORD $0x009a; BYTE $0x00 // leaq         $39563(%rip), %rax  /* _Digits(%rip) */
-	MOVB    0(R10)(AX*1), AX
-	MOVB    AX, 0(DI)
-	MOVL    $1, CX
-	JMP     LBB4_12
-
+	ADDQ R11, R11
+	CMPL SI, $10000000
+	JB LBB4_11
+	LONG $0xb3058d48; WORD $0x009a; BYTE $0x00  // leaq         $39603(%rip), %rax  /* _Digits(%rip) */
+	MOVB 0(R10)(AX*1), AX
+	MOVB AX, 0(DI)
+	MOVL $1, CX
+	JMP LBB4_12
 LBB4_11:
 	XORL CX, CX
 	CMPL SI, $1000000
-	JB   LBB4_13
-
+	JB LBB4_13
 LBB4_12:
 	MOVL R10, AX
-	ORQ  $1, AX
-	LONG $0x66358d48; WORD $0x009a; BYTE $0x00 // leaq         $39526(%rip), %rsi  /* _Digits(%rip) */
+	ORQ $1, AX
+	LONG $0x8e358d48; WORD $0x009a; BYTE $0x00  // leaq         $39566(%rip), %rsi  /* _Digits(%rip) */
 	MOVB 0(AX)(SI*1), AX
 	MOVL CX, SI
-	INCL CX
+	ADDL $1, CX
 	MOVB AX, 0(DI)(SI*1)
-
 LBB4_14:
-	LONG $0x55058d48; WORD $0x009a; BYTE $0x00 // leaq         $39509(%rip), %rax  /* _Digits(%rip) */
+	LONG $0x7c058d48; WORD $0x009a; BYTE $0x00  // leaq         $39548(%rip), %rax  /* _Digits(%rip) */
 	MOVB 0(R9)(AX*1), AX
 	MOVL CX, SI
-	INCL CX
+	ADDL $1, CX
 	MOVB AX, 0(DI)(SI*1)
-
 LBB4_15:
 	MOVWLZX R9, AX
-	ORQ     $1, AX
-	LONG    $0x3b358d48; WORD $0x009a; BYTE $0x00 // leaq         $39483(%rip), %rsi  /* _Digits(%rip) */
-	MOVB    0(AX)(SI*1), AX
-	MOVL    CX, DX
-	MOVB    AX, 0(DX)(DI*1)
-	MOVB    0(R8)(SI*1), AX
-	MOVB    AX, 1(DX)(DI*1)
+	ORQ $1, AX
+	LONG $0x61358d48; WORD $0x009a; BYTE $0x00  // leaq         $39521(%rip), %rsi  /* _Digits(%rip) */
+	MOVB 0(AX)(SI*1), AX
+	MOVL CX, DX
+	MOVB AX, 0(DI)(DX*1)
+	MOVB 0(R8)(SI*1), AX
+	MOVB AX, 1(DI)(DX*1)
 	MOVWLZX R8, AX
-	ORQ     $1, AX
-	MOVB    0(AX)(SI*1), AX
-	MOVB    AX, 2(DX)(DI*1)
-	MOVB    0(R11)(SI*1), AX
-	MOVB    AX, 3(DX)(DI*1)
+	ORQ $1, AX
+	MOVB 0(AX)(SI*1), AX
+	MOVB AX, 2(DI)(DX*1)
+	MOVB 0(R11)(SI*1), AX
+	MOVB AX, 3(DI)(DX*1)
 	MOVWLZX R11, AX
-	ORQ     $1, AX
-	MOVB    0(AX)(SI*1), AX
-	ADDL    $5, CX
-	MOVB    AX, 4(DX)(DI*1)
-	MOVL    CX, AX
-	BYTE    $0x5d                                 // popq         %rbp
+	ORQ $1, AX
+	MOVB 0(AX)(SI*1), AX
+	ADDL $5, CX
+	MOVB AX, 4(DI)(DX*1)
+	MOVL CX, AX
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB4_13:
 	XORL CX, CX
 	CMPL SI, $100000
-	JAE  LBB4_14
-	JMP  LBB4_15
-
+	JAE LBB4_14
+	JMP LBB4_15
 LBB4_16:
 	MOVQ $9999999999999999, AX
 	CMPQ SI, AX
-	JA   LBB4_18
+	JA LBB4_18
 	MOVQ $-6067343680855748867, CX
 	MOVQ SI, AX
 	MULQ CX
 	SHRQ $26, DX
-	LONG $0xe100c269; WORD $0x05f5             // imull        $100000000, %edx, %eax
+	LONG $0xe100c269; WORD $0x05f5  // imull        $100000000, %edx, %eax
 	SUBL AX, SI
-	LONG $0xc26ef9c5                           // vmovd        %edx, %xmm0
-	QUAD $0xfffffdcb0d6ffac5                   // vmovdqu      $-565(%rip), %xmm1  /* LCPI4_0(%rip) */
-	LONG $0xd1f4f9c5                           // vpmuludq     %xmm1, %xmm0, %xmm2
-	LONG $0xd273e9c5; BYTE $0x2d               // vpsrlq       $45, %xmm2, %xmm2
+	LONG $0xc26ef9c5  // vmovd        %edx, %xmm0
+	QUAD $0xfffffdc60d6ffac5  // vmovdqu      $-570(%rip), %xmm1  /* LCPI4_0(%rip) */
+	LONG $0xd1f4f9c5  // vpmuludq     %xmm1, %xmm0, %xmm2
+	LONG $0xd273e9c5; BYTE $0x2d  // vpsrlq       $45, %xmm2, %xmm2
 	MOVL $10000, AX
-	LONG $0x6ef9e1c4; BYTE $0xd8               // vmovq        %rax, %xmm3
-	LONG $0xe3f4e9c5                           // vpmuludq     %xmm3, %xmm2, %xmm4
-	LONG $0xc4faf9c5                           // vpsubd       %xmm4, %xmm0, %xmm0
-	LONG $0xc061e9c5                           // vpunpcklwd   %xmm0, %xmm2, %xmm0
-	LONG $0xf073f9c5; BYTE $0x02               // vpsllq       $2, %xmm0, %xmm0
-	LONG $0xc070fbc5; BYTE $0x50               // vpshuflw     $80, %xmm0, %xmm0
-	LONG $0xc070f9c5; BYTE $0x50               // vpshufd      $80, %xmm0, %xmm0
-	QUAD $0xfffffdc51512fbc5                   // vmovddup     $-571(%rip), %xmm2  /* LCPI4_1(%rip) */
-	LONG $0xc2e4f9c5                           // vpmulhuw     %xmm2, %xmm0, %xmm0
-	QUAD $0xfffffdc12512fbc5                   // vmovddup     $-575(%rip), %xmm4  /* LCPI4_2(%rip) */
-	LONG $0xc4e4f9c5                           // vpmulhuw     %xmm4, %xmm0, %xmm0
-	QUAD $0xfffffd8d2d6ffac5                   // vmovdqu      $-627(%rip), %xmm5  /* LCPI4_3(%rip) */
-	LONG $0xf5d5f9c5                           // vpmullw      %xmm5, %xmm0, %xmm6
-	LONG $0xf673c9c5; BYTE $0x10               // vpsllq       $16, %xmm6, %xmm6
-	LONG $0xc6f9f9c5                           // vpsubw       %xmm6, %xmm0, %xmm0
-	LONG $0xf66ef9c5                           // vmovd        %esi, %xmm6
-	LONG $0xc9f4c9c5                           // vpmuludq     %xmm1, %xmm6, %xmm1
-	LONG $0xd173f1c5; BYTE $0x2d               // vpsrlq       $45, %xmm1, %xmm1
-	LONG $0xdbf4f1c5                           // vpmuludq     %xmm3, %xmm1, %xmm3
-	LONG $0xdbfac9c5                           // vpsubd       %xmm3, %xmm6, %xmm3
-	LONG $0xcb61f1c5                           // vpunpcklwd   %xmm3, %xmm1, %xmm1
-	LONG $0xf173f1c5; BYTE $0x02               // vpsllq       $2, %xmm1, %xmm1
-	LONG $0xc970fbc5; BYTE $0x50               // vpshuflw     $80, %xmm1, %xmm1
-	LONG $0xc970f9c5; BYTE $0x50               // vpshufd      $80, %xmm1, %xmm1
-	LONG $0xcae4f1c5                           // vpmulhuw     %xmm2, %xmm1, %xmm1
-	LONG $0xcce4f1c5                           // vpmulhuw     %xmm4, %xmm1, %xmm1
-	LONG $0xd5d5f1c5                           // vpmullw      %xmm5, %xmm1, %xmm2
-	LONG $0xf273e9c5; BYTE $0x10               // vpsllq       $16, %xmm2, %xmm2
-	LONG $0xcaf9f1c5                           // vpsubw       %xmm2, %xmm1, %xmm1
-	LONG $0xc167f9c5                           // vpackuswb    %xmm1, %xmm0, %xmm0
-	QUAD $0xfffffd470dfcf9c5                   // vpaddb       $-697(%rip), %xmm0, %xmm1  /* LCPI4_4(%rip) */
-	LONG $0xd2efe9c5                           // vpxor        %xmm2, %xmm2, %xmm2
-	LONG $0xc274f9c5                           // vpcmpeqb     %xmm2, %xmm0, %xmm0
-	LONG $0xc0d7f9c5                           // vpmovmskb    %xmm0, %eax
-	ORL  $32768, AX
-	XORL $-32769, AX
+	LONG $0x6ef9e1c4; BYTE $0xd8  // vmovq        %rax, %xmm3
+	LONG $0xe3f4e9c5  // vpmuludq     %xmm3, %xmm2, %xmm4
+	LONG $0xc4faf9c5  // vpsubd       %xmm4, %xmm0, %xmm0
+	LONG $0xc061e9c5  // vpunpcklwd   %xmm0, %xmm2, %xmm0
+	LONG $0xf073f9c5; BYTE $0x02  // vpsllq       $2, %xmm0, %xmm0
+	LONG $0xc070fbc5; BYTE $0x50  // vpshuflw     $80, %xmm0, %xmm0
+	LONG $0xc070f9c5; BYTE $0x50  // vpshufd      $80, %xmm0, %xmm0
+	QUAD $0xfffffdc01512fbc5  // vmovddup     $-576(%rip), %xmm2  /* LCPI4_1(%rip) */
+	LONG $0xc2e4f9c5  // vpmulhuw     %xmm2, %xmm0, %xmm0
+	QUAD $0xfffffdbc2512fbc5  // vmovddup     $-580(%rip), %xmm4  /* LCPI4_2(%rip) */
+	LONG $0xc4e4f9c5  // vpmulhuw     %xmm4, %xmm0, %xmm0
+	QUAD $0xfffffd882d6ffac5  // vmovdqu      $-632(%rip), %xmm5  /* LCPI4_3(%rip) */
+	LONG $0xf5d5f9c5  // vpmullw      %xmm5, %xmm0, %xmm6
+	LONG $0xf673c9c5; BYTE $0x10  // vpsllq       $16, %xmm6, %xmm6
+	LONG $0xc6f9f9c5  // vpsubw       %xmm6, %xmm0, %xmm0
+	LONG $0xf66ef9c5  // vmovd        %esi, %xmm6
+	LONG $0xc9f4c9c5  // vpmuludq     %xmm1, %xmm6, %xmm1
+	LONG $0xd173f1c5; BYTE $0x2d  // vpsrlq       $45, %xmm1, %xmm1
+	LONG $0xdbf4f1c5  // vpmuludq     %xmm3, %xmm1, %xmm3
+	LONG $0xdbfac9c5  // vpsubd       %xmm3, %xmm6, %xmm3
+	LONG $0xcb61f1c5  // vpunpcklwd   %xmm3, %xmm1, %xmm1
+	LONG $0xf173f1c5; BYTE $0x02  // vpsllq       $2, %xmm1, %xmm1
+	LONG $0xc970fbc5; BYTE $0x50  // vpshuflw     $80, %xmm1, %xmm1
+	LONG $0xc970f9c5; BYTE $0x50  // vpshufd      $80, %xmm1, %xmm1
+	LONG $0xcae4f1c5  // vpmulhuw     %xmm2, %xmm1, %xmm1
+	LONG $0xcce4f1c5  // vpmulhuw     %xmm4, %xmm1, %xmm1
+	LONG $0xd5d5f1c5  // vpmullw      %xmm5, %xmm1, %xmm2
+	LONG $0xf273e9c5; BYTE $0x10  // vpsllq       $16, %xmm2, %xmm2
+	LONG $0xcaf9f1c5  // vpsubw       %xmm2, %xmm1, %xmm1
+	LONG $0xc167f9c5  // vpackuswb    %xmm1, %xmm0, %xmm0
+	QUAD $0xfffffd420dfcf9c5  // vpaddb       $-702(%rip), %xmm0, %xmm1  /* LCPI4_4(%rip) */
+	LONG $0xd2efe9c5  // vpxor        %xmm2, %xmm2, %xmm2
+	LONG $0xc274f9c5  // vpcmpeqb     %xmm2, %xmm0, %xmm0
+	LONG $0xc0d7f9c5  // vpmovmskb    %xmm0, %eax
+	NOTL AX
+	ORL $32768, AX
 	BSFL AX, AX
 	MOVL $16, CX
 	SUBL AX, CX
 	SHLQ $4, AX
-	LONG $0xb0158d48; WORD $0x0099; BYTE $0x00 // leaq         $39344(%rip), %rdx  /* _VecShiftShuffles(%rip) */
-	LONG $0x0071e2c4; WORD $0x1004             // vpshufb      (%rax,%rdx), %xmm1, %xmm0
-	LONG $0x077ffac5                           // vmovdqu      %xmm0, (%rdi)
+	LONG $0xd9158d48; WORD $0x0099; BYTE $0x00  // leaq         $39385(%rip), %rdx  /* _VecShiftShuffles(%rip) */
+	LONG $0x0071e2c4; WORD $0x1004  // vpshufb      (%rax,%rdx), %xmm1, %xmm0
+	LONG $0x077ffac5  // vmovdqu      %xmm0, (%rdi)
 	MOVL CX, AX
-	BYTE $0x5d                                 // popq         %rbp
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB4_18:
-	MOVQ  $4153837486827862103, CX
-	MOVQ  SI, AX
-	MULQ  CX
-	SHRQ  $51, DX
-	MOVQ  $10000000000000000, AX
+	MOVQ $4153837486827862103, CX
+	MOVQ SI, AX
+	MULQ CX
+	SHRQ $51, DX
+	MOVQ $10000000000000000, AX
 	IMULQ DX, AX
-	SUBQ  AX, SI
-	CMPL  DX, $9
-	JA    LBB4_20
-	ADDB  $48, DX
-	MOVB  DX, 0(DI)
-	MOVL  $1, CX
-	JMP   LBB4_25
-
+	SUBQ AX, SI
+	CMPL DX, $9
+	JA LBB4_20
+	ADDB $48, DX
+	MOVB DX, 0(DI)
+	MOVL $1, CX
+	JMP LBB4_25
 LBB4_20:
 	CMPL DX, $99
-	JA   LBB4_22
+	JA LBB4_22
 	MOVL DX, AX
-	LONG $0x930d8d48; WORD $0x0098; BYTE $0x00 // leaq         $39059(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xbc0d8d48; WORD $0x0098; BYTE $0x00  // leaq         $39100(%rip), %rcx  /* _Digits(%rip) */
 	MOVB 0(CX)(AX*2), DX
 	MOVB 1(CX)(AX*2), AX
 	MOVB DX, 0(DI)
 	MOVB AX, 1(DI)
 	MOVL $2, CX
-	JMP  LBB4_25
-
+	JMP LBB4_25
 LBB4_22:
-	MOVL    DX, AX
-	SHRL    $2, AX
-	LONG    $0x147bc069; WORD $0x0000             // imull        $5243, %eax, %eax
-	SHRL    $17, AX
-	CMPL    DX, $999
-	JA      LBB4_24
-	ADDL    $48, AX
-	MOVB    AX, 0(DI)
+	MOVL DX, AX
+	SHRL $2, AX
+	LONG $0x147bc069; WORD $0x0000  // imull        $5243, %eax, %eax
+	SHRL $17, AX
+	CMPL DX, $999
+	JA LBB4_24
+	ADDL $48, AX
+	MOVB AX, 0(DI)
 	MOVWLZX DX, AX
-	MOVL    AX, CX
-	SHRL    $2, CX
-	LONG    $0x147bc969; WORD $0x0000             // imull        $5243, %ecx, %ecx
-	SHRL    $17, CX
-	WORD    $0xc96b; BYTE $0x64                   // imull        $100, %ecx, %ecx
-	SUBL    CX, AX
+	MOVL AX, CX
+	SHRL $2, CX
+	LONG $0x147bc969; WORD $0x0000  // imull        $5243, %ecx, %ecx
+	SHRL $17, CX
+	WORD $0xc96b; BYTE $0x64  // imull        $100, %ecx, %ecx
+	SUBL CX, AX
 	MOVWLZX AX, AX
-	LONG    $0x420d8d48; WORD $0x0098; BYTE $0x00 // leaq         $38978(%rip), %rcx  /* _Digits(%rip) */
-	MOVB    0(CX)(AX*2), DX
-	MOVB    1(CX)(AX*2), AX
-	MOVB    DX, 1(DI)
-	MOVB    AX, 2(DI)
-	MOVL    $3, CX
-	JMP     LBB4_25
-
+	LONG $0x6b0d8d48; WORD $0x0098; BYTE $0x00  // leaq         $39019(%rip), %rcx  /* _Digits(%rip) */
+	MOVB 0(CX)(AX*2), DX
+	MOVB 1(CX)(AX*2), AX
+	MOVB DX, 1(DI)
+	MOVB AX, 2(DI)
+	MOVL $3, CX
+	JMP LBB4_25
 LBB4_24:
-	WORD    $0xc86b; BYTE $0x64                   // imull        $100, %eax, %ecx
-	SUBL    CX, DX
+	WORD $0xc86b; BYTE $0x64  // imull        $100, %eax, %ecx
+	SUBL CX, DX
 	MOVWLZX AX, AX
-	LONG    $0x1f058d4c; WORD $0x0098; BYTE $0x00 // leaq         $38943(%rip), %r8  /* _Digits(%rip) */
-	MOVB    0(R8)(AX*2), CX
-	MOVB    1(R8)(AX*2), AX
-	MOVB    CX, 0(DI)
-	MOVB    AX, 1(DI)
+	LONG $0x48058d4c; WORD $0x0098; BYTE $0x00  // leaq         $38984(%rip), %r8  /* _Digits(%rip) */
+	MOVB 0(R8)(AX*2), CX
+	MOVB 1(R8)(AX*2), AX
+	MOVB CX, 0(DI)
+	MOVB AX, 1(DI)
 	MOVWLZX DX, AX
-	MOVB    0(R8)(AX*2), CX
-	ADDQ    AX, AX
-	MOVB    CX, 2(DI)
-	ORL     $1, AX
+	MOVB 0(R8)(AX*2), CX
+	ADDQ AX, AX
+	MOVB CX, 2(DI)
+	ORL $1, AX
 	MOVWLZX AX, AX
-	MOVB    0(AX)(R8*1), AX
-	MOVB    AX, 3(DI)
-	MOVL    $4, CX
-
+	MOVB 0(AX)(R8*1), AX
+	MOVB AX, 3(DI)
+	MOVL $4, CX
 LBB4_25:
 	MOVQ $-6067343680855748867, DX
 	MOVQ SI, AX
 	MULQ DX
 	SHRQ $26, DX
-	LONG $0xc26ef9c5               // vmovd        %edx, %xmm0
-	QUAD $0xfffffbe60d6ffac5       // vmovdqu      $-1050(%rip), %xmm1  /* LCPI4_0(%rip) */
-	LONG $0xd1f4f9c5               // vpmuludq     %xmm1, %xmm0, %xmm2
-	LONG $0xd273e9c5; BYTE $0x2d   // vpsrlq       $45, %xmm2, %xmm2
+	LONG $0xc26ef9c5  // vmovd        %edx, %xmm0
+	QUAD $0xfffffbe40d6ffac5  // vmovdqu      $-1052(%rip), %xmm1  /* LCPI4_0(%rip) */
+	LONG $0xd1f4f9c5  // vpmuludq     %xmm1, %xmm0, %xmm2
+	LONG $0xd273e9c5; BYTE $0x2d  // vpsrlq       $45, %xmm2, %xmm2
 	MOVL $10000, AX
-	LONG $0x6ef9e1c4; BYTE $0xd8   // vmovq        %rax, %xmm3
-	LONG $0xe3f4e9c5               // vpmuludq     %xmm3, %xmm2, %xmm4
-	LONG $0xc4faf9c5               // vpsubd       %xmm4, %xmm0, %xmm0
-	LONG $0xc061e9c5               // vpunpcklwd   %xmm0, %xmm2, %xmm0
-	LONG $0xf073f9c5; BYTE $0x02   // vpsllq       $2, %xmm0, %xmm0
-	LONG $0xc070fbc5; BYTE $0x50   // vpshuflw     $80, %xmm0, %xmm0
-	LONG $0xc070f9c5; BYTE $0x50   // vpshufd      $80, %xmm0, %xmm0
-	QUAD $0xfffffbe01512fbc5       // vmovddup     $-1056(%rip), %xmm2  /* LCPI4_1(%rip) */
-	LONG $0xc2e4f9c5               // vpmulhuw     %xmm2, %xmm0, %xmm0
-	QUAD $0xfffffbdc2512fbc5       // vmovddup     $-1060(%rip), %xmm4  /* LCPI4_2(%rip) */
-	LONG $0xc4e4f9c5               // vpmulhuw     %xmm4, %xmm0, %xmm0
-	QUAD $0xfffffba82d6ffac5       // vmovdqu      $-1112(%rip), %xmm5  /* LCPI4_3(%rip) */
-	LONG $0xf5d5f9c5               // vpmullw      %xmm5, %xmm0, %xmm6
-	LONG $0xf673c9c5; BYTE $0x10   // vpsllq       $16, %xmm6, %xmm6
-	LONG $0xc6f9f9c5               // vpsubw       %xmm6, %xmm0, %xmm0
-	LONG $0xe100c269; WORD $0x05f5 // imull        $100000000, %edx, %eax
+	LONG $0x6ef9e1c4; BYTE $0xd8  // vmovq        %rax, %xmm3
+	LONG $0xe3f4e9c5  // vpmuludq     %xmm3, %xmm2, %xmm4
+	LONG $0xc4faf9c5  // vpsubd       %xmm4, %xmm0, %xmm0
+	LONG $0xc061e9c5  // vpunpcklwd   %xmm0, %xmm2, %xmm0
+	LONG $0xf073f9c5; BYTE $0x02  // vpsllq       $2, %xmm0, %xmm0
+	LONG $0xc070fbc5; BYTE $0x50  // vpshuflw     $80, %xmm0, %xmm0
+	LONG $0xc070f9c5; BYTE $0x50  // vpshufd      $80, %xmm0, %xmm0
+	QUAD $0xfffffbde1512fbc5  // vmovddup     $-1058(%rip), %xmm2  /* LCPI4_1(%rip) */
+	LONG $0xc2e4f9c5  // vpmulhuw     %xmm2, %xmm0, %xmm0
+	QUAD $0xfffffbda2512fbc5  // vmovddup     $-1062(%rip), %xmm4  /* LCPI4_2(%rip) */
+	LONG $0xc4e4f9c5  // vpmulhuw     %xmm4, %xmm0, %xmm0
+	QUAD $0xfffffba62d6ffac5  // vmovdqu      $-1114(%rip), %xmm5  /* LCPI4_3(%rip) */
+	LONG $0xf5d5f9c5  // vpmullw      %xmm5, %xmm0, %xmm6
+	LONG $0xf673c9c5; BYTE $0x10  // vpsllq       $16, %xmm6, %xmm6
+	LONG $0xc6f9f9c5  // vpsubw       %xmm6, %xmm0, %xmm0
+	LONG $0xe100c269; WORD $0x05f5  // imull        $100000000, %edx, %eax
 	SUBL AX, SI
-	LONG $0xf66ef9c5               // vmovd        %esi, %xmm6
-	LONG $0xc9f4c9c5               // vpmuludq     %xmm1, %xmm6, %xmm1
-	LONG $0xd173f1c5; BYTE $0x2d   // vpsrlq       $45, %xmm1, %xmm1
-	LONG $0xdbf4f1c5               // vpmuludq     %xmm3, %xmm1, %xmm3
-	LONG $0xdbfac9c5               // vpsubd       %xmm3, %xmm6, %xmm3
-	LONG $0xcb61f1c5               // vpunpcklwd   %xmm3, %xmm1, %xmm1
-	LONG $0xf173f1c5; BYTE $0x02   // vpsllq       $2, %xmm1, %xmm1
-	LONG $0xc970fbc5; BYTE $0x50   // vpshuflw     $80, %xmm1, %xmm1
-	LONG $0xc970f9c5; BYTE $0x50   // vpshufd      $80, %xmm1, %xmm1
-	LONG $0xcae4f1c5               // vpmulhuw     %xmm2, %xmm1, %xmm1
-	LONG $0xcce4f1c5               // vpmulhuw     %xmm4, %xmm1, %xmm1
-	LONG $0xd5d5f1c5               // vpmullw      %xmm5, %xmm1, %xmm2
-	LONG $0xf273e9c5; BYTE $0x10   // vpsllq       $16, %xmm2, %xmm2
-	LONG $0xcaf9f1c5               // vpsubw       %xmm2, %xmm1, %xmm1
-	LONG $0xc167f9c5               // vpackuswb    %xmm1, %xmm0, %xmm0
-	QUAD $0xfffffb5a05fcf9c5       // vpaddb       $-1190(%rip), %xmm0, %xmm0  /* LCPI4_4(%rip) */
+	LONG $0xf66ef9c5  // vmovd        %esi, %xmm6
+	LONG $0xc9f4c9c5  // vpmuludq     %xmm1, %xmm6, %xmm1
+	LONG $0xd173f1c5; BYTE $0x2d  // vpsrlq       $45, %xmm1, %xmm1
+	LONG $0xdbf4f1c5  // vpmuludq     %xmm3, %xmm1, %xmm3
+	LONG $0xdbfac9c5  // vpsubd       %xmm3, %xmm6, %xmm3
+	LONG $0xcb61f1c5  // vpunpcklwd   %xmm3, %xmm1, %xmm1
+	LONG $0xf173f1c5; BYTE $0x02  // vpsllq       $2, %xmm1, %xmm1
+	LONG $0xc970fbc5; BYTE $0x50  // vpshuflw     $80, %xmm1, %xmm1
+	LONG $0xc970f9c5; BYTE $0x50  // vpshufd      $80, %xmm1, %xmm1
+	LONG $0xcae4f1c5  // vpmulhuw     %xmm2, %xmm1, %xmm1
+	LONG $0xcce4f1c5  // vpmulhuw     %xmm4, %xmm1, %xmm1
+	LONG $0xd5d5f1c5  // vpmullw      %xmm5, %xmm1, %xmm2
+	LONG $0xf273e9c5; BYTE $0x10  // vpsllq       $16, %xmm2, %xmm2
+	LONG $0xcaf9f1c5  // vpsubw       %xmm2, %xmm1, %xmm1
+	LONG $0xc167f9c5  // vpackuswb    %xmm1, %xmm0, %xmm0
+	QUAD $0xfffffb5805fcf9c5  // vpaddb       $-1192(%rip), %xmm0, %xmm0  /* LCPI4_4(%rip) */
 	MOVL CX, AX
-	LONG $0x047ffac5; BYTE $0x07   // vmovdqu      %xmm0, (%rdi,%rax)
-	ORL  $16, CX
+	LONG $0x047ffac5; BYTE $0x07  // vmovdqu      %xmm0, (%rdi,%rax)
+	ORL $16, CX
 	MOVL CX, AX
-	BYTE $0x5d                     // popq         %rbp
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LCPI5_0:
-	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
-
+	QUAD $0x2020202020202020; QUAD $0x2020202020202020  // .space 16, '                '
 LCPI5_1:
-	QUAD $0x2222222222222222; QUAD $0x2222222222222222 // .space 16, '""""""""""""""""'
-
+	QUAD $0x2222222222222222; QUAD $0x2222222222222222  // .space 16, '""""""""""""""""'
 LCPI5_2:
-	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
-
+	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c  // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
 _quote:
-	BYTE  $0x55                                 // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD  $0x5741                               // pushq        %r15
-	WORD  $0x5641                               // pushq        %r14
-	WORD  $0x5541                               // pushq        %r13
-	WORD  $0x5441                               // pushq        %r12
-	BYTE  $0x53                                 // pushq        %rbx
-	SUBQ  $32, SP
-	MOVQ  DX, R10
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $32, SP
 	TESTB $1, R8
-	LONG  $0x21058d48; WORD $0x0098; BYTE $0x00 // leaq         $38945(%rip), %rax  /* __SingleQuoteTab(%rip) */
-	LONG  $0x1a158d48; WORD $0x00a8; BYTE $0x00 // leaq         $43034(%rip), %rdx  /* __DoubleQuoteTab(%rip) */
-	LONG  $0xd0440f48                           // cmoveq       %rax, %rdx
-	MOVQ  R10, R8
-	MOVQ  DI, AX
+	LONG $0x4d058d48; WORD $0x0098; BYTE $0x00  // leaq         $38989(%rip), %rax  /* __SingleQuoteTab(%rip) */
+	LONG $0x46158d4c; WORD $0x00a8; BYTE $0x00  // leaq         $43078(%rip), %r10  /* __DoubleQuoteTab(%rip) */
+	LONG $0xd0440f4c  // cmoveq       %rax, %r10
+	MOVQ DX, R8
+	MOVQ DI, AX
 	TESTQ SI, SI
-	JE    LBB5_57
-	MOVQ  0(CX), R14
-	QUAD  $0xffffff8c056ffac5                   // vmovdqu      $-116(%rip), %xmm0  /* LCPI5_0(%rip) */
-	QUAD  $0xffffff940d6ffac5                   // vmovdqu      $-108(%rip), %xmm1  /* LCPI5_1(%rip) */
-	QUAD  $0xffffff9c156ffac5                   // vmovdqu      $-100(%rip), %xmm2  /* LCPI5_2(%rip) */
-	LONG  $0xdb76e1c5                           // vpcmpeqd     %xmm3, %xmm3, %xmm3
-	MOVQ  DI, AX
-	MOVQ  R10, R8
-	MOVQ  R10, -56(BP)
-	MOVQ  CX, -48(BP)
-
+	JE LBB5_56
+	MOVQ CX, -56(BP)
+	MOVQ 0(CX), R11
+	QUAD $0xffffff8b056ffac5  // vmovdqu      $-117(%rip), %xmm0  /* LCPI5_0(%rip) */
+	QUAD $0xffffff930d6ffac5  // vmovdqu      $-109(%rip), %xmm1  /* LCPI5_1(%rip) */
+	QUAD $0xffffff9b156ffac5  // vmovdqu      $-101(%rip), %xmm2  /* LCPI5_2(%rip) */
+	LONG $0xdb76e1c5  // vpcmpeqd     %xmm3, %xmm3, %xmm3
+	MOVQ DI, CX
+	MOVQ DX, -48(BP)
+	MOVQ DX, R8
 LBB5_2:
-	CMPQ  SI, $15
-	SETGT R9
-	MOVQ  R14, R11
-	MOVQ  R8, R12
-	MOVQ  SI, R10
-	MOVQ  AX, R15
-	CMPQ  R14, $16
-	JL    LBB5_9
-	CMPQ  SI, $16
-	JL    LBB5_9
-	MOVQ  AX, R15
-	MOVQ  SI, R10
-	MOVQ  R8, R12
-	MOVQ  R14, R13
-
+	MOVQ CX, AX
+	CMPQ SI, $15
+	SETGT R14
+	MOVQ R11, R12
+	MOVQ R8, R13
+	MOVQ SI, R9
+	MOVQ CX, R15
+	CMPQ R11, $16
+	JL LBB5_9
+	CMPQ SI, $16
+	JL LBB5_9
+	XORL R13, R13
+	MOVQ SI, CX
+	MOVQ R11, BX
 LBB5_5:
-	LONG  $0x6f7ac1c4; BYTE $0x27   // vmovdqu      (%r15), %xmm4
-	LONG  $0xec64f9c5               // vpcmpgtb     %xmm4, %xmm0, %xmm5
-	LONG  $0xf174d9c5               // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG  $0xfa74d9c5               // vpcmpeqb     %xmm2, %xmm4, %xmm7
-	LONG  $0xf6ebc1c5               // vpor         %xmm6, %xmm7, %xmm6
-	LONG  $0x7f7ac1c4; WORD $0x2424 // vmovdqu      %xmm4, (%r12)
-	LONG  $0xe364d9c5               // vpcmpgtb     %xmm3, %xmm4, %xmm4
-	LONG  $0xe5dbd9c5               // vpand        %xmm5, %xmm4, %xmm4
-	LONG  $0xe4ebc9c5               // vpor         %xmm4, %xmm6, %xmm4
-	LONG  $0xccd7f9c5               // vpmovmskb    %xmm4, %ecx
-	TESTW CX, CX
-	JNE   LBB5_6
-	ADDQ  $16, R15
-	ADDQ  $16, R12
-	LEAQ  -16(R13), R11
-	CMPQ  R10, $31
-	SETGT R9
-	CMPQ  R10, $32
-	LEAQ  -16(R10), R10
-	JL    LBB5_9
-	CMPQ  R13, $31
-	MOVQ  R11, R13
-	JG    LBB5_5
-
+	LONG $0x6f7aa1c4; WORD $0x2824  // vmovdqu      (%rax,%r13), %xmm4
+	LONG $0xec64f9c5  // vpcmpgtb     %xmm4, %xmm0, %xmm5
+	LONG $0xf174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xfa74d9c5  // vpcmpeqb     %xmm2, %xmm4, %xmm7
+	LONG $0xf6ebc1c5  // vpor         %xmm6, %xmm7, %xmm6
+	LONG $0x7f7a81c4; WORD $0x2824  // vmovdqu      %xmm4, (%r8,%r13)
+	LONG $0xe364d9c5  // vpcmpgtb     %xmm3, %xmm4, %xmm4
+	LONG $0xe4dbd1c5  // vpand        %xmm4, %xmm5, %xmm4
+	LONG $0xe4ebc9c5  // vpor         %xmm4, %xmm6, %xmm4
+	LONG $0xd4d7f9c5  // vpmovmskb    %xmm4, %edx
+	TESTW DX, DX
+	JNE LBB5_22
+	LEAQ -16(CX), R9
+	LEAQ -16(BX), R12
+	CMPQ CX, $31
+	SETGT R14
+	ADDQ $16, R13
+	CMPQ CX, $32
+	JL LBB5_8
+	MOVQ R9, CX
+	CMPQ BX, $31
+	MOVQ R12, BX
+	JG LBB5_5
+LBB5_8:
+	LEAQ 0(AX)(R13*1), R15
+	ADDQ R8, R13
 LBB5_9:
-	TESTB R9, R9
-	JE    LBB5_10
-	LONG  $0x6f7ac1c4; BYTE $0x27 // vmovdqu      (%r15), %xmm4
-	LONG  $0xec64f9c5             // vpcmpgtb     %xmm4, %xmm0, %xmm5
-	LONG  $0xf174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG  $0xfa74d9c5             // vpcmpeqb     %xmm2, %xmm4, %xmm7
-	LONG  $0xf6ebc1c5             // vpor         %xmm6, %xmm7, %xmm6
-	LONG  $0xfb64d9c5             // vpcmpgtb     %xmm3, %xmm4, %xmm7
-	LONG  $0xeddbc1c5             // vpand        %xmm5, %xmm7, %xmm5
-	LONG  $0xedebc9c5             // vpor         %xmm5, %xmm6, %xmm5
-	LONG  $0xcdd7f9c5             // vpmovmskb    %xmm5, %ecx
-	ORL   $65536, CX
-	BSFL  CX, R9
-	LONG  $0x7ef9e1c4; BYTE $0xe1 // vmovq        %xmm4, %rcx
-	CMPQ  R11, R9
-	JGE   LBB5_13
-	CMPQ  R11, $8
-	MOVQ  SI, -72(BP)
-	JB    LBB5_25
-	MOVQ  CX, 0(R12)
-	LEAQ  8(R15), R9
-	ADDQ  $8, R12
-	LEAQ  -8(R11), BX
-	JMP   LBB5_27
-
-LBB5_10:
-	TESTQ R11, R11
-	MOVQ  DI, -64(BP)
-	JLE   LBB5_11
-	TESTQ R10, R10
-	MOVQ  -48(BP), CX
-	MOVQ  -56(BP), DI
-	LONG  $0xcf2d8d4c; WORD $0x0096; BYTE $0x00 // leaq         $38607(%rip), %r13  /* __SingleQuoteTab(%rip) */
-	JLE   LBB5_39
-
-LBB5_35:
-	MOVBLZX 0(R15), R9
-	MOVQ    R9, BX
-	SHLQ    $4, BX
-	CMPQ    0(BX)(R13*1), $0
-	JNE     LBB5_36
-	INCQ    R15
-	MOVB    R9, 0(R12)
-	CMPQ    R10, $2
-	LEAQ    -1(R10), R10
-	JL      LBB5_39
-	INCQ    R12
-	CMPQ    R11, $1
-	LEAQ    -1(R11), R11
-	JG      LBB5_35
-	JMP     LBB5_39
-
-LBB5_6:
-	MOVWLZX CX, CX
-	SUBQ    AX, R15
-	BSFL    CX, R11
-	ADDQ    R15, R11
-	JMP     LBB5_23
-
+	TESTB R14, R14
+	JE LBB5_13
+	LONG $0x6f7ac1c4; BYTE $0x27  // vmovdqu      (%r15), %xmm4
+	LONG $0xec64f9c5  // vpcmpgtb     %xmm4, %xmm0, %xmm5
+	LONG $0xf174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xfa74d9c5  // vpcmpeqb     %xmm2, %xmm4, %xmm7
+	LONG $0xf6ebc1c5  // vpor         %xmm6, %xmm7, %xmm6
+	LONG $0xfb64d9c5  // vpcmpgtb     %xmm3, %xmm4, %xmm7
+	LONG $0xefdbd1c5  // vpand        %xmm7, %xmm5, %xmm5
+	LONG $0xedebc9c5  // vpor         %xmm5, %xmm6, %xmm5
+	LONG $0xcdd7f9c5  // vpmovmskb    %xmm5, %ecx
+	ORL $65536, CX
+	BSFL CX, R9
+	LONG $0x7ef9e1c4; BYTE $0xe1  // vmovq        %xmm4, %rcx
+	CMPQ R12, R9
+	JGE LBB5_23
+	CMPQ R12, $8
+	JB LBB5_27
+	MOVQ CX, 0(R13)
+	LEAQ 8(R15), R9
+	ADDQ $8, R13
+	LEAQ -8(R12), BX
+	CMPQ BX, $4
+	JAE LBB5_28
+	JMP LBB5_29
 LBB5_13:
+	TESTQ R12, R12
+	JLE LBB5_20
+	TESTQ R9, R9
+	JLE LBB5_20
+	MOVQ R10, -64(BP)
+	MOVQ DI, -72(BP)
+	XORL R10, R10
+	XORL CX, CX
+LBB5_16:
+	MOVBLZX 0(R15)(R10*1), DI
+	MOVQ DI, DX
+	SHLQ $4, DX
+	LONG $0xe21d8d48; WORD $0x0096; BYTE $0x00  // leaq         $38626(%rip), %rbx  /* __SingleQuoteTab(%rip) */
+	CMPQ 0(DX)(BX*1), $0
+	JNE LBB5_26
+	LEAQ 0(R9)(CX*1), R14
+	MOVB DI, 0(R13)(R10*1)
+	LEAQ -1(CX), DX
+	CMPQ R14, $2
+	JL LBB5_19
+	ADDQ R12, CX
+	ADDQ $1, R10
+	CMPQ CX, $1
+	MOVQ DX, CX
+	JG LBB5_16
+LBB5_19:
+	SUBQ DX, R15
+	ADDQ DX, R9
+	MOVQ -72(BP), DI
+	MOVQ -64(BP), R10
+LBB5_20:
+	MOVQ $12884901889, R14
+	TESTQ R9, R9
+	JE LBB5_25
+	NOTQ R15
+	ADDQ AX, R15
+	JMP LBB5_40
+LBB5_22:
+	MOVWLZX DX, CX
+	BSFL CX, R15
+	ADDQ R13, R15
+	JMP LBB5_39
+LBB5_23:
 	CMPL R9, $8
-	JB   LBB5_14
-	MOVQ CX, 0(R12)
-	LEAQ 8(R15), R13
-	ADDQ $8, R12
+	JB LBB5_33
+	MOVQ CX, 0(R13)
+	LEAQ 8(R15), R12
+	ADDQ $8, R13
 	LEAQ -8(R9), BX
 	CMPQ BX, $4
-	JAE  LBB5_17
-	JMP  LBB5_18
-
-LBB5_36:
-	SUBQ AX, R15
-	MOVQ R15, R11
-	JMP  LBB5_40
-
+	JAE LBB5_34
+	JMP LBB5_35
 LBB5_25:
-	MOVQ R15, R9
-	MOVQ R11, BX
-
-LBB5_27:
-	MOVQ -48(BP), CX
-	MOVQ -56(BP), R10
-	MOVQ $12884901889, R13
-	CMPQ BX, $4
-	JAE  LBB5_28
-	CMPQ BX, $2
-	JAE  LBB5_30
-
-LBB5_31:
-	TESTQ BX, BX
-	JE    LBB5_33
-
-LBB5_32:
-	MOVB 0(R9), BX
-	MOVB BX, 0(R12)
-
-LBB5_33:
-	SUBQ AX, R11
-	ADDQ R15, R11
-	NOTQ R11
-	MOVQ -72(BP), SI
-	JMP  LBB5_41
-
-LBB5_11:
-	MOVQ -48(BP), CX
-	MOVQ -56(BP), DI
-
-LBB5_39:
 	SUBQ AX, R15
-	NEGQ R10
-	SBBQ R11, R11
-	XORQ R15, R11
-
-LBB5_40:
-	MOVQ $12884901889, R13
-	MOVQ DI, R10
-	MOVQ -64(BP), DI
-	JMP  LBB5_41
-
-LBB5_14:
-	MOVQ R15, R13
+	JMP LBB5_40
+LBB5_26:
+	SUBQ AX, R15
+	SUBQ CX, R15
+	MOVQ -72(BP), DI
+	MOVQ -64(BP), R10
+	JMP LBB5_39
+LBB5_27:
+	MOVQ R15, R9
+	MOVQ R12, BX
+	CMPQ BX, $4
+	JB LBB5_29
+LBB5_28:
+	MOVL 0(R9), CX
+	MOVL CX, 0(R13)
+	ADDQ $4, R9
+	ADDQ $4, R13
+	ADDQ $-4, BX
+LBB5_29:
+	CMPQ BX, $2
+	JB LBB5_30
+	MOVWLZX 0(R9), CX
+	MOVW CX, 0(R13)
+	ADDQ $2, R9
+	ADDQ $2, R13
+	ADDQ $-2, BX
+	TESTQ BX, BX
+	JNE LBB5_31
+	JMP LBB5_32
+LBB5_30:
+	TESTQ BX, BX
+	JE LBB5_32
+LBB5_31:
+	MOVB 0(R9), CX
+	MOVB CX, 0(R13)
+LBB5_32:
+	NOTQ R12
+	ADDQ AX, R12
+	SUBQ R15, R12
+	MOVQ R12, R15
+	JMP LBB5_39
+LBB5_33:
+	MOVQ R15, R12
 	MOVQ R9, BX
 	CMPQ BX, $4
-	JB   LBB5_18
-
-LBB5_17:
-	MOVL 0(R13), CX
-	MOVL CX, 0(R12)
-	ADDQ $4, R13
+	JB LBB5_35
+LBB5_34:
+	MOVL 0(R12), CX
+	MOVL CX, 0(R13)
 	ADDQ $4, R12
+	ADDQ $4, R13
 	ADDQ $-4, BX
-
-LBB5_18:
-	CMPQ  BX, $2
-	JAE   LBB5_19
+LBB5_35:
+	CMPQ BX, $2
+	JB LBB5_36
+	MOVWLZX 0(R12), CX
+	MOVW CX, 0(R13)
+	ADDQ $2, R12
+	ADDQ $2, R13
+	ADDQ $-2, BX
 	TESTQ BX, BX
-	JE    LBB5_22
-
-LBB5_21:
-	MOVB 0(R13), CX
-	MOVB CX, 0(R12)
-
-LBB5_22:
+	JNE LBB5_37
+	JMP LBB5_38
+LBB5_36:
+	TESTQ BX, BX
+	JE LBB5_38
+LBB5_37:
+	MOVB 0(R12), CX
+	MOVB CX, 0(R13)
+LBB5_38:
 	SUBQ AX, R15
 	ADDQ R9, R15
-	MOVQ R15, R11
-
-LBB5_23:
-	MOVQ -48(BP), CX
-	MOVQ -56(BP), R10
-	MOVQ $12884901889, R13
-
-LBB5_41:
-	TESTQ R11, R11
-	JS    LBB5_42
-	ADDQ  R11, AX
-	ADDQ  R11, R8
-	CMPQ  SI, R11
-	JE    LBB5_57
-	SUBQ  R11, R14
-	SUBQ  SI, R11
-	JMP   LBB5_45
-
-LBB5_55:
-	INCQ AX
-	ADDQ R12, R8
-	INCQ R11
-	JE   LBB5_57
-
-LBB5_45:
-	MOVBLZX 0(AX), BX
-	SHLQ    $4, BX
-	MOVQ    0(DX)(BX*1), SI
-	TESTL   SI, SI
-	JE      LBB5_56
-	MOVLQSX SI, R12
-	SUBQ    R12, R14
-	JL      LBB5_47
-	SHLQ    $32, SI
-	LEAQ    8(DX)(BX*1), R15
-	CMPQ    SI, R13
-	JL      LBB5_49
-	MOVL    0(R15), SI
-	MOVL    SI, 0(R8)
-	LEAQ    12(DX)(BX*1), R15
-	LEAQ    4(R8), R9
-	LEAQ    -4(R12), BX
-	CMPQ    BX, $2
-	JGE     LBB5_52
-	JMP     LBB5_53
-
+LBB5_39:
+	MOVQ $12884901889, R14
+LBB5_40:
+	TESTQ R15, R15
+	JS LBB5_59
+	ADDQ R15, R8
+	CMPQ SI, R15
+	JE LBB5_55
+	SUBQ R15, R11
+	JMP LBB5_44
+LBB5_43:
+	ADDQ BX, R8
+	ADDQ $1, R15
+	CMPQ SI, R15
+	JE LBB5_55
+LBB5_44:
+	MOVBLZX 0(AX)(R15*1), CX
+	SHLQ $4, CX
+	MOVQ 0(R10)(CX*1), DX
+	TESTL DX, DX
+	JE LBB5_52
+	MOVLQSX DX, BX
+	SUBQ BX, R11
+	JL LBB5_57
+	SHLQ $32, DX
+	LEAQ 0(R10)(CX*1), R9
+	ADDQ $8, R9
+	CMPQ DX, R14
+	JL LBB5_48
+	MOVL 0(R9), DX
+	MOVL DX, 0(R8)
+	LEAQ 0(R10)(CX*1), R9
+	ADDQ $12, R9
+	LEAQ 4(R8), R12
+	LEAQ -4(BX), CX
+	CMPQ CX, $2
+	JGE LBB5_49
+	JMP LBB5_50
+LBB5_48:
+	MOVQ R8, R12
+	MOVQ BX, CX
+	CMPQ CX, $2
+	JL LBB5_50
 LBB5_49:
-	MOVQ R8, R9
-	MOVQ R12, BX
-	CMPQ BX, $2
-	JL   LBB5_53
-
+	MOVWLZX 0(R9), DX
+	MOVW DX, 0(R12)
+	ADDQ $2, R9
+	ADDQ $2, R12
+	ADDQ $-2, CX
+LBB5_50:
+	TESTQ CX, CX
+	JLE LBB5_43
+	MOVBLZX 0(R9), CX
+	MOVB CX, 0(R12)
+	JMP LBB5_43
 LBB5_52:
-	MOVWLZX 0(R15), SI
-	MOVW    SI, 0(R9)
-	ADDQ    $2, R15
-	ADDQ    $2, R9
-	ADDQ    $-2, BX
-
-LBB5_53:
-	TESTQ   BX, BX
-	JLE     LBB5_55
-	MOVBLZX 0(R15), BX
-	MOVB    BX, 0(R9)
-	JMP     LBB5_55
-
+	LEAQ 0(AX)(R15*1), CX
+	SUBQ R15, SI
+	JNE LBB5_2
+LBB5_55:
+	ADDQ R15, AX
+	MOVQ -56(BP), CX
+	MOVQ -48(BP), DX
 LBB5_56:
-	MOVQ  R11, SI
-	NEGQ  SI
-	TESTQ R11, R11
-	JNE   LBB5_2
-	JMP   LBB5_57
-
-LBB5_28:
-	MOVL 0(R9), SI
-	MOVL SI, 0(R12)
-	ADDQ $4, R9
-	ADDQ $4, R12
-	ADDQ $-4, BX
-	CMPQ BX, $2
-	JB   LBB5_31
-
-LBB5_30:
-	MOVWLZX 0(R9), SI
-	MOVW    SI, 0(R12)
-	ADDQ    $2, R9
-	ADDQ    $2, R12
-	ADDQ    $-2, BX
-	TESTQ   BX, BX
-	JNE     LBB5_32
-	JMP     LBB5_33
-
-LBB5_19:
-	MOVWLZX 0(R13), CX
-	MOVW    CX, 0(R12)
-	ADDQ    $2, R13
-	ADDQ    $2, R12
-	ADDQ    $-2, BX
-	TESTQ   BX, BX
-	JNE     LBB5_21
-	JMP     LBB5_22
-
-LBB5_57:
-	SUBQ R10, R8
+	SUBQ DX, R8
 	MOVQ R8, 0(CX)
 	SUBQ DI, AX
-	JMP  LBB5_58
-
-LBB5_47:
-	SUBQ R10, R8
+	JMP LBB5_58
+LBB5_57:
+	SUBQ -48(BP), R8
+	MOVQ -56(BP), CX
 	MOVQ R8, 0(CX)
-	NOTQ AX
-	ADDQ DI, AX
-
+	SUBQ AX, DI
+	NOTQ R15
+	ADDQ DI, R15
+	MOVQ R15, AX
 LBB5_58:
 	ADDQ $32, SP
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5d41 // popq         %r13
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB5_42:
-	SUBQ R10, R8
-	NOTQ R11
-	ADDQ R11, R8
-	MOVQ R8, 0(CX)
-	SUBQ DI, AX
-	ADDQ R11, AX
-	NOTQ AX
-	JMP  LBB5_58
-
+LBB5_59:
+	SUBQ -48(BP), R8
+	MOVQ R15, CX
+	NOTQ CX
+	ADDQ R8, CX
+	MOVQ -56(BP), DX
+	MOVQ CX, 0(DX)
+	SUBQ AX, DI
+	ADDQ R15, DI
+	MOVQ DI, AX
+	JMP LBB5_58
 LCPI6_0:
-	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
-
+	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c  // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
 _unquote:
-	BYTE  $0x55                                 // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD  $0x5741                               // pushq        %r15
-	WORD  $0x5641                               // pushq        %r14
-	WORD  $0x5541                               // pushq        %r13
-	WORD  $0x5441                               // pushq        %r12
-	BYTE  $0x53                                 // pushq        %rbx
-	SUBQ  $40, SP
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $32, SP
 	TESTQ SI, SI
-	JE    LBB6_82
-	MOVQ  SI, R11
-	MOVQ  CX, -56(BP)
-	MOVQ  R8, AX
-	MOVQ  R8, -72(BP)
-	MOVL  R8, R10
-	ANDL  $1, R10
-	LONG  $0xf0058d4c; WORD $0x00b3; BYTE $0x00 // leaq         $46064(%rip), %r8  /* __UnquoteTab(%rip) */
-	QUAD  $0xffffffb2056ffac5                   // vmovdqu      $-78(%rip), %xmm0  /* LCPI6_0(%rip) */
-	MOVQ  DI, R9
-	MOVQ  SI, R13
-	MOVQ  DX, AX
-
-LBB6_2:
+	JE LBB6_1
+	MOVQ CX, -48(BP)
+	MOVL R8, R10
+	ANDL $1, R10
+	LONG $0x2d0d8d48; WORD $0x00b4; BYTE $0x00  // leaq         $46125(%rip), %rcx  /* __UnquoteTab(%rip) */
+	QUAD $0xffffffbc056ffac5  // vmovdqu      $-68(%rip), %xmm0  /* LCPI6_0(%rip) */
+	MOVQ DI, R9
+	MOVQ SI, R13
+	MOVQ DX, AX
+LBB6_3:
 	CMPB 0(R9), $92
-	JNE  LBB6_4
-	XORL SI, SI
-	JMP  LBB6_13
-
-LBB6_4:
+	JNE LBB6_5
+	XORL R14, R14
+	JMP LBB6_17
+LBB6_5:
 	MOVQ R13, R15
-	MOVQ AX, SI
+	MOVQ AX, R12
 	MOVQ R9, R14
 	CMPQ R13, $16
-	JL   LBB6_7
-
-LBB6_5:
-	LONG  $0x6f7ac1c4; BYTE $0x0e // vmovdqu      (%r14), %xmm1
-	LONG  $0x0e7ffac5             // vmovdqu      %xmm1, (%rsi)
-	LONG  $0xc874f1c5             // vpcmpeqb     %xmm0, %xmm1, %xmm1
-	LONG  $0xd9d7f9c5             // vpmovmskb    %xmm1, %ebx
-	TESTW BX, BX
-	JNE   LBB6_12
-	ADDQ  $16, R14
-	ADDQ  $16, SI
-	CMPQ  R15, $31
-	LEAQ  -16(R15), R15
-	JG    LBB6_5
-
-LBB6_7:
-	TESTQ R15, R15
-	JE    LBB6_83
-	XORL  BX, BX
-
-LBB6_9:
-	MOVBLZX 0(R14)(BX*1), CX
-	CMPB    CX, $92
-	JE      LBB6_11
-	MOVB    CX, 0(SI)(BX*1)
-	INCQ    BX
-	CMPQ    R15, BX
-	JNE     LBB6_9
-	JMP     LBB6_83
-
-LBB6_11:
-	ADDQ BX, R14
-	SUBQ R9, R14
-	MOVQ R14, SI
-	CMPQ SI, $-1
-	JNE  LBB6_13
-	JMP  LBB6_83
-
-LBB6_12:
-	MOVWLZX BX, CX
-	SUBQ    R9, R14
-	BSFQ    CX, SI
-	ADDQ    R14, SI
-	CMPQ    SI, $-1
-	JE      LBB6_83
-
-LBB6_13:
-	LEAQ  2(SI), CX
-	SUBQ  CX, R13
-	JS    LBB6_94
-	LEAQ  2(R9)(SI*1), R9
-	TESTQ R10, R10
-	JNE   LBB6_58
-
-LBB6_15:
-	ADDQ    SI, AX
-	MOVBLZX -1(R9), CX
-	MOVB    0(CX)(R8*1), CX
-	CMPB    CX, $-1
-	JE      LBB6_18
-	TESTB   CX, CX
-	JE      LBB6_95
-	MOVB    CX, 0(AX)
-	INCQ    AX
-	JMP     LBB6_57
-
-LBB6_18:
-	CMPQ    R13, $3
-	JLE     LBB6_94
-	MOVL    0(R9), SI
-	MOVL    SI, CX
-	NOTL    CX
-	LEAL    -808464432(SI), BX
-	ANDL    $-2139062144, CX
-	TESTL   BX, CX
-	JNE     LBB6_85
-	LEAL    421075225(SI), BX
-	ORL     SI, BX
-	TESTL   $-2139062144, BX
-	JNE     LBB6_85
-	MOVL    SI, BX
-	ANDL    $2139062143, BX
-	MOVL    $-1061109568, R14
-	SUBL    BX, R14
-	LEAL    1179010630(BX), R15
-	ANDL    CX, R14
-	TESTL   R15, R14
-	JNE     LBB6_85
-	MOVL    $-522133280, R14
-	SUBL    BX, R14
-	ADDL    $960051513, BX
-	ANDL    R14, CX
-	TESTL   BX, CX
-	JNE     LBB6_85
-	BSWAPL  SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	NOTL    CX
-	ANDL    $16843009, CX
-	LEAL    0(CX)(CX*8), CX
-	ANDL    $252645135, SI
-	ADDL    CX, SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	ORL     SI, CX
-	MOVBLZX CX, R15
-	SHRL    $8, CX
-	ANDL    $65280, CX
-	ORL     CX, R15
-	LEAQ    -4(R13), R14
-	CMPL    R15, $128
-	JB      LBB6_66
-	XORL    R12, R12
-	TESTQ   R10, R10
-	JE      LBB6_40
-
-LBB6_25:
-	CMPL    R15, $2048
-	JB      LBB6_68
-	MOVL    R15, CX
-	ANDL    $-2048, CX
-	CMPL    CX, $55296
-	JNE     LBB6_54
-	TESTQ   R14, R14
-	JLE     LBB6_72
-	CMPB    4(R9)(R12*1), $92
-	JNE     LBB6_73
-	CMPL    R15, $56319
-	JA      LBB6_70
-	CMPQ    R14, $7
-	JL      LBB6_70
-	CMPB    5(R9)(R12*1), $92
-	JNE     LBB6_70
-	CMPB    6(R9)(R12*1), $117
-	JNE     LBB6_70
-	MOVL    7(R9)(R12*1), SI
-	MOVL    SI, CX
-	NOTL    CX
-	LEAL    -808464432(SI), BX
-	ANDL    $-2139062144, CX
-	TESTL   BX, CX
-	JNE     LBB6_99
-	LEAL    421075225(SI), BX
-	ORL     SI, BX
-	TESTL   $-2139062144, BX
-	JNE     LBB6_99
-	MOVL    SI, BX
-	ANDL    $2139062143, BX
-	MOVL    $-1061109568, -44(BP)
-	SUBL    BX, -44(BP)
-	MOVQ    SI, -80(BP)
-	LEAL    1179010630(BX), SI
-	MOVL    SI, -60(BP)
-	ANDL    CX, -44(BP)
-	MOVL    -60(BP), SI
-	TESTL   SI, -44(BP)
-	MOVQ    -80(BP), SI
-	JNE     LBB6_99
-	MOVL    $-522133280, -44(BP)
-	SUBL    BX, -44(BP)
-	ADDL    $960051513, BX
-	ANDL    -44(BP), CX
-	TESTL   BX, CX
-	JNE     LBB6_99
-	BSWAPL  SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	NOTL    CX
-	ANDL    $16843009, CX
-	LEAL    0(CX)(CX*8), CX
-	ANDL    $252645135, SI
-	ADDL    CX, SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	ORL     SI, CX
-	MOVL    CX, SI
-	SHRL    $8, SI
-	ANDL    $65280, SI
-	MOVBLZX CX, BX
-	ORL     SI, BX
-	ANDL    $16515072, CX
-	CMPL    CX, $14417920
-	JE      LBB6_77
-	TESTB   $2, -72(BP)
-	JE      LBB6_114
-	ADDQ    $-7, R14
-	MOVW    $-16401, 0(AX)
-	MOVB    $-67, 2(AX)
-	ADDQ    $3, AX
-	ADDQ    $7, R12
-	MOVL    BX, R15
-	CMPL    BX, $127
-	JA      LBB6_25
-	JMP     LBB6_53
-
-LBB6_40:
-	CMPL    R15, $2048
-	JB      LBB6_68
-	MOVL    R15, CX
-	ANDL    $-2048, CX
-	CMPL    CX, $55296
-	JNE     LBB6_54
-	CMPL    R15, $56319
-	JA      LBB6_69
-	CMPQ    R14, $6
-	JL      LBB6_69
-	CMPB    4(R9)(R12*1), $92
-	JNE     LBB6_69
-	CMPB    5(R9)(R12*1), $117
-	JNE     LBB6_69
-	MOVL    6(R9)(R12*1), SI
-	MOVL    SI, CX
-	NOTL    CX
-	LEAL    -808464432(SI), BX
-	ANDL    $-2139062144, CX
-	TESTL   BX, CX
-	JNE     LBB6_98
-	LEAL    421075225(SI), BX
-	ORL     SI, BX
-	TESTL   $-2139062144, BX
-	JNE     LBB6_98
-	MOVL    SI, BX
-	ANDL    $2139062143, BX
-	MOVL    $-1061109568, -44(BP)
-	SUBL    BX, -44(BP)
-	MOVQ    SI, -80(BP)
-	LEAL    1179010630(BX), SI
-	MOVL    SI, -60(BP)
-	ANDL    CX, -44(BP)
-	MOVL    -60(BP), SI
-	TESTL   SI, -44(BP)
-	MOVQ    -80(BP), SI
-	JNE     LBB6_98
-	MOVL    $-522133280, -44(BP)
-	SUBL    BX, -44(BP)
-	ADDL    $960051513, BX
-	ANDL    -44(BP), CX
-	TESTL   BX, CX
-	JNE     LBB6_98
-	BSWAPL  SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	NOTL    CX
-	ANDL    $16843009, CX
-	LEAL    0(CX)(CX*8), CX
-	ANDL    $252645135, SI
-	ADDL    CX, SI
-	MOVL    SI, CX
-	SHRL    $4, CX
-	ORL     SI, CX
-	MOVL    CX, SI
-	SHRL    $8, SI
-	ANDL    $65280, SI
-	MOVBLZX CX, BX
-	ORL     SI, BX
-	ANDL    $16515072, CX
-	CMPL    CX, $14417920
-	JE      LBB6_76
-	TESTB   $2, -72(BP)
-	JE      LBB6_113
-	ADDQ    $-6, R14
-	MOVW    $-16401, 0(AX)
-	MOVB    $-67, 2(AX)
-	ADDQ    $3, AX
-	ADDQ    $6, R12
-	MOVL    BX, R15
-	CMPL    BX, $128
-	JAE     LBB6_40
-
-LBB6_53:
-	LEAQ 4(R9)(R12*1), R9
-	MOVL BX, R15
-	JMP  LBB6_67
-
-LBB6_54:
-	LEAQ 4(R9)(R12*1), R9
-	MOVL R15, CX
-	SHRL $12, CX
-	ORB  $-32, CX
-	MOVB CX, 0(AX)
-	MOVL R15, CX
-	SHRL $6, CX
-	ANDB $63, CX
-	ORB  $-128, CX
-	MOVB CX, 1(AX)
-	ANDB $63, R15
-	ORB  $-128, R15
-	MOVB R15, 2(AX)
-
-LBB6_55:
-	ADDQ $3, AX
-
-LBB6_56:
-	MOVQ R14, R13
-
-LBB6_57:
-	TESTQ R13, R13
-	JNE   LBB6_2
-	JMP   LBB6_96
-
-LBB6_58:
-	TESTL R13, R13
-	JE    LBB6_94
-	CMPB  -1(R9), $92
-	JNE   LBB6_97
-	CMPB  0(R9), $92
-	JNE   LBB6_65
-	CMPL  R13, $1
-	JLE   LBB6_94
-	MOVB  1(R9), CX
-	CMPB  CX, $34
-	JE    LBB6_64
-	CMPB  CX, $92
-	JNE   LBB6_109
-
-LBB6_64:
-	INCQ R9
-	DECQ R13
-
-LBB6_65:
-	INCQ R9
-	DECQ R13
-	JMP  LBB6_15
-
-LBB6_66:
-	ADDQ $4, R9
-
-LBB6_67:
-	MOVB R15, 0(AX)
-	INCQ AX
-	JMP  LBB6_56
-
-LBB6_68:
-	LEAQ 4(R9)(R12*1), R9
-	MOVL R15, CX
-	SHRL $6, CX
-	ORB  $-64, CX
-	MOVB CX, 0(AX)
-	ANDB $63, R15
-	ORB  $-128, R15
-	MOVB R15, 1(AX)
-	ADDQ $2, AX
-	JMP  LBB6_56
-
-LBB6_69:
-	LEAQ 4(R9)(R12*1), R9
-	JMP  LBB6_71
-
-LBB6_70:
-	LEAQ 5(R9)(R12*1), R9
-	SUBQ R12, R13
-	ADDQ $-5, R13
+	JL LBB6_11
+	XORL R12, R12
 	MOVQ R13, R14
-
-LBB6_71:
-	TESTB $2, -72(BP)
-	JNE   LBB6_75
-	JMP   LBB6_116
-
-LBB6_72:
-	TESTB $2, -72(BP)
-	JNE   LBB6_74
-	JMP   LBB6_94
-
-LBB6_73:
-	TESTB $2, -72(BP)
-	JE    LBB6_117
-
-LBB6_74:
-	LEAQ 4(R9)(R12*1), R9
-
-LBB6_75:
+LBB6_7:
+	LONG $0x6f7a81c4; WORD $0x210c  // vmovdqu      (%r9,%r12), %xmm1
+	LONG $0x7f7aa1c4; WORD $0x200c  // vmovdqu      %xmm1, (%rax,%r12)
+	LONG $0xc874f1c5  // vpcmpeqb     %xmm0, %xmm1, %xmm1
+	LONG $0xd9d7f9c5  // vpmovmskb    %xmm1, %ebx
+	TESTW BX, BX
+	JNE LBB6_8
+	LEAQ -16(R14), R15
+	ADDQ $16, R12
+	CMPQ R14, $31
+	MOVQ R15, R14
+	JG LBB6_7
+	LEAQ 0(R9)(R12*1), R14
+	ADDQ AX, R12
+LBB6_11:
+	TESTQ R15, R15
+	JE LBB6_115
+	XORL BX, BX
+LBB6_13:
+	MOVBLZX 0(R14)(BX*1), R11
+	CMPB R11, $92
+	JE LBB6_15
+	MOVB R11, 0(R12)(BX*1)
+	ADDQ $1, BX
+	CMPQ R15, BX
+	JNE LBB6_13
+	JMP LBB6_115
+LBB6_15:
+	SUBQ R9, R14
+	ADDQ BX, R14
+	CMPQ R14, $-1
+	JNE LBB6_17
+	JMP LBB6_115
+LBB6_8:
+	MOVWLZX BX, BX
+	BSFQ BX, R14
+	ADDQ R12, R14
+	CMPQ R14, $-1
+	JE LBB6_115
+LBB6_17:
+	LEAQ 2(R14), BX
+	SUBQ BX, R13
+	JS LBB6_18
+	ADDQ R14, R9
+	ADDQ $2, R9
+	TESTQ R10, R10
+	JNE LBB6_20
+LBB6_31:
+	ADDQ R14, AX
+	MOVBLZX -1(R9), BX
+	MOVB 0(BX)(CX*1), BX
+	CMPB BX, $-1
+	JE LBB6_35
+	TESTB BX, BX
+	JE LBB6_33
+	MOVB BX, 0(AX)
+	ADDQ $1, AX
+	TESTQ R13, R13
+	JNE LBB6_3
+	JMP LBB6_114
+LBB6_35:
+	CMPQ R13, $3
+	JLE LBB6_18
+	MOVL 0(R9), R14
+	MOVL R14, R15
+	NOTL R15
+	LEAL -808464432(R14), BX
+	ANDL $-2139062144, R15
+	TESTL BX, R15
+	JNE LBB6_40
+	LEAL 421075225(R14), BX
+	ORL R14, BX
+	TESTL $-2139062144, BX
+	JNE LBB6_40
+	MOVQ CX, R12
+	MOVL R14, BX
+	ANDL $2139062143, BX
+	MOVL $-1061109568, CX
+	SUBL BX, CX
+	LEAL 1179010630(BX), R11
+	ANDL R15, CX
+	TESTL R11, CX
+	JNE LBB6_40
+	MOVL $-522133280, CX
+	SUBL BX, CX
+	ADDL $960051513, BX
+	ANDL CX, R15
+	TESTL BX, R15
+	JNE LBB6_40
+	BSWAPL R14
+	MOVL R14, CX
+	SHRL $4, CX
+	NOTL CX
+	ANDL $16843009, CX
+	LEAL 0(CX)(CX*8), CX
+	ANDL $252645135, R14
+	ADDL CX, R14
+	MOVL R14, CX
+	SHRL $4, CX
+	ORL R14, CX
+	MOVBLZX CX, R15
+	SHRL $8, CX
+	ANDL $65280, CX
+	ORL CX, R15
+	LEAQ -4(R13), R14
+	CMPL R15, $128
+	JB LBB6_50
+	XORL R11, R11
+	TESTQ R10, R10
+	JNE LBB6_52
+LBB6_54:
+	CMPL R15, $2048
+	JB LBB6_53
+	MOVL R15, CX
+	ANDL $-2048, CX
+	CMPL CX, $55296
+	JNE LBB6_69
+	CMPL R15, $56319
+	JA LBB6_84
+	CMPQ R14, $6
+	JL LBB6_84
+	CMPB 4(R9)(R11*1), $92
+	JNE LBB6_84
+	CMPB 5(R9)(R11*1), $117
+	JNE LBB6_84
+	MOVL 6(R9)(R11*1), CX
+	MOVL CX, BX
+	NOTL BX
+	MOVQ CX, -64(BP)
+	ADDL $-808464432, CX
+	ANDL $-2139062144, BX
+	MOVL BX, -68(BP)
+	TESTL CX, BX
+	JNE LBB6_117
+	MOVQ -64(BP), BX
+	LEAL 421075225(BX), CX
+	ORL BX, CX
+	TESTL $-2139062144, CX
+	JNE LBB6_117
+	MOVQ -64(BP), BX
+	ANDL $2139062143, BX
+	MOVL $-1061109568, CX
+	SUBL BX, CX
+	MOVL CX, -72(BP)
+	LEAL 1179010630(BX), CX
+	MOVL CX, -52(BP)
+	MOVL -72(BP), CX
+	ANDL -68(BP), CX
+	TESTL CX, -52(BP)
+	JNE LBB6_117
+	MOVL $-522133280, CX
+	SUBL BX, CX
+	MOVL CX, -52(BP)
+	ADDL $960051513, BX
+	MOVL -68(BP), CX
+	ANDL -52(BP), CX
+	TESTL BX, CX
+	JNE LBB6_117
+	MOVQ -64(BP), BX
+	BSWAPL BX
+	MOVL BX, CX
+	SHRL $4, CX
+	NOTL CX
+	ANDL $16843009, CX
+	LEAL 0(CX)(CX*8), CX
+	ANDL $252645135, BX
+	ADDL CX, BX
+	MOVL BX, CX
+	SHRL $4, CX
+	ORL BX, CX
+	MOVL CX, BX
+	SHRL $8, BX
+	ANDL $65280, BX
+	MOVL BX, -64(BP)
+	MOVBLZX CX, BX
+	ADDL -64(BP), BX
+	ANDL $16515072, CX
+	CMPL CX, $14417920
+	JE LBB6_109
+	TESTB $2, R8
+	JE LBB6_118
+	ADDQ $-6, R14
 	MOVW $-16401, 0(AX)
 	MOVB $-67, 2(AX)
-	JMP  LBB6_55
-
-LBB6_76:
-	LEAQ 10(R9)(R12*1), R9
-	SUBQ R12, R13
-	ADDQ $-10, R13
-	JMP  LBB6_78
-
-LBB6_77:
-	LEAQ 11(R9)(R12*1), R9
-	SUBQ R12, R13
-	ADDQ $-11, R13
-
-LBB6_78:
-	SHLL  $10, R15
-	LEAL  -56613888(R15)(BX*1), CX
-	CMPL  CX, $1114112
-	JB    LBB6_81
-	TESTB $2, -72(BP)
-	JE    LBB6_111
-	MOVW  $-16401, 0(AX)
-	MOVB  $-67, 2(AX)
-	ADDQ  $3, AX
-	JMP   LBB6_57
-
-LBB6_81:
-	MOVL CX, SI
-	SHRL $18, SI
-	ORB  $-16, SI
-	MOVB SI, 0(AX)
-	MOVL CX, SI
-	SHRL $12, SI
-	ANDB $63, SI
-	ORB  $-128, SI
-	MOVB SI, 1(AX)
-	MOVL CX, SI
-	SHRL $6, SI
-	ANDB $63, SI
-	ORB  $-128, SI
-	MOVB SI, 2(AX)
+	ADDQ $3, AX
+	ADDQ $6, R11
+	MOVL BX, R15
+	CMPL BX, $127
+	JA LBB6_54
+	JMP LBB6_67
+LBB6_52:
+	CMPL R15, $2048
+	JB LBB6_53
+	MOVL R15, CX
+	ANDL $-2048, CX
+	CMPL CX, $55296
+	JNE LBB6_69
+	TESTQ R14, R14
+	JLE LBB6_72
+	CMPB 4(R9)(R11*1), $92
+	JNE LBB6_80
+	CMPL R15, $56319
+	JA LBB6_79
+	CMPQ R14, $7
+	JL LBB6_79
+	CMPB 5(R9)(R11*1), $92
+	JNE LBB6_79
+	CMPB 6(R9)(R11*1), $117
+	JNE LBB6_79
+	MOVL 7(R9)(R11*1), CX
+	MOVL CX, BX
+	NOTL BX
+	MOVQ CX, -64(BP)
+	ADDL $-808464432, CX
+	ANDL $-2139062144, BX
+	MOVL BX, -68(BP)
+	TESTL CX, BX
+	JNE LBB6_94
+	MOVQ -64(BP), BX
+	LEAL 421075225(BX), CX
+	ORL BX, CX
+	TESTL $-2139062144, CX
+	JNE LBB6_94
+	MOVQ -64(BP), BX
+	ANDL $2139062143, BX
+	MOVL $-1061109568, CX
+	SUBL BX, CX
+	MOVL CX, -72(BP)
+	LEAL 1179010630(BX), CX
+	MOVL CX, -52(BP)
+	MOVL -72(BP), CX
+	ANDL -68(BP), CX
+	TESTL CX, -52(BP)
+	JNE LBB6_94
+	MOVL $-522133280, CX
+	SUBL BX, CX
+	MOVL CX, -52(BP)
+	ADDL $960051513, BX
+	MOVL -68(BP), CX
+	ANDL -52(BP), CX
+	TESTL BX, CX
+	JNE LBB6_94
+	MOVQ -64(BP), BX
+	BSWAPL BX
+	MOVL BX, CX
+	SHRL $4, CX
+	NOTL CX
+	ANDL $16843009, CX
+	LEAL 0(CX)(CX*8), CX
+	ANDL $252645135, BX
+	ADDL CX, BX
+	MOVL BX, CX
+	SHRL $4, CX
+	ORL BX, CX
+	MOVL CX, BX
+	SHRL $8, BX
+	ANDL $65280, BX
+	MOVL BX, -64(BP)
+	MOVBLZX CX, BX
+	ADDL -64(BP), BX
+	ANDL $16515072, CX
+	CMPL CX, $14417920
+	JE LBB6_110
+	TESTB $2, R8
+	JE LBB6_106
+	ADDQ $-7, R14
+	MOVW $-16401, 0(AX)
+	MOVB $-67, 2(AX)
+	ADDQ $3, AX
+	ADDQ $7, R11
+	MOVQ BX, CX
+	MOVL CX, R15
+	CMPL CX, $128
+	JAE LBB6_52
+LBB6_67:
+	ADDQ R11, R9
+	ADDQ $4, R9
+	MOVL BX, R15
+	JMP LBB6_68
+LBB6_69:
+	ADDQ R11, R9
+	ADDQ $4, R9
+	MOVL R15, CX
+	SHRL $12, CX
+	ORB $-32, CX
+	MOVB CX, 0(AX)
+	MOVL R15, CX
+	SHRL $6, CX
 	ANDB $63, CX
-	ORB  $-128, CX
-	MOVB CX, 3(AX)
+	ORB $-128, CX
+	MOVB CX, 1(AX)
+	ANDB $63, R15
+	ORB $-128, R15
+	MOVB R15, 2(AX)
+LBB6_87:
+	ADDQ $3, AX
+	MOVQ R14, R13
+	MOVQ R12, CX
+	TESTQ R13, R13
+	JNE LBB6_3
+	JMP LBB6_114
+LBB6_20:
+	TESTL R13, R13
+	JE LBB6_18
+	CMPB -1(R9), $92
+	JNE LBB6_22
+	CMPB 0(R9), $92
+	JNE LBB6_30
+	CMPL R13, $1
+	JLE LBB6_18
+	MOVB 1(R9), BX
+	CMPB BX, $34
+	JE LBB6_29
+	CMPB BX, $92
+	JNE LBB6_28
+LBB6_29:
+	ADDQ $1, R9
+	ADDQ $-1, R13
+LBB6_30:
+	ADDQ $1, R9
+	ADDQ $-1, R13
+	JMP LBB6_31
+LBB6_50:
+	ADDQ $4, R9
+LBB6_68:
+	MOVQ R12, CX
+	MOVB R15, 0(AX)
+	ADDQ $1, AX
+	MOVQ R14, R13
+	TESTQ R13, R13
+	JNE LBB6_3
+	JMP LBB6_114
+LBB6_53:
+	ADDQ R11, R9
+	ADDQ $4, R9
+	MOVL R15, CX
+	SHRL $6, CX
+	ORB $-64, CX
+	MOVB CX, 0(AX)
+	ANDB $63, R15
+	ORB $-128, R15
+	MOVB R15, 1(AX)
+	ADDQ $2, AX
+	MOVQ R14, R13
+	MOVQ R12, CX
+	TESTQ R13, R13
+	JNE LBB6_3
+	JMP LBB6_114
+LBB6_84:
+	ADDQ R11, R9
+	ADDQ $4, R9
+	JMP LBB6_85
+LBB6_79:
+	ADDQ R11, R9
+	ADDQ $5, R9
+	SUBQ R11, R13
+	ADDQ $-5, R13
+	MOVQ R13, R14
+LBB6_85:
+	TESTB $2, R8
+	JE LBB6_89
+LBB6_86:
+	MOVW $-16401, 0(AX)
+	MOVB $-67, 2(AX)
+	JMP LBB6_87
+LBB6_80:
+	TESTB $2, R8
+	JE LBB6_82
+	ADDQ R11, R9
+	ADDQ $4, R9
+	JMP LBB6_86
+LBB6_109:
+	ADDQ R11, R9
+	ADDQ $10, R9
+	SUBQ R11, R13
+	ADDQ $-10, R13
+	JMP LBB6_111
+LBB6_110:
+	ADDQ R11, R9
+	ADDQ $11, R9
+	SUBQ R11, R13
+	ADDQ $-11, R13
+LBB6_111:
+	SHLL $10, R15
+	MOVL BX, R14
+	ADDL R15, R14
+	LEAL 0(BX)(R15*1), R11
+	ADDL $-56613888, R11
+	MOVL R11, BX
+	SHRL $18, BX
+	ORB $-16, BX
+	MOVB BX, 0(AX)
+	MOVL R11, CX
+	SHRL $12, CX
+	ANDB $63, CX
+	ORB $-128, CX
+	MOVB CX, 1(AX)
+	SHRL $6, R11
+	ANDB $63, R11
+	ORB $-128, R11
+	MOVB R11, 2(AX)
+	ANDB $63, R14
+	ORB $-128, R14
+	MOVB R14, 3(AX)
 	ADDQ $4, AX
-	JMP  LBB6_57
-
-LBB6_82:
+	MOVQ R12, CX
+	TESTQ R13, R13
+	JNE LBB6_3
+	JMP LBB6_114
+LBB6_1:
 	XORL R13, R13
 	MOVQ DX, AX
-
-LBB6_83:
+LBB6_115:
 	ADDQ R13, AX
 	SUBQ DX, AX
-
-LBB6_84:
-	ADDQ $40, SP
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5d41 // popq         %r13
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+LBB6_116:
+	ADDQ $32, SP
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB6_85:
+LBB6_40:
 	MOVQ R9, DX
 	SUBQ DI, DX
-	MOVQ -56(BP), DI
+	MOVQ -48(BP), DI
 	MOVQ DX, 0(DI)
-	MOVB 0(R9), CX
-	LEAL -48(CX), SI
+	MOVB 0(R9), SI
+	LEAL -48(SI), CX
 	MOVQ $-2, AX
-	CMPB SI, $10
-	JB   LBB6_87
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_87:
+	CMPB CX, $10
+	JB LBB6_42
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA LBB6_116
+LBB6_42:
 	LEAQ 1(DX), CX
 	MOVQ CX, 0(DI)
-	MOVB 1(R9), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_89
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_89:
+	MOVB 1(R9), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB LBB6_44
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA LBB6_116
+LBB6_44:
 	LEAQ 2(DX), CX
 	MOVQ CX, 0(DI)
-	MOVB 2(R9), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_91
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_91:
+	MOVB 2(R9), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB LBB6_46
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA LBB6_116
+LBB6_46:
 	LEAQ 3(DX), CX
 	MOVQ CX, 0(DI)
-	MOVB 3(R9), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_93
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_93:
+	MOVB 3(R9), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB LBB6_48
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA LBB6_116
+LBB6_48:
 	ADDQ $4, DX
 	MOVQ DX, 0(DI)
-	JMP  LBB6_84
-
-LBB6_94:
-	MOVQ -56(BP), AX
-	MOVQ R11, 0(AX)
-	MOVQ $-1, AX
-	JMP  LBB6_84
-
-LBB6_95:
+	JMP LBB6_116
+LBB6_33:
 	NOTQ DI
 	ADDQ DI, R9
-	MOVQ -56(BP), AX
+	MOVQ -48(BP), AX
 	MOVQ R9, 0(AX)
 	MOVQ $-3, AX
-	JMP  LBB6_84
-
-LBB6_96:
-	XORL R13, R13
-	JMP  LBB6_83
-
-LBB6_97:
+	JMP LBB6_116
+LBB6_22:
 	NOTQ DI
 	ADDQ DI, R9
-	JMP  LBB6_110
-
-LBB6_98:
-	LEAQ 4(R9)(R12*1), SI
-	JMP  LBB6_100
-
-LBB6_99:
-	LEAQ 5(R9)(R12*1), SI
-
-LBB6_100:
+LBB6_23:
+	MOVQ -48(BP), AX
+	MOVQ R9, 0(AX)
+	MOVQ $-2, AX
+	JMP LBB6_116
+LBB6_117:
+	LEAQ 0(R9)(R11*1), SI
+	ADDQ $4, SI
+	JMP LBB6_95
+LBB6_94:
+	LEAQ 0(R9)(R11*1), SI
+	ADDQ $5, SI
+LBB6_95:
 	MOVQ SI, DX
 	SUBQ DI, DX
 	ADDQ $2, DX
-	MOVQ -56(BP), AX
+	MOVQ -48(BP), AX
 	MOVQ DX, 0(AX)
-	MOVB 2(SI), CX
-	LEAL -48(CX), DI
+	MOVB 2(SI), DI
+	LEAL -48(DI), CX
 	MOVQ $-2, AX
-	CMPB DI, $10
-	JB   LBB6_102
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_102:
+	CMPB CX, $10
+	JB LBB6_97
+	ANDB $-33, DI
+	ADDB $-65, DI
+	CMPB DI, $5
+	JA LBB6_116
+LBB6_97:
 	LEAQ 1(DX), CX
-	MOVQ -56(BP), DI
+	MOVQ -48(BP), DI
 	MOVQ CX, 0(DI)
-	MOVB 3(SI), CX
-	LEAL -48(CX), DI
-	CMPB DI, $10
-	JB   LBB6_104
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_104:
+	MOVB 3(SI), DI
+	LEAL -48(DI), CX
+	CMPB CX, $10
+	JB LBB6_99
+	ANDB $-33, DI
+	ADDB $-65, DI
+	CMPB DI, $5
+	JA LBB6_116
+LBB6_99:
 	LEAQ 2(DX), CX
-	MOVQ -56(BP), DI
+	MOVQ -48(BP), DI
 	MOVQ CX, 0(DI)
-	MOVB 4(SI), CX
-	LEAL -48(CX), DI
-	CMPB DI, $10
-	JB   LBB6_106
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_106:
+	MOVB 4(SI), DI
+	LEAL -48(DI), CX
+	CMPB CX, $10
+	JB LBB6_101
+	ANDB $-33, DI
+	ADDB $-65, DI
+	CMPB DI, $5
+	JA LBB6_116
+LBB6_101:
 	LEAQ 3(DX), CX
-	MOVQ -56(BP), DI
+	MOVQ -48(BP), DI
 	MOVQ CX, 0(DI)
-	MOVB 5(SI), CX
-	LEAL -48(CX), SI
-	CMPB SI, $10
-	JB   LBB6_108
-	ANDB $-33, CX
-	ADDB $-65, CX
-	CMPB CX, $5
-	JA   LBB6_84
-
-LBB6_108:
+	MOVB 5(SI), SI
+	LEAL -48(SI), CX
+	CMPB CX, $10
+	JB LBB6_103
+	ANDB $-33, SI
+	ADDB $-65, SI
+	CMPB SI, $5
+	JA LBB6_116
+LBB6_103:
 	ADDQ $4, DX
-	MOVQ -56(BP), CX
+	MOVQ -48(BP), CX
 	MOVQ DX, 0(CX)
-	JMP  LBB6_84
-
-LBB6_109:
+	JMP LBB6_116
+LBB6_28:
 	SUBQ DI, R9
-	INCQ R9
-
-LBB6_110:
-	MOVQ -56(BP), AX
-	MOVQ R9, 0(AX)
-	MOVQ $-2, AX
-	JMP  LBB6_84
-
-LBB6_111:
-	SUBQ DI, R9
-	ADDQ $-4, R9
-
-LBB6_112:
-	MOVQ -56(BP), AX
-	MOVQ R9, 0(AX)
-	MOVQ $-4, AX
-	JMP  LBB6_84
-
-LBB6_113:
-	LEAQ 10(R9)(R12*1), AX
-	JMP  LBB6_115
-
+	ADDQ $1, R9
+	JMP LBB6_23
+LBB6_72:
+	TESTB $2, R8
+	JE LBB6_18
+	MOVW $-16401, 0(AX)
+	MOVB $-67, 2(AX)
+	ADDQ $3, AX
 LBB6_114:
-	LEAQ 11(R9)(R12*1), AX
-
-LBB6_115:
+	XORL R13, R13
+	JMP LBB6_115
+LBB6_18:
+	MOVQ -48(BP), AX
+	MOVQ SI, 0(AX)
+	MOVQ $-1, AX
+	JMP LBB6_116
+LBB6_118:
+	LEAQ 0(R9)(R11*1), AX
+	ADDQ $10, AX
+	JMP LBB6_107
+LBB6_106:
+	LEAQ 0(R9)(R11*1), AX
+	ADDQ $11, AX
+LBB6_107:
 	SUBQ DI, AX
 	ADDQ $-4, AX
-	MOVQ -56(BP), CX
+	MOVQ -48(BP), CX
 	MOVQ AX, 0(CX)
 	MOVQ $-4, AX
-	JMP  LBB6_84
-
-LBB6_116:
-	LEAQ 4(R10)(DI*1), AX
-	SUBQ AX, R9
-	JMP  LBB6_112
-
-LBB6_117:
-	ADDQ R12, R9
+	JMP LBB6_116
+LBB6_89:
+	ADDQ R10, DI
 	SUBQ DI, R9
-	JMP  LBB6_112
-
+	ADDQ $-4, R9
+LBB6_83:
+	MOVQ -48(BP), AX
+	MOVQ R9, 0(AX)
+	MOVQ $-4, AX
+	JMP LBB6_116
+LBB6_82:
+	SUBQ DI, R9
+	ADDQ R11, R9
+	JMP LBB6_83
 LCPI7_0:
-	QUAD $0x2626262626262626; QUAD $0x2626262626262626 // .space 16, '&&&&&&&&&&&&&&&&'
-
+	QUAD $0x2626262626262626; QUAD $0x2626262626262626  // .space 16, '&&&&&&&&&&&&&&&&'
 LCPI7_1:
-	QUAD $0xe2e2e2e2e2e2e2e2; QUAD $0xe2e2e2e2e2e2e2e2 // .space 16, '\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2'
-
+	QUAD $0xe2e2e2e2e2e2e2e2; QUAD $0xe2e2e2e2e2e2e2e2  // .space 16, '\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2\xe2'
 LCPI7_2:
-	QUAD $0x0202020202020202; QUAD $0x0202020202020202 // .space 16, '\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02'
-
+	QUAD $0xfdfdfdfdfdfdfdfd; QUAD $0xfdfdfdfdfdfdfdfd  // .space 16, '\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd\xfd'
 LCPI7_3:
-	QUAD $0x3e3e3e3e3e3e3e3e; QUAD $0x3e3e3e3e3e3e3e3e // .space 16, '>>>>>>>>>>>>>>>>'
-
+	QUAD $0x3c3c3c3c3c3c3c3c; QUAD $0x3c3c3c3c3c3c3c3c  // .space 16, '<<<<<<<<<<<<<<<<'
 _html_escape:
-	BYTE  $0x55                                 // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD  $0x5741                               // pushq        %r15
-	WORD  $0x5641                               // pushq        %r14
-	WORD  $0x5541                               // pushq        %r13
-	WORD  $0x5441                               // pushq        %r12
-	BYTE  $0x53                                 // pushq        %rbx
-	SUBQ  $24, SP
-	MOVQ  CX, -64(BP)
-	MOVQ  DX, R10
-	MOVQ  DX, -56(BP)
-	MOVQ  DI, -48(BP)
-	MOVQ  DI, AX
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $16, SP
+	MOVQ CX, -56(BP)
+	MOVQ DX, R14
+	MOVQ DX, -48(BP)
+	MOVQ DI, AX
 	TESTQ SI, SI
-	JLE   LBB7_59
-	MOVQ  -64(BP), AX
-	MOVQ  0(AX), R9
-	QUAD  $0xffffff85056ffac5                   // vmovdqu      $-123(%rip), %xmm0  /* LCPI7_0(%rip) */
-	QUAD  $0xffffff8d0d6ffac5                   // vmovdqu      $-115(%rip), %xmm1  /* LCPI7_1(%rip) */
-	QUAD  $0xffffff95156ffac5                   // vmovdqu      $-107(%rip), %xmm2  /* LCPI7_2(%rip) */
-	QUAD  $0xffffff9d1d6ffac5                   // vmovdqu      $-99(%rip), %xmm3  /* LCPI7_3(%rip) */
-	MOVQ  $5764607797912141824, R14
-	LONG  $0x571d8d4c; WORD $0x00ac; BYTE $0x00 // leaq         $44119(%rip), %r11  /* __HtmlQuoteTab(%rip) */
-	MOVQ  -48(BP), R15
-	MOVQ  -56(BP), R10
-
+	JLE LBB7_70
+	MOVQ -56(BP), AX
+	MOVQ 0(AX), R9
+	QUAD $0xffffff89056ffac5  // vmovdqu      $-119(%rip), %xmm0  /* LCPI7_0(%rip) */
+	QUAD $0xffffff910d6ffac5  // vmovdqu      $-111(%rip), %xmm1  /* LCPI7_1(%rip) */
+	QUAD $0xffffff99156ffac5  // vmovdqu      $-103(%rip), %xmm2  /* LCPI7_2(%rip) */
+	QUAD $0xffffffa11d6ffac5  // vmovdqu      $-95(%rip), %xmm3  /* LCPI7_3(%rip) */
+	LONG $0x0d1d8d4c; WORD $0x00ac; BYTE $0x00  // leaq         $44045(%rip), %r11  /* __HtmlQuoteTab(%rip) */
+	MOVQ DI, R12
+	MOVQ -48(BP), R14
 LBB7_2:
 	TESTQ R9, R9
-	JLE   LBB7_61
-	CMPQ  SI, $15
-	SETGT BX
-	MOVQ  R9, R12
-	MOVQ  R10, R8
-	MOVQ  SI, AX
-	MOVQ  R15, R13
-	CMPQ  R9, $16
-	JL    LBB7_9
-	CMPQ  SI, $16
-	JL    LBB7_9
-	MOVQ  R15, R13
-	MOVQ  SI, AX
-	MOVQ  R10, R8
-	MOVQ  R9, CX
-
-LBB7_6:
-	LONG  $0x6f7ac1c4; WORD $0x0065 // vmovdqu      (%r13), %xmm4
-	LONG  $0xe874d9c5               // vpcmpeqb     %xmm0, %xmm4, %xmm5
-	LONG  $0xf174d9c5               // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG  $0xedebc9c5               // vpor         %xmm5, %xmm6, %xmm5
-	LONG  $0xf2ebd9c5               // vpor         %xmm2, %xmm4, %xmm6
-	LONG  $0xf374c9c5               // vpcmpeqb     %xmm3, %xmm6, %xmm6
-	LONG  $0xeeebd1c5               // vpor         %xmm6, %xmm5, %xmm5
-	LONG  $0x7f7ac1c4; BYTE $0x20   // vmovdqu      %xmm4, (%r8)
-	LONG  $0xd5d7f9c5               // vpmovmskb    %xmm5, %edx
-	TESTW DX, DX
-	JNE   LBB7_21
-	ADDQ  $16, R13
-	ADDQ  $16, R8
-	LEAQ  -16(CX), R12
-	CMPQ  AX, $31
-	SETGT BX
-	CMPQ  AX, $32
-	LEAQ  -16(AX), AX
-	JL    LBB7_9
-	CMPQ  CX, $31
-	MOVQ  R12, CX
-	JG    LBB7_6
-
-LBB7_9:
-	TESTB BX, BX
-	JE    LBB7_13
-	MOVQ  R14, DX
-	LONG  $0x6f7ac1c4; WORD $0x0065 // vmovdqu      (%r13), %xmm4
-	LONG  $0xe874d9c5               // vpcmpeqb     %xmm0, %xmm4, %xmm5
-	LONG  $0xf174d9c5               // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG  $0xedebc9c5               // vpor         %xmm5, %xmm6, %xmm5
-	LONG  $0xf2ebd9c5               // vpor         %xmm2, %xmm4, %xmm6
-	LONG  $0xf374c9c5               // vpcmpeqb     %xmm3, %xmm6, %xmm6
-	LONG  $0xeeebd1c5               // vpor         %xmm6, %xmm5, %xmm5
-	LONG  $0xc5d7f9c5               // vpmovmskb    %xmm5, %eax
-	ORL   $65536, AX
-	BSFL  AX, R14
-	LONG  $0x7ef9e1c4; BYTE $0xe0   // vmovq        %xmm4, %rax
-	CMPQ  R12, R14
-	JGE   LBB7_22
-	CMPQ  R12, $8
-	JB    LBB7_25
-	MOVQ  AX, 0(R8)
-	LEAQ  8(R13), R14
-	ADDQ  $8, R8
-	LEAQ  -8(R12), AX
-	CMPQ  AX, $4
-	JAE   LBB7_26
-	JMP   LBB7_27
-
-LBB7_13:
-	TESTQ R12, R12
-	JLE   LBB7_20
-	TESTQ AX, AX
-	JLE   LBB7_20
-
-LBB7_15:
-	MOVBLZX 0(R13), CX
-	CMPQ    CX, $62
-	JA      LBB7_17
-	BTQ     CX, R14
-	JB      LBB7_24
-
-LBB7_17:
-	CMPB CX, $-30
-	JE   LBB7_24
-	INCQ R13
-	MOVB CX, 0(R8)
-	CMPQ AX, $2
-	LEAQ -1(AX), AX
-	JL   LBB7_20
-	INCQ R8
-	CMPQ R12, $1
-	LEAQ -1(R12), R12
-	JG   LBB7_15
-
-LBB7_20:
-	SUBQ  R15, R13
-	NEGQ  AX
-	SBBQ  R12, R12
-	XORQ  R13, R12
-	TESTQ R12, R12
-	JNS   LBB7_37
-	JMP   LBB7_57
-
-LBB7_21:
-	MOVWLZX DX, AX
-	SUBQ    R15, R13
-	BSFL    AX, R12
-	ADDQ    R13, R12
-	TESTQ   R12, R12
-	JNS     LBB7_37
-	JMP     LBB7_57
-
-LBB7_22:
-	CMPL R14, $8
-	JB   LBB7_31
+	JLE LBB7_3
+	CMPQ SI, $15
+	SETGT AX
+	MOVQ R9, R13
+	MOVQ R14, R8
+	MOVQ SI, BX
+	MOVQ R12, R15
+	CMPQ R9, $16
+	JL LBB7_12
+	CMPQ SI, $16
+	JL LBB7_12
+	XORL R8, R8
+	MOVQ SI, DX
+	MOVQ R9, CX
+LBB7_7:
+	LONG $0x6f7a81c4; WORD $0x0424  // vmovdqu      (%r12,%r8), %xmm4
+	LONG $0xe874d9c5  // vpcmpeqb     %xmm0, %xmm4, %xmm5
+	LONG $0xf174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xedebc9c5  // vpor         %xmm5, %xmm6, %xmm5
+	LONG $0xf2dbd9c5  // vpand        %xmm2, %xmm4, %xmm6
+	LONG $0xf374c9c5  // vpcmpeqb     %xmm3, %xmm6, %xmm6
+	LONG $0xeeebd1c5  // vpor         %xmm6, %xmm5, %xmm5
+	LONG $0x7f7a81c4; WORD $0x0624  // vmovdqu      %xmm4, (%r14,%r8)
+	LONG $0xc5d7f9c5  // vpmovmskb    %xmm5, %eax
+	TESTW AX, AX
+	JNE LBB7_8
+	LEAQ -16(DX), BX
+	LEAQ -16(CX), R13
+	CMPQ DX, $31
+	SETGT AX
+	ADDQ $16, R8
+	CMPQ DX, $32
+	JL LBB7_11
+	MOVQ BX, DX
+	CMPQ CX, $31
+	MOVQ R13, CX
+	JG LBB7_7
+LBB7_11:
+	LEAQ 0(R12)(R8*1), R15
+	ADDQ R14, R8
+LBB7_12:
+	TESTB AX, AX
+	JE LBB7_13
+	LONG $0x6f7ac1c4; BYTE $0x27  // vmovdqu      (%r15), %xmm4
+	LONG $0xe874d9c5  // vpcmpeqb     %xmm0, %xmm4, %xmm5
+	LONG $0xf174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xedebc9c5  // vpor         %xmm5, %xmm6, %xmm5
+	LONG $0xf2dbd9c5  // vpand        %xmm2, %xmm4, %xmm6
+	LONG $0xf374c9c5  // vpcmpeqb     %xmm3, %xmm6, %xmm6
+	LONG $0xeeebd1c5  // vpor         %xmm6, %xmm5, %xmm5
+	LONG $0xc5d7f9c5  // vpmovmskb    %xmm5, %eax
+	ORL $65536, AX
+	BSFL AX, R10
+	LONG $0x7ef9e1c4; BYTE $0xe0  // vmovq        %xmm4, %rax
+	CMPQ R13, R10
+	JGE LBB7_24
+	CMPQ R13, $8
+	JB LBB7_35
 	MOVQ AX, 0(R8)
-	LEAQ 8(R13), R12
+	LEAQ 8(R15), R10
 	ADDQ $8, R8
-	LEAQ -8(R14), AX
-	CMPQ AX, $4
-	JAE  LBB7_32
-	JMP  LBB7_33
-
-LBB7_24:
-	SUBQ  R15, R13
-	MOVQ  R13, R12
-	TESTQ R12, R12
-	JNS   LBB7_37
-	JMP   LBB7_57
-
-LBB7_25:
-	MOVQ R13, R14
-	MOVQ R12, AX
-	CMPQ AX, $4
-	JB   LBB7_27
-
-LBB7_26:
-	MOVL 0(R14), CX
-	MOVL CX, 0(R8)
-	ADDQ $4, R14
-	ADDQ $4, R8
-	ADDQ $-4, AX
-
-LBB7_27:
-	CMPQ    AX, $2
-	JB      LBB7_28
-	MOVWLZX 0(R14), CX
-	MOVW    CX, 0(R8)
-	ADDQ    $2, R14
-	ADDQ    $2, R8
-	ADDQ    $-2, AX
-	TESTQ   AX, AX
-	JNE     LBB7_29
-	JMP     LBB7_30
-
-LBB7_28:
-	TESTQ AX, AX
-	JE    LBB7_30
-
-LBB7_29:
-	MOVB 0(R14), AX
-	MOVB AX, 0(R8)
-
-LBB7_30:
-	SUBQ  R15, R12
-	ADDQ  R13, R12
-	NOTQ  R12
-	MOVQ  DX, R14
-	TESTQ R12, R12
-	JNS   LBB7_37
-	JMP   LBB7_57
-
-LBB7_31:
-	MOVQ R13, R12
-	MOVQ R14, AX
-	CMPQ AX, $4
-	JB   LBB7_33
-
-LBB7_32:
-	MOVL 0(R12), CX
-	MOVL CX, 0(R8)
-	ADDQ $4, R12
-	ADDQ $4, R8
-	ADDQ $-4, AX
-
-LBB7_33:
-	CMPQ    AX, $2
-	JB      LBB7_34
-	MOVWLZX 0(R12), CX
-	MOVW    CX, 0(R8)
-	ADDQ    $2, R12
-	ADDQ    $2, R8
-	ADDQ    $-2, AX
-	TESTQ   AX, AX
-	JNE     LBB7_35
-	JMP     LBB7_36
-
-LBB7_34:
-	TESTQ AX, AX
-	JE    LBB7_36
-
-LBB7_35:
-	MOVB 0(R12), AX
-	MOVB AX, 0(R8)
-
-LBB7_36:
-	SUBQ  R15, R13
-	ADDQ  R14, R13
-	MOVQ  R13, R12
-	MOVQ  DX, R14
-	TESTQ R12, R12
-	JS    LBB7_57
-
-LBB7_37:
+	LEAQ -8(R13), BX
+	CMPQ BX, $4
+	JAE LBB7_38
+	JMP LBB7_39
+LBB7_13:
+	TESTQ R13, R13
+	JLE LBB7_21
+	TESTQ BX, BX
+	JLE LBB7_21
+	XORL CX, CX
+	XORL AX, AX
+LBB7_16:
+	MOVBLZX 0(R15)(CX*1), R11
+	CMPQ R11, $62
+	JA LBB7_17
+	MOVQ $5764607797912141824, DX
+	BTQ R11, DX
+	JB LBB7_45
+LBB7_17:
+	CMPB R11, $-30
+	JE LBB7_45
+	LEAQ 0(BX)(AX*1), R10
+	MOVB R11, 0(R8)(CX*1)
+	LEAQ -1(AX), DX
+	CMPQ R10, $2
+	JL LBB7_20
+	ADDQ R13, AX
+	ADDQ $1, CX
+	CMPQ AX, $1
+	MOVQ DX, AX
+	JG LBB7_16
+LBB7_20:
+	SUBQ DX, R15
+	ADDQ DX, BX
+	LONG $0xae1d8d4c; WORD $0x00aa; BYTE $0x00  // leaq         $43694(%rip), %r11  /* __HtmlQuoteTab(%rip) */
+LBB7_21:
+	TESTQ BX, BX
+	JE LBB7_22
+	NOTQ R15
 	ADDQ R12, R15
-	ADDQ R12, R10
-	SUBQ R12, SI
-	JLE  LBB7_58
-	SUBQ R12, R9
-	MOVB 0(R15), CX
-	CMPB CX, $-30
-	JE   LBB7_51
-	MOVQ R15, AX
-
-LBB7_40:
-	MOVBLZX CX, DX
-	SHLQ    $4, DX
-	MOVQ    0(DX)(R11*1), DI
-	MOVLQSX DI, BX
-	SUBQ    BX, R9
-	JL      LBB7_60
-	SHLQ    $32, DI
-	LEAQ    8(DX)(R11*1), R15
-	MOVQ    $12884901889, CX
-	CMPQ    DI, CX
-	JL      LBB7_43
-	MOVL    0(R15), CX
-	MOVL    CX, 0(R10)
-	LEAQ    12(DX)(R11*1), R15
-	LEAQ    4(R10), R8
-	LEAQ    -4(BX), DI
-	CMPQ    DI, $2
-	JGE     LBB7_44
-	JMP     LBB7_45
-
-LBB7_43:
-	MOVQ R10, R8
-	MOVQ BX, DI
-	CMPQ DI, $2
-	JL   LBB7_45
-
-LBB7_44:
-	MOVWLZX 0(R15), DX
-	MOVW    DX, 0(R8)
-	ADDQ    $2, R15
-	ADDQ    $2, R8
-	ADDQ    $-2, DI
-
+	TESTQ R15, R15
+	JNS LBB7_49
+	JMP LBB7_48
+LBB7_8:
+	MOVWLZX AX, AX
+	BSFL AX, R15
+	ADDQ R8, R15
+	TESTQ R15, R15
+	JNS LBB7_49
+	JMP LBB7_48
+LBB7_24:
+	CMPL R10, $8
+	JB LBB7_25
+	MOVQ AX, 0(R8)
+	LEAQ 8(R15), R13
+	ADDQ $8, R8
+	LEAQ -8(R10), BX
+	CMPQ BX, $4
+	JAE LBB7_28
+	JMP LBB7_29
 LBB7_45:
-	TESTQ DI, DI
-	JLE   LBB7_47
-	MOVB  0(R15), CX
-	MOVB  CX, 0(R8)
-
-LBB7_47:
-	ADDQ BX, R10
-
-LBB7_48:
-	INCQ AX
-	MOVQ AX, R15
+	SUBQ R12, R15
+	SUBQ AX, R15
+	LONG $0x4c1d8d4c; WORD $0x00aa; BYTE $0x00  // leaq         $43596(%rip), %r11  /* __HtmlQuoteTab(%rip) */
+	TESTQ R15, R15
+	JNS LBB7_49
+	JMP LBB7_48
+LBB7_35:
+	MOVQ R15, R10
+	MOVQ R13, BX
+	CMPQ BX, $4
+	JB LBB7_39
+LBB7_38:
+	MOVL 0(R10), AX
+	MOVL AX, 0(R8)
+	ADDQ $4, R10
+	ADDQ $4, R8
+	ADDQ $-4, BX
+LBB7_39:
+	CMPQ BX, $2
+	JAE LBB7_40
+	TESTQ BX, BX
+	JE LBB7_43
+LBB7_42:
+	MOVB 0(R10), AX
+	MOVB AX, 0(R8)
+LBB7_43:
+	NOTQ R13
+	ADDQ R12, R13
+	SUBQ R15, R13
+	MOVQ R13, R15
+	TESTQ R15, R15
+	JNS LBB7_49
+	JMP LBB7_48
+LBB7_25:
+	MOVQ R15, R13
+	MOVQ R10, BX
+	CMPQ BX, $4
+	JB LBB7_29
+LBB7_28:
+	MOVL 0(R13), AX
+	MOVL AX, 0(R8)
+	ADDQ $4, R13
+	ADDQ $4, R8
+	ADDQ $-4, BX
+LBB7_29:
+	CMPQ BX, $2
+	JAE LBB7_30
+	TESTQ BX, BX
+	JE LBB7_33
+LBB7_32:
+	MOVB 0(R13), AX
+	MOVB AX, 0(R8)
+LBB7_33:
+	SUBQ R12, R15
+	ADDQ R10, R15
+	TESTQ R15, R15
+	JNS LBB7_49
+	JMP LBB7_48
+LBB7_40:
+	MOVWLZX 0(R10), AX
+	MOVW AX, 0(R8)
+	ADDQ $2, R10
+	ADDQ $2, R8
+	ADDQ $-2, BX
+	TESTQ BX, BX
+	JNE LBB7_42
+	JMP LBB7_43
+LBB7_30:
+	MOVWLZX 0(R13), AX
+	MOVW AX, 0(R8)
+	ADDQ $2, R13
+	ADDQ $2, R8
+	ADDQ $-2, BX
+	TESTQ BX, BX
+	JNE LBB7_32
+	JMP LBB7_33
+LBB7_22:
+	SUBQ R12, R15
+	TESTQ R15, R15
+	JS LBB7_48
+LBB7_49:
+	ADDQ R15, R12
+	ADDQ R15, R14
+	SUBQ R15, SI
+	JLE LBB7_50
+	SUBQ R15, R9
+	MOVB 0(R12), CX
+	CMPB CX, $-30
+	JE LBB7_53
+	MOVQ R12, AX
+LBB7_57:
+	MOVBLZX CX, CX
+	SHLQ $4, CX
+	MOVQ 0(CX)(R11*1), DX
+	MOVLQSX DX, R15
+	SUBQ R15, R9
+	JL LBB7_58
+	SHLQ $32, DX
+	LEAQ 0(CX)(R11*1), R10
+	ADDQ $8, R10
+	MOVQ $12884901889, BX
+	CMPQ DX, BX
+	JL LBB7_62
+	MOVL 0(R10), DX
+	MOVL DX, 0(R14)
+	LEAQ 0(CX)(R11*1), R10
+	ADDQ $12, R10
+	LEAQ 4(R14), R8
+	LEAQ -4(R15), CX
+	CMPQ CX, $2
+	JGE LBB7_65
+	JMP LBB7_66
+LBB7_62:
+	MOVQ R14, R8
+	MOVQ R15, CX
+	CMPQ CX, $2
+	JL LBB7_66
+LBB7_65:
+	MOVWLZX 0(R10), DX
+	MOVW DX, 0(R8)
+	ADDQ $2, R10
+	ADDQ $2, R8
+	ADDQ $-2, CX
+LBB7_66:
+	TESTQ CX, CX
+	JLE LBB7_68
+	MOVB 0(R10), CX
+	MOVB CX, 0(R8)
+LBB7_68:
+	ADDQ R15, R14
+LBB7_69:
+	ADDQ $1, AX
+	LEAQ -1(SI), CX
+	MOVQ AX, R12
 	CMPQ SI, $1
-	LEAQ -1(SI), SI
-	JG   LBB7_2
-	JMP  LBB7_59
-
-LBB7_51:
+	MOVQ CX, SI
+	JG LBB7_2
+	JMP LBB7_70
+LBB7_53:
 	CMPQ SI, $3
-	JL   LBB7_55
-	CMPB 1(R15), $-128
-	JNE  LBB7_55
-	MOVB 2(R15), CX
+	JL LBB7_59
+	CMPB 1(R12), $-128
+	JNE LBB7_59
+	MOVB 2(R12), CX
 	MOVL CX, AX
 	ANDB $-2, AX
 	CMPB AX, $-88
-	JNE  LBB7_55
-	LEAQ 2(R15), AX
+	JNE LBB7_59
+	LEAQ 2(R12), AX
 	ADDQ $-2, SI
-	JMP  LBB7_40
-
-LBB7_55:
-	TESTQ R9, R9
-	JLE   LBB7_61
-	MOVB  $-30, 0(R10)
-	INCQ  R10
-	DECQ  R9
-	MOVQ  R15, AX
-	JMP   LBB7_48
-
-LBB7_57:
-	SUBQ -56(BP), R10
-	NOTQ R12
-	ADDQ R12, R10
-	MOVQ -64(BP), AX
-	MOVQ R10, 0(AX)
-	SUBQ -48(BP), R15
-	ADDQ R12, R15
-	NOTQ R15
-	JMP  LBB7_62
-
-LBB7_58:
-	MOVQ R15, AX
-
+	JMP LBB7_57
 LBB7_59:
-	SUBQ -56(BP), R10
-	MOVQ -64(BP), CX
-	MOVQ R10, 0(CX)
-	SUBQ -48(BP), AX
-	JMP  LBB7_63
-
-LBB7_60:
-	SUBQ -56(BP), R10
-	MOVQ -64(BP), AX
-	MOVQ R10, 0(AX)
-
-LBB7_61:
-	NOTQ R15
-	ADDQ -48(BP), R15
-
-LBB7_62:
+	TESTQ R9, R9
+	JLE LBB7_3
+	MOVB $-30, 0(R14)
+	ADDQ $1, R14
+	ADDQ $-1, R9
+	MOVQ R12, AX
+	JMP LBB7_69
+LBB7_48:
+	SUBQ -48(BP), R14
 	MOVQ R15, AX
-
-LBB7_63:
-	ADDQ $24, SP
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5d41 // popq         %r13
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+	NOTQ AX
+	ADDQ R14, AX
+	MOVQ -56(BP), CX
+	MOVQ AX, 0(CX)
+	SUBQ R12, DI
+	ADDQ R15, DI
+	MOVQ DI, AX
+	JMP LBB7_71
+LBB7_50:
+	MOVQ R12, AX
+LBB7_70:
+	SUBQ -48(BP), R14
+	MOVQ -56(BP), CX
+	MOVQ R14, 0(CX)
+	SUBQ DI, AX
+	JMP LBB7_71
+LBB7_58:
+	SUBQ -48(BP), R14
+	MOVQ -56(BP), AX
+	MOVQ R14, 0(AX)
+LBB7_3:
+	NOTQ R12
+	ADDQ DI, R12
+	MOVQ R12, AX
+LBB7_71:
+	ADDQ $16, SP
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 _atof_eisel_lemire64:
-	BYTE  $0x55               // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	WORD  $0x5741             // pushq        %r15
-	WORD  $0x5641             // pushq        %r14
-	BYTE  $0x53               // pushq        %rbx
-	LEAL  348(SI), AX
-	CMPL  AX, $695
-	JA    LBB8_1
-	MOVQ  CX, R8
-	MOVL  DX, R9
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	BYTE $0x53  // pushq        %rbx
+	LEAL 348(SI), AX
+	CMPL AX, $695
+	JA LBB8_1
+	MOVQ CX, R8
+	MOVL DX, R9
 	TESTQ DI, DI
-	JE    LBB8_4
-	BSRQ  DI, R10
-	XORQ  $63, R10
-	JMP   LBB8_5
-
+	JE LBB8_4
+	BSRQ DI, R10
+	XORQ $63, R10
+	JMP LBB8_5
 LBB8_4:
 	MOVL $64, R10
-
 LBB8_5:
 	MOVL R10, CX
 	SHLQ CX, DI
 	MOVL AX, CX
 	SHLQ $4, CX
-	LONG $0x953d8d4c; WORD $0x0030; BYTE $0x00 // leaq         $12437(%rip), %r15  /* _POW10_M128_TAB(%rip) */
+	LONG $0x0f3d8d4c; WORD $0x0030; BYTE $0x00  // leaq         $12303(%rip), %r15  /* _POW10_M128_TAB(%rip) */
 	MOVQ DI, AX
 	MULQ 8(CX)(R15*1)
 	MOVQ AX, R11
@@ -2929,9 +2710,9 @@ LBB8_5:
 	MOVQ DI, BX
 	NOTQ BX
 	CMPQ AX, BX
-	JBE  LBB8_11
+	JBE LBB8_11
 	CMPL DX, $511
-	JNE  LBB8_11
+	JNE LBB8_11
 	MOVQ DI, AX
 	MULQ 0(CX)(R15*1)
 	ADDQ DX, R11
@@ -2939,2793 +2720,2484 @@ LBB8_5:
 	MOVL R14, DX
 	ANDL $511, DX
 	CMPQ AX, BX
-	JBE  LBB8_11
+	JBE LBB8_11
 	CMPQ R11, $-1
-	JNE  LBB8_11
+	JNE LBB8_11
 	CMPL DX, $511
-	JE   LBB8_1
-
+	JE LBB8_1
 LBB8_11:
-	MOVQ R14, DI
-	SHRQ $63, DI
-	LEAL 9(DI), CX
+	MOVQ R14, AX
+	SHRQ $63, AX
+	LEAL 9(AX), CX
 	SHRQ CX, R14
-	ORQ  R11, DX
-	JNE  LBB8_14
-	MOVL R14, AX
-	ANDL $3, AX
-	CMPL AX, $1
-	JE   LBB8_1
-
+	ORQ R11, DX
+	JNE LBB8_14
+	MOVL R14, CX
+	ANDL $3, CX
+	CMPL CX, $1
+	JE LBB8_1
 LBB8_14:
-	LONG $0x526ac669; WORD $0x0003 // imull        $217706, %esi, %eax
-	SARL $16, AX
-	ADDL $1087, AX
-	WORD $0x9848                   // cltq
-	SUBQ R10, AX
-	XORQ $1, DI
-	SUBQ DI, AX
+	LONG $0x526ace69; WORD $0x0003  // imull        $217706, %esi, %ecx
+	SARL $16, CX
+	ADDL $1087, CX
+	MOVLQSX CX, SI
 	MOVL R14, DX
 	ANDL $1, DX
 	ADDQ R14, DX
 	MOVQ $126100789566373888, CX
 	ANDQ DX, CX
+	NOTQ R10
+	ADDQ SI, R10
+	ADDQ AX, R10
 	CMPQ CX, $1
-	SBBQ $-1, AX
-	LEAQ -1(AX), SI
-	CMPQ SI, $2045
-	JBE  LBB8_16
-
+	SBBQ $-1, R10
+	LEAQ -1(R10), AX
+	CMPQ AX, $2045
+	JBE LBB8_16
 LBB8_1:
 	XORL AX, AX
-
 LBB8_17:
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB8_16:
 	CMPQ CX, $1
 	MOVB $2, CX
 	SBBB $0, CX
 	SHRQ CX, DX
-	SHLQ $52, AX
-	MOVQ $4503599627370495, CX
-	ANDQ DX, CX
-	ORQ  AX, CX
-	MOVQ $-9223372036854775808, AX
-	ORQ  CX, AX
+	SHLQ $52, R10
+	MOVQ $4503599627370495, AX
+	ANDQ DX, AX
+	ORQ R10, AX
+	MOVQ $-9223372036854775808, CX
+	ORQ AX, CX
 	CMPL R9, $-1
-	LONG $0xc1450f48               // cmovneq      %rcx, %rax
-	MOVQ AX, 0(R8)
+	LONG $0xc8450f48  // cmovneq      %rax, %rcx
+	MOVQ CX, 0(R8)
 	MOVB $1, AX
-	JMP  LBB8_17
-
+	JMP LBB8_17
 _decimal_to_f64:
-	BYTE $0x55                     // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5       // movq         %rsp, %rbp
-	WORD $0x5741                   // pushq        %r15
-	WORD $0x5641                   // pushq        %r14
-	WORD $0x5541                   // pushq        %r13
-	WORD $0x5441                   // pushq        %r12
-	BYTE $0x53                     // pushq        %rbx
-	BYTE $0x50                     // pushq        %rax
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	BYTE $0x50  // pushq        %rax
 	MOVQ SI, BX
-	MOVQ DI, R12
+	MOVQ DI, R15
 	MOVQ $4503599627370496, R13
 	CMPL 16(DI), $0
-	JE   LBB9_4
+	JE LBB9_4
 	MOVQ $9218868437227405312, R14
-	MOVL 20(R12), AX
-	XORL R15, R15
+	MOVL 20(R15), AX
+	XORL R12, R12
 	CMPL AX, $310
-	JG   LBB9_78
+	JG LBB9_64
 	CMPL AX, $-330
-	JGE  LBB9_5
+	JGE LBB9_5
 	XORL R14, R14
-	JMP  LBB9_78
-
+	JMP LBB9_64
 LBB9_4:
 	XORL R14, R14
-	XORL R15, R15
-	JMP  LBB9_78
-
+	XORL R12, R12
+	JMP LBB9_64
 LBB9_5:
 	TESTL AX, AX
-	MOVQ  BX, -48(BP)
-	JLE   LBB9_22
-	XORL  R15, R15
-	JMP   LBB9_9
-
-LBB9_7:
-	NEGL BX
-	MOVQ R12, DI
-	MOVL BX, SI
-	LONG $0x002de0e8; BYTE $0x00 // callq        _right_shift
-
-LBB9_8:
-	ADDL  R14, R15
-	MOVL  20(R12), AX
-	TESTL AX, AX
-	JLE   LBB9_22
-
-LBB9_9:
-	MOVL $27, R14
-	CMPL AX, $8
-	JG   LBB9_11
+	MOVQ BX, -48(BP)
+	JLE LBB9_12
+	XORL R12, R12
+	LONG $0x3b358d4c; WORD $0x005a; BYTE $0x00  // leaq         $23099(%rip), %r14  /* _POW_TAB(%rip) */
+	JMP LBB9_8
+LBB9_10:
 	MOVL AX, AX
-	LONG $0x910d8d48; WORD $0x005a; BYTE $0x00 // leaq         $23185(%rip), %rcx  /* _POW_TAB(%rip) */
-	MOVL 0(CX)(AX*4), R14
-
+	MOVL 0(R14)(AX*4), BX
+	CMPL 16(R15), $0
+	JE LBB9_7
 LBB9_11:
-	TESTL R14, R14
-	JE    LBB9_8
-	CMPL  16(R12), $0
-	JE    LBB9_8
-	MOVL  R14, BX
-	NEGL  BX
-	TESTL R14, R14
-	JS    LBB9_16
-	CMPL  R14, $61
-	JL    LBB9_7
-
-LBB9_15:
-	MOVQ R12, DI
-	MOVL $60, SI
-	LONG $0x002d8ee8; BYTE $0x00 // callq        _right_shift
-	LEAL 60(BX), AX
-	CMPL BX, $-120
-	MOVL AX, BX
-	JL   LBB9_15
-	JMP  LBB9_7
-
-LBB9_16:
-	CMPL R14, $-61
-	JG   LBB9_18
-
-LBB9_17:
-	MOVQ R12, DI
-	MOVL $60, SI
-	LONG $0x002c00e8; BYTE $0x00 // callq        _left_shift
-	LEAL -60(BX), SI
-	CMPL BX, $120
-	MOVL SI, BX
-	JG   LBB9_17
-	JMP  LBB9_19
-
-LBB9_18:
+	MOVQ R15, DI
 	MOVL BX, SI
-
-LBB9_19:
-	MOVQ R12, DI
-	LONG $0x002beae8; BYTE $0x00 // callq        _left_shift
-	JMP  LBB9_8
-
-LBB9_20:
-	MOVQ R12, DI
-	LONG $0x002bdde8; BYTE $0x00 // callq        _left_shift
-
-LBB9_21:
-	SUBL R14, R15
-	MOVL 20(R12), AX
-
-LBB9_22:
+	LONG $0x002d28e8; BYTE $0x00  // callq        _right_shift
+LBB9_7:
+	ADDL BX, R12
+	MOVL 20(R15), AX
 	TESTL AX, AX
-	JS    LBB9_25
-	JNE   LBB9_36
-	MOVQ  0(R12), CX
-	CMPB  0(CX), $53
-	JL    LBB9_26
-	JMP   LBB9_36
-
-LBB9_25:
-	MOVL $27, R14
-	CMPL AX, $-8
-	JL   LBB9_27
-
-LBB9_26:
-	NEGL AX
-	WORD $0x9848                               // cltq
-	LONG $0xeb0d8d48; WORD $0x0059; BYTE $0x00 // leaq         $23019(%rip), %rcx  /* _POW_TAB(%rip) */
-	MOVL 0(CX)(AX*4), R14
-
-LBB9_27:
-	TESTL R14, R14
-	JE    LBB9_21
-	CMPL  16(R12), $0
-	JE    LBB9_21
-	TESTL R14, R14
-	JLE   LBB9_33
-	MOVL  R14, SI
-	CMPL  R14, $61
-	JL    LBB9_20
-	MOVL  R14, BX
-
-LBB9_32:
-	MOVQ R12, DI
-	MOVL $60, SI
-	LONG $0x002b78e8; BYTE $0x00 // callq        _left_shift
-	LEAL -60(BX), SI
-	CMPL BX, $120
-	MOVL SI, BX
-	JG   LBB9_32
-	JMP  LBB9_20
-
-LBB9_33:
-	MOVL R14, BX
-	CMPL R14, $-61
-	JG   LBB9_35
-
-LBB9_34:
-	MOVQ R12, DI
-	MOVL $60, SI
-	LONG $0x002cc5e8; BYTE $0x00 // callq        _right_shift
-	LEAL 60(BX), AX
-	CMPL BX, $-120
-	MOVL AX, BX
-	JL   LBB9_34
-
-LBB9_35:
-	NEGL BX
-	MOVQ R12, DI
+	JLE LBB9_12
+LBB9_8:
+	CMPL AX, $8
+	JLE LBB9_10
+	MOVL $27, BX
+	CMPL 16(R15), $0
+	JNE LBB9_11
+	JMP LBB9_7
+LBB9_12:
+	LONG $0xfd358d4c; WORD $0x0059; BYTE $0x00  // leaq         $23037(%rip), %r14  /* _POW_TAB(%rip) */
+	JMP LBB9_14
+LBB9_18:
+	MOVL $27, BX
+	CMPL 16(R15), $0
+	JE LBB9_13
+LBB9_20:
+	MOVQ R15, DI
 	MOVL BX, SI
-	LONG $0x002cafe8; BYTE $0x00 // callq        _right_shift
-	JMP  LBB9_21
-
-LBB9_36:
-	CMPL R15, $-1022
-	JG   LBB9_42
-	CMPL 16(R12), $0
+	LONG $0x002b5be8; BYTE $0x00  // callq        _left_shift
+	MOVL 20(R15), AX
+LBB9_13:
+	SUBL BX, R12
+LBB9_14:
+	TESTL AX, AX
+	JS LBB9_17
+	JNE LBB9_21
+	MOVQ 0(R15), CX
+	CMPB 0(CX), $53
+	JL LBB9_19
+	JMP LBB9_21
+LBB9_17:
+	CMPL AX, $-8
+	JL LBB9_18
+LBB9_19:
+	MOVL AX, CX
+	NEGL CX
+	MOVLQSX CX, CX
+	MOVL 0(R14)(CX*4), BX
+	CMPL 16(R15), $0
+	JNE LBB9_20
+	JMP LBB9_13
+LBB9_21:
+	CMPL R12, $-1022
+	JG LBB9_27
+	CMPL 16(R15), $0
 	MOVQ -48(BP), BX
-	JE   LBB9_44
-	CMPL R15, $-1082
-	JG   LBB9_45
-	ADDL $961, R15
-
-LBB9_40:
-	MOVQ R12, DI
+	JE LBB9_29
+	CMPL R12, $-1082
+	JG LBB9_30
+	ADDL $961, R12
+LBB9_25:
+	MOVQ R15, DI
 	MOVL $60, SI
-	LONG $0x002c78e8; BYTE $0x00 // callq        _right_shift
-	ADDL $60, R15
-	CMPL R15, $-120
-	JL   LBB9_40
-	ADDL $60, R15
-	JMP  LBB9_46
-
-LBB9_42:
-	CMPL R15, $1024
+	LONG $0x002c8ae8; BYTE $0x00  // callq        _right_shift
+	ADDL $60, R12
+	CMPL R12, $-120
+	JL LBB9_25
+	ADDL $60, R12
+	JMP LBB9_31
+LBB9_27:
+	CMPL R12, $1024
 	MOVQ -48(BP), BX
-	JG   LBB9_75
-	DECL R15
-	MOVL R15, R14
-	JMP  LBB9_47
-
-LBB9_44:
+	JG LBB9_61
+	ADDL $-1, R12
+	MOVL R12, R14
+	JMP LBB9_32
+LBB9_29:
 	MOVL $-1022, R14
-	JMP  LBB9_49
-
-LBB9_45:
-	ADDL $1021, R15
-
-LBB9_46:
-	NEGL R15
-	MOVQ R12, DI
-	MOVL R15, SI
-	LONG $0x002c32e8; BYTE $0x00 // callq        _right_shift
+	JMP LBB9_34
+LBB9_30:
+	ADDL $1021, R12
+LBB9_31:
+	NEGL R12
+	MOVQ R15, DI
+	MOVL R12, SI
+	LONG $0x002c43e8; BYTE $0x00  // callq        _right_shift
 	MOVL $-1022, R14
-
-LBB9_47:
-	CMPL 16(R12), $0
-	JE   LBB9_49
-	MOVQ R12, DI
+LBB9_32:
+	CMPL 16(R15), $0
+	JE LBB9_34
+	MOVQ R15, DI
 	MOVL $53, SI
-	LONG $0x002aa8e8; BYTE $0x00 // callq        _left_shift
-
+	LONG $0x002a99e8; BYTE $0x00  // callq        _left_shift
+LBB9_34:
+	MOVL 20(R15), AX
+	MOVQ $-1, R12
+	CMPL AX, $20
+	JG LBB9_63
+	TESTL AX, AX
+	JLE LBB9_40
+	MOVL 16(R15), DX
+	XORL SI, SI
+	TESTL DX, DX
+	WORD $0x480f; BYTE $0xd6  // cmovsl       %esi, %edx
+	LEAQ -1(AX), R9
+	CMPQ R9, DX
+	LONG $0xca430f44  // cmovael      %edx, %r9d
+	LEAL 1(R9), R8
+	XORL R12, R12
+LBB9_37:
+	CMPQ DX, SI
+	JE LBB9_41
+	LEAQ 0(R12)(R12*4), DI
+	MOVQ 0(R15), CX
+	MOVBQSX 0(CX)(SI*1), CX
+	LEAQ 0(CX)(DI*2), R12
+	ADDQ $-48, R12
+	ADDQ $1, SI
+	CMPQ AX, SI
+	JNE LBB9_37
+	MOVL R8, R9
+	JMP LBB9_41
+LBB9_40:
+	XORL R9, R9
+	XORL R12, R12
+LBB9_41:
+	CMPL AX, R9
+	JLE LBB9_49
+	MOVL AX, SI
+	SUBL R9, SI
+	MOVL R9, DX
+	NOTL DX
+	ADDL AX, DX
+	ANDL $7, SI
+	JE LBB9_46
+	NEGL SI
+	XORL DI, DI
+LBB9_44:
+	ADDQ R12, R12
+	LEAQ 0(R12)(R12*4), R12
+	ADDL $-1, DI
+	CMPL SI, DI
+	JNE LBB9_44
+	SUBL DI, R9
+LBB9_46:
+	CMPL DX, $7
+	JB LBB9_49
+	MOVL AX, DX
+	SUBL R9, DX
+LBB9_48:
+	IMUL3Q $100000000, R12, R12
+	ADDL $-8, DX
+	JNE LBB9_48
 LBB9_49:
-	MOVLQSX 20(R12), R8
-	MOVQ    $-1, R15
-	CMPQ    R8, $20
-	JG      LBB9_77
-	MOVL    R8, CX
-	TESTL   CX, CX
-	JLE     LBB9_54
-	MOVLQSX 16(R12), SI
-	XORL    DX, DX
-	XORL    R15, R15
-
-LBB9_52:
-	CMPQ    DX, SI
-	JGE     LBB9_55
-	LEAQ    0(R15)(R15*4), AX
-	MOVQ    0(R12), DI
-	MOVBQSX 0(DI)(DX*1), DI
-	LEAQ    -48(DI)(AX*2), R15
-	INCQ    DX
-	CMPQ    CX, DX
-	JNE     LBB9_52
-	JMP     LBB9_55
-
-LBB9_54:
-	XORL DX, DX
-	XORL R15, R15
-
-LBB9_55:
-	CMPL R8, DX
-	JLE  LBB9_63
-	MOVL CX, DI
-	SUBL DX, DI
-	MOVL DX, SI
-	NOTL SI
-	ADDL R8, SI
-	ANDL $7, DI
-	JE   LBB9_60
-	NEGL DI
-	XORL AX, AX
-
-LBB9_58:
-	ADDQ R15, R15
-	LEAQ 0(R15)(R15*4), R15
-	DECL AX
-	CMPL DI, AX
-	JNE  LBB9_58
-	SUBL AX, DX
-
-LBB9_60:
-	CMPL SI, $7
-	JB   LBB9_63
-	MOVL CX, AX
-	SUBL DX, AX
-
-LBB9_62:
-	IMUL3Q $100000000, R15, R15
-	ADDL   $-8, AX
-	JNE    LBB9_62
-
-LBB9_63:
-	TESTL CX, CX
-	JS    LBB9_71
-	MOVL  16(R12), DX
-	CMPL  DX, R8
-	JLE   LBB9_71
-	MOVQ  0(R12), SI
-	MOVB  0(SI)(CX*1), AX
-	LEAL  1(CX), DI
-	CMPL  DI, DX
-	JNE   LBB9_72
-	CMPB  AX, $53
-	JNE   LBB9_72
-	CMPL  28(R12), $0
-	SETNE DX
-	JNE   LBB9_73
-	TESTL CX, CX
-	JLE   LBB9_73
-	MOVB  -1(R8)(SI*1), DX
-	ANDB  $1, DX
-	JMP   LBB9_73
-
-LBB9_71:
-	XORL DX, DX
-
-LBB9_73:
-	MOVBLZX DX, AX
-	ADDQ    AX, R15
-	MOVQ    $9007199254740992, AX
-	CMPQ    R15, AX
-	JNE     LBB9_77
-	CMPL    R14, $1022
-	JLE     LBB9_76
-
-LBB9_75:
-	XORL R15, R15
+	TESTL AX, AX
+	JS LBB9_57
+	MOVL 16(R15), SI
+	CMPL SI, AX
+	JLE LBB9_57
+	MOVQ 0(R15), DX
+	MOVB 0(DX)(AX*1), CX
+	LEAL 1(AX), DI
+	CMPL DI, SI
+	JNE LBB9_58
+	CMPB CX, $53
+	JNE LBB9_58
+	CMPL 28(R15), $0
+	SETNE CX
+	JNE LBB9_59
+	TESTL AX, AX
+	JLE LBB9_59
+	ADDL $-1, AX
+	MOVB 0(DX)(AX*1), CX
+	ANDB $1, CX
+	JMP LBB9_59
+LBB9_57:
+	XORL CX, CX
+LBB9_59:
+	MOVBLZX CX, AX
+	ADDQ AX, R12
+	MOVQ $9007199254740992, AX
+	CMPQ R12, AX
+	JNE LBB9_63
+	CMPL R14, $1022
+	JLE LBB9_62
+LBB9_61:
+	XORL R12, R12
 	MOVQ $9218868437227405312, R14
-	JMP  LBB9_78
-
-LBB9_76:
-	INCL R14
-	MOVQ R13, R15
-
-LBB9_77:
-	MOVQ  R15, AX
-	ANDQ  R13, AX
-	ADDL  $1023, R14
-	ANDL  $2047, R14
-	SHLQ  $52, R14
+	JMP LBB9_64
+LBB9_62:
+	ADDL $1, R14
+	MOVQ R13, R12
+LBB9_63:
+	MOVQ R12, AX
+	ANDQ R13, AX
+	ADDL $1023, R14
+	ANDL $2047, R14
+	SHLQ $52, R14
 	TESTQ AX, AX
-	LONG  $0xf0440f4c // cmoveq       %rax, %r14
-
-LBB9_78:
-	DECQ R13
-	ANDQ R15, R13
-	ORQ  R14, R13
+	LONG $0xf0440f4c  // cmoveq       %rax, %r14
+LBB9_64:
+	ADDQ $-1, R13
+	ANDQ R12, R13
+	ORQ R14, R13
 	MOVQ $-9223372036854775808, AX
-	ORQ  R13, AX
-	CMPL 24(R12), $0
-	LONG $0xc5440f49               // cmoveq       %r13, %rax
+	ORQ R13, AX
+	CMPL 24(R15), $0
+	LONG $0xc5440f49  // cmoveq       %r13, %rax
 	MOVQ AX, 0(BX)
 	XORL AX, AX
 	ADDQ $8, SP
-	BYTE $0x5b                     // popq         %rbx
-	WORD $0x5c41                   // popq         %r12
-	WORD $0x5d41                   // popq         %r13
-	WORD $0x5e41                   // popq         %r14
-	WORD $0x5f41                   // popq         %r15
-	BYTE $0x5d                     // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB9_72:
-	CMPB  AX, $52
-	SETGT DX
-	JMP   LBB9_73
-
+LBB9_58:
+	CMPB CX, $52
+	SETGT CX
+	JMP LBB9_59
 _atof_native:
-	BYTE  $0x55               // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	SUBQ  $48, SP
-	MOVQ  $0, -40(BP)
-	MOVQ  DX, -32(BP)
-	MOVQ  CX, -24(BP)
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	SUBQ $48, SP
+	MOVQ $0, -40(BP)
+	MOVQ DX, -32(BP)
+	MOVQ CX, -24(BP)
 	TESTQ CX, CX
-	JE    LBB10_5
-	MOVB  $0, 0(DX)
-	CMPQ  CX, $1
-	JE    LBB10_5
-	MOVB  $0, 1(DX)
-	CMPQ  -24(BP), $3
-	JB    LBB10_5
-	MOVL  $2, AX
-
+	JE LBB10_5
+	MOVB $0, 0(DX)
+	CMPQ CX, $1
+	JE LBB10_5
+	MOVB $0, 1(DX)
+	CMPQ -24(BP), $3
+	JB LBB10_5
+	MOVL $2, AX
 LBB10_4:
 	MOVQ -32(BP), CX
 	MOVB $0, 0(CX)(AX*1)
-	INCQ AX
+	ADDQ $1, AX
 	CMPQ -24(BP), AX
-	JA   LBB10_4
-
+	JA LBB10_4
 LBB10_5:
-	LONG $0xc057f8c5             // vxorps       %xmm0, %xmm0, %xmm0
-	LONG $0x4511f8c5; BYTE $0xf0 // vmovups      %xmm0, $-16(%rbp)
+	LONG $0xc057f8c5  // vxorps       %xmm0, %xmm0, %xmm0
+	LONG $0x4511f8c5; BYTE $0xf0  // vmovups      %xmm0, $-16(%rbp)
 	CMPB 0(DI), $45
-	JNE  LBB10_6
+	JNE LBB10_8
 	MOVL $1, -8(BP)
 	MOVL $1, AX
 	CMPQ AX, SI
-	JL   LBB10_9
-
-LBB10_41:
+	JL LBB10_9
+LBB10_7:
 	MOVL $0, -12(BP)
-	JMP  LBB10_40
-
-LBB10_6:
+	JMP LBB10_40
+LBB10_8:
 	XORL AX, AX
 	CMPQ AX, SI
-	JGE  LBB10_41
-
+	JGE LBB10_7
 LBB10_9:
 	MOVB $1, R11
 	XORL R9, R9
 	XORL R10, R10
 	XORL R8, R8
-	JMP  LBB10_10
-
-LBB10_13:
-	DECL -12(BP)
-	XORL R10, R10
-
-LBB10_22:
-	INCQ  AX
-	CMPQ  AX, SI
+	JMP LBB10_13
+LBB10_21:
+	MOVL $1, -4(BP)
+LBB10_12:
+	ADDQ $1, AX
+	CMPQ AX, SI
 	SETLT R11
-	CMPQ  SI, AX
-	JE    LBB10_23
-
-LBB10_10:
+	CMPQ SI, AX
+	JE LBB10_23
+LBB10_13:
 	MOVBLZX 0(DI)(AX*1), CX
-	LEAL    -48(CX), DX
-	CMPB    DX, $9
-	JA      LBB10_19
-	TESTL   R10, R10
-	JNE     LBB10_14
-	CMPB    CX, $48
-	JE      LBB10_13
-
-LBB10_14:
-	MOVLQSX R9, R10
-	CMPQ    -24(BP), R10
-	JBE     LBB10_16
-	MOVQ    -32(BP), DX
-	MOVB    CX, 0(DX)(R10*1)
-	MOVL    -16(BP), R9
-	INCL    R9
-	MOVL    R9, -16(BP)
-	MOVL    R9, R10
-	JMP     LBB10_22
-
-LBB10_19:
+	LEAL -48(CX), DX
+	CMPB DX, $9
+	JA LBB10_18
+	CMPB CX, $48
+	JNE LBB10_20
+	TESTL R10, R10
+	JE LBB10_22
+	MOVLQSX R9, R11
+	CMPQ -24(BP), R11
+	JA LBB10_10
+	JMP LBB10_11
+LBB10_18:
 	CMPB CX, $46
-	JNE  LBB10_20
+	JNE LBB10_30
 	MOVL R10, -12(BP)
 	MOVL $1, R8
-	JMP  LBB10_22
-
-LBB10_16:
-	CMPB CX, $48
-	JNE  LBB10_18
-	MOVL R9, R10
-	JMP  LBB10_22
-
-LBB10_18:
-	MOVL $1, -4(BP)
-	MOVL R9, R10
-	JMP  LBB10_22
-
-LBB10_23:
-	MOVL  SI, CX
-	MOVQ  SI, AX
-	TESTL R8, R8
-	JNE   LBB10_26
-
-LBB10_25:
-	MOVL R9, -12(BP)
-
-LBB10_26:
-	TESTB $1, R11
-	JE    LBB10_40
-	MOVB  0(DI)(CX*1), CX
-	ORB   $32, CX
-	CMPB  CX, $101
-	JNE   LBB10_40
-	MOVL  AX, DX
-	MOVB  1(DI)(DX*1), CX
-	CMPB  CX, $45
-	JE    LBB10_32
-	MOVL  $1, R8
-	CMPB  CX, $43
-	JNE   LBB10_30
-	ADDL  $2, AX
-	JMP   LBB10_33
-
+	JMP LBB10_12
 LBB10_20:
-	MOVQ  AX, CX
+	MOVLQSX R10, R11
+	CMPQ -24(BP), R11
+	JBE LBB10_21
+LBB10_10:
+	MOVQ -32(BP), DX
+	MOVB CX, 0(DX)(R11*1)
+	MOVL -16(BP), R9
+	ADDL $1, R9
+	MOVL R9, -16(BP)
+LBB10_11:
+	MOVL R9, R10
+	JMP LBB10_12
+LBB10_22:
+	ADDL $-1, -12(BP)
+	XORL R10, R10
+	JMP LBB10_12
+LBB10_23:
+	MOVL SI, CX
+	MOVQ SI, AX
 	TESTL R8, R8
-	JNE   LBB10_26
-	JMP   LBB10_25
-
-LBB10_32:
+	JNE LBB10_25
+LBB10_24:
+	MOVL R9, -12(BP)
+LBB10_25:
+	TESTB $1, R11
+	JE LBB10_40
+	MOVB 0(DI)(CX*1), CX
+	ORB $32, CX
+	CMPB CX, $101
+	JNE LBB10_40
+	MOVL AX, DX
+	MOVB 1(DI)(DX*1), CX
+	CMPB CX, $45
+	JE LBB10_31
+	MOVL $1, R8
+	CMPB CX, $43
+	JNE LBB10_33
+	ADDL $2, AX
+	JMP LBB10_32
+LBB10_30:
+	MOVQ AX, CX
+	TESTL R8, R8
+	JNE LBB10_25
+	JMP LBB10_24
+LBB10_31:
 	ADDL $2, AX
 	MOVL $-1, R8
-
+LBB10_32:
+	MOVL AX, DX
+	MOVLQSX DX, DX
+	XORL AX, AX
+	CMPQ DX, SI
+	JL LBB10_34
+	JMP LBB10_39
 LBB10_33:
-	MOVL    AX, DX
+	ADDQ $1, DX
 	MOVLQSX DX, DX
-	XORL    R9, R9
-	CMPQ    DX, SI
-	JL      LBB10_35
-	JMP     LBB10_39
-
-LBB10_30:
-	INCQ    DX
-	MOVLQSX DX, DX
-	XORL    R9, R9
-	CMPQ    DX, SI
-	JGE     LBB10_39
-
+	XORL AX, AX
+	CMPQ DX, SI
+	JGE LBB10_39
+LBB10_34:
+	XORL AX, AX
 LBB10_35:
-	XORL R9, R9
-
-LBB10_36:
-	CMPL    R9, $9999
-	JG      LBB10_39
-	MOVBLZX 0(DI)(DX*1), CX
-	LEAL    -48(CX), AX
-	CMPB    AX, $9
-	JA      LBB10_39
-	LEAL    0(R9)(R9*4), AX
-	LEAL    -48(CX)(AX*2), R9
-	INCQ    DX
-	CMPQ    SI, DX
-	JNE     LBB10_36
-
+	MOVBLSX 0(DI)(DX*1), CX
+	CMPL CX, $48
+	JL LBB10_39
+	CMPL AX, $9999
+	JG LBB10_39
+	CMPB CX, $57
+	JG LBB10_39
+	LEAL 0(AX)(AX*4), AX
+	LEAL 0(CX)(AX*2), AX
+	ADDL $-48, AX
+	ADDQ $1, DX
+	CMPQ SI, DX
+	JNE LBB10_35
 LBB10_39:
-	IMULL R8, R9
-	ADDL  R9, -12(BP)
-
+	IMULL R8, AX
+	ADDL AX, -12(BP)
 LBB10_40:
 	LEAQ -32(BP), DI
 	LEAQ -40(BP), SI
-	LONG $0xfffabde8; BYTE $0xff // callq        _decimal_to_f64
-	LONG $0x4510fbc5; BYTE $0xd8 // vmovsd       $-40(%rbp), %xmm0
+	LONG $0xfffb60e8; BYTE $0xff  // callq        _decimal_to_f64
+	LONG $0x4510fbc5; BYTE $0xd8  // vmovsd       $-40(%rbp), %xmm0
 	ADDQ $48, SP
-	BYTE $0x5d                   // popq         %rbp
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 _value:
-	BYTE    $0x55                                 // pushq        %rbp
-	WORD    $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD    $0x5741                               // pushq        %r15
-	WORD    $0x5641                               // pushq        %r14
-	WORD    $0x5441                               // pushq        %r12
-	BYTE    $0x53                                 // pushq        %rbx
-	SUBQ    $32, SP
-	MOVL    R8, R12
-	MOVQ    CX, R14
-	MOVQ    SI, BX
-	MOVQ    DI, R15
-	MOVQ    DX, -40(BP)
-	MOVQ    DI, -64(BP)
-	MOVQ    SI, -56(BP)
-	LEAQ    -40(BP), DX
-	LONG    $0x00049ae8; BYTE $0x00               // callq        _advance_ns
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $32, SP
+	MOVL R8, R12
+	MOVQ CX, R14
+	MOVQ SI, BX
+	MOVQ DI, R15
+	MOVQ DX, -40(BP)
+	MOVQ DI, -64(BP)
+	MOVQ SI, -56(BP)
+	LEAQ -40(BP), DX
+	LONG $0x0004b6e8; BYTE $0x00  // callq        _advance_ns
 	MOVBLSX AX, AX
-	CMPL    AX, $125
-	JA      LBB11_4
-	LONG    $0x530d8d48; WORD $0x0002; BYTE $0x00 // leaq         $595(%rip), %rcx  /* LJTI11_0(%rip) */
+	CMPL AX, $125
+	JA LBB11_4
+	LONG $0x6f0d8d48; WORD $0x0002; BYTE $0x00  // leaq         $623(%rip), %rcx  /* LJTI11_0(%rip) */
 	MOVLQSX 0(CX)(AX*4), AX
-	ADDQ    CX, AX
-	JMP     AX
-
+	ADDQ CX, AX
+	JMP AX
 LBB11_2:
-	DECQ -40(BP)
+	ADDQ $-1, -40(BP)
 	LEAQ -64(BP), DI
 	LEAQ -40(BP), SI
 	MOVQ R14, DX
-	LONG $0x000a90e8; BYTE $0x00 // callq        _vnumber
+	LONG $0x000a7ee8; BYTE $0x00  // callq        _vnumber
 	MOVQ -40(BP), BX
-	JMP  LBB11_18
-
+	JMP LBB11_18
 LBB11_3:
 	MOVQ $1, 0(R14)
 	MOVQ -40(BP), BX
-	JMP  LBB11_18
-
+	JMP LBB11_18
 LBB11_4:
 	MOVQ $-2, 0(R14)
 	MOVQ -40(BP), BX
-	DECQ BX
-	JMP  LBB11_18
-
+	ADDQ $-1, BX
+	JMP LBB11_18
 LBB11_5:
-	MOVQ  $-1, -48(BP)
-	MOVQ  -40(BP), R15
-	LEAQ  -64(BP), DI
-	LEAQ  -48(BP), DX
-	MOVQ  R15, SI
-	LONG  $0x0006cce8; BYTE $0x00 // callq        _advance_string
+	MOVQ $-1, -48(BP)
+	MOVQ -40(BP), R15
+	LEAQ -64(BP), DI
+	LEAQ -48(BP), DX
+	MOVQ R15, SI
+	LONG $0x0006ade8; BYTE $0x00  // callq        _advance_string
 	TESTQ AX, AX
-	JS    LBB11_25
-	MOVQ  AX, -40(BP)
-	MOVQ  R15, 16(R14)
-	MOVQ  -48(BP), CX
-	CMPQ  CX, AX
-	MOVQ  $-1, DX
-	LONG  $0xd14c0f48             // cmovlq       %rcx, %rdx
-	MOVQ  DX, 24(R14)
-	MOVL  $7, CX
-	MOVQ  CX, 0(R14)
-	MOVQ  AX, BX
-	JMP   LBB11_18
-
+	JS LBB11_25
+	MOVQ AX, -40(BP)
+	MOVQ R15, 16(R14)
+	MOVQ -48(BP), CX
+	CMPQ CX, AX
+	MOVQ $-1, DX
+	LONG $0xd14c0f48  // cmovlq       %rcx, %rdx
+	MOVQ DX, 24(R14)
+	MOVL $7, CX
+	MOVQ CX, 0(R14)
+	MOVQ AX, BX
+	JMP LBB11_18
 LBB11_7:
-	XORL  AX, AX
+	XORL AX, AX
 	TESTL R12, R12
-	MOVL  $11, CX
-	JMP   LBB11_17
-
+	MOVQ $-2, CX
+	MOVL $11, DX
+	JMP LBB11_17
 LBB11_8:
-	XORL  AX, AX
+	XORL AX, AX
 	TESTL R12, R12
-	MOVL  $10, CX
-	JMP   LBB11_17
-
+	MOVQ $-2, CX
+	MOVL $10, DX
+	JMP LBB11_17
 LBB11_9:
 	MOVQ $5, 0(R14)
 	MOVQ -40(BP), BX
-	JMP  LBB11_18
-
+	JMP LBB11_18
 LBB11_10:
 	MOVQ -40(BP), AX
 	LEAQ -3(BX), CX
 	CMPQ AX, CX
-	JA   LBB11_11
+	JA LBB11_11
 	MOVL -1(R15)(AX*1), DX
 	CMPL DX, $1819047278
-	JNE  LBB11_26
+	JNE LBB11_26
 	ADDQ $3, AX
 	MOVQ AX, -40(BP)
 	MOVL $2, CX
-	JMP  LBB11_30
-
+	JMP LBB11_30
 LBB11_12:
 	MOVQ -40(BP), AX
 	LEAQ -3(BX), CX
 	CMPQ AX, CX
-	JA   LBB11_11
+	JA LBB11_11
 	MOVL -1(R15)(AX*1), DX
 	CMPL DX, $1702195828
-	JNE  LBB11_31
+	JNE LBB11_31
 	ADDQ $3, AX
 	MOVQ AX, -40(BP)
 	MOVL $3, CX
-	JMP  LBB11_30
-
+	JMP LBB11_30
 LBB11_15:
-	XORL  AX, AX
+	XORL AX, AX
 	TESTL R12, R12
-	MOVL  $13, CX
-	JMP   LBB11_17
-
+	MOVQ $-2, CX
+	MOVL $13, DX
+	JMP LBB11_17
 LBB11_16:
-	XORL  AX, AX
+	XORL AX, AX
 	TESTL R12, R12
-	MOVL  $12, CX
-
+	MOVQ $-2, CX
+	MOVL $12, DX
 LBB11_17:
-	MOVQ  $-2, DX
-	LONG  $0xd1450f48 // cmovneq      %rcx, %rdx
+	LONG $0xd1440f48  // cmoveq       %rcx, %rdx
 	SETEQ AX
-	MOVQ  DX, 0(R14)
-	MOVQ  -40(BP), BX
-	SUBQ  AX, BX
-	JMP   LBB11_18
-
+	MOVQ DX, 0(R14)
+	MOVQ -40(BP), BX
+	SUBQ AX, BX
+	JMP LBB11_18
 LBB11_19:
 	MOVQ -40(BP), AX
 	LEAQ -4(BX), CX
 	CMPQ AX, CX
-	JBE  LBB11_20
-
+	JBE LBB11_20
 LBB11_11:
 	MOVQ BX, -40(BP)
 	MOVQ $-1, CX
 	MOVQ CX, 0(R14)
-	JMP  LBB11_18
-
+	JMP LBB11_18
 LBB11_22:
 	MOVQ $6, 0(R14)
 	MOVQ -40(BP), BX
-	JMP  LBB11_18
-
+	JMP LBB11_18
 LBB11_20:
 	MOVL 0(R15)(AX*1), DX
 	CMPL DX, $1702063201
-	JNE  LBB11_35
+	JNE LBB11_35
 	ADDQ $4, AX
 	MOVQ AX, -40(BP)
 	MOVL $4, CX
-	JMP  LBB11_30
-
+	JMP LBB11_30
 LBB11_25:
 	MOVQ BX, -40(BP)
 	MOVQ AX, 0(R14)
-	JMP  LBB11_18
-
+	JMP LBB11_18
 LBB11_26:
-	DECQ AX
+	ADDQ $-1, AX
 	MOVQ AX, -40(BP)
 	MOVQ $-2, CX
 	CMPB DX, $110
-	JNE  LBB11_30
+	JNE LBB11_30
 	MOVL $1819047278, DX
-
 LBB11_28:
-	SHRL    $8, DX
+	SHRL $8, DX
 	MOVBLSX 1(R15)(AX*1), SI
-	INCQ    AX
+	ADDQ $1, AX
 	MOVBLZX DX, DI
-	CMPL    DI, SI
-	JE      LBB11_28
-	JMP     LBB11_29
-
+	CMPL DI, SI
+	JE LBB11_28
+	JMP LBB11_29
 LBB11_31:
-	DECQ AX
+	ADDQ $-1, AX
 	MOVQ AX, -40(BP)
 	MOVQ $-2, CX
 	CMPB DX, $116
-	JNE  LBB11_30
+	JNE LBB11_30
 	MOVL $1702195828, DX
-
 LBB11_33:
-	SHRL    $8, DX
+	SHRL $8, DX
 	MOVBLSX 1(R15)(AX*1), SI
-	INCQ    AX
+	ADDQ $1, AX
 	MOVBLZX DX, DI
-	CMPL    DI, SI
-	JE      LBB11_33
-	JMP     LBB11_29
-
+	CMPL DI, SI
+	JE LBB11_33
+	JMP LBB11_29
 LBB11_35:
 	MOVQ $-2, CX
 	CMPB DX, $97
-	JNE  LBB11_30
+	JNE LBB11_30
 	MOVL $1702063201, DX
-
 LBB11_37:
-	SHRL    $8, DX
+	SHRL $8, DX
 	MOVBLSX 1(R15)(AX*1), SI
-	INCQ    AX
+	ADDQ $1, AX
 	MOVBLZX DX, DI
-	CMPL    DI, SI
-	JE      LBB11_37
-
+	CMPL DI, SI
+	JE LBB11_37
 LBB11_29:
 	MOVQ AX, -40(BP)
-
 LBB11_30:
 	MOVQ AX, BX
 	MOVQ CX, 0(R14)
-
 LBB11_18:
 	MOVQ BX, AX
 	ADDQ $32, SP
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-// .set L11_0_set_3, LBB11_3-LJTI11_0
-// .set L11_0_set_4, LBB11_4-LJTI11_0
-// .set L11_0_set_5, LBB11_5-LJTI11_0
-// .set L11_0_set_7, LBB11_7-LJTI11_0
-// .set L11_0_set_2, LBB11_2-LJTI11_0
-// .set L11_0_set_8, LBB11_8-LJTI11_0
-// .set L11_0_set_9, LBB11_9-LJTI11_0
-// .set L11_0_set_16, LBB11_16-LJTI11_0
-// .set L11_0_set_19, LBB11_19-LJTI11_0
-// .set L11_0_set_10, LBB11_10-LJTI11_0
-// .set L11_0_set_12, LBB11_12-LJTI11_0
-// .set L11_0_set_22, LBB11_22-LJTI11_0
-// .set L11_0_set_15, LBB11_15-LJTI11_0
+	// .set L11_0_set_3, LBB11_3-LJTI11_0
+	// .set L11_0_set_4, LBB11_4-LJTI11_0
+	// .set L11_0_set_5, LBB11_5-LJTI11_0
+	// .set L11_0_set_7, LBB11_7-LJTI11_0
+	// .set L11_0_set_2, LBB11_2-LJTI11_0
+	// .set L11_0_set_8, LBB11_8-LJTI11_0
+	// .set L11_0_set_9, LBB11_9-LJTI11_0
+	// .set L11_0_set_16, LBB11_16-LJTI11_0
+	// .set L11_0_set_19, LBB11_19-LJTI11_0
+	// .set L11_0_set_10, LBB11_10-LJTI11_0
+	// .set L11_0_set_12, LBB11_12-LJTI11_0
+	// .set L11_0_set_22, LBB11_22-LJTI11_0
+	// .set L11_0_set_15, LBB11_15-LJTI11_0
 LJTI11_0:
-	LONG $0xfffffdd3 // .long L11_0_set_3
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffdf6 // .long L11_0_set_5
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffe49 // .long L11_0_set_7
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffdb6 // .long L11_0_set_2
-	LONG $0xfffffe58 // .long L11_0_set_8
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffe67 // .long L11_0_set_9
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffee7 // .long L11_0_set_16
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xffffff0e // .long L11_0_set_19
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffe77 // .long L11_0_set_10
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffeab // .long L11_0_set_12
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xffffff2e // .long L11_0_set_22
-	LONG $0xfffffde3 // .long L11_0_set_4
-	LONG $0xfffffedb // .long L11_0_set_15
-
+	LONG $0xfffffdb8  // .long L11_0_set_3
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffddc  // .long L11_0_set_5
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffe2f  // .long L11_0_set_7
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffd9a  // .long L11_0_set_2
+	LONG $0xfffffe45  // .long L11_0_set_8
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffe5b  // .long L11_0_set_9
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffee2  // .long L11_0_set_16
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xffffff09  // .long L11_0_set_19
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffe6b  // .long L11_0_set_10
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffe9f  // .long L11_0_set_12
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xffffff29  // .long L11_0_set_22
+	LONG $0xfffffdc8  // .long L11_0_set_4
+	LONG $0xfffffecf  // .long L11_0_set_15
 LCPI12_0:
-	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
-
+	QUAD $0x2020202020202020; QUAD $0x2020202020202020  // .space 16, '                '
 LCPI12_1:
-	QUAD $0x0909090909090909; QUAD $0x0909090909090909 // .space 16, '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
-
+	QUAD $0x0909090909090909; QUAD $0x0909090909090909  // .space 16, '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
 LCPI12_2:
-	QUAD $0x0a0a0a0a0a0a0a0a; QUAD $0x0a0a0a0a0a0a0a0a // .space 16, '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-
+	QUAD $0x0a0a0a0a0a0a0a0a; QUAD $0x0a0a0a0a0a0a0a0a  // .space 16, '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 LCPI12_3:
-	QUAD $0x0d0d0d0d0d0d0d0d; QUAD $0x0d0d0d0d0d0d0d0d // .space 16, '\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r'
-
+	QUAD $0x0d0d0d0d0d0d0d0d; QUAD $0x0d0d0d0d0d0d0d0d  // .space 16, '\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r'
 _advance_ns:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	BYTE $0x53               // pushq        %rbx
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	MOVQ 0(DX), R8
 	CMPQ R8, SI
-	JAE  LBB12_6
+	JAE LBB12_6
 	MOVB 0(DI)(R8*1), AX
 	CMPB AX, $13
-	JE   LBB12_6
+	JE LBB12_6
 	CMPB AX, $32
-	JE   LBB12_6
+	JE LBB12_6
 	ADDB $-9, AX
 	CMPB AX, $1
-	JBE  LBB12_6
-	MOVQ R8, R10
-	JMP  LBB12_5
-
-LBB12_6:
-	LEAQ 1(R8), R10
-	CMPQ R10, SI
-	JAE  LBB12_10
-	MOVB 0(DI)(R10*1), CX
-	CMPB CX, $13
-	JE   LBB12_10
-	CMPB CX, $32
-	JE   LBB12_10
-	ADDB $-9, CX
-	CMPB CX, $1
-	JA   LBB12_5
-
-LBB12_10:
-	LEAQ 2(R8), R10
-	CMPQ R10, SI
-	JAE  LBB12_14
-	MOVB 0(DI)(R10*1), CX
-	CMPB CX, $13
-	JE   LBB12_14
-	CMPB CX, $32
-	JE   LBB12_14
-	ADDB $-9, CX
-	CMPB CX, $1
-	JA   LBB12_5
-
-LBB12_14:
-	LEAQ 3(R8), R10
-	CMPQ R10, SI
-	JAE  LBB12_18
-	MOVB 0(DI)(R10*1), CX
-	CMPB CX, $13
-	JE   LBB12_18
-	CMPB CX, $32
-	JE   LBB12_18
-	ADDB $-9, CX
-	CMPB CX, $1
-	JA   LBB12_5
-
-LBB12_18:
-	LEAQ  4(R8), R9
-	CMPQ  R9, SI
-	JAE   LBB12_19
-	LEAQ  0(DI)(R9*1), R10
-	MOVQ  SI, BX
-	SUBQ  R9, BX
-	JE    LBB12_27
-	MOVL  R10, AX
-	ANDL  $15, AX
-	TESTQ AX, AX
-	JE    LBB12_27
-	LEAQ  0(DI)(R8*1), R10
-	MOVQ  SI, BX
-	SUBQ  R8, BX
-	LEAQ  -5(BX), R8
-	XORL  AX, AX
-	MOVQ  $4294977024, R9
-
-LBB12_23:
-	MOVBLSX 4(R10)(AX*1), CX
-	CMPL    CX, $32
-	JA      LBB12_25
-	BTQ     CX, R9
-	JAE     LBB12_25
-	LEAQ    1(AX), R11
-	CMPQ    R8, AX
-	JE      LBB12_26
-	LEAQ    5(R10)(AX*1), CX
-	ANDL    $15, CX
-	MOVQ    R11, AX
-	TESTQ   CX, CX
-	JNE     LBB12_23
-
-LBB12_26:
-	LEAQ 4(R11)(R10*1), R10
-	SUBQ R11, BX
-	ADDQ $-4, BX
-
-LBB12_27:
-	CMPQ BX, $16
-	JB   LBB12_33
-	LEAQ -16(BX), R8
+	JBE LBB12_6
 	MOVQ R8, AX
-	ANDQ $-16, AX
-	LEAQ 16(AX)(R10*1), R9
-	ANDL $15, R8
-	QUAD $0xfffffe92056ffac5 // vmovdqu      $-366(%rip), %xmm0  /* LCPI12_0(%rip) */
-	QUAD $0xfffffe9a0d6ffac5 // vmovdqu      $-358(%rip), %xmm1  /* LCPI12_1(%rip) */
-	QUAD $0xfffffea2156ffac5 // vmovdqu      $-350(%rip), %xmm2  /* LCPI12_2(%rip) */
-	QUAD $0xfffffeaa1d6ffac5 // vmovdqu      $-342(%rip), %xmm3  /* LCPI12_3(%rip) */
-
+	JMP LBB12_5
+LBB12_6:
+	LEAQ 1(R8), AX
+	CMPQ AX, SI
+	JAE LBB12_10
+	MOVB 0(DI)(AX*1), CX
+	CMPB CX, $13
+	JE LBB12_10
+	CMPB CX, $32
+	JE LBB12_10
+	ADDB $-9, CX
+	CMPB CX, $1
+	JA LBB12_5
+LBB12_10:
+	LEAQ 2(R8), AX
+	CMPQ AX, SI
+	JAE LBB12_14
+	MOVB 0(DI)(AX*1), CX
+	CMPB CX, $13
+	JE LBB12_14
+	CMPB CX, $32
+	JE LBB12_14
+	ADDB $-9, CX
+	CMPB CX, $1
+	JA LBB12_5
+LBB12_14:
+	LEAQ 3(R8), AX
+	CMPQ AX, SI
+	JAE LBB12_18
+	MOVB 0(DI)(AX*1), CX
+	CMPB CX, $13
+	JE LBB12_18
+	CMPB CX, $32
+	JE LBB12_18
+	ADDB $-9, CX
+	CMPB CX, $1
+	JA LBB12_5
+LBB12_18:
+	ADDQ $4, R8
+	CMPQ R8, SI
+	JAE LBB12_19
+	LEAQ 0(DI)(R8*1), R9
+	MOVQ SI, R11
+	SUBQ R8, R11
+	JE LBB12_27
+	MOVL R9, AX
+	ANDL $15, AX
+	TESTQ AX, AX
+	JE LBB12_27
+	MOVL $5, R10
+	SUBQ SI, R10
+	MOVQ $4294977024, R9
+LBB12_23:
+	MOVBLSX 0(DI)(R8*1), CX
+	CMPL CX, $32
+	JA LBB12_42
+	BTQ CX, R9
+	JAE LBB12_42
+	LEAQ 0(R10)(R8*1), AX
+	LEAQ 1(R8), CX
+	CMPQ AX, $4
+	JE LBB12_26
+	LEAL 0(DI)(R8*1), AX
+	ADDL $1, AX
+	ANDL $15, AX
+	MOVQ CX, R8
+	TESTQ AX, AX
+	JNE LBB12_23
+LBB12_26:
+	LEAQ 0(DI)(CX*1), R9
+	MOVQ SI, R11
+	SUBQ CX, R11
+LBB12_27:
+	CMPQ R11, $16
+	JB LBB12_33
+	MOVQ DI, CX
+	SUBQ R9, CX
+	QUAD $0xfffffea7056ffac5  // vmovdqu      $-345(%rip), %xmm0  /* LCPI12_0(%rip) */
+	QUAD $0xfffffeaf0d6ffac5  // vmovdqu      $-337(%rip), %xmm1  /* LCPI12_1(%rip) */
+	QUAD $0xfffffeb7156ffac5  // vmovdqu      $-329(%rip), %xmm2  /* LCPI12_2(%rip) */
+	QUAD $0xfffffebf1d6ffac5  // vmovdqu      $-321(%rip), %xmm3  /* LCPI12_3(%rip) */
 LBB12_29:
-	LONG $0x6f79c1c4; BYTE $0x22 // vmovdqa      (%r10), %xmm4
-	LONG $0xe874d9c5             // vpcmpeqb     %xmm0, %xmm4, %xmm5
-	LONG $0xf174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm6
-	LONG $0xeeebd1c5             // vpor         %xmm6, %xmm5, %xmm5
-	LONG $0xf274d9c5             // vpcmpeqb     %xmm2, %xmm4, %xmm6
-	LONG $0xe374d9c5             // vpcmpeqb     %xmm3, %xmm4, %xmm4
-	LONG $0xe6ebd9c5             // vpor         %xmm6, %xmm4, %xmm4
-	LONG $0xe5ebd9c5             // vpor         %xmm5, %xmm4, %xmm4
-	LONG $0xc4d7f9c5             // vpmovmskb    %xmm4, %eax
+	LONG $0x6f79c1c4; BYTE $0x21  // vmovdqa      (%r9), %xmm4
+	LONG $0xe874d9c5  // vpcmpeqb     %xmm0, %xmm4, %xmm5
+	LONG $0xf174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm6
+	LONG $0xeeebd1c5  // vpor         %xmm6, %xmm5, %xmm5
+	LONG $0xf274d9c5  // vpcmpeqb     %xmm2, %xmm4, %xmm6
+	LONG $0xe374d9c5  // vpcmpeqb     %xmm3, %xmm4, %xmm4
+	LONG $0xe6ebd9c5  // vpor         %xmm6, %xmm4, %xmm4
+	LONG $0xe5ebd9c5  // vpor         %xmm5, %xmm4, %xmm4
+	LONG $0xc4d7f9c5  // vpmovmskb    %xmm4, %eax
 	CMPW AX, $-1
-	JNE  LBB12_30
-	ADDQ $16, R10
-	ADDQ $-16, BX
-	CMPQ BX, $15
-	JA   LBB12_29
-	MOVQ R8, BX
-	MOVQ R9, R10
-
+	JNE LBB12_30
+	ADDQ $16, R9
+	ADDQ $-16, R11
+	ADDQ $-16, CX
+	CMPQ R11, $15
+	JA LBB12_29
 LBB12_33:
-	TESTQ BX, BX
-	JE    LBB12_42
-	LEAQ  0(R10)(BX*1), R8
-	INCQ  R10
-	MOVQ  $4294977024, R9
-
+	TESTQ R11, R11
+	JE LBB12_40
+	LEAQ 0(R9)(R11*1), R8
+	XORL CX, CX
+	MOVQ $4294977024, R10
 LBB12_35:
-	MOVBLSX -1(R10), AX
-	CMPL    AX, $32
-	JA      LBB12_37
-	BTQ     AX, R9
-	JAE     LBB12_37
-	DECQ    BX
-	INCQ    R10
-	TESTQ   BX, BX
-	JNE     LBB12_35
-	MOVQ    R8, R10
-
-LBB12_42:
-	SUBQ DI, R10
-	CMPQ R10, SI
-	JB   LBB12_5
-	JMP  LBB12_44
-
+	MOVBLSX 0(R9)(CX*1), AX
+	CMPL AX, $32
+	JA LBB12_37
+	BTQ AX, R10
+	JAE LBB12_37
+	ADDQ $1, CX
+	CMPQ R11, CX
+	JNE LBB12_35
+	MOVQ R8, R9
+LBB12_40:
+	SUBQ DI, R9
+LBB12_41:
+	MOVQ R9, R8
+	JMP LBB12_42
 LBB12_19:
-	MOVQ R9, 0(DX)
-	JMP  LBB12_44
-
+	MOVQ R8, 0(DX)
+	JMP LBB12_43
 LBB12_30:
 	MOVWLZX AX, AX
-	SUBQ    DI, R10
-	NOTL    AX
-	BSFL    AX, AX
-	ADDQ    AX, R10
-	CMPQ    R10, SI
-	JB      LBB12_5
-	JMP     LBB12_44
-
-LBB12_25:
-	ADDQ AX, R10
-	MOVQ DI, AX
-	NOTQ AX
-	LEAQ 5(AX)(R10*1), R10
-	CMPQ R10, SI
-	JAE  LBB12_44
-
+	NOTL AX
+	BSFL AX, R8
+	SUBQ CX, R8
+LBB12_42:
+	MOVQ R8, AX
+	CMPQ R8, SI
+	JAE LBB12_43
 LBB12_5:
-	LEAQ    1(R10), AX
-	MOVQ    AX, 0(DX)
-	MOVB    0(DI)(R10*1), AX
+	LEAQ 1(AX), CX
+	MOVQ CX, 0(DX)
+	MOVB 0(DI)(AX*1), AX
 	MOVBLSX AX, AX
-	BYTE    $0x5b            // popq         %rbx
-	BYTE    $0x5d            // popq         %rbp
+	BYTE $0x5d  // popq         %rbp
 	RET
-
+LBB12_43:
+	XORL AX, AX
+	MOVBLSX AX, AX
+	BYTE $0x5d  // popq         %rbp
+	RET
 LBB12_37:
-	MOVQ DI, AX
-	NOTQ AX
-	ADDQ AX, R10
-	CMPQ R10, SI
-	JB   LBB12_5
-
-LBB12_44:
-	XORL    AX, AX
-	MOVBLSX AX, AX
-	BYTE    $0x5b  // popq         %rbx
-	BYTE    $0x5d  // popq         %rbp
-	RET
-
+	SUBQ DI, R9
+	ADDQ CX, R9
+	JMP LBB12_41
 _vstring:
-	BYTE  $0x55                   // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	WORD  $0x5741                 // pushq        %r15
-	WORD  $0x5641                 // pushq        %r14
-	WORD  $0x5441                 // pushq        %r12
-	BYTE  $0x53                   // pushq        %rbx
-	SUBQ  $16, SP
-	MOVQ  DX, R14
-	MOVQ  SI, BX
-	MOVQ  DI, R15
-	MOVQ  $-1, -40(BP)
-	MOVQ  0(SI), R12
-	LEAQ  -40(BP), DX
-	MOVQ  R12, SI
-	LONG  $0x000060e8; BYTE $0x00 // callq        _advance_string
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $16, SP
+	MOVQ DX, R14
+	MOVQ SI, BX
+	MOVQ DI, R15
+	MOVQ $-1, -40(BP)
+	MOVQ 0(SI), R12
+	LEAQ -40(BP), DX
+	MOVQ R12, SI
+	LONG $0x000060e8; BYTE $0x00  // callq        _advance_string
 	TESTQ AX, AX
-	JS    LBB13_1
-	MOVQ  AX, 0(BX)
-	MOVQ  R12, 16(R14)
-	MOVQ  -40(BP), CX
-	CMPQ  CX, AX
-	MOVQ  $-1, AX
-	LONG  $0xc14c0f48             // cmovlq       %rcx, %rax
-	MOVQ  AX, 24(R14)
-	MOVL  $7, AX
-	JMP   LBB13_3
-
+	JS LBB13_1
+	MOVQ AX, 0(BX)
+	MOVQ R12, 16(R14)
+	MOVQ -40(BP), CX
+	CMPQ CX, AX
+	MOVQ $-1, AX
+	LONG $0xc14c0f48  // cmovlq       %rcx, %rax
+	MOVQ AX, 24(R14)
+	MOVL $7, AX
+	JMP LBB13_3
 LBB13_1:
 	MOVQ 8(R15), CX
 	MOVQ CX, 0(BX)
-
 LBB13_3:
 	MOVQ AX, 0(R14)
 	ADDQ $16, SP
-	BYTE $0x5b      // popq         %rbx
-	WORD $0x5c41    // popq         %r12
-	WORD $0x5e41    // popq         %r14
-	WORD $0x5f41    // popq         %r15
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LCPI14_0:
-	QUAD $0x2222222222222222; QUAD $0x2222222222222222 // .space 16, '""""""""""""""""'
-
+	QUAD $0x2222222222222222; QUAD $0x2222222222222222  // .space 16, '""""""""""""""""'
 LCPI14_1:
-	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
-
+	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c  // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
 _advance_string:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	WORD $0x5741             // pushq        %r15
-	WORD $0x5641             // pushq        %r14
-	WORD $0x5541             // pushq        %r13
-	WORD $0x5441             // pushq        %r12
-	BYTE $0x53               // pushq        %rbx
-	SUBQ $16, SP
-	MOVQ 8(DI), R12
-	SUBQ SI, R12
-	JE   LBB14_17
-	MOVQ 0(DI), AX
-	MOVQ AX, -48(BP)
-	ADDQ AX, SI
-	MOVQ DX, -56(BP)
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	BYTE $0x50  // pushq        %rax
+	MOVQ 8(DI), R15
+	SUBQ SI, R15
+	JE LBB14_18
+	MOVQ 0(DI), R9
+	MOVQ DX, -48(BP)
 	MOVQ $-1, 0(DX)
-	CMPQ R12, $64
-	JB   LBB14_18
-	MOVL R12, R9
-	ANDL $63, R9
-	MOVQ $-1, R14
-	XORL R15, R15
-	QUAD $0xffffff8a056ffac5 // vmovdqu      $-118(%rip), %xmm0  /* LCPI14_0(%rip) */
-	QUAD $0xffffff920d6ffac5 // vmovdqu      $-110(%rip), %xmm1  /* LCPI14_1(%rip) */
-	MOVQ -48(BP), DX
-
+	CMPQ R15, $64
+	JB LBB14_19
+	MOVQ SI, R12
+	NOTQ R12
+	MOVQ $-1, DX
+	XORL R14, R14
+	QUAD $0xffffff95056ffac5  // vmovdqu      $-107(%rip), %xmm0  /* LCPI14_0(%rip) */
+	QUAD $0xffffff9d0d6ffac5  // vmovdqu      $-99(%rip), %xmm1  /* LCPI14_1(%rip) */
 LBB14_3:
-	LONG $0x166ffac5             // vmovdqu      (%rsi), %xmm2
-	LONG $0x5e6ffac5; BYTE $0x10 // vmovdqu      $16(%rsi), %xmm3
-	LONG $0x666ffac5; BYTE $0x20 // vmovdqu      $32(%rsi), %xmm4
-	LONG $0x6e6ffac5; BYTE $0x30 // vmovdqu      $48(%rsi), %xmm5
-	LONG $0xf074e9c5             // vpcmpeqb     %xmm0, %xmm2, %xmm6
-	LONG $0xded7f9c5             // vpmovmskb    %xmm6, %ebx
-	LONG $0xf074e1c5             // vpcmpeqb     %xmm0, %xmm3, %xmm6
-	LONG $0xced7f9c5             // vpmovmskb    %xmm6, %ecx
-	LONG $0xf074d9c5             // vpcmpeqb     %xmm0, %xmm4, %xmm6
-	LONG $0xc6d7f9c5             // vpmovmskb    %xmm6, %eax
-	LONG $0xf074d1c5             // vpcmpeqb     %xmm0, %xmm5, %xmm6
-	LONG $0xeed779c5             // vpmovmskb    %xmm6, %r13d
-	LONG $0xd174e9c5             // vpcmpeqb     %xmm1, %xmm2, %xmm2
-	LONG $0xfad7f9c5             // vpmovmskb    %xmm2, %edi
-	LONG $0xd174e1c5             // vpcmpeqb     %xmm1, %xmm3, %xmm2
-	LONG $0xd2d779c5             // vpmovmskb    %xmm2, %r10d
-	LONG $0xd174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm2
-	LONG $0xdad779c5             // vpmovmskb    %xmm2, %r11d
-	LONG $0xd174d1c5             // vpcmpeqb     %xmm1, %xmm5, %xmm2
-	LONG $0xc2d779c5             // vpmovmskb    %xmm2, %r8d
+	LONG $0x6f7ac1c4; WORD $0x3114  // vmovdqu      (%r9,%rsi), %xmm2
+	LONG $0x6f7ac1c4; WORD $0x315c; BYTE $0x10  // vmovdqu      $16(%r9,%rsi), %xmm3
+	LONG $0x6f7ac1c4; WORD $0x3164; BYTE $0x20  // vmovdqu      $32(%r9,%rsi), %xmm4
+	LONG $0x6f7ac1c4; WORD $0x316c; BYTE $0x30  // vmovdqu      $48(%r9,%rsi), %xmm5
+	LONG $0xf074e9c5  // vpcmpeqb     %xmm0, %xmm2, %xmm6
+	LONG $0xded7f9c5  // vpmovmskb    %xmm6, %ebx
+	LONG $0xf074e1c5  // vpcmpeqb     %xmm0, %xmm3, %xmm6
+	LONG $0xfed7f9c5  // vpmovmskb    %xmm6, %edi
+	LONG $0xf074d9c5  // vpcmpeqb     %xmm0, %xmm4, %xmm6
+	LONG $0xced7f9c5  // vpmovmskb    %xmm6, %ecx
+	LONG $0xf074d1c5  // vpcmpeqb     %xmm0, %xmm5, %xmm6
+	LONG $0xeed779c5  // vpmovmskb    %xmm6, %r13d
+	LONG $0xd174e9c5  // vpcmpeqb     %xmm1, %xmm2, %xmm2
+	LONG $0xc2d7f9c5  // vpmovmskb    %xmm2, %eax
+	LONG $0xd174e1c5  // vpcmpeqb     %xmm1, %xmm3, %xmm2
+	LONG $0xd2d779c5  // vpmovmskb    %xmm2, %r10d
+	LONG $0xd174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm2
+	LONG $0xdad779c5  // vpmovmskb    %xmm2, %r11d
+	LONG $0xd174d1c5  // vpcmpeqb     %xmm1, %xmm5, %xmm2
+	LONG $0xc2d779c5  // vpmovmskb    %xmm2, %r8d
 	SHLQ $48, R13
-	SHLQ $32, AX
-	SHLQ $16, CX
-	ORQ  CX, BX
-	ORQ  AX, BX
+	SHLQ $32, CX
+	SHLQ $16, DI
+	ORQ DI, BX
+	ORQ CX, BX
 	SHLQ $48, R8
 	SHLQ $32, R11
 	SHLQ $16, R10
-	ORQ  R10, DI
-	ORQ  R11, DI
-	ORQ  R8, DI
-	JE   LBB14_5
-	CMPQ R14, $-1
-	JE   LBB14_8
-
+	ORQ R10, AX
+	ORQ R11, AX
+	ORQ R8, AX
+	JE LBB14_5
+	CMPQ DX, $-1
+	JE LBB14_8
 LBB14_5:
-	ORQ  R13, BX
-	MOVQ DI, AX
-	ORQ  R15, AX
-	JNE  LBB14_9
-
+	ORQ R13, BX
+	MOVQ AX, CX
+	ORQ R14, CX
+	JNE LBB14_9
 LBB14_6:
 	TESTQ BX, BX
-	JNE   LBB14_15
-
+	JNE LBB14_10
 LBB14_7:
-	ADDQ $64, SI
+	ADDQ $-64, R15
 	ADDQ $-64, R12
-	CMPQ R12, $63
-	JA   LBB14_3
-	JMP  LBB14_10
-
+	ADDQ $64, SI
+	CMPQ R15, $63
+	JA LBB14_3
+	JMP LBB14_12
 LBB14_8:
-	MOVQ SI, AX
-	SUBQ DX, AX
-	BSFQ DI, R14
-	ADDQ AX, R14
-	MOVQ -56(BP), AX
-	MOVQ R14, 0(AX)
-	ORQ  R13, BX
-	MOVQ DI, AX
-	ORQ  R15, AX
-	JE   LBB14_6
-
+	BSFQ AX, DX
+	ADDQ SI, DX
+	MOVQ -48(BP), CX
+	MOVQ DX, 0(CX)
+	ORQ R13, BX
+	MOVQ AX, CX
+	ORQ R14, CX
+	JE LBB14_6
 LBB14_9:
-	MOVQ  R15, AX
-	NOTQ  AX
-	ANDQ  DI, AX
-	LEAQ  0(AX)(AX*1), R8
-	ORQ   R15, R8
-	MOVQ  R8, CX
-	NOTQ  CX
-	ANDQ  DI, CX
-	MOVQ  $-6148914691236517206, DI
-	ANDQ  DI, CX
-	XORL  R15, R15
-	ADDQ  AX, CX
-	SETCS R15
-	ADDQ  CX, CX
-	MOVQ  $6148914691236517205, AX
-	XORQ  AX, CX
-	ANDQ  R8, CX
-	NOTQ  CX
-	ANDQ  CX, BX
+	MOVQ R14, CX
+	NOTQ CX
+	ANDQ AX, CX
+	LEAQ 0(CX)(CX*1), R8
+	ORQ R14, R8
+	MOVQ R8, DI
+	NOTQ DI
+	ANDQ AX, DI
+	MOVQ $-6148914691236517206, AX
+	ANDQ AX, DI
+	XORL R14, R14
+	ADDQ CX, DI
+	SETCS R14
+	ADDQ DI, DI
+	MOVQ $6148914691236517205, AX
+	XORQ AX, DI
+	ANDQ R8, DI
+	NOTQ DI
+	ANDQ DI, BX
 	TESTQ BX, BX
-	JE    LBB14_7
-	JMP   LBB14_15
-
+	JE LBB14_7
 LBB14_10:
-	MOVQ R9, R12
-	CMPQ R12, $32
-	JB   LBB14_22
-
-LBB14_11:
-	LONG $0x066ffac5             // vmovdqu      (%rsi), %xmm0
-	LONG $0x4e6ffac5; BYTE $0x10 // vmovdqu      $16(%rsi), %xmm1
-	QUAD $0xfffffe43156ffac5     // vmovdqu      $-445(%rip), %xmm2  /* LCPI14_0(%rip) */
-	QUAD $0xfffffe4b1d6ffac5     // vmovdqu      $-437(%rip), %xmm3  /* LCPI14_1(%rip) */
-	LONG $0xe274f9c5             // vpcmpeqb     %xmm2, %xmm0, %xmm4
-	LONG $0xfcd7f9c5             // vpmovmskb    %xmm4, %edi
-	LONG $0xd274f1c5             // vpcmpeqb     %xmm2, %xmm1, %xmm2
-	LONG $0xdad7f9c5             // vpmovmskb    %xmm2, %ebx
-	LONG $0xc374f9c5             // vpcmpeqb     %xmm3, %xmm0, %xmm0
-	LONG $0xc0d7f9c5             // vpmovmskb    %xmm0, %eax
-	LONG $0xc374f1c5             // vpcmpeqb     %xmm3, %xmm1, %xmm0
-	LONG $0xc8d7f9c5             // vpmovmskb    %xmm0, %ecx
-	SHLQ $16, BX
-	SHLQ $16, CX
-	ORQ  CX, AX
-	JE   LBB14_13
-	CMPQ R14, $-1
-	JE   LBB14_19
-
-LBB14_13:
-	ORQ  DI, BX
-	MOVQ AX, CX
-	ORQ  R15, CX
-	JNE  LBB14_20
-
-LBB14_14:
-	TESTQ BX, BX
-	JE    LBB14_21
-
-LBB14_15:
 	BSFQ BX, AX
-	SUBQ DX, SI
-	LEAQ 1(SI)(AX*1), AX
-
-LBB14_16:
-	ADDQ $16, SP
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5d41 // popq         %r13
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+	SUBQ R12, AX
+LBB14_11:
+	ADDQ $8, SP
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB14_18:
-	MOVQ $-1, R14
-	XORL R15, R15
-	MOVQ -48(BP), DX
-	CMPQ R12, $32
-	JAE  LBB14_11
-	JMP  LBB14_22
-
-LBB14_19:
-	MOVQ SI, CX
-	SUBQ DX, CX
-	BSFQ AX, R14
-	ADDQ CX, R14
-	MOVQ -56(BP), CX
-	MOVQ R14, 0(CX)
-	ORQ  DI, BX
+LBB14_12:
+	ADDQ R9, SI
+	CMPQ R15, $32
+	JB LBB14_23
+LBB14_13:
+	LONG $0x066ffac5  // vmovdqu      (%rsi), %xmm0
+	LONG $0x4e6ffac5; BYTE $0x10  // vmovdqu      $16(%rsi), %xmm1
+	QUAD $0xfffffe40156ffac5  // vmovdqu      $-448(%rip), %xmm2  /* LCPI14_0(%rip) */
+	QUAD $0xfffffe481d6ffac5  // vmovdqu      $-440(%rip), %xmm3  /* LCPI14_1(%rip) */
+	LONG $0xe274f9c5  // vpcmpeqb     %xmm2, %xmm0, %xmm4
+	LONG $0xccd7f9c5  // vpmovmskb    %xmm4, %ecx
+	LONG $0xd274f1c5  // vpcmpeqb     %xmm2, %xmm1, %xmm2
+	LONG $0xfad7f9c5  // vpmovmskb    %xmm2, %edi
+	LONG $0xc374f9c5  // vpcmpeqb     %xmm3, %xmm0, %xmm0
+	LONG $0xc0d7f9c5  // vpmovmskb    %xmm0, %eax
+	LONG $0xc374f1c5  // vpcmpeqb     %xmm3, %xmm1, %xmm0
+	LONG $0xd8d7f9c5  // vpmovmskb    %xmm0, %ebx
+	SHLQ $16, DI
+	SHLQ $16, BX
+	ORQ BX, AX
+	JE LBB14_15
+	CMPQ DX, $-1
+	JE LBB14_20
+LBB14_15:
+	ORQ CX, DI
 	MOVQ AX, CX
-	ORQ  R15, CX
-	JE   LBB14_14
-
-LBB14_20:
-	MOVL  R15, CX
-	NOTL  CX
-	ANDL  AX, CX
-	LEAL  0(CX)(CX*1), R8
-	ORL   R15, R8
-	MOVL  R8, DI
-	NOTL  DI
-	ANDL  AX, DI
-	ANDL  $-1431655766, DI
-	XORL  R15, R15
-	ADDL  CX, DI
-	SETCS R15
-	ADDL  DI, DI
-	XORL  $1431655765, DI
-	ANDL  R8, DI
-	NOTL  DI
-	ANDL  DI, BX
-	TESTQ BX, BX
-	JNE   LBB14_15
-
-LBB14_21:
-	ADDQ $32, SI
-	ADDQ $-32, R12
-
-LBB14_22:
-	TESTQ R15, R15
-	JNE   LBB14_33
-	MOVQ  $-1, AX
-	TESTQ R12, R12
-	JE    LBB14_16
-
-LBB14_24:
-	MOVQ DX, R9
-	NOTQ R9
-	MOVQ -56(BP), CX
-
-LBB14_25:
-	LEAQ    1(SI), DI
-	MOVBLZX 0(SI), BX
-	CMPB    BX, $34
-	JE      LBB14_32
-	LEAQ    -1(R12), R10
-	CMPB    BX, $92
-	JE      LBB14_28
-	MOVQ    R10, R12
-	MOVQ    DI, SI
-	TESTQ   R10, R10
-	JNE     LBB14_25
-	JMP     LBB14_16
-
-LBB14_28:
-	TESTQ R10, R10
-	JE    LBB14_16
-	CMPQ  R14, $-1
-	JNE   LBB14_31
-	ADDQ  R9, DI
-	MOVQ  DI, 0(CX)
-	MOVQ  DI, R14
-
-LBB14_31:
-	ADDQ  $2, SI
-	ADDQ  $-2, R12
-	MOVQ  R12, R10
-	MOVQ  -48(BP), DX
-	TESTQ R10, R10
-	JNE   LBB14_25
-	JMP   LBB14_16
-
-LBB14_32:
-	SUBQ DX, DI
-	MOVQ DI, AX
-	JMP  LBB14_16
-
-LBB14_33:
-	TESTQ R12, R12
-	JE    LBB14_17
-	CMPQ  R14, $-1
-	JNE   LBB14_36
-	MOVQ  -48(BP), R14
-	NOTQ  R14
-	ADDQ  SI, R14
-	MOVQ  -56(BP), AX
-	MOVQ  R14, 0(AX)
-
-LBB14_36:
-	INCQ  SI
-	DECQ  R12
-	MOVQ  -48(BP), DX
-	MOVQ  $-1, AX
-	TESTQ R12, R12
-	JNE   LBB14_24
-	JMP   LBB14_16
-
+	ORQ R14, CX
+	JNE LBB14_21
+LBB14_16:
+	TESTQ DI, DI
+	JE LBB14_22
 LBB14_17:
+	BSFQ DI, AX
+	SUBQ R9, SI
+	ADDQ SI, AX
+	ADDQ $1, AX
+	JMP LBB14_11
+LBB14_19:
+	ADDQ R9, SI
+	MOVQ $-1, DX
+	XORL R14, R14
+	CMPQ R15, $32
+	JAE LBB14_13
+	JMP LBB14_23
+LBB14_20:
+	MOVQ SI, BX
+	SUBQ R9, BX
+	BSFQ AX, DX
+	ADDQ BX, DX
+	MOVQ -48(BP), BX
+	MOVQ DX, 0(BX)
+	ORQ CX, DI
+	MOVQ AX, CX
+	ORQ R14, CX
+	JE LBB14_16
+LBB14_21:
+	MOVL R14, CX
+	NOTL CX
+	ANDL AX, CX
+	LEAL 0(CX)(CX*1), R8
+	ORL R14, R8
+	MOVL R8, BX
+	NOTL BX
+	ANDL AX, BX
+	ANDL $-1431655766, BX
+	XORL R14, R14
+	ADDL CX, BX
+	SETCS R14
+	ADDL BX, BX
+	XORL $1431655765, BX
+	ANDL R8, BX
+	NOTL BX
+	ANDL BX, DI
+	TESTQ DI, DI
+	JNE LBB14_17
+LBB14_22:
+	ADDQ $32, SI
+	ADDQ $-32, R15
+LBB14_23:
+	TESTQ R14, R14
+	JNE LBB14_38
+	TESTQ R15, R15
+	JE LBB14_35
+LBB14_25:
+	MOVQ R9, DI
+	NEGQ DI
 	MOVQ $-1, AX
-	JMP  LBB14_16
-
+LBB14_26:
+	XORL CX, CX
+LBB14_27:
+	MOVBLZX 0(SI)(CX*1), BX
+	CMPB BX, $34
+	JE LBB14_34
+	CMPB BX, $92
+	JE LBB14_30
+	ADDQ $1, CX
+	CMPQ R15, CX
+	JNE LBB14_27
+	JMP LBB14_36
+LBB14_30:
+	LEAQ -1(R15), BX
+	CMPQ BX, CX
+	JE LBB14_11
+	CMPQ DX, $-1
+	JNE LBB14_33
+	LEAQ 0(DI)(SI*1), DX
+	ADDQ CX, DX
+	MOVQ -48(BP), BX
+	MOVQ DX, 0(BX)
+LBB14_33:
+	ADDQ CX, SI
+	ADDQ $2, SI
+	MOVQ R15, BX
+	SUBQ CX, BX
+	ADDQ $-2, BX
+	ADDQ $-2, R15
+	CMPQ R15, CX
+	MOVQ BX, R15
+	JNE LBB14_26
+	JMP LBB14_11
+LBB14_34:
+	ADDQ CX, SI
+	ADDQ $1, SI
+LBB14_35:
+	SUBQ R9, SI
+	MOVQ SI, AX
+	JMP LBB14_11
+LBB14_36:
+	MOVQ $-1, AX
+	CMPB BX, $34
+	JNE LBB14_11
+	ADDQ CX, SI
+	JMP LBB14_35
+LBB14_38:
+	TESTQ R15, R15
+	JE LBB14_18
+	CMPQ DX, $-1
+	JNE LBB14_41
+	MOVQ R9, DX
+	NOTQ DX
+	ADDQ SI, DX
+	MOVQ -48(BP), AX
+	MOVQ DX, 0(AX)
+LBB14_41:
+	ADDQ $1, SI
+	ADDQ $-1, R15
+	TESTQ R15, R15
+	JNE LBB14_25
+	JMP LBB14_35
+LBB14_18:
+	MOVQ $-1, AX
+	JMP LBB14_11
 LCPI15_0:
-	LONG $0x43300000 // .long 1127219200
-	LONG $0x45300000 // .long 1160773632
-	LONG $0x00000000 // .long 0
-	LONG $0x00000000 // .long 0
-
+	LONG $0x43300000  // .long 1127219200
+	LONG $0x45300000  // .long 1160773632
+	LONG $0x00000000  // .long 0
+	LONG $0x00000000  // .long 0
 LCPI15_1:
-	QUAD $0x4330000000000000 // .quad 4841369599423283200
-	QUAD $0x4530000000000000 // .quad 4985484787499139072
-
+	QUAD $0x4330000000000000  // .quad 0x4330000000000000
+	QUAD $0x4530000000000000  // .quad 0x4530000000000000
 LCPI15_2:
-	QUAD $0x430c6bf526340000 // .quad 4831355200913801216
-
+	QUAD $0x430c6bf526340000  // .quad 0x430c6bf526340000
 LCPI15_3:
-	QUAD $0xc30c6bf526340000 // .quad -4392016835940974592
-
+	QUAD $0xc30c6bf526340000  // .quad 0xc30c6bf526340000
 _vnumber:
-	BYTE $0x55                   // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	WORD $0x5741                 // pushq        %r15
-	WORD $0x5641                 // pushq        %r14
-	WORD $0x5541                 // pushq        %r13
-	WORD $0x5441                 // pushq        %r12
-	BYTE $0x53                   // pushq        %rbx
-	SUBQ $56, SP
-	MOVQ DX, BX
-	MOVQ SI, R14
-	MOVQ $0, -48(BP)
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $72, SP
+	MOVQ DX, R14
+	MOVQ $0, -64(BP)
 	MOVQ 0(SI), AX
 	MOVQ 0(DI), R15
 	MOVQ 8(DI), R13
-	MOVQ 32(DX), R10
-	MOVQ 40(DX), R11
+	MOVQ 32(DX), R11
+	MOVQ 40(DX), BX
 	MOVQ $9, 0(DX)
-	LONG $0xc057f9c5             // vxorpd       %xmm0, %xmm0, %xmm0
-	LONG $0x4211f9c5; BYTE $0x08 // vmovupd      %xmm0, $8(%rdx)
+	LONG $0xc057f9c5  // vxorpd       %xmm0, %xmm0, %xmm0
+	LONG $0x4211f9c5; BYTE $0x08  // vmovupd      %xmm0, $8(%rdx)
 	MOVQ 0(SI), CX
 	MOVQ CX, 24(DX)
 	CMPQ AX, R13
-	JAE  LBB15_52
+	JAE LBB15_6
 	MOVB 0(R15)(AX*1), DI
-	MOVL $1, R9
+	MOVL $1, R10
 	CMPB DI, $45
-	JNE  LBB15_4
-	INCQ AX
+	JNE LBB15_4
+	ADDQ $1, AX
 	CMPQ AX, R13
-	JAE  LBB15_52
+	JAE LBB15_6
 	MOVB 0(R15)(AX*1), DI
-	MOVL $-1, R9
-
+	MOVL $-1, R10
 LBB15_4:
 	LEAL -48(DI), CX
 	CMPB CX, $10
-	JB   LBB15_6
-
-LBB15_5:
-	MOVQ AX, 0(R14)
-	MOVQ $-2, 0(BX)
-	JMP  LBB15_53
-
+	JB LBB15_9
+	MOVQ AX, 0(SI)
+	MOVQ $-2, 0(R14)
+	JMP LBB15_8
 LBB15_6:
-	CMPB    DI, $48
-	JNE     LBB15_10
-	LEAQ    1(AX), SI
-	CMPQ    AX, R13
-	JAE     LBB15_19
-	MOVB    0(R15)(SI*1), DX
-	ADDB    $-46, DX
-	CMPB    DX, $55
-	JA      LBB15_19
+	MOVQ R13, 0(SI)
+LBB15_7:
+	MOVQ $-1, 0(R14)
+LBB15_8:
+	ADDQ $72, SP
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
+	RET
+LBB15_9:
+	CMPB DI, $48
+	JNE LBB15_13
+	LEAQ 1(AX), R9
+	CMPQ AX, R13
+	JAE LBB15_22
+	MOVB 0(R15)(R9*1), DX
+	ADDB $-46, DX
+	CMPB DX, $55
+	JA LBB15_22
 	MOVBLZX DX, R8
-	MOVQ    $36028797027352577, DX
-	BTQ     R8, DX
-	JAE     LBB15_19
-
-LBB15_10:
-	CMPQ AX, R13
-	JAE  LBB15_18
-	CMPB CX, $9
-	JA   LBB15_20
-	LEAQ -1(R13), R8
-	XORL CX, CX
-	XORL SI, SI
-	XORL R12, R12
-
+	MOVQ $36028797027352577, DX
+	BTQ R8, DX
+	JAE LBB15_22
 LBB15_13:
-	CMPL    SI, $18
-	JG      LBB15_15
-	MOVBQSX DI, DI
-	LEAQ    0(R12)(R12*4), DX
-	LEAQ    -48(DI)(DX*2), R12
-	INCL    SI
-	JMP     LBB15_16
-
-LBB15_15:
-	INCL CX
-
+	CMPQ AX, R13
+	MOVQ R11, -104(BP)
+	MOVQ BX, -96(BP)
+	MOVQ SI, -56(BP)
+	JAE LBB15_21
+	CMPB CX, $9
+	MOVL R10, -68(BP)
+	MOVB $1, CX
+	JA LBB15_23
+	MOVL CX, -44(BP)
+	MOVL $4294967248, R9
+	LEAQ -1(R13), R10
+	XORL CX, CX
+	XORL R8, R8
+	XORL R12, R12
 LBB15_16:
-	CMPQ    R8, AX
-	JE      LBB15_24
-	MOVBLZX 1(R15)(AX*1), DI
-	INCQ    AX
-	LEAL    -48(DI), DX
-	CMPB    DX, $10
-	JB      LBB15_13
-	JMP     LBB15_21
-
+	CMPL R8, $18
+	JG LBB15_18
+	LEAQ 0(R12)(R12*4), DX
+	MOVBLSX DI, DI
+	ADDL R9, DI
+	LEAQ 0(DI)(DX*2), R12
+	ADDL $1, R8
+	JMP LBB15_19
 LBB15_18:
-	XORL CX, CX
-	XORL SI, SI
-	XORL R12, R12
-	JMP  LBB15_25
-
+	ADDL $1, CX
 LBB15_19:
-	MOVQ SI, 0(R14)
-	JMP  LBB15_53
-
-LBB15_20:
-	XORL R12, R12
-	XORL SI, SI
-	XORL CX, CX
-
+	CMPQ R10, AX
+	JE LBB15_28
+	MOVBLZX 1(R15)(AX*1), DI
+	ADDQ $1, AX
+	LEAL -48(DI), DX
+	CMPB DX, $10
+	JB LBB15_16
+	JMP LBB15_24
 LBB15_21:
-	XORL  DX, DX
-	TESTL CX, CX
-	SETGT DX
-	MOVL  DX, -52(BP)
-	MOVL  $9, R8
-	CMPB  DI, $46
-	JNE   LBB15_26
-	INCQ  AX
-	MOVQ  $8, 0(BX)
-	CMPQ  AX, R13
-	JAE   LBB15_52
-	MOVB  0(R15)(AX*1), DX
-	ADDB  $-48, DX
-	MOVL  $8, R8
-	CMPB  DX, $10
-	JAE   LBB15_5
-	JMP   LBB15_26
-
-LBB15_24:
-	MOVQ R13, AX
-
-LBB15_25:
-	XORL  DX, DX
-	TESTL CX, CX
-	SETGT DX
-	MOVL  DX, -52(BP)
-	MOVL  $9, R8
-
-LBB15_26:
-	TESTL CX, CX
-	JNE   LBB15_35
-	TESTQ R12, R12
-	JNE   LBB15_35
-	CMPQ  AX, R13
-	JAE   LBB15_33
-	MOVL  AX, DI
-	SUBL  R13, DI
-	XORL  SI, SI
-	XORL  CX, CX
-
-LBB15_30:
-	CMPB 0(R15)(AX*1), $48
-	JNE  LBB15_34
-	INCQ AX
-	DECL CX
-	CMPQ R13, AX
-	JNE  LBB15_30
-	XORL R12, R12
-	CMPL R8, $9
-	JE   LBB15_55
-	JMP  LBB15_59
-
-LBB15_33:
+	MOVB $1, CX
+	MOVL CX, -44(BP)
 	XORL CX, CX
-	XORL SI, SI
-
-LBB15_34:
+	XORL R8, R8
 	XORL R12, R12
-
-LBB15_35:
+	XORL R11, R11
+	TESTL CX, CX
+	SETGT R11
+	JE LBB15_30
+	JMP LBB15_38
+LBB15_22:
+	MOVQ R9, 0(SI)
+	JMP LBB15_8
+LBB15_23:
+	MOVL CX, -44(BP)
+	XORL R12, R12
+	XORL R8, R8
+	XORL CX, CX
+LBB15_24:
+	CMPB DI, $46
+	JNE LBB15_29
+	ADDQ $1, AX
+	MOVQ $8, 0(R14)
 	CMPQ AX, R13
-	JAE  LBB15_40
-	CMPL SI, $18
-	JG   LBB15_40
-
+	JAE LBB15_67
+	MOVB 0(R15)(AX*1), DX
+	ADDB $-48, DX
+	CMPB DX, $10
+	JAE LBB15_89
+	MOVL $0, -44(BP)
+	JMP LBB15_29
+LBB15_28:
+	MOVQ R13, AX
+LBB15_29:
+	MOVL -68(BP), R10
+	XORL R11, R11
+	TESTL CX, CX
+	SETGT R11
+	JNE LBB15_38
+LBB15_30:
+	TESTQ R12, R12
+	JNE LBB15_38
+	CMPQ AX, R13
+	JAE LBB15_36
+	MOVL AX, SI
+	SUBL R13, SI
+	XORL R8, R8
+	XORL CX, CX
+LBB15_33:
+	CMPB 0(R15)(AX*1), $48
+	JNE LBB15_37
+	ADDQ $1, AX
+	ADDL $-1, CX
+	CMPQ R13, AX
+	JNE LBB15_33
+	XORL R12, R12
+	CMPB -44(BP), $0
+	JNE LBB15_57
+	JMP LBB15_61
+LBB15_36:
+	XORL CX, CX
+	XORL R8, R8
 LBB15_37:
-	MOVBLZX 0(R15)(AX*1), DI
-	LEAL    -48(DI), DX
-	CMPB    DX, $9
-	JA      LBB15_40
-	LEAQ    0(R12)(R12*4), DX
-	LEAQ    -48(DI)(DX*2), R12
-	DECL    CX
-	INCQ    AX
-	CMPQ    AX, R13
-	JAE     LBB15_40
-	LEAL    1(SI), DX
-	CMPL    SI, $18
-	MOVL    DX, SI
-	JL      LBB15_37
-
-LBB15_40:
+	XORL R12, R12
+LBB15_38:
 	CMPQ AX, R13
-	JAE  LBB15_54
-	MOVB 0(R15)(AX*1), SI
-	LEAL -48(SI), DX
+	JAE LBB15_44
+	CMPL R8, $18
+	JG LBB15_44
+	MOVL $4294967248, R9
+LBB15_41:
+	MOVBLZX 0(R15)(AX*1), DI
+	LEAL -48(DI), DX
 	CMPB DX, $9
-	JA   LBB15_46
-	LEAQ -1(R13), DI
-
-LBB15_43:
-	CMPQ    DI, AX
-	JE      LBB15_76
-	MOVBLZX 1(R15)(AX*1), SI
-	INCQ    AX
-	LEAL    -48(SI), DX
-	CMPB    DX, $9
-	JBE     LBB15_43
-	MOVL    $1, -52(BP)
-
-LBB15_46:
-	ORB  $32, SI
-	CMPB SI, $101
-	JNE  LBB15_54
-	LEAQ 1(AX), DI
-	MOVQ $8, 0(BX)
-	CMPQ DI, R13
-	JAE  LBB15_52
-	MOVB 0(R15)(DI*1), SI
+	JA LBB15_44
+	LEAQ 0(R12)(R12*4), DX
+	ADDL R9, DI
+	LEAQ 0(DI)(DX*2), R12
+	ADDL $-1, CX
+	ADDQ $1, AX
+	CMPQ AX, R13
+	JAE LBB15_44
+	LEAL 1(R8), DX
+	CMPL R8, $18
+	MOVL DX, R8
+	JL LBB15_41
+LBB15_44:
+	CMPQ AX, R13
+	JAE LBB15_56
+	MOVB 0(R15)(AX*1), DX
+	LEAL -48(DX), SI
+	CMPB SI, $9
+	JA LBB15_50
+	LEAQ -1(R13), SI
+LBB15_47:
+	CMPQ SI, AX
+	JE LBB15_68
+	MOVBLZX 1(R15)(AX*1), DX
+	ADDQ $1, AX
+	LEAL -48(DX), DI
+	CMPB DI, $9
+	JBE LBB15_47
+	MOVL $1, R11
+LBB15_50:
+	ORB $32, DX
+	CMPB DX, $101
+	JNE LBB15_56
+	LEAQ 1(AX), DX
+	MOVQ $8, 0(R14)
+	CMPQ DX, R13
+	JAE LBB15_67
+	MOVL R11, -44(BP)
+	MOVB 0(R15)(DX*1), SI
 	CMPB SI, $45
-	JE   LBB15_50
+	JE LBB15_54
 	MOVL $1, R8
 	CMPB SI, $43
-	JNE  LBB15_85
-
-LBB15_50:
-	ADDQ  $2, AX
-	CMPQ  AX, R13
-	JAE   LBB15_52
-	XORL  DX, DX
-	CMPB  SI, $43
-	SETEQ DX
-	LEAL  -1(DX)(DX*1), R8
-	MOVB  0(R15)(AX*1), SI
-	JMP   LBB15_86
-
-LBB15_52:
-	MOVQ R13, 0(R14)
-	MOVQ $-1, 0(BX)
-
-LBB15_53:
-	ADDQ $56, SP
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5d41 // popq         %r13
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
-	RET
-
+	JNE LBB15_87
 LBB15_54:
-	MOVL CX, DI
+	ADDQ $2, AX
+	CMPQ AX, R13
+	JAE LBB15_67
+	XORL DX, DX
+	CMPB SI, $43
+	SETEQ DX
+	LEAL 0(DX)(DX*1), R8
+	ADDL $-1, R8
+	MOVB 0(R15)(AX*1), SI
+	JMP LBB15_88
+LBB15_56:
+	MOVL CX, SI
 	MOVQ AX, R13
-	CMPL R8, $9
-	JNE  LBB15_59
-
-LBB15_55:
-	TESTL   DI, DI
-	JNE     LBB15_58
-	MOVQ    $-9223372036854775808, AX
-	MOVLQSX R9, CX
-	TESTQ   R12, R12
-	JNS     LBB15_80
-	MOVQ    R12, DX
-	ANDQ    CX, DX
-	CMPQ    DX, AX
-	JE      LBB15_80
-
-LBB15_58:
-	MOVQ $8, 0(BX)
-
-LBB15_59:
-	MOVQ $0, -64(BP)
-	LONG $0x6ef9c1c4; BYTE $0xc4   // vmovq        %r12, %xmm0
-	QUAD $0xfffffcf60562f9c5       // vpunpckldq   $-778(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
-	QUAD $0xfffffcfe055cf9c5       // vsubpd       $-770(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
-	LONG $0x0579e3c4; WORD $0x01c8 // vpermilpd    $1, %xmm0, %xmm1
-	LONG $0xc058f3c5               // vaddsd       %xmm0, %xmm1, %xmm0
-	LONG $0x4511fbc5; BYTE $0xd0   // vmovsd       %xmm0, $-48(%rbp)
+	CMPB -44(BP), $0
+	JE LBB15_61
+LBB15_57:
+	TESTL SI, SI
+	JNE LBB15_60
+	MOVQ $-9223372036854775808, AX
+	MOVLQSX R10, CX
+	TESTQ R12, R12
+	JNS LBB15_71
+	MOVQ R12, DX
+	ANDQ CX, DX
+	CMPQ DX, AX
+	JE LBB15_71
+LBB15_60:
+	MOVQ $8, 0(R14)
+LBB15_61:
+	MOVQ $0, -80(BP)
+	LONG $0x6ef9c1c4; BYTE $0xc4  // vmovq        %r12, %xmm0
+	QUAD $0xfffffcae0562f9c5  // vpunpckldq   $-850(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
+	QUAD $0xfffffcb6055cf9c5  // vsubpd       $-842(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
+	LONG $0x0579e3c4; WORD $0x01c8  // vpermilpd    $1, %xmm0, %xmm1
+	LONG $0xc058f3c5  // vaddsd       %xmm0, %xmm1, %xmm0
+	LONG $0x4511fbc5; BYTE $0xc0  // vmovsd       %xmm0, $-64(%rbp)
 	MOVQ R12, AX
 	SHRQ $52, AX
-	JE   LBB15_71
-
-LBB15_60:
-	MOVQ  R11, -80(BP)
-	MOVQ  R10, -88(BP)
-	LEAQ  -48(BP), CX
-	MOVQ  DI, SI
-	MOVQ  R12, DI
-	MOVQ  SI, -72(BP)
-	MOVL  R9, DX
-	MOVL  R9, -56(BP)
-	LONG  $0xffeb66e8; BYTE $0xff // callq        _atof_eisel_lemire64
+	JNE LBB15_76
+	LONG $0x7ef9e1c4; BYTE $0xc1  // vmovq        %xmm0, %rcx
+	MOVL R10, AX
+	SHRL $31, AX
+	SHLQ $63, AX
+	ORQ CX, AX
+	MOVQ AX, -64(BP)
+	TESTQ R12, R12
+	JE LBB15_83
+	TESTL SI, SI
+	JE LBB15_83
+	LONG $0x6ef9e1c4; BYTE $0xc0  // vmovq        %rax, %xmm0
+	LEAL -1(SI), AX
+	CMPL AX, $36
+	JA LBB15_69
+	CMPL SI, $23
+	JL LBB15_72
+	LEAL -22(SI), AX
+	LONG $0x980d8d48; WORD $0x00bc; BYTE $0x00  // leaq         $48280(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0x0459fbc5; BYTE $0xc1  // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
+	LONG $0x4511fbc5; BYTE $0xc0  // vmovsd       %xmm0, $-64(%rbp)
+	MOVL $22, AX
+	JMP LBB15_73
+LBB15_67:
+	MOVQ -56(BP), AX
+	MOVQ R13, 0(AX)
+	JMP LBB15_7
+LBB15_68:
+	MOVL $1, R11
+	MOVL CX, SI
+	CMPB -44(BP), $0
+	JNE LBB15_57
+	JMP LBB15_61
+LBB15_69:
+	CMPL SI, $-22
+	JB LBB15_76
+	NEGL SI
+	LONG $0x4f058d48; WORD $0x00bc; BYTE $0x00  // leaq         $48207(%rip), %rax  /* _P10_TAB(%rip) */
+	LONG $0x045efbc5; BYTE $0xf0  // vdivsd       (%rax,%rsi,8), %xmm0, %xmm0
+	LONG $0x4511fbc5; BYTE $0xc0  // vmovsd       %xmm0, $-64(%rbp)
+	JMP LBB15_80
+LBB15_71:
+	LONG $0x6ef9c1c4; BYTE $0xc4  // vmovq        %r12, %xmm0
+	IMULQ CX, R12
+	QUAD $0xfffffbda0562f9c5  // vpunpckldq   $-1062(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
+	QUAD $0xfffffbe2055cf9c5  // vsubpd       $-1054(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
+	MOVQ R12, 16(R14)
+	LONG $0x0579e3c4; WORD $0x01c8  // vpermilpd    $1, %xmm0, %xmm1
+	LONG $0xc058f3c5  // vaddsd       %xmm0, %xmm1, %xmm0
+	ANDQ CX, AX
+	LONG $0x7ef9e1c4; BYTE $0xc1  // vmovq        %xmm0, %rcx
+	ORQ AX, CX
+	MOVQ CX, 8(R14)
+	MOVQ -56(BP), AX
+	MOVQ R13, 0(AX)
+	JMP LBB15_8
+LBB15_72:
+	MOVL SI, AX
+LBB15_73:
+	QUAD $0xfffffbbf052ef9c5  // vucomisd     $-1089(%rip), %xmm0  /* LCPI15_2(%rip) */
+	JA LBB15_76
+	QUAD $0xfffffbbd0d10fbc5  // vmovsd       $-1091(%rip), %xmm1  /* LCPI15_3(%rip) */
+	LONG $0xc82ef9c5  // vucomisd     %xmm0, %xmm1
+	JA LBB15_76
+	MOVL AX, AX
+	LONG $0xdb0d8d48; WORD $0x00bb; BYTE $0x00  // leaq         $48091(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0x0459fbc5; BYTE $0xc1  // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
+	LONG $0x4511fbc5; BYTE $0xc0  // vmovsd       %xmm0, $-64(%rbp)
+	JMP LBB15_80
+LBB15_76:
+	MOVL R11, -44(BP)
+	LEAQ -64(BP), CX
+	MOVQ R12, DI
+	MOVL R10, DX
+	MOVL R10, BX
+	MOVQ SI, -88(BP)
+	LONG $0xffeacae8; BYTE $0xff  // callq        _atof_eisel_lemire64
 	TESTB AX, AX
-	JE    LBB15_64
-	MOVQ  -72(BP), SI
-	MOVL  -56(BP), DX
-	CMPL  -52(BP), $0
-	JE    LBB15_79
-	INCQ  R12
-	LEAQ  -64(BP), CX
-	MOVQ  R12, DI
-	LONG  $0xffeb42e8; BYTE $0xff // callq        _atof_eisel_lemire64
+	JE LBB15_81
+	MOVQ -88(BP), SI
+	CMPL -44(BP), $0
+	JE LBB15_82
+	MOVL BX, DX
+	ADDQ $1, R12
+	LEAQ -80(BP), CX
+	MOVQ R12, DI
+	LONG $0xffeaaae8; BYTE $0xff  // callq        _atof_eisel_lemire64
 	TESTB AX, AX
-	JE    LBB15_64
-	LONG  $0x4d10fbc5; BYTE $0xc0 // vmovsd       $-64(%rbp), %xmm1
-	LONG  $0x4510fbc5; BYTE $0xd0 // vmovsd       $-48(%rbp), %xmm0
-	LONG  $0xc82ef9c5             // vucomisd     %xmm0, %xmm1
-	JNE   LBB15_64
-	JNP   LBB15_66
-
-LBB15_64:
-	MOVQ 0(R14), AX
+	JE LBB15_81
+	LONG $0x4d10fbc5; BYTE $0xb0  // vmovsd       $-80(%rbp), %xmm1
+	LONG $0x4510fbc5; BYTE $0xc0  // vmovsd       $-64(%rbp), %xmm0
+	LONG $0xc82ef9c5  // vucomisd     %xmm0, %xmm1
+	JNE LBB15_81
+	JP LBB15_81
+LBB15_80:
+	LONG $0x7ef9e1c4; BYTE $0xc0  // vmovq        %xmm0, %rax
+	JMP LBB15_83
+LBB15_81:
+	MOVQ -56(BP), BX
+	MOVQ 0(BX), AX
 	ADDQ AX, R15
 	MOVQ R13, SI
 	SUBQ AX, SI
 	MOVQ R15, DI
-	MOVQ -88(BP), DX
-	MOVQ -80(BP), CX
-	LONG $0xffefeee8; BYTE $0xff // callq        _atof_native
-
-LBB15_65:
-	LONG $0x4511fbc5; BYTE $0xd0 // vmovsd       %xmm0, $-48(%rbp)
-
-LBB15_66:
-	LONG $0x7ef9e1c4; BYTE $0xc0 // vmovq        %xmm0, %rax
-
-LBB15_67:
-	MOVQ $-9223372036854775808, CX
-	DECQ CX
-	ANDQ AX, CX
-	MOVQ $9218868437227405312, DX
-	CMPQ CX, DX
-	JNE  LBB15_69
-	MOVQ $-8, 0(BX)
-
-LBB15_69:
-	MOVQ AX, 8(BX)
-
-LBB15_70:
-	MOVQ R13, 0(R14)
-	JMP  LBB15_53
-
-LBB15_71:
-	LONG    $0x7ef9e1c4; BYTE $0xc1               // vmovq        %xmm0, %rcx
-	MOVL    R9, AX
-	SHRL    $31, AX
-	SHLQ    $63, AX
-	ORQ     CX, AX
-	MOVQ    AX, -48(BP)
-	TESTQ   R12, R12
-	JE      LBB15_67
-	TESTL   DI, DI
-	JE      LBB15_67
-	LONG    $0x6ef9e1c4; BYTE $0xc0               // vmovq        %rax, %xmm0
-	LEAL    -1(DI), AX
-	CMPL    AX, $36
-	JA      LBB15_77
-	CMPL    DI, $23
-	JL      LBB15_81
-	MOVLQSX DI, AX
-	LONG    $0x060d8d48; WORD $0x00bc; BYTE $0x00 // leaq         $48134(%rip), %rcx  /* _P10_TAB(%rip) */
-	QUAD    $0xffff50c18459fbc5; BYTE $0xff       // vmulsd       $-176(%rcx,%rax,8), %xmm0, %xmm0
-	LONG    $0x4511fbc5; BYTE $0xd0               // vmovsd       %xmm0, $-48(%rbp)
-	MOVL    $22, AX
-	JMP     LBB15_82
-
-LBB15_76:
-	MOVL $1, -52(BP)
-	MOVL CX, DI
-	CMPL R8, $9
-	JE   LBB15_55
-	JMP  LBB15_59
-
-LBB15_77:
-	CMPL    DI, $-22
-	JB      LBB15_60
-	NEGL    DI
-	MOVLQSX DI, AX
-	LONG    $0xc40d8d48; WORD $0x00bb; BYTE $0x00 // leaq         $48068(%rip), %rcx  /* _P10_TAB(%rip) */
-	LONG    $0x045efbc5; BYTE $0xc1               // vdivsd       (%rcx,%rax,8), %xmm0, %xmm0
-	JMP     LBB15_65
-
-LBB15_79:
-	MOVQ -48(BP), AX
-	JMP  LBB15_67
-
-LBB15_80:
-	LONG  $0x6ef9c1c4; BYTE $0xc4   // vmovq        %r12, %xmm0
-	IMULQ CX, R12
-	QUAD  $0xfffffb790562f9c5       // vpunpckldq   $-1159(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
-	QUAD  $0xfffffb81055cf9c5       // vsubpd       $-1151(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
-	MOVQ  R12, 16(BX)
-	LONG  $0x0579e3c4; WORD $0x01c8 // vpermilpd    $1, %xmm0, %xmm1
-	LONG  $0xc058f3c5               // vaddsd       %xmm0, %xmm1, %xmm0
-	ANDQ  CX, AX
-	LONG  $0x7ef9e1c4; BYTE $0xc1   // vmovq        %xmm0, %rcx
-	ORQ   AX, CX
-	MOVQ  CX, 8(BX)
-	JMP   LBB15_70
-
-LBB15_81:
-	MOVL DI, AX
-
+	MOVQ -104(BP), DX
+	MOVQ -96(BP), CX
+	LONG $0xffeea7e8; BYTE $0xff  // callq        _atof_native
+	LONG $0x4511fbc5; BYTE $0xc0  // vmovsd       %xmm0, $-64(%rbp)
+	LONG $0x7ef9e1c4; BYTE $0xc0  // vmovq        %xmm0, %rax
+	JMP LBB15_84
 LBB15_82:
-	QUAD $0xfffffb65052ef9c5                   // vucomisd     $-1179(%rip), %xmm0  /* LCPI15_2(%rip) */
-	JA   LBB15_60
-	QUAD $0xfffffb5f0d10fbc5                   // vmovsd       $-1185(%rip), %xmm1  /* LCPI15_3(%rip) */
-	LONG $0xc82ef9c5                           // vucomisd     %xmm0, %xmm1
-	JA   LBB15_60
-	MOVL AX, AX
-	LONG $0x4b0d8d48; WORD $0x00bb; BYTE $0x00 // leaq         $47947(%rip), %rcx  /* _P10_TAB(%rip) */
-	LONG $0x0459fbc5; BYTE $0xc1               // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
-	JMP  LBB15_65
-
-LBB15_85:
-	MOVQ DI, AX
-
+	MOVQ -64(BP), AX
+LBB15_83:
+	MOVQ -56(BP), BX
+	LONG $0x6ef9e1c4; BYTE $0xc0  // vmovq        %rax, %xmm0
+LBB15_84:
+	MOVQ $-9223372036854775808, CX
+	ADDQ $-1, CX
+	ANDQ AX, CX
+	MOVQ $9218868437227405312, AX
+	CMPQ CX, AX
+	JNE LBB15_86
+	MOVQ $-8, 0(R14)
 LBB15_86:
+	LONG $0x117bc1c4; WORD $0x0846  // vmovsd       %xmm0, $8(%r14)
+	MOVQ R13, 0(BX)
+	JMP LBB15_8
+LBB15_87:
+	MOVQ DX, AX
+LBB15_88:
 	LEAL -48(SI), DI
 	CMPB DI, $9
-	JA   LBB15_5
-	MOVL R9, -56(BP)
+	JBE LBB15_90
+LBB15_89:
+	MOVQ -56(BP), CX
+	MOVQ AX, 0(CX)
+	MOVQ $-2, 0(R14)
+	JMP LBB15_8
+LBB15_90:
 	CMPQ AX, R13
-	JAE  LBB15_93
+	JAE LBB15_96
 	CMPB DI, $9
-	JA   LBB15_93
+	JA LBB15_96
 	LEAQ -1(R13), R9
 	XORL DI, DI
-
-LBB15_90:
-	MOVL    DI, DX
-	CMPL    DI, $10000
-	LEAL    0(DX)(DX*4), DI
-	MOVBLZX SI, SI
-	LEAL    -48(SI)(DI*2), DI
-	WORD    $0x4d0f; BYTE $0xfa // cmovgel      %edx, %edi
-	CMPQ    R9, AX
-	JE      LBB15_94
-	MOVBLZX 1(R15)(AX*1), SI
-	INCQ    AX
-	LEAL    -48(SI), DX
-	CMPB    DX, $10
-	JB      LBB15_90
-	JMP     LBB15_95
-
 LBB15_93:
+	MOVL DI, DX
+	MOVBLZX SI, SI
+	CMPL DI, $10000
+	LEAL 0(DX)(DX*4), DI
+	LEAL -48(SI)(DI*2), DI
+	WORD $0x4d0f; BYTE $0xfa  // cmovgel      %edx, %edi
+	CMPQ R9, AX
+	JE LBB15_97
+	MOVBLZX 1(R15)(AX*1), SI
+	ADDQ $1, AX
+	LEAL -48(SI), DX
+	CMPB DX, $10
+	JB LBB15_93
+	JMP LBB15_98
+LBB15_96:
 	XORL DI, DI
-	JMP  LBB15_95
-
-LBB15_94:
+	JMP LBB15_98
+LBB15_97:
 	MOVQ R13, AX
-
-LBB15_95:
-	IMULL R8, DI
-	ADDL  CX, DI
-	MOVQ  AX, R13
-	MOVL  -56(BP), R9
-	JMP   LBB15_59
-
+LBB15_98:
+	MOVQ DI, SI
+	IMULL R8, SI
+	ADDL CX, SI
+	MOVQ AX, R13
+	MOVL -44(BP), R11
+	JMP LBB15_61
 _vsigned:
-	BYTE $0x55                   // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	BYTE $0x53                   // pushq        %rbx
-	MOVQ 0(SI), BX
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	BYTE $0x53  // pushq        %rbx
+	MOVQ 0(SI), AX
 	MOVQ 0(DI), R8
-	MOVQ 8(DI), R10
+	MOVQ 8(DI), R11
 	MOVQ $9, 0(DX)
-	LONG $0xc057f8c5             // vxorps       %xmm0, %xmm0, %xmm0
-	LONG $0x4211f8c5; BYTE $0x08 // vmovups      %xmm0, $8(%rdx)
+	LONG $0xc057f8c5  // vxorps       %xmm0, %xmm0, %xmm0
+	LONG $0x4211f8c5; BYTE $0x08  // vmovups      %xmm0, $8(%rdx)
 	MOVQ 0(SI), CX
 	MOVQ CX, 24(DX)
-	CMPQ BX, R10
-	JAE  LBB16_1
-	MOVB 0(R8)(BX*1), CX
+	CMPQ AX, R11
+	JAE LBB16_1
+	MOVB 0(R8)(AX*1), CX
 	MOVL $1, R9
 	CMPB CX, $45
-	JNE  LBB16_5
-	INCQ BX
-	CMPQ BX, R10
-	JAE  LBB16_1
-	MOVB 0(R8)(BX*1), CX
+	JNE LBB16_5
+	ADDQ $1, AX
+	CMPQ AX, R11
+	JAE LBB16_1
+	MOVB 0(R8)(AX*1), CX
 	MOVQ $-1, R9
-
 LBB16_5:
 	LEAL -48(CX), DI
 	CMPB DI, $10
-	JB   LBB16_7
-	MOVQ BX, 0(SI)
+	JB LBB16_7
+	MOVQ AX, 0(SI)
 	MOVQ $-2, 0(DX)
-	BYTE $0x5b       // popq         %rbx
-	BYTE $0x5d       // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB16_1:
-	MOVQ R10, 0(SI)
+	MOVQ R11, 0(SI)
 	MOVQ $-1, 0(DX)
-	BYTE $0x5b      // popq         %rbx
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB16_7:
-	CMPB    CX, $48
-	JNE     LBB16_8
-	LEAQ    1(BX), DI
-	CMPQ    BX, R10
-	JAE     LBB16_17
-	MOVB    0(R8)(DI*1), CX
-	ADDB    $-46, CX
-	CMPB    CX, $55
-	JA      LBB16_17
-	MOVBLZX CX, R11
-	MOVQ    $36028797027352577, CX
-	BTQ     R11, CX
-	JAE     LBB16_17
-
-LBB16_8:
+	CMPB CX, $48
+	JNE LBB16_12
+	LEAQ 1(AX), DI
+	CMPQ AX, R11
+	JAE LBB16_11
+	MOVB 0(R8)(DI*1), CX
+	ADDB $-46, CX
+	CMPB CX, $55
+	JA LBB16_11
+	MOVBLZX CX, R10
+	MOVQ $36028797027352577, CX
+	BTQ R10, CX
+	JAE LBB16_11
+LBB16_12:
+	CMPQ AX, R11
+	MOVQ R11, R10
+	LONG $0xd0470f4c  // cmovaq       %rax, %r10
 	XORL DI, DI
-
-LBB16_9:
-	CMPQ    BX, R10
-	JAE     LBB16_22
-	MOVBQSX 0(R8)(BX*1), CX
-	LEAL    -48(CX), AX
-	CMPB    AX, $9
-	JA      LBB16_18
-	IMUL3Q  $10, DI, DI
-	JO      LBB16_13
-	INCQ    BX
-	ADDQ    $-48, CX
-	IMULQ   R9, CX
-	ADDQ    CX, DI
-	JNO     LBB16_9
-
 LBB16_13:
-	DECQ BX
-	MOVQ BX, 0(SI)
-	MOVQ $-5, 0(DX)
-	BYTE $0x5b      // popq         %rbx
-	BYTE $0x5d      // popq         %rbp
-	RET
-
+	CMPQ R10, AX
+	JE LBB16_23
+	MOVBQSX 0(R8)(AX*1), CX
+	LEAL -48(CX), BX
+	CMPB BX, $9
+	JA LBB16_18
+	IMUL3Q $10, DI, DI
+	JO LBB16_17
+	ADDQ $1, AX
+	ADDL $-48, CX
+	IMULQ R9, CX
+	ADDQ CX, DI
+	JNO LBB16_13
 LBB16_17:
+	ADDQ $-1, AX
+	MOVQ AX, 0(SI)
+	MOVQ $-5, 0(DX)
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
+	RET
+LBB16_11:
 	MOVQ DI, 0(SI)
-	BYTE $0x5b     // popq         %rbx
-	BYTE $0x5d     // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB16_18:
-	CMPB CX, $101
-	JE   LBB16_21
-	CMPB CX, $69
-	JE   LBB16_21
+	CMPQ AX, R11
+	JAE LBB16_22
 	CMPB CX, $46
-	JNE  LBB16_22
-
-LBB16_21:
-	MOVQ BX, 0(SI)
+	JE LBB16_25
+	CMPB CX, $69
+	JE LBB16_25
+	CMPB CX, $101
+	JNE LBB16_22
+LBB16_25:
+	MOVQ AX, 0(SI)
 	MOVQ $-6, 0(DX)
-	BYTE $0x5b      // popq         %rbx
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB16_22:
-	MOVQ BX, 0(SI)
+	MOVQ AX, R10
+LBB16_23:
+	MOVQ R10, 0(SI)
 	MOVQ DI, 16(DX)
-	BYTE $0x5b      // popq         %rbx
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 _vunsigned:
-	BYTE $0x55                   // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	BYTE $0x53  // pushq        %rbx
 	MOVQ DX, R8
 	MOVQ 0(SI), CX
 	MOVQ 0(DI), R9
 	MOVQ 8(DI), R11
 	MOVQ $9, 0(DX)
-	LONG $0xc057f8c5             // vxorps       %xmm0, %xmm0, %xmm0
-	LONG $0x4211f8c5; BYTE $0x08 // vmovups      %xmm0, $8(%rdx)
+	LONG $0xc057f8c5  // vxorps       %xmm0, %xmm0, %xmm0
+	LONG $0x4211f8c5; BYTE $0x08  // vmovups      %xmm0, $8(%rdx)
 	MOVQ 0(SI), AX
 	MOVQ AX, 24(DX)
 	CMPQ CX, R11
-	JAE  LBB17_1
+	JAE LBB17_1
 	MOVB 0(R9)(CX*1), AX
 	CMPB AX, $45
-	JNE  LBB17_4
-
+	JNE LBB17_4
 LBB17_3:
 	MOVQ CX, 0(SI)
 	MOVQ $-6, 0(R8)
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB17_1:
 	MOVQ R11, 0(SI)
 	MOVQ $-1, 0(R8)
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB17_4:
 	LEAL -48(AX), DX
 	CMPB DX, $10
-	JB   LBB17_6
+	JB LBB17_6
 	MOVQ CX, 0(SI)
 	MOVQ $-2, 0(R8)
-	BYTE $0x5d       // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB17_6:
-	CMPB    AX, $48
-	JNE     LBB17_7
-	MOVB    1(R9)(CX*1), AX
-	ADDB    $-46, AX
-	CMPB    AX, $55
-	JA      LBB17_16
+	CMPB AX, $48
+	JNE LBB17_7
+	MOVB 1(R9)(CX*1), AX
+	ADDB $-46, AX
+	CMPB AX, $55
+	JA LBB17_16
 	MOVBLZX AX, AX
-	MOVQ    $36028797027352577, DX
-	BTQ     AX, DX
-	JAE     LBB17_16
-
+	MOVQ $36028797027352577, DX
+	BTQ AX, DX
+	JAE LBB17_16
 LBB17_7:
 	XORL AX, AX
 	MOVL $10, R10
-
 LBB17_8:
-	CMPQ    CX, R11
-	JAE     LBB17_20
+	CMPQ R11, CX
+	JE LBB17_22
 	MOVBLSX 0(R9)(CX*1), DI
-	LEAL    -48(DI), DX
-	CMPB    DX, $9
-	JA      LBB17_17
-	MULQ    R10
-	JO      LBB17_13
-	INCQ    CX
-	ADDL    $-48, DI
-	MOVLQSX DI, DX
-	MOVQ    DX, DI
-	SARQ    $63, DI
-	ADDQ    DX, AX
-	ADCQ    $0, DI
-	MOVL    DI, DX
-	ANDL    $1, DX
-	NEGQ    DX
-	XORQ    DX, DI
-	JNE     LBB17_13
-	TESTQ   DX, DX
-	JNS     LBB17_8
-
+	LEAL -48(DI), DX
+	CMPB DX, $9
+	JA LBB17_17
+	MULQ R10
+	JO LBB17_13
+	ADDQ $1, CX
+	ADDL $-48, DI
+	XORL BX, BX
+	ADDQ DI, AX
+	SETCS BX
+	MOVQ BX, DX
+	NEGQ DX
+	XORQ DX, BX
+	JNE LBB17_13
+	TESTQ DX, DX
+	JNS LBB17_8
 LBB17_13:
-	DECQ CX
+	ADDQ $-1, CX
 	MOVQ CX, 0(SI)
 	MOVQ $-5, 0(R8)
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB17_17:
-	CMPB DI, $101
-	JE   LBB17_3
-	CMPB DI, $69
-	JE   LBB17_3
+	CMPQ CX, R11
+	JAE LBB17_21
 	CMPB DI, $46
-	JE   LBB17_3
-
-LBB17_20:
-	MOVQ CX, 0(SI)
+	JE LBB17_3
+	CMPB DI, $69
+	JE LBB17_3
+	CMPB DI, $101
+	JE LBB17_3
+LBB17_21:
+	MOVQ CX, R11
+LBB17_22:
+	MOVQ R11, 0(SI)
 	MOVQ AX, 16(R8)
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB17_16:
-	INCQ CX
+	ADDQ $1, CX
 	MOVQ CX, 0(SI)
-	BYTE $0x5d     // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 _skip_one:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	MOVQ DX, AX
 	MOVQ SI, DX
 	MOVQ DI, SI
 	MOVQ $1, 0(AX)
 	MOVQ AX, DI
 	XORL CX, CX
-	BYTE $0x5d               // popq         %rbp
-	JMP  _fsm_exec
-
+	BYTE $0x5d  // popq         %rbp
+	JMP _fsm_exec
 _fsm_exec:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	WORD $0x5741             // pushq        %r15
-	WORD $0x5641             // pushq        %r14
-	WORD $0x5541             // pushq        %r13
-	WORD $0x5441             // pushq        %r12
-	BYTE $0x53               // pushq        %rbx
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
 	SUBQ $40, SP
-	CMPL 0(DI), $0
-	JE   LBB19_2
-	MOVQ DI, R12
 	MOVL CX, -60(BP)
+	CMPL 0(DI), $0
+	JE LBB19_62
+	MOVQ DI, R12
 	MOVQ SI, -48(BP)
 	MOVQ DX, -56(BP)
 	MOVQ $-1, R14
-	JMP  LBB19_4
-
+	JMP LBB19_5
 LBB19_2:
-	MOVQ $-1, R13
-	JMP  LBB19_68
-
-LBB19_3:
-	LEAQ  3(AX), CX
-	MOVQ  CX, 0(BX)
-	TESTQ AX, AX
-	JLE   LBB19_64
-
-LBB19_40:
-	MOVL  0(R12), CX
-	MOVQ  R14, R13
-	TESTL CX, CX
-	JE    LBB19_68
-
-LBB19_4:
-	MOVQ    -48(BP), R13
-	MOVQ    0(R13), DI
-	MOVQ    8(R13), SI
-	MOVQ    -56(BP), BX
-	MOVQ    BX, DX
-	LONG    $0xfff220e8; BYTE $0xff // callq        _advance_ns
-	MOVLQSX 0(R12), DX
-	LEAQ    -1(DX), CX
-	MOVL    0(R12)(DX*4), SI
-	CMPQ    R14, $-1
-	JNE     LBB19_6
-	MOVQ    0(BX), R14
-	DECQ    R14
-
-LBB19_6:
-	DECL    SI
-	CMPL    SI, $5
-	JA      LBB19_11
-	LONG    $0x823d8d48; WORD $0x0004; BYTE $0x00 // leaq         $1154(%rip), %rdi  /* LJTI19_0(%rip) */
-	MOVLQSX 0(DI)(SI*4), SI
-	ADDQ    DI, SI
-	JMP     SI
-
-LBB19_8:
-	MOVBLSX AX, AX
-	CMPL    AX, $44
-	JE      LBB19_29
-	CMPL    AX, $93
-	JNE     LBB19_67
-	MOVL    CX, 0(R12)
-	MOVQ    R14, R13
-	TESTL   CX, CX
-	JNE     LBB19_4
-	JMP     LBB19_68
-
-LBB19_11:
-	MOVL    CX, 0(R12)
-	MOVBLSX AX, AX
-	CMPL    AX, $123
-	JBE     LBB19_27
-	JMP     LBB19_67
-
-LBB19_12:
-	MOVBLSX AX, AX
-	CMPL    AX, $44
-	JE      LBB19_31
-	CMPL    AX, $125
-	JNE     LBB19_67
-	MOVL    CX, 0(R12)
-	MOVQ    R14, R13
-	TESTL   CX, CX
-	JNE     LBB19_4
-	JMP     LBB19_68
-
-LBB19_15:
-	CMPB AX, $34
-	JNE  LBB19_67
-	MOVL $4, 0(R12)(DX*4)
-	MOVQ 0(BX), R15
 	MOVQ R13, DI
-
-LBB19_17:
-	MOVQ  R15, SI
-	LEAQ  -72(BP), DX
-	LONG  $0xfff412e8; BYTE $0xff // callq        _advance_string
-	MOVQ  AX, R13
+	MOVQ BX, SI
+	LONG $0x00077ce8; BYTE $0x00  // callq        _validate_string
 	TESTQ AX, AX
-	JS    LBB19_59
-	MOVQ  R13, 0(BX)
-	TESTQ R15, R15
-	JG    LBB19_40
-	JMP   LBB19_60
-
-LBB19_19:
-	CMPB AX, $58
-	JNE  LBB19_67
-	MOVL $0, 0(R12)(DX*4)
-	JMP  LBB19_40
-
-LBB19_21:
-	CMPB  AX, $93
-	JNE   LBB19_26
-	MOVL  CX, 0(R12)
-	MOVQ  R14, R13
+	JS LBB19_35
+LBB19_3:
+	MOVL 0(R12), CX
+	MOVQ R14, R13
 	TESTL CX, CX
-	JNE   LBB19_4
-	JMP   LBB19_68
-
-LBB19_23:
+	JE LBB19_66
+LBB19_5:
+	MOVQ -48(BP), R13
+	MOVQ 0(R13), DI
+	MOVQ 8(R13), SI
+	MOVQ -56(BP), BX
+	MOVQ BX, DX
+	LONG $0xfff1c1e8; BYTE $0xff  // callq        _advance_ns
+	MOVLQSX 0(R12), DX
+	LEAQ -1(DX), CX
+	CMPQ R14, $-1
+	JNE LBB19_7
+	MOVQ 0(BX), R14
+	ADDQ $-1, R14
+LBB19_7:
+	MOVL 0(R12)(DX*4), SI
+	ADDL $-1, SI
+	CMPL SI, $5
+	JA LBB19_12
+	LONG $0x603d8d48; WORD $0x0004; BYTE $0x00  // leaq         $1120(%rip), %rdi  /* LJTI19_0(%rip) */
+	MOVLQSX 0(DI)(SI*4), SI
+	ADDQ DI, SI
+	JMP SI
+LBB19_9:
 	MOVBLSX AX, AX
-	CMPL    AX, $34
-	JE      LBB19_33
-	CMPL    AX, $125
-	JNE     LBB19_67
-	MOVL    CX, 0(R12)
-	MOVQ    R14, R13
-	TESTL   CX, CX
-	JNE     LBB19_4
-	JMP     LBB19_68
-
-LBB19_26:
-	MOVL    $1, 0(R12)(DX*4)
+	CMPL AX, $44
+	JE LBB19_29
+	CMPL AX, $93
+	JE LBB19_11
+	JMP LBB19_65
+LBB19_12:
+	MOVL CX, 0(R12)
 	MOVBLSX AX, AX
-	CMPL    AX, $123
-	JA      LBB19_67
-
-LBB19_27:
-	MOVQ    $-1, R13
-	LONG    $0x770d8d48; WORD $0x0003; BYTE $0x00 // leaq         $887(%rip), %rcx  /* LJTI19_1(%rip) */
-	MOVLQSX 0(CX)(AX*4), AX
-	ADDQ    CX, AX
-	JMP     AX
-
-LBB19_28:
-	MOVQ  -56(BP), BX
-	MOVQ  0(BX), R15
-	LEAQ  -1(R15), R13
-	MOVQ  -48(BP), AX
-	MOVQ  0(AX), DI
-	ADDQ  R13, DI
-	MOVQ  8(AX), SI
-	SUBQ  R13, SI
-	LONG  $0x000cefe8; BYTE $0x00 // callq        _skip_number
-	MOVQ  $-2, CX
-	SUBQ  AX, CX
-	TESTQ AX, AX
-	LEAQ  -1(AX), AX
-	LONG  $0xc1480f48             // cmovsq       %rcx, %rax
-	MOVQ  $-2, CX
-	LONG  $0xe9480f4c             // cmovsq       %rcx, %r13
-	ADDQ  R15, AX
-	MOVQ  AX, 0(BX)
-	TESTQ R13, R13
-	JNS   LBB19_40
-	JMP   LBB19_68
-
-LBB19_29:
+	CMPL AX, $123
+	JBE LBB19_25
+	JMP LBB19_65
+LBB19_13:
+	MOVBLSX AX, AX
+	CMPL AX, $44
+	JNE LBB19_14
 	CMPL DX, $65535
-	JG   LBB19_61
-	LEAL 1(DX), AX
-	MOVL AX, 0(R12)
-	MOVL $0, 4(R12)(DX*4)
-	JMP  LBB19_40
-
-LBB19_31:
-	CMPL DX, $65535
-	JG   LBB19_61
+	JG LBB19_74
 	LEAL 1(DX), AX
 	MOVL AX, 0(R12)
 	MOVL $3, 4(R12)(DX*4)
-	JMP  LBB19_40
-
-LBB19_33:
-	MOVL  $2, 0(R12)(DX*4)
-	MOVL  -60(BP), AX
-	CMPL  AX, $1
-	JE    LBB19_37
-	TESTL AX, AX
-	JNE   LBB19_38
-	MOVQ  -56(BP), BX
-	MOVQ  0(BX), R15
-	MOVQ  -48(BP), DI
-	MOVQ  R15, SI
-	LEAQ  -72(BP), DX
-	LONG  $0xfff2b2e8; BYTE $0xff // callq        _advance_string
-	MOVQ  AX, R13
+	JMP LBB19_3
+LBB19_15:
+	CMPB AX, $34
+	JNE LBB19_65
+	MOVL $4, 0(R12)(DX*4)
+	CMPL -60(BP), $0
+	JNE LBB19_2
+	MOVQ 0(BX), R15
+	MOVQ R13, DI
+LBB19_18:
+	MOVQ R15, SI
+	LEAQ -72(BP), DX
+	LONG $0xfff375e8; BYTE $0xff  // callq        _advance_string
+	MOVQ AX, R13
 	TESTQ AX, AX
-	JS    LBB19_59
-	MOVQ  R13, 0(BX)
+	JS LBB19_63
+	MOVQ R13, 0(BX)
 	TESTQ R15, R15
-	JG    LBB19_38
-	JMP   LBB19_60
-
-LBB19_37:
-	MOVQ  R13, DI
-	MOVQ  BX, SI
-	LONG  $0x000533e8; BYTE $0x00 // callq        _validate_string
+	JG LBB19_3
+	JMP LBB19_20
+LBB19_21:
+	CMPB AX, $58
+	JNE LBB19_65
+	MOVL $0, 0(R12)(DX*4)
+	JMP LBB19_3
+LBB19_23:
+	CMPB AX, $93
+	JE LBB19_11
+	MOVL $1, 0(R12)(DX*4)
+	MOVBLSX AX, AX
+	CMPL AX, $123
+	JA LBB19_65
+LBB19_25:
+	MOVQ $-1, R13
+	LONG $0x8b0d8d48; WORD $0x0003; BYTE $0x00  // leaq         $907(%rip), %rcx  /* LJTI19_1(%rip) */
+	MOVLQSX 0(CX)(AX*4), AX
+	ADDQ CX, AX
+	JMP AX
+LBB19_28:
+	MOVQ -56(BP), BX
+	MOVQ 0(BX), R15
+	LEAQ -1(R15), R13
+	MOVQ -48(BP), AX
+	MOVQ 0(AX), DI
+	ADDQ R13, DI
+	MOVQ 8(AX), SI
+	SUBQ R13, SI
+	LONG $0x000d05e8; BYTE $0x00  // callq        _skip_number
+	LEAQ -1(AX), CX
+	MOVQ $-2, DX
+	SUBQ AX, DX
 	TESTQ AX, AX
-	JS    LBB19_65
-
+	LONG $0xd1490f48  // cmovnsq      %rcx, %rdx
+	MOVQ $-2, AX
+	LONG $0xe8480f4c  // cmovsq       %rax, %r13
+	ADDQ R15, DX
+	MOVQ DX, 0(BX)
+	TESTQ R13, R13
+	JNS LBB19_3
+	JMP LBB19_66
+LBB19_26:
+	MOVBLSX AX, AX
+	CMPL AX, $34
+	JE LBB19_33
+LBB19_14:
+	CMPL AX, $125
+	JNE LBB19_65
+LBB19_11:
+	MOVL CX, 0(R12)
+	MOVQ R14, R13
+	TESTL CX, CX
+	JNE LBB19_5
+	JMP LBB19_66
+LBB19_29:
+	CMPL DX, $65535
+	JG LBB19_74
+	LEAL 1(DX), AX
+	MOVL AX, 0(R12)
+	MOVL $0, 4(R12)(DX*4)
+	JMP LBB19_3
+LBB19_33:
+	MOVL $2, 0(R12)(DX*4)
+	CMPL -60(BP), $0
+	JE LBB19_36
+	MOVQ R13, DI
+	MOVQ BX, SI
+	LONG $0x00057ae8; BYTE $0x00  // callq        _validate_string
+	TESTQ AX, AX
+	JNS LBB19_38
+	JMP LBB19_35
+LBB19_36:
+	MOVQ 0(BX), R15
+	MOVQ R13, DI
+	MOVQ R15, SI
+	LEAQ -72(BP), DX
+	LONG $0xfff240e8; BYTE $0xff  // callq        _advance_string
+	MOVQ AX, R13
+	TESTQ AX, AX
+	JS LBB19_63
+	MOVQ R13, 0(BX)
+	TESTQ R15, R15
+	JLE LBB19_20
 LBB19_38:
 	MOVLQSX 0(R12), AX
-	CMPQ    AX, $65535
-	JG      LBB19_61
-	LEAL    1(AX), CX
-	MOVL    CX, 0(R12)
-	MOVL    $4, 4(R12)(AX*4)
-	JMP     LBB19_40
-
-LBB19_41:
-	MOVL  -60(BP), AX
-	CMPL  AX, $1
-	JE    LBB19_57
-	TESTL AX, AX
-	JNE   LBB19_40
-	MOVQ  -56(BP), BX
-	MOVQ  0(BX), R15
-	MOVQ  -48(BP), DI
-	JMP   LBB19_17
-
-LBB19_44:
-	MOVQ  -56(BP), BX
-	MOVQ  0(BX), R13
-	MOVQ  -48(BP), AX
-	MOVQ  0(AX), DI
-	ADDQ  R13, DI
-	MOVQ  8(AX), SI
-	SUBQ  R13, SI
-	LONG  $0x000bbbe8; BYTE $0x00 // callq        _skip_number
+	CMPQ AX, $65535
+	JG LBB19_74
+	LEAL 1(AX), CX
+	MOVL CX, 0(R12)
+	MOVL $4, 4(R12)(AX*4)
+	JMP LBB19_3
+LBB19_40:
+	CMPL -60(BP), $0
+	JE LBB19_61
+	MOVQ -48(BP), DI
+	MOVQ -56(BP), SI
+	LONG $0x00050ae8; BYTE $0x00  // callq        _validate_string
 	TESTQ AX, AX
-	JS    LBB19_66
-	ADDQ  R13, AX
-	MOVQ  AX, 0(BX)
+	JNS LBB19_3
+	JMP LBB19_35
+LBB19_42:
+	MOVQ -56(BP), BX
+	MOVQ 0(BX), R13
+	MOVQ -48(BP), AX
+	MOVQ 0(AX), DI
+	ADDQ R13, DI
+	MOVQ 8(AX), SI
+	SUBQ R13, SI
+	LONG $0x000bd7e8; BYTE $0x00  // callq        _skip_number
+	TESTQ AX, AX
+	JS LBB19_64
+	ADDQ R13, AX
+	MOVQ AX, 0(BX)
 	TESTQ R13, R13
-	JG    LBB19_40
-	JMP   LBB19_69
-
-LBB19_46:
+	JG LBB19_3
+	JMP LBB19_44
+LBB19_45:
 	MOVLQSX 0(R12), AX
-	CMPQ    AX, $65535
-	JG      LBB19_61
-	LEAL    1(AX), CX
-	MOVL    CX, 0(R12)
-	MOVL    $5, 4(R12)(AX*4)
-	JMP     LBB19_40
-
-LBB19_48:
-	MOVQ  -56(BP), BX
-	MOVQ  0(BX), AX
-	MOVQ  -48(BP), SI
-	MOVQ  8(SI), CX
-	LEAQ  -4(CX), DX
-	CMPQ  AX, DX
-	JA    LBB19_75
-	MOVQ  0(SI), CX
-	MOVL  0(CX)(AX*1), DX
-	CMPL  DX, $1702063201
-	JNE   LBB19_72
-	LEAQ  4(AX), CX
-	MOVQ  CX, 0(BX)
+	CMPQ AX, $65535
+	JG LBB19_74
+	LEAL 1(AX), CX
+	MOVL CX, 0(R12)
+	MOVL $5, 4(R12)(AX*4)
+	JMP LBB19_3
+LBB19_47:
+	MOVQ -56(BP), BX
+	MOVQ 0(BX), AX
+	MOVQ -48(BP), SI
+	MOVQ 8(SI), CX
+	LEAQ -4(CX), DX
+	CMPQ AX, DX
+	JA LBB19_70
+	MOVQ 0(SI), CX
+	MOVL 0(CX)(AX*1), DX
+	CMPL DX, $1702063201
+	JNE LBB19_67
+	LEAQ 4(AX), CX
+	MOVQ CX, 0(BX)
 	TESTQ AX, AX
-	JG    LBB19_40
-	JMP   LBB19_64
-
-LBB19_51:
+	JG LBB19_3
+	JMP LBB19_58
+LBB19_50:
 	MOVQ -56(BP), BX
 	MOVQ 0(BX), AX
 	MOVQ -48(BP), SI
 	MOVQ 8(SI), CX
 	LEAQ -3(CX), DX
 	CMPQ AX, DX
-	JA   LBB19_75
+	JA LBB19_70
 	MOVQ 0(SI), CX
 	CMPL -1(CX)(AX*1), $1819047278
-	JE   LBB19_3
-	JMP  LBB19_76
-
-LBB19_53:
+	JE LBB19_57
+	JMP LBB19_52
+LBB19_55:
 	MOVQ -56(BP), BX
 	MOVQ 0(BX), AX
 	MOVQ -48(BP), SI
 	MOVQ 8(SI), CX
 	LEAQ -3(CX), DX
 	CMPQ AX, DX
-	JA   LBB19_75
+	JA LBB19_70
 	MOVQ 0(SI), CX
 	CMPL -1(CX)(AX*1), $1702195828
-	JE   LBB19_3
-	JMP  LBB19_80
-
-LBB19_55:
-	MOVLQSX 0(R12), AX
-	CMPQ    AX, $65535
-	JG      LBB19_61
-	LEAL    1(AX), CX
-	MOVL    CX, 0(R12)
-	MOVL    $6, 4(R12)(AX*4)
-	JMP     LBB19_40
-
+	JNE LBB19_71
 LBB19_57:
-	MOVQ  -48(BP), DI
-	MOVQ  -56(BP), SI
-	LONG  $0x0003b1e8; BYTE $0x00 // callq        _validate_string
+	LEAQ 3(AX), CX
+	MOVQ CX, 0(BX)
 	TESTQ AX, AX
-	JNS   LBB19_40
-	JMP   LBB19_65
-
-LBB19_61:
-	MOVQ $-7, R13
-	JMP  LBB19_68
-
+	JG LBB19_3
+	JMP LBB19_58
 LBB19_59:
+	MOVLQSX 0(R12), AX
+	CMPQ AX, $65535
+	JG LBB19_74
+	LEAL 1(AX), CX
+	MOVL CX, 0(R12)
+	MOVL $6, 4(R12)(AX*4)
+	JMP LBB19_3
+LBB19_61:
+	MOVQ -56(BP), BX
+	MOVQ 0(BX), R15
+	MOVQ -48(BP), DI
+	JMP LBB19_18
+LBB19_62:
+	MOVQ $-1, R13
+	JMP LBB19_66
+LBB19_74:
+	MOVQ $-7, R13
+	JMP LBB19_66
+LBB19_35:
+	MOVQ AX, R13
+	JMP LBB19_66
+LBB19_63:
 	MOVQ -48(BP), AX
 	MOVQ 8(AX), AX
 	MOVQ AX, 0(BX)
-	JMP  LBB19_68
-
-LBB19_60:
-	DECQ R15
+	JMP LBB19_66
+LBB19_20:
+	ADDQ $-1, R15
 	MOVQ R15, R13
-	JMP  LBB19_68
-
-LBB19_75:
+	JMP LBB19_66
+LBB19_70:
 	MOVQ CX, 0(BX)
-	JMP  LBB19_68
-
-LBB19_64:
-	DECQ AX
-
-LBB19_65:
+	JMP LBB19_66
+LBB19_58:
+	ADDQ $-1, AX
 	MOVQ AX, R13
-	JMP  LBB19_68
-
-LBB19_66:
+	JMP LBB19_66
+LBB19_64:
 	NOTQ AX
 	ADDQ AX, R13
 	MOVQ R13, 0(BX)
-
-LBB19_67:
+LBB19_65:
 	MOVQ $-2, R13
-
-LBB19_68:
+LBB19_66:
 	MOVQ R13, AX
 	ADDQ $40, SP
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5d41 // popq         %r13
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB19_69:
-	DECQ R13
-	JMP  LBB19_68
-
-LBB19_72:
+LBB19_44:
+	ADDQ $-1, R13
+	JMP LBB19_66
+LBB19_67:
 	MOVQ $-2, R13
 	CMPB DX, $97
-	JNE  LBB19_68
-	INCQ AX
+	JNE LBB19_66
+	ADDQ $1, AX
 	MOVL $1702063201, DX
-
-LBB19_74:
-	SHRL    $8, DX
-	MOVQ    AX, 0(BX)
+LBB19_69:
+	SHRL $8, DX
+	MOVQ AX, 0(BX)
 	MOVBLSX 0(CX)(AX*1), SI
 	MOVBLZX DX, DI
-	INCQ    AX
-	CMPL    DI, SI
-	JE      LBB19_74
-	JMP     LBB19_68
-
-LBB19_76:
-	LEAQ -1(AX), DX
-	MOVQ DX, 0(BX)
-	MOVQ $-2, R13
-	CMPB -1(CX)(AX*1), $110
-	JNE  LBB19_68
-	MOVL $1819047278, DX
-
-LBB19_78:
-	SHRL    $8, DX
-	MOVQ    AX, 0(BX)
-	MOVBLSX 0(CX)(AX*1), SI
-	MOVBLZX DX, DI
-	INCQ    AX
-	CMPL    DI, SI
-	JE      LBB19_78
-	JMP     LBB19_68
-
-LBB19_80:
+	ADDQ $1, AX
+	CMPL DI, SI
+	JE LBB19_69
+	JMP LBB19_66
+LBB19_71:
 	LEAQ -1(AX), DX
 	MOVQ DX, 0(BX)
 	MOVQ $-2, R13
 	CMPB -1(CX)(AX*1), $116
-	JNE  LBB19_68
+	JNE LBB19_66
 	MOVL $1702195828, DX
-
-LBB19_82:
-	SHRL    $8, DX
-	MOVQ    AX, 0(BX)
+LBB19_73:
+	SHRL $8, DX
+	MOVQ AX, 0(BX)
 	MOVBLSX 0(CX)(AX*1), SI
 	MOVBLZX DX, DI
-	INCQ    AX
-	CMPL    DI, SI
-	JE      LBB19_82
-	JMP     LBB19_68
-
-// .set L19_0_set_8, LBB19_8-LJTI19_0
-// .set L19_0_set_12, LBB19_12-LJTI19_0
-// .set L19_0_set_15, LBB19_15-LJTI19_0
-// .set L19_0_set_19, LBB19_19-LJTI19_0
-// .set L19_0_set_21, LBB19_21-LJTI19_0
-// .set L19_0_set_23, LBB19_23-LJTI19_0
+	ADDQ $1, AX
+	CMPL DI, SI
+	JE LBB19_73
+	JMP LBB19_66
+LBB19_52:
+	LEAQ -1(AX), DX
+	MOVQ DX, 0(BX)
+	MOVQ $-2, R13
+	CMPB -1(CX)(AX*1), $110
+	JNE LBB19_66
+	MOVL $1819047278, DX
+LBB19_54:
+	SHRL $8, DX
+	MOVQ AX, 0(BX)
+	MOVBLSX 0(CX)(AX*1), SI
+	MOVBLZX DX, DI
+	ADDQ $1, AX
+	CMPL DI, SI
+	JE LBB19_54
+	JMP LBB19_66
+	// .set L19_0_set_9, LBB19_9-LJTI19_0
+	// .set L19_0_set_13, LBB19_13-LJTI19_0
+	// .set L19_0_set_15, LBB19_15-LJTI19_0
+	// .set L19_0_set_21, LBB19_21-LJTI19_0
+	// .set L19_0_set_23, LBB19_23-LJTI19_0
+	// .set L19_0_set_26, LBB19_26-LJTI19_0
 LJTI19_0:
-	LONG $0xfffffb87 // .long L19_0_set_8
-	LONG $0xfffffbc1 // .long L19_0_set_12
-	LONG $0xfffffbea // .long L19_0_set_15
-	LONG $0xfffffc29 // .long L19_0_set_19
-	LONG $0xfffffc3e // .long L19_0_set_21
-	LONG $0xfffffc56 // .long L19_0_set_23
-
-	// .set L19_1_set_68, LBB19_68-LJTI19_1
-	// .set L19_1_set_67, LBB19_67-LJTI19_1
-	// .set L19_1_set_41, LBB19_41-LJTI19_1
-	// .set L19_1_set_44, LBB19_44-LJTI19_1
+	LONG $0xfffffba9  // .long L19_0_set_9
+	LONG $0xfffffbd8  // .long L19_0_set_13
+	LONG $0xfffffc05  // .long L19_0_set_15
+	LONG $0xfffffc4e  // .long L19_0_set_21
+	LONG $0xfffffc63  // .long L19_0_set_23
+	LONG $0xfffffceb  // .long L19_0_set_26
+	// .set L19_1_set_66, LBB19_66-LJTI19_1
+	// .set L19_1_set_65, LBB19_65-LJTI19_1
+	// .set L19_1_set_40, LBB19_40-LJTI19_1
+	// .set L19_1_set_42, LBB19_42-LJTI19_1
 	// .set L19_1_set_28, LBB19_28-LJTI19_1
-	// .set L19_1_set_46, LBB19_46-LJTI19_1
-	// .set L19_1_set_48, LBB19_48-LJTI19_1
-	// .set L19_1_set_51, LBB19_51-LJTI19_1
-	// .set L19_1_set_53, LBB19_53-LJTI19_1
+	// .set L19_1_set_45, LBB19_45-LJTI19_1
+	// .set L19_1_set_47, LBB19_47-LJTI19_1
+	// .set L19_1_set_50, LBB19_50-LJTI19_1
 	// .set L19_1_set_55, LBB19_55-LJTI19_1
+	// .set L19_1_set_59, LBB19_59-LJTI19_1
 LJTI19_1:
-	LONG $0xffffff40 // .long L19_1_set_68
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffda6 // .long L19_1_set_41
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffdca // .long L19_1_set_44
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xfffffc92 // .long L19_1_set_28
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffe04 // .long L19_1_set_46
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffe29 // .long L19_1_set_48
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffe6c // .long L19_1_set_51
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffe9e // .long L19_1_set_53
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xffffff39 // .long L19_1_set_67
-	LONG $0xfffffecc // .long L19_1_set_55
-
+	LONG $0xffffff3b  // .long L19_1_set_66
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffd8b  // .long L19_1_set_40
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffdb0  // .long L19_1_set_42
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xfffffc7e  // .long L19_1_set_28
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffdea  // .long L19_1_set_45
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffe0f  // .long L19_1_set_47
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffe52  // .long L19_1_set_50
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffe80  // .long L19_1_set_55
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xffffff34  // .long L19_1_set_65
+	LONG $0xfffffebf  // .long L19_1_set_59
 _skip_array:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	MOVQ DX, AX
 	MOVQ SI, DX
 	MOVQ DI, SI
@@ -5733,12 +5205,11 @@ _skip_array:
 	MOVQ CX, 0(AX)
 	MOVQ AX, DI
 	XORL CX, CX
-	BYTE $0x5d               // popq         %rbp
-	JMP  _fsm_exec
-
+	BYTE $0x5d  // popq         %rbp
+	JMP _fsm_exec
 _skip_object:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	MOVQ DX, AX
 	MOVQ SI, DX
 	MOVQ DI, SI
@@ -5746,5670 +5217,5500 @@ _skip_object:
 	MOVQ CX, 0(AX)
 	MOVQ AX, DI
 	XORL CX, CX
-	BYTE $0x5d               // popq         %rbp
-	JMP  _fsm_exec
-
+	BYTE $0x5d  // popq         %rbp
+	JMP _fsm_exec
 _skip_string:
-	BYTE  $0x55                   // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	WORD  $0x5741                 // pushq        %r15
-	WORD  $0x5641                 // pushq        %r14
-	BYTE  $0x53                   // pushq        %rbx
-	BYTE  $0x50                   // pushq        %rax
-	MOVQ  SI, R14
-	MOVQ  DI, R15
-	MOVQ  0(SI), BX
-	LEAQ  -32(BP), DX
-	MOVQ  BX, SI
-	LONG  $0xffedade8; BYTE $0xff // callq        _advance_string
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	BYTE $0x53  // pushq        %rbx
+	BYTE $0x50  // pushq        %rax
+	MOVQ SI, R14
+	MOVQ DI, R15
+	MOVQ 0(SI), BX
+	LEAQ -32(BP), DX
+	MOVQ BX, SI
+	LONG $0xffed35e8; BYTE $0xff  // callq        _advance_string
 	TESTQ AX, AX
-	JS    LBB22_2
-	DECQ  BX
-	MOVQ  AX, CX
-	MOVQ  BX, AX
-	JMP   LBB22_3
-
+	JS LBB22_2
+	ADDQ $-1, BX
+	MOVQ AX, CX
+	MOVQ BX, AX
+	JMP LBB22_3
 LBB22_2:
 	MOVQ 8(R15), CX
-
 LBB22_3:
 	MOVQ CX, 0(R14)
 	ADDQ $8, SP
-	BYTE $0x5b      // popq         %rbx
-	WORD $0x5e41    // popq         %r14
-	WORD $0x5f41    // popq         %r15
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LCPI23_0:
-	QUAD $0x2222222222222222; QUAD $0x2222222222222222 // .space 16, '""""""""""""""""'
-
+	QUAD $0x2222222222222222; QUAD $0x2222222222222222  // .space 16, '""""""""""""""""'
 LCPI23_1:
-	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
-
+	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c  // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
 LCPI23_2:
-	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
-
+	QUAD $0x2020202020202020; QUAD $0x2020202020202020  // .space 16, '                '
 _validate_string:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	WORD $0x5741             // pushq        %r15
-	WORD $0x5641             // pushq        %r14
-	WORD $0x5541             // pushq        %r13
-	WORD $0x5441             // pushq        %r12
-	BYTE $0x53               // pushq        %rbx
-	SUBQ $40, SP
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5541  // pushq        %r13
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	SUBQ $24, SP
 	MOVQ SI, R14
 	MOVQ 0(SI), R15
-	MOVQ 8(DI), R12
-	MOVQ R12, -64(BP)
-	SUBQ R15, R12
-	JE   LBB23_16
-	MOVQ R14, -48(BP)
-	MOVQ 0(DI), AX
-	MOVQ AX, -56(BP)
-	LEAQ 0(AX)(R15*1), SI
-	CMPQ R12, $64
-	MOVQ SI, -72(BP)
-	JB   LBB23_31
-	MOVL R12, R9
-	ANDL $63, R9
-	MOVQ $-1, R13
-	XORL R14, R14
-	QUAD $0xffffff72056f7ac5 // vmovdqu      $-142(%rip), %xmm8  /* LCPI23_0(%rip) */
-	QUAD $0xffffff7a0d6ffac5 // vmovdqu      $-134(%rip), %xmm1  /* LCPI23_1(%rip) */
-	QUAD $0xffffff82156ffac5 // vmovdqu      $-126(%rip), %xmm2  /* LCPI23_2(%rip) */
-	LONG $0xdb76e1c5         // vpcmpeqd     %xmm3, %xmm3, %xmm3
-
-LBB23_3:
-	LONG  $0x3e6ffac5             // vmovdqu      (%rsi), %xmm7
-	LONG  $0x766ffac5; BYTE $0x10 // vmovdqu      $16(%rsi), %xmm6
-	LONG  $0x6e6ffac5; BYTE $0x20 // vmovdqu      $32(%rsi), %xmm5
-	LONG  $0x666ffac5; BYTE $0x30 // vmovdqu      $48(%rsi), %xmm4
-	LONG  $0xc774b9c5             // vpcmpeqb     %xmm7, %xmm8, %xmm0
-	LONG  $0xd0d7f9c5             // vpmovmskb    %xmm0, %edx
-	LONG  $0xc674b9c5             // vpcmpeqb     %xmm6, %xmm8, %xmm0
-	LONG  $0xc0d7f9c5             // vpmovmskb    %xmm0, %eax
-	LONG  $0xc574b9c5             // vpcmpeqb     %xmm5, %xmm8, %xmm0
-	LONG  $0xd8d7f9c5             // vpmovmskb    %xmm0, %ebx
-	LONG  $0xc474b9c5             // vpcmpeqb     %xmm4, %xmm8, %xmm0
-	LONG  $0xd8d779c5             // vpmovmskb    %xmm0, %r11d
-	LONG  $0xc174c1c5             // vpcmpeqb     %xmm1, %xmm7, %xmm0
-	LONG  $0xd0d779c5             // vpmovmskb    %xmm0, %r10d
-	LONG  $0xc174c9c5             // vpcmpeqb     %xmm1, %xmm6, %xmm0
-	LONG  $0xc8d7f9c5             // vpmovmskb    %xmm0, %ecx
-	LONG  $0xc174d1c5             // vpcmpeqb     %xmm1, %xmm5, %xmm0
-	SHLQ  $16, AX
-	ORQ   AX, DX
-	LONG  $0xc0d7f9c5             // vpmovmskb    %xmm0, %eax
-	LONG  $0xc174d9c5             // vpcmpeqb     %xmm1, %xmm4, %xmm0
-	SHLQ  $32, BX
-	ORQ   BX, DX
-	LONG  $0xd8d7f9c5             // vpmovmskb    %xmm0, %ebx
-	LONG  $0xc764e9c5             // vpcmpgtb     %xmm7, %xmm2, %xmm0
-	LONG  $0xfb64c1c5             // vpcmpgtb     %xmm3, %xmm7, %xmm7
-	LONG  $0xc0dbc1c5             // vpand        %xmm0, %xmm7, %xmm0
-	SHLQ  $16, CX
-	ORQ   CX, R10
-	LONG  $0xc8d7f9c5             // vpmovmskb    %xmm0, %ecx
-	LONG  $0xc664e9c5             // vpcmpgtb     %xmm6, %xmm2, %xmm0
-	LONG  $0xf364c9c5             // vpcmpgtb     %xmm3, %xmm6, %xmm6
-	LONG  $0xc0dbc9c5             // vpand        %xmm0, %xmm6, %xmm0
-	SHLQ  $32, AX
-	ORQ   AX, R10
-	LONG  $0xf8d7f9c5             // vpmovmskb    %xmm0, %edi
-	LONG  $0xc564e9c5             // vpcmpgtb     %xmm5, %xmm2, %xmm0
-	LONG  $0xeb64d1c5             // vpcmpgtb     %xmm3, %xmm5, %xmm5
-	LONG  $0xc0dbd1c5             // vpand        %xmm0, %xmm5, %xmm0
-	SHLQ  $48, BX
-	ORQ   BX, R10
-	LONG  $0xc0d7f9c5             // vpmovmskb    %xmm0, %eax
-	LONG  $0xc464e9c5             // vpcmpgtb     %xmm4, %xmm2, %xmm0
-	LONG  $0xe364d9c5             // vpcmpgtb     %xmm3, %xmm4, %xmm4
-	LONG  $0xc0dbd9c5             // vpand        %xmm0, %xmm4, %xmm0
-	SHLQ  $16, DI
-	ORQ   DI, CX
-	LONG  $0xc0d779c5             // vpmovmskb    %xmm0, %r8d
-	SHLQ  $48, R11
-	SHLQ  $32, AX
-	CMPQ  R13, $-1
-	JNE   LBB23_5
-	TESTQ R10, R10
-	JNE   LBB23_10
-
-LBB23_5:
-	SHLQ  $48, R8
-	ORQ   AX, CX
-	ORQ   R11, DX
-	MOVQ  R10, AX
-	ORQ   R14, AX
-	JNE   LBB23_9
-	ORQ   R8, CX
-	TESTQ DX, DX
-	JNE   LBB23_11
-
+	MOVQ 8(DI), R8
+	MOVQ R8, -64(BP)
+	SUBQ R15, R8
+	JE LBB23_52
+	MOVQ 0(DI), R13
+	LEAQ 0(R15)(R13*1), DI
+	MOVQ $-1, R11
+	XORL R12, R12
+	CMPQ R8, $64
+	JB LBB23_2
+	QUAD $0xffffff85056f7ac5  // vmovdqu      $-123(%rip), %xmm8  /* LCPI23_0(%rip) */
+	QUAD $0xffffff8d0d6ffac5  // vmovdqu      $-115(%rip), %xmm1  /* LCPI23_1(%rip) */
+	QUAD $0xffffff95156ffac5  // vmovdqu      $-107(%rip), %xmm2  /* LCPI23_2(%rip) */
+	LONG $0xdb76e1c5  // vpcmpeqd     %xmm3, %xmm3, %xmm3
+	MOVQ R15, DX
+LBB23_4:
+	LONG $0x6f7ac1c4; WORD $0x157c; BYTE $0x00  // vmovdqu      (%r13,%rdx), %xmm7
+	LONG $0x6f7ac1c4; WORD $0x1574; BYTE $0x10  // vmovdqu      $16(%r13,%rdx), %xmm6
+	LONG $0x6f7ac1c4; WORD $0x156c; BYTE $0x20  // vmovdqu      $32(%r13,%rdx), %xmm5
+	LONG $0x6f7ac1c4; WORD $0x1564; BYTE $0x30  // vmovdqu      $48(%r13,%rdx), %xmm4
+	LONG $0xc774b9c5  // vpcmpeqb     %xmm7, %xmm8, %xmm0
+	LONG $0xc0d7f9c5  // vpmovmskb    %xmm0, %eax
+	LONG $0xc674b9c5  // vpcmpeqb     %xmm6, %xmm8, %xmm0
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	LONG $0xc574b9c5  // vpcmpeqb     %xmm5, %xmm8, %xmm0
+	LONG $0xd8d7f9c5  // vpmovmskb    %xmm0, %ebx
+	LONG $0xc474b9c5  // vpcmpeqb     %xmm4, %xmm8, %xmm0
+	LONG $0xc8d779c5  // vpmovmskb    %xmm0, %r9d
+	LONG $0xc174c1c5  // vpcmpeqb     %xmm1, %xmm7, %xmm0
+	LONG $0xf0d7f9c5  // vpmovmskb    %xmm0, %esi
+	LONG $0xc174c9c5  // vpcmpeqb     %xmm1, %xmm6, %xmm0
+	SHLQ $16, CX
+	ORQ CX, AX
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	LONG $0xc174d1c5  // vpcmpeqb     %xmm1, %xmm5, %xmm0
+	SHLQ $32, BX
+	ORQ BX, AX
+	LONG $0xd8d7f9c5  // vpmovmskb    %xmm0, %ebx
+	LONG $0xc174d9c5  // vpcmpeqb     %xmm1, %xmm4, %xmm0
+	SHLQ $16, CX
+	ORQ CX, SI
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	LONG $0xc764e9c5  // vpcmpgtb     %xmm7, %xmm2, %xmm0
+	LONG $0xfb64c1c5  // vpcmpgtb     %xmm3, %xmm7, %xmm7
+	LONG $0xc7dbf9c5  // vpand        %xmm7, %xmm0, %xmm0
+	SHLQ $32, BX
+	ORQ BX, SI
+	LONG $0xd8d7f9c5  // vpmovmskb    %xmm0, %ebx
+	LONG $0xc664e9c5  // vpcmpgtb     %xmm6, %xmm2, %xmm0
+	LONG $0xf364c9c5  // vpcmpgtb     %xmm3, %xmm6, %xmm6
+	LONG $0xc6dbf9c5  // vpand        %xmm6, %xmm0, %xmm0
+	SHLQ $48, CX
+	ORQ CX, SI
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	LONG $0xc564e9c5  // vpcmpgtb     %xmm5, %xmm2, %xmm0
+	LONG $0xeb64d1c5  // vpcmpgtb     %xmm3, %xmm5, %xmm5
+	LONG $0xc5dbf9c5  // vpand        %xmm5, %xmm0, %xmm0
+	SHLQ $16, CX
+	ORQ CX, BX
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	SHLQ $48, R9
+	SHLQ $32, CX
+	CMPQ R11, $-1
+	JNE LBB23_7
+	TESTQ SI, SI
+	JNE LBB23_6
 LBB23_7:
-	TESTQ CX, CX
-	JNE   LBB23_18
-	ADDQ  $64, SI
-	ADDQ  $-64, R12
-	CMPQ  R12, $63
-	JA    LBB23_3
-	JMP   LBB23_20
-
-LBB23_9:
-	MOVQ  R14, AX
-	NOTQ  AX
-	ANDQ  R10, AX
-	LEAQ  0(AX)(AX*1), R11
-	ORQ   R14, R11
-	MOVQ  R11, DI
-	NOTQ  DI
-	ANDQ  R10, DI
-	MOVQ  $-6148914691236517206, BX
-	ANDQ  BX, DI
-	XORL  R14, R14
-	ADDQ  AX, DI
-	SETCS R14
-	ADDQ  DI, DI
-	MOVQ  $6148914691236517205, AX
-	XORQ  AX, DI
-	ANDQ  R11, DI
-	NOTQ  DI
-	ANDQ  DI, DX
-	ORQ   R8, CX
-	TESTQ DX, DX
-	JE    LBB23_7
-	JMP   LBB23_11
-
-LBB23_10:
-	MOVQ SI, DI
-	SUBQ -56(BP), DI
-	BSFQ R10, R13
-	ADDQ DI, R13
-	JMP  LBB23_5
-
-LBB23_11:
-	SUBQ  -56(BP), SI
-	BSFQ  DX, DX
-	LEAQ  1(SI)(DX*1), BX
-	TESTQ CX, CX
-	MOVQ  -48(BP), R14
-	JE    LBB23_13
-	BSFQ  CX, AX
-	CMPQ  AX, DX
-	JBE   LBB23_27
-
-LBB23_13:
-	TESTQ BX, BX
-	JS    LBB23_15
-	MOVQ  R15, SI
-	NOTQ  SI
-	ADDQ  BX, SI
-	MOVQ  -72(BP), DI
-	LONG  $0x0002bee8; BYTE $0x00 // callq        _utf8_validate
-	LEAQ  0(AX)(R15*1), R13
+	LONG $0xc464e9c5  // vpcmpgtb     %xmm4, %xmm2, %xmm0
+	LONG $0xe364d9c5  // vpcmpgtb     %xmm3, %xmm4, %xmm4
+	LONG $0xc4dbf9c5  // vpand        %xmm4, %xmm0, %xmm0
+	LONG $0xd0d779c5  // vpmovmskb    %xmm0, %r10d
+	SHLQ $48, R10
+	ORQ CX, BX
+	ORQ R9, AX
+	MOVQ SI, CX
+	ORQ R12, CX
+	JNE LBB23_8
+	ORQ R10, BX
 	TESTQ AX, AX
-	LONG  $0xeb480f4c             // cmovsq       %rbx, %r13
-	LEAQ  -1(R15), BX
-	MOVQ  $-2, AX
-	LONG  $0xd8490f48             // cmovnsq      %rax, %rbx
-	JMP   LBB23_17
-
-LBB23_15:
-	CMPQ BX, $-1
-	JNE  LBB23_17
-
-LBB23_16:
-	MOVQ $-1, BX
-	MOVQ -64(BP), R13
-
-LBB23_17:
-	MOVQ R13, 0(R14)
-	MOVQ BX, AX
-	ADDQ $40, SP
-	BYTE $0x5b       // popq         %rbx
-	WORD $0x5c41     // popq         %r12
-	WORD $0x5d41     // popq         %r13
-	WORD $0x5e41     // popq         %r14
-	WORD $0x5f41     // popq         %r15
-	BYTE $0x5d       // popq         %rbp
-	RET
-
-LBB23_18:
-	MOVQ $-2, BX
-	CMPQ R13, $-1
-	JE   LBB23_28
-
-LBB23_19:
-	MOVQ -48(BP), R14
-	JMP  LBB23_17
-
-LBB23_20:
-	MOVQ R9, R12
-	CMPQ R12, $32
-	JB   LBB23_35
-
-LBB23_21:
-	LONG  $0x066ffac5             // vmovdqu      (%rsi), %xmm0
-	LONG  $0x4e6ffac5; BYTE $0x10 // vmovdqu      $16(%rsi), %xmm1
-	QUAD  $0xfffffd35156ffac5     // vmovdqu      $-715(%rip), %xmm2  /* LCPI23_0(%rip) */
-	LONG  $0xda74f9c5             // vpcmpeqb     %xmm2, %xmm0, %xmm3
-	LONG  $0xdbd779c5             // vpmovmskb    %xmm3, %r11d
-	LONG  $0xd274f1c5             // vpcmpeqb     %xmm2, %xmm1, %xmm2
-	LONG  $0xd2d7f9c5             // vpmovmskb    %xmm2, %edx
-	QUAD  $0xfffffd2d156ffac5     // vmovdqu      $-723(%rip), %xmm2  /* LCPI23_1(%rip) */
-	LONG  $0xda74f9c5             // vpcmpeqb     %xmm2, %xmm0, %xmm3
-	LONG  $0xcbd7f9c5             // vpmovmskb    %xmm3, %ecx
-	LONG  $0xd274f1c5             // vpcmpeqb     %xmm2, %xmm1, %xmm2
-	LONG  $0xc2d7f9c5             // vpmovmskb    %xmm2, %eax
-	QUAD  $0xfffffd25156ffac5     // vmovdqu      $-731(%rip), %xmm2  /* LCPI23_2(%rip) */
-	LONG  $0xd864e9c5             // vpcmpgtb     %xmm0, %xmm2, %xmm3
-	LONG  $0xe476d9c5             // vpcmpeqd     %xmm4, %xmm4, %xmm4
-	LONG  $0xc464f9c5             // vpcmpgtb     %xmm4, %xmm0, %xmm0
-	LONG  $0xc3dbf9c5             // vpand        %xmm3, %xmm0, %xmm0
-	LONG  $0xc0d779c5             // vpmovmskb    %xmm0, %r8d
-	LONG  $0xc164e9c5             // vpcmpgtb     %xmm1, %xmm2, %xmm0
-	LONG  $0xcc64f1c5             // vpcmpgtb     %xmm4, %xmm1, %xmm1
-	LONG  $0xc0dbf1c5             // vpand        %xmm0, %xmm1, %xmm0
-	LONG  $0xd0d779c5             // vpmovmskb    %xmm0, %r10d
-	SHLQ  $16, DX
-	SHLQ  $16, AX
-	ORQ   AX, CX
-	CMPQ  R13, $-1
-	JNE   LBB23_23
-	TESTQ CX, CX
-	JNE   LBB23_47
-
-LBB23_23:
-	SHLQ  $16, R10
-	ORQ   R11, DX
-	MOVQ  CX, AX
-	ORQ   R14, AX
-	JNE   LBB23_32
-	ORQ   R8, R10
-	TESTQ DX, DX
-	JE    LBB23_33
-
-LBB23_25:
-	SUBQ  -56(BP), SI
-	BSFQ  DX, CX
-	LEAQ  1(SI)(CX*1), BX
-	TESTQ R10, R10
-	JE    LBB23_30
-	BSFQ  R10, AX
-	CMPQ  AX, CX
-	MOVQ  -48(BP), R14
-	JA    LBB23_13
-
-LBB23_27:
-	ADDQ SI, AX
-	CMPQ R13, $-1
-	LONG $0xe8440f4c // cmoveq       %rax, %r13
-	MOVQ $-2, BX
-	JMP  LBB23_17
-
-LBB23_28:
-	SUBQ -56(BP), SI
-	BSFQ CX, R13
-
-LBB23_29:
-	ADDQ SI, R13
-	MOVQ -48(BP), R14
-	JMP  LBB23_17
-
-LBB23_30:
-	MOVQ -48(BP), R14
-	JMP  LBB23_13
-
-LBB23_31:
-	MOVQ $-1, R13
-	XORL R14, R14
-	CMPQ R12, $32
-	JAE  LBB23_21
-	JMP  LBB23_35
-
-LBB23_32:
-	MOVL  R14, AX
-	NOTL  AX
-	ANDL  CX, AX
-	LEAL  0(AX)(AX*1), BX
-	ORL   R14, BX
-	MOVL  BX, DI
-	NOTL  DI
-	ANDL  CX, DI
-	ANDL  $-1431655766, DI
-	XORL  R14, R14
-	ADDL  AX, DI
-	SETCS R14
-	ADDL  DI, DI
-	XORL  $1431655765, DI
-	ANDL  BX, DI
-	NOTL  DI
-	ANDL  DI, DX
-	ORQ   R8, R10
-	TESTQ DX, DX
-	JNE   LBB23_25
-
-LBB23_33:
-	TESTQ R10, R10
-	JNE   LBB23_48
-	ADDQ  $32, SI
-	ADDQ  $-32, R12
-
-LBB23_35:
-	TESTQ R14, R14
-	JNE   LBB23_50
-	MOVQ  -48(BP), R14
-	TESTQ R12, R12
-	JE    LBB23_46
-
-LBB23_37:
-	MOVQ -56(BP), CX
+	JNE LBB23_10
+LBB23_14:
+	TESTQ BX, BX
+	JNE LBB23_15
+	ADDQ $-64, R8
+	ADDQ $64, DX
+	CMPQ R8, $63
+	JA LBB23_4
+	JMP LBB23_18
+LBB23_8:
+	MOVQ R12, CX
 	NOTQ CX
-
-LBB23_38:
-	LEAQ    1(SI), AX
-	MOVBLZX 0(SI), DX
-	CMPB    DX, $34
-	JE      LBB23_45
-	LEAQ    -1(R12), BX
-	CMPB    DX, $92
-	JE      LBB23_42
-	CMPB    DX, $31
-	JBE     LBB23_52
-	MOVQ    AX, SI
-	MOVQ    BX, R12
-	TESTQ   BX, BX
-	JNE     LBB23_38
-	JMP     LBB23_44
-
-LBB23_42:
+	ANDQ SI, CX
+	MOVQ CX, -56(BP)
+	LEAQ 0(CX)(CX*1), R9
+	ORQ R12, R9
+	MOVQ R9, -48(BP)
+	NOTQ R9
+	ANDQ SI, R9
+	MOVQ $-6148914691236517206, SI
+	ANDQ SI, R9
+	XORL R12, R12
+	ADDQ -56(BP), R9
+	SETCS R12
+	ADDQ R9, R9
+	MOVQ $6148914691236517205, CX
+	XORQ CX, R9
+	ANDQ -48(BP), R9
+	NOTQ R9
+	ANDQ R9, AX
+	ORQ R10, BX
+	TESTQ AX, AX
+	JE LBB23_14
+	JMP LBB23_10
+LBB23_6:
+	BSFQ SI, R11
+	ADDQ DX, R11
+	JMP LBB23_7
+LBB23_10:
+	BSFQ AX, CX
+	LEAQ 0(CX)(DX*1), R12
+	ADDQ $1, R12
 	TESTQ BX, BX
-	JE    LBB23_16
-	ADDQ  CX, AX
-	CMPQ  R13, $-1
-	LONG  $0xe8440f4c // cmoveq       %rax, %r13
-	ADDQ  $2, SI
-	ADDQ  $-2, R12
-	MOVQ  R12, BX
-	TESTQ BX, BX
-	JNE   LBB23_38
-
-LBB23_44:
-	CMPB DX, $34
-	JNE  LBB23_16
-	JMP  LBB23_46
-
-LBB23_45:
-	MOVQ AX, SI
-
-LBB23_46:
-	SUBQ -56(BP), SI
-	MOVQ SI, BX
-	JMP  LBB23_13
-
-LBB23_47:
-	MOVQ SI, AX
-	SUBQ -56(BP), AX
-	BSFQ CX, R13
-	ADDQ AX, R13
-	JMP  LBB23_23
-
-LBB23_48:
-	MOVQ $-2, BX
-	CMPQ R13, $-1
-	JNE  LBB23_19
-	SUBQ -56(BP), SI
-	BSFQ R10, R13
-	JMP  LBB23_29
-
+	JE LBB23_50
+	BSFQ BX, AX
+	CMPQ AX, CX
+	JBE LBB23_13
 LBB23_50:
 	TESTQ R12, R12
-	MOVQ  -48(BP), R14
-	JE    LBB23_16
-	MOVQ  -56(BP), AX
-	NOTQ  AX
-	ADDQ  SI, AX
-	CMPQ  R13, $-1
-	LONG  $0xe8440f4c  // cmoveq       %rax, %r13
-	INCQ  SI
-	DECQ  R12
-	TESTQ R12, R12
-	JNE   LBB23_37
-	JMP   LBB23_46
-
+	JS LBB23_51
+	LEAQ -1(R15), BX
+	MOVQ R15, SI
+	NOTQ SI
+	ADDQ R12, SI
+	LONG $0x0002b3e8; BYTE $0x00  // callq        _utf8_validate
+	ADDQ AX, R15
+	TESTQ AX, AX
+	LONG $0xfc480f4d  // cmovsq       %r12, %r15
+	MOVQ $-2, R12
+	LONG $0xe3480f4c  // cmovsq       %rbx, %r12
+	MOVQ R15, R11
+	JMP LBB23_54
+LBB23_51:
+	CMPQ R12, $-1
+	JNE LBB23_54
 LBB23_52:
-	MOVQ $-2, BX
-	CMPQ R13, $-1
-	JNE  LBB23_19
-	ADDQ CX, AX
-	MOVQ AX, R13
-	MOVQ -48(BP), R14
-	JMP  LBB23_17
-
+	MOVQ $-1, R12
+	MOVQ -64(BP), R11
+LBB23_54:
+	MOVQ R11, 0(R14)
+	MOVQ R12, AX
+	ADDQ $24, SP
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5d41  // popq         %r13
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
+	RET
+LBB23_15:
+	MOVQ $-2, R12
+	CMPQ R11, $-1
+	JNE LBB23_54
+	BSFQ BX, R11
+	ADDQ DX, R11
+	JMP LBB23_54
+LBB23_18:
+	ADDQ R13, DX
+	CMPQ R8, $32
+	JB LBB23_32
+LBB23_20:
+	LONG $0x026ffac5  // vmovdqu      (%rdx), %xmm0
+	LONG $0x4a6ffac5; BYTE $0x10  // vmovdqu      $16(%rdx), %xmm1
+	QUAD $0xfffffd44156ffac5  // vmovdqu      $-700(%rip), %xmm2  /* LCPI23_0(%rip) */
+	LONG $0xda74f9c5  // vpcmpeqb     %xmm2, %xmm0, %xmm3
+	LONG $0xf3d7f9c5  // vpmovmskb    %xmm3, %esi
+	LONG $0xd274f1c5  // vpcmpeqb     %xmm2, %xmm1, %xmm2
+	LONG $0xc2d7f9c5  // vpmovmskb    %xmm2, %eax
+	QUAD $0xfffffd3c156ffac5  // vmovdqu      $-708(%rip), %xmm2  /* LCPI23_1(%rip) */
+	LONG $0xda74f9c5  // vpcmpeqb     %xmm2, %xmm0, %xmm3
+	LONG $0xdbd7f9c5  // vpmovmskb    %xmm3, %ebx
+	LONG $0xd274f1c5  // vpcmpeqb     %xmm2, %xmm1, %xmm2
+	LONG $0xcad7f9c5  // vpmovmskb    %xmm2, %ecx
+	QUAD $0xfffffd34156ffac5  // vmovdqu      $-716(%rip), %xmm2  /* LCPI23_2(%rip) */
+	LONG $0xd864e9c5  // vpcmpgtb     %xmm0, %xmm2, %xmm3
+	LONG $0xe476d9c5  // vpcmpeqd     %xmm4, %xmm4, %xmm4
+	LONG $0xc464f9c5  // vpcmpgtb     %xmm4, %xmm0, %xmm0
+	LONG $0xc0dbe1c5  // vpand        %xmm0, %xmm3, %xmm0
+	LONG $0xd0d779c5  // vpmovmskb    %xmm0, %r10d
+	LONG $0xc164e9c5  // vpcmpgtb     %xmm1, %xmm2, %xmm0
+	LONG $0xcc64f1c5  // vpcmpgtb     %xmm4, %xmm1, %xmm1
+	LONG $0xc1dbf9c5  // vpand        %xmm1, %xmm0, %xmm0
+	LONG $0xc8d779c5  // vpmovmskb    %xmm0, %r9d
+	SHLQ $16, AX
+	SHLQ $16, CX
+	ORQ CX, BX
+	CMPQ R11, $-1
+	JNE LBB23_23
+	TESTQ BX, BX
+	JNE LBB23_22
+LBB23_23:
+	SHLQ $16, R9
+	ORQ SI, AX
+	MOVQ BX, CX
+	ORQ R12, CX
+	JNE LBB23_24
+	ORQ R10, R9
+	TESTQ AX, AX
+	JE LBB23_28
+LBB23_26:
+	SUBQ R13, DX
+	BSFQ AX, CX
+	LEAQ 0(DX)(CX*1), R12
+	ADDQ $1, R12
+	TESTQ R9, R9
+	JE LBB23_50
+	BSFQ R9, AX
+	CMPQ AX, CX
+	JA LBB23_50
+LBB23_13:
+	ADDQ DX, AX
+	CMPQ R11, $-1
+	LONG $0xd8440f4c  // cmoveq       %rax, %r11
+	MOVQ $-2, R12
+	JMP LBB23_54
+LBB23_2:
+	MOVQ DI, DX
+	CMPQ R8, $32
+	JAE LBB23_20
+	JMP LBB23_32
+LBB23_24:
+	MOVL R12, CX
+	NOTL CX
+	ANDL BX, CX
+	LEAL 0(CX)(CX*1), SI
+	ORL R12, SI
+	MOVL SI, -48(BP)
+	NOTL SI
+	ANDL BX, SI
+	ANDL $-1431655766, SI
+	XORL R12, R12
+	ADDL CX, SI
+	SETCS R12
+	ADDL SI, SI
+	XORL $1431655765, SI
+	ANDL -48(BP), SI
+	NOTL SI
+	ANDL SI, AX
+	ORQ R10, R9
+	TESTQ AX, AX
+	JNE LBB23_26
+LBB23_28:
+	TESTQ R9, R9
+	JNE LBB23_29
+	ADDQ $32, DX
+	ADDQ $-32, R8
+LBB23_32:
+	TESTQ R12, R12
+	JNE LBB23_33
+	TESTQ R8, R8
+	JE LBB23_49
+LBB23_36:
+	MOVQ R13, AX
+	NOTQ AX
+	MOVQ R13, SI
+	NEGQ SI
+LBB23_37:
+	XORL BX, BX
+LBB23_38:
+	MOVBLZX 0(DX)(BX*1), CX
+	CMPB CX, $34
+	JE LBB23_48
+	CMPB CX, $92
+	JE LBB23_40
+	CMPB CX, $31
+	JBE LBB23_43
+	ADDQ $1, BX
+	CMPQ R8, BX
+	JNE LBB23_38
+	JMP LBB23_46
+LBB23_40:
+	LEAQ -1(R8), CX
+	CMPQ CX, BX
+	JE LBB23_52
+	LEAQ 0(SI)(DX*1), CX
+	ADDQ BX, CX
+	CMPQ R11, $-1
+	LONG $0xd9440f4c  // cmoveq       %rcx, %r11
+	ADDQ BX, DX
+	ADDQ $2, DX
+	MOVQ R8, CX
+	SUBQ BX, CX
+	ADDQ $-2, CX
+	ADDQ $-2, R8
+	CMPQ R8, BX
+	MOVQ CX, R8
+	JNE LBB23_37
+	JMP LBB23_52
+LBB23_48:
+	ADDQ BX, DX
+	ADDQ $1, DX
+LBB23_49:
+	SUBQ R13, DX
+	MOVQ DX, R12
+	JMP LBB23_50
+LBB23_46:
+	CMPB CX, $34
+	JNE LBB23_52
+	ADDQ R8, DX
+	JMP LBB23_49
+LBB23_22:
+	MOVQ DX, CX
+	SUBQ R13, CX
+	BSFQ BX, R11
+	ADDQ CX, R11
+	JMP LBB23_23
+LBB23_29:
+	MOVQ $-2, R12
+	CMPQ R11, $-1
+	JNE LBB23_54
+	SUBQ R13, DX
+	BSFQ R9, R11
+	ADDQ DX, R11
+	JMP LBB23_54
+LBB23_33:
+	TESTQ R8, R8
+	JE LBB23_52
+	MOVQ R13, AX
+	NOTQ AX
+	ADDQ DX, AX
+	CMPQ R11, $-1
+	LONG $0xd8440f4c  // cmoveq       %rax, %r11
+	ADDQ $1, DX
+	ADDQ $-1, R8
+	TESTQ R8, R8
+	JNE LBB23_36
+	JMP LBB23_49
+LBB23_43:
+	MOVQ $-2, R12
+	CMPQ R11, $-1
+	JNE LBB23_54
+	ADDQ DX, AX
+	LEAQ 0(BX)(AX*1), R11
+	ADDQ $1, R11
+	JMP LBB23_54
 _utf8_validate:
-	BYTE  $0x55                                 // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD  $0x5741                               // pushq        %r15
-	WORD  $0x5641                               // pushq        %r14
-	BYTE  $0x53                                 // pushq        %rbx
-	MOVQ  $-1, AX
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	BYTE $0x53  // pushq        %rbx
+	MOVQ $-1, AX
 	TESTQ SI, SI
-	JLE   LBB24_27
-	LONG  $0x840d8d4c; WORD $0x00ac; BYTE $0x00 // leaq         $44164(%rip), %r9  /* _first(%rip) */
-	LONG  $0x7d058d4c; WORD $0x00ad; BYTE $0x00 // leaq         $44413(%rip), %r8  /* _ranges(%rip) */
-	LONG  $0x19158d4c; WORD $0x0001; BYTE $0x00 // leaq         $281(%rip), %r10  /* LJTI24_0(%rip) */
-	MOVQ  DI, R14
-
+	JLE LBB24_28
+	LONG $0x5c0d8d4c; WORD $0x00ac; BYTE $0x00  // leaq         $44124(%rip), %r9  /* _first(%rip) */
+	LONG $0x55058d4c; WORD $0x00ad; BYTE $0x00  // leaq         $44373(%rip), %r8  /* _ranges(%rip) */
+	LONG $0x30158d4c; WORD $0x0001; BYTE $0x00  // leaq         $304(%rip), %r10  /* LJTI24_0(%rip) */
+	MOVQ DI, R14
 LBB24_2:
 	CMPB 0(R14), $0
-	JS   LBB24_3
-	MOVQ SI, DX
+	JS LBB24_3
+	MOVQ SI, BX
 	MOVQ R14, CX
 	CMPQ SI, $16
-	JL   LBB24_5
-
-LBB24_10:
-	LONG  $0x016ffac5 // vmovdqu      (%rcx), %xmm0
-	LONG  $0xd8d7f9c5 // vpmovmskb    %xmm0, %ebx
-	TESTW BX, BX
-	JNE   LBB24_11
-	ADDQ  $16, CX
-	CMPQ  DX, $31
-	LEAQ  -16(DX), DX
-	JG    LBB24_10
-
-LBB24_5:
-	TESTQ DX, DX
-	JLE   LBB24_27
-	INCQ  DX
-
-LBB24_7:
+	JL LBB24_15
+	XORL DX, DX
+	XORL BX, BX
+LBB24_6:
+	LONG $0x6f7ac1c4; WORD $0x1604  // vmovdqu      (%r14,%rdx), %xmm0
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	TESTW CX, CX
+	JNE LBB24_7
+	ADDQ $16, DX
+	LEAQ 0(SI)(BX*1), CX
+	ADDQ $-16, CX
+	ADDQ $-16, BX
+	ADDQ $16, CX
+	CMPQ CX, $31
+	JG LBB24_6
+	MOVQ R14, CX
+	SUBQ BX, CX
+	MOVQ SI, BX
+	SUBQ DX, BX
+LBB24_15:
+	TESTQ BX, BX
+	JLE LBB24_28
+	ADDQ $1, BX
+	MOVQ CX, DX
+	SUBQ R14, DX
+LBB24_17:
 	CMPB 0(CX), $0
-	JS   LBB24_12
-	INCQ CX
-	DECQ DX
-	CMPQ DX, $1
-	JG   LBB24_7
-	JMP  LBB24_27
-
+	JS LBB24_8
+	ADDQ $1, CX
+	ADDQ $-1, BX
+	ADDQ $1, DX
+	CMPQ BX, $1
+	JG LBB24_17
+	JMP LBB24_28
 LBB24_3:
 	XORL DX, DX
+LBB24_8:
 	CMPQ DX, $-1
-	JNE  LBB24_14
-	JMP  LBB24_27
-
-LBB24_12:
-	SUBQ R14, CX
-	MOVQ CX, DX
-	CMPQ DX, $-1
-	JE   LBB24_27
-
-LBB24_14:
-	SUBQ    DX, SI
-	JLE     LBB24_27
-	LEAQ    0(R14)(DX*1), R11
+	JE LBB24_28
+LBB24_9:
+	SUBQ DX, SI
+	JLE LBB24_28
+	LEAQ 0(R14)(DX*1), R11
 	MOVBLZX 0(R14)(DX*1), R14
 	MOVBLZX 0(R14)(R9*1), R15
-	MOVL    R15, DX
-	ANDL    $7, DX
-	CMPQ    SI, DX
-	JB      LBB24_25
-	CMPB    DX, $4
-	JA      LBB24_25
-	MOVL    $1, BX
-	MOVBLZX DX, CX
-	MOVLQSX 0(R10)(CX*4), CX
-	ADDQ    R10, CX
-	JMP     CX
-
-LBB24_18:
-	MOVB  3(R11), BX
+	MOVL R15, CX
+	ANDL $7, CX
+	CMPQ SI, CX
+	JB LBB24_26
+	CMPB CX, $4
+	JA LBB24_26
+	MOVL $1, BX
+	MOVBLZX CX, DX
+	MOVLQSX 0(R10)(DX*4), DX
+	ADDQ R10, DX
+	JMP DX
+LBB24_19:
+	MOVB 3(R11), BX
 	TESTB BX, BX
-	JNS   LBB24_25
-	CMPB  BX, $-65
-	JA    LBB24_25
-
-LBB24_20:
-	MOVB  2(R11), BX
+	JNS LBB24_26
+	CMPB BX, $-65
+	JA LBB24_26
+LBB24_21:
+	MOVB 2(R11), BX
 	TESTB BX, BX
-	JNS   LBB24_25
-	CMPB  BX, $-65
-	JA    LBB24_25
-
-LBB24_22:
+	JNS LBB24_26
+	CMPB BX, $-65
+	JA LBB24_26
+LBB24_23:
 	TESTB R14, R14
-	JNS   LBB24_25
-	SHRQ  $4, R15
-	MOVB  1(R11), R14
-	CMPB  R14, 0(R8)(R15*2)
-	JB    LBB24_25
-	MOVQ  DX, BX
-	CMPB  1(R8)(R15*2), R14
-	JB    LBB24_25
-
-LBB24_26:
+	JNS LBB24_26
+	SHRQ $4, R15
+	MOVB 1(R11), R14
+	CMPB R14, 0(R8)(R15*2)
+	JB LBB24_26
+	MOVQ CX, BX
+	CMPB 1(R8)(R15*2), R14
+	JB LBB24_26
+LBB24_27:
 	ADDQ BX, R11
 	MOVQ R11, R14
 	SUBQ BX, SI
-	JG   LBB24_2
-	JMP  LBB24_27
-
-LBB24_11:
-	MOVWLZX BX, DX
-	SUBQ    R14, CX
-	BSFQ    DX, DX
-	ADDQ    CX, DX
-	CMPQ    DX, $-1
-	JNE     LBB24_14
-	JMP     LBB24_27
-
-LBB24_25:
+	JG LBB24_2
+	JMP LBB24_28
+LBB24_7:
+	MOVWLZX CX, CX
+	BSFQ CX, DX
+	SUBQ BX, DX
+	CMPQ DX, $-1
+	JNE LBB24_9
+	JMP LBB24_28
+LBB24_26:
 	SUBQ DI, R11
 	MOVQ R11, AX
-
-LBB24_27:
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
+LBB24_28:
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-// .set L24_0_set_26, LBB24_26-LJTI24_0
-// .set L24_0_set_25, LBB24_25-LJTI24_0
-// .set L24_0_set_22, LBB24_22-LJTI24_0
-// .set L24_0_set_20, LBB24_20-LJTI24_0
-// .set L24_0_set_18, LBB24_18-LJTI24_0
+	// .set L24_0_set_27, LBB24_27-LJTI24_0
+	// .set L24_0_set_26, LBB24_26-LJTI24_0
+	// .set L24_0_set_23, LBB24_23-LJTI24_0
+	// .set L24_0_set_21, LBB24_21-LJTI24_0
+	// .set L24_0_set_19, LBB24_19-LJTI24_0
 LJTI24_0:
-	LONG $0xffffffc9 // .long L24_0_set_26
-	LONG $0xfffffff3 // .long L24_0_set_25
-	LONG $0xffffffac // .long L24_0_set_22
-	LONG $0xffffff9f // .long L24_0_set_20
-	LONG $0xffffff92 // .long L24_0_set_18
-
+	LONG $0xffffffcc  // .long L24_0_set_27
+	LONG $0xfffffff3  // .long L24_0_set_26
+	LONG $0xffffffaf  // .long L24_0_set_23
+	LONG $0xffffffa2  // .long L24_0_set_21
+	LONG $0xffffff95  // .long L24_0_set_19
 _skip_negative:
-	BYTE  $0x55                   // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	WORD  $0x5641                 // pushq        %r14
-	BYTE  $0x53                   // pushq        %rbx
-	MOVQ  SI, R14
-	MOVQ  0(SI), BX
-	MOVQ  0(DI), AX
-	ADDQ  BX, AX
-	MOVQ  8(DI), SI
-	SUBQ  BX, SI
-	MOVQ  AX, DI
-	LONG  $0x000098e8; BYTE $0x00 // callq        _skip_number
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5641  // pushq        %r14
+	BYTE $0x53  // pushq        %rbx
+	MOVQ SI, R14
+	MOVQ 0(SI), BX
+	MOVQ 0(DI), AX
+	ADDQ BX, AX
+	MOVQ 8(DI), SI
+	SUBQ BX, SI
+	MOVQ AX, DI
+	LONG $0x000099e8; BYTE $0x00  // callq        _skip_number
 	TESTQ AX, AX
-	JS    LBB25_1
-	ADDQ  BX, AX
-	MOVQ  AX, 0(R14)
-	DECQ  BX
-	JMP   LBB25_3
-
+	JS LBB25_1
+	ADDQ BX, AX
+	MOVQ AX, 0(R14)
+	ADDQ $-1, BX
+	JMP LBB25_3
 LBB25_1:
 	NOTQ AX
 	ADDQ AX, BX
 	MOVQ BX, 0(R14)
 	MOVQ $-2, BX
-
 LBB25_3:
 	MOVQ BX, AX
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5e41 // popq         %r14
-	BYTE $0x5d   // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LCPI26_0:
-	QUAD $0x2f2f2f2f2f2f2f2f; QUAD $0x2f2f2f2f2f2f2f2f // .space 16, '////////////////'
-
+	QUAD $0x2f2f2f2f2f2f2f2f; QUAD $0x2f2f2f2f2f2f2f2f  // .space 16, '////////////////'
 LCPI26_1:
-	QUAD $0x3a3a3a3a3a3a3a3a; QUAD $0x3a3a3a3a3a3a3a3a // .space 16, '::::::::::::::::'
-
+	QUAD $0x3a3a3a3a3a3a3a3a; QUAD $0x3a3a3a3a3a3a3a3a  // .space 16, '::::::::::::::::'
 LCPI26_2:
-	QUAD $0x2b2b2b2b2b2b2b2b; QUAD $0x2b2b2b2b2b2b2b2b // .space 16, '++++++++++++++++'
-
+	QUAD $0x2b2b2b2b2b2b2b2b; QUAD $0x2b2b2b2b2b2b2b2b  // .space 16, '++++++++++++++++'
 LCPI26_3:
-	QUAD $0x2d2d2d2d2d2d2d2d; QUAD $0x2d2d2d2d2d2d2d2d // .space 16, '----------------'
-
+	QUAD $0x2d2d2d2d2d2d2d2d; QUAD $0x2d2d2d2d2d2d2d2d  // .space 16, '----------------'
 LCPI26_4:
-	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
-
+	QUAD $0xdfdfdfdfdfdfdfdf; QUAD $0xdfdfdfdfdfdfdfdf  // .space 16, '\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf\xdf'
 LCPI26_5:
-	QUAD $0x2e2e2e2e2e2e2e2e; QUAD $0x2e2e2e2e2e2e2e2e // .space 16, '................'
-
+	QUAD $0x2e2e2e2e2e2e2e2e; QUAD $0x2e2e2e2e2e2e2e2e  // .space 16, '................'
 LCPI26_6:
-	QUAD $0x6565656565656565; QUAD $0x6565656565656565 // .space 16, 'eeeeeeeeeeeeeeee'
-
+	QUAD $0x4545454545454545; QUAD $0x4545454545454545  // .space 16, 'EEEEEEEEEEEEEEEE'
 _skip_number:
-	BYTE    $0x55                  // pushq        %rbp
-	WORD    $0x8948; BYTE $0xe5    // movq         %rsp, %rbp
-	WORD    $0x5741                // pushq        %r15
-	WORD    $0x5641                // pushq        %r14
-	WORD    $0x5541                // pushq        %r13
-	WORD    $0x5441                // pushq        %r12
-	BYTE    $0x53                  // pushq        %rbx
-	TESTQ   SI, SI
-	JE      LBB26_34
-	CMPB    0(DI), $48
-	JNE     LBB26_5
-	MOVL    $1, DX
-	CMPQ    SI, $1
-	JE      LBB26_52
-	MOVB    1(DI), AX
-	ADDB    $-46, AX
-	CMPB    AX, $55
-	JA      LBB26_52
-	MOVBLZX AX, AX
-	MOVQ    $36028797027352577, CX
-	BTQ     AX, CX
-	JAE     LBB26_52
-
-LBB26_5:
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	WORD $0x5441  // pushq        %r12
+	BYTE $0x53  // pushq        %rbx
+	TESTQ SI, SI
+	JE LBB26_1
+	CMPB 0(DI), $48
+	JNE LBB26_6
+	MOVL $1, AX
+	CMPQ SI, $1
+	JE LBB26_55
+	MOVB 1(DI), CX
+	ADDB $-46, CX
+	CMPB CX, $55
+	JA LBB26_55
+	MOVBLZX CX, CX
+	MOVQ $36028797027352577, DX
+	BTQ CX, DX
+	JAE LBB26_55
+LBB26_6:
 	CMPQ SI, $16
-	JB   LBB26_57
-	LEAQ -16(SI), R11
-	MOVQ R11, AX
-	ANDQ $-16, AX
-	LEAQ 16(AX)(DI*1), R10
-	ANDL $15, R11
+	JB LBB26_7
+	MOVQ $-1, R10
+	XORL AX, AX
+	QUAD $0xffffff27056f7ac5  // vmovdqu      $-217(%rip), %xmm8  /* LCPI26_0(%rip) */
+	QUAD $0xffffff2f0d6f7ac5  // vmovdqu      $-209(%rip), %xmm9  /* LCPI26_1(%rip) */
+	QUAD $0xffffff37156f7ac5  // vmovdqu      $-201(%rip), %xmm10  /* LCPI26_2(%rip) */
+	QUAD $0xffffff3f1d6f7ac5  // vmovdqu      $-193(%rip), %xmm11  /* LCPI26_3(%rip) */
+	QUAD $0xffffff47256ffac5  // vmovdqu      $-185(%rip), %xmm4  /* LCPI26_4(%rip) */
+	QUAD $0xffffff4f2d6ffac5  // vmovdqu      $-177(%rip), %xmm5  /* LCPI26_5(%rip) */
+	QUAD $0xffffff57356ffac5  // vmovdqu      $-169(%rip), %xmm6  /* LCPI26_6(%rip) */
+	MOVL $4294967295, R11
 	MOVQ $-1, R9
-	QUAD $0xffffff15056f7ac5 // vmovdqu      $-235(%rip), %xmm8  /* LCPI26_0(%rip) */
-	QUAD $0xffffff1d0d6f7ac5 // vmovdqu      $-227(%rip), %xmm9  /* LCPI26_1(%rip) */
-	QUAD $0xffffff25156f7ac5 // vmovdqu      $-219(%rip), %xmm10  /* LCPI26_2(%rip) */
-	QUAD $0xffffff2d1d6f7ac5 // vmovdqu      $-211(%rip), %xmm11  /* LCPI26_3(%rip) */
-	QUAD $0xffffff35256ffac5 // vmovdqu      $-203(%rip), %xmm4  /* LCPI26_4(%rip) */
-	QUAD $0xffffff3d2d6ffac5 // vmovdqu      $-195(%rip), %xmm5  /* LCPI26_5(%rip) */
-	QUAD $0xffffff45356ffac5 // vmovdqu      $-187(%rip), %xmm6  /* LCPI26_6(%rip) */
-	MOVL $4294967295, R14
-	MOVQ $-1, AX
 	MOVQ $-1, R8
-	MOVQ DI, R15
-
-LBB26_7:
-	LONG $0x6f7ac1c4; BYTE $0x3f // vmovdqu      (%r15), %xmm7
-	LONG $0x6441c1c4; BYTE $0xc0 // vpcmpgtb     %xmm8, %xmm7, %xmm0
-	LONG $0xcf64b1c5             // vpcmpgtb     %xmm7, %xmm9, %xmm1
-	LONG $0xc1dbf9c5             // vpand        %xmm1, %xmm0, %xmm0
-	LONG $0xcf74a9c5             // vpcmpeqb     %xmm7, %xmm10, %xmm1
-	LONG $0xd774a1c5             // vpcmpeqb     %xmm7, %xmm11, %xmm2
-	LONG $0xc9ebe9c5             // vpor         %xmm1, %xmm2, %xmm1
-	LONG $0xd4ebc1c5             // vpor         %xmm4, %xmm7, %xmm2
-	LONG $0xd674e9c5             // vpcmpeqb     %xmm6, %xmm2, %xmm2
-	LONG $0xfd74c1c5             // vpcmpeqb     %xmm5, %xmm7, %xmm7
-	LONG $0xdfebe9c5             // vpor         %xmm7, %xmm2, %xmm3
-	LONG $0xc0ebf1c5             // vpor         %xmm0, %xmm1, %xmm0
-	LONG $0xc0ebe1c5             // vpor         %xmm0, %xmm3, %xmm0
-	LONG $0xd7d7f9c5             // vpmovmskb    %xmm7, %edx
-	LONG $0xead779c5             // vpmovmskb    %xmm2, %r13d
-	LONG $0xe1d779c5             // vpmovmskb    %xmm1, %r12d
-	LONG $0xc8d7f9c5             // vpmovmskb    %xmm0, %ecx
-	XORQ R14, CX
+	MOVQ SI, R15
+LBB26_9:
+	LONG $0x3c6ffac5; BYTE $0x07  // vmovdqu      (%rdi,%rax), %xmm7
+	LONG $0x6441c1c4; BYTE $0xc0  // vpcmpgtb     %xmm8, %xmm7, %xmm0
+	LONG $0xcf64b1c5  // vpcmpgtb     %xmm7, %xmm9, %xmm1
+	LONG $0xc1dbf9c5  // vpand        %xmm1, %xmm0, %xmm0
+	LONG $0xcf74a9c5  // vpcmpeqb     %xmm7, %xmm10, %xmm1
+	LONG $0xd774a1c5  // vpcmpeqb     %xmm7, %xmm11, %xmm2
+	LONG $0xc9ebe9c5  // vpor         %xmm1, %xmm2, %xmm1
+	LONG $0xd4dbc1c5  // vpand        %xmm4, %xmm7, %xmm2
+	LONG $0xd674e9c5  // vpcmpeqb     %xmm6, %xmm2, %xmm2
+	LONG $0xfd74c1c5  // vpcmpeqb     %xmm5, %xmm7, %xmm7
+	LONG $0xdfebe9c5  // vpor         %xmm7, %xmm2, %xmm3
+	LONG $0xc0ebf1c5  // vpor         %xmm0, %xmm1, %xmm0
+	LONG $0xc0ebe1c5  // vpor         %xmm0, %xmm3, %xmm0
+	LONG $0xdfd7f9c5  // vpmovmskb    %xmm7, %ebx
+	LONG $0xe2d779c5  // vpmovmskb    %xmm2, %r12d
+	LONG $0xf1d779c5  // vpmovmskb    %xmm1, %r14d
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	XORQ R11, CX
 	BSFQ CX, CX
 	CMPL CX, $16
-	JE   LBB26_9
-	MOVL $-1, BX
-	SHLL CX, BX
-	NOTL BX
+	JE LBB26_11
+	MOVL $-1, DX
+	SHLL CX, DX
+	NOTL DX
+	ANDL DX, BX
+	ANDL DX, R12
+	ANDL R14, DX
+	MOVL DX, R14
+LBB26_11:
+	LEAL -1(BX), DX
 	ANDL BX, DX
-	ANDL BX, R13
-	ANDL R12, BX
-	MOVL BX, R12
-
-LBB26_9:
-	LEAL  -1(DX), BX
-	ANDL  DX, BX
-	JNE   LBB26_50
-	LEAL  -1(R13), BX
-	ANDL  R13, BX
-	JNE   LBB26_50
-	LEAL  -1(R12), BX
-	ANDL  R12, BX
-	JNE   LBB26_50
-	TESTL DX, DX
-	JE    LBB26_15
-	MOVQ  R15, BX
-	SUBQ  DI, BX
-	BSFL  DX, DX
-	ADDQ  BX, DX
-	CMPQ  R8, $-1
-	JNE   LBB26_51
-	MOVQ  DX, R8
-
-LBB26_15:
-	TESTL R13, R13
-	JE    LBB26_18
-	MOVQ  R15, BX
-	SUBQ  DI, BX
-	BSFL  R13, DX
-	ADDQ  BX, DX
-	CMPQ  AX, $-1
-	JNE   LBB26_51
-	MOVQ  DX, AX
-
-LBB26_18:
-	TESTL R12, R12
-	JE    LBB26_21
-	MOVQ  R15, BX
-	SUBQ  DI, BX
-	BSFL  R12, DX
-	ADDQ  BX, DX
-	CMPQ  R9, $-1
-	JNE   LBB26_51
-	MOVQ  DX, R9
-
-LBB26_21:
-	CMPL  CX, $16
-	JNE   LBB26_35
-	ADDQ  $16, R15
-	ADDQ  $-16, SI
-	CMPQ  SI, $15
-	JA    LBB26_7
-	TESTQ R11, R11
-	JE    LBB26_36
-
-LBB26_24:
-	LEAQ 0(R10)(R11*1), CX
-	LONG $0x5b358d48; WORD $0x0001; BYTE $0x00 // leaq         $347(%rip), %rsi  /* LJTI26_0(%rip) */
-	JMP  LBB26_26
-
-LBB26_25:
-	MOVQ BX, R10
-	DECQ R11
-	JE   LBB26_54
-
-LBB26_26:
-	MOVBLSX 0(R10), DX
-	ADDL    $-43, DX
-	CMPL    DX, $58
-	JA      LBB26_36
-	LEAQ    1(R10), BX
-	MOVLQSX 0(SI)(DX*4), DX
-	ADDQ    SI, DX
-	JMP     DX
-
-LBB26_28:
-	MOVQ BX, DX
-	SUBQ DI, DX
-	CMPQ R9, $-1
-	JNE  LBB26_58
-	DECQ DX
-	MOVQ DX, R9
-	JMP  LBB26_25
-
-LBB26_30:
-	MOVQ BX, DX
-	SUBQ DI, DX
-	CMPQ AX, $-1
-	JNE  LBB26_58
-	DECQ DX
-	MOVQ DX, AX
-	JMP  LBB26_25
-
-LBB26_32:
-	MOVQ BX, DX
-	SUBQ DI, DX
+	JNE LBB26_12
+	LEAL -1(R12), DX
+	ANDL R12, DX
+	JNE LBB26_12
+	LEAL -1(R14), DX
+	ANDL R14, DX
+	JNE LBB26_12
+	TESTL BX, BX
+	JE LBB26_19
+	BSFL BX, BX
 	CMPQ R8, $-1
-	JNE  LBB26_58
-	DECQ DX
-	MOVQ DX, R8
-	JMP  LBB26_25
-
-LBB26_34:
-	MOVQ $-1, AX
-	JMP  LBB26_53
-
-LBB26_35:
-	ADDQ CX, R15
-	MOVQ R15, R10
-
-LBB26_36:
-	MOVQ  $-1, DX
-	TESTQ AX, AX
-	JE    LBB26_52
-
+	JNE LBB26_56
+	ADDQ AX, BX
+	MOVQ BX, R8
+LBB26_19:
+	TESTL R12, R12
+	JE LBB26_22
+	BSFL R12, DX
+	CMPQ R9, $-1
+	JNE LBB26_57
+	ADDQ AX, DX
+	MOVQ DX, R9
+LBB26_22:
+	TESTL R14, R14
+	JE LBB26_25
+	BSFL R14, DX
+	CMPQ R10, $-1
+	JNE LBB26_57
+	ADDQ AX, DX
+	MOVQ DX, R10
+LBB26_25:
+	CMPL CX, $16
+	JNE LBB26_58
+	ADDQ $-16, R15
+	ADDQ $16, AX
+	CMPQ R15, $15
+	JA LBB26_9
+	LEAQ 0(DI)(AX*1), DX
+	MOVQ DX, CX
+	CMPQ AX, SI
+	JE LBB26_41
+LBB26_28:
+	LEAQ 0(DX)(R15*1), CX
+	MOVQ DX, R14
+	SUBQ DI, R14
+	XORL AX, AX
+	LONG $0x3f1d8d4c; WORD $0x0001; BYTE $0x00  // leaq         $319(%rip), %r11  /* LJTI26_0(%rip) */
+	JMP LBB26_29
+LBB26_31:
+	CMPL BX, $101
+	JNE LBB26_40
+LBB26_32:
+	CMPQ R9, $-1
+	JNE LBB26_59
+	LEAQ 0(R14)(AX*1), R9
+LBB26_39:
+	ADDQ $1, AX
+	CMPQ R15, AX
+	JE LBB26_41
+LBB26_29:
+	MOVBLSX 0(DX)(AX*1), BX
+	LEAL -48(BX), SI
+	CMPL SI, $10
+	JB LBB26_39
+	LEAL -43(BX), SI
+	CMPL SI, $26
+	JA LBB26_31
+	MOVLQSX 0(R11)(SI*4), SI
+	ADDQ R11, SI
+	JMP SI
 LBB26_37:
-	TESTQ R9, R9
-	JE    LBB26_52
-	TESTQ R8, R8
-	JE    LBB26_52
-	SUBQ  DI, R10
-	LEAQ  -1(R10), CX
-	CMPQ  AX, CX
-	JE    LBB26_45
-	CMPQ  R8, CX
-	JE    LBB26_45
-	CMPQ  R9, CX
-	JE    LBB26_45
-	TESTQ R9, R9
-	JLE   LBB26_46
-	LEAQ  -1(R9), CX
-	CMPQ  AX, CX
-	JE    LBB26_46
-	NOTQ  R9
-	MOVQ  R9, DX
-	MOVQ  R9, AX
-	JMP   LBB26_53
-
-LBB26_45:
-	NEGQ R10
-	MOVQ R10, DX
-	MOVQ R10, AX
-	JMP  LBB26_53
-
-LBB26_46:
-	MOVQ  R8, CX
-	ORQ   AX, CX
-	CMPQ  R8, AX
-	JL    LBB26_49
-	TESTQ CX, CX
-	JS    LBB26_49
-	NOTQ  R8
-	MOVQ  R8, DX
-	MOVQ  R8, AX
-	JMP   LBB26_53
-
-LBB26_49:
-	TESTQ CX, CX
-	LEAQ  -1(AX), CX
-	NOTQ  AX
-	LONG  $0xc2480f49 // cmovsq       %r10, %rax
-	CMPQ  R8, CX
-	LONG  $0xc2450f49 // cmovneq      %r10, %rax
-	JMP   LBB26_53
-
-LBB26_50:
-	SUBQ DI, R15
-	BSFL BX, DX
-	ADDQ R15, DX
-
-LBB26_51:
-	NOTQ DX
-
-LBB26_52:
-	MOVQ DX, AX
-
-LBB26_53:
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5c41 // popq         %r12
-	WORD $0x5d41 // popq         %r13
-	WORD $0x5e41 // popq         %r14
-	WORD $0x5f41 // popq         %r15
-	BYTE $0x5d   // popq         %rbp
-	RET
-
-LBB26_54:
-	MOVQ  CX, R10
-	MOVQ  $-1, DX
-	TESTQ AX, AX
-	JNE   LBB26_37
-	JMP   LBB26_52
-
-LBB26_58:
-	NEGQ DX
-	JMP  LBB26_52
-
-LBB26_57:
-	MOVQ $-1, R8
-	MOVQ DI, R10
-	MOVQ SI, R11
+	CMPQ R10, $-1
+	JNE LBB26_59
+	LEAQ 0(R14)(AX*1), R10
+	JMP LBB26_39
+LBB26_35:
+	CMPQ R8, $-1
+	JNE LBB26_59
+	LEAQ 0(R14)(AX*1), R8
+	JMP LBB26_39
+LBB26_1:
 	MOVQ $-1, AX
-	MOVQ $-1, R9
-	JMP  LBB26_24
-
-// .set L26_0_set_28, LBB26_28-LJTI26_0
-// .set L26_0_set_36, LBB26_36-LJTI26_0
-// .set L26_0_set_32, LBB26_32-LJTI26_0
-// .set L26_0_set_25, LBB26_25-LJTI26_0
-// .set L26_0_set_30, LBB26_30-LJTI26_0
-LJTI26_0:
-	LONG $0xfffffecc // .long L26_0_set_28
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xfffffecc // .long L26_0_set_28
-	LONG $0xfffffefc // .long L26_0_set_32
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xfffffea7 // .long L26_0_set_25
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xfffffee4 // .long L26_0_set_30
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xffffff26 // .long L26_0_set_36
-	LONG $0xfffffee4 // .long L26_0_set_30
-
-_skip_positive:
-	BYTE  $0x55                   // pushq        %rbp
-	WORD  $0x8948; BYTE $0xe5     // movq         %rsp, %rbp
-	WORD  $0x5741                 // pushq        %r15
-	WORD  $0x5641                 // pushq        %r14
-	BYTE  $0x53                   // pushq        %rbx
-	BYTE  $0x50                   // pushq        %rax
-	MOVQ  SI, R14
-	MOVQ  0(SI), R15
-	LEAQ  -1(R15), BX
-	MOVQ  0(DI), AX
-	ADDQ  BX, AX
-	MOVQ  8(DI), SI
-	SUBQ  BX, SI
-	MOVQ  AX, DI
-	LONG  $0xfffbb8e8; BYTE $0xff // callq        _skip_number
-	MOVQ  $-2, CX
-	MOVQ  $-2, DX
-	SUBQ  AX, DX
-	TESTQ AX, AX
-	LEAQ  -1(AX), AX
-	LONG  $0xc2480f48             // cmovsq       %rdx, %rax
-	LONG  $0xcb490f48             // cmovnsq      %rbx, %rcx
-	ADDQ  R15, AX
-	MOVQ  AX, 0(R14)
-	MOVQ  CX, AX
-	ADDQ  $8, SP
-	BYTE  $0x5b                   // popq         %rbx
-	WORD  $0x5e41                 // popq         %r14
-	WORD  $0x5f41                 // popq         %r15
-	BYTE  $0x5d                   // popq         %rbp
+	JMP LBB26_55
+LBB26_58:
+	ADDQ AX, CX
+	ADDQ DI, CX
+LBB26_41:
+	MOVQ $-1, AX
+	TESTQ R9, R9
+	JNE LBB26_42
+	JMP LBB26_55
+LBB26_40:
+	ADDQ AX, DX
+	MOVQ DX, CX
+	MOVQ $-1, AX
+	TESTQ R9, R9
+	JE LBB26_55
+LBB26_42:
+	TESTQ R10, R10
+	JE LBB26_55
+	TESTQ R8, R8
+	JE LBB26_55
+	SUBQ DI, CX
+	LEAQ -1(CX), AX
+	CMPQ R9, AX
+	JE LBB26_47
+	CMPQ R8, AX
+	JE LBB26_47
+	CMPQ R10, AX
+	JE LBB26_47
+	TESTQ R10, R10
+	JLE LBB26_51
+	LEAQ -1(R10), AX
+	CMPQ R9, AX
+	JE LBB26_51
+	NOTQ R10
+	MOVQ R10, AX
+	JMP LBB26_55
+LBB26_47:
+	NEGQ CX
+	MOVQ CX, AX
+LBB26_55:
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5c41  // popq         %r12
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
 	RET
-
+LBB26_51:
+	MOVQ R8, AX
+	ORQ R9, AX
+	CMPQ R8, R9
+	JL LBB26_54
+	TESTQ AX, AX
+	JS LBB26_54
+	NOTQ R8
+	MOVQ R8, AX
+	JMP LBB26_55
+LBB26_54:
+	LEAQ -1(R9), DX
+	TESTQ AX, AX
+	NOTQ R9
+	LONG $0xc9480f4c  // cmovsq       %rcx, %r9
+	CMPQ R8, DX
+	LONG $0xc9450f4c  // cmovneq      %rcx, %r9
+	MOVQ R9, AX
+	JMP LBB26_55
+LBB26_12:
+	BSFL DX, CX
+	JMP LBB26_13
+LBB26_59:
+	SUBQ DX, DI
+	NOTQ AX
+	ADDQ DI, AX
+	JMP LBB26_55
+LBB26_57:
+	MOVL DX, CX
+	JMP LBB26_13
+LBB26_56:
+	MOVL BX, CX
+LBB26_13:
+	NOTQ AX
+	SUBQ CX, AX
+	JMP LBB26_55
+LBB26_7:
+	MOVQ $-1, R8
+	MOVQ DI, DX
+	MOVQ SI, R15
+	MOVQ $-1, R9
+	MOVQ $-1, R10
+	JMP LBB26_28
+	// .set L26_0_set_37, LBB26_37-LJTI26_0
+	// .set L26_0_set_40, LBB26_40-LJTI26_0
+	// .set L26_0_set_35, LBB26_35-LJTI26_0
+	// .set L26_0_set_32, LBB26_32-LJTI26_0
+LJTI26_0:
+	LONG $0xfffffefc  // .long L26_0_set_37
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xfffffefc  // .long L26_0_set_37
+	LONG $0xffffff0c  // .long L26_0_set_35
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xffffff39  // .long L26_0_set_40
+	LONG $0xfffffec8  // .long L26_0_set_32
+_skip_positive:
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5741  // pushq        %r15
+	WORD $0x5641  // pushq        %r14
+	BYTE $0x53  // pushq        %rbx
+	BYTE $0x50  // pushq        %rax
+	MOVQ SI, R14
+	MOVQ 0(SI), R15
+	LEAQ -1(R15), BX
+	MOVQ 0(DI), AX
+	ADDQ BX, AX
+	MOVQ 8(DI), SI
+	SUBQ BX, SI
+	MOVQ AX, DI
+	LONG $0xfffc6de8; BYTE $0xff  // callq        _skip_number
+	LEAQ -1(AX), DX
+	MOVQ $-2, CX
+	MOVQ $-2, SI
+	SUBQ AX, SI
+	TESTQ AX, AX
+	LONG $0xf2490f48  // cmovnsq      %rdx, %rsi
+	LONG $0xcb490f48  // cmovnsq      %rbx, %rcx
+	ADDQ R15, SI
+	MOVQ SI, 0(R14)
+	MOVQ CX, AX
+	ADDQ $8, SP
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	WORD $0x5f41  // popq         %r15
+	BYTE $0x5d  // popq         %rbp
+	RET
 _validate_one:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	MOVQ DX, AX
 	MOVQ SI, DX
 	MOVQ DI, SI
 	MOVQ $1, 0(AX)
 	MOVQ AX, DI
 	MOVL $1, CX
-	BYTE $0x5d               // popq         %rbp
-	JMP  _fsm_exec
-
+	BYTE $0x5d  // popq         %rbp
+	JMP _fsm_exec
 _find_non_ascii:
-	BYTE $0x55               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	MOVQ DI, CX
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
 	CMPQ SI, $16
-	JL   LBB29_1
-
-LBB29_6:
-	LONG  $0x016ffac5 // vmovdqu      (%rcx), %xmm0
-	LONG  $0xc0d7f9c5 // vpmovmskb    %xmm0, %eax
-	TESTW AX, AX
-	JNE   LBB29_7
-	ADDQ  $16, CX
-	CMPQ  SI, $31
-	LEAQ  -16(SI), SI
-	JG    LBB29_6
-
-LBB29_1:
-	MOVQ  $-1, AX
-	TESTQ SI, SI
-	JLE   LBB29_9
-	INCQ  SI
-
-LBB29_3:
-	CMPB 0(CX), $0
-	JS   LBB29_8
-	INCQ CX
-	DECQ SI
-	CMPQ SI, $1
-	JG   LBB29_3
-
+	JL LBB29_1
+	XORL AX, AX
+	XORL DX, DX
 LBB29_9:
-	BYTE $0x5d // popq         %rbp
-	RET
-
-LBB29_8:
-	SUBQ DI, CX
-	MOVQ CX, AX
+	LONG $0x046ffac5; BYTE $0x07  // vmovdqu      (%rdi,%rax), %xmm0
+	LONG $0xc8d7f9c5  // vpmovmskb    %xmm0, %ecx
+	TESTW CX, CX
+	JNE LBB29_10
+	ADDQ $16, AX
+	LEAQ 0(SI)(DX*1), CX
+	ADDQ $-16, CX
+	ADDQ $-16, DX
+	ADDQ $16, CX
+	CMPQ CX, $31
+	JG LBB29_9
+	MOVQ DI, CX
+	SUBQ DX, CX
+	SUBQ AX, SI
+	MOVQ $-1, AX
+	TESTQ SI, SI
+	JG LBB29_5
+	JMP LBB29_12
+LBB29_1:
+	MOVQ DI, CX
+	MOVQ $-1, AX
+	TESTQ SI, SI
+	JLE LBB29_12
+LBB29_5:
+	ADDQ $1, SI
+	MOVQ CX, DX
+	SUBQ DI, DX
+LBB29_6:
+	CMPB 0(CX), $0
+	JS LBB29_7
+	ADDQ $1, CX
+	ADDQ $-1, SI
+	ADDQ $1, DX
+	CMPQ SI, $1
+	JG LBB29_6
+LBB29_12:
 	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB29_7:
-	MOVWLZX AX, AX
-	SUBQ    DI, CX
-	BSFQ    AX, AX
-	ADDQ    CX, AX
-	BYTE    $0x5d  // popq         %rbp
+	MOVQ DX, AX
+	BYTE $0x5d  // popq         %rbp
 	RET
-
+LBB29_10:
+	MOVWLZX CX, AX
+	BSFQ AX, AX
+	SUBQ DX, AX
+	BYTE $0x5d  // popq         %rbp
+	RET
 _print_mantissa:
-	BYTE    $0x55                                 // pushq        %rbp
-	WORD    $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD    $0x5641                               // pushq        %r14
-	BYTE    $0x53                                 // pushq        %rbx
-	MOVLQSX DX, R14
-	ADDQ    SI, R14
-	MOVQ    DI, AX
-	SHRQ    $32, AX
-	JE      LBB30_2
-	MOVQ    $-6067343680855748867, DX
-	MOVQ    DI, AX
-	MULQ    DX
-	SHRQ    $26, DX
-	LONG    $0x00c26944; WORD $0x0a1f; BYTE $0xfa // imull        $-100000000, %edx, %r8d
-	ADDL    DI, R8
-	MOVL    $3518437209, R9
-	MOVQ    R8, AX
-	IMULQ   R9, AX
-	SHRQ    $45, AX
-	LONG    $0x2710f869; WORD $0x0000             // imull        $10000, %eax, %edi
-	SUBL    DI, R8
-	MOVQ    AX, DI
-	IMULQ   R9, DI
-	SHRQ    $45, DI
-	LONG    $0x2710ff69; WORD $0x0000             // imull        $10000, %edi, %edi
-	SUBL    DI, AX
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5641  // pushq        %r14
+	BYTE $0x53  // pushq        %rbx
+	MOVL DX, R14
+	ADDQ SI, R14
+	MOVQ DI, AX
+	SHRQ $32, AX
+	JE LBB30_2
+	MOVQ $-6067343680855748867, DX
+	MOVQ DI, AX
+	MULQ DX
+	SHRQ $26, DX
+	LONG $0x00c26944; WORD $0x0a1f; BYTE $0xfa  // imull        $-100000000, %edx, %r8d
+	ADDL DI, R8
+	MOVL $3518437209, R9
+	MOVQ R8, AX
+	IMULQ R9, AX
+	SHRQ $45, AX
+	LONG $0x2710f869; WORD $0x0000  // imull        $10000, %eax, %edi
+	SUBL DI, R8
+	MOVQ AX, DI
+	IMULQ R9, DI
+	SHRQ $45, DI
+	LONG $0x2710ff69; WORD $0x0000  // imull        $10000, %edi, %edi
+	SUBL DI, AX
 	MOVWLZX R8, DI
-	SHRL    $2, DI
-	LONG    $0x7bcf6944; WORD $0x0014; BYTE $0x00 // imull        $5243, %edi, %r9d
-	SHRL    $17, R9
-	LONG    $0x64f96b41                           // imull        $100, %r9d, %edi
-	SUBL    DI, R8
+	SHRL $2, DI
+	LONG $0x7bcf6944; WORD $0x0014; BYTE $0x00  // imull        $5243, %edi, %r9d
+	SHRL $17, R9
+	LONG $0x64f96b41  // imull        $100, %r9d, %edi
+	SUBL DI, R8
 	MOVWLZX R8, R8
 	MOVWLZX AX, DI
-	SHRL    $2, DI
-	LONG    $0x7bd76944; WORD $0x0014; BYTE $0x00 // imull        $5243, %edi, %r10d
-	SHRL    $17, R10
-	LONG    $0x64fa6b41                           // imull        $100, %r10d, %edi
-	SUBL    DI, AX
+	SHRL $2, DI
+	LONG $0x7bd76944; WORD $0x0014; BYTE $0x00  // imull        $5243, %edi, %r10d
+	SHRL $17, R10
+	LONG $0x64fa6b41  // imull        $100, %r10d, %edi
+	SUBL DI, AX
 	MOVWLZX AX, R11
-	LONG    $0x143d8d48; WORD $0x0059; BYTE $0x00 // leaq         $22804(%rip), %rdi  /* _Digits(%rip) */
+	LONG $0x5a3d8d48; WORD $0x0059; BYTE $0x00  // leaq         $22874(%rip), %rdi  /* _Digits(%rip) */
 	MOVWLZX 0(DI)(R8*2), AX
-	MOVW    AX, -2(R14)
+	MOVW AX, -2(R14)
 	MOVWLZX 0(DI)(R9*2), AX
-	MOVW    AX, -4(R14)
+	MOVW AX, -4(R14)
 	MOVWLZX 0(DI)(R11*2), AX
-	MOVW    AX, -6(R14)
+	MOVW AX, -6(R14)
 	MOVWLZX 0(DI)(R10*2), AX
-	MOVW    AX, -8(R14)
-	ADDQ    $-8, R14
-	MOVQ    DX, DI
-
+	MOVW AX, -8(R14)
+	ADDQ $-8, R14
+	MOVQ DX, DI
 LBB30_2:
 	CMPL DI, $10000
-	JB   LBB30_3
+	JB LBB30_3
 	MOVL $3518437209, R8
-	LONG $0xcc0d8d4c; WORD $0x0058; BYTE $0x00 // leaq         $22732(%rip), %r9  /* _Digits(%rip) */
-
+	LONG $0x120d8d4c; WORD $0x0059; BYTE $0x00  // leaq         $22802(%rip), %r9  /* _Digits(%rip) */
 LBB30_5:
-	MOVL    DI, AX
-	IMULQ   R8, AX
-	SHRQ    $45, AX
-	LONG    $0xd8f0d069; WORD $0xffff // imull        $-10000, %eax, %edx
-	ADDL    DI, DX
-	IMUL3Q  $1374389535, DX, CX
-	SHRQ    $37, CX
-	WORD    $0xd96b; BYTE $0x64       // imull        $100, %ecx, %ebx
-	SUBL    BX, DX
+	MOVL DI, AX
+	IMULQ R8, AX
+	SHRQ $45, AX
+	LONG $0xd8f0d069; WORD $0xffff  // imull        $-10000, %eax, %edx
+	ADDL DI, DX
+	IMUL3Q $1374389535, DX, CX
+	SHRQ $37, CX
+	WORD $0xd96b; BYTE $0x64  // imull        $100, %ecx, %ebx
+	SUBL BX, DX
 	MOVWLZX 0(R9)(DX*2), DX
-	MOVW    DX, -2(R14)
+	MOVW DX, -2(R14)
 	MOVWLZX 0(R9)(CX*2), CX
-	MOVW    CX, -4(R14)
-	ADDQ    $-4, R14
-	CMPL    DI, $99999999
-	MOVL    AX, DI
-	JA      LBB30_5
-	CMPL    AX, $100
-	JB      LBB30_8
-
+	MOVW CX, -4(R14)
+	ADDQ $-4, R14
+	CMPL DI, $99999999
+	MOVL AX, DI
+	JA LBB30_5
+	CMPL AX, $100
+	JB LBB30_8
 LBB30_7:
 	MOVWLZX AX, CX
-	SHRL    $2, CX
-	LONG    $0x147bc969; WORD $0x0000             // imull        $5243, %ecx, %ecx
-	SHRL    $17, CX
-	WORD    $0xd16b; BYTE $0x64                   // imull        $100, %ecx, %edx
-	SUBL    DX, AX
+	SHRL $2, CX
+	LONG $0x147bc969; WORD $0x0000  // imull        $5243, %ecx, %ecx
+	SHRL $17, CX
+	WORD $0xd16b; BYTE $0x64  // imull        $100, %ecx, %edx
+	SUBL DX, AX
 	MOVWLZX AX, AX
-	LONG    $0x65158d48; WORD $0x0058; BYTE $0x00 // leaq         $22629(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0xab158d48; WORD $0x0058; BYTE $0x00  // leaq         $22699(%rip), %rdx  /* _Digits(%rip) */
 	MOVWLZX 0(DX)(AX*2), AX
-	MOVW    AX, -2(R14)
-	ADDQ    $-2, R14
-	MOVL    CX, AX
-
+	MOVW AX, -2(R14)
+	ADDQ $-2, R14
+	MOVL CX, AX
 LBB30_8:
-	CMPL    AX, $10
-	JB      LBB30_10
-	MOVL    AX, AX
-	LONG    $0x480d8d48; WORD $0x0058; BYTE $0x00 // leaq         $22600(%rip), %rcx  /* _Digits(%rip) */
+	CMPL AX, $10
+	JB LBB30_10
+	MOVL AX, AX
+	LONG $0x8e0d8d48; WORD $0x0058; BYTE $0x00  // leaq         $22670(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
-	MOVW    AX, -2(R14)
-	BYTE    $0x5b                                 // popq         %rbx
-	WORD    $0x5e41                               // popq         %r14
-	BYTE    $0x5d                                 // popq         %rbp
+	MOVW AX, -2(R14)
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 LBB30_3:
 	MOVL DI, AX
 	CMPL AX, $100
-	JAE  LBB30_7
-	JMP  LBB30_8
-
+	JAE LBB30_7
+	JMP LBB30_8
 LBB30_10:
 	ADDB $48, AX
 	MOVB AX, 0(SI)
-	BYTE $0x5b     // popq         %rbx
-	WORD $0x5e41   // popq         %r14
-	BYTE $0x5d     // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	BYTE $0x5d  // popq         %rbp
 	RET
-
 _left_shift:
-	BYTE    $0x55                                 // pushq        %rbp
-	WORD    $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
-	WORD    $0x5641                               // pushq        %r14
-	BYTE    $0x53                                 // pushq        %rbx
-	MOVL    SI, CX
-	IMUL3Q  $104, CX, DX
-	LONG    $0x6c358d48; WORD $0x008a; BYTE $0x00 // leaq         $35436(%rip), %rsi  /* _LSHIFT_TAB(%rip) */
-	MOVL    0(DX)(SI*1), R8
-	MOVQ    0(DI), R10
-	MOVLQSX 16(DI), R9
-	MOVB    4(DX)(SI*1), AX
-	TESTQ   R9, R9
-	JE      LBB31_6
-	LEAQ    5(DX)(SI*1), DX
-	XORL    SI, SI
-
-LBB31_3:
-	TESTB   AX, AX
-	JE      LBB31_8
-	CMPB    0(R10)(SI*1), AX
-	JNE     LBB31_5
-	MOVBLZX 0(DX)(SI*1), AX
-	INCQ    SI
-	CMPQ    R9, SI
-	JNE     LBB31_3
-
-LBB31_6:
-	TESTB AX, AX
-	JE    LBB31_8
-
-LBB31_7:
-	DECL R8
-
-LBB31_8:
-	TESTL   R9, R9
-	JLE     LBB31_23
-	LEAL    0(R8)(R9*1), AX
-	MOVLQSX AX, R14
-	DECQ    R14
-	XORL    DX, DX
-	MOVQ    $-3689348814741910323, R11
-
-LBB31_10:
-	MOVBQSX -1(R10)(R9*1), SI
-	ADDQ    $-48, SI
-	SHLQ    CX, SI
-	ADDQ    DX, SI
-	MOVQ    SI, AX
-	MULQ    R11
-	SHRQ    $3, DX
-	LEAQ    0(DX)(DX*1), AX
-	LEAQ    0(AX)(AX*4), BX
-	MOVQ    SI, AX
-	SUBQ    BX, AX
-	CMPQ    8(DI), R14
-	JBE     LBB31_16
-	ADDB    $48, AX
-	MOVB    AX, 0(R10)(R14*1)
-	JMP     LBB31_18
-
-LBB31_16:
-	TESTQ AX, AX
-	JE    LBB31_18
-	MOVL  $1, 28(DI)
-
-LBB31_18:
-	CMPQ R9, $2
-	JL   LBB31_12
-	DECQ R9
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	WORD $0x5641  // pushq        %r14
+	BYTE $0x53  // pushq        %rbx
+	MOVL SI, CX
+	IMUL3Q $104, CX, R11
+	LONG $0xb2158d48; WORD $0x008a; BYTE $0x00  // leaq         $35506(%rip), %rdx  /* _LSHIFT_TAB(%rip) */
+	MOVL 0(R11)(DX*1), R8
 	MOVQ 0(DI), R10
-	DECQ R14
-	JMP  LBB31_10
-
+	MOVLQSX 16(DI), R9
+	TESTQ R9, R9
+	JE LBB31_1
+	LEAQ 0(R11)(DX*1), SI
+	ADDQ $4, SI
+	XORL BX, BX
+LBB31_4:
+	MOVBLZX 0(SI)(BX*1), AX
+	TESTB AX, AX
+	JE LBB31_10
+	CMPB 0(R10)(BX*1), AX
+	JNE LBB31_6
+	ADDQ $1, BX
+	CMPQ R9, BX
+	JNE LBB31_4
+	MOVL R9, SI
+	ADDQ R11, DX
+	CMPB 4(SI)(DX*1), $0
+	JNE LBB31_9
+	JMP LBB31_10
+LBB31_1:
+	XORL SI, SI
+	ADDQ R11, DX
+	CMPB 4(SI)(DX*1), $0
+	JE LBB31_10
+LBB31_9:
+	ADDL $-1, R8
+LBB31_10:
+	TESTL R9, R9
+	JLE LBB31_25
+	LEAL 0(R8)(R9*1), AX
+	MOVLQSX AX, R14
+	ADDQ $-1, R14
+	XORL DX, DX
+	MOVQ $-3689348814741910323, R11
 LBB31_12:
+	MOVBQSX -1(R10)(R9*1), SI
+	ADDQ $-48, SI
+	SHLQ CX, SI
+	ADDQ DX, SI
+	MOVQ SI, AX
+	MULQ R11
+	SHRQ $3, DX
+	LEAQ 0(DX)(DX*1), AX
+	LEAQ 0(AX)(AX*4), BX
+	MOVQ SI, AX
+	SUBQ BX, AX
+	CMPQ 8(DI), R14
+	JBE LBB31_18
+	ADDB $48, AX
+	MOVB AX, 0(R10)(R14*1)
+	JMP LBB31_20
+LBB31_18:
+	TESTQ AX, AX
+	JE LBB31_20
+	MOVL $1, 28(DI)
+LBB31_20:
+	CMPQ R9, $2
+	JL LBB31_14
+	ADDQ $-1, R9
+	MOVQ 0(DI), R10
+	ADDQ $-1, R14
+	JMP LBB31_12
+LBB31_14:
 	CMPQ SI, $10
-	JAE  LBB31_13
-
-LBB31_23:
+	JAE LBB31_15
+LBB31_25:
 	MOVLQSX 16(DI), CX
 	MOVLQSX R8, AX
-	ADDQ    CX, AX
-	MOVL    AX, 16(DI)
-	MOVQ    8(DI), CX
-	CMPQ    CX, AX
-	JA      LBB31_25
-	MOVL    CX, 16(DI)
-	MOVL    CX, AX
-
-LBB31_25:
-	ADDL  R8, 20(DI)
-	TESTL AX, AX
-	JLE   LBB31_29
-	MOVQ  0(DI), CX
-	MOVL  AX, AX
-
+	ADDQ CX, AX
+	MOVL AX, 16(DI)
+	MOVQ 8(DI), CX
+	CMPQ CX, AX
+	JA LBB31_27
+	MOVL CX, 16(DI)
+	MOVL CX, AX
 LBB31_27:
-	CMPB -1(CX)(AX*1), $48
-	JNE  LBB31_31
-	MOVL AX, DX
-	DECQ AX
-	DECL DX
-	MOVL DX, 16(DI)
-	LEAQ 1(AX), DX
-	CMPQ DX, $1
-	JG   LBB31_27
-
-LBB31_29:
+	ADDL R8, 20(DI)
 	TESTL AX, AX
-	JE    LBB31_30
-
+	JLE LBB31_31
+	MOVQ 0(DI), CX
+	MOVL AX, DX
+	ADDQ $1, DX
+	ADDL $-1, AX
+LBB31_29:
+	MOVL AX, SI
+	CMPB 0(CX)(SI*1), $48
+	JNE LBB31_33
+	MOVL AX, 16(DI)
+	ADDQ $-1, DX
+	ADDL $-1, AX
+	CMPQ DX, $1
+	JG LBB31_29
+	JMP LBB31_32
 LBB31_31:
-	BYTE $0x5b   // popq         %rbx
-	WORD $0x5e41 // popq         %r14
-	BYTE $0x5d   // popq         %rbp
+	JE LBB31_32
+LBB31_33:
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	BYTE $0x5d  // popq         %rbp
 	RET
-
-LBB31_13:
-	MOVLQSX R14, SI
-	DECQ    SI
-	JMP     LBB31_14
-
+LBB31_32:
+	MOVL $0, 20(DI)
+	BYTE $0x5b  // popq         %rbx
+	WORD $0x5e41  // popq         %r14
+	BYTE $0x5d  // popq         %rbp
+	RET
 LBB31_15:
+	MOVLQSX R14, SI
+	ADDQ $-1, SI
+	JMP LBB31_16
+LBB31_17:
 	ADDB $48, AX
 	MOVQ 0(DI), BX
 	MOVB AX, 0(BX)(SI*1)
-
-LBB31_22:
-	DECQ SI
+LBB31_24:
+	ADDQ $-1, SI
 	CMPQ CX, $9
-	JBE  LBB31_23
-
-LBB31_14:
-	MOVQ  DX, CX
-	MOVQ  DX, AX
-	MULQ  R11
-	SHRQ  $3, DX
-	LEAQ  0(DX)(DX*1), AX
-	LEAQ  0(AX)(AX*4), BX
-	MOVQ  CX, AX
-	SUBQ  BX, AX
-	CMPQ  8(DI), SI
-	JA    LBB31_15
+	JBE LBB31_25
+LBB31_16:
+	MOVQ DX, CX
+	MOVQ DX, AX
+	MULQ R11
+	SHRQ $3, DX
+	LEAQ 0(DX)(DX*1), AX
+	LEAQ 0(AX)(AX*4), BX
+	MOVQ CX, AX
+	SUBQ BX, AX
+	CMPQ 8(DI), SI
+	JA LBB31_17
 	TESTQ AX, AX
-	JE    LBB31_22
-	MOVL  $1, 28(DI)
-	JMP   LBB31_22
-
-LBB31_30:
-	MOVL $0, 20(DI)
-	BYTE $0x5b      // popq         %rbx
-	WORD $0x5e41    // popq         %r14
-	BYTE $0x5d      // popq         %rbp
-	RET
-
-LBB31_5:
-	JL  LBB31_7
-	JMP LBB31_8
-
+	JE LBB31_24
+	MOVL $1, 28(DI)
+	JMP LBB31_24
+LBB31_6:
+	JL LBB31_9
+	JMP LBB31_10
 _right_shift:
-	BYTE    $0x55               // pushq        %rbp
-	WORD    $0x8948; BYTE $0xe5 // movq         %rsp, %rbp
-	MOVL    SI, CX
-	MOVLQSX 16(DI), R9
-	XORL    SI, SI
-	XORL    AX, AX
-
+	BYTE $0x55  // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
+	BYTE $0x53  // pushq        %rbx
+	MOVL SI, CX
+	MOVL 16(DI), R8
+	XORL DX, DX
+	TESTL R8, R8
+	MOVL $0, R11
+	LONG $0xd8490f45  // cmovnsl      %r8d, %r11d
+	XORL AX, AX
 LBB32_1:
-	CMPQ    SI, R9
-	JGE     LBB32_2
-	LEAQ    0(AX)(AX*4), AX
-	MOVQ    0(DI), DX
-	MOVBQSX 0(DX)(SI*1), DX
-	LEAQ    -48(DX)(AX*2), AX
-	INCQ    SI
-	MOVQ    AX, DX
-	SHRQ    CX, DX
-	TESTQ   DX, DX
-	JE      LBB32_1
-
-LBB32_6:
-	MOVL    20(DI), DX
-	SUBL    SI, DX
-	INCL    DX
-	MOVQ    $-1, R8
-	SHLQ    CX, R8
-	MOVL    DX, 20(DI)
-	NOTQ    R8
-	XORL    R10, R10
-	CMPL    SI, R9
-	JGE     LBB32_9
-	MOVLQSX SI, R9
-	MOVQ    0(DI), SI
-	XORL    R10, R10
-
-LBB32_8:
-	MOVQ    AX, DX
-	SHRQ    CX, DX
-	ANDQ    R8, AX
-	ADDB    $48, DX
-	MOVB    DX, 0(SI)(R10*1)
-	LEAQ    0(AX)(AX*4), AX
-	MOVQ    0(DI), SI
-	LEAQ    0(SI)(R9*1), DX
-	MOVBQSX 0(R10)(DX*1), DX
-	LEAQ    -48(DX)(AX*2), AX
-	MOVLQSX 16(DI), R11
-	LEAQ    1(R9)(R10*1), DX
-	INCQ    R10
-	CMPQ    DX, R11
-	JL      LBB32_8
-	JMP     LBB32_9
-
-LBB32_11:
+	CMPQ R11, DX
+	JE LBB32_2
+	LEAQ 0(AX)(AX*4), AX
+	MOVQ 0(DI), SI
+	MOVBQSX 0(SI)(DX*1), SI
+	LEAQ 0(SI)(AX*2), AX
+	ADDQ $-48, AX
+	ADDQ $1, DX
+	MOVQ AX, SI
+	SHRQ CX, SI
+	TESTQ SI, SI
+	JE LBB32_1
+	MOVL DX, R11
+LBB32_7:
+	MOVL 20(DI), DX
+	SUBL R11, DX
+	ADDL $1, DX
+	MOVQ $-1, R9
+	SHLQ CX, R9
+	MOVL DX, 20(DI)
+	NOTQ R9
+	XORL R10, R10
+	CMPL R11, R8
+	JGE LBB32_10
+	MOVLQSX R11, R8
+	MOVQ 0(DI), SI
+	XORL R10, R10
+LBB32_9:
+	MOVQ AX, DX
+	SHRQ CX, DX
+	ANDQ R9, AX
+	ADDB $48, DX
+	MOVB DX, 0(SI)(R10*1)
+	MOVQ 0(DI), SI
+	LEAQ 0(SI)(R8*1), DX
+	MOVBQSX 0(R10)(DX*1), R11
+	LEAQ 1(R8)(R10*1), BX
+	ADDQ $1, R10
+	LEAQ 0(AX)(AX*4), AX
+	LEAQ 0(R11)(AX*2), AX
+	ADDQ $-48, AX
+	MOVLQSX 16(DI), DX
+	CMPQ BX, DX
+	JL LBB32_9
+	JMP LBB32_10
+LBB32_12:
 	ADDB $48, SI
-	MOVQ 0(DI), DX
-	MOVB SI, 0(DX)(R9*1)
-	INCL R9
-	MOVL R9, R10
-
-LBB32_14:
+	MOVQ 0(DI), BX
+	MOVB SI, 0(BX)(DX*1)
+	ADDL $1, DX
+	MOVL DX, R10
+LBB32_15:
 	ADDQ AX, AX
 	LEAQ 0(AX)(AX*4), AX
-
-LBB32_9:
-	TESTQ   AX, AX
-	JE      LBB32_15
-	MOVQ    AX, SI
-	SHRQ    CX, SI
-	ANDQ    R8, AX
-	MOVLQSX R10, R9
-	CMPQ    8(DI), R9
-	JA      LBB32_11
-	TESTQ   SI, SI
-	JE      LBB32_14
-	MOVL    $1, 28(DI)
-	JMP     LBB32_14
-
-LBB32_15:
-	MOVL  R10, 16(DI)
+LBB32_10:
+	TESTQ AX, AX
+	JE LBB32_16
+	MOVQ AX, SI
+	SHRQ CX, SI
+	ANDQ R9, AX
+	MOVLQSX R10, DX
+	CMPQ 8(DI), DX
+	JA LBB32_12
+	TESTQ SI, SI
+	JE LBB32_15
+	MOVL $1, 28(DI)
+	JMP LBB32_15
+LBB32_16:
+	MOVL R10, 16(DI)
 	TESTL R10, R10
-	JLE   LBB32_19
-	MOVQ  0(DI), AX
-	MOVL  R10, R10
-
-LBB32_17:
-	CMPB -1(AX)(R10*1), $48
-	JNE  LBB32_21
+	JLE LBB32_20
+	MOVQ 0(DI), AX
 	MOVL R10, CX
-	DECQ R10
-	DECL CX
-	MOVL CX, 16(DI)
-	LEAQ 1(R10), CX
+	ADDQ $1, CX
+	ADDL $-1, R10
+LBB32_18:
+	MOVL R10, DX
+	CMPB 0(AX)(DX*1), $48
+	JNE LBB32_22
+	MOVL R10, 16(DI)
+	ADDQ $-1, CX
+	ADDL $-1, R10
 	CMPQ CX, $1
-	JG   LBB32_17
-
-LBB32_19:
-	TESTL R10, R10
-	JE    LBB32_20
-
-LBB32_21:
-	BYTE $0x5d // popq         %rbp
-	RET
-
+	JG LBB32_18
+	JMP LBB32_21
 LBB32_2:
 	TESTQ AX, AX
-	JE    LBB32_22
-	MOVQ  AX, DX
-	SHRQ  CX, DX
+	JE LBB32_23
+	MOVQ AX, DX
+	SHRQ CX, DX
 	TESTQ DX, DX
-	JNE   LBB32_6
-
+	JNE LBB32_7
 LBB32_4:
-	ADDQ  AX, AX
-	LEAQ  0(AX)(AX*4), AX
-	INCL  SI
-	MOVQ  AX, DX
-	SHRQ  CX, DX
+	ADDQ AX, AX
+	LEAQ 0(AX)(AX*4), AX
+	ADDL $1, R11
+	MOVQ AX, DX
+	SHRQ CX, DX
 	TESTQ DX, DX
-	JE    LBB32_4
-	JMP   LBB32_6
-
+	JE LBB32_4
+	JMP LBB32_7
 LBB32_20:
-	MOVL $0, 20(DI)
-	BYTE $0x5d      // popq         %rbp
-	RET
-
+	JE LBB32_21
 LBB32_22:
-	MOVL $0, 16(DI)
-	BYTE $0x5d      // popq         %rbp
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
 	RET
-
+LBB32_21:
+	MOVL $0, 20(DI)
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
+	RET
+LBB32_23:
+	MOVL $0, 16(DI)
+	BYTE $0x5b  // popq         %rbx
+	BYTE $0x5d  // popq         %rbp
+	RET
 _POW10_M128_TAB:
-	QUAD $0x1732c869cd60e453                           // .quad 1671618768450675795
-	QUAD $0xfa8fd5a0081c0288                           // .quad -391859759250406776
-	QUAD $0x0e7fbd42205c8eb4                           // .quad 1044761730281672372
-	QUAD $0x9c99e58405118195                           // .quad -7162441377172586091
-	QUAD $0x521fac92a873b261                           // .quad 5917638181279478369
-	QUAD $0xc3c05ee50655e1fa                           // .quad -4341365703038344710
-	QUAD $0xe6a797b752909ef9                           // .quad -1826324310255427847
-	QUAD $0xf4b0769e47eb5a78                           // .quad -815021110370542984
-	QUAD $0x9028bed2939a635c                           // .quad -8058981721550724260
-	QUAD $0x98ee4a22ecf3188b                           // .quad -7426917221622671221
-	QUAD $0x7432ee873880fc33                           // .quad 8373016921771146291
-	QUAD $0xbf29dcaba82fdeae                           // .quad -4671960508600951122
-	QUAD $0x113faa2906a13b3f                           // .quad 1242899115359157055
-	QUAD $0xeef453d6923bd65a                           // .quad -1228264617323800998
-	QUAD $0x4ac7ca59a424c507                           // .quad 5388497965526861063
-	QUAD $0x9558b4661b6565f8                           // .quad -7685194413468457480
-	QUAD $0x5d79bcf00d2df649                           // .quad 6735622456908576329
-	QUAD $0xbaaee17fa23ebf76                           // .quad -4994806998408183946
-	QUAD $0xf4d82c2c107973dc                           // .quad -803843965719055396
-	QUAD $0xe95a99df8ace6f53                           // .quad -1631822729582842029
-	QUAD $0x79071b9b8a4be869                           // .quad 8720969558280366185
-	QUAD $0x91d8a02bb6c10594                           // .quad -7937418233630358124
-	QUAD $0x9748e2826cdee284                           // .quad -7545532125859093884
-	QUAD $0xb64ec836a47146f9                           // .quad -5310086773610559751
-	QUAD $0xfd1b1b2308169b25                           // .quad -208543120469091547
-	QUAD $0xe3e27a444d8d98b7                           // .quad -2025922448585811785
-	QUAD $0xfe30f0f5e50e20f7                           // .quad -130339450293182217
-	QUAD $0x8e6d8c6ab0787f72                           // .quad -8183730558007214222
-	QUAD $0xbdbd2d335e51a935                           // .quad -4774610331293865675
-	QUAD $0xb208ef855c969f4f                           // .quad -5617977179081629873
-	QUAD $0xad2c788035e61382                           // .quad -5968262914117332094
-	QUAD $0xde8b2b66b3bc4723                           // .quad -2410785455424649437
-	QUAD $0x4c3bcb5021afcc31                           // .quad 5493207715531443249
-	QUAD $0x8b16fb203055ac76                           // .quad -8424269937281487754
-	QUAD $0xdf4abe242a1bbf3d                           // .quad -2356862392440471747
-	QUAD $0xaddcb9e83c6b1793                           // .quad -5918651403174471789
-	QUAD $0xd71d6dad34a2af0d                           // .quad -2946077990550589683
-	QUAD $0xd953e8624b85dd78                           // .quad -2786628235540701832
-	QUAD $0x8672648c40e5ad68                           // .quad -8758827771735200408
-	QUAD $0x87d4713d6f33aa6b                           // .quad -8659171674854020501
-	QUAD $0x680efdaf511f18c2                           // .quad 7498209359040551106
-	QUAD $0xa9c98d8ccb009506                           // .quad -6212278575140137722
-	QUAD $0x0212bd1b2566def2                           // .quad 149389661945913074
-	QUAD $0xd43bf0effdc0ba48                           // .quad -3153662200497784248
-	QUAD $0x014bb630f7604b57                           // .quad 93368538716195671
-	QUAD $0x84a57695fe98746d                           // .quad -8888567902952197011
-	QUAD $0x419ea3bd35385e2d                           // .quad 4728396691822632493
-	QUAD $0xa5ced43b7e3e9188                           // .quad -6499023860262858360
-	QUAD $0x52064cac828675b9                           // .quad 5910495864778290617
-	QUAD $0xcf42894a5dce35ea                           // .quad -3512093806901185046
-	QUAD $0x7343efebd1940993                           // .quad 8305745933913819539
-	QUAD $0x818995ce7aa0e1b2                           // .quad -9112587656954322510
-	QUAD $0x1014ebe6c5f90bf8                           // .quad 1158810380537498616
-	QUAD $0xa1ebfb4219491a1f                           // .quad -6779048552765515233
-	QUAD $0xd41a26e077774ef6                           // .quad -3163173042755514634
-	QUAD $0xca66fa129f9b60a6                           // .quad -3862124672529506138
-	QUAD $0x8920b098955522b4                           // .quad -8565652321871781196
-	QUAD $0xfd00b897478238d0                           // .quad -215969822234494768
-	QUAD $0x55b46e5f5d5535b0                           // .quad 6175682344898606512
-	QUAD $0x9e20735e8cb16382                           // .quad -7052510166537641086
-	QUAD $0xeb2189f734aa831d                           // .quad -1503769105731517667
-	QUAD $0xc5a890362fddbc62                           // .quad -4203951689744663454
-	QUAD $0xa5e9ec7501d523e4                           // .quad -6491397400591784988
-	QUAD $0xf712b443bbd52b7b                           // .quad -643253593753441413
-	QUAD $0x47b233c92125366e                           // .quad 5166248661484910190
-	QUAD $0x9a6bb0aa55653b2d                           // .quad -7319562523736982739
-	QUAD $0x999ec0bb696e840a                           // .quad -7377247228426025974
-	QUAD $0xc1069cd4eabe89f8                           // .quad -4537767136243840520
-	QUAD $0xc00670ea43ca250d                           // .quad -4609873017105144563
-	QUAD $0xf148440a256e2c76                           // .quad -1060522901877412746
-	QUAD $0x380406926a5e5728                           // .quad 4036358391950366504
-	QUAD $0x96cd2a865764dbca                           // .quad -7580355841314464822
-	QUAD $0xc605083704f5ecf2                           // .quad -4177924046916817678
-	QUAD $0xbc807527ed3e12bc                           // .quad -4863758783215693124
-	QUAD $0xf7864a44c633682e                           // .quad -610719040218634194
-	QUAD $0xeba09271e88d976b                           // .quad -1468012460592228501
-	QUAD $0x7ab3ee6afbe0211d                           // .quad 8841672636718129437
-	QUAD $0x93445b8731587ea3                           // .quad -7835036815511224669
-	QUAD $0x5960ea05bad82964                           // .quad 6440404777470273892
-	QUAD $0xb8157268fdae9e4c                           // .quad -5182110000961642932
-	QUAD $0x6fb92487298e33bd                           // .quad 8050505971837842365
-	QUAD $0xe61acf033d1a45df                           // .quad -1865951482774665761
-	QUAD $0xa5d3b6d479f8e056                           // .quad -6497648813669818282
-	QUAD $0x8fd0c16206306bab                           // .quad -8083748704375247957
-	QUAD $0x8f48a4899877186c                           // .quad -8122061017087272852
-	QUAD $0xb3c4f1ba87bc8696                           // .quad -5492999862041672042
-	QUAD $0x331acdabfe94de87                           // .quad 3682481783923072647
-	QUAD $0xe0b62e2929aba83c                           // .quad -2254563809124702148
-	QUAD $0x9ff0c08b7f1d0b14                           // .quad -6921820921902855404
-	QUAD $0x8c71dcd9ba0b4925                           // .quad -8326631408344020699
-	QUAD $0x07ecf0ae5ee44dd9                           // .quad 571095884476206553
-	QUAD $0xaf8e5410288e1b6f                           // .quad -5796603242002637969
-	QUAD $0xc9e82cd9f69d6150                           // .quad -3897816162832129712
-	QUAD $0xdb71e91432b1a24a                           // .quad -2634068034075909558
-	QUAD $0xbe311c083a225cd2                           // .quad -4741978110983775022
-	QUAD $0x892731ac9faf056e                           // .quad -8563821548938525330
-	QUAD $0x6dbd630a48aaf406                           // .quad 7907585416552444934
-	QUAD $0xab70fe17c79ac6ca                           // .quad -6093090917745768758
-	QUAD $0x092cbbccdad5b108                           // .quad 661109733835780360
-	QUAD $0xd64d3d9db981787d                           // .quad -3004677628754823043
-	QUAD $0x25bbf56008c58ea5                           // .quad 2719036592861056677
-	QUAD $0x85f0468293f0eb4e                           // .quad -8795452545612846258
-	QUAD $0xaf2af2b80af6f24e                           // .quad -5824576295778454962
-	QUAD $0xa76c582338ed2621                           // .quad -6382629663588669919
-	QUAD $0x1af5af660db4aee1                           // .quad 1942651667131707105
-	QUAD $0xd1476e2c07286faa                           // .quad -3366601061058449494
-	QUAD $0x50d98d9fc890ed4d                           // .quad 5825843310384704845
-	QUAD $0x82cca4db847945ca                           // .quad -9021654690802612790
-	QUAD $0xe50ff107bab528a0                           // .quad -1941067898873894752
-	QUAD $0xa37fce126597973c                           // .quad -6665382345075878084
-	QUAD $0x1e53ed49a96272c8                           // .quad 2185351144835019464
-	QUAD $0xcc5fc196fefd7d0c                           // .quad -3720041912917459700
-	QUAD $0x25e8e89c13bb0f7a                           // .quad 2731688931043774330
-	QUAD $0xff77b1fcbebcdc4f                           // .quad -38366372719436721
-	QUAD $0x77b191618c54e9ac                           // .quad 8624834609543440812
-	QUAD $0x9faacf3df73609b1                           // .quad -6941508010590729807
-	QUAD $0xd59df5b9ef6a2417                           // .quad -3054014793352862697
-	QUAD $0xc795830d75038c1d                           // .quad -4065198994811024355
-	QUAD $0x4b0573286b44ad1d                           // .quad 5405853545163697437
-	QUAD $0xf97ae3d0d2446f25                           // .quad -469812725086392539
-	QUAD $0x4ee367f9430aec32                           // .quad 5684501474941004850
-	QUAD $0x9becce62836ac577                           // .quad -7211161980820077193
-	QUAD $0x229c41f793cda73f                           // .quad 2493940825248868159
-	QUAD $0xc2e801fb244576d5                           // .quad -4402266457597708587
-	QUAD $0x6b43527578c1110f                           // .quad 7729112049988473103
-	QUAD $0xf3a20279ed56d48a                           // .quad -891147053569747830
-	QUAD $0x830a13896b78aaa9                           // .quad -9004363024039368023
-	QUAD $0x9845418c345644d6                           // .quad -7474495936122174250
-	QUAD $0x23cc986bc656d553                           // .quad 2579604275232953683
-	QUAD $0xbe5691ef416bd60c                           // .quad -4731433901725329908
-	QUAD $0x2cbfbe86b7ec8aa8                           // .quad 3224505344041192104
-	QUAD $0xedec366b11c6cb8f                           // .quad -1302606358729274481
-	QUAD $0x7bf7d71432f3d6a9                           // .quad 8932844867666826921
-	QUAD $0x94b3a202eb1c3f39                           // .quad -7731658001846878407
-	QUAD $0xdaf5ccd93fb0cc53                           // .quad -2669001970698630061
-	QUAD $0xb9e08a83a5e34f07                           // .quad -5052886483881210105
-	QUAD $0xd1b3400f8f9cff68                           // .quad -3336252463373287576
-	QUAD $0xe858ad248f5c22c9                           // .quad -1704422086424124727
-	QUAD $0x23100809b9c21fa1                           // .quad 2526528228819083169
-	QUAD $0x91376c36d99995be                           // .quad -7982792831656159810
-	QUAD $0xabd40a0c2832a78a                           // .quad -6065211750830921846
-	QUAD $0xb58547448ffffb2d                           // .quad -5366805021142811859
-	QUAD $0x16c90c8f323f516c                           // .quad 1641857348316123500
-	QUAD $0xe2e69915b3fff9f9                           // .quad -2096820258001126919
-	QUAD $0xae3da7d97f6792e3                           // .quad -5891368184943504669
-	QUAD $0x8dd01fad907ffc3b                           // .quad -8228041688891786181
-	QUAD $0x99cd11cfdf41779c                           // .quad -7364210231179380836
-	QUAD $0xb1442798f49ffb4a                           // .quad -5673366092687344822
-	QUAD $0x40405643d711d583                           // .quad 4629795266307937667
-	QUAD $0xdd95317f31c7fa1d                           // .quad -2480021597431793123
-	QUAD $0x482835ea666b2572                           // .quad 5199465050656154994
-	QUAD $0x8a7d3eef7f1cfc52                           // .quad -8467542526035952558
-	QUAD $0xda3243650005eecf                           // .quad -2724040723534582065
-	QUAD $0xad1c8eab5ee43b66                           // .quad -5972742139117552794
-	QUAD $0x90bed43e40076a82                           // .quad -8016736922845615486
-	QUAD $0xd863b256369d4a40                           // .quad -2854241655469553088
-	QUAD $0x5a7744a6e804a291                           // .quad 6518754469289960081
-	QUAD $0x873e4f75e2224e68                           // .quad -8701430062309552536
-	QUAD $0x711515d0a205cb36                           // .quad 8148443086612450102
-	QUAD $0xa90de3535aaae202                           // .quad -6265101559459552766
-	QUAD $0x0d5a5b44ca873e03                           // .quad 962181821410786819
-	QUAD $0xd3515c2831559a83                           // .quad -3219690930897053053
-	QUAD $0xe858790afe9486c2                           // .quad -1704479370831952190
-	QUAD $0x8412d9991ed58091                           // .quad -8929835859451740015
-	QUAD $0x626e974dbe39a872                           // .quad 7092772823314835570
-	QUAD $0xa5178fff668ae0b6                           // .quad -6550608805887287114
-	QUAD $0xfb0a3d212dc8128f                           // .quad -357406007711231345
-	QUAD $0xce5d73ff402d98e3                           // .quad -3576574988931720989
-	QUAD $0x7ce66634bc9d0b99                           // .quad 8999993282035256217
-	QUAD $0x80fa687f881c7f8e                           // .quad -9152888395723407474
-	QUAD $0x1c1fffc1ebc44e80                           // .quad 2026619565689294464
-	QUAD $0xa139029f6a239f72                           // .quad -6829424476226871438
-	QUAD $0xa327ffb266b56220                           // .quad -6690097579743157728
-	QUAD $0xc987434744ac874e                           // .quad -3925094576856201394
-	QUAD $0x4bf1ff9f0062baa8                           // .quad 5472436080603216552
-	QUAD $0xfbe9141915d7a922                           // .quad -294682202642863838
-	QUAD $0x6f773fc3603db4a9                           // .quad 8031958568804398249
-	QUAD $0x9d71ac8fada6c9b5                           // .quad -7101705404292871755
-	QUAD $0xcb550fb4384d21d3                           // .quad -3795109844276665901
-	QUAD $0xc4ce17b399107c22                           // .quad -4265445736938701790
-	QUAD $0x7e2a53a146606a48                           // .quad 9091170749936331336
-	QUAD $0xf6019da07f549b2b                           // .quad -720121152745989333
-	QUAD $0x2eda7444cbfc426d                           // .quad 3376138709496513133
-	QUAD $0x99c102844f94e0fb                           // .quad -7367604748107325189
-	QUAD $0xfa911155fefb5308                           // .quad -391512631556746488
-	QUAD $0xc0314325637a1939                           // .quad -4597819916706768583
-	QUAD $0x793555ab7eba27ca                           // .quad 8733981247408842698
-	QUAD $0xf03d93eebc589f88                           // .quad -1135588877456072824
-	QUAD $0x4bc1558b2f3458de                           // .quad 5458738279630526686
-	QUAD $0x96267c7535b763b5                           // .quad -7627272076051127371
-	QUAD $0x9eb1aaedfb016f16                           // .quad -7011635205744005354
-	QUAD $0xbbb01b9283253ca2                           // .quad -4922404076636521310
-	QUAD $0x465e15a979c1cadc                           // .quad 5070514048102157020
-	QUAD $0xea9c227723ee8bcb                           // .quad -1541319077368263733
-	QUAD $0x0bfacd89ec191ec9                           // .quad 863228270850154185
-	QUAD $0x92a1958a7675175f                           // .quad -7880853450996246689
-	QUAD $0xcef980ec671f667b                           // .quad -3532650679864695173
-	QUAD $0xb749faed14125d36                           // .quad -5239380795317920458
-	QUAD $0x82b7e12780e7401a                           // .quad -9027499368258256870
-	QUAD $0xe51c79a85916f484                           // .quad -1937539975720012668
-	QUAD $0xd1b2ecb8b0908810                           // .quad -3336344095947716592
-	QUAD $0x8f31cc0937ae58d2                           // .quad -8128491512466089774
-	QUAD $0x861fa7e6dcb4aa15                           // .quad -8782116138362033643
-	QUAD $0xb2fe3f0b8599ef07                           // .quad -5548928372155224313
-	QUAD $0x67a791e093e1d49a                           // .quad 7469098900757009562
-	QUAD $0xdfbdcece67006ac9                           // .quad -2324474446766642487
-	QUAD $0xe0c8bb2c5c6d24e0                           // .quad -2249342214667950880
-	QUAD $0x8bd6a141006042bd                           // .quad -8370325556870233411
-	QUAD $0x58fae9f773886e18                           // .quad 6411694268519837208
-	QUAD $0xaecc49914078536d                           // .quad -5851220927660403859
-	QUAD $0xaf39a475506a899e                           // .quad -5820440219632367202
-	QUAD $0xda7f5bf590966848                           // .quad -2702340141148116920
-	QUAD $0x6d8406c952429603                           // .quad 7891439908798240259
-	QUAD $0x888f99797a5e012d                           // .quad -8606491615858654931
-	QUAD $0xc8e5087ba6d33b83                           // .quad -3970758169284363389
-	QUAD $0xaab37fd7d8f58178                           // .quad -6146428501395930760
-	QUAD $0xfb1e4a9a90880a64                           // .quad -351761693178066332
-	QUAD $0xd5605fcdcf32e1d6                           // .quad -3071349608317525546
-	QUAD $0x5cf2eea09a55067f                           // .quad 6697677969404790399
-	QUAD $0x855c3be0a17fcd26                           // .quad -8837122532839535322
-	QUAD $0xf42faa48c0ea481e                           // .quad -851274575098787810
-	QUAD $0xa6b34ad8c9dfc06f                           // .quad -6434717147622031249
-	QUAD $0xf13b94daf124da26                           // .quad -1064093218873484762
-	QUAD $0xd0601d8efc57b08b                           // .quad -3431710416100151157
-	QUAD $0x76c53d08d6b70858                           // .quad 8558313775058847832
-	QUAD $0x823c12795db6ce57                           // .quad -9062348037703676329
-	QUAD $0x54768c4b0c64ca6e                           // .quad 6086206200396171886
-	QUAD $0xa2cb1717b52481ed                           // .quad -6716249028702207507
-	QUAD $0xa9942f5dcf7dfd09                           // .quad -6227300304786948855
-	QUAD $0xcb7ddcdda26da268                           // .quad -3783625267450371480
-	QUAD $0xd3f93b35435d7c4c                           // .quad -3172439362556298164
-	QUAD $0xfe5d54150b090b02                           // .quad -117845565885576446
-	QUAD $0xc47bc5014a1a6daf                           // .quad -4288617610811380305
-	QUAD $0x9efa548d26e5a6e1                           // .quad -6991182506319567135
-	QUAD $0x359ab6419ca1091b                           // .quad 3862600023340550427
-	QUAD $0xc6b8e9b0709f109a                           // .quad -4127292114472071014
-	QUAD $0xc30163d203c94b62                           // .quad -4395122007679087774
-	QUAD $0xf867241c8cc6d4c0                           // .quad -547429124662700864
-	QUAD $0x79e0de63425dcf1d                           // .quad 8782263791269039901
-	QUAD $0x9b407691d7fc44f8                           // .quad -7259672230555269896
-	QUAD $0x985915fc12f542e4                           // .quad -7468914334623251740
-	QUAD $0xc21094364dfb5636                           // .quad -4462904269766699466
-	QUAD $0x3e6f5b7b17b2939d                           // .quad 4498915137003099037
-	QUAD $0xf294b943e17a2bc4                           // .quad -966944318780986428
-	QUAD $0xa705992ceecf9c42                           // .quad -6411550076227838910
-	QUAD $0x979cf3ca6cec5b5a                           // .quad -7521869226879198374
-	QUAD $0x50c6ff782a838353                           // .quad 5820620459997365075
-	QUAD $0xbd8430bd08277231                           // .quad -4790650515171610063
-	QUAD $0xa4f8bf5635246428                           // .quad -6559282480285457368
-	QUAD $0xece53cec4a314ebd                           // .quad -1376627125537124675
-	QUAD $0x871b7795e136be99                           // .quad -8711237568605798759
-	QUAD $0x940f4613ae5ed136                           // .quad -7777920981101784778
-	QUAD $0x28e2557b59846e3f                           // .quad 2946011094524915263
-	QUAD $0xb913179899f68584                           // .quad -5110715207949843068
-	QUAD $0x331aeada2fe589cf                           // .quad 3682513868156144079
-	QUAD $0xe757dd7ec07426e5                           // .quad -1776707991509915931
-	QUAD $0x3ff0d2c85def7621                           // .quad 4607414176811284001
-	QUAD $0x9096ea6f3848984f                           // .quad -8027971522334779313
-	QUAD $0x0fed077a756b53a9                           // .quad 1147581702586717097
-	QUAD $0xb4bca50b065abe63                           // .quad -5423278384491086237
-	QUAD $0xd3e8495912c62894                           // .quad -3177208890193991532
-	QUAD $0xe1ebce4dc7f16dfb                           // .quad -2167411962186469893
-	QUAD $0x64712dd7abbbd95c                           // .quad 7237616480483531100
-	QUAD $0x8d3360f09cf6e4bd                           // .quad -8272161504007625539
-	QUAD $0xbd8d794d96aacfb3                           // .quad -4788037454677749837
-	QUAD $0xb080392cc4349dec                           // .quad -5728515861582144020
-	QUAD $0xecf0d7a0fc5583a0                           // .quad -1373360799919799392
-	QUAD $0xdca04777f541c567                           // .quad -2548958808550292121
-	QUAD $0xf41686c49db57244                           // .quad -858350499949874620
-	QUAD $0x89e42caaf9491b60                           // .quad -8510628282985014432
-	QUAD $0x311c2875c522ced5                           // .quad 3538747893490044629
-	QUAD $0xac5d37d5b79b6239                           // .quad -6026599335303880135
-	QUAD $0x7d633293366b828b                           // .quad 9035120885289943691
-	QUAD $0xd77485cb25823ac7                           // .quad -2921563150702462265
-	QUAD $0xae5dff9c02033197                           // .quad -5882264492762254953
-	QUAD $0x86a8d39ef77164bc                           // .quad -8743505996830120772
-	QUAD $0xd9f57f830283fdfc                           // .quad -2741144597525430788
-	QUAD $0xa8530886b54dbdeb                           // .quad -6317696477610263061
-	QUAD $0xd072df63c324fd7b                           // .quad -3426430746906788485
-	QUAD $0xd267caa862a12d66                           // .quad -3285434578585440922
-	QUAD $0x4247cb9e59f71e6d                           // .quad 4776009810824339053
-	QUAD $0x8380dea93da4bc60                           // .quad -8970925639256982432
-	QUAD $0x52d9be85f074e608                           // .quad 5970012263530423816
-	QUAD $0xa46116538d0deb78                           // .quad -6601971030643840136
-	QUAD $0x67902e276c921f8b                           // .quad 7462515329413029771
-	QUAD $0xcd795be870516656                           // .quad -3640777769877412266
-	QUAD $0x00ba1cd8a3db53b6                           // .quad 52386062455755702
-	QUAD $0x806bd9714632dff6                           // .quad -9193015133814464522
-	QUAD $0x80e8a40eccd228a4                           // .quad -9157889458785081180
-	QUAD $0xa086cfcd97bf97f3                           // .quad -6879582898840692749
-	QUAD $0x6122cd128006b2cd                           // .quad 6999382250228200141
-	QUAD $0xc8a883c0fdaf7df0                           // .quad -3987792605123478032
-	QUAD $0x796b805720085f81                           // .quad 8749227812785250177
-	QUAD $0xfad2a4b13d1b5d6c                           // .quad -373054737976959636
-	QUAD $0xcbe3303674053bb0                           // .quad -3755104653863994448
-	QUAD $0x9cc3a6eec6311a63                           // .quad -7150688238876681629
-	QUAD $0xbedbfc4411068a9c                           // .quad -4693880817329993060
-	QUAD $0xc3f490aa77bd60fc                           // .quad -4326674280168464132
-	QUAD $0xee92fb5515482d44                           // .quad -1255665003235103420
-	QUAD $0xf4f1b4d515acb93b                           // .quad -796656831783192261
-	QUAD $0x751bdd152d4d1c4a                           // .quad 8438581409832836170
-	QUAD $0x991711052d8bf3c5                           // .quad -7415439547505577019
-	QUAD $0xd262d45a78a0635d                           // .quad -3286831292991118499
-	QUAD $0xbf5cd54678eef0b6                           // .quad -4657613415954583370
-	QUAD $0x86fb897116c87c34                           // .quad -8720225134666286028
-	QUAD $0xef340a98172aace4                           // .quad -1210330751515841308
-	QUAD $0xd45d35e6ae3d4da0                           // .quad -3144297699952734816
-	QUAD $0x9580869f0e7aac0e                           // .quad -7673985747338482674
-	QUAD $0x8974836059cca109                           // .quad -8542058143368306423
-	QUAD $0xbae0a846d2195712                           // .quad -4980796165745715438
-	QUAD $0x2bd1a438703fc94b                           // .quad 3157485376071780683
-	QUAD $0xe998d258869facd7                           // .quad -1614309188754756393
-	QUAD $0x7b6306a34627ddcf                           // .quad 8890957387685944783
-	QUAD $0x91ff83775423cc06                           // .quad -7926472270612804602
-	QUAD $0x1a3bc84c17b1d542                           // .quad 1890324697752655170
-	QUAD $0xb67f6455292cbf08                           // .quad -5296404319838617848
-	QUAD $0x20caba5f1d9e4a93                           // .quad 2362905872190818963
-	QUAD $0xe41f3d6a7377eeca                           // .quad -2008819381370884406
-	QUAD $0x547eb47b7282ee9c                           // .quad 6088502188546649756
-	QUAD $0x8e938662882af53e                           // .quad -8173041140997884610
-	QUAD $0xe99e619a4f23aa43                           // .quad -1612744301171463613
-	QUAD $0xb23867fb2a35b28d                           // .quad -5604615407819967859
-	QUAD $0x6405fa00e2ec94d4                           // .quad 7207441660390446292
-	QUAD $0xdec681f9f4c31f31                           // .quad -2394083241347571919
-	QUAD $0xde83bc408dd3dd04                           // .quad -2412877989897052924
-	QUAD $0x8b3c113c38f9f37e                           // .quad -8413831053483314306
-	QUAD $0x9624ab50b148d445                           // .quad -7627783505798704059
-	QUAD $0xae0b158b4738705e                           // .quad -5905602798426754978
-	QUAD $0x3badd624dd9b0957                           // .quad 4300328673033783639
-	QUAD $0xd98ddaee19068c76                           // .quad -2770317479606055818
-	QUAD $0xe54ca5d70a80e5d6                           // .quad -1923980597781273130
-	QUAD $0x87f8a8d4cfa417c9                           // .quad -8648977452394866743
-	QUAD $0x5e9fcf4ccd211f4c                           // .quad 6818396289628184396
-	QUAD $0xa9f6d30a038d1dbc                           // .quad -6199535797066195524
-	QUAD $0x7647c3200069671f                           // .quad 8522995362035230495
-	QUAD $0xd47487cc8470652b                           // .quad -3137733727905356501
-	QUAD $0x29ecd9f40041e073                           // .quad 3021029092058325107
-	QUAD $0x84c8d4dfd2c63f3b                           // .quad -8878612607581929669
-	QUAD $0xf468107100525890                           // .quad -835399653354481520
-	QUAD $0xa5fb0a17c777cf09                           // .quad -6486579741050024183
-	QUAD $0x7182148d4066eeb4                           // .quad 8179122470161673908
-	QUAD $0xcf79cc9db955c2cc                           // .quad -3496538657885142324
-	QUAD $0xc6f14cd848405530                           // .quad -4111420493003729616
-	QUAD $0x81ac1fe293d599bf                           // .quad -9102865688819295809
-	QUAD $0xb8ada00e5a506a7c                           // .quad -5139275616254662020
-	QUAD $0xa21727db38cb002f                           // .quad -6766896092596731857
-	QUAD $0xa6d90811f0e4851c                           // .quad -6424094520318327524
-	QUAD $0xca9cf1d206fdc03b                           // .quad -3846934097318526917
-	QUAD $0x908f4a166d1da663                           // .quad -8030118150397909405
-	QUAD $0xfd442e4688bd304a                           // .quad -196981603220770742
-	QUAD $0x9a598e4e043287fe                           // .quad -7324666853212387330
-	QUAD $0x9e4a9cec15763e2e                           // .quad -7040642529654063570
-	QUAD $0x40eff1e1853f29fd                           // .quad 4679224488766679549
-	QUAD $0xc5dd44271ad3cdba                           // .quad -4189117143640191558
-	QUAD $0xd12bee59e68ef47c                           // .quad -3374341425896426372
-	QUAD $0xf7549530e188c128                           // .quad -624710411122851544
-	QUAD $0x82bb74f8301958ce                           // .quad -9026492418826348338
-	QUAD $0x9a94dd3e8cf578b9                           // .quad -7307973034592864071
-	QUAD $0xe36a52363c1faf01                           // .quad -2059743486678159615
-	QUAD $0xc13a148e3032d6e7                           // .quad -4523280274813692185
-	QUAD $0xdc44e6c3cb279ac1                           // .quad -2574679358347699519
-	QUAD $0xf18899b1bc3f8ca1                           // .quad -1042414325089727327
-	QUAD $0x29ab103a5ef8c0b9                           // .quad 3002511419460075705
-	QUAD $0x96f5600f15a7b7e5                           // .quad -7569037980822161435
-	QUAD $0x7415d448f6b6f0e7                           // .quad 8364825292752482535
-	QUAD $0xbcb2b812db11a5de                           // .quad -4849611457600313890
-	QUAD $0x111b495b3464ad21                           // .quad 1232659579085827361
-	QUAD $0xebdf661791d60f56                           // .quad -1450328303573004458
-	QUAD $0xcab10dd900beec34                           // .quad -3841273781498745804
-	QUAD $0x936b9fcebb25c995                           // .quad -7823984217374209643
-	QUAD $0x3d5d514f40eea742                           // .quad 4421779809981343554
-	QUAD $0xb84687c269ef3bfb                           // .quad -5168294253290374149
-	QUAD $0x0cb4a5a3112a5112                           // .quad 915538744049291538
-	QUAD $0xe65829b3046b0afa                           // .quad -1848681798185579782
-	QUAD $0x47f0e785eaba72ab                           // .quad 5183897733458195115
-	QUAD $0x8ff71a0fe2c2e6dc                           // .quad -8072955151507069220
-	QUAD $0x59ed216765690f56                           // .quad 6479872166822743894
-	QUAD $0xb3f4e093db73a093                           // .quad -5479507920956448621
-	QUAD $0x306869c13ec3532c                           // .quad 3488154190101041964
-	QUAD $0xe0f218b8d25088b8                           // .quad -2237698882768172872
-	QUAD $0x1e414218c73a13fb                           // .quad 2180096368813151227
-	QUAD $0x8c974f7383725573                           // .quad -8316090829371189901
-	QUAD $0xe5d1929ef90898fa                           // .quad -1886565557410948870
-	QUAD $0xafbd2350644eeacf                           // .quad -5783427518286599473
-	QUAD $0xdf45f746b74abf39                           // .quad -2358206946763686087
-	QUAD $0xdbac6c247d62a583                           // .quad -2617598379430861437
-	QUAD $0x6b8bba8c328eb783                           // .quad 7749492695127472003
-	QUAD $0x894bc396ce5da772                           // .quad -8553528014785370254
-	QUAD $0x066ea92f3f326564                           // .quad 463493832054564196
-	QUAD $0xab9eb47c81f5114f                           // .quad -6080224000054324913
-	QUAD $0xc80a537b0efefebd                           // .quad -4032318728359182659
-	QUAD $0xd686619ba27255a2                           // .quad -2988593981640518238
-	QUAD $0xbd06742ce95f5f36                           // .quad -4826042214438183114
-	QUAD $0x8613fd0145877585                           // .quad -8785400266166405755
-	QUAD $0x2c48113823b73704                           // .quad 3190819268807046916
-	QUAD $0xa798fc4196e952e7                           // .quad -6370064314280619289
-	QUAD $0xf75a15862ca504c5                           // .quad -623161932418579259
-	QUAD $0xd17f3b51fca3a7a0                           // .quad -3350894374423386208
-	QUAD $0x9a984d73dbe722fb                           // .quad -7307005235402693893
-	QUAD $0x82ef85133de648c4                           // .quad -9011838011655698236
-	QUAD $0xc13e60d0d2e0ebba                           // .quad -4522070525825979462
-	QUAD $0xa3ab66580d5fdaf5                           // .quad -6653111496142234891
-	QUAD $0x318df905079926a8                           // .quad 3570783879572301480
-	QUAD $0xcc963fee10b7d1b3                           // .quad -3704703351750405709
-	QUAD $0xfdf17746497f7052                           // .quad -148206168962011054
-	QUAD $0xffbbcfe994e5c61f                           // .quad -19193171260619233
-	QUAD $0xfeb6ea8bedefa633                           // .quad -92628855601256909
-	QUAD $0x9fd561f1fd0f9bd3                           // .quad -6929524759678968877
-	QUAD $0xfe64a52ee96b8fc0                           // .quad -115786069501571136
-	QUAD $0xc7caba6e7c5382c8                           // .quad -4050219931171323192
-	QUAD $0x3dfdce7aa3c673b0                           // .quad 4466953431550423984
-	QUAD $0xf9bd690a1b68637b                           // .quad -451088895536766085
-	QUAD $0x06bea10ca65c084e                           // .quad 486002885505321038
-	QUAD $0x9c1661a651213e2d                           // .quad -7199459587351560659
-	QUAD $0x486e494fcff30a62                           // .quad 5219189625309039202
-	QUAD $0xc31bfa0fe5698db8                           // .quad -4387638465762062920
-	QUAD $0x5a89dba3c3efccfa                           // .quad 6523987031636299002
-	QUAD $0xf3e2f893dec3f126                           // .quad -872862063775190746
-	QUAD $0xf89629465a75e01c                           // .quad -534194123654701028
-	QUAD $0x986ddb5c6b3a76b7                           // .quad -7463067817500576073
-	QUAD $0xf6bbb397f1135823                           // .quad -667742654568376285
-	QUAD $0xbe89523386091465                           // .quad -4717148753448332187
-	QUAD $0x746aa07ded582e2c                           // .quad 8388693718644305452
-	QUAD $0xee2ba6c0678b597f                           // .quad -1284749923383027329
-	QUAD $0xa8c2a44eb4571cdc                           // .quad -6286281471915778852
-	QUAD $0x94db483840b717ef                           // .quad -7720497729755473937
-	QUAD $0x92f34d62616ce413                           // .quad -7857851839894723565
-	QUAD $0xba121a4650e4ddeb                           // .quad -5038936143766954517
-	QUAD $0x77b020baf9c81d17                           // .quad 8624429273841147159
-	QUAD $0xe896a0d7e51e1566                           // .quad -1686984161281305242
-	QUAD $0x0ace1474dc1d122e                           // .quad 778582277723329070
-	QUAD $0x915e2486ef32cd60                           // .quad -7971894128441897632
-	QUAD $0x0d819992132456ba                           // .quad 973227847154161338
-	QUAD $0xb5b5ada8aaff80b8                           // .quad -5353181642124984136
-	QUAD $0x10e1fff697ed6c69                           // .quad 1216534808942701673
-	QUAD $0xe3231912d5bf60e6                           // .quad -2079791034228842266
-	QUAD $0xca8d3ffa1ef463c1                           // .quad -3851351762838199359
-	QUAD $0x8df5efabc5979c8f                           // .quad -8217398424034108273
-	QUAD $0xbd308ff8a6b17cb2                           // .quad -4814189703547749198
-	QUAD $0xb1736b96b6fd83b3                           // .quad -5660062011615247437
-	QUAD $0xac7cb3f6d05ddbde                           // .quad -6017737129434686498
-	QUAD $0xddd0467c64bce4a0                           // .quad -2463391496091671392
-	QUAD $0x6bcdf07a423aa96b                           // .quad 7768129340171790699
-	QUAD $0x8aa22c0dbef60ee4                           // .quad -8457148712698376476
-	QUAD $0x86c16c98d2c953c6                           // .quad -8736582398494813242
-	QUAD $0xad4ab7112eb3929d                           // .quad -5959749872445582691
-	QUAD $0xe871c7bf077ba8b7                           // .quad -1697355961263740745
-	QUAD $0xd89d64d57a607744                           // .quad -2838001322129590460
-	QUAD $0x11471cd764ad4972                           // .quad 1244995533423855986
-	QUAD $0x87625f056c7c4a8b                           // .quad -8691279853972075893
-	QUAD $0xd598e40d3dd89bcf                           // .quad -3055441601647567921
-	QUAD $0xa93af6c6c79b5d2d                           // .quad -6252413799037706963
-	QUAD $0x4aff1d108d4ec2c3                           // .quad 5404070034795315907
-	QUAD $0xd389b47879823479                           // .quad -3203831230369745799
-	QUAD $0xcedf722a585139ba                           // .quad -3539985255894009414
-	QUAD $0x843610cb4bf160cb                           // .quad -8919923546622172981
-	QUAD $0xc2974eb4ee658828                           // .quad -4424981569867511768
-	QUAD $0xa54394fe1eedb8fe                           // .quad -6538218414850328322
-	QUAD $0x733d226229feea32                           // .quad 8303831092947774002
-	QUAD $0xce947a3da6a9273e                           // .quad -3561087000135522498
-	QUAD $0x0806357d5a3f525f                           // .quad 578208414664970847
-	QUAD $0x811ccc668829b887                           // .quad -9143208402725783417
-	QUAD $0xca07c2dcb0cf26f7                           // .quad -3888925500096174345
-	QUAD $0xa163ff802a3426a8                           // .quad -6817324484979841368
-	QUAD $0xfc89b393dd02f0b5                           // .quad -249470856692830027
-	QUAD $0xc9bcff6034c13052                           // .quad -3909969587797413806
-	QUAD $0xbbac2078d443ace2                           // .quad -4923524589293425438
-	QUAD $0xfc2c3f3841f17c67                           // .quad -275775966319379353
-	QUAD $0xd54b944b84aa4c0d                           // .quad -3077202868308390899
-	QUAD $0x9d9ba7832936edc0                           // .quad -7089889006590693952
-	QUAD $0x0a9e795e65d4df11                           // .quad 765182433041899281
-	QUAD $0xc5029163f384a931                           // .quad -4250675239810979535
-	QUAD $0x4d4617b5ff4a16d5                           // .quad 5568164059729762005
-	QUAD $0xf64335bcf065d37d                           // .quad -701658031336336515
-	QUAD $0x504bced1bf8e4e45                           // .quad 5785945546544795205
-	QUAD $0x99ea0196163fa42e                           // .quad -7356065297226292178
-	QUAD $0xe45ec2862f71e1d6                           // .quad -1990940103673781802
-	QUAD $0xc06481fb9bcf8d39                           // .quad -4583395603105477319
-	QUAD $0x5d767327bb4e5a4c                           // .quad 6734696907262548556
-	QUAD $0xf07da27a82c37088                           // .quad -1117558485454458744
-	QUAD $0x3a6a07f8d510f86f                           // .quad 4209185567039092847
-	QUAD $0x964e858c91ba2655                           // .quad -7616003081050118571
-	QUAD $0x890489f70a55368b                           // .quad -8573576096483297653
-	QUAD $0xbbe226efb628afea                           // .quad -4908317832885260310
-	QUAD $0x2b45ac74ccea842e                           // .quad 3118087934678041646
-	QUAD $0xeadab0aba3b2dbe5                           // .quad -1523711272679187483
-	QUAD $0x3b0b8bc90012929d                           // .quad 4254647968387469981
-	QUAD $0x92c8ae6b464fc96f                           // .quad -7869848573065574033
-	QUAD $0x09ce6ebb40173744                           // .quad 706623942056949572
-	QUAD $0xb77ada0617e3bbcb                           // .quad -5225624697904579637
-	QUAD $0xcc420a6a101d0515                           // .quad -3728406090856200939
-	QUAD $0xe55990879ddcaabd                           // .quad -1920344853953336643
-	QUAD $0x9fa946824a12232d                           // .quad -6941939825212513491
-	QUAD $0x8f57fa54c2a9eab6                           // .quad -8117744561361917258
-	QUAD $0x47939822dc96abf9                           // .quad 5157633273766521849
-	QUAD $0xb32df8e9f3546564                           // .quad -5535494683275008668
-	QUAD $0x59787e2b93bc56f7                           // .quad 6447041592208152311
-	QUAD $0xdff9772470297ebd                           // .quad -2307682335666372931
-	QUAD $0x57eb4edb3c55b65a                           // .quad 6335244004343789146
-	QUAD $0x8bfbea76c619ef36                           // .quad -8359830487432564938
-	QUAD $0xede622920b6b23f1                           // .quad -1304317031425039375
-	QUAD $0xaefae51477a06b03                           // .quad -5838102090863318269
-	QUAD $0xe95fab368e45eced                           // .quad -1630396289281299219
-	QUAD $0xdab99e59958885c4                           // .quad -2685941595151759932
-	QUAD $0x11dbcb0218ebb414                           // .quad 1286845328412881940
-	QUAD $0x88b402f7fd75539b                           // .quad -8596242524610931813
-	QUAD $0xd652bdc29f26a119                           // .quad -3003129357911285479
-	QUAD $0xaae103b5fcd2a881                           // .quad -6133617137336276863
-	QUAD $0x4be76d3346f0495f                           // .quad 5469460339465668959
-	QUAD $0xd59944a37c0752a2                           // .quad -3055335403242958174
-	QUAD $0x6f70a4400c562ddb                           // .quad 8030098730593431003
-	QUAD $0x857fcae62d8493a5                           // .quad -8827113654667930715
-	QUAD $0xcb4ccd500f6bb952                           // .quad -3797434642040374958
-	QUAD $0xa6dfbd9fb8e5b88e                           // .quad -6422206049907525490
-	QUAD $0x7e2000a41346a7a7                           // .quad 9088264752731695015
-	QUAD $0xd097ad07a71f26b2                           // .quad -3416071543957018958
-	QUAD $0x8ed400668c0c28c8                           // .quad -8154892584824854328
-	QUAD $0x825ecc24c873782f                           // .quad -9052573742614218705
-	QUAD $0x728900802f0f32fa                           // .quad 8253128342678483706
-	QUAD $0xa2f67f2dfa90563b                           // .quad -6704031159840385477
-	QUAD $0x4f2b40a03ad2ffb9                           // .quad 5704724409920716729
-	QUAD $0xcbb41ef979346bca                           // .quad -3768352931373093942
-	QUAD $0xe2f610c84987bfa8                           // .quad -2092466524453879896
-	QUAD $0xfea126b7d78186bc                           // .quad -98755145788979524
-	QUAD $0x0dd9ca7d2df4d7c9                           // .quad 998051431430019017
-	QUAD $0x9f24b832e6b0f436                           // .quad -6979250993759194058
-	QUAD $0x91503d1c79720dbb                           // .quad -7975807747567252037
-	QUAD $0xc6ede63fa05d3143                           // .quad -4112377723771604669
-	QUAD $0x75a44c6397ce912a                           // .quad 8476984389250486570
-	QUAD $0xf8a95fcf88747d94                           // .quad -528786136287117932
-	QUAD $0xc986afbe3ee11aba                           // .quad -3925256793573221702
-	QUAD $0x9b69dbe1b548ce7c                           // .quad -7248020362820530564
-	QUAD $0xfbe85badce996168                           // .quad -294884973539139224
-	QUAD $0xc24452da229b021b                           // .quad -4448339435098275301
-	QUAD $0xfae27299423fb9c3                           // .quad -368606216923924029
-	QUAD $0xf2d56790ab41c2a2                           // .quad -948738275445456222
-	QUAD $0xdccd879fc967d41a                           // .quad -2536221894791146470
-	QUAD $0x97c560ba6b0919a5                           // .quad -7510490449794491995
-	QUAD $0x5400e987bbc1c920                           // .quad 6053094668365842720
-	QUAD $0xbdb6b8e905cb600f                           // .quad -4776427043815727089
-	QUAD $0x290123e9aab23b68                           // .quad 2954682317029915496
-	QUAD $0xed246723473e3813                           // .quad -1358847786342270957
-	QUAD $0xf9a0b6720aaf6521                           // .quad -459166561069996767
-	QUAD $0x9436c0760c86e30b                           // .quad -7766808894105001205
-	QUAD $0xf808e40e8d5b3e69                           // .quad -573958201337495959
-	QUAD $0xb94470938fa89bce                           // .quad -5096825099203863602
-	QUAD $0xb60b1d1230b20e04                           // .quad -5329133770099257852
-	QUAD $0xe7958cb87392c2c2                           // .quad -1759345355577441598
-	QUAD $0xb1c6f22b5e6f48c2                           // .quad -5636551615525730110
-	QUAD $0x90bd77f3483bb9b9                           // .quad -8017119874876982855
-	QUAD $0x1e38aeb6360b1af3                           // .quad 2177682517447613171
-	QUAD $0xb4ecd5f01a4aa828                           // .quad -5409713825168840664
-	QUAD $0x25c6da63c38de1b0                           // .quad 2722103146809516464
-	QUAD $0xe2280b6c20dd5232                           // .quad -2150456263033662926
-	QUAD $0x579c487e5a38ad0e                           // .quad 6313000485183335694
-	QUAD $0x8d590723948a535f                           // .quad -8261564192037121185
-	QUAD $0x2d835a9df0c6d851                           // .quad 3279564588051781713
-	QUAD $0xb0af48ec79ace837                           // .quad -5715269221619013577
-	QUAD $0xf8e431456cf88e65                           // .quad -512230283362660763
-	QUAD $0xdcdb1b2798182244                           // .quad -2532400508596379068
-	QUAD $0x1b8e9ecb641b58ff                           // .quad 1985699082112030975
-	QUAD $0x8a08f0f8bf0f156b                           // .quad -8500279345513818773
-	QUAD $0xe272467e3d222f3f                           // .quad -2129562165787349185
-	QUAD $0xac8b2d36eed2dac5                           // .quad -6013663163464885563
-	QUAD $0x5b0ed81dcc6abb0f                           // .quad 6561419329620589327
-	QUAD $0xd7adf884aa879177                           // .quad -2905392935903719049
-	QUAD $0x98e947129fc2b4e9                           // .quad -7428327965055601431
-	QUAD $0x86ccbb52ea94baea                           // .quad -8733399612580906262
-	QUAD $0x3f2398d747b36224                           // .quad 4549648098962661924
-	QUAD $0xa87fea27a539e9a5                           // .quad -6305063497298744923
-	QUAD $0x8eec7f0d19a03aad                           // .quad -8147997931578836307
-	QUAD $0xd29fe4b18e88640e                           // .quad -3269643353196043250
-	QUAD $0x1953cf68300424ac                           // .quad 1825030320404309164
-	QUAD $0x83a3eeeef9153e89                           // .quad -8961056123388608887
-	QUAD $0x5fa8c3423c052dd7                           // .quad 6892973918932774359
-	QUAD $0xa48ceaaab75a8e2b                           // .quad -6589634135808373205
-	QUAD $0x3792f412cb06794d                           // .quad 4004531380238580045
-	QUAD $0xcdb02555653131b6                           // .quad -3625356651333078602
-	QUAD $0xe2bbd88bbee40bd0                           // .quad -2108853905778275376
-	QUAD $0x808e17555f3ebf11                           // .quad -9183376934724255983
-	QUAD $0x5b6aceaeae9d0ec4                           // .quad 6587304654631931588
-	QUAD $0xa0b19d2ab70e6ed6                           // .quad -6867535149977932074
-	QUAD $0xf245825a5a445275                           // .quad -989241218564861323
-	QUAD $0xc8de047564d20a8b                           // .quad -3972732919045027189
-	QUAD $0xeed6e2f0f0d56712                           // .quad -1236551523206076654
-	QUAD $0xfb158592be068d2e                           // .quad -354230130378896082
-	QUAD $0x55464dd69685606b                           // .quad 6144684325637283947
-	QUAD $0x9ced737bb6c4183d                           // .quad -7138922859127891907
-	QUAD $0xaa97e14c3c26b886                           // .quad -6154202648235558778
-	QUAD $0xc428d05aa4751e4c                           // .quad -4311967555482476980
-	QUAD $0xd53dd99f4b3066a8                           // .quad -3081067291867060568
-	QUAD $0xf53304714d9265df                           // .quad -778273425925708321
-	QUAD $0xe546a8038efe4029                           // .quad -1925667057416912855
-	QUAD $0x993fe2c6d07b7fab                           // .quad -7403949918844649557
-	QUAD $0xde98520472bdd033                           // .quad -2407083821771141069
-	QUAD $0xbf8fdb78849a5f96                           // .quad -4643251380128424042
-	QUAD $0x963e66858f6d4440                           // .quad -7620540795641314240
-	QUAD $0xef73d256a5c0f77c                           // .quad -1192378206733142148
-	QUAD $0xdde7001379a44aa8                           // .quad -2456994988062127448
-	QUAD $0x95a8637627989aad                           // .quad -7662765406849295699
-	QUAD $0x5560c018580d5d52                           // .quad 6152128301777116498
-	QUAD $0xbb127c53b17ec159                           // .quad -4966770740134231719
-	QUAD $0xaab8f01e6e10b4a6                           // .quad -6144897678060768090
-	QUAD $0xe9d71b689dde71af                           // .quad -1596777406740401745
-	QUAD $0xcab3961304ca70e8                           // .quad -3840561048787980056
-	QUAD $0x9226712162ab070d                           // .quad -7915514906853832947
-	QUAD $0x3d607b97c5fd0d22                           // .quad 4422670725869800738
-	QUAD $0xb6b00d69bb55c8d1                           // .quad -5282707615139903279
-	QUAD $0x8cb89a7db77c506a                           // .quad -8306719647944912790
-	QUAD $0xe45c10c42a2b3b05                           // .quad -1991698500497491195
-	QUAD $0x77f3608e92adb242                           // .quad 8643358275316593218
-	QUAD $0x8eb98a7a9a5b04e3                           // .quad -8162340590452013853
-	QUAD $0x55f038b237591ed3                           // .quad 6192511825718353619
-	QUAD $0xb267ed1940f1c61c                           // .quad -5591239719637629412
-	QUAD $0x6b6c46dec52f6688                           // .quad 7740639782147942024
-	QUAD $0xdf01e85f912e37a3                           // .quad -2377363631119648861
-	QUAD $0x2323ac4b3b3da015                           // .quad 2532056854628769813
-	QUAD $0x8b61313bbabce2c6                           // .quad -8403381297090862394
-	QUAD $0xabec975e0a0d081a                           // .quad -6058300968568813542
-	QUAD $0xae397d8aa96c1b77                           // .quad -5892540602936190089
-	QUAD $0x96e7bd358c904a21                           // .quad -7572876210711016927
-	QUAD $0xd9c7dced53c72255                           // .quad -2753989735242849707
-	QUAD $0x7e50d64177da2e54                           // .quad 9102010423587778132
-	QUAD $0x881cea14545c7575                           // .quad -8638772612167862923
-	QUAD $0xdde50bd1d5d0b9e9                           // .quad -2457545025797441047
-	QUAD $0xaa242499697392d2                           // .quad -6186779746782440750
-	QUAD $0x955e4ec64b44e864                           // .quad -7683617300674189212
-	QUAD $0xd4ad2dbfc3d07787                           // .quad -3121788665050663033
-	QUAD $0xbd5af13bef0b113e                           // .quad -4802260812921368258
-	QUAD $0x84ec3c97da624ab4                           // .quad -8868646943297746252
-	QUAD $0xecb1ad8aeacdd58e                           // .quad -1391139997724322418
-	QUAD $0xa6274bbdd0fadd61                           // .quad -6474122660694794911
-	QUAD $0x67de18eda5814af2                           // .quad 7484447039699372786
-	QUAD $0xcfb11ead453994ba                           // .quad -3480967307441105734
-	QUAD $0x80eacf948770ced7                           // .quad -9157278655470055721
-	QUAD $0x81ceb32c4b43fcf4                           // .quad -9093133594791772940
-	QUAD $0xa1258379a94d028d                           // .quad -6834912300910181747
-	QUAD $0xa2425ff75e14fc31                           // .quad -6754730975062328271
-	QUAD $0x096ee45813a04330                           // .quad 679731660717048624
-	QUAD $0xcad2f7f5359a3b3e                           // .quad -3831727700400522434
-	QUAD $0x8bca9d6e188853fc                           // .quad -8373707460958465028
-	QUAD $0xfd87b5f28300ca0d                           // .quad -177973607073265139
-	QUAD $0x775ea264cf55347d                           // .quad 8601490892183123069
-	QUAD $0x9e74d1b791e07e48                           // .quad -7028762532061872568
-	QUAD $0x95364afe032a819d                           // .quad -7694880458480647779
-	QUAD $0xc612062576589dda                           // .quad -4174267146649952806
-	QUAD $0x3a83ddbd83f52204                           // .quad 4216457482181353988
-	QUAD $0xf79687aed3eec551                           // .quad -606147914885053103
-	QUAD $0xc4926a9672793542                           // .quad -4282243101277735614
-	QUAD $0x9abe14cd44753b52                           // .quad -7296371474444240046
-	QUAD $0x75b7053c0f178293                           // .quad 8482254178684994195
-	QUAD $0xc16d9a0095928a27                           // .quad -4508778324627912153
-	QUAD $0x5324c68b12dd6338                           // .quad 5991131704928854840
-	QUAD $0xf1c90080baf72cb1                           // .quad -1024286887357502287
-	QUAD $0xd3f6fc16ebca5e03                           // .quad -3173071712060547581
-	QUAD $0x971da05074da7bee                           // .quad -7557708332239520786
-	QUAD $0x88f4bb1ca6bcf584                           // .quad -8578025658503072380
-	QUAD $0xbce5086492111aea                           // .quad -4835449396872013078
-	QUAD $0x2b31e9e3d06c32e5                           // .quad 3112525982153323237
-	QUAD $0xec1e4a7db69561a5                           // .quad -1432625727662628443
-	QUAD $0x3aff322e62439fcf                           // .quad 4251171748059520975
-	QUAD $0x9392ee8e921d5d07                           // .quad -7812920107430224633
-	QUAD $0x09befeb9fad487c2                           // .quad 702278666647013314
-	QUAD $0xb877aa3236a4b449                           // .quad -5154464115860392887
-	QUAD $0x4c2ebe687989a9b3                           // .quad 5489534351736154547
-	QUAD $0xe69594bec44de15b                           // .quad -1831394126398103205
-	QUAD $0x0f9d37014bf60a10                           // .quad 1125115960621402640
-	QUAD $0x901d7cf73ab0acd9                           // .quad -8062150356639896359
-	QUAD $0x538484c19ef38c94                           // .quad 6018080969204141204
-	QUAD $0xb424dc35095cd80f                           // .quad -5466001927372482545
-	QUAD $0x2865a5f206b06fb9                           // .quad 2910915193077788601
-	QUAD $0xe12e13424bb40e13                           // .quad -2220816390788215277
-	QUAD $0xf93f87b7442e45d3                           // .quad -486521013540076077
-	QUAD $0x8cbccc096f5088cb                           // .quad -8305539271883716405
-	QUAD $0xf78f69a51539d748                           // .quad -608151266925095096
-	QUAD $0xafebff0bcb24aafe                           // .quad -5770238071427257602
-	QUAD $0xb573440e5a884d1b                           // .quad -5371875102083756773
-	QUAD $0xdbe6fecebdedd5be                           // .quad -2601111570856684098
-	QUAD $0x31680a88f8953030                           // .quad 3560107088838733872
-	QUAD $0x89705f4136b4a597                           // .quad -8543223759426509417
-	QUAD $0xfdc20d2b36ba7c3d                           // .quad -161552157378970563
-	QUAD $0xabcc77118461cefc                           // .quad -6067343680855748868
-	QUAD $0x3d32907604691b4c                           // .quad 4409745821703674700
-	QUAD $0xd6bf94d5e57a42bc                           // .quad -2972493582642298180
-	QUAD $0xa63f9a49c2c1b10f                           // .quad -6467280898289979121
-	QUAD $0x8637bd05af6c69b5                           // .quad -8775337516792518219
-	QUAD $0x0fcf80dc33721d53                           // .quad 1139270913992301907
-	QUAD $0xa7c5ac471b478423                           // .quad -6357485877563259869
-	QUAD $0xd3c36113404ea4a8                           // .quad -3187597375937010520
-	QUAD $0xd1b71758e219652b                           // .quad -3335171328526686933
-	QUAD $0x645a1cac083126e9                           // .quad 7231123676894144233
-	QUAD $0x83126e978d4fdf3b                           // .quad -9002011107970261189
-	QUAD $0x3d70a3d70a3d70a3                           // .quad 4427218577690292387
-	QUAD $0xa3d70a3d70a3d70a                           // .quad -6640827866535438582
-	QUAD $0xcccccccccccccccc; QUAD $0xcccccccccccccccc // .space 16, '\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc'
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x8000000000000000                           // .quad -9223372036854775808
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xa000000000000000                           // .quad -6917529027641081856
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xc800000000000000                           // .quad -4035225266123964416
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xfa00000000000000                           // .quad -432345564227567616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x9c40000000000000                           // .quad -7187745005283311616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xc350000000000000                           // .quad -4372995238176751616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xf424000000000000                           // .quad -854558029293551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x9896800000000000                           // .quad -7451627795949551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xbebc200000000000                           // .quad -4702848726509551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xee6b280000000000                           // .quad -1266874889709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x9502f90000000000                           // .quad -7709325833709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xba43b74000000000                           // .quad -5024971273709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xe8d4a51000000000                           // .quad -1669528073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x9184e72a00000000                           // .quad -7960984073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xb5e620f480000000                           // .quad -5339544073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xe35fa931a0000000                           // .quad -2062744073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x8e1bc9bf04000000                           // .quad -8206744073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xb1a2bc2ec5000000                           // .quad -5646744073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xde0b6b3a76400000                           // .quad -2446744073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x8ac7230489e80000                           // .quad -8446744073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xad78ebc5ac620000                           // .quad -5946744073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xd8d726b7177a8000                           // .quad -2821744073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x878678326eac9000                           // .quad -8681119073709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xa968163f0a57b400                           // .quad -6239712823709551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xd3c21bcecceda100                           // .quad -3187955011209551616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x84595161401484a0                           // .quad -8910000909647051616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xa56fa5b99019a5c8                           // .quad -6525815118631426616
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0xcecb8f27f4200f3a                           // .quad -3545582879861895366
-	QUAD $0x4000000000000000                           // .quad 4611686018427387904
-	QUAD $0x813f3978f8940984                           // .quad -9133518327554766460
-	QUAD $0x5000000000000000                           // .quad 5764607523034234880
-	QUAD $0xa18f07d736b90be5                           // .quad -6805211891016070171
-	QUAD $0xa400000000000000                           // .quad -6629298651489370112
-	QUAD $0xc9f2c9cd04674ede                           // .quad -3894828845342699810
-	QUAD $0x4d00000000000000                           // .quad 5548434740920451072
-	QUAD $0xfc6f7c4045812296                           // .quad -256850038250986858
-	QUAD $0xf020000000000000                           // .quad -1143914305352105984
-	QUAD $0x9dc5ada82b70b59d                           // .quad -7078060301547948643
-	QUAD $0x6c28000000000000                           // .quad 7793479155164643328
-	QUAD $0xc5371912364ce305                           // .quad -4235889358507547899
-	QUAD $0xc732000000000000                           // .quad -4093209111326359552
-	QUAD $0xf684df56c3e01bc6                           // .quad -683175679707046970
-	QUAD $0x3c7f400000000000                           // .quad 4359273333062107136
-	QUAD $0x9a130b963a6c115c                           // .quad -7344513827457986212
-	QUAD $0x4b9f100000000000                           // .quad 5449091666327633920
-	QUAD $0xc097ce7bc90715b3                           // .quad -4568956265895094861
-	QUAD $0x1e86d40000000000                           // .quad 2199678564482154496
-	QUAD $0xf0bdc21abb48db20                           // .quad -1099509313941480672
-	QUAD $0x1314448000000000                           // .quad 1374799102801346560
-	QUAD $0x96769950b50d88f4                           // .quad -7604722348854507276
-	QUAD $0x17d955a000000000                           // .quad 1718498878501683200
-	QUAD $0xbc143fa4e250eb31                           // .quad -4894216917640746191
-	QUAD $0x5dcfab0800000000                           // .quad 6759809616554491904
-	QUAD $0xeb194f8e1ae525fd                           // .quad -1506085128623544835
-	QUAD $0x5aa1cae500000000                           // .quad 6530724019560251392
-	QUAD $0x92efd1b8d0cf37be                           // .quad -7858832233030797378
-	QUAD $0xf14a3d9e40000000                           // .quad -1059967012404461568
-	QUAD $0xb7abc627050305ad                           // .quad -5211854272861108819
-	QUAD $0x6d9ccd05d0000000                           // .quad 7898413271349198848
-	QUAD $0xe596b7b0c643c719                           // .quad -1903131822648998119
-	QUAD $0xe4820023a2000000                           // .quad -1981020733047832576
-	QUAD $0x8f7e32ce7bea5c6f                           // .quad -8106986416796705681
-	QUAD $0xdda2802c8a800000                           // .quad -2476275916309790720
-	QUAD $0xb35dbf821ae4f38b                           // .quad -5522047002568494197
-	QUAD $0xd50b2037ad200000                           // .quad -3095344895387238400
-	QUAD $0xe0352f62a19e306e                           // .quad -2290872734783229842
-	QUAD $0x4526f422cc340000                           // .quad 4982938468024057856
-	QUAD $0x8c213d9da502de45                           // .quad -8349324486880600507
-	QUAD $0x9670b12b7f410000                           // .quad -7606384970252091392
-	QUAD $0xaf298d050e4395d6                           // .quad -5824969590173362730
-	QUAD $0x3c0cdd765f114000                           // .quad 4327076842467049472
-	QUAD $0xdaf3f04651d47b4c                           // .quad -2669525969289315508
-	QUAD $0xa5880a69fb6ac800                           // .quad -6518949010312869888
-	QUAD $0x88d8762bf324cd0f                           // .quad -8585982758446904049
-	QUAD $0x8eea0d047a457a00                           // .quad -8148686262891087360
-	QUAD $0xab0e93b6efee0053                           // .quad -6120792429631242157
-	QUAD $0x72a4904598d6d880                           // .quad 8260886245095692416
-	QUAD $0xd5d238a4abe98068                           // .quad -3039304518611664792
-	QUAD $0x47a6da2b7f864750                           // .quad 5163053903184807760
-	QUAD $0x85a36366eb71f041                           // .quad -8817094351773372351
-	QUAD $0x999090b65f67d924                           // .quad -7381240676301154012
-	QUAD $0xa70c3c40a64e6c51                           // .quad -6409681921289327535
-	QUAD $0xfff4b4e3f741cf6d                           // .quad -3178808521666707
-	QUAD $0xd0cf4b50cfe20765                           // .quad -3400416383184271515
-	QUAD $0xbff8f10e7a8921a4                           // .quad -4613672773753429596
-	QUAD $0x82818f1281ed449f                           // .quad -9042789267131251553
-	QUAD $0xaff72d52192b6a0d                           // .quad -5767090967191786995
-	QUAD $0xa321f2d7226895c7                           // .quad -6691800565486676537
-	QUAD $0x9bf4f8a69f764490                           // .quad -7208863708989733744
-	QUAD $0xcbea6f8ceb02bb39                           // .quad -3753064688430957767
-	QUAD $0x02f236d04753d5b4                           // .quad 212292400617608628
-	QUAD $0xfee50b7025c36a08                           // .quad -79644842111309304
-	QUAD $0x01d762422c946590                           // .quad 132682750386005392
-	QUAD $0x9f4f2726179a2245                           // .quad -6967307053960650171
-	QUAD $0x424d3ad2b7b97ef5                           // .quad 4777539456409894645
-	QUAD $0xc722f0ef9d80aad6                           // .quad -4097447799023424810
-	QUAD $0xd2e0898765a7deb2                           // .quad -3251447716342407502
-	QUAD $0xf8ebad2b84e0d58b                           // .quad -510123730351893109
-	QUAD $0x63cc55f49f88eb2f                           // .quad 7191217214140771119
-	QUAD $0x9b934c3b330c8577                           // .quad -7236356359111015049
-	QUAD $0x3cbf6b71c76b25fb                           // .quad 4377335499248575995
-	QUAD $0xc2781f49ffcfa6d5                           // .quad -4433759430461380907
-	QUAD $0x8bef464e3945ef7a                           // .quad -8363388681221443718
-	QUAD $0xf316271c7fc3908a                           // .quad -930513269649338230
-	QUAD $0x97758bf0e3cbb5ac                           // .quad -7532960934977096276
-	QUAD $0x97edd871cfda3a56                           // .quad -7499099821171918250
-	QUAD $0x3d52eeed1cbea317                           // .quad 4418856886560793367
-	QUAD $0xbde94e8e43d0c8ec                           // .quad -4762188758037509908
-	QUAD $0x4ca7aaa863ee4bdd                           // .quad 5523571108200991709
-	QUAD $0xed63a231d4c4fb27                           // .quad -1341049929119499481
-	QUAD $0x8fe8caa93e74ef6a                           // .quad -8076983103442849942
-	QUAD $0x945e455f24fb1cf8                           // .quad -7755685233340769032
-	QUAD $0xb3e2fd538e122b44                           // .quad -5484542860876174524
-	QUAD $0xb975d6b6ee39e436                           // .quad -5082920523248573386
-	QUAD $0x60dbbca87196b616                           // .quad 6979379479186945558
-	QUAD $0xe7d34c64a9c85d44                           // .quad -1741964635633328828
-	QUAD $0xbc8955e946fe31cd                           // .quad -4861259862362934835
-	QUAD $0x90e40fbeea1d3a4a                           // .quad -8006256924911912374
-	QUAD $0x6babab6398bdbe41                           // .quad 7758483227328495169
-	QUAD $0xb51d13aea4a488dd                           // .quad -5396135137712502563
-	QUAD $0xc696963c7eed2dd1                           // .quad -4136954021121544751
-	QUAD $0xe264589a4dcdab14                           // .quad -2133482903713240300
-	QUAD $0xfc1e1de5cf543ca2                           // .quad -279753253987271518
-	QUAD $0x8d7eb76070a08aec                           // .quad -8250955842461857044
-	QUAD $0x3b25a55f43294bcb                           // .quad 4261994450943298507
-	QUAD $0xb0de65388cc8ada8                           // .quad -5702008784649933400
-	QUAD $0x49ef0eb713f39ebe                           // .quad 5327493063679123134
-	QUAD $0xdd15fe86affad912                           // .quad -2515824962385028846
-	QUAD $0x6e3569326c784337                           // .quad 7941369183226839863
-	QUAD $0x8a2dbf142dfcc7ab                           // .quad -8489919629131724885
-	QUAD $0x49c2c37f07965404                           // .quad 5315025460606161924
-	QUAD $0xacb92ed9397bf996                           // .quad -6000713517987268202
-	QUAD $0xdc33745ec97be906                           // .quad -2579590211097073402
-	QUAD $0xd7e77a8f87daf7fb                           // .quad -2889205879056697349
-	QUAD $0x69a028bb3ded71a3                           // .quad 7611128154919104931
-	QUAD $0x86f0ac99b4e8dafd                           // .quad -8723282702051517699
-	QUAD $0xc40832ea0d68ce0c                           // .quad -4321147861633282548
-	QUAD $0xa8acd7c0222311bc                           // .quad -6292417359137009220
-	QUAD $0xf50a3fa490c30190                           // .quad -789748808614215280
-	QUAD $0xd2d80db02aabd62b                           // .quad -3253835680493873621
-	QUAD $0x792667c6da79e0fa                           // .quad 8729779031470891258
-	QUAD $0x83c7088e1aab65db                           // .quad -8951176327949752869
-	QUAD $0x577001b891185938                           // .quad 6300537770911226168
-	QUAD $0xa4b8cab1a1563f52                           // .quad -6577284391509803182
-	QUAD $0xed4c0226b55e6f86                           // .quad -1347699823215743098
-	QUAD $0xcde6fd5e09abcf26                           // .quad -3609919470959866074
-	QUAD $0x544f8158315b05b4                           // .quad 6075216638131242420
-	QUAD $0x80b05e5ac60b6178                           // .quad -9173728696990998152
-	QUAD $0x696361ae3db1c721                           // .quad 7594020797664053025
-	QUAD $0xa0dc75f1778e39d6                           // .quad -6855474852811359786
-	QUAD $0x03bc3a19cd1e38e9                           // .quad 269153960225290473
-	QUAD $0xc913936dd571c84c                           // .quad -3957657547586811828
-	QUAD $0x04ab48a04065c723                           // .quad 336442450281613091
-	QUAD $0xfb5878494ace3a5f                           // .quad -335385916056126881
-	QUAD $0x62eb0d64283f9c76                           // .quad 7127805559067090038
-	QUAD $0x9d174b2dcec0e47b                           // .quad -7127145225176161157
-	QUAD $0x3ba5d0bd324f8394                           // .quad 4298070930406474644
-	QUAD $0xc45d1df942711d9a                           // .quad -4297245513042813542
-	QUAD $0xca8f44ec7ee36479                           // .quad -3850783373846682503
-	QUAD $0xf5746577930d6500                           // .quad -759870872876129024
-	QUAD $0x7e998b13cf4e1ecb                           // .quad 9122475437414293195
-	QUAD $0x9968bf6abbe85f20                           // .quad -7392448323188662496
-	QUAD $0x9e3fedd8c321a67e                           // .quad -7043649776941685122
-	QUAD $0xbfc2ef456ae276e8                           // .quad -4628874385558440216
-	QUAD $0xc5cfe94ef3ea101e                           // .quad -4192876202749718498
-	QUAD $0xefb3ab16c59b14a2                           // .quad -1174406963520662366
-	QUAD $0xbba1f1d158724a12                           // .quad -4926390635932268014
-	QUAD $0x95d04aee3b80ece5                           // .quad -7651533379841495835
-	QUAD $0x2a8a6e45ae8edc97                           // .quad 3065383741939440791
-	QUAD $0xbb445da9ca61281f                           // .quad -4952730706374481889
-	QUAD $0xf52d09d71a3293bd                           // .quad -779956341003086915
-	QUAD $0xea1575143cf97226                           // .quad -1579227364540714458
-	QUAD $0x593c2626705f9c56                           // .quad 6430056314514152534
-	QUAD $0x924d692ca61be758                           // .quad -7904546130479028392
-	QUAD $0x6f8b2fb00c77836c                           // .quad 8037570393142690668
-	QUAD $0xb6e0c377cfa2e12e                           // .quad -5268996644671397586
-	QUAD $0x0b6dfb9c0f956447                           // .quad 823590954573587527
-	QUAD $0xe498f455c38b997a                           // .quad -1974559787411859078
-	QUAD $0x4724bd4189bd5eac                           // .quad 5126430365035880108
-	QUAD $0x8edf98b59a373fec                           // .quad -8151628894773493780
-	QUAD $0x58edec91ec2cb657                           // .quad 6408037956294850135
-	QUAD $0xb2977ee300c50fe7                           // .quad -5577850100039479321
-	QUAD $0x2f2967b66737e3ed                           // .quad 3398361426941174765
-	QUAD $0xdf3d5e9bc0f653e1                           // .quad -2360626606621961247
-	QUAD $0xbd79e0d20082ee74                           // .quad -4793553135802847628
-	QUAD $0x8b865b215899f46c                           // .quad -8392920656779807636
-	QUAD $0xecd8590680a3aa11                           // .quad -1380255401326171631
-	QUAD $0xae67f1e9aec07187                           // .quad -5879464802547371641
-	QUAD $0xe80e6f4820cc9495                           // .quad -1725319251657714539
-	QUAD $0xda01ee641a708de9                           // .quad -2737644984756826647
-	QUAD $0x3109058d147fdcdd                           // .quad 3533361486141316317
-	QUAD $0x884134fe908658b2                           // .quad -8628557143114098510
-	QUAD $0xbd4b46f0599fd415                           // .quad -4806670179178130411
-	QUAD $0xaa51823e34a7eede                           // .quad -6174010410465235234
-	QUAD $0x6c9e18ac7007c91a                           // .quad 7826720331309500698
-	QUAD $0xd4e5e2cdc1d1ea96                           // .quad -3105826994654156138
-	QUAD $0x03e2cf6bc604ddb0                           // .quad 280014188641050032
-	QUAD $0x850fadc09923329e                           // .quad -8858670899299929442
-	QUAD $0x84db8346b786151c                           // .quad -8873354301053463268
-	QUAD $0xa6539930bf6bff45                           // .quad -6461652605697523899
-	QUAD $0xe612641865679a63                           // .quad -1868320839462053277
-	QUAD $0xcfe87f7cef46ff16                           // .quad -3465379738694516970
-	QUAD $0x4fcb7e8f3f60c07e                           // .quad 5749828502977298558
-	QUAD $0x81f14fae158c5f6e                           // .quad -9083391364325154962
-	QUAD $0xe3be5e330f38f09d                           // .quad -2036086408133152611
-	QUAD $0xa26da3999aef7749                           // .quad -6742553186979055799
-	QUAD $0x5cadf5bfd3072cc5                           // .quad 6678264026688335045
-	QUAD $0xcb090c8001ab551c                           // .quad -3816505465296431844
-	QUAD $0x73d9732fc7c8f7f6                           // .quad 8347830033360418806
-	QUAD $0xfdcb4fa002162a63                           // .quad -158945813193151901
-	QUAD $0x2867e7fddcdd9afa                           // .quad 2911550761636567802
-	QUAD $0x9e9f11c4014dda7e                           // .quad -7016870160886801794
-	QUAD $0xb281e1fd541501b8                           // .quad -5583933584809066056
-	QUAD $0xc646d63501a1511d                           // .quad -4159401682681114339
-	QUAD $0x1f225a7ca91a4226                           // .quad 2243455055843443238
-	QUAD $0xf7d88bc24209a565                           // .quad -587566084924005019
-	QUAD $0x3375788de9b06958                           // .quad 3708002419115845976
-	QUAD $0x9ae757596946075f                           // .quad -7284757830718584993
-	QUAD $0x0052d6b1641c83ae                           // .quad 23317005467419566
-	QUAD $0xc1a12d2fc3978937                           // .quad -4494261269970843337
-	QUAD $0xc0678c5dbd23a49a                           // .quad -4582539761593113446
-	QUAD $0xf209787bb47d6b84                           // .quad -1006140569036166268
-	QUAD $0xf840b7ba963646e0                           // .quad -558244341782001952
-	QUAD $0x9745eb4d50ce6332                           // .quad -7546366883288685774
-	QUAD $0xb650e5a93bc3d898                           // .quad -5309491445654890344
-	QUAD $0xbd176620a501fbff                           // .quad -4821272585683469313
-	QUAD $0xa3e51f138ab4cebe                           // .quad -6636864307068612930
-	QUAD $0xec5d3fa8ce427aff                           // .quad -1414904713676948737
-	QUAD $0xc66f336c36b10137                           // .quad -4148040191917883081
-	QUAD $0x93ba47c980e98cdf                           // .quad -7801844473689174817
-	QUAD $0xb80b0047445d4184                           // .quad -5185050239897353852
-	QUAD $0xb8a8d9bbe123f017                           // .quad -5140619573684080617
-	QUAD $0xa60dc059157491e5                           // .quad -6481312799871692315
-	QUAD $0xe6d3102ad96cec1d                           // .quad -1814088448677712867
-	QUAD $0x87c89837ad68db2f                           // .quad -8662506518347195601
-	QUAD $0x9043ea1ac7e41392                           // .quad -8051334308064652398
-	QUAD $0x29babe4598c311fb                           // .quad 3006924907348169211
-	QUAD $0xb454e4a179dd1877                           // .quad -5452481866653427593
-	QUAD $0xf4296dd6fef3d67a                           // .quad -853029884242176390
-	QUAD $0xe16a1dc9d8545e94                           // .quad -2203916314889396588
-	QUAD $0x1899e4a65f58660c                           // .quad 1772699331562333708
-	QUAD $0x8ce2529e2734bb1d                           // .quad -8294976724446954723
-	QUAD $0x5ec05dcff72e7f8f                           // .quad 6827560182880305039
-	QUAD $0xb01ae745b101e9e4                           // .quad -5757034887131305500
-	QUAD $0x76707543f4fa1f73                           // .quad 8534450228600381299
-	QUAD $0xdc21a1171d42645d                           // .quad -2584607590486743971
-	QUAD $0x6a06494a791c53a8                           // .quad 7639874402088932264
-	QUAD $0x899504ae72497eba                           // .quad -8532908771695296838
-	QUAD $0x0487db9d17636892                           // .quad 326470965756389522
-	QUAD $0xabfa45da0edbde69                           // .quad -6054449946191733143
-	QUAD $0x45a9d2845d3c42b6                           // .quad 5019774725622874806
-	QUAD $0xd6f8d7509292d603                           // .quad -2956376414312278525
-	QUAD $0x0b8a2392ba45a9b2                           // .quad 831516194300602802
-	QUAD $0x865b86925b9bc5c2                           // .quad -8765264286586255934
-	QUAD $0x8e6cac7768d7141e                           // .quad -8183976793979022306
-	QUAD $0xa7f26836f282b732                           // .quad -6344894339805432014
-	QUAD $0x3207d795430cd926                           // .quad 3605087062808385830
-	QUAD $0xd1ef0244af2364ff                           // .quad -3319431906329402113
-	QUAD $0x7f44e6bd49e807b8                           // .quad 9170708441896323000
-	QUAD $0x8335616aed761f1f                           // .quad -8992173969096958177
-	QUAD $0x5f16206c9c6209a6                           // .quad 6851699533943015846
-	QUAD $0xa402b9c5a8d3a6e7                           // .quad -6628531442943809817
-	QUAD $0x36dba887c37a8c0f                           // .quad 3952938399001381903
-	QUAD $0xcd036837130890a1                           // .quad -3673978285252374367
-	QUAD $0xc2494954da2c9789                           // .quad -4446942528265218167
-	QUAD $0x802221226be55a64                           // .quad -9213765455923815836
-	QUAD $0xf2db9baa10b7bd6c                           // .quad -946992141904134804
-	QUAD $0xa02aa96b06deb0fd                           // .quad -6905520801477381891
-	QUAD $0x6f92829494e5acc7                           // .quad 8039631859474607303
-	QUAD $0xc83553c5c8965d3d                           // .quad -4020214983419339459
-	QUAD $0xcb772339ba1f17f9                           // .quad -3785518230938904583
-	QUAD $0xfa42a8b73abbf48c                           // .quad -413582710846786420
-	QUAD $0xff2a760414536efb                           // .quad -60105885123121413
-	QUAD $0x9c69a97284b578d7                           // .quad -7176018221920323369
-	QUAD $0xfef5138519684aba                           // .quad -75132356403901766
-	QUAD $0xc38413cf25e2d70d                           // .quad -4358336758973016307
-	QUAD $0x7eb258665fc25d69                           // .quad 9129456591349898601
-	QUAD $0xf46518c2ef5b8cd1                           // .quad -836234930288882479
-	QUAD $0xef2f773ffbd97a61                           // .quad -1211618658047395231
-	QUAD $0x98bf2f79d5993802                           // .quad -7440175859071633406
-	QUAD $0xaafb550ffacfd8fa                           // .quad -6126209340986631942
-	QUAD $0xbeeefb584aff8603                           // .quad -4688533805412153853
-	QUAD $0x95ba2a53f983cf38                           // .quad -7657761676233289928
-	QUAD $0xeeaaba2e5dbf6784                           // .quad -1248981238337804412
-	QUAD $0xdd945a747bf26183                           // .quad -2480258038432112253
-	QUAD $0x952ab45cfa97a0b2                           // .quad -7698142301602209614
-	QUAD $0x94f971119aeef9e4                           // .quad -7712008566467528220
-	QUAD $0xba756174393d88df                           // .quad -5010991858575374113
-	QUAD $0x7a37cd5601aab85d                           // .quad 8806733365625141341
-	QUAD $0xe912b9d1478ceb17                           // .quad -1652053804791829737
-	QUAD $0xac62e055c10ab33a                           // .quad -6025006692552756422
-	QUAD $0x91abb422ccb812ee                           // .quad -7950062655635975442
-	QUAD $0x577b986b314d6009                           // .quad 6303799689591218185
-	QUAD $0xb616a12b7fe617aa                           // .quad -5325892301117581398
-	QUAD $0xed5a7e85fda0b80b                           // .quad -1343622424865753077
-	QUAD $0xe39c49765fdf9d94                           // .quad -2045679357969588844
-	QUAD $0x14588f13be847307                           // .quad 1466078993672598279
-	QUAD $0x8e41ade9fbebc27d                           // .quad -8196078626372074883
-	QUAD $0x596eb2d8ae258fc8                           // .quad 6444284760518135752
-	QUAD $0xb1d219647ae6b31c                           // .quad -5633412264537705700
-	QUAD $0x6fca5f8ed9aef3bb                           // .quad 8055355950647669691
-	QUAD $0xde469fbd99a05fe3                           // .quad -2430079312244744221
-	QUAD $0x25de7bb9480d5854                           // .quad 2728754459941099604
-	QUAD $0x8aec23d680043bee                           // .quad -8436328597794046994
-	QUAD $0xaf561aa79a10ae6a                           // .quad -5812428961928401302
-	QUAD $0xada72ccc20054ae9                           // .quad -5933724728815170839
-	QUAD $0x1b2ba1518094da04                           // .quad 1957835834444274180
-	QUAD $0xd910f7ff28069da4                           // .quad -2805469892591575644
-	QUAD $0x90fb44d2f05d0842                           // .quad -7999724640327104446
-	QUAD $0x87aa9aff79042286                           // .quad -8670947710510816634
-	QUAD $0x353a1607ac744a53                           // .quad 3835402254873283155
-	QUAD $0xa99541bf57452b28                           // .quad -6226998619711132888
-	QUAD $0x42889b8997915ce8                           // .quad 4794252818591603944
-	QUAD $0xd3fa922f2d1675f2                           // .quad -3172062256211528206
-	QUAD $0x69956135febada11                           // .quad 7608094030047140369
-	QUAD $0x847c9b5d7c2e09b7                           // .quad -8900067937773286985
-	QUAD $0x43fab9837e699095                           // .quad 4898431519131537557
-	QUAD $0xa59bc234db398c25                           // .quad -6513398903789220827
-	QUAD $0x94f967e45e03f4bb                           // .quad -7712018656367741765
-	QUAD $0xcf02b2c21207ef2e                           // .quad -3530062611309138130
-	QUAD $0x1d1be0eebac278f5                           // .quad 2097517367411243253
-	QUAD $0x8161afb94b44f57d                           // .quad -9123818159709293187
-	QUAD $0x6462d92a69731732                           // .quad 7233582727691441970
-	QUAD $0xa1ba1ba79e1632dc                           // .quad -6793086681209228580
-	QUAD $0x7d7b8f7503cfdcfe                           // .quad 9041978409614302462
-	QUAD $0xca28a291859bbf93                           // .quad -3879672333084147821
-	QUAD $0x5cda735244c3d43e                           // .quad 6690786993590490174
-	QUAD $0xfcb2cb35e702af78                           // .quad -237904397927796872
-	QUAD $0x3a0888136afa64a7                           // .quad 4181741870994056359
-	QUAD $0x9defbf01b061adab                           // .quad -7066219276345954901
-	QUAD $0x088aaa1845b8fdd0                           // .quad 615491320315182544
-	QUAD $0xc56baec21c7a1916                           // .quad -4221088077005055722
-	QUAD $0x8aad549e57273d45                           // .quad -8454007886460797627
-	QUAD $0xf6c69a72a3989f5b                           // .quad -664674077828931749
-	QUAD $0x36ac54e2f678864b                           // .quad 3939617107816777291
-	QUAD $0x9a3c2087a63f6399                           // .quad -7332950326284164199
-	QUAD $0x84576a1bb416a7dd                           // .quad -8910536670511192099
-	QUAD $0xc0cb28a98fcf3c7f                           // .quad -4554501889427817345
-	QUAD $0x656d44a2a11c51d5                           // .quad 7308573235570561493
-	QUAD $0xf0fdf2d3f3c30b9f                           // .quad -1081441343357383777
-	QUAD $0x9f644ae5a4b1b325                           // .quad -6961356773836868827
-	QUAD $0x969eb7c47859e743                           // .quad -7593429867239446717
-	QUAD $0x873d5d9f0dde1fee                           // .quad -8701695967296086034
-	QUAD $0xbc4665b596706114                           // .quad -4880101315621920492
-	QUAD $0xa90cb506d155a7ea                           // .quad -6265433940692719638
-	QUAD $0xeb57ff22fc0c7959                           // .quad -1488440626100012711
-	QUAD $0x09a7f12442d588f2                           // .quad 695789805494438130
-	QUAD $0x9316ff75dd87cbd8                           // .quad -7847804418953589800
-	QUAD $0x0c11ed6d538aeb2f                           // .quad 869737256868047663
-	QUAD $0xb7dcbf5354e9bece                           // .quad -5198069505264599346
-	QUAD $0x8f1668c8a86da5fa                           // .quad -8136200465769716230
-	QUAD $0xe5d3ef282a242e81                           // .quad -1885900863153361279
-	QUAD $0xf96e017d694487bc                           // .quad -473439272678684740
-	QUAD $0x8fa475791a569d10                           // .quad -8096217067111932656
-	QUAD $0x37c981dcc395a9ac                           // .quad 4019886927579031980
-	QUAD $0xb38d92d760ec4455                           // .quad -5508585315462527915
-	QUAD $0x85bbe253f47b1417                           // .quad -8810199395808373737
-	QUAD $0xe070f78d3927556a                           // .quad -2274045625900771990
-	QUAD $0x93956d7478ccec8e                           // .quad -7812217631593927538
-	QUAD $0x8c469ab843b89562                           // .quad -8338807543829064350
-	QUAD $0x387ac8d1970027b2                           // .quad 4069786015789754290
-	QUAD $0xaf58416654a6babb                           // .quad -5811823411358942533
-	QUAD $0x06997b05fcc0319e                           // .quad 475546501309804958
-	QUAD $0xdb2e51bfe9d0696a                           // .quad -2653093245771290262
-	QUAD $0x441fece3bdf81f03                           // .quad 4908902581746016003
-	QUAD $0x88fcf317f22241e2                           // .quad -8575712306248138270
-	QUAD $0xd527e81cad7626c3                           // .quad -3087243809672255805
-	QUAD $0xab3c2fddeeaad25a                           // .quad -6107954364382784934
-	QUAD $0x8a71e223d8d3b074                           // .quad -8470740780517707660
-	QUAD $0xd60b3bd56a5586f1                           // .quad -3023256937051093263
-	QUAD $0xf6872d5667844e49                           // .quad -682526969396179383
-	QUAD $0x85c7056562757456                           // .quad -8807064613298015146
-	QUAD $0xb428f8ac016561db                           // .quad -5464844730172612133
-	QUAD $0xa738c6bebb12d16c                           // .quad -6397144748195131028
-	QUAD $0xe13336d701beba52                           // .quad -2219369894288377262
-	QUAD $0xd106f86e69d785c7                           // .quad -3384744916816525881
-	QUAD $0xecc0024661173473                           // .quad -1387106183930235789
-	QUAD $0x82a45b450226b39c                           // .quad -9032994600651410532
-	QUAD $0x27f002d7f95d0190                           // .quad 2877803288514593168
-	QUAD $0xa34d721642b06084                           // .quad -6679557232386875260
-	QUAD $0x31ec038df7b441f4                           // .quad 3597254110643241460
-	QUAD $0xcc20ce9bd35c78a5                           // .quad -3737760522056206171
-	QUAD $0x7e67047175a15271                           // .quad 9108253656731439729
-	QUAD $0xff290242c83396ce                           // .quad -60514634142869810
-	QUAD $0x0f0062c6e984d386                           // .quad 1080972517029761926
-	QUAD $0x9f79a169bd203e41                           // .quad -6955350673980375487
-	QUAD $0x52c07b78a3e60868                           // .quad 5962901664714590312
-	QUAD $0xc75809c42c684dd1                           // .quad -4082502324048081455
-	QUAD $0xa7709a56ccdf8a82                           // .quad -6381430974388925822
-	QUAD $0xf92e0c3537826145                           // .quad -491441886632713915
-	QUAD $0x88a66076400bb691                           // .quad -8600080377420466543
-	QUAD $0x9bbcc7a142b17ccb                           // .quad -7224680206786528053
-	QUAD $0x6acff893d00ea435                           // .quad 7696643601933968437
-	QUAD $0xc2abf989935ddbfe                           // .quad -4419164240055772162
-	QUAD $0x0583f6b8c4124d43                           // .quad 397432465562684739
-	QUAD $0xf356f7ebf83552fe                           // .quad -912269281642327298
-	QUAD $0xc3727a337a8b704a                           // .quad -4363290727450709942
-	QUAD $0x98165af37b2153de                           // .quad -7487697328667536418
-	QUAD $0x744f18c0592e4c5c                           // .quad 8380944645968776284
-	QUAD $0xbe1bf1b059e9a8d6                           // .quad -4747935642407032618
-	QUAD $0x1162def06f79df73                           // .quad 1252808770606194547
-	QUAD $0xeda2ee1c7064130c                           // .quad -1323233534581402868
-	QUAD $0x8addcb5645ac2ba8                           // .quad -8440366555225904216
-	QUAD $0x9485d4d1c63e8be7                           // .quad -7744549986754458649
-	QUAD $0x6d953e2bd7173692                           // .quad 7896285879677171346
-	QUAD $0xb9a74a0637ce2ee1                           // .quad -5069001465015685407
-	QUAD $0xc8fa8db6ccdd0437                           // .quad -3964700705685699529
-	QUAD $0xe8111c87c5c1ba99                           // .quad -1724565812842218855
-	QUAD $0x1d9c9892400a22a2                           // .quad 2133748077373825698
-	QUAD $0x910ab1d4db9914a0                           // .quad -7995382660667468640
-	QUAD $0x2503beb6d00cab4b                           // .quad 2667185096717282123
-	QUAD $0xb54d5e4a127f59c8                           // .quad -5382542307406947896
-	QUAD $0x2e44ae64840fd61d                           // .quad 3333981370896602653
-	QUAD $0xe2a0b5dc971f303a                           // .quad -2116491865831296966
-	QUAD $0x5ceaecfed289e5d2                           // .quad 6695424375237764562
-	QUAD $0x8da471a9de737e24                           // .quad -8240336443785642460
-	QUAD $0x7425a83e872c5f47                           // .quad 8369280469047205703
-	QUAD $0xb10d8e1456105dad                           // .quad -5688734536304665171
-	QUAD $0xd12f124e28f77719                           // .quad -3373457468973156583
-	QUAD $0xdd50f1996b947518                           // .quad -2499232151953443560
-	QUAD $0x82bd6b70d99aaa6f                           // .quad -9025939945749304721
-	QUAD $0x8a5296ffe33cc92f                           // .quad -8479549122611984081
-	QUAD $0x636cc64d1001550b                           // .quad 7164319141522920715
-	QUAD $0xace73cbfdc0bfb7b                           // .quad -5987750384837592197
-	QUAD $0x3c47f7e05401aa4e                           // .quad 4343712908476262990
-	QUAD $0xd8210befd30efa5a                           // .quad -2873001962619602342
-	QUAD $0x65acfaec34810a71                           // .quad 7326506586225052273
-	QUAD $0x8714a775e3e95c78                           // .quad -8713155254278333320
-	QUAD $0x7f1839a741a14d0d                           // .quad 9158133232781315341
-	QUAD $0xa8d9d1535ce3b396                           // .quad -6279758049420528746
-	QUAD $0x1ede48111209a050                           // .quad 2224294504121868368
-	QUAD $0xd31045a8341ca07c                           // .quad -3238011543348273028
-	QUAD $0x934aed0aab460432                           // .quad -7833187971778608078
-	QUAD $0x83ea2b892091e44d                           // .quad -8941286242233752499
-	QUAD $0xf81da84d5617853f                           // .quad -568112927868484289
-	QUAD $0xa4e4b66b68b65d60                           // .quad -6564921784364802720
-	QUAD $0x36251260ab9d668e                           // .quad 3901544858591782542
-	QUAD $0xce1de40642e3f4b9                           // .quad -3594466212028615495
-	QUAD $0xc1d72b7c6b426019                           // .quad -4479063491021217767
-	QUAD $0x80d2ae83e9ce78f3                           // .quad -9164070410158966541
-	QUAD $0xb24cf65b8612f81f                           // .quad -5598829363776522209
-	QUAD $0xa1075a24e4421730                           // .quad -6843401994271320272
-	QUAD $0xdee033f26797b627                           // .quad -2386850686293264857
-	QUAD $0xc94930ae1d529cfc                           // .quad -3942566474411762436
-	QUAD $0x169840ef017da3b1                           // .quad 1628122660560806833
-	QUAD $0xfb9b7cd9a4a7443c                           // .quad -316522074587315140
-	QUAD $0x8e1f289560ee864e                           // .quad -8205795374004271538
-	QUAD $0x9d412e0806e88aa5                           // .quad -7115355324258153819
-	QUAD $0xf1a6f2bab92a27e2                           // .quad -1033872180650563614
-	QUAD $0xc491798a08a2ad4e                           // .quad -4282508136895304370
-	QUAD $0xae10af696774b1db                           // .quad -5904026244240592421
-	QUAD $0xf5b5d7ec8acb58a2                           // .quad -741449152691742558
-	QUAD $0xacca6da1e0a8ef29                           // .quad -5995859411864064215
-	QUAD $0x9991a6f3d6bf1765                           // .quad -7380934748073420955
-	QUAD $0x17fd090a58d32af3                           // .quad 1728547772024695539
-	QUAD $0xbff610b0cc6edd3f                           // .quad -4614482416664388289
-	QUAD $0xddfc4b4cef07f5b0                           // .quad -2451001303396518480
-	QUAD $0xeff394dcff8a948e                           // .quad -1156417002403097458
-	QUAD $0x4abdaf101564f98e                           // .quad 5385653213018257806
-	QUAD $0x95f83d0a1fb69cd9                           // .quad -7640289654143017767
-	QUAD $0x9d6d1ad41abe37f1                           // .quad -7102991539009341455
-	QUAD $0xbb764c4ca7a4440f                           // .quad -4938676049251384305
-	QUAD $0x84c86189216dc5ed                           // .quad -8878739423761676819
-	QUAD $0xea53df5fd18d5513                           // .quad -1561659043136842477
-	QUAD $0x32fd3cf5b4e49bb4                           // .quad 3674159897003727796
-	QUAD $0x92746b9be2f8552c                           // .quad -7893565929601608404
-	QUAD $0x3fbc8c33221dc2a1                           // .quad 4592699871254659745
-	QUAD $0xb7118682dbb66a77                           // .quad -5255271393574622601
-	QUAD $0x0fabaf3feaa5334a                           // .quad 1129188820640936778
-	QUAD $0xe4d5e82392a40515                           // .quad -1957403223540890347
-	QUAD $0x29cb4d87f2a7400e                           // .quad 3011586022114279438
-	QUAD $0x8f05b1163ba6832d                           // .quad -8140906042354138323
-	QUAD $0x743e20e9ef511012                           // .quad 8376168546070237202
-	QUAD $0xb2c71d5bca9023f8                           // .quad -5564446534515285000
-	QUAD $0x914da9246b255416                           // .quad -7976533391121755114
-	QUAD $0xdf78e4b2bd342cf6                           // .quad -2343872149716718346
-	QUAD $0x1ad089b6c2f7548e                           // .quad 1932195658189984910
-	QUAD $0x8bab8eefb6409c1a                           // .quad -8382449121214030822
-	QUAD $0xa184ac2473b529b1                           // .quad -6808127464117294671
-	QUAD $0xae9672aba3d0c320                           // .quad -5866375383090150624
-	QUAD $0xc9e5d72d90a2741e                           // .quad -3898473311719230434
-	QUAD $0xda3c0f568cc4f3e8                           // .quad -2721283210435300376
-	QUAD $0x7e2fa67c7a658892                           // .quad 9092669226243950738
-	QUAD $0x8865899617fb1871                           // .quad -8618331034163144591
-	QUAD $0xddbb901b98feeab7                           // .quad -2469221522477225289
-	QUAD $0xaa7eebfb9df9de8d                           // .quad -6161227774276542835
-	QUAD $0x552a74227f3ea565                           // .quad 6136845133758244197
-	QUAD $0xd51ea6fa85785631                           // .quad -3089848699418290639
-	QUAD $0xd53a88958f87275f                           // .quad -3082000819042179233
-	QUAD $0x8533285c936b35de                           // .quad -8848684464777513506
-	QUAD $0x8a892abaf368f137                           // .quad -8464187042230111945
-	QUAD $0xa67ff273b8460356                           // .quad -6449169562544503978
-	QUAD $0x2d2b7569b0432d85                           // .quad 3254824252494523781
-	QUAD $0xd01fef10a657842c                           // .quad -3449775934753242068
-	QUAD $0x9c3b29620e29fc73                           // .quad -7189106879045698445
-	QUAD $0x8213f56a67f6b29b                           // .quad -9073638986861858149
-	QUAD $0x8349f3ba91b47b8f                           // .quad -8986383598807123057
-	QUAD $0xa298f2c501f45f42                           // .quad -6730362715149934782
-	QUAD $0x241c70a936219a73                           // .quad 2602078556773259891
-	QUAD $0xcb3f2f7642717713                           // .quad -3801267375510030573
-	QUAD $0xed238cd383aa0110                           // .quad -1359087822460813040
-	QUAD $0xfe0efb53d30dd4d7                           // .quad -139898200960150313
-	QUAD $0xf4363804324a40aa                           // .quad -849429889038008150
-	QUAD $0x9ec95d1463e8a506                           // .quad -7004965403241175802
-	QUAD $0xb143c6053edcd0d5                           // .quad -5673473379724898091
-	QUAD $0xc67bb4597ce2ce48                           // .quad -4144520735624081848
-	QUAD $0xdd94b7868e94050a                           // .quad -2480155706228734710
-	QUAD $0xf81aa16fdc1b81da                           // .quad -568964901102714406
-	QUAD $0xca7cf2b4191c8326                           // .quad -3855940325606653146
-	QUAD $0x9b10a4e5e9913128                           // .quad -7273132090830278360
-	QUAD $0xfd1c2f611f63a3f0                           // .quad -208239388580928528
-	QUAD $0xc1d4ce1f63f57d72                           // .quad -4479729095110460046
-	QUAD $0xbc633b39673c8cec                           // .quad -4871985254153548564
-	QUAD $0xf24a01a73cf2dccf                           // .quad -987975350460687153
-	QUAD $0xd5be0503e085d813                           // .quad -3044990783845967853
-	QUAD $0x976e41088617ca01                           // .quad -7535013621679011327
-	QUAD $0x4b2d8644d8a74e18                           // .quad 5417133557047315992
-	QUAD $0xbd49d14aa79dbc82                           // .quad -4807081008671376254
-	QUAD $0xddf8e7d60ed1219e                           // .quad -2451955090545630818
-	QUAD $0xec9c459d51852ba2                           // .quad -1397165242411832414
-	QUAD $0xcabb90e5c942b503                           // .quad -3838314940804713213
-	QUAD $0x93e1ab8252f33b45                           // .quad -7790757304148477115
-	QUAD $0x3d6a751f3b936243                           // .quad 4425478360848884291
-	QUAD $0xb8da1662e7b00a17                           // .quad -5126760611758208489
-	QUAD $0x0cc512670a783ad4                           // .quad 920161932633717460
-	QUAD $0xe7109bfba19c0c9d                           // .quad -1796764746270372707
-	QUAD $0x27fb2b80668b24c5                           // .quad 2880944217109767365
-	QUAD $0x906a617d450187e2                           // .quad -8040506994060064798
-	QUAD $0xb1f9f660802dedf6                           // .quad -5622191765467566602
-	QUAD $0xb484f9dc9641e9da                           // .quad -5438947724147693094
-	QUAD $0x5e7873f8a0396973                           // .quad 6807318348447705459
-	QUAD $0xe1a63853bbd26451                           // .quad -2186998636757228463
-	QUAD $0xdb0b487b6423e1e8                           // .quad -2662955059861265944
-	QUAD $0x8d07e33455637eb2                           // .quad -8284403175614349646
-	QUAD $0x91ce1a9a3d2cda62                           // .quad -7940379843253970334
-	QUAD $0xb049dc016abc5e5f                           // .quad -5743817951090549153
-	QUAD $0x7641a140cc7810fb                           // .quad 8521269269642088699
-	QUAD $0xdc5c5301c56b75f7                           // .quad -2568086420435798537
-	QUAD $0xa9e904c87fcb0a9d                           // .quad -6203421752542164323
-	QUAD $0x89b9b3e11b6329ba                           // .quad -8522583040413455942
-	QUAD $0x546345fa9fbdcd44                           // .quad 6080780864604458308
-	QUAD $0xac2820d9623bf429                           // .quad -6041542782089432023
-	QUAD $0xa97c177947ad4095                           // .quad -6234081974526590827
-	QUAD $0xd732290fbacaf133                           // .quad -2940242459184402125
-	QUAD $0x49ed8eabcccc485d                           // .quad 5327070802775656541
-	QUAD $0x867f59a9d4bed6c0                           // .quad -8755180564631333184
-	QUAD $0x5c68f256bfff5a74                           // .quad 6658838503469570676
-	QUAD $0xa81f301449ee8c70                           // .quad -6332289687361778576
-	QUAD $0x73832eec6fff3111                           // .quad 8323548129336963345
-	QUAD $0xd226fc195c6a2f8c                           // .quad -3303676090774835316
-	QUAD $0xc831fd53c5ff7eab                           // .quad -4021154456019173717
-	QUAD $0x83585d8fd9c25db7                           // .quad -8982326584375353929
-	QUAD $0xba3e7ca8b77f5e55                           // .quad -5026443070023967147
-	QUAD $0xa42e74f3d032f525                           // .quad -6616222212041804507
-	QUAD $0x28ce1bd2e55f35eb                           // .quad 2940318199324816875
-	QUAD $0xcd3a1230c43fb26f                           // .quad -3658591746624867729
-	QUAD $0x7980d163cf5b81b3                           // .quad 8755227902219092403
-	QUAD $0x80444b5e7aa7cf85                           // .quad -9204148869281624187
-	QUAD $0xd7e105bcc332621f                           // .quad -2891023177508298209
-	QUAD $0xa0555e361951c366                           // .quad -6893500068174642330
-	QUAD $0x8dd9472bf3fefaa7                           // .quad -8225464990312760665
-	QUAD $0xc86ab5c39fa63440                           // .quad -4005189066790915008
-	QUAD $0xb14f98f6f0feb951                           // .quad -5670145219463562927
-	QUAD $0xfa856334878fc150                           // .quad -394800315061255856
-	QUAD $0x6ed1bf9a569f33d3                           // .quad 7985374283903742931
-	QUAD $0x9c935e00d4b9d8d2                           // .quad -7164279224554366766
-	QUAD $0x0a862f80ec4700c8                           // .quad 758345818024902856
-	QUAD $0xc3b8358109e84f07                           // .quad -4343663012265570553
-	QUAD $0xcd27bb612758c0fa                           // .quad -3663753745896259334
-	QUAD $0xf4a642e14c6262c8                           // .quad -817892746904575288
-	QUAD $0x8038d51cb897789c                           // .quad -9207375118826243940
-	QUAD $0x98e7e9cccfbd7dbd                           // .quad -7428711994456441411
-	QUAD $0xe0470a63e6bd56c3                           // .quad -2285846861678029117
-	QUAD $0xbf21e44003acdd2c                           // .quad -4674203974643163860
-	QUAD $0x1858ccfce06cac74                           // .quad 1754377441329851508
-	QUAD $0xeeea5d5004981478                           // .quad -1231068949876566920
-	QUAD $0x0f37801e0c43ebc8                           // .quad 1096485900831157192
-	QUAD $0x95527a5202df0ccb                           // .quad -7686947121313936181
-	QUAD $0xd30560258f54e6ba                           // .quad -3241078642388441414
-	QUAD $0xbaa718e68396cffd                           // .quad -4996997883215032323
-	QUAD $0x47c6b82ef32a2069                           // .quad 5172023733869224041
-	QUAD $0xe950df20247c83fd                           // .quad -1634561335591402499
-	QUAD $0x4cdc331d57fa5441                           // .quad 5538357842881958977
-	QUAD $0x91d28b7416cdd27e                           // .quad -7939129862385708418
-	QUAD $0xe0133fe4adf8e952                           // .quad -2300424733252327086
-	QUAD $0xb6472e511c81471d                           // .quad -5312226309554747619
-	QUAD $0x58180fddd97723a6                           // .quad 6347841120289366950
-	QUAD $0xe3d8f9e563a198e5                           // .quad -2028596868516046619
-	QUAD $0x570f09eaa7ea7648                           // .quad 6273243709394548296
-	QUAD $0x8e679c2f5e44ff8f                           // .quad -8185402070463610993
-	QUAD $0x2cd2cc6551e513da                           // .quad 3229868618315797466
-	QUAD $0xb201833b35d63f73                           // .quad -5620066569652125837
-	QUAD $0xf8077f7ea65e58d1                           // .quad -574350245532641071
-	QUAD $0xde81e40a034bcf4f                           // .quad -2413397193637769393
-	QUAD $0xfb04afaf27faf782                           // .quad -358968903457900670
-	QUAD $0x8b112e86420f6191                           // .quad -8425902273664687727
-	QUAD $0x79c5db9af1f9b563                           // .quad 8774660907532399971
-	QUAD $0xadd57a27d29339f6                           // .quad -5920691823653471754
-	QUAD $0x18375281ae7822bc                           // .quad 1744954097560724156
-	QUAD $0xd94ad8b1c7380874                           // .quad -2789178761139451788
-	QUAD $0x8f2293910d0b15b5                           // .quad -8132775725879323211
-	QUAD $0x87cec76f1c830548                           // .quad -8660765753353239224
-	QUAD $0xb2eb3875504ddb22                           // .quad -5554283638921766110
-	QUAD $0xa9c2794ae3a3c69a                           // .quad -6214271173264161126
-	QUAD $0x5fa60692a46151eb                           // .quad 6892203506629956075
-	QUAD $0xd433179d9c8cb841                           // .quad -3156152948152813503
-	QUAD $0xdbc7c41ba6bcd333                           // .quad -2609901835997359309
-	QUAD $0x849feec281d7f328                           // .quad -8890124620236590296
-	QUAD $0x12b9b522906c0800                           // .quad 1349308723430688768
-	QUAD $0xa5c7ea73224deff3                           // .quad -6500969756868349965
-	QUAD $0xd768226b34870a00                           // .quad -2925050114139026944
-	QUAD $0xcf39e50feae16bef                           // .quad -3514526177658049553
-	QUAD $0xe6a1158300d46640                           // .quad -1828156321336891840
-	QUAD $0x81842f29f2cce375                           // .quad -9114107888677362827
-	QUAD $0x60495ae3c1097fd0                           // .quad 6938176635183661008
-	QUAD $0xa1e53af46f801c53                           // .quad -6780948842419315629
-	QUAD $0x385bb19cb14bdfc4                           // .quad 4061034775552188356
-	QUAD $0xca5e89b18b602368                           // .quad -3864500034596756632
-	QUAD $0x46729e03dd9ed7b5                           // .quad 5076293469440235445
-	QUAD $0xfcf62c1dee382c42                           // .quad -218939024818557886
-	QUAD $0x6c07a2c26a8346d1                           // .quad 7784369436827535057
-	QUAD $0x9e19db92b4e31ba9                           // .quad -7054365918152680535
-	QUAD $0xc7098b7305241885                           // .quad -4104596259247744891
-	QUAD $0xc5a05277621be293                           // .quad -4206271379263462765
-	QUAD $0xb8cbee4fc66d1ea7                           // .quad -5130745324059681113
-	QUAD $0xf70867153aa2db38                           // .quad -646153205651940552
-	QUAD $0x737f74f1dc043328                           // .quad 8322499218531169064
-	QUAD $0x9a65406d44a5c903                           // .quad -7321374781173544701
-	QUAD $0x505f522e53053ff2                           // .quad 5791438004736573426
-	QUAD $0xc0fe908895cf3b44                           // .quad -4540032458039542972
-	QUAD $0x647726b9e7c68fef                           // .quad 7239297505920716783
-	QUAD $0xf13e34aabb430a15                           // .quad -1063354554122040811
-	QUAD $0x5eca783430dc19f5                           // .quad 6830403950414141941
-	QUAD $0x96c6e0eab509e64d                           // .quad -7582125623967357363
-	QUAD $0xb67d16413d132072                           // .quad -5297053117264486286
-	QUAD $0xbc789925624c5fe0                           // .quad -4865971011531808800
-	QUAD $0xe41c5bd18c57e88f                           // .quad -2009630378153219953
-	QUAD $0xeb96bf6ebadf77d8                           // .quad -1470777745987373096
-	QUAD $0x8e91b962f7b6f159                           // .quad -8173548013986844327
-	QUAD $0x933e37a534cbaae7                           // .quad -7836765118883190041
-	QUAD $0x723627bbb5a4adb0                           // .quad 8229809056225996208
-	QUAD $0xb80dc58e81fe95a1                           // .quad -5184270380176599647
-	QUAD $0xcec3b1aaa30dd91c                           // .quad -3547796734999668452
-	QUAD $0xe61136f2227e3b09                           // .quad -1868651956793361655
-	QUAD $0x213a4f0aa5e8a7b1                           // .quad 2394313059052595121
-	QUAD $0x8fcac257558ee4e6                           // .quad -8085436500636932890
-	QUAD $0xa988e2cd4f62d19d                           // .quad -6230480713039031907
-	QUAD $0xb3bd72ed2af29e1f                           // .quad -5495109607368778209
-	QUAD $0x93eb1b80a33b8605                           // .quad -7788100891298789883
-	QUAD $0xe0accfa875af45a7                           // .quad -2257200990783584857
-	QUAD $0xbc72f130660533c3                           // .quad -4867563057061743677
-	QUAD $0x8c6c01c9498d8b88                           // .quad -8328279646880822392
-	QUAD $0xeb8fad7c7f8680b4                           // .quad -1472767802899791692
-	QUAD $0xaf87023b9bf0ee6a                           // .quad -5798663540173640086
-	QUAD $0xa67398db9f6820e1                           // .quad -6452645772052127519
-	QUAD $0xdb68c2ca82ed2a05                           // .quad -2636643406789662203
-	QUAD $0x88083f8943a1148c                           // .quad -8644589625959967604
-	QUAD $0x892179be91d43a43                           // .quad -8565431156884620733
-	QUAD $0x6a0a4f6b948959b0                           // .quad 7641007041259592112
-	QUAD $0xab69d82e364948d4                           // .quad -6095102927678388012
-	QUAD $0x848ce34679abb01c                           // .quad -8895485272135061476
-	QUAD $0xd6444e39c3db9b09                           // .quad -3007192641170597111
-	QUAD $0xf2d80e0c0c0b4e11                           // .quad -947992276657025519
-	QUAD $0x85eab0e41a6940e5                           // .quad -8797024428372705051
-	QUAD $0x6f8e118f0f0e2195                           // .quad 8038381691033493909
-	QUAD $0xa7655d1d2103911f                           // .quad -6384594517038493409
-	QUAD $0x4b7195f2d2d1a9fb                           // .quad 5436291095364479483
-	QUAD $0xd13eb46469447567                           // .quad -3369057127870728857
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
+	QUAD $0x1732c869cd60e453  // .quad 1671618768450675795
+	QUAD $0xfa8fd5a0081c0288  // .quad -391859759250406776
+	QUAD $0x0e7fbd42205c8eb4  // .quad 1044761730281672372
+	QUAD $0x9c99e58405118195  // .quad -7162441377172586091
+	QUAD $0x521fac92a873b261  // .quad 5917638181279478369
+	QUAD $0xc3c05ee50655e1fa  // .quad -4341365703038344710
+	QUAD $0xe6a797b752909ef9  // .quad -1826324310255427847
+	QUAD $0xf4b0769e47eb5a78  // .quad -815021110370542984
+	QUAD $0x9028bed2939a635c  // .quad -8058981721550724260
+	QUAD $0x98ee4a22ecf3188b  // .quad -7426917221622671221
+	QUAD $0x7432ee873880fc33  // .quad 8373016921771146291
+	QUAD $0xbf29dcaba82fdeae  // .quad -4671960508600951122
+	QUAD $0x113faa2906a13b3f  // .quad 1242899115359157055
+	QUAD $0xeef453d6923bd65a  // .quad -1228264617323800998
+	QUAD $0x4ac7ca59a424c507  // .quad 5388497965526861063
+	QUAD $0x9558b4661b6565f8  // .quad -7685194413468457480
+	QUAD $0x5d79bcf00d2df649  // .quad 6735622456908576329
+	QUAD $0xbaaee17fa23ebf76  // .quad -4994806998408183946
+	QUAD $0xf4d82c2c107973dc  // .quad -803843965719055396
+	QUAD $0xe95a99df8ace6f53  // .quad -1631822729582842029
+	QUAD $0x79071b9b8a4be869  // .quad 8720969558280366185
+	QUAD $0x91d8a02bb6c10594  // .quad -7937418233630358124
+	QUAD $0x9748e2826cdee284  // .quad -7545532125859093884
+	QUAD $0xb64ec836a47146f9  // .quad -5310086773610559751
+	QUAD $0xfd1b1b2308169b25  // .quad -208543120469091547
+	QUAD $0xe3e27a444d8d98b7  // .quad -2025922448585811785
+	QUAD $0xfe30f0f5e50e20f7  // .quad -130339450293182217
+	QUAD $0x8e6d8c6ab0787f72  // .quad -8183730558007214222
+	QUAD $0xbdbd2d335e51a935  // .quad -4774610331293865675
+	QUAD $0xb208ef855c969f4f  // .quad -5617977179081629873
+	QUAD $0xad2c788035e61382  // .quad -5968262914117332094
+	QUAD $0xde8b2b66b3bc4723  // .quad -2410785455424649437
+	QUAD $0x4c3bcb5021afcc31  // .quad 5493207715531443249
+	QUAD $0x8b16fb203055ac76  // .quad -8424269937281487754
+	QUAD $0xdf4abe242a1bbf3d  // .quad -2356862392440471747
+	QUAD $0xaddcb9e83c6b1793  // .quad -5918651403174471789
+	QUAD $0xd71d6dad34a2af0d  // .quad -2946077990550589683
+	QUAD $0xd953e8624b85dd78  // .quad -2786628235540701832
+	QUAD $0x8672648c40e5ad68  // .quad -8758827771735200408
+	QUAD $0x87d4713d6f33aa6b  // .quad -8659171674854020501
+	QUAD $0x680efdaf511f18c2  // .quad 7498209359040551106
+	QUAD $0xa9c98d8ccb009506  // .quad -6212278575140137722
+	QUAD $0x0212bd1b2566def2  // .quad 149389661945913074
+	QUAD $0xd43bf0effdc0ba48  // .quad -3153662200497784248
+	QUAD $0x014bb630f7604b57  // .quad 93368538716195671
+	QUAD $0x84a57695fe98746d  // .quad -8888567902952197011
+	QUAD $0x419ea3bd35385e2d  // .quad 4728396691822632493
+	QUAD $0xa5ced43b7e3e9188  // .quad -6499023860262858360
+	QUAD $0x52064cac828675b9  // .quad 5910495864778290617
+	QUAD $0xcf42894a5dce35ea  // .quad -3512093806901185046
+	QUAD $0x7343efebd1940993  // .quad 8305745933913819539
+	QUAD $0x818995ce7aa0e1b2  // .quad -9112587656954322510
+	QUAD $0x1014ebe6c5f90bf8  // .quad 1158810380537498616
+	QUAD $0xa1ebfb4219491a1f  // .quad -6779048552765515233
+	QUAD $0xd41a26e077774ef6  // .quad -3163173042755514634
+	QUAD $0xca66fa129f9b60a6  // .quad -3862124672529506138
+	QUAD $0x8920b098955522b4  // .quad -8565652321871781196
+	QUAD $0xfd00b897478238d0  // .quad -215969822234494768
+	QUAD $0x55b46e5f5d5535b0  // .quad 6175682344898606512
+	QUAD $0x9e20735e8cb16382  // .quad -7052510166537641086
+	QUAD $0xeb2189f734aa831d  // .quad -1503769105731517667
+	QUAD $0xc5a890362fddbc62  // .quad -4203951689744663454
+	QUAD $0xa5e9ec7501d523e4  // .quad -6491397400591784988
+	QUAD $0xf712b443bbd52b7b  // .quad -643253593753441413
+	QUAD $0x47b233c92125366e  // .quad 5166248661484910190
+	QUAD $0x9a6bb0aa55653b2d  // .quad -7319562523736982739
+	QUAD $0x999ec0bb696e840a  // .quad -7377247228426025974
+	QUAD $0xc1069cd4eabe89f8  // .quad -4537767136243840520
+	QUAD $0xc00670ea43ca250d  // .quad -4609873017105144563
+	QUAD $0xf148440a256e2c76  // .quad -1060522901877412746
+	QUAD $0x380406926a5e5728  // .quad 4036358391950366504
+	QUAD $0x96cd2a865764dbca  // .quad -7580355841314464822
+	QUAD $0xc605083704f5ecf2  // .quad -4177924046916817678
+	QUAD $0xbc807527ed3e12bc  // .quad -4863758783215693124
+	QUAD $0xf7864a44c633682e  // .quad -610719040218634194
+	QUAD $0xeba09271e88d976b  // .quad -1468012460592228501
+	QUAD $0x7ab3ee6afbe0211d  // .quad 8841672636718129437
+	QUAD $0x93445b8731587ea3  // .quad -7835036815511224669
+	QUAD $0x5960ea05bad82964  // .quad 6440404777470273892
+	QUAD $0xb8157268fdae9e4c  // .quad -5182110000961642932
+	QUAD $0x6fb92487298e33bd  // .quad 8050505971837842365
+	QUAD $0xe61acf033d1a45df  // .quad -1865951482774665761
+	QUAD $0xa5d3b6d479f8e056  // .quad -6497648813669818282
+	QUAD $0x8fd0c16206306bab  // .quad -8083748704375247957
+	QUAD $0x8f48a4899877186c  // .quad -8122061017087272852
+	QUAD $0xb3c4f1ba87bc8696  // .quad -5492999862041672042
+	QUAD $0x331acdabfe94de87  // .quad 3682481783923072647
+	QUAD $0xe0b62e2929aba83c  // .quad -2254563809124702148
+	QUAD $0x9ff0c08b7f1d0b14  // .quad -6921820921902855404
+	QUAD $0x8c71dcd9ba0b4925  // .quad -8326631408344020699
+	QUAD $0x07ecf0ae5ee44dd9  // .quad 571095884476206553
+	QUAD $0xaf8e5410288e1b6f  // .quad -5796603242002637969
+	QUAD $0xc9e82cd9f69d6150  // .quad -3897816162832129712
+	QUAD $0xdb71e91432b1a24a  // .quad -2634068034075909558
+	QUAD $0xbe311c083a225cd2  // .quad -4741978110983775022
+	QUAD $0x892731ac9faf056e  // .quad -8563821548938525330
+	QUAD $0x6dbd630a48aaf406  // .quad 7907585416552444934
+	QUAD $0xab70fe17c79ac6ca  // .quad -6093090917745768758
+	QUAD $0x092cbbccdad5b108  // .quad 661109733835780360
+	QUAD $0xd64d3d9db981787d  // .quad -3004677628754823043
+	QUAD $0x25bbf56008c58ea5  // .quad 2719036592861056677
+	QUAD $0x85f0468293f0eb4e  // .quad -8795452545612846258
+	QUAD $0xaf2af2b80af6f24e  // .quad -5824576295778454962
+	QUAD $0xa76c582338ed2621  // .quad -6382629663588669919
+	QUAD $0x1af5af660db4aee1  // .quad 1942651667131707105
+	QUAD $0xd1476e2c07286faa  // .quad -3366601061058449494
+	QUAD $0x50d98d9fc890ed4d  // .quad 5825843310384704845
+	QUAD $0x82cca4db847945ca  // .quad -9021654690802612790
+	QUAD $0xe50ff107bab528a0  // .quad -1941067898873894752
+	QUAD $0xa37fce126597973c  // .quad -6665382345075878084
+	QUAD $0x1e53ed49a96272c8  // .quad 2185351144835019464
+	QUAD $0xcc5fc196fefd7d0c  // .quad -3720041912917459700
+	QUAD $0x25e8e89c13bb0f7a  // .quad 2731688931043774330
+	QUAD $0xff77b1fcbebcdc4f  // .quad -38366372719436721
+	QUAD $0x77b191618c54e9ac  // .quad 8624834609543440812
+	QUAD $0x9faacf3df73609b1  // .quad -6941508010590729807
+	QUAD $0xd59df5b9ef6a2417  // .quad -3054014793352862697
+	QUAD $0xc795830d75038c1d  // .quad -4065198994811024355
+	QUAD $0x4b0573286b44ad1d  // .quad 5405853545163697437
+	QUAD $0xf97ae3d0d2446f25  // .quad -469812725086392539
+	QUAD $0x4ee367f9430aec32  // .quad 5684501474941004850
+	QUAD $0x9becce62836ac577  // .quad -7211161980820077193
+	QUAD $0x229c41f793cda73f  // .quad 2493940825248868159
+	QUAD $0xc2e801fb244576d5  // .quad -4402266457597708587
+	QUAD $0x6b43527578c1110f  // .quad 7729112049988473103
+	QUAD $0xf3a20279ed56d48a  // .quad -891147053569747830
+	QUAD $0x830a13896b78aaa9  // .quad -9004363024039368023
+	QUAD $0x9845418c345644d6  // .quad -7474495936122174250
+	QUAD $0x23cc986bc656d553  // .quad 2579604275232953683
+	QUAD $0xbe5691ef416bd60c  // .quad -4731433901725329908
+	QUAD $0x2cbfbe86b7ec8aa8  // .quad 3224505344041192104
+	QUAD $0xedec366b11c6cb8f  // .quad -1302606358729274481
+	QUAD $0x7bf7d71432f3d6a9  // .quad 8932844867666826921
+	QUAD $0x94b3a202eb1c3f39  // .quad -7731658001846878407
+	QUAD $0xdaf5ccd93fb0cc53  // .quad -2669001970698630061
+	QUAD $0xb9e08a83a5e34f07  // .quad -5052886483881210105
+	QUAD $0xd1b3400f8f9cff68  // .quad -3336252463373287576
+	QUAD $0xe858ad248f5c22c9  // .quad -1704422086424124727
+	QUAD $0x23100809b9c21fa1  // .quad 2526528228819083169
+	QUAD $0x91376c36d99995be  // .quad -7982792831656159810
+	QUAD $0xabd40a0c2832a78a  // .quad -6065211750830921846
+	QUAD $0xb58547448ffffb2d  // .quad -5366805021142811859
+	QUAD $0x16c90c8f323f516c  // .quad 1641857348316123500
+	QUAD $0xe2e69915b3fff9f9  // .quad -2096820258001126919
+	QUAD $0xae3da7d97f6792e3  // .quad -5891368184943504669
+	QUAD $0x8dd01fad907ffc3b  // .quad -8228041688891786181
+	QUAD $0x99cd11cfdf41779c  // .quad -7364210231179380836
+	QUAD $0xb1442798f49ffb4a  // .quad -5673366092687344822
+	QUAD $0x40405643d711d583  // .quad 4629795266307937667
+	QUAD $0xdd95317f31c7fa1d  // .quad -2480021597431793123
+	QUAD $0x482835ea666b2572  // .quad 5199465050656154994
+	QUAD $0x8a7d3eef7f1cfc52  // .quad -8467542526035952558
+	QUAD $0xda3243650005eecf  // .quad -2724040723534582065
+	QUAD $0xad1c8eab5ee43b66  // .quad -5972742139117552794
+	QUAD $0x90bed43e40076a82  // .quad -8016736922845615486
+	QUAD $0xd863b256369d4a40  // .quad -2854241655469553088
+	QUAD $0x5a7744a6e804a291  // .quad 6518754469289960081
+	QUAD $0x873e4f75e2224e68  // .quad -8701430062309552536
+	QUAD $0x711515d0a205cb36  // .quad 8148443086612450102
+	QUAD $0xa90de3535aaae202  // .quad -6265101559459552766
+	QUAD $0x0d5a5b44ca873e03  // .quad 962181821410786819
+	QUAD $0xd3515c2831559a83  // .quad -3219690930897053053
+	QUAD $0xe858790afe9486c2  // .quad -1704479370831952190
+	QUAD $0x8412d9991ed58091  // .quad -8929835859451740015
+	QUAD $0x626e974dbe39a872  // .quad 7092772823314835570
+	QUAD $0xa5178fff668ae0b6  // .quad -6550608805887287114
+	QUAD $0xfb0a3d212dc8128f  // .quad -357406007711231345
+	QUAD $0xce5d73ff402d98e3  // .quad -3576574988931720989
+	QUAD $0x7ce66634bc9d0b99  // .quad 8999993282035256217
+	QUAD $0x80fa687f881c7f8e  // .quad -9152888395723407474
+	QUAD $0x1c1fffc1ebc44e80  // .quad 2026619565689294464
+	QUAD $0xa139029f6a239f72  // .quad -6829424476226871438
+	QUAD $0xa327ffb266b56220  // .quad -6690097579743157728
+	QUAD $0xc987434744ac874e  // .quad -3925094576856201394
+	QUAD $0x4bf1ff9f0062baa8  // .quad 5472436080603216552
+	QUAD $0xfbe9141915d7a922  // .quad -294682202642863838
+	QUAD $0x6f773fc3603db4a9  // .quad 8031958568804398249
+	QUAD $0x9d71ac8fada6c9b5  // .quad -7101705404292871755
+	QUAD $0xcb550fb4384d21d3  // .quad -3795109844276665901
+	QUAD $0xc4ce17b399107c22  // .quad -4265445736938701790
+	QUAD $0x7e2a53a146606a48  // .quad 9091170749936331336
+	QUAD $0xf6019da07f549b2b  // .quad -720121152745989333
+	QUAD $0x2eda7444cbfc426d  // .quad 3376138709496513133
+	QUAD $0x99c102844f94e0fb  // .quad -7367604748107325189
+	QUAD $0xfa911155fefb5308  // .quad -391512631556746488
+	QUAD $0xc0314325637a1939  // .quad -4597819916706768583
+	QUAD $0x793555ab7eba27ca  // .quad 8733981247408842698
+	QUAD $0xf03d93eebc589f88  // .quad -1135588877456072824
+	QUAD $0x4bc1558b2f3458de  // .quad 5458738279630526686
+	QUAD $0x96267c7535b763b5  // .quad -7627272076051127371
+	QUAD $0x9eb1aaedfb016f16  // .quad -7011635205744005354
+	QUAD $0xbbb01b9283253ca2  // .quad -4922404076636521310
+	QUAD $0x465e15a979c1cadc  // .quad 5070514048102157020
+	QUAD $0xea9c227723ee8bcb  // .quad -1541319077368263733
+	QUAD $0x0bfacd89ec191ec9  // .quad 863228270850154185
+	QUAD $0x92a1958a7675175f  // .quad -7880853450996246689
+	QUAD $0xcef980ec671f667b  // .quad -3532650679864695173
+	QUAD $0xb749faed14125d36  // .quad -5239380795317920458
+	QUAD $0x82b7e12780e7401a  // .quad -9027499368258256870
+	QUAD $0xe51c79a85916f484  // .quad -1937539975720012668
+	QUAD $0xd1b2ecb8b0908810  // .quad -3336344095947716592
+	QUAD $0x8f31cc0937ae58d2  // .quad -8128491512466089774
+	QUAD $0x861fa7e6dcb4aa15  // .quad -8782116138362033643
+	QUAD $0xb2fe3f0b8599ef07  // .quad -5548928372155224313
+	QUAD $0x67a791e093e1d49a  // .quad 7469098900757009562
+	QUAD $0xdfbdcece67006ac9  // .quad -2324474446766642487
+	QUAD $0xe0c8bb2c5c6d24e0  // .quad -2249342214667950880
+	QUAD $0x8bd6a141006042bd  // .quad -8370325556870233411
+	QUAD $0x58fae9f773886e18  // .quad 6411694268519837208
+	QUAD $0xaecc49914078536d  // .quad -5851220927660403859
+	QUAD $0xaf39a475506a899e  // .quad -5820440219632367202
+	QUAD $0xda7f5bf590966848  // .quad -2702340141148116920
+	QUAD $0x6d8406c952429603  // .quad 7891439908798240259
+	QUAD $0x888f99797a5e012d  // .quad -8606491615858654931
+	QUAD $0xc8e5087ba6d33b83  // .quad -3970758169284363389
+	QUAD $0xaab37fd7d8f58178  // .quad -6146428501395930760
+	QUAD $0xfb1e4a9a90880a64  // .quad -351761693178066332
+	QUAD $0xd5605fcdcf32e1d6  // .quad -3071349608317525546
+	QUAD $0x5cf2eea09a55067f  // .quad 6697677969404790399
+	QUAD $0x855c3be0a17fcd26  // .quad -8837122532839535322
+	QUAD $0xf42faa48c0ea481e  // .quad -851274575098787810
+	QUAD $0xa6b34ad8c9dfc06f  // .quad -6434717147622031249
+	QUAD $0xf13b94daf124da26  // .quad -1064093218873484762
+	QUAD $0xd0601d8efc57b08b  // .quad -3431710416100151157
+	QUAD $0x76c53d08d6b70858  // .quad 8558313775058847832
+	QUAD $0x823c12795db6ce57  // .quad -9062348037703676329
+	QUAD $0x54768c4b0c64ca6e  // .quad 6086206200396171886
+	QUAD $0xa2cb1717b52481ed  // .quad -6716249028702207507
+	QUAD $0xa9942f5dcf7dfd09  // .quad -6227300304786948855
+	QUAD $0xcb7ddcdda26da268  // .quad -3783625267450371480
+	QUAD $0xd3f93b35435d7c4c  // .quad -3172439362556298164
+	QUAD $0xfe5d54150b090b02  // .quad -117845565885576446
+	QUAD $0xc47bc5014a1a6daf  // .quad -4288617610811380305
+	QUAD $0x9efa548d26e5a6e1  // .quad -6991182506319567135
+	QUAD $0x359ab6419ca1091b  // .quad 3862600023340550427
+	QUAD $0xc6b8e9b0709f109a  // .quad -4127292114472071014
+	QUAD $0xc30163d203c94b62  // .quad -4395122007679087774
+	QUAD $0xf867241c8cc6d4c0  // .quad -547429124662700864
+	QUAD $0x79e0de63425dcf1d  // .quad 8782263791269039901
+	QUAD $0x9b407691d7fc44f8  // .quad -7259672230555269896
+	QUAD $0x985915fc12f542e4  // .quad -7468914334623251740
+	QUAD $0xc21094364dfb5636  // .quad -4462904269766699466
+	QUAD $0x3e6f5b7b17b2939d  // .quad 4498915137003099037
+	QUAD $0xf294b943e17a2bc4  // .quad -966944318780986428
+	QUAD $0xa705992ceecf9c42  // .quad -6411550076227838910
+	QUAD $0x979cf3ca6cec5b5a  // .quad -7521869226879198374
+	QUAD $0x50c6ff782a838353  // .quad 5820620459997365075
+	QUAD $0xbd8430bd08277231  // .quad -4790650515171610063
+	QUAD $0xa4f8bf5635246428  // .quad -6559282480285457368
+	QUAD $0xece53cec4a314ebd  // .quad -1376627125537124675
+	QUAD $0x871b7795e136be99  // .quad -8711237568605798759
+	QUAD $0x940f4613ae5ed136  // .quad -7777920981101784778
+	QUAD $0x28e2557b59846e3f  // .quad 2946011094524915263
+	QUAD $0xb913179899f68584  // .quad -5110715207949843068
+	QUAD $0x331aeada2fe589cf  // .quad 3682513868156144079
+	QUAD $0xe757dd7ec07426e5  // .quad -1776707991509915931
+	QUAD $0x3ff0d2c85def7621  // .quad 4607414176811284001
+	QUAD $0x9096ea6f3848984f  // .quad -8027971522334779313
+	QUAD $0x0fed077a756b53a9  // .quad 1147581702586717097
+	QUAD $0xb4bca50b065abe63  // .quad -5423278384491086237
+	QUAD $0xd3e8495912c62894  // .quad -3177208890193991532
+	QUAD $0xe1ebce4dc7f16dfb  // .quad -2167411962186469893
+	QUAD $0x64712dd7abbbd95c  // .quad 7237616480483531100
+	QUAD $0x8d3360f09cf6e4bd  // .quad -8272161504007625539
+	QUAD $0xbd8d794d96aacfb3  // .quad -4788037454677749837
+	QUAD $0xb080392cc4349dec  // .quad -5728515861582144020
+	QUAD $0xecf0d7a0fc5583a0  // .quad -1373360799919799392
+	QUAD $0xdca04777f541c567  // .quad -2548958808550292121
+	QUAD $0xf41686c49db57244  // .quad -858350499949874620
+	QUAD $0x89e42caaf9491b60  // .quad -8510628282985014432
+	QUAD $0x311c2875c522ced5  // .quad 3538747893490044629
+	QUAD $0xac5d37d5b79b6239  // .quad -6026599335303880135
+	QUAD $0x7d633293366b828b  // .quad 9035120885289943691
+	QUAD $0xd77485cb25823ac7  // .quad -2921563150702462265
+	QUAD $0xae5dff9c02033197  // .quad -5882264492762254953
+	QUAD $0x86a8d39ef77164bc  // .quad -8743505996830120772
+	QUAD $0xd9f57f830283fdfc  // .quad -2741144597525430788
+	QUAD $0xa8530886b54dbdeb  // .quad -6317696477610263061
+	QUAD $0xd072df63c324fd7b  // .quad -3426430746906788485
+	QUAD $0xd267caa862a12d66  // .quad -3285434578585440922
+	QUAD $0x4247cb9e59f71e6d  // .quad 4776009810824339053
+	QUAD $0x8380dea93da4bc60  // .quad -8970925639256982432
+	QUAD $0x52d9be85f074e608  // .quad 5970012263530423816
+	QUAD $0xa46116538d0deb78  // .quad -6601971030643840136
+	QUAD $0x67902e276c921f8b  // .quad 7462515329413029771
+	QUAD $0xcd795be870516656  // .quad -3640777769877412266
+	QUAD $0x00ba1cd8a3db53b6  // .quad 52386062455755702
+	QUAD $0x806bd9714632dff6  // .quad -9193015133814464522
+	QUAD $0x80e8a40eccd228a4  // .quad -9157889458785081180
+	QUAD $0xa086cfcd97bf97f3  // .quad -6879582898840692749
+	QUAD $0x6122cd128006b2cd  // .quad 6999382250228200141
+	QUAD $0xc8a883c0fdaf7df0  // .quad -3987792605123478032
+	QUAD $0x796b805720085f81  // .quad 8749227812785250177
+	QUAD $0xfad2a4b13d1b5d6c  // .quad -373054737976959636
+	QUAD $0xcbe3303674053bb0  // .quad -3755104653863994448
+	QUAD $0x9cc3a6eec6311a63  // .quad -7150688238876681629
+	QUAD $0xbedbfc4411068a9c  // .quad -4693880817329993060
+	QUAD $0xc3f490aa77bd60fc  // .quad -4326674280168464132
+	QUAD $0xee92fb5515482d44  // .quad -1255665003235103420
+	QUAD $0xf4f1b4d515acb93b  // .quad -796656831783192261
+	QUAD $0x751bdd152d4d1c4a  // .quad 8438581409832836170
+	QUAD $0x991711052d8bf3c5  // .quad -7415439547505577019
+	QUAD $0xd262d45a78a0635d  // .quad -3286831292991118499
+	QUAD $0xbf5cd54678eef0b6  // .quad -4657613415954583370
+	QUAD $0x86fb897116c87c34  // .quad -8720225134666286028
+	QUAD $0xef340a98172aace4  // .quad -1210330751515841308
+	QUAD $0xd45d35e6ae3d4da0  // .quad -3144297699952734816
+	QUAD $0x9580869f0e7aac0e  // .quad -7673985747338482674
+	QUAD $0x8974836059cca109  // .quad -8542058143368306423
+	QUAD $0xbae0a846d2195712  // .quad -4980796165745715438
+	QUAD $0x2bd1a438703fc94b  // .quad 3157485376071780683
+	QUAD $0xe998d258869facd7  // .quad -1614309188754756393
+	QUAD $0x7b6306a34627ddcf  // .quad 8890957387685944783
+	QUAD $0x91ff83775423cc06  // .quad -7926472270612804602
+	QUAD $0x1a3bc84c17b1d542  // .quad 1890324697752655170
+	QUAD $0xb67f6455292cbf08  // .quad -5296404319838617848
+	QUAD $0x20caba5f1d9e4a93  // .quad 2362905872190818963
+	QUAD $0xe41f3d6a7377eeca  // .quad -2008819381370884406
+	QUAD $0x547eb47b7282ee9c  // .quad 6088502188546649756
+	QUAD $0x8e938662882af53e  // .quad -8173041140997884610
+	QUAD $0xe99e619a4f23aa43  // .quad -1612744301171463613
+	QUAD $0xb23867fb2a35b28d  // .quad -5604615407819967859
+	QUAD $0x6405fa00e2ec94d4  // .quad 7207441660390446292
+	QUAD $0xdec681f9f4c31f31  // .quad -2394083241347571919
+	QUAD $0xde83bc408dd3dd04  // .quad -2412877989897052924
+	QUAD $0x8b3c113c38f9f37e  // .quad -8413831053483314306
+	QUAD $0x9624ab50b148d445  // .quad -7627783505798704059
+	QUAD $0xae0b158b4738705e  // .quad -5905602798426754978
+	QUAD $0x3badd624dd9b0957  // .quad 4300328673033783639
+	QUAD $0xd98ddaee19068c76  // .quad -2770317479606055818
+	QUAD $0xe54ca5d70a80e5d6  // .quad -1923980597781273130
+	QUAD $0x87f8a8d4cfa417c9  // .quad -8648977452394866743
+	QUAD $0x5e9fcf4ccd211f4c  // .quad 6818396289628184396
+	QUAD $0xa9f6d30a038d1dbc  // .quad -6199535797066195524
+	QUAD $0x7647c3200069671f  // .quad 8522995362035230495
+	QUAD $0xd47487cc8470652b  // .quad -3137733727905356501
+	QUAD $0x29ecd9f40041e073  // .quad 3021029092058325107
+	QUAD $0x84c8d4dfd2c63f3b  // .quad -8878612607581929669
+	QUAD $0xf468107100525890  // .quad -835399653354481520
+	QUAD $0xa5fb0a17c777cf09  // .quad -6486579741050024183
+	QUAD $0x7182148d4066eeb4  // .quad 8179122470161673908
+	QUAD $0xcf79cc9db955c2cc  // .quad -3496538657885142324
+	QUAD $0xc6f14cd848405530  // .quad -4111420493003729616
+	QUAD $0x81ac1fe293d599bf  // .quad -9102865688819295809
+	QUAD $0xb8ada00e5a506a7c  // .quad -5139275616254662020
+	QUAD $0xa21727db38cb002f  // .quad -6766896092596731857
+	QUAD $0xa6d90811f0e4851c  // .quad -6424094520318327524
+	QUAD $0xca9cf1d206fdc03b  // .quad -3846934097318526917
+	QUAD $0x908f4a166d1da663  // .quad -8030118150397909405
+	QUAD $0xfd442e4688bd304a  // .quad -196981603220770742
+	QUAD $0x9a598e4e043287fe  // .quad -7324666853212387330
+	QUAD $0x9e4a9cec15763e2e  // .quad -7040642529654063570
+	QUAD $0x40eff1e1853f29fd  // .quad 4679224488766679549
+	QUAD $0xc5dd44271ad3cdba  // .quad -4189117143640191558
+	QUAD $0xd12bee59e68ef47c  // .quad -3374341425896426372
+	QUAD $0xf7549530e188c128  // .quad -624710411122851544
+	QUAD $0x82bb74f8301958ce  // .quad -9026492418826348338
+	QUAD $0x9a94dd3e8cf578b9  // .quad -7307973034592864071
+	QUAD $0xe36a52363c1faf01  // .quad -2059743486678159615
+	QUAD $0xc13a148e3032d6e7  // .quad -4523280274813692185
+	QUAD $0xdc44e6c3cb279ac1  // .quad -2574679358347699519
+	QUAD $0xf18899b1bc3f8ca1  // .quad -1042414325089727327
+	QUAD $0x29ab103a5ef8c0b9  // .quad 3002511419460075705
+	QUAD $0x96f5600f15a7b7e5  // .quad -7569037980822161435
+	QUAD $0x7415d448f6b6f0e7  // .quad 8364825292752482535
+	QUAD $0xbcb2b812db11a5de  // .quad -4849611457600313890
+	QUAD $0x111b495b3464ad21  // .quad 1232659579085827361
+	QUAD $0xebdf661791d60f56  // .quad -1450328303573004458
+	QUAD $0xcab10dd900beec34  // .quad -3841273781498745804
+	QUAD $0x936b9fcebb25c995  // .quad -7823984217374209643
+	QUAD $0x3d5d514f40eea742  // .quad 4421779809981343554
+	QUAD $0xb84687c269ef3bfb  // .quad -5168294253290374149
+	QUAD $0x0cb4a5a3112a5112  // .quad 915538744049291538
+	QUAD $0xe65829b3046b0afa  // .quad -1848681798185579782
+	QUAD $0x47f0e785eaba72ab  // .quad 5183897733458195115
+	QUAD $0x8ff71a0fe2c2e6dc  // .quad -8072955151507069220
+	QUAD $0x59ed216765690f56  // .quad 6479872166822743894
+	QUAD $0xb3f4e093db73a093  // .quad -5479507920956448621
+	QUAD $0x306869c13ec3532c  // .quad 3488154190101041964
+	QUAD $0xe0f218b8d25088b8  // .quad -2237698882768172872
+	QUAD $0x1e414218c73a13fb  // .quad 2180096368813151227
+	QUAD $0x8c974f7383725573  // .quad -8316090829371189901
+	QUAD $0xe5d1929ef90898fa  // .quad -1886565557410948870
+	QUAD $0xafbd2350644eeacf  // .quad -5783427518286599473
+	QUAD $0xdf45f746b74abf39  // .quad -2358206946763686087
+	QUAD $0xdbac6c247d62a583  // .quad -2617598379430861437
+	QUAD $0x6b8bba8c328eb783  // .quad 7749492695127472003
+	QUAD $0x894bc396ce5da772  // .quad -8553528014785370254
+	QUAD $0x066ea92f3f326564  // .quad 463493832054564196
+	QUAD $0xab9eb47c81f5114f  // .quad -6080224000054324913
+	QUAD $0xc80a537b0efefebd  // .quad -4032318728359182659
+	QUAD $0xd686619ba27255a2  // .quad -2988593981640518238
+	QUAD $0xbd06742ce95f5f36  // .quad -4826042214438183114
+	QUAD $0x8613fd0145877585  // .quad -8785400266166405755
+	QUAD $0x2c48113823b73704  // .quad 3190819268807046916
+	QUAD $0xa798fc4196e952e7  // .quad -6370064314280619289
+	QUAD $0xf75a15862ca504c5  // .quad -623161932418579259
+	QUAD $0xd17f3b51fca3a7a0  // .quad -3350894374423386208
+	QUAD $0x9a984d73dbe722fb  // .quad -7307005235402693893
+	QUAD $0x82ef85133de648c4  // .quad -9011838011655698236
+	QUAD $0xc13e60d0d2e0ebba  // .quad -4522070525825979462
+	QUAD $0xa3ab66580d5fdaf5  // .quad -6653111496142234891
+	QUAD $0x318df905079926a8  // .quad 3570783879572301480
+	QUAD $0xcc963fee10b7d1b3  // .quad -3704703351750405709
+	QUAD $0xfdf17746497f7052  // .quad -148206168962011054
+	QUAD $0xffbbcfe994e5c61f  // .quad -19193171260619233
+	QUAD $0xfeb6ea8bedefa633  // .quad -92628855601256909
+	QUAD $0x9fd561f1fd0f9bd3  // .quad -6929524759678968877
+	QUAD $0xfe64a52ee96b8fc0  // .quad -115786069501571136
+	QUAD $0xc7caba6e7c5382c8  // .quad -4050219931171323192
+	QUAD $0x3dfdce7aa3c673b0  // .quad 4466953431550423984
+	QUAD $0xf9bd690a1b68637b  // .quad -451088895536766085
+	QUAD $0x06bea10ca65c084e  // .quad 486002885505321038
+	QUAD $0x9c1661a651213e2d  // .quad -7199459587351560659
+	QUAD $0x486e494fcff30a62  // .quad 5219189625309039202
+	QUAD $0xc31bfa0fe5698db8  // .quad -4387638465762062920
+	QUAD $0x5a89dba3c3efccfa  // .quad 6523987031636299002
+	QUAD $0xf3e2f893dec3f126  // .quad -872862063775190746
+	QUAD $0xf89629465a75e01c  // .quad -534194123654701028
+	QUAD $0x986ddb5c6b3a76b7  // .quad -7463067817500576073
+	QUAD $0xf6bbb397f1135823  // .quad -667742654568376285
+	QUAD $0xbe89523386091465  // .quad -4717148753448332187
+	QUAD $0x746aa07ded582e2c  // .quad 8388693718644305452
+	QUAD $0xee2ba6c0678b597f  // .quad -1284749923383027329
+	QUAD $0xa8c2a44eb4571cdc  // .quad -6286281471915778852
+	QUAD $0x94db483840b717ef  // .quad -7720497729755473937
+	QUAD $0x92f34d62616ce413  // .quad -7857851839894723565
+	QUAD $0xba121a4650e4ddeb  // .quad -5038936143766954517
+	QUAD $0x77b020baf9c81d17  // .quad 8624429273841147159
+	QUAD $0xe896a0d7e51e1566  // .quad -1686984161281305242
+	QUAD $0x0ace1474dc1d122e  // .quad 778582277723329070
+	QUAD $0x915e2486ef32cd60  // .quad -7971894128441897632
+	QUAD $0x0d819992132456ba  // .quad 973227847154161338
+	QUAD $0xb5b5ada8aaff80b8  // .quad -5353181642124984136
+	QUAD $0x10e1fff697ed6c69  // .quad 1216534808942701673
+	QUAD $0xe3231912d5bf60e6  // .quad -2079791034228842266
+	QUAD $0xca8d3ffa1ef463c1  // .quad -3851351762838199359
+	QUAD $0x8df5efabc5979c8f  // .quad -8217398424034108273
+	QUAD $0xbd308ff8a6b17cb2  // .quad -4814189703547749198
+	QUAD $0xb1736b96b6fd83b3  // .quad -5660062011615247437
+	QUAD $0xac7cb3f6d05ddbde  // .quad -6017737129434686498
+	QUAD $0xddd0467c64bce4a0  // .quad -2463391496091671392
+	QUAD $0x6bcdf07a423aa96b  // .quad 7768129340171790699
+	QUAD $0x8aa22c0dbef60ee4  // .quad -8457148712698376476
+	QUAD $0x86c16c98d2c953c6  // .quad -8736582398494813242
+	QUAD $0xad4ab7112eb3929d  // .quad -5959749872445582691
+	QUAD $0xe871c7bf077ba8b7  // .quad -1697355961263740745
+	QUAD $0xd89d64d57a607744  // .quad -2838001322129590460
+	QUAD $0x11471cd764ad4972  // .quad 1244995533423855986
+	QUAD $0x87625f056c7c4a8b  // .quad -8691279853972075893
+	QUAD $0xd598e40d3dd89bcf  // .quad -3055441601647567921
+	QUAD $0xa93af6c6c79b5d2d  // .quad -6252413799037706963
+	QUAD $0x4aff1d108d4ec2c3  // .quad 5404070034795315907
+	QUAD $0xd389b47879823479  // .quad -3203831230369745799
+	QUAD $0xcedf722a585139ba  // .quad -3539985255894009414
+	QUAD $0x843610cb4bf160cb  // .quad -8919923546622172981
+	QUAD $0xc2974eb4ee658828  // .quad -4424981569867511768
+	QUAD $0xa54394fe1eedb8fe  // .quad -6538218414850328322
+	QUAD $0x733d226229feea32  // .quad 8303831092947774002
+	QUAD $0xce947a3da6a9273e  // .quad -3561087000135522498
+	QUAD $0x0806357d5a3f525f  // .quad 578208414664970847
+	QUAD $0x811ccc668829b887  // .quad -9143208402725783417
+	QUAD $0xca07c2dcb0cf26f7  // .quad -3888925500096174345
+	QUAD $0xa163ff802a3426a8  // .quad -6817324484979841368
+	QUAD $0xfc89b393dd02f0b5  // .quad -249470856692830027
+	QUAD $0xc9bcff6034c13052  // .quad -3909969587797413806
+	QUAD $0xbbac2078d443ace2  // .quad -4923524589293425438
+	QUAD $0xfc2c3f3841f17c67  // .quad -275775966319379353
+	QUAD $0xd54b944b84aa4c0d  // .quad -3077202868308390899
+	QUAD $0x9d9ba7832936edc0  // .quad -7089889006590693952
+	QUAD $0x0a9e795e65d4df11  // .quad 765182433041899281
+	QUAD $0xc5029163f384a931  // .quad -4250675239810979535
+	QUAD $0x4d4617b5ff4a16d5  // .quad 5568164059729762005
+	QUAD $0xf64335bcf065d37d  // .quad -701658031336336515
+	QUAD $0x504bced1bf8e4e45  // .quad 5785945546544795205
+	QUAD $0x99ea0196163fa42e  // .quad -7356065297226292178
+	QUAD $0xe45ec2862f71e1d6  // .quad -1990940103673781802
+	QUAD $0xc06481fb9bcf8d39  // .quad -4583395603105477319
+	QUAD $0x5d767327bb4e5a4c  // .quad 6734696907262548556
+	QUAD $0xf07da27a82c37088  // .quad -1117558485454458744
+	QUAD $0x3a6a07f8d510f86f  // .quad 4209185567039092847
+	QUAD $0x964e858c91ba2655  // .quad -7616003081050118571
+	QUAD $0x890489f70a55368b  // .quad -8573576096483297653
+	QUAD $0xbbe226efb628afea  // .quad -4908317832885260310
+	QUAD $0x2b45ac74ccea842e  // .quad 3118087934678041646
+	QUAD $0xeadab0aba3b2dbe5  // .quad -1523711272679187483
+	QUAD $0x3b0b8bc90012929d  // .quad 4254647968387469981
+	QUAD $0x92c8ae6b464fc96f  // .quad -7869848573065574033
+	QUAD $0x09ce6ebb40173744  // .quad 706623942056949572
+	QUAD $0xb77ada0617e3bbcb  // .quad -5225624697904579637
+	QUAD $0xcc420a6a101d0515  // .quad -3728406090856200939
+	QUAD $0xe55990879ddcaabd  // .quad -1920344853953336643
+	QUAD $0x9fa946824a12232d  // .quad -6941939825212513491
+	QUAD $0x8f57fa54c2a9eab6  // .quad -8117744561361917258
+	QUAD $0x47939822dc96abf9  // .quad 5157633273766521849
+	QUAD $0xb32df8e9f3546564  // .quad -5535494683275008668
+	QUAD $0x59787e2b93bc56f7  // .quad 6447041592208152311
+	QUAD $0xdff9772470297ebd  // .quad -2307682335666372931
+	QUAD $0x57eb4edb3c55b65a  // .quad 6335244004343789146
+	QUAD $0x8bfbea76c619ef36  // .quad -8359830487432564938
+	QUAD $0xede622920b6b23f1  // .quad -1304317031425039375
+	QUAD $0xaefae51477a06b03  // .quad -5838102090863318269
+	QUAD $0xe95fab368e45eced  // .quad -1630396289281299219
+	QUAD $0xdab99e59958885c4  // .quad -2685941595151759932
+	QUAD $0x11dbcb0218ebb414  // .quad 1286845328412881940
+	QUAD $0x88b402f7fd75539b  // .quad -8596242524610931813
+	QUAD $0xd652bdc29f26a119  // .quad -3003129357911285479
+	QUAD $0xaae103b5fcd2a881  // .quad -6133617137336276863
+	QUAD $0x4be76d3346f0495f  // .quad 5469460339465668959
+	QUAD $0xd59944a37c0752a2  // .quad -3055335403242958174
+	QUAD $0x6f70a4400c562ddb  // .quad 8030098730593431003
+	QUAD $0x857fcae62d8493a5  // .quad -8827113654667930715
+	QUAD $0xcb4ccd500f6bb952  // .quad -3797434642040374958
+	QUAD $0xa6dfbd9fb8e5b88e  // .quad -6422206049907525490
+	QUAD $0x7e2000a41346a7a7  // .quad 9088264752731695015
+	QUAD $0xd097ad07a71f26b2  // .quad -3416071543957018958
+	QUAD $0x8ed400668c0c28c8  // .quad -8154892584824854328
+	QUAD $0x825ecc24c873782f  // .quad -9052573742614218705
+	QUAD $0x728900802f0f32fa  // .quad 8253128342678483706
+	QUAD $0xa2f67f2dfa90563b  // .quad -6704031159840385477
+	QUAD $0x4f2b40a03ad2ffb9  // .quad 5704724409920716729
+	QUAD $0xcbb41ef979346bca  // .quad -3768352931373093942
+	QUAD $0xe2f610c84987bfa8  // .quad -2092466524453879896
+	QUAD $0xfea126b7d78186bc  // .quad -98755145788979524
+	QUAD $0x0dd9ca7d2df4d7c9  // .quad 998051431430019017
+	QUAD $0x9f24b832e6b0f436  // .quad -6979250993759194058
+	QUAD $0x91503d1c79720dbb  // .quad -7975807747567252037
+	QUAD $0xc6ede63fa05d3143  // .quad -4112377723771604669
+	QUAD $0x75a44c6397ce912a  // .quad 8476984389250486570
+	QUAD $0xf8a95fcf88747d94  // .quad -528786136287117932
+	QUAD $0xc986afbe3ee11aba  // .quad -3925256793573221702
+	QUAD $0x9b69dbe1b548ce7c  // .quad -7248020362820530564
+	QUAD $0xfbe85badce996168  // .quad -294884973539139224
+	QUAD $0xc24452da229b021b  // .quad -4448339435098275301
+	QUAD $0xfae27299423fb9c3  // .quad -368606216923924029
+	QUAD $0xf2d56790ab41c2a2  // .quad -948738275445456222
+	QUAD $0xdccd879fc967d41a  // .quad -2536221894791146470
+	QUAD $0x97c560ba6b0919a5  // .quad -7510490449794491995
+	QUAD $0x5400e987bbc1c920  // .quad 6053094668365842720
+	QUAD $0xbdb6b8e905cb600f  // .quad -4776427043815727089
+	QUAD $0x290123e9aab23b68  // .quad 2954682317029915496
+	QUAD $0xed246723473e3813  // .quad -1358847786342270957
+	QUAD $0xf9a0b6720aaf6521  // .quad -459166561069996767
+	QUAD $0x9436c0760c86e30b  // .quad -7766808894105001205
+	QUAD $0xf808e40e8d5b3e69  // .quad -573958201337495959
+	QUAD $0xb94470938fa89bce  // .quad -5096825099203863602
+	QUAD $0xb60b1d1230b20e04  // .quad -5329133770099257852
+	QUAD $0xe7958cb87392c2c2  // .quad -1759345355577441598
+	QUAD $0xb1c6f22b5e6f48c2  // .quad -5636551615525730110
+	QUAD $0x90bd77f3483bb9b9  // .quad -8017119874876982855
+	QUAD $0x1e38aeb6360b1af3  // .quad 2177682517447613171
+	QUAD $0xb4ecd5f01a4aa828  // .quad -5409713825168840664
+	QUAD $0x25c6da63c38de1b0  // .quad 2722103146809516464
+	QUAD $0xe2280b6c20dd5232  // .quad -2150456263033662926
+	QUAD $0x579c487e5a38ad0e  // .quad 6313000485183335694
+	QUAD $0x8d590723948a535f  // .quad -8261564192037121185
+	QUAD $0x2d835a9df0c6d851  // .quad 3279564588051781713
+	QUAD $0xb0af48ec79ace837  // .quad -5715269221619013577
+	QUAD $0xf8e431456cf88e65  // .quad -512230283362660763
+	QUAD $0xdcdb1b2798182244  // .quad -2532400508596379068
+	QUAD $0x1b8e9ecb641b58ff  // .quad 1985699082112030975
+	QUAD $0x8a08f0f8bf0f156b  // .quad -8500279345513818773
+	QUAD $0xe272467e3d222f3f  // .quad -2129562165787349185
+	QUAD $0xac8b2d36eed2dac5  // .quad -6013663163464885563
+	QUAD $0x5b0ed81dcc6abb0f  // .quad 6561419329620589327
+	QUAD $0xd7adf884aa879177  // .quad -2905392935903719049
+	QUAD $0x98e947129fc2b4e9  // .quad -7428327965055601431
+	QUAD $0x86ccbb52ea94baea  // .quad -8733399612580906262
+	QUAD $0x3f2398d747b36224  // .quad 4549648098962661924
+	QUAD $0xa87fea27a539e9a5  // .quad -6305063497298744923
+	QUAD $0x8eec7f0d19a03aad  // .quad -8147997931578836307
+	QUAD $0xd29fe4b18e88640e  // .quad -3269643353196043250
+	QUAD $0x1953cf68300424ac  // .quad 1825030320404309164
+	QUAD $0x83a3eeeef9153e89  // .quad -8961056123388608887
+	QUAD $0x5fa8c3423c052dd7  // .quad 6892973918932774359
+	QUAD $0xa48ceaaab75a8e2b  // .quad -6589634135808373205
+	QUAD $0x3792f412cb06794d  // .quad 4004531380238580045
+	QUAD $0xcdb02555653131b6  // .quad -3625356651333078602
+	QUAD $0xe2bbd88bbee40bd0  // .quad -2108853905778275376
+	QUAD $0x808e17555f3ebf11  // .quad -9183376934724255983
+	QUAD $0x5b6aceaeae9d0ec4  // .quad 6587304654631931588
+	QUAD $0xa0b19d2ab70e6ed6  // .quad -6867535149977932074
+	QUAD $0xf245825a5a445275  // .quad -989241218564861323
+	QUAD $0xc8de047564d20a8b  // .quad -3972732919045027189
+	QUAD $0xeed6e2f0f0d56712  // .quad -1236551523206076654
+	QUAD $0xfb158592be068d2e  // .quad -354230130378896082
+	QUAD $0x55464dd69685606b  // .quad 6144684325637283947
+	QUAD $0x9ced737bb6c4183d  // .quad -7138922859127891907
+	QUAD $0xaa97e14c3c26b886  // .quad -6154202648235558778
+	QUAD $0xc428d05aa4751e4c  // .quad -4311967555482476980
+	QUAD $0xd53dd99f4b3066a8  // .quad -3081067291867060568
+	QUAD $0xf53304714d9265df  // .quad -778273425925708321
+	QUAD $0xe546a8038efe4029  // .quad -1925667057416912855
+	QUAD $0x993fe2c6d07b7fab  // .quad -7403949918844649557
+	QUAD $0xde98520472bdd033  // .quad -2407083821771141069
+	QUAD $0xbf8fdb78849a5f96  // .quad -4643251380128424042
+	QUAD $0x963e66858f6d4440  // .quad -7620540795641314240
+	QUAD $0xef73d256a5c0f77c  // .quad -1192378206733142148
+	QUAD $0xdde7001379a44aa8  // .quad -2456994988062127448
+	QUAD $0x95a8637627989aad  // .quad -7662765406849295699
+	QUAD $0x5560c018580d5d52  // .quad 6152128301777116498
+	QUAD $0xbb127c53b17ec159  // .quad -4966770740134231719
+	QUAD $0xaab8f01e6e10b4a6  // .quad -6144897678060768090
+	QUAD $0xe9d71b689dde71af  // .quad -1596777406740401745
+	QUAD $0xcab3961304ca70e8  // .quad -3840561048787980056
+	QUAD $0x9226712162ab070d  // .quad -7915514906853832947
+	QUAD $0x3d607b97c5fd0d22  // .quad 4422670725869800738
+	QUAD $0xb6b00d69bb55c8d1  // .quad -5282707615139903279
+	QUAD $0x8cb89a7db77c506a  // .quad -8306719647944912790
+	QUAD $0xe45c10c42a2b3b05  // .quad -1991698500497491195
+	QUAD $0x77f3608e92adb242  // .quad 8643358275316593218
+	QUAD $0x8eb98a7a9a5b04e3  // .quad -8162340590452013853
+	QUAD $0x55f038b237591ed3  // .quad 6192511825718353619
+	QUAD $0xb267ed1940f1c61c  // .quad -5591239719637629412
+	QUAD $0x6b6c46dec52f6688  // .quad 7740639782147942024
+	QUAD $0xdf01e85f912e37a3  // .quad -2377363631119648861
+	QUAD $0x2323ac4b3b3da015  // .quad 2532056854628769813
+	QUAD $0x8b61313bbabce2c6  // .quad -8403381297090862394
+	QUAD $0xabec975e0a0d081a  // .quad -6058300968568813542
+	QUAD $0xae397d8aa96c1b77  // .quad -5892540602936190089
+	QUAD $0x96e7bd358c904a21  // .quad -7572876210711016927
+	QUAD $0xd9c7dced53c72255  // .quad -2753989735242849707
+	QUAD $0x7e50d64177da2e54  // .quad 9102010423587778132
+	QUAD $0x881cea14545c7575  // .quad -8638772612167862923
+	QUAD $0xdde50bd1d5d0b9e9  // .quad -2457545025797441047
+	QUAD $0xaa242499697392d2  // .quad -6186779746782440750
+	QUAD $0x955e4ec64b44e864  // .quad -7683617300674189212
+	QUAD $0xd4ad2dbfc3d07787  // .quad -3121788665050663033
+	QUAD $0xbd5af13bef0b113e  // .quad -4802260812921368258
+	QUAD $0x84ec3c97da624ab4  // .quad -8868646943297746252
+	QUAD $0xecb1ad8aeacdd58e  // .quad -1391139997724322418
+	QUAD $0xa6274bbdd0fadd61  // .quad -6474122660694794911
+	QUAD $0x67de18eda5814af2  // .quad 7484447039699372786
+	QUAD $0xcfb11ead453994ba  // .quad -3480967307441105734
+	QUAD $0x80eacf948770ced7  // .quad -9157278655470055721
+	QUAD $0x81ceb32c4b43fcf4  // .quad -9093133594791772940
+	QUAD $0xa1258379a94d028d  // .quad -6834912300910181747
+	QUAD $0xa2425ff75e14fc31  // .quad -6754730975062328271
+	QUAD $0x096ee45813a04330  // .quad 679731660717048624
+	QUAD $0xcad2f7f5359a3b3e  // .quad -3831727700400522434
+	QUAD $0x8bca9d6e188853fc  // .quad -8373707460958465028
+	QUAD $0xfd87b5f28300ca0d  // .quad -177973607073265139
+	QUAD $0x775ea264cf55347d  // .quad 8601490892183123069
+	QUAD $0x9e74d1b791e07e48  // .quad -7028762532061872568
+	QUAD $0x95364afe032a819d  // .quad -7694880458480647779
+	QUAD $0xc612062576589dda  // .quad -4174267146649952806
+	QUAD $0x3a83ddbd83f52204  // .quad 4216457482181353988
+	QUAD $0xf79687aed3eec551  // .quad -606147914885053103
+	QUAD $0xc4926a9672793542  // .quad -4282243101277735614
+	QUAD $0x9abe14cd44753b52  // .quad -7296371474444240046
+	QUAD $0x75b7053c0f178293  // .quad 8482254178684994195
+	QUAD $0xc16d9a0095928a27  // .quad -4508778324627912153
+	QUAD $0x5324c68b12dd6338  // .quad 5991131704928854840
+	QUAD $0xf1c90080baf72cb1  // .quad -1024286887357502287
+	QUAD $0xd3f6fc16ebca5e03  // .quad -3173071712060547581
+	QUAD $0x971da05074da7bee  // .quad -7557708332239520786
+	QUAD $0x88f4bb1ca6bcf584  // .quad -8578025658503072380
+	QUAD $0xbce5086492111aea  // .quad -4835449396872013078
+	QUAD $0x2b31e9e3d06c32e5  // .quad 3112525982153323237
+	QUAD $0xec1e4a7db69561a5  // .quad -1432625727662628443
+	QUAD $0x3aff322e62439fcf  // .quad 4251171748059520975
+	QUAD $0x9392ee8e921d5d07  // .quad -7812920107430224633
+	QUAD $0x09befeb9fad487c2  // .quad 702278666647013314
+	QUAD $0xb877aa3236a4b449  // .quad -5154464115860392887
+	QUAD $0x4c2ebe687989a9b3  // .quad 5489534351736154547
+	QUAD $0xe69594bec44de15b  // .quad -1831394126398103205
+	QUAD $0x0f9d37014bf60a10  // .quad 1125115960621402640
+	QUAD $0x901d7cf73ab0acd9  // .quad -8062150356639896359
+	QUAD $0x538484c19ef38c94  // .quad 6018080969204141204
+	QUAD $0xb424dc35095cd80f  // .quad -5466001927372482545
+	QUAD $0x2865a5f206b06fb9  // .quad 2910915193077788601
+	QUAD $0xe12e13424bb40e13  // .quad -2220816390788215277
+	QUAD $0xf93f87b7442e45d3  // .quad -486521013540076077
+	QUAD $0x8cbccc096f5088cb  // .quad -8305539271883716405
+	QUAD $0xf78f69a51539d748  // .quad -608151266925095096
+	QUAD $0xafebff0bcb24aafe  // .quad -5770238071427257602
+	QUAD $0xb573440e5a884d1b  // .quad -5371875102083756773
+	QUAD $0xdbe6fecebdedd5be  // .quad -2601111570856684098
+	QUAD $0x31680a88f8953030  // .quad 3560107088838733872
+	QUAD $0x89705f4136b4a597  // .quad -8543223759426509417
+	QUAD $0xfdc20d2b36ba7c3d  // .quad -161552157378970563
+	QUAD $0xabcc77118461cefc  // .quad -6067343680855748868
+	QUAD $0x3d32907604691b4c  // .quad 4409745821703674700
+	QUAD $0xd6bf94d5e57a42bc  // .quad -2972493582642298180
+	QUAD $0xa63f9a49c2c1b10f  // .quad -6467280898289979121
+	QUAD $0x8637bd05af6c69b5  // .quad -8775337516792518219
+	QUAD $0x0fcf80dc33721d53  // .quad 1139270913992301907
+	QUAD $0xa7c5ac471b478423  // .quad -6357485877563259869
+	QUAD $0xd3c36113404ea4a8  // .quad -3187597375937010520
+	QUAD $0xd1b71758e219652b  // .quad -3335171328526686933
+	QUAD $0x645a1cac083126e9  // .quad 7231123676894144233
+	QUAD $0x83126e978d4fdf3b  // .quad -9002011107970261189
+	QUAD $0x3d70a3d70a3d70a3  // .quad 4427218577690292387
+	QUAD $0xa3d70a3d70a3d70a  // .quad -6640827866535438582
+	QUAD $0xcccccccccccccccc; QUAD $0xcccccccccccccccc  // .space 16, '\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc'
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x8000000000000000  // .quad -9223372036854775808
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xa000000000000000  // .quad -6917529027641081856
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xc800000000000000  // .quad -4035225266123964416
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xfa00000000000000  // .quad -432345564227567616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x9c40000000000000  // .quad -7187745005283311616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xc350000000000000  // .quad -4372995238176751616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xf424000000000000  // .quad -854558029293551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x9896800000000000  // .quad -7451627795949551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xbebc200000000000  // .quad -4702848726509551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xee6b280000000000  // .quad -1266874889709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x9502f90000000000  // .quad -7709325833709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xba43b74000000000  // .quad -5024971273709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xe8d4a51000000000  // .quad -1669528073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x9184e72a00000000  // .quad -7960984073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xb5e620f480000000  // .quad -5339544073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xe35fa931a0000000  // .quad -2062744073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x8e1bc9bf04000000  // .quad -8206744073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xb1a2bc2ec5000000  // .quad -5646744073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xde0b6b3a76400000  // .quad -2446744073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x8ac7230489e80000  // .quad -8446744073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xad78ebc5ac620000  // .quad -5946744073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xd8d726b7177a8000  // .quad -2821744073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x878678326eac9000  // .quad -8681119073709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xa968163f0a57b400  // .quad -6239712823709551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xd3c21bcecceda100  // .quad -3187955011209551616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x84595161401484a0  // .quad -8910000909647051616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xa56fa5b99019a5c8  // .quad -6525815118631426616
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0xcecb8f27f4200f3a  // .quad -3545582879861895366
+	QUAD $0x4000000000000000  // .quad 4611686018427387904
+	QUAD $0x813f3978f8940984  // .quad -9133518327554766460
+	QUAD $0x5000000000000000  // .quad 5764607523034234880
+	QUAD $0xa18f07d736b90be5  // .quad -6805211891016070171
+	QUAD $0xa400000000000000  // .quad -6629298651489370112
+	QUAD $0xc9f2c9cd04674ede  // .quad -3894828845342699810
+	QUAD $0x4d00000000000000  // .quad 5548434740920451072
+	QUAD $0xfc6f7c4045812296  // .quad -256850038250986858
+	QUAD $0xf020000000000000  // .quad -1143914305352105984
+	QUAD $0x9dc5ada82b70b59d  // .quad -7078060301547948643
+	QUAD $0x6c28000000000000  // .quad 7793479155164643328
+	QUAD $0xc5371912364ce305  // .quad -4235889358507547899
+	QUAD $0xc732000000000000  // .quad -4093209111326359552
+	QUAD $0xf684df56c3e01bc6  // .quad -683175679707046970
+	QUAD $0x3c7f400000000000  // .quad 4359273333062107136
+	QUAD $0x9a130b963a6c115c  // .quad -7344513827457986212
+	QUAD $0x4b9f100000000000  // .quad 5449091666327633920
+	QUAD $0xc097ce7bc90715b3  // .quad -4568956265895094861
+	QUAD $0x1e86d40000000000  // .quad 2199678564482154496
+	QUAD $0xf0bdc21abb48db20  // .quad -1099509313941480672
+	QUAD $0x1314448000000000  // .quad 1374799102801346560
+	QUAD $0x96769950b50d88f4  // .quad -7604722348854507276
+	QUAD $0x17d955a000000000  // .quad 1718498878501683200
+	QUAD $0xbc143fa4e250eb31  // .quad -4894216917640746191
+	QUAD $0x5dcfab0800000000  // .quad 6759809616554491904
+	QUAD $0xeb194f8e1ae525fd  // .quad -1506085128623544835
+	QUAD $0x5aa1cae500000000  // .quad 6530724019560251392
+	QUAD $0x92efd1b8d0cf37be  // .quad -7858832233030797378
+	QUAD $0xf14a3d9e40000000  // .quad -1059967012404461568
+	QUAD $0xb7abc627050305ad  // .quad -5211854272861108819
+	QUAD $0x6d9ccd05d0000000  // .quad 7898413271349198848
+	QUAD $0xe596b7b0c643c719  // .quad -1903131822648998119
+	QUAD $0xe4820023a2000000  // .quad -1981020733047832576
+	QUAD $0x8f7e32ce7bea5c6f  // .quad -8106986416796705681
+	QUAD $0xdda2802c8a800000  // .quad -2476275916309790720
+	QUAD $0xb35dbf821ae4f38b  // .quad -5522047002568494197
+	QUAD $0xd50b2037ad200000  // .quad -3095344895387238400
+	QUAD $0xe0352f62a19e306e  // .quad -2290872734783229842
+	QUAD $0x4526f422cc340000  // .quad 4982938468024057856
+	QUAD $0x8c213d9da502de45  // .quad -8349324486880600507
+	QUAD $0x9670b12b7f410000  // .quad -7606384970252091392
+	QUAD $0xaf298d050e4395d6  // .quad -5824969590173362730
+	QUAD $0x3c0cdd765f114000  // .quad 4327076842467049472
+	QUAD $0xdaf3f04651d47b4c  // .quad -2669525969289315508
+	QUAD $0xa5880a69fb6ac800  // .quad -6518949010312869888
+	QUAD $0x88d8762bf324cd0f  // .quad -8585982758446904049
+	QUAD $0x8eea0d047a457a00  // .quad -8148686262891087360
+	QUAD $0xab0e93b6efee0053  // .quad -6120792429631242157
+	QUAD $0x72a4904598d6d880  // .quad 8260886245095692416
+	QUAD $0xd5d238a4abe98068  // .quad -3039304518611664792
+	QUAD $0x47a6da2b7f864750  // .quad 5163053903184807760
+	QUAD $0x85a36366eb71f041  // .quad -8817094351773372351
+	QUAD $0x999090b65f67d924  // .quad -7381240676301154012
+	QUAD $0xa70c3c40a64e6c51  // .quad -6409681921289327535
+	QUAD $0xfff4b4e3f741cf6d  // .quad -3178808521666707
+	QUAD $0xd0cf4b50cfe20765  // .quad -3400416383184271515
+	QUAD $0xbff8f10e7a8921a4  // .quad -4613672773753429596
+	QUAD $0x82818f1281ed449f  // .quad -9042789267131251553
+	QUAD $0xaff72d52192b6a0d  // .quad -5767090967191786995
+	QUAD $0xa321f2d7226895c7  // .quad -6691800565486676537
+	QUAD $0x9bf4f8a69f764490  // .quad -7208863708989733744
+	QUAD $0xcbea6f8ceb02bb39  // .quad -3753064688430957767
+	QUAD $0x02f236d04753d5b4  // .quad 212292400617608628
+	QUAD $0xfee50b7025c36a08  // .quad -79644842111309304
+	QUAD $0x01d762422c946590  // .quad 132682750386005392
+	QUAD $0x9f4f2726179a2245  // .quad -6967307053960650171
+	QUAD $0x424d3ad2b7b97ef5  // .quad 4777539456409894645
+	QUAD $0xc722f0ef9d80aad6  // .quad -4097447799023424810
+	QUAD $0xd2e0898765a7deb2  // .quad -3251447716342407502
+	QUAD $0xf8ebad2b84e0d58b  // .quad -510123730351893109
+	QUAD $0x63cc55f49f88eb2f  // .quad 7191217214140771119
+	QUAD $0x9b934c3b330c8577  // .quad -7236356359111015049
+	QUAD $0x3cbf6b71c76b25fb  // .quad 4377335499248575995
+	QUAD $0xc2781f49ffcfa6d5  // .quad -4433759430461380907
+	QUAD $0x8bef464e3945ef7a  // .quad -8363388681221443718
+	QUAD $0xf316271c7fc3908a  // .quad -930513269649338230
+	QUAD $0x97758bf0e3cbb5ac  // .quad -7532960934977096276
+	QUAD $0x97edd871cfda3a56  // .quad -7499099821171918250
+	QUAD $0x3d52eeed1cbea317  // .quad 4418856886560793367
+	QUAD $0xbde94e8e43d0c8ec  // .quad -4762188758037509908
+	QUAD $0x4ca7aaa863ee4bdd  // .quad 5523571108200991709
+	QUAD $0xed63a231d4c4fb27  // .quad -1341049929119499481
+	QUAD $0x8fe8caa93e74ef6a  // .quad -8076983103442849942
+	QUAD $0x945e455f24fb1cf8  // .quad -7755685233340769032
+	QUAD $0xb3e2fd538e122b44  // .quad -5484542860876174524
+	QUAD $0xb975d6b6ee39e436  // .quad -5082920523248573386
+	QUAD $0x60dbbca87196b616  // .quad 6979379479186945558
+	QUAD $0xe7d34c64a9c85d44  // .quad -1741964635633328828
+	QUAD $0xbc8955e946fe31cd  // .quad -4861259862362934835
+	QUAD $0x90e40fbeea1d3a4a  // .quad -8006256924911912374
+	QUAD $0x6babab6398bdbe41  // .quad 7758483227328495169
+	QUAD $0xb51d13aea4a488dd  // .quad -5396135137712502563
+	QUAD $0xc696963c7eed2dd1  // .quad -4136954021121544751
+	QUAD $0xe264589a4dcdab14  // .quad -2133482903713240300
+	QUAD $0xfc1e1de5cf543ca2  // .quad -279753253987271518
+	QUAD $0x8d7eb76070a08aec  // .quad -8250955842461857044
+	QUAD $0x3b25a55f43294bcb  // .quad 4261994450943298507
+	QUAD $0xb0de65388cc8ada8  // .quad -5702008784649933400
+	QUAD $0x49ef0eb713f39ebe  // .quad 5327493063679123134
+	QUAD $0xdd15fe86affad912  // .quad -2515824962385028846
+	QUAD $0x6e3569326c784337  // .quad 7941369183226839863
+	QUAD $0x8a2dbf142dfcc7ab  // .quad -8489919629131724885
+	QUAD $0x49c2c37f07965404  // .quad 5315025460606161924
+	QUAD $0xacb92ed9397bf996  // .quad -6000713517987268202
+	QUAD $0xdc33745ec97be906  // .quad -2579590211097073402
+	QUAD $0xd7e77a8f87daf7fb  // .quad -2889205879056697349
+	QUAD $0x69a028bb3ded71a3  // .quad 7611128154919104931
+	QUAD $0x86f0ac99b4e8dafd  // .quad -8723282702051517699
+	QUAD $0xc40832ea0d68ce0c  // .quad -4321147861633282548
+	QUAD $0xa8acd7c0222311bc  // .quad -6292417359137009220
+	QUAD $0xf50a3fa490c30190  // .quad -789748808614215280
+	QUAD $0xd2d80db02aabd62b  // .quad -3253835680493873621
+	QUAD $0x792667c6da79e0fa  // .quad 8729779031470891258
+	QUAD $0x83c7088e1aab65db  // .quad -8951176327949752869
+	QUAD $0x577001b891185938  // .quad 6300537770911226168
+	QUAD $0xa4b8cab1a1563f52  // .quad -6577284391509803182
+	QUAD $0xed4c0226b55e6f86  // .quad -1347699823215743098
+	QUAD $0xcde6fd5e09abcf26  // .quad -3609919470959866074
+	QUAD $0x544f8158315b05b4  // .quad 6075216638131242420
+	QUAD $0x80b05e5ac60b6178  // .quad -9173728696990998152
+	QUAD $0x696361ae3db1c721  // .quad 7594020797664053025
+	QUAD $0xa0dc75f1778e39d6  // .quad -6855474852811359786
+	QUAD $0x03bc3a19cd1e38e9  // .quad 269153960225290473
+	QUAD $0xc913936dd571c84c  // .quad -3957657547586811828
+	QUAD $0x04ab48a04065c723  // .quad 336442450281613091
+	QUAD $0xfb5878494ace3a5f  // .quad -335385916056126881
+	QUAD $0x62eb0d64283f9c76  // .quad 7127805559067090038
+	QUAD $0x9d174b2dcec0e47b  // .quad -7127145225176161157
+	QUAD $0x3ba5d0bd324f8394  // .quad 4298070930406474644
+	QUAD $0xc45d1df942711d9a  // .quad -4297245513042813542
+	QUAD $0xca8f44ec7ee36479  // .quad -3850783373846682503
+	QUAD $0xf5746577930d6500  // .quad -759870872876129024
+	QUAD $0x7e998b13cf4e1ecb  // .quad 9122475437414293195
+	QUAD $0x9968bf6abbe85f20  // .quad -7392448323188662496
+	QUAD $0x9e3fedd8c321a67e  // .quad -7043649776941685122
+	QUAD $0xbfc2ef456ae276e8  // .quad -4628874385558440216
+	QUAD $0xc5cfe94ef3ea101e  // .quad -4192876202749718498
+	QUAD $0xefb3ab16c59b14a2  // .quad -1174406963520662366
+	QUAD $0xbba1f1d158724a12  // .quad -4926390635932268014
+	QUAD $0x95d04aee3b80ece5  // .quad -7651533379841495835
+	QUAD $0x2a8a6e45ae8edc97  // .quad 3065383741939440791
+	QUAD $0xbb445da9ca61281f  // .quad -4952730706374481889
+	QUAD $0xf52d09d71a3293bd  // .quad -779956341003086915
+	QUAD $0xea1575143cf97226  // .quad -1579227364540714458
+	QUAD $0x593c2626705f9c56  // .quad 6430056314514152534
+	QUAD $0x924d692ca61be758  // .quad -7904546130479028392
+	QUAD $0x6f8b2fb00c77836c  // .quad 8037570393142690668
+	QUAD $0xb6e0c377cfa2e12e  // .quad -5268996644671397586
+	QUAD $0x0b6dfb9c0f956447  // .quad 823590954573587527
+	QUAD $0xe498f455c38b997a  // .quad -1974559787411859078
+	QUAD $0x4724bd4189bd5eac  // .quad 5126430365035880108
+	QUAD $0x8edf98b59a373fec  // .quad -8151628894773493780
+	QUAD $0x58edec91ec2cb657  // .quad 6408037956294850135
+	QUAD $0xb2977ee300c50fe7  // .quad -5577850100039479321
+	QUAD $0x2f2967b66737e3ed  // .quad 3398361426941174765
+	QUAD $0xdf3d5e9bc0f653e1  // .quad -2360626606621961247
+	QUAD $0xbd79e0d20082ee74  // .quad -4793553135802847628
+	QUAD $0x8b865b215899f46c  // .quad -8392920656779807636
+	QUAD $0xecd8590680a3aa11  // .quad -1380255401326171631
+	QUAD $0xae67f1e9aec07187  // .quad -5879464802547371641
+	QUAD $0xe80e6f4820cc9495  // .quad -1725319251657714539
+	QUAD $0xda01ee641a708de9  // .quad -2737644984756826647
+	QUAD $0x3109058d147fdcdd  // .quad 3533361486141316317
+	QUAD $0x884134fe908658b2  // .quad -8628557143114098510
+	QUAD $0xbd4b46f0599fd415  // .quad -4806670179178130411
+	QUAD $0xaa51823e34a7eede  // .quad -6174010410465235234
+	QUAD $0x6c9e18ac7007c91a  // .quad 7826720331309500698
+	QUAD $0xd4e5e2cdc1d1ea96  // .quad -3105826994654156138
+	QUAD $0x03e2cf6bc604ddb0  // .quad 280014188641050032
+	QUAD $0x850fadc09923329e  // .quad -8858670899299929442
+	QUAD $0x84db8346b786151c  // .quad -8873354301053463268
+	QUAD $0xa6539930bf6bff45  // .quad -6461652605697523899
+	QUAD $0xe612641865679a63  // .quad -1868320839462053277
+	QUAD $0xcfe87f7cef46ff16  // .quad -3465379738694516970
+	QUAD $0x4fcb7e8f3f60c07e  // .quad 5749828502977298558
+	QUAD $0x81f14fae158c5f6e  // .quad -9083391364325154962
+	QUAD $0xe3be5e330f38f09d  // .quad -2036086408133152611
+	QUAD $0xa26da3999aef7749  // .quad -6742553186979055799
+	QUAD $0x5cadf5bfd3072cc5  // .quad 6678264026688335045
+	QUAD $0xcb090c8001ab551c  // .quad -3816505465296431844
+	QUAD $0x73d9732fc7c8f7f6  // .quad 8347830033360418806
+	QUAD $0xfdcb4fa002162a63  // .quad -158945813193151901
+	QUAD $0x2867e7fddcdd9afa  // .quad 2911550761636567802
+	QUAD $0x9e9f11c4014dda7e  // .quad -7016870160886801794
+	QUAD $0xb281e1fd541501b8  // .quad -5583933584809066056
+	QUAD $0xc646d63501a1511d  // .quad -4159401682681114339
+	QUAD $0x1f225a7ca91a4226  // .quad 2243455055843443238
+	QUAD $0xf7d88bc24209a565  // .quad -587566084924005019
+	QUAD $0x3375788de9b06958  // .quad 3708002419115845976
+	QUAD $0x9ae757596946075f  // .quad -7284757830718584993
+	QUAD $0x0052d6b1641c83ae  // .quad 23317005467419566
+	QUAD $0xc1a12d2fc3978937  // .quad -4494261269970843337
+	QUAD $0xc0678c5dbd23a49a  // .quad -4582539761593113446
+	QUAD $0xf209787bb47d6b84  // .quad -1006140569036166268
+	QUAD $0xf840b7ba963646e0  // .quad -558244341782001952
+	QUAD $0x9745eb4d50ce6332  // .quad -7546366883288685774
+	QUAD $0xb650e5a93bc3d898  // .quad -5309491445654890344
+	QUAD $0xbd176620a501fbff  // .quad -4821272585683469313
+	QUAD $0xa3e51f138ab4cebe  // .quad -6636864307068612930
+	QUAD $0xec5d3fa8ce427aff  // .quad -1414904713676948737
+	QUAD $0xc66f336c36b10137  // .quad -4148040191917883081
+	QUAD $0x93ba47c980e98cdf  // .quad -7801844473689174817
+	QUAD $0xb80b0047445d4184  // .quad -5185050239897353852
+	QUAD $0xb8a8d9bbe123f017  // .quad -5140619573684080617
+	QUAD $0xa60dc059157491e5  // .quad -6481312799871692315
+	QUAD $0xe6d3102ad96cec1d  // .quad -1814088448677712867
+	QUAD $0x87c89837ad68db2f  // .quad -8662506518347195601
+	QUAD $0x9043ea1ac7e41392  // .quad -8051334308064652398
+	QUAD $0x29babe4598c311fb  // .quad 3006924907348169211
+	QUAD $0xb454e4a179dd1877  // .quad -5452481866653427593
+	QUAD $0xf4296dd6fef3d67a  // .quad -853029884242176390
+	QUAD $0xe16a1dc9d8545e94  // .quad -2203916314889396588
+	QUAD $0x1899e4a65f58660c  // .quad 1772699331562333708
+	QUAD $0x8ce2529e2734bb1d  // .quad -8294976724446954723
+	QUAD $0x5ec05dcff72e7f8f  // .quad 6827560182880305039
+	QUAD $0xb01ae745b101e9e4  // .quad -5757034887131305500
+	QUAD $0x76707543f4fa1f73  // .quad 8534450228600381299
+	QUAD $0xdc21a1171d42645d  // .quad -2584607590486743971
+	QUAD $0x6a06494a791c53a8  // .quad 7639874402088932264
+	QUAD $0x899504ae72497eba  // .quad -8532908771695296838
+	QUAD $0x0487db9d17636892  // .quad 326470965756389522
+	QUAD $0xabfa45da0edbde69  // .quad -6054449946191733143
+	QUAD $0x45a9d2845d3c42b6  // .quad 5019774725622874806
+	QUAD $0xd6f8d7509292d603  // .quad -2956376414312278525
+	QUAD $0x0b8a2392ba45a9b2  // .quad 831516194300602802
+	QUAD $0x865b86925b9bc5c2  // .quad -8765264286586255934
+	QUAD $0x8e6cac7768d7141e  // .quad -8183976793979022306
+	QUAD $0xa7f26836f282b732  // .quad -6344894339805432014
+	QUAD $0x3207d795430cd926  // .quad 3605087062808385830
+	QUAD $0xd1ef0244af2364ff  // .quad -3319431906329402113
+	QUAD $0x7f44e6bd49e807b8  // .quad 9170708441896323000
+	QUAD $0x8335616aed761f1f  // .quad -8992173969096958177
+	QUAD $0x5f16206c9c6209a6  // .quad 6851699533943015846
+	QUAD $0xa402b9c5a8d3a6e7  // .quad -6628531442943809817
+	QUAD $0x36dba887c37a8c0f  // .quad 3952938399001381903
+	QUAD $0xcd036837130890a1  // .quad -3673978285252374367
+	QUAD $0xc2494954da2c9789  // .quad -4446942528265218167
+	QUAD $0x802221226be55a64  // .quad -9213765455923815836
+	QUAD $0xf2db9baa10b7bd6c  // .quad -946992141904134804
+	QUAD $0xa02aa96b06deb0fd  // .quad -6905520801477381891
+	QUAD $0x6f92829494e5acc7  // .quad 8039631859474607303
+	QUAD $0xc83553c5c8965d3d  // .quad -4020214983419339459
+	QUAD $0xcb772339ba1f17f9  // .quad -3785518230938904583
+	QUAD $0xfa42a8b73abbf48c  // .quad -413582710846786420
+	QUAD $0xff2a760414536efb  // .quad -60105885123121413
+	QUAD $0x9c69a97284b578d7  // .quad -7176018221920323369
+	QUAD $0xfef5138519684aba  // .quad -75132356403901766
+	QUAD $0xc38413cf25e2d70d  // .quad -4358336758973016307
+	QUAD $0x7eb258665fc25d69  // .quad 9129456591349898601
+	QUAD $0xf46518c2ef5b8cd1  // .quad -836234930288882479
+	QUAD $0xef2f773ffbd97a61  // .quad -1211618658047395231
+	QUAD $0x98bf2f79d5993802  // .quad -7440175859071633406
+	QUAD $0xaafb550ffacfd8fa  // .quad -6126209340986631942
+	QUAD $0xbeeefb584aff8603  // .quad -4688533805412153853
+	QUAD $0x95ba2a53f983cf38  // .quad -7657761676233289928
+	QUAD $0xeeaaba2e5dbf6784  // .quad -1248981238337804412
+	QUAD $0xdd945a747bf26183  // .quad -2480258038432112253
+	QUAD $0x952ab45cfa97a0b2  // .quad -7698142301602209614
+	QUAD $0x94f971119aeef9e4  // .quad -7712008566467528220
+	QUAD $0xba756174393d88df  // .quad -5010991858575374113
+	QUAD $0x7a37cd5601aab85d  // .quad 8806733365625141341
+	QUAD $0xe912b9d1478ceb17  // .quad -1652053804791829737
+	QUAD $0xac62e055c10ab33a  // .quad -6025006692552756422
+	QUAD $0x91abb422ccb812ee  // .quad -7950062655635975442
+	QUAD $0x577b986b314d6009  // .quad 6303799689591218185
+	QUAD $0xb616a12b7fe617aa  // .quad -5325892301117581398
+	QUAD $0xed5a7e85fda0b80b  // .quad -1343622424865753077
+	QUAD $0xe39c49765fdf9d94  // .quad -2045679357969588844
+	QUAD $0x14588f13be847307  // .quad 1466078993672598279
+	QUAD $0x8e41ade9fbebc27d  // .quad -8196078626372074883
+	QUAD $0x596eb2d8ae258fc8  // .quad 6444284760518135752
+	QUAD $0xb1d219647ae6b31c  // .quad -5633412264537705700
+	QUAD $0x6fca5f8ed9aef3bb  // .quad 8055355950647669691
+	QUAD $0xde469fbd99a05fe3  // .quad -2430079312244744221
+	QUAD $0x25de7bb9480d5854  // .quad 2728754459941099604
+	QUAD $0x8aec23d680043bee  // .quad -8436328597794046994
+	QUAD $0xaf561aa79a10ae6a  // .quad -5812428961928401302
+	QUAD $0xada72ccc20054ae9  // .quad -5933724728815170839
+	QUAD $0x1b2ba1518094da04  // .quad 1957835834444274180
+	QUAD $0xd910f7ff28069da4  // .quad -2805469892591575644
+	QUAD $0x90fb44d2f05d0842  // .quad -7999724640327104446
+	QUAD $0x87aa9aff79042286  // .quad -8670947710510816634
+	QUAD $0x353a1607ac744a53  // .quad 3835402254873283155
+	QUAD $0xa99541bf57452b28  // .quad -6226998619711132888
+	QUAD $0x42889b8997915ce8  // .quad 4794252818591603944
+	QUAD $0xd3fa922f2d1675f2  // .quad -3172062256211528206
+	QUAD $0x69956135febada11  // .quad 7608094030047140369
+	QUAD $0x847c9b5d7c2e09b7  // .quad -8900067937773286985
+	QUAD $0x43fab9837e699095  // .quad 4898431519131537557
+	QUAD $0xa59bc234db398c25  // .quad -6513398903789220827
+	QUAD $0x94f967e45e03f4bb  // .quad -7712018656367741765
+	QUAD $0xcf02b2c21207ef2e  // .quad -3530062611309138130
+	QUAD $0x1d1be0eebac278f5  // .quad 2097517367411243253
+	QUAD $0x8161afb94b44f57d  // .quad -9123818159709293187
+	QUAD $0x6462d92a69731732  // .quad 7233582727691441970
+	QUAD $0xa1ba1ba79e1632dc  // .quad -6793086681209228580
+	QUAD $0x7d7b8f7503cfdcfe  // .quad 9041978409614302462
+	QUAD $0xca28a291859bbf93  // .quad -3879672333084147821
+	QUAD $0x5cda735244c3d43e  // .quad 6690786993590490174
+	QUAD $0xfcb2cb35e702af78  // .quad -237904397927796872
+	QUAD $0x3a0888136afa64a7  // .quad 4181741870994056359
+	QUAD $0x9defbf01b061adab  // .quad -7066219276345954901
+	QUAD $0x088aaa1845b8fdd0  // .quad 615491320315182544
+	QUAD $0xc56baec21c7a1916  // .quad -4221088077005055722
+	QUAD $0x8aad549e57273d45  // .quad -8454007886460797627
+	QUAD $0xf6c69a72a3989f5b  // .quad -664674077828931749
+	QUAD $0x36ac54e2f678864b  // .quad 3939617107816777291
+	QUAD $0x9a3c2087a63f6399  // .quad -7332950326284164199
+	QUAD $0x84576a1bb416a7dd  // .quad -8910536670511192099
+	QUAD $0xc0cb28a98fcf3c7f  // .quad -4554501889427817345
+	QUAD $0x656d44a2a11c51d5  // .quad 7308573235570561493
+	QUAD $0xf0fdf2d3f3c30b9f  // .quad -1081441343357383777
+	QUAD $0x9f644ae5a4b1b325  // .quad -6961356773836868827
+	QUAD $0x969eb7c47859e743  // .quad -7593429867239446717
+	QUAD $0x873d5d9f0dde1fee  // .quad -8701695967296086034
+	QUAD $0xbc4665b596706114  // .quad -4880101315621920492
+	QUAD $0xa90cb506d155a7ea  // .quad -6265433940692719638
+	QUAD $0xeb57ff22fc0c7959  // .quad -1488440626100012711
+	QUAD $0x09a7f12442d588f2  // .quad 695789805494438130
+	QUAD $0x9316ff75dd87cbd8  // .quad -7847804418953589800
+	QUAD $0x0c11ed6d538aeb2f  // .quad 869737256868047663
+	QUAD $0xb7dcbf5354e9bece  // .quad -5198069505264599346
+	QUAD $0x8f1668c8a86da5fa  // .quad -8136200465769716230
+	QUAD $0xe5d3ef282a242e81  // .quad -1885900863153361279
+	QUAD $0xf96e017d694487bc  // .quad -473439272678684740
+	QUAD $0x8fa475791a569d10  // .quad -8096217067111932656
+	QUAD $0x37c981dcc395a9ac  // .quad 4019886927579031980
+	QUAD $0xb38d92d760ec4455  // .quad -5508585315462527915
+	QUAD $0x85bbe253f47b1417  // .quad -8810199395808373737
+	QUAD $0xe070f78d3927556a  // .quad -2274045625900771990
+	QUAD $0x93956d7478ccec8e  // .quad -7812217631593927538
+	QUAD $0x8c469ab843b89562  // .quad -8338807543829064350
+	QUAD $0x387ac8d1970027b2  // .quad 4069786015789754290
+	QUAD $0xaf58416654a6babb  // .quad -5811823411358942533
+	QUAD $0x06997b05fcc0319e  // .quad 475546501309804958
+	QUAD $0xdb2e51bfe9d0696a  // .quad -2653093245771290262
+	QUAD $0x441fece3bdf81f03  // .quad 4908902581746016003
+	QUAD $0x88fcf317f22241e2  // .quad -8575712306248138270
+	QUAD $0xd527e81cad7626c3  // .quad -3087243809672255805
+	QUAD $0xab3c2fddeeaad25a  // .quad -6107954364382784934
+	QUAD $0x8a71e223d8d3b074  // .quad -8470740780517707660
+	QUAD $0xd60b3bd56a5586f1  // .quad -3023256937051093263
+	QUAD $0xf6872d5667844e49  // .quad -682526969396179383
+	QUAD $0x85c7056562757456  // .quad -8807064613298015146
+	QUAD $0xb428f8ac016561db  // .quad -5464844730172612133
+	QUAD $0xa738c6bebb12d16c  // .quad -6397144748195131028
+	QUAD $0xe13336d701beba52  // .quad -2219369894288377262
+	QUAD $0xd106f86e69d785c7  // .quad -3384744916816525881
+	QUAD $0xecc0024661173473  // .quad -1387106183930235789
+	QUAD $0x82a45b450226b39c  // .quad -9032994600651410532
+	QUAD $0x27f002d7f95d0190  // .quad 2877803288514593168
+	QUAD $0xa34d721642b06084  // .quad -6679557232386875260
+	QUAD $0x31ec038df7b441f4  // .quad 3597254110643241460
+	QUAD $0xcc20ce9bd35c78a5  // .quad -3737760522056206171
+	QUAD $0x7e67047175a15271  // .quad 9108253656731439729
+	QUAD $0xff290242c83396ce  // .quad -60514634142869810
+	QUAD $0x0f0062c6e984d386  // .quad 1080972517029761926
+	QUAD $0x9f79a169bd203e41  // .quad -6955350673980375487
+	QUAD $0x52c07b78a3e60868  // .quad 5962901664714590312
+	QUAD $0xc75809c42c684dd1  // .quad -4082502324048081455
+	QUAD $0xa7709a56ccdf8a82  // .quad -6381430974388925822
+	QUAD $0xf92e0c3537826145  // .quad -491441886632713915
+	QUAD $0x88a66076400bb691  // .quad -8600080377420466543
+	QUAD $0x9bbcc7a142b17ccb  // .quad -7224680206786528053
+	QUAD $0x6acff893d00ea435  // .quad 7696643601933968437
+	QUAD $0xc2abf989935ddbfe  // .quad -4419164240055772162
+	QUAD $0x0583f6b8c4124d43  // .quad 397432465562684739
+	QUAD $0xf356f7ebf83552fe  // .quad -912269281642327298
+	QUAD $0xc3727a337a8b704a  // .quad -4363290727450709942
+	QUAD $0x98165af37b2153de  // .quad -7487697328667536418
+	QUAD $0x744f18c0592e4c5c  // .quad 8380944645968776284
+	QUAD $0xbe1bf1b059e9a8d6  // .quad -4747935642407032618
+	QUAD $0x1162def06f79df73  // .quad 1252808770606194547
+	QUAD $0xeda2ee1c7064130c  // .quad -1323233534581402868
+	QUAD $0x8addcb5645ac2ba8  // .quad -8440366555225904216
+	QUAD $0x9485d4d1c63e8be7  // .quad -7744549986754458649
+	QUAD $0x6d953e2bd7173692  // .quad 7896285879677171346
+	QUAD $0xb9a74a0637ce2ee1  // .quad -5069001465015685407
+	QUAD $0xc8fa8db6ccdd0437  // .quad -3964700705685699529
+	QUAD $0xe8111c87c5c1ba99  // .quad -1724565812842218855
+	QUAD $0x1d9c9892400a22a2  // .quad 2133748077373825698
+	QUAD $0x910ab1d4db9914a0  // .quad -7995382660667468640
+	QUAD $0x2503beb6d00cab4b  // .quad 2667185096717282123
+	QUAD $0xb54d5e4a127f59c8  // .quad -5382542307406947896
+	QUAD $0x2e44ae64840fd61d  // .quad 3333981370896602653
+	QUAD $0xe2a0b5dc971f303a  // .quad -2116491865831296966
+	QUAD $0x5ceaecfed289e5d2  // .quad 6695424375237764562
+	QUAD $0x8da471a9de737e24  // .quad -8240336443785642460
+	QUAD $0x7425a83e872c5f47  // .quad 8369280469047205703
+	QUAD $0xb10d8e1456105dad  // .quad -5688734536304665171
+	QUAD $0xd12f124e28f77719  // .quad -3373457468973156583
+	QUAD $0xdd50f1996b947518  // .quad -2499232151953443560
+	QUAD $0x82bd6b70d99aaa6f  // .quad -9025939945749304721
+	QUAD $0x8a5296ffe33cc92f  // .quad -8479549122611984081
+	QUAD $0x636cc64d1001550b  // .quad 7164319141522920715
+	QUAD $0xace73cbfdc0bfb7b  // .quad -5987750384837592197
+	QUAD $0x3c47f7e05401aa4e  // .quad 4343712908476262990
+	QUAD $0xd8210befd30efa5a  // .quad -2873001962619602342
+	QUAD $0x65acfaec34810a71  // .quad 7326506586225052273
+	QUAD $0x8714a775e3e95c78  // .quad -8713155254278333320
+	QUAD $0x7f1839a741a14d0d  // .quad 9158133232781315341
+	QUAD $0xa8d9d1535ce3b396  // .quad -6279758049420528746
+	QUAD $0x1ede48111209a050  // .quad 2224294504121868368
+	QUAD $0xd31045a8341ca07c  // .quad -3238011543348273028
+	QUAD $0x934aed0aab460432  // .quad -7833187971778608078
+	QUAD $0x83ea2b892091e44d  // .quad -8941286242233752499
+	QUAD $0xf81da84d5617853f  // .quad -568112927868484289
+	QUAD $0xa4e4b66b68b65d60  // .quad -6564921784364802720
+	QUAD $0x36251260ab9d668e  // .quad 3901544858591782542
+	QUAD $0xce1de40642e3f4b9  // .quad -3594466212028615495
+	QUAD $0xc1d72b7c6b426019  // .quad -4479063491021217767
+	QUAD $0x80d2ae83e9ce78f3  // .quad -9164070410158966541
+	QUAD $0xb24cf65b8612f81f  // .quad -5598829363776522209
+	QUAD $0xa1075a24e4421730  // .quad -6843401994271320272
+	QUAD $0xdee033f26797b627  // .quad -2386850686293264857
+	QUAD $0xc94930ae1d529cfc  // .quad -3942566474411762436
+	QUAD $0x169840ef017da3b1  // .quad 1628122660560806833
+	QUAD $0xfb9b7cd9a4a7443c  // .quad -316522074587315140
+	QUAD $0x8e1f289560ee864e  // .quad -8205795374004271538
+	QUAD $0x9d412e0806e88aa5  // .quad -7115355324258153819
+	QUAD $0xf1a6f2bab92a27e2  // .quad -1033872180650563614
+	QUAD $0xc491798a08a2ad4e  // .quad -4282508136895304370
+	QUAD $0xae10af696774b1db  // .quad -5904026244240592421
+	QUAD $0xf5b5d7ec8acb58a2  // .quad -741449152691742558
+	QUAD $0xacca6da1e0a8ef29  // .quad -5995859411864064215
+	QUAD $0x9991a6f3d6bf1765  // .quad -7380934748073420955
+	QUAD $0x17fd090a58d32af3  // .quad 1728547772024695539
+	QUAD $0xbff610b0cc6edd3f  // .quad -4614482416664388289
+	QUAD $0xddfc4b4cef07f5b0  // .quad -2451001303396518480
+	QUAD $0xeff394dcff8a948e  // .quad -1156417002403097458
+	QUAD $0x4abdaf101564f98e  // .quad 5385653213018257806
+	QUAD $0x95f83d0a1fb69cd9  // .quad -7640289654143017767
+	QUAD $0x9d6d1ad41abe37f1  // .quad -7102991539009341455
+	QUAD $0xbb764c4ca7a4440f  // .quad -4938676049251384305
+	QUAD $0x84c86189216dc5ed  // .quad -8878739423761676819
+	QUAD $0xea53df5fd18d5513  // .quad -1561659043136842477
+	QUAD $0x32fd3cf5b4e49bb4  // .quad 3674159897003727796
+	QUAD $0x92746b9be2f8552c  // .quad -7893565929601608404
+	QUAD $0x3fbc8c33221dc2a1  // .quad 4592699871254659745
+	QUAD $0xb7118682dbb66a77  // .quad -5255271393574622601
+	QUAD $0x0fabaf3feaa5334a  // .quad 1129188820640936778
+	QUAD $0xe4d5e82392a40515  // .quad -1957403223540890347
+	QUAD $0x29cb4d87f2a7400e  // .quad 3011586022114279438
+	QUAD $0x8f05b1163ba6832d  // .quad -8140906042354138323
+	QUAD $0x743e20e9ef511012  // .quad 8376168546070237202
+	QUAD $0xb2c71d5bca9023f8  // .quad -5564446534515285000
+	QUAD $0x914da9246b255416  // .quad -7976533391121755114
+	QUAD $0xdf78e4b2bd342cf6  // .quad -2343872149716718346
+	QUAD $0x1ad089b6c2f7548e  // .quad 1932195658189984910
+	QUAD $0x8bab8eefb6409c1a  // .quad -8382449121214030822
+	QUAD $0xa184ac2473b529b1  // .quad -6808127464117294671
+	QUAD $0xae9672aba3d0c320  // .quad -5866375383090150624
+	QUAD $0xc9e5d72d90a2741e  // .quad -3898473311719230434
+	QUAD $0xda3c0f568cc4f3e8  // .quad -2721283210435300376
+	QUAD $0x7e2fa67c7a658892  // .quad 9092669226243950738
+	QUAD $0x8865899617fb1871  // .quad -8618331034163144591
+	QUAD $0xddbb901b98feeab7  // .quad -2469221522477225289
+	QUAD $0xaa7eebfb9df9de8d  // .quad -6161227774276542835
+	QUAD $0x552a74227f3ea565  // .quad 6136845133758244197
+	QUAD $0xd51ea6fa85785631  // .quad -3089848699418290639
+	QUAD $0xd53a88958f87275f  // .quad -3082000819042179233
+	QUAD $0x8533285c936b35de  // .quad -8848684464777513506
+	QUAD $0x8a892abaf368f137  // .quad -8464187042230111945
+	QUAD $0xa67ff273b8460356  // .quad -6449169562544503978
+	QUAD $0x2d2b7569b0432d85  // .quad 3254824252494523781
+	QUAD $0xd01fef10a657842c  // .quad -3449775934753242068
+	QUAD $0x9c3b29620e29fc73  // .quad -7189106879045698445
+	QUAD $0x8213f56a67f6b29b  // .quad -9073638986861858149
+	QUAD $0x8349f3ba91b47b8f  // .quad -8986383598807123057
+	QUAD $0xa298f2c501f45f42  // .quad -6730362715149934782
+	QUAD $0x241c70a936219a73  // .quad 2602078556773259891
+	QUAD $0xcb3f2f7642717713  // .quad -3801267375510030573
+	QUAD $0xed238cd383aa0110  // .quad -1359087822460813040
+	QUAD $0xfe0efb53d30dd4d7  // .quad -139898200960150313
+	QUAD $0xf4363804324a40aa  // .quad -849429889038008150
+	QUAD $0x9ec95d1463e8a506  // .quad -7004965403241175802
+	QUAD $0xb143c6053edcd0d5  // .quad -5673473379724898091
+	QUAD $0xc67bb4597ce2ce48  // .quad -4144520735624081848
+	QUAD $0xdd94b7868e94050a  // .quad -2480155706228734710
+	QUAD $0xf81aa16fdc1b81da  // .quad -568964901102714406
+	QUAD $0xca7cf2b4191c8326  // .quad -3855940325606653146
+	QUAD $0x9b10a4e5e9913128  // .quad -7273132090830278360
+	QUAD $0xfd1c2f611f63a3f0  // .quad -208239388580928528
+	QUAD $0xc1d4ce1f63f57d72  // .quad -4479729095110460046
+	QUAD $0xbc633b39673c8cec  // .quad -4871985254153548564
+	QUAD $0xf24a01a73cf2dccf  // .quad -987975350460687153
+	QUAD $0xd5be0503e085d813  // .quad -3044990783845967853
+	QUAD $0x976e41088617ca01  // .quad -7535013621679011327
+	QUAD $0x4b2d8644d8a74e18  // .quad 5417133557047315992
+	QUAD $0xbd49d14aa79dbc82  // .quad -4807081008671376254
+	QUAD $0xddf8e7d60ed1219e  // .quad -2451955090545630818
+	QUAD $0xec9c459d51852ba2  // .quad -1397165242411832414
+	QUAD $0xcabb90e5c942b503  // .quad -3838314940804713213
+	QUAD $0x93e1ab8252f33b45  // .quad -7790757304148477115
+	QUAD $0x3d6a751f3b936243  // .quad 4425478360848884291
+	QUAD $0xb8da1662e7b00a17  // .quad -5126760611758208489
+	QUAD $0x0cc512670a783ad4  // .quad 920161932633717460
+	QUAD $0xe7109bfba19c0c9d  // .quad -1796764746270372707
+	QUAD $0x27fb2b80668b24c5  // .quad 2880944217109767365
+	QUAD $0x906a617d450187e2  // .quad -8040506994060064798
+	QUAD $0xb1f9f660802dedf6  // .quad -5622191765467566602
+	QUAD $0xb484f9dc9641e9da  // .quad -5438947724147693094
+	QUAD $0x5e7873f8a0396973  // .quad 6807318348447705459
+	QUAD $0xe1a63853bbd26451  // .quad -2186998636757228463
+	QUAD $0xdb0b487b6423e1e8  // .quad -2662955059861265944
+	QUAD $0x8d07e33455637eb2  // .quad -8284403175614349646
+	QUAD $0x91ce1a9a3d2cda62  // .quad -7940379843253970334
+	QUAD $0xb049dc016abc5e5f  // .quad -5743817951090549153
+	QUAD $0x7641a140cc7810fb  // .quad 8521269269642088699
+	QUAD $0xdc5c5301c56b75f7  // .quad -2568086420435798537
+	QUAD $0xa9e904c87fcb0a9d  // .quad -6203421752542164323
+	QUAD $0x89b9b3e11b6329ba  // .quad -8522583040413455942
+	QUAD $0x546345fa9fbdcd44  // .quad 6080780864604458308
+	QUAD $0xac2820d9623bf429  // .quad -6041542782089432023
+	QUAD $0xa97c177947ad4095  // .quad -6234081974526590827
+	QUAD $0xd732290fbacaf133  // .quad -2940242459184402125
+	QUAD $0x49ed8eabcccc485d  // .quad 5327070802775656541
+	QUAD $0x867f59a9d4bed6c0  // .quad -8755180564631333184
+	QUAD $0x5c68f256bfff5a74  // .quad 6658838503469570676
+	QUAD $0xa81f301449ee8c70  // .quad -6332289687361778576
+	QUAD $0x73832eec6fff3111  // .quad 8323548129336963345
+	QUAD $0xd226fc195c6a2f8c  // .quad -3303676090774835316
+	QUAD $0xc831fd53c5ff7eab  // .quad -4021154456019173717
+	QUAD $0x83585d8fd9c25db7  // .quad -8982326584375353929
+	QUAD $0xba3e7ca8b77f5e55  // .quad -5026443070023967147
+	QUAD $0xa42e74f3d032f525  // .quad -6616222212041804507
+	QUAD $0x28ce1bd2e55f35eb  // .quad 2940318199324816875
+	QUAD $0xcd3a1230c43fb26f  // .quad -3658591746624867729
+	QUAD $0x7980d163cf5b81b3  // .quad 8755227902219092403
+	QUAD $0x80444b5e7aa7cf85  // .quad -9204148869281624187
+	QUAD $0xd7e105bcc332621f  // .quad -2891023177508298209
+	QUAD $0xa0555e361951c366  // .quad -6893500068174642330
+	QUAD $0x8dd9472bf3fefaa7  // .quad -8225464990312760665
+	QUAD $0xc86ab5c39fa63440  // .quad -4005189066790915008
+	QUAD $0xb14f98f6f0feb951  // .quad -5670145219463562927
+	QUAD $0xfa856334878fc150  // .quad -394800315061255856
+	QUAD $0x6ed1bf9a569f33d3  // .quad 7985374283903742931
+	QUAD $0x9c935e00d4b9d8d2  // .quad -7164279224554366766
+	QUAD $0x0a862f80ec4700c8  // .quad 758345818024902856
+	QUAD $0xc3b8358109e84f07  // .quad -4343663012265570553
+	QUAD $0xcd27bb612758c0fa  // .quad -3663753745896259334
+	QUAD $0xf4a642e14c6262c8  // .quad -817892746904575288
+	QUAD $0x8038d51cb897789c  // .quad -9207375118826243940
+	QUAD $0x98e7e9cccfbd7dbd  // .quad -7428711994456441411
+	QUAD $0xe0470a63e6bd56c3  // .quad -2285846861678029117
+	QUAD $0xbf21e44003acdd2c  // .quad -4674203974643163860
+	QUAD $0x1858ccfce06cac74  // .quad 1754377441329851508
+	QUAD $0xeeea5d5004981478  // .quad -1231068949876566920
+	QUAD $0x0f37801e0c43ebc8  // .quad 1096485900831157192
+	QUAD $0x95527a5202df0ccb  // .quad -7686947121313936181
+	QUAD $0xd30560258f54e6ba  // .quad -3241078642388441414
+	QUAD $0xbaa718e68396cffd  // .quad -4996997883215032323
+	QUAD $0x47c6b82ef32a2069  // .quad 5172023733869224041
+	QUAD $0xe950df20247c83fd  // .quad -1634561335591402499
+	QUAD $0x4cdc331d57fa5441  // .quad 5538357842881958977
+	QUAD $0x91d28b7416cdd27e  // .quad -7939129862385708418
+	QUAD $0xe0133fe4adf8e952  // .quad -2300424733252327086
+	QUAD $0xb6472e511c81471d  // .quad -5312226309554747619
+	QUAD $0x58180fddd97723a6  // .quad 6347841120289366950
+	QUAD $0xe3d8f9e563a198e5  // .quad -2028596868516046619
+	QUAD $0x570f09eaa7ea7648  // .quad 6273243709394548296
+	QUAD $0x8e679c2f5e44ff8f  // .quad -8185402070463610993
+	QUAD $0x2cd2cc6551e513da  // .quad 3229868618315797466
+	QUAD $0xb201833b35d63f73  // .quad -5620066569652125837
+	QUAD $0xf8077f7ea65e58d1  // .quad -574350245532641071
+	QUAD $0xde81e40a034bcf4f  // .quad -2413397193637769393
+	QUAD $0xfb04afaf27faf782  // .quad -358968903457900670
+	QUAD $0x8b112e86420f6191  // .quad -8425902273664687727
+	QUAD $0x79c5db9af1f9b563  // .quad 8774660907532399971
+	QUAD $0xadd57a27d29339f6  // .quad -5920691823653471754
+	QUAD $0x18375281ae7822bc  // .quad 1744954097560724156
+	QUAD $0xd94ad8b1c7380874  // .quad -2789178761139451788
+	QUAD $0x8f2293910d0b15b5  // .quad -8132775725879323211
+	QUAD $0x87cec76f1c830548  // .quad -8660765753353239224
+	QUAD $0xb2eb3875504ddb22  // .quad -5554283638921766110
+	QUAD $0xa9c2794ae3a3c69a  // .quad -6214271173264161126
+	QUAD $0x5fa60692a46151eb  // .quad 6892203506629956075
+	QUAD $0xd433179d9c8cb841  // .quad -3156152948152813503
+	QUAD $0xdbc7c41ba6bcd333  // .quad -2609901835997359309
+	QUAD $0x849feec281d7f328  // .quad -8890124620236590296
+	QUAD $0x12b9b522906c0800  // .quad 1349308723430688768
+	QUAD $0xa5c7ea73224deff3  // .quad -6500969756868349965
+	QUAD $0xd768226b34870a00  // .quad -2925050114139026944
+	QUAD $0xcf39e50feae16bef  // .quad -3514526177658049553
+	QUAD $0xe6a1158300d46640  // .quad -1828156321336891840
+	QUAD $0x81842f29f2cce375  // .quad -9114107888677362827
+	QUAD $0x60495ae3c1097fd0  // .quad 6938176635183661008
+	QUAD $0xa1e53af46f801c53  // .quad -6780948842419315629
+	QUAD $0x385bb19cb14bdfc4  // .quad 4061034775552188356
+	QUAD $0xca5e89b18b602368  // .quad -3864500034596756632
+	QUAD $0x46729e03dd9ed7b5  // .quad 5076293469440235445
+	QUAD $0xfcf62c1dee382c42  // .quad -218939024818557886
+	QUAD $0x6c07a2c26a8346d1  // .quad 7784369436827535057
+	QUAD $0x9e19db92b4e31ba9  // .quad -7054365918152680535
+	QUAD $0xc7098b7305241885  // .quad -4104596259247744891
+	QUAD $0xc5a05277621be293  // .quad -4206271379263462765
+	QUAD $0xb8cbee4fc66d1ea7  // .quad -5130745324059681113
+	QUAD $0xf70867153aa2db38  // .quad -646153205651940552
+	QUAD $0x737f74f1dc043328  // .quad 8322499218531169064
+	QUAD $0x9a65406d44a5c903  // .quad -7321374781173544701
+	QUAD $0x505f522e53053ff2  // .quad 5791438004736573426
+	QUAD $0xc0fe908895cf3b44  // .quad -4540032458039542972
+	QUAD $0x647726b9e7c68fef  // .quad 7239297505920716783
+	QUAD $0xf13e34aabb430a15  // .quad -1063354554122040811
+	QUAD $0x5eca783430dc19f5  // .quad 6830403950414141941
+	QUAD $0x96c6e0eab509e64d  // .quad -7582125623967357363
+	QUAD $0xb67d16413d132072  // .quad -5297053117264486286
+	QUAD $0xbc789925624c5fe0  // .quad -4865971011531808800
+	QUAD $0xe41c5bd18c57e88f  // .quad -2009630378153219953
+	QUAD $0xeb96bf6ebadf77d8  // .quad -1470777745987373096
+	QUAD $0x8e91b962f7b6f159  // .quad -8173548013986844327
+	QUAD $0x933e37a534cbaae7  // .quad -7836765118883190041
+	QUAD $0x723627bbb5a4adb0  // .quad 8229809056225996208
+	QUAD $0xb80dc58e81fe95a1  // .quad -5184270380176599647
+	QUAD $0xcec3b1aaa30dd91c  // .quad -3547796734999668452
+	QUAD $0xe61136f2227e3b09  // .quad -1868651956793361655
+	QUAD $0x213a4f0aa5e8a7b1  // .quad 2394313059052595121
+	QUAD $0x8fcac257558ee4e6  // .quad -8085436500636932890
+	QUAD $0xa988e2cd4f62d19d  // .quad -6230480713039031907
+	QUAD $0xb3bd72ed2af29e1f  // .quad -5495109607368778209
+	QUAD $0x93eb1b80a33b8605  // .quad -7788100891298789883
+	QUAD $0xe0accfa875af45a7  // .quad -2257200990783584857
+	QUAD $0xbc72f130660533c3  // .quad -4867563057061743677
+	QUAD $0x8c6c01c9498d8b88  // .quad -8328279646880822392
+	QUAD $0xeb8fad7c7f8680b4  // .quad -1472767802899791692
+	QUAD $0xaf87023b9bf0ee6a  // .quad -5798663540173640086
+	QUAD $0xa67398db9f6820e1  // .quad -6452645772052127519
+	QUAD $0xdb68c2ca82ed2a05  // .quad -2636643406789662203
+	QUAD $0x88083f8943a1148c  // .quad -8644589625959967604
+	QUAD $0x892179be91d43a43  // .quad -8565431156884620733
+	QUAD $0x6a0a4f6b948959b0  // .quad 7641007041259592112
+	QUAD $0xab69d82e364948d4  // .quad -6095102927678388012
+	QUAD $0x848ce34679abb01c  // .quad -8895485272135061476
+	QUAD $0xd6444e39c3db9b09  // .quad -3007192641170597111
+	QUAD $0xf2d80e0c0c0b4e11  // .quad -947992276657025519
+	QUAD $0x85eab0e41a6940e5  // .quad -8797024428372705051
+	QUAD $0x6f8e118f0f0e2195  // .quad 8038381691033493909
+	QUAD $0xa7655d1d2103911f  // .quad -6384594517038493409
+	QUAD $0x4b7195f2d2d1a9fb  // .quad 5436291095364479483
+	QUAD $0xd13eb46469447567  // .quad -3369057127870728857
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 _POW_TAB:
-	LONG $0x00000001 // .long 1
-	LONG $0x00000003 // .long 3
-	LONG $0x00000006 // .long 6
-	LONG $0x00000009 // .long 9
-	LONG $0x0000000d // .long 13
-	LONG $0x00000010 // .long 16
-	LONG $0x00000013 // .long 19
-	LONG $0x00000017 // .long 23
-	LONG $0x0000001a // .long 26
-
+	LONG $0x00000001  // .long 1
+	LONG $0x00000003  // .long 3
+	LONG $0x00000006  // .long 6
+	LONG $0x00000009  // .long 9
+	LONG $0x0000000d  // .long 13
+	LONG $0x00000010  // .long 16
+	LONG $0x00000013  // .long 19
+	LONG $0x00000017  // .long 23
+	LONG $0x0000001a  // .long 26
 _DOUBLE_POW5_INV_SPLIT:
-	QUAD $0x0000000000000001 // .quad 1
-	QUAD $0x2000000000000000 // .quad 2305843009213693952
-	QUAD $0x999999999999999a // .quad -7378697629483820646
-	QUAD $0x1999999999999999 // .quad 1844674407370955161
-	QUAD $0x47ae147ae147ae15 // .quad 5165088340638674453
-	QUAD $0x147ae147ae147ae1 // .quad 1475739525896764129
-	QUAD $0x6c8b4395810624de // .quad 7821419487252849886
-	QUAD $0x10624dd2f1a9fbe7 // .quad 1180591620717411303
-	QUAD $0x7a786c226809d496 // .quad 8824922364862649494
-	QUAD $0x1a36e2eb1c432ca5 // .quad 1888946593147858085
-	QUAD $0x61f9f01b866e43ab // .quad 7059937891890119595
-	QUAD $0x14f8b588e368f084 // .quad 1511157274518286468
-	QUAD $0xb4c7f34938583622 // .quad -5420096130713635294
-	QUAD $0x10c6f7a0b5ed8d36 // .quad 1208925819614629174
-	QUAD $0x87a6520ec08d236a // .quad -8672153809141816470
-	QUAD $0x1ad7f29abcaf4857 // .quad 1934281311383406679
-	QUAD $0x9fb841a566d74f88 // .quad -6937723047313453176
-	QUAD $0x15798ee2308c39df // .quad 1547425049106725343
-	QUAD $0xe62d01511f12a607 // .quad -1860829623108852217
-	QUAD $0x112e0be826d694b2 // .quad 1237940039285380274
-	QUAD $0xd6ae6881cb5109a4 // .quad -2977327396974163548
-	QUAD $0x1b7cdfd9d7bdbab7 // .quad 1980704062856608439
-	QUAD $0xdef1ed34a2a73aea // .quad -2381861917579330838
-	QUAD $0x15fd7fe17964955f // .quad 1584563250285286751
-	QUAD $0x7f27f0f6e885c8bb // .quad 9162556910162266299
-	QUAD $0x119799812dea1119 // .quad 1267650600228229401
-	QUAD $0x650cb4be40d60df8 // .quad 7281393426775805432
-	QUAD $0x1c25c268497681c2 // .quad 2028240960365167042
-	QUAD $0xea70909833de7193 // .quad -1553582888063176301
-	QUAD $0x16849b86a12b9b01 // .quad 1622592768292133633
-	QUAD $0x21f3a6e0297ec143 // .quad 2446482504291369283
-	QUAD $0x1203af9ee756159b // .quad 1298074214633706907
-	QUAD $0x6985d7cd0f313537 // .quad 7603720821608101175
-	QUAD $0x1cd2b297d889bc2b // .quad 2076918743413931051
-	QUAD $0x2137dfd73f5a90f9 // .quad 2393627842544570617
-	QUAD $0x170ef54646d49689 // .quad 1661534994731144841
-	QUAD $0xe75fe645cc4873fa // .quad -1774446540706253830
-	QUAD $0x12725dd1d243aba0 // .quad 1329227995784915872
-	QUAD $0xa5663d3c7a0d865d // .quad -6528463279871916451
-	QUAD $0x1d83c94fb6d2ac34 // .quad 2126764793255865396
-	QUAD $0x511e976394d79eb1 // .quad 5845275820328197809
-	QUAD $0x179ca10c9242235d // .quad 1701411834604692317
-	QUAD $0xda7edf82dd794bc1 // .quad -2702476973221262399
-	QUAD $0x12e3b40a0e9b4f7d // .quad 1361129467683753853
-	QUAD $0x2a6498d1625bac68 // .quad 3054734472329800808
-	QUAD $0x1e392010175ee596 // .quad 2177807148294006166
-	QUAD $0xeeb6e0a781e2f053 // .quad -1245561236878069677
-	QUAD $0x182db34012b25144 // .quad 1742245718635204932
-	QUAD $0x58924d52ce4f26a9 // .quad 6382248639981364905
-	QUAD $0x1357c299a88ea76a // .quad 1393796574908163946
-	QUAD $0x27507bb7b07ea441 // .quad 2832900194486363201
-	QUAD $0x1ef2d0f5da7dd8aa // .quad 2230074519853062314
-	QUAD $0x52a6c95fc0655034 // .quad 5955668970331000884
-	QUAD $0x18c240c4aecb13bb // .quad 1784059615882449851
-	QUAD $0x0eebd44c99eaa690 // .quad 1075186361522890384
-	QUAD $0x13ce9a36f23c0fc9 // .quad 1427247692705959881
-	QUAD $0xb17953adc3110a80 // .quad -5658399451047196032
-	QUAD $0x1fb0f6be50601941 // .quad 2283596308329535809
-	QUAD $0xc12ddc8b02740867 // .quad -4526719560837756825
-	QUAD $0x195a5efea6b34767 // .quad 1826877046663628647
-	QUAD $0x3424b06f3529a052 // .quad 3757321980813615186
-	QUAD $0x14484bfeebc29f86 // .quad 1461501637330902918
-	QUAD $0x901d59f290ee19db // .quad -8062188859574838821
-	QUAD $0x1039d66589687f9e // .quad 1169201309864722334
-	QUAD $0x4cfbc31db4b0295f // .quad 5547241898389809503
-	QUAD $0x19f623d5a8a73297 // .quad 1870722095783555735
-	QUAD $0x3d9635b15d59bab2 // .quad 4437793518711847602
-	QUAD $0x14c4e977ba1f5bac // .quad 1496577676626844588
-	QUAD $0x97ab5e277de16228 // .quad -7517811629256252888
-	QUAD $0x109d8792fb4c4956 // .quad 1197262141301475670
-	QUAD $0xf2abc9d8c9689d0d // .quad -960452162584273651
-	QUAD $0x1a95a5b7f87a0ef0 // .quad 1915619426082361072
-	QUAD $0x5bbca17a3aba173e // .quad 6610335899416401726
-	QUAD $0x154484932d2e725a // .quad 1532495540865888858
-	QUAD $0xafca1ac82efb45cb // .quad -5779777724692609589
-	QUAD $0x11039d428a8b8eae // .quad 1225996432692711086
-	QUAD $0xb2dcf7a6b1920945 // .quad -5558295544766265019
-	QUAD $0x1b38fb9daa78e44a // .quad 1961594292308337738
-	QUAD $0xf57d92ebc141a104 // .quad -757287621071101692
-	QUAD $0x15c72fb1552d836e // .quad 1569275433846670190
-	QUAD $0xc46475896767b403 // .quad -4295178911598791677
-	QUAD $0x116c262777579c58 // .quad 1255420347077336152
-	QUAD $0x6d6d88dbd8a5ecd2 // .quad 7885109000409574610
-	QUAD $0x1be03d0bf225c6f4 // .quad 2008672555323737844
-	QUAD $0x8abe071646eb23db // .quad -8449308058639981605
-	QUAD $0x164cfda3281e38c3 // .quad 1606938044258990275
-	QUAD $0x6efe6c11d255b649 // .quad 7997948812055656009
-	QUAD $0x11d7314f534b609c // .quad 1285550435407192220
-	QUAD $0xb197134fb6ef8a0e // .quad -5650025974420502002
-	QUAD $0x1c8b821885456760 // .quad 2056880696651507552
-	QUAD $0x27ac0f72f8bfa1a5 // .quad 2858676849947419045
-	QUAD $0x16d601ad376ab91a // .quad 1645504557321206042
-	QUAD $0xb95672c260994e1e // .quad -5091756149525885410
-	QUAD $0x1244ce242c5560e1 // .quad 1316403645856964833
-	QUAD $0xf5571e03cdc21695 // .quad -768112209757596011
-	QUAD $0x1d3ae36d13bbce35 // .quad 2106245833371143733
-	QUAD $0x2aac18030b01abab // .quad 3074859046935833515
-	QUAD $0x17624f8a762fd82b // .quad 1684996666696914987
-	QUAD $0xbbbce0026f348956 // .quad -4918810391935153834
-	QUAD $0x12b50c6ec4f31355 // .quad 1347997333357531989
-	QUAD $0x92c7ccd0b1eda889 // .quad -7870096627096246135
-	QUAD $0x1dee7a4ad4b81eef // .quad 2156795733372051183
-	QUAD $0xdbd30a408e57ba07 // .quad -2606728486935086585
-	QUAD $0x17f1fb6f10934bf2 // .quad 1725436586697640946
-	QUAD $0x7ca8d50071dfc806 // .quad 8982663654677661702
-	QUAD $0x1327fc58da0f6ff5 // .quad 1380349269358112757
-	QUAD $0xfaa7bb33e9660cd6 // .quad -385133411483382570
-	QUAD $0x1ea6608e29b24cbb // .quad 2208558830972980411
-	QUAD $0x9552fc298784d711 // .quad -7686804358670526703
-	QUAD $0x18851a0b548ea3c9 // .quad 1766847064778384329
-	QUAD $0xaaa8c9bad2d0ac0e // .quad -6149443486936421362
-	QUAD $0x139dae6f76d88307 // .quad 1413477651822707463
-	QUAD $0xdddadc5e1e1aace3 // .quad -2460411949614453533
-	QUAD $0x1f62b0b257c0d1a5 // .quad 2261564242916331941
-	QUAD $0x7e48b04b4b488a4f // .quad 9099716884534168143
-	QUAD $0x191bc08eac9a4151 // .quad 1809251394333065553
-	QUAD $0xcb6d59d5d5d3a1d9 // .quad -3788272936598396455
-	QUAD $0x141633a556e1cdda // .quad 1447401115466452442
-	QUAD $0x3c577b1177dc817b // .quad 4348079280205103483
-	QUAD $0x1011c2eaabe7d7e2 // .quad 1157920892373161954
-	QUAD $0xc6f25e825960cf2a // .quad -4111119595897565398
-	QUAD $0x19b604aaaca62636 // .quad 1852673427797059126
-	QUAD $0x6bf518684780a5bb // .quad 7779150767507678651
-	QUAD $0x14919d5556eb51c5 // .quad 1482138742237647301
-	QUAD $0x232a79ed06008496 // .quad 2533971799264232598
-	QUAD $0x10747ddddf22a7d1 // .quad 1185710993790117841
-	QUAD $0xd1dd8fe1a3340756 // .quad -3324342750661048490
-	QUAD $0x1a53fc9631d10c81 // .quad 1897137590064188545
-	QUAD $0xa7e4731ae8f66c45 // .quad -6348823015270749115
-	QUAD $0x150ffd44f4a73d34 // .quad 1517710072051350836
-	QUAD $0x531d28e253f8569e // .quad 5988988032009131678
-	QUAD $0x10d9976a5d52975d // .quad 1214168057641080669
-	QUAD $0xeb61db03b98d5762 // .quad -1485665593011120286
-	QUAD $0x1af5bf109550f22e // .quad 1942668892225729070
-	QUAD $0xbc4e48cfc7a445e8 // .quad -4877881289150806552
-	QUAD $0x159165a6ddda5b58 // .quad 1554135113780583256
-	QUAD $0x6371d3d96c836b20 // .quad 7165741412905085728
-	QUAD $0x11411e1f17e1e2ad // .quad 1243308091024466605
-	QUAD $0x9f1c8628ad9f11cd // .quad -6981557813061414451
-	QUAD $0x1b9b6364f3030448 // .quad 1989292945639146568
-	QUAD $0xe5b06b53be18db0b // .quad -1895897435707221237
-	QUAD $0x1615e91d8f359d06 // .quad 1591434356511317254
-	QUAD $0xeaf3890fcb4715a2 // .quad -1516717948565776990
-	QUAD $0x11ab20e472914a6b // .quad 1273147485209053803
-	QUAD $0x44b8db4c7871bc37 // .quad 4951948911778577463
-	QUAD $0x1c45016d841baa46 // .quad 2037035976334486086
-	QUAD $0x03c715d6c6c1635f // .quad 272210314680951647
-	QUAD $0x169d9abe03495505 // .quad 1629628781067588869
-	QUAD $0x3638de456bcde919 // .quad 3907117066486671641
-	QUAD $0x1217aefe69077737 // .quad 1303703024854071095
-	QUAD $0x56c163a2461641c1 // .quad 6251387306378674625
-	QUAD $0x1cf2b1970e725858 // .quad 2085924839766513752
-	QUAD $0xdf011c81d1ab67ce // .quad -2377587784380880946
-	QUAD $0x17288e1271f51379 // .quad 1668739871813211001
-	QUAD $0x7f3416ce4155eca5 // .quad 9165976216721026213
-	QUAD $0x1286d80ec190dc61 // .quad 1334991897450568801
-	QUAD $0x6520247d3556476e // .quad 7286864317269821294
-	QUAD $0x1da48ce468e7c702 // .quad 2135987035920910082
-	QUAD $0xea801d30f7783925 // .quad -1549206175667963611
-	QUAD $0x17b6d71d20b96c01 // .quad 1708789628736728065
-	QUAD $0xbb99b0f3f92cfa84 // .quad -4928713755276281212
-	QUAD $0x12f8ac174d612334 // .quad 1367031702989382452
-	QUAD $0x5f5c4e532847f739 // .quad 6871453250525591353
-	QUAD $0x1e5aacf215683854 // .quad 2187250724783011924
-	QUAD $0x7f7d0b75b9d32c2e // .quad 9186511415162383406
-	QUAD $0x18488a5b44536043 // .quad 1749800579826409539
-	QUAD $0x9930d5f7c7dc2358 // .quad -7408186126837734568
-	QUAD $0x136d3b7c36a919cf // .quad 1399840463861127631
-	QUAD $0x8eb4898c72f9d226 // .quad -8163748988198464986
-	QUAD $0x1f152bf9f10e8fb2 // .quad 2239744742177804210
-	QUAD $0x722a07a38f2e41b8 // .quad 8226396068408869304
-	QUAD $0x18ddbcc7f40ba628 // .quad 1791795793742243368
-	QUAD $0xc1bb394fa5be9afa // .quad -4486929589498635526
-	QUAD $0x13e497065cd61e86 // .quad 1433436634993794694
-	QUAD $0x9c5ec2190930f7f6 // .quad -7179087343197816842
-	QUAD $0x1fd424d6faf030d7 // .quad 2293498615990071511
-	QUAD $0x49e56814075a5ff8 // .quad 5324776569667477496
-	QUAD $0x197683df2f268d79 // .quad 1834798892792057209
-	QUAD $0x6e51201005e1e660 // .quad 7949170070475892320
-	QUAD $0x145ecfe5bf520ac7 // .quad 1467839114233645767
-	QUAD $0xf1da800cd181851a // .quad -1019361573103106790
-	QUAD $0x104bd984990e6f05 // .quad 1174271291386916613
-	QUAD $0x4fc400148268d4f5 // .quad 5747719112518849781
-	QUAD $0x1a12f5a0f4e3e4d6 // .quad 1878834066219066582
-	QUAD $0xd96999aa01ed772b // .quad -2780522339468740821
-	QUAD $0x14dbf7b3f71cb711 // .quad 1503067252975253265
-	QUAD $0xadee1488018ac5bc // .quad -5913766686316902980
-	QUAD $0x10aff95cc5b09274 // .quad 1202453802380202612
-	QUAD $0x497ceda668de092c // .quad 5295368560860596524
-	QUAD $0x1ab328946f80ea54 // .quad 1923926083808324180
-	QUAD $0x3aca57b853e4d424 // .quad 4236294848688477220
-	QUAD $0x155c2076bf9a5510 // .quad 1539140867046659344
-	QUAD $0x623b7960431d7683 // .quad 7078384693692692099
-	QUAD $0x1116805effaeaa73 // .quad 1231312693637327475
-	QUAD $0x9d2bf566d1c8bd9e // .quad -7121328563801244258
-	QUAD $0x1b5733cb32b110b8 // .quad 1970100309819723960
-	QUAD $0x7dbcc452416d647f // .quad 9060332407926645887
-	QUAD $0x15df5ca28ef40d60 // .quad 1576080247855779168
-	QUAD $0xcafd69db678ab6cc // .quad -3819780517884414260
-	QUAD $0x117f7d4ed8c33de6 // .quad 1260864198284623334
-	QUAD $0xab2f0fc572778adf // .quad -6111648828615062817
-	QUAD $0x1bff2ee48e052fd7 // .quad 2017382717255397335
-	QUAD $0x88f273045b92d580 // .quad -8578667877633960576
-	QUAD $0x1665bf1d3e6a8cac // .quad 1613906173804317868
-	QUAD $0xd3f528d049424466 // .quad -3173585487365258138
-	QUAD $0x11eaff4a98553d56 // .quad 1291124939043454294
-	QUAD $0xb988414d4203a0a3 // .quad -5077736779784413021
-	QUAD $0x1cab3210f3bb9557 // .quad 2065799902469526871
-	QUAD $0x6139cdd76802e6e9 // .quad 7005857020398200553
-	QUAD $0x16ef5b40c2fc7779 // .quad 1652639921975621497
-	QUAD $0xe761717920025254 // .quad -1774012013165260204
-	QUAD $0x125915cd68c9f92d // .quad 1322111937580497197
-	QUAD $0xa568b58e999d5086 // .quad -6527768035806326650
-	QUAD $0x1d5b561574765b7c // .quad 2115379100128795516
-	QUAD $0x5120913ee14aa6d2 // .quad 5845832015580669650
-	QUAD $0x177c44ddf6c515fd // .quad 1692303280103036413
-	QUAD $0xa74d40ff1aa21f0e // .quad -6391380831761195250
-	QUAD $0x12c9d0b1923744ca // .quad 1353842624082429130
-	QUAD $0x0baece64f769cb4a // .quad 841837113407818570
-	QUAD $0x1e0fb44f50586e11 // .quad 2166148198531886609
-	QUAD $0x3c8bd850c5ee3c3b // .quad 4362818505468165179
-	QUAD $0x180c903f7379f1a7 // .quad 1732918558825509287
-	QUAD $0xca0979da37f1c9c9 // .quad -3888442825109288503
-	QUAD $0x133d4032c2c7f485 // .quad 1386334847060407429
-	QUAD $0xa9a8c2f6bfe942db // .quad -6221508520174861605
-	QUAD $0x1ec866b79e0cba6f // .quad 2218135755296651887
-	QUAD $0x2153cf2bccba9be3 // .quad 2401490813343931363
-	QUAD $0x18a0522c7e709526 // .quad 1774508604237321510
-	QUAD $0x1aa9728970954982 // .quad 1921192650675145090
-	QUAD $0x13b374f06526ddb8 // .quad 1419606883389857208
-	QUAD $0xf775840f1a88759d // .quad -615440573661678179
-	QUAD $0x1f8587e7083e2f8c // .quad 2271371013423771532
-	QUAD $0x5f9136727ba05e17 // .quad 6886345170554478103
-	QUAD $0x19379fec0698260a // .quad 1817096810739017226
-	QUAD $0x1940f85b9619e4df // .quad 1819727321701672159
-	QUAD $0x142c7ff0054684d5 // .quad 1453677448591213781
-	QUAD $0xe100c6afab47ea4c // .quad -2233566957380572596
-	QUAD $0x1023998cd1053710 // .quad 1162941958872971024
-	QUAD $0xce67a44c453fdd47 // .quad -3573707131808916153
-	QUAD $0x19d28f47b4d524e7 // .quad 1860707134196753639
-	QUAD $0xd852e9d69dccb106 // .quad -2858965705447132922
-	QUAD $0x14a8729fc3ddb71f // .quad 1488565707357402911
-	QUAD $0x79dbee454b0a2738 // .quad 8780873879868024632
-	QUAD $0x1086c219697e2c19 // .quad 1190852565885922329
-	QUAD $0x295fe3a211a9d859 // .quad 2981351763563108441
-	QUAD $0x1a71368f0f30468f // .quad 1905364105417475727
-	QUAD $0xbab31c81a7bb137a // .quad -4993616218633333894
-	QUAD $0x15275ed8d8f36ba5 // .quad 1524291284333980581
-	QUAD $0x6228e39aec95a92f // .quad 7073153469319063855
-	QUAD $0x10ec4be0ad8f8951 // .quad 1219433027467184465
-	QUAD $0x9d0e38f7e0ef7517 // .quad -7129698522799049449
-	QUAD $0x1b13ac9aaf4c0ee8 // .quad 1951092843947495144
-	QUAD $0xb0d82d931a592a79 // .quad -5703758818239239559
-	QUAD $0x15a956e225d67253 // .quad 1560874275157996115
-	QUAD $0x8d79be0f4847552e // .quad -8252355869333301970
-	QUAD $0x11544581b7dec1dc // .quad 1248699420126396892
-	QUAD $0x158f967eda0bbb7c // .quad 1553625868034358140
-	QUAD $0x1bba08cf8c979c94 // .quad 1997919072202235028
-	QUAD $0x77a611ff14d62f97 // .quad 8621598323911307159
-	QUAD $0x162e6d72d6dfb076 // .quad 1598335257761788022
-	QUAD $0xf951a7ff43de8c79 // .quad -481418970354774919
-	QUAD $0x11bebdf578b2f391 // .quad 1278668206209430417
-	QUAD $0xc21c3ffed2fdad8e // .quad -4459619167309550194
-	QUAD $0x1c6463225ab7ec1c // .quad 2045869129935088668
-	QUAD $0x01b0333242648ad8 // .quad 121653480894270168
-	QUAD $0x16b6b5b5155ff017 // .quad 1636695303948070935
-	QUAD $0x0159c28e9b83a246 // .quad 97322784715416134
-	QUAD $0x122bc490dde659ac // .quad 1309356243158456748
-	QUAD $0xcef604175f3903a3 // .quad -3533632359197244509
-	QUAD $0x1d12d41afca3c2ac // .quad 2094969989053530796
-	QUAD $0x725e69ac4c2d9c83 // .quad 8241140556867935363
-	QUAD $0x17424348ca1c9bbd // .quad 1675975991242824637
-	QUAD $0xf5185489d68ae39c // .quad -785785183989472356
-	QUAD $0x129b69070816e2fd // .quad 1340780792994259709
-	QUAD $0xee8d540fbdab05c6 // .quad -1257256294383155770
-	QUAD $0x1dc574d80cf16b2f // .quad 2145249268790815535
-	QUAD $0xbed77672fe226b05 // .quad -4695153850248434939
-	QUAD $0x17d12a4670c1228c // .quad 1716199415032652428
-	QUAD $0xff12c528cb4ebc04 // .quad -66774265456837628
-	QUAD $0x130dbb6b8d674ed6 // .quad 1372959532026121942
-	QUAD $0xcb513b74787df9a0 // .quad -3796187639472850528
-	QUAD $0x1e7c5f127bd87e24 // .quad 2196735251241795108
-	QUAD $0x090dc929f9fe614d // .quad 652398703163629901
-	QUAD $0x18637f41fcad31b7 // .quad 1757388200993436087
-	QUAD $0xa0d7d42194cb810a // .quad -6856778666952916726
-	QUAD $0x1382cc34ca2427c5 // .quad 1405910560794748869
-	QUAD $0x67bfb9cf5478ce77 // .quad 7475898206584884855
-	QUAD $0x1f37ad21436d0c6f // .quad 2249456897271598191
-	QUAD $0x1fcc94a5dd2d71f9 // .quad 2291369750525997561
-	QUAD $0x18f9574dcf8a7059 // .quad 1799565517817278553
-	QUAD $0x7fd6dd517dbdf4c7 // .quad 9211793429904618695
-	QUAD $0x13faac3e3fa1f37a // .quad 1439652414253822842
-	QUAD $0xffbe2ee8c92fee0b // .quad -18525771120251381
-	QUAD $0x1ff779fd329cb8c3 // .quad 2303443862806116547
-	QUAD $0x6631bf20a0f324d6 // .quad 7363877012587619542
-	QUAD $0x1992c7fdc216fa36 // .quad 1842755090244893238
-	QUAD $0xb827cc1a1a5c1d78 // .quad -5176944834155635336
-	QUAD $0x14756ccb01abfb5e // .quad 1474204072195914590
-	QUAD $0x935309ae7b7ce460 // .quad -7830904682066418592
-	QUAD $0x105df0a267bcc918 // .quad 1179363257756731672
-	QUAD $0x1eeb42b0c594a099 // .quad 2227947767661371545
-	QUAD $0x1a2fe76a3f9474f4 // .quad 1886981212410770676
-	QUAD $0xe58902270476e6e1 // .quad -1906990600612813087
-	QUAD $0x14f31f8832dd2a5c // .quad 1509584969928616540
-	QUAD $0xb7a0ce859d2bebe7 // .quad -5214941295232160793
-	QUAD $0x10c27fa028b0eeb0 // .quad 1207667975942893232
-	QUAD $0x59014a6f61dfdfd8 // .quad 6413489186596184024
-	QUAD $0x1ad0cc33744e4ab4 // .quad 1932268761508629172
-	QUAD $0xe0cdd525e7e64cad // .quad -2247906280206873427
-	QUAD $0x1573d68f903ea229 // .quad 1545815009206903337
-	QUAD $0x4d7177518651d6f1 // .quad 5580372605318321905
-	QUAD $0x11297872d9cbb4ee // .quad 1236652007365522670
-	QUAD $0x7be8bee8d6e957e8 // .quad 8928596168509315048
-	QUAD $0x1b758d848fac54b0 // .quad 1978643211784836272
-	QUAD $0xfcba3253df211320 // .quad -235820694676368608
-	QUAD $0x15f7a46a0c89dd59 // .quad 1582914569427869017
-	QUAD $0x63c8284318e74280 // .quad 7190041073742725760
-	QUAD $0x1192e9ee706e4aae // .quad 1266331655542295214
-	QUAD $0x060d0d3827d86a66 // .quad 436019273762630246
-	QUAD $0x1c1e43171a4a1117 // .quad 2026130648867672343
-	QUAD $0x6b3da42cecad21eb // .quad 7727513048493924843
-	QUAD $0x167e9c127b6e7412 // .quad 1620904519094137874
-	QUAD $0x88fe1cf0bd574e56 // .quad -8575384820172501418
-	QUAD $0x11fee341fc585cdb // .quad 1296723615275310299
-	QUAD $0x419694b462254a23 // .quad 4726128361433549347
-	QUAD $0x1ccb0536608d615f // .quad 2074757784440496479
-	QUAD $0x67abaa29e81dd4e9 // .quad 7470251503888749801
-	QUAD $0x1708d0f84d3de77f // .quad 1659806227552397183
-	QUAD $0xb95621bb2017dd87 // .quad -5091845241114731129
-	QUAD $0x126d73f9d764b932 // .quad 1327844982041917746
-	QUAD $0xc223692b668c95a5 // .quad -4457603571041659483
-	QUAD $0x1d7becc2f23ac1ea // .quad 2124551971267068394
-	QUAD $0xce82ba891ed6de1d // .quad -3566082856833327587
-	QUAD $0x179657025b6234bb // .quad 1699641577013654715
-	QUAD $0xa53562074bdf1818 // .quad -6542215100208572392
-	QUAD $0x12deac01e2b4f6fc // .quad 1359713261610923772
-	QUAD $0x3b889cd87964f359 // .quad 4289851098633925465
-	QUAD $0x1e3113363787f194 // .quad 2175541218577478036
-	QUAD $0xfc6d4a46c783f5e1 // .quad -257467935834769951
-	QUAD $0x18274291c6065adc // .quad 1740432974861982428
-	QUAD $0x30576e9f06032b1a // .quad 3483374466074094362
-	QUAD $0x13529ba7d19eaf17 // .quad 1392346379889585943
-	QUAD $0x1a257dcb3cd1de90 // .quad 1884050330976640656
-	QUAD $0x1eea92a61c311825 // .quad 2227754207823337509
-	QUAD $0x481dfe3c30a7e540 // .quad 5196589079523222848
-	QUAD $0x18bba884e35a79b7 // .quad 1782203366258670007
-	QUAD $0xd34b31c9c0865100 // .quad -3221426365865242368
-	QUAD $0x13c9539d82aec7c5 // .quad 1425762693006936005
-	QUAD $0x5211e942cda3b4cd // .quad 5913764258841343181
-	QUAD $0x1fa885c8d117a609 // .quad 2281220308811097609
-	QUAD $0x74db21023e1c90a4 // .quad 8420360221814984868
-	QUAD $0x19539e3a40dfb807 // .quad 1824976247048878087
-	QUAD $0xf715b401cb4a0d50 // .quad -642409452031832752
-	QUAD $0x1442e4fb67196005 // .quad 1459980997639102469
-	QUAD $0xf8de299b09080aa7 // .quad -513927561625466201
-	QUAD $0x103583fc527ab337 // .quad 1167984798111281975
-	QUAD $0x8e304291a80cddd7 // .quad -8200981728084566569
-	QUAD $0x19ef3993b72ab859 // .quad 1868775676978051161
-	QUAD $0x3e8d020e200a4b13 // .quad 4507261061758077715
-	QUAD $0x14bf6142f8eef9e1 // .quad 1495020541582440929
-	QUAD $0x653d9b3e80083c0f // .quad 7295157664148372495
-	QUAD $0x10991a9bfa58c7e7 // .quad 1196016433265952743
-	QUAD $0x6ec8f864000d2ce4 // .quad 7982903447895485668
-	QUAD $0x1a8e90f9908e0ca5 // .quad 1913626293225524389
-	QUAD $0x8bd3f9e999a423ea // .quad -8371072500651252758
-	QUAD $0x153eda614071a3b7 // .quad 1530901034580419511
-	QUAD $0x3ca994bae1501cbb // .quad 4371188443704728763
-	QUAD $0x10ff151a99f482f9 // .quad 1224720827664335609
-	QUAD $0xc775bac49bb3612b // .quad -4074144934298164949
-	QUAD $0x1b31bb5dc320d18e // .quad 1959553324262936974
-	QUAD $0xd2c4956a16291a89 // .quad -3259315947438531959
-	QUAD $0x15c162b168e70e0b // .quad 1567642659410349579
-	QUAD $0xdbd0778811ba7ba1 // .quad -2607452757950825567
-	QUAD $0x11678227871f3e6f // .quad 1254114127528279663
-	QUAD $0x2c80bf401c5d929b // .quad 3206773216762499739
-	QUAD $0x1bd8d03f3e9863e6 // .quad 2006582604045247462
-	QUAD $0xbd33cc3349e47549 // .quad -4813279056073820855
-	QUAD $0x16470cff6546b651 // .quad 1605266083236197969
-	QUAD $0xca8fd68f6e505dd4 // .quad -3850623244859056684
-	QUAD $0x11d270cc51055ea7 // .quad 1284212866588958375
-	QUAD $0x4419574be3b3c953 // .quad 4907049252451240275
-	QUAD $0x1c83e7ad4e6efdd9 // .quad 2054740586542333401
-	QUAD $0x0347790982f63aa9 // .quad 236290587219081897
-	QUAD $0x16cfec8aa52597e1 // .quad 1643792469233866721
-	QUAD $0xcf6c60d468c4fbba // .quad -3500316344966644806
-	QUAD $0x123ff06eea847980 // .quad 1315033975387093376
-	QUAD $0xe57a34870e07f92a // .quad -1911157337204721366
-	QUAD $0x1d331a4b10d3f59a // .quad 2104054360619349402
-	QUAD $0x512e906c0b399422 // .quad 5849771759720043554
-	QUAD $0x175c1508da432ae2 // .quad 1683243488495479522
-	QUAD $0xda8ba6bcd5c7a9b5 // .quad -2698880221707785803
-	QUAD $0x12b010d3e1cf5581 // .quad 1346594790796383617
-	QUAD $0x90df712e22d90f87 // .quad -8007557169474367609
-	QUAD $0x1de6815302e5559c // .quad 2154551665274213788
-	QUAD $0xda4c5a8b4f140c6c // .quad -2716696920837583764
-	QUAD $0x17eb9aa8cf1dde16 // .quad 1723641332219371030
-	QUAD $0xaea37ba2a5a9a38a // .quad -5862706351411977334
-	QUAD $0x1322e220a5b17e78 // .quad 1378913065775496824
-	QUAD $0x7dd25f6aa2a905a9 // .quad 9066413911450387881
-	QUAD $0x1e9e369aa2b59727 // .quad 2206260905240794919
-	QUAD $0x97db7f888220d154 // .quad -7504264129807330988
-	QUAD $0x187e92154ef7ac1f // .quad 1765008724192635935
-	QUAD $0x797c6606ce80a777 // .quad 8753983955121776503
-	QUAD $0x139874ddd8c6234c // .quad 1412006979354108748
-	QUAD $0x8f2d700ae4010bf1 // .quad -8129718560256619535
-	QUAD $0x1f5a549627a36bad // .quad 2259211166966573997
-	QUAD $0x0c2459a25000d65a // .quad 874922781278525018
-	QUAD $0x191510781fb5efbe // .quad 1807368933573259198
-	QUAD $0x701d1481d99a4515 // .quad 8078635854506640661
-	QUAD $0x1410d9f9b2f7f2fe // .quad 1445895146858607358
-	QUAD $0xc017439b147b6a77 // .quad -4605137760620418441
-	QUAD $0x100d7b2e28c65bfe // .quad 1156716117486885886
-	QUAD $0xccf205c4ed9243f2 // .quad -3678871602250759182
-	QUAD $0x19af2b7d0e0a2cca // .quad 1850745787979017418
-	QUAD $0x0a5b37d0be0e9cc2 // .quad 746251532941302978
-	QUAD $0x148c22ca71a1bd6f // .quad 1480596630383213935
-	QUAD $0x0848f973cb3ee3ce // .quad 597001226353042382
-	QUAD $0x10701bd527b4978c // .quad 1184477304306571148
-	QUAD $0xda0e5bec78649fb0 // .quad -2734146852577042512
-	QUAD $0x1a4cf9550c5425ac // .quad 1895163686890513836
-	QUAD $0x7b3eaff060507fc0 // .quad 8880728962164096960
-	QUAD $0x150a6110d6a9b7bd // .quad 1516130949512411069
-	QUAD $0x95cbbff380406633 // .quad -7652812089236363725
-	QUAD $0x10d51a73deee2c97 // .quad 1212904759609928855
-	QUAD $0xefac665266cd7052 // .quad -1176452898552450990
-	QUAD $0x1aee90b964b04758 // .quad 1940647615375886168
-	QUAD $0x2623850eb8a459db // .quad 2748186495899949531
-	QUAD $0x158ba6fab6f36c47 // .quad 1552518092300708935
-	QUAD $0x1e82d0d893b6ae49 // .quad 2198549196719959625
-	QUAD $0x113c85955f29236c // .quad 1242014473840567148
-	QUAD $0xfd9e1af41f8ab075 // .quad -171670099989974923
-	QUAD $0x1b9408eefea838ac // .quad 1987223158144907436
-	QUAD $0x97b1af29b2d559f7 // .quad -7516033709475800585
-	QUAD $0x16100725988693bd // .quad 1589778526515925949
-	QUAD $0xac8e25baf5777b2c // .quad -6012826967580640468
-	QUAD $0x11a66c1e139edc97 // .quad 1271822821212740759
-	QUAD $0x7a7d092b2258c513 // .quad 8826220925580526867
-	QUAD $0x1c3d79c9b8fe2dbf // .quad 2034916513940385215
-	QUAD $0x61fda0ef4ead6a76 // .quad 7060976740464421494
-	QUAD $0x169794a160cb57cc // .quad 1627933211152308172
-	QUAD $0xe7fe1a590bbdeec5 // .quad -1729916237112283451
-	QUAD $0x1212dd4de7091309 // .quad 1302346568921846537
-	QUAD $0xa6635d5b45fcb13a // .quad -6457214794121563846
-	QUAD $0x1ceafbafd80e84dc // .quad 2083754510274954460
-	QUAD $0x851c4aaf6b308dc8 // .quad -8855120650039161400
-	QUAD $0x172262f3133ed0b0 // .quad 1667003608219963568
-	QUAD $0xd0e36ef2bc26d7d4 // .quad -3394747705289418796
-	QUAD $0x1281e8c275cbda26 // .quad 1333602886575970854
-	QUAD $0xb49f17eac6a48c86 // .quad -5431596328463070074
-	QUAD $0x1d9ca79d894629d7 // .quad 2133764618521553367
-	QUAD $0x2a18dfef0550706b // .quad 3033420566713364587
-	QUAD $0x17b08617a104ee46 // .quad 1707011694817242694
-	QUAD $0x54e0b3259dd9f389 // .quad 6116085268112601993
-	QUAD $0x12f39e794d9d8b6b // .quad 1365609355853794155
-	QUAD $0x87cdeb6f62f65274 // .quad -8661007644729388428
-	QUAD $0x1e5297287c2f4578 // .quad 2184974969366070648
-	QUAD $0xd30b22bf825ea85d // .quad -3239457301041600419
-	QUAD $0x18421286c9bf6ac6 // .quad 1747979975492856518
-	QUAD $0x0f3c1bcc684bb9e4 // .quad 1097782973908629988
-	QUAD $0x13680ed23aff889f // .quad 1398383980394285215
-	QUAD $0x18602c7a4079296d // .quad 1756452758253807981
-	QUAD $0x1f0ce4839198da98 // .quad 2237414368630856344
-	QUAD $0x46b356c833942124 // .quad 5094511021344956708
-	QUAD $0x18d71d360e13e213 // .quad 1789931494904685075
-	QUAD $0x388f78a029434db6 // .quad 4075608817075965366
-	QUAD $0x13df4a91a4dcb4dc // .quad 1431945195923748060
-	QUAD $0x5a7f2766a86baf8a // .quad 6520974107321544586
-	QUAD $0x1fcbaa82a1612160 // .quad 2291112313477996896
-	QUAD $0x153285ebb9efbfa2 // .quad 1527430471115325346
-	QUAD $0x196fbb9bb44db44d // .quad 1832889850782397517
-	QUAD $0xaa8ed189618c994e // .quad -6156753252591560370
-	QUAD $0x145962e2f6a4903d // .quad 1466311880625918013
-	QUAD $0xeed8a7a11ad6e10c // .quad -1236053787331337972
-	QUAD $0x1047824f2bb6d9ca // .quad 1173049504500734410
-	QUAD $0x7e27729b5e249b45 // .quad 9090360384495590213
-	QUAD $0x1a0c03b1df8af611 // .quad 1876879207201175057
-	QUAD $0xfe85f549181d4904 // .quad -106409321887348476
-	QUAD $0x14d6695b193bf80d // .quad 1501503365760940045
-	QUAD $0xcb9e5dd4134aa0d0 // .quad -3774476272251789104
-	QUAD $0x10ab877c142ff9a4 // .quad 1201202692608752036
-	QUAD $0xdf63c9535211014d // .quad -2349813220860952243
-	QUAD $0x1aac0bf9b9e65c3a // .quad 1921924308174003258
-	QUAD $0x191ca10f74da6771 // .quad 1809498238053148529
-	QUAD $0x15566ffafb1eb02f // .quad 1537539446539202607
-	QUAD $0xadb080d92a4852c1 // .quad -5931099039041301823
-	QUAD $0x1111f32f2f4bc025 // .quad 1230031557231362085
-	QUAD $0x15e7348eaa0d5134 // .quad 1578287981759648052
-	QUAD $0x1b4feb7eb212cd09 // .quad 1968050491570179337
-	QUAD $0xab1f5d3eee710dc4 // .quad -6116067244076102204
-	QUAD $0x15d98932280f0a6d // .quad 1574440393256143469
-	QUAD $0xbc1917658b8da49d // .quad -4892853795260881763
-	QUAD $0x117ad428200c0857 // .quad 1259552314604914775
-	QUAD $0x2cf4f23c127c3a94 // .quad 3239480371808320148
-	QUAD $0x1bf7b9d9cce00d59 // .quad 2015283703367863641
-	QUAD $0xf0c3f4fcdb969543 // .quad -1097764517295254205
-	QUAD $0x165fc7e170b33de0 // .quad 1612226962694290912
-	QUAD $0x5a365d9716121103 // .quad 6500486015647617283
-	QUAD $0x11e6398126f5cb1a // .quad 1289781570155432730
-	QUAD $0x9056fc24f01ce804 // .quad -8045966448673363964
-	QUAD $0x1ca38f350b22de90 // .quad 2063650512248692368
-	QUAD $0xd9df301d8ce3ecd0 // .quad -2747424344196780848
-	QUAD $0x16e93f5da2824ba6 // .quad 1650920409798953894
-	QUAD $0xe17f59b13d8323da // .quad -2197939475357424678
-	QUAD $0x125432b14ecea2eb // .quad 1320736327839163115
-	QUAD $0x68cbc2b52f38395c // .quad 7551343283653851484
-	QUAD $0x1d53844ee47dd179 // .quad 2113178124542660985
-	QUAD $0x53d6355dbf602de3 // .quad 6041074626923081187
-	QUAD $0x177603725064a794 // .quad 1690542499634128788
-	QUAD $0xa9782ab165e68b1c // .quad -6235186742687266020
-	QUAD $0x12c4cf8ea6b6ec76 // .quad 1352433999707303030
-	QUAD $0x0f26aab56fd744fa // .quad 1091747655926105338
-	QUAD $0x1e07b27dd78b13f1 // .quad 2163894399531684849
-	QUAD $0x3f52222abfdf6a62 // .quad 4562746939482794594
-	QUAD $0x18062864ac6f4327 // .quad 1731115519625347879
-	QUAD $0x65db4e88997f884e // .quad 7339546366328145998
-	QUAD $0x1338205089f29c1f // .quad 1384892415700278303
-	QUAD $0x6fc54a7428cc0d4a // .quad 8053925371383123274
-	QUAD $0x1ec033b40fea9365 // .quad 2215827865120445285
-	QUAD $0x596aa1f68709a43b // .quad 6443140297106498619
-	QUAD $0x1899c2f673220f84 // .quad 1772662292096356228
-	QUAD $0xadeee7f86c07b696 // .quad -5913534206540532074
-	QUAD $0x13ae3591f5b4d936 // .quad 1418129833677084982
-	QUAD $0x497e3ff3e00c5756 // .quad 5295740528502789974
-	QUAD $0x1f7d228322baf524 // .quad 2269007733883335972
-	QUAD $0xd464fff64cd6ac45 // .quad -3142105206681588667
-	QUAD $0x1930e868e89590e9 // .quad 1815206187106668777
-	QUAD $0x4383fff83d7889d1 // .quad 4865013464138549713
-	QUAD $0x14272053ed4473ee // .quad 1452164949685335022
-	QUAD $0xcf9cccc69793a174 // .quad -3486686858172980876
-	QUAD $0x101f4d0ff1038ff1 // .quad 1161731959748268017
-	QUAD $0x7f6147a425b90252 // .quad 9178696285890871890
-	QUAD $0x19cbae7fe805b31c // .quad 1858771135597228828
-	QUAD $0xcc4dd2e9b7c7350f // .quad -3725089415513033457
-	QUAD $0x14a2f1ffecd15c16 // .quad 1487016908477783062
-	QUAD $0x3d0b0f215fd290d9 // .quad 4398626097073393881
-	QUAD $0x10825b3323dab012 // .quad 1189613526782226450
-	QUAD $0x61ab4b689950e7c1 // .quad 7037801755317430209
-	QUAD $0x1a6a2b85062ab350 // .quad 1903381642851562320
-	QUAD $0x4e22a2ba1440b967 // .quad 5630241404253944167
-	QUAD $0x1521bc6a6b555c40 // .quad 1522705314281249856
-	QUAD $0x0b4ee894dd009453 // .quad 814844308661245011
-	QUAD $0x10e7c9eebc4449cd // .quad 1218164251424999885
-	QUAD $0x1217da87c800ed51 // .quad 1303750893857992017
-	QUAD $0x1b0c764ac6d3a948 // .quad 1949062802279999816
-	QUAD $0xdb46486ca000bdda // .quad -2646348099655516710
-	QUAD $0x15a391d56bdc876c // .quad 1559250241823999852
-	QUAD $0x490506bd4ccd64af // .quad 5261619149759407279
-	QUAD $0x114fa7ddefe39f8a // .quad 1247400193459199882
-	QUAD $0xa8080ac87ae23ab1 // .quad -6338804619352589647
-	QUAD $0x1bb2a62fe638ff43 // .quad 1995840309534719811
-	QUAD $0x5339a239fbe82ef4 // .quad 5997002748743659252
-	QUAD $0x162884f31e93ff69 // .quad 1596672247627775849
-	QUAD $0x75c7b4fb2fecf25d // .quad 8486951013736837725
-	QUAD $0x11ba03f5b20fff87 // .quad 1277337798102220679
-	QUAD $0x22d92191e647ea2e // .quad 2511075177753209390
-	QUAD $0x1c5cd322b67fff3f // .quad 2043740476963553087
-	QUAD $0xb57a8141850654f2 // .quad -5369837487281253134
-	QUAD $0x16b0a8e891ffff65 // .quad 1634992381570842469
-	QUAD $0xc4620101373843f5 // .quad -4295869989825002507
-	QUAD $0x1226ed86db3332b7 // .quad 1307993905256673975
-	QUAD $0x3a366801f1f39fee // .quad 4194654460505726958
-	QUAD $0x1d0b15a491eb8459 // .quad 2092790248410678361
-	QUAD $0xfb5eb99b27f6198b // .quad -333625246337328757
-	QUAD $0x173c115074bc69e0 // .quad 1674232198728542688
-	QUAD $0x2f7efae2865e7ad6 // .quad 3422448617672047318
-	QUAD $0x129674405d6387e7 // .quad 1339385758982834151
-	QUAD $0xe597f7d0d6fd9156 // .quad -1902779841208544938
-	QUAD $0x1dbd86cd6238d971 // .quad 2143017214372534641
-	QUAD $0x8479930d78cadaab // .quad -8900921502450656597
-	QUAD $0x17cad23de82d7ac1 // .quad 1714413771498027713
-	QUAD $0xd06142712d6f1556 // .quad -3431388387218614954
-	QUAD $0x1308a831868ac89a // .quad 1371531017198422170
-	QUAD $0x4d686a4eaf182222 // .quad 5577825024675947042
-	QUAD $0x1e74404f3daada91 // .quad 2194449627517475473
-	QUAD $0xa453883ef279b4e8 // .quad -6605786424484973336
-	QUAD $0x185d003f6488aeda // .quad 1755559702013980378
-	QUAD $0xe9dc6cff28615d87 // .quad -1595280324846068345
-	QUAD $0x137d99cc506d58ae // .quad 1404447761611184302
-	QUAD $0xa960ae650d6895a4 // .quad -6241797334495619676
-	QUAD $0x1f2f5c7a1a488de4 // .quad 2247116418577894884
-	QUAD $0xbab3beb73ded4483 // .quad -4993437867596495741
-	QUAD $0x18f2b061aea07183 // .quad 1797693134862315907
-	QUAD $0x2ef6322c318a9d36 // .quad 3383947335406624054
-	QUAD $0x13f559e7bee6c136 // .quad 1438154507889852726
-	QUAD $0xe4bd1d13827761f0 // .quad -1964381892833222160
-	QUAD $0x1feef63f97d79b89 // .quad 2301047212623764361
-	QUAD $0x83ca7da9352c4e5a // .quad -8950203143750398374
-	QUAD $0x198bf832dfdfafa1 // .quad 1840837770099011489
-	QUAD $0x9ca1fe20f756a515 // .quad -7160162515000318699
-	QUAD $0x146ff9c24cb2f2e7 // .quad 1472670216079209191
-	QUAD $0x4a1b31b3f9121daa // .quad 5339916432225476010
-	QUAD $0x1059949b708f28b9 // .quad 1178136172863367353
-	QUAD $0x435eb5ecc1b695dd // .quad 4854517476818851293
-	QUAD $0x1a28edc580e50df5 // .quad 1885017876581387765
-	QUAD $0x35e55e57015ede4a // .quad 3883613981455081034
-	QUAD $0x14ed8b04671da4c4 // .quad 1508014301265110212
-	QUAD $0xc4b77eac0118b1d5 // .quad -4271806444319755819
-	QUAD $0x10be08d0527e1d69 // .quad 1206411441012088169
-	QUAD $0xa12597799b5ab622 // .quad -6834890310911609310
-	QUAD $0x1ac9a7b3b7302f0f // .quad 1930258305619341071
-	QUAD $0x4db7ac6149155e81 // .quad 5600134195496443521
-	QUAD $0x156e1fc2f8f358d9 // .quad 1544206644495472857
-	QUAD $0xd7c6238107444b9b // .quad -2898590273086665829
-	QUAD $0x1124e63593f5e0ad // .quad 1235365315596378285
-	QUAD $0x593d059b3ed3ac2b // .quad 6430302007287065643
-	QUAD $0x1b6e3d2286563449 // .quad 1976584504954205257
-	QUAD $0xe0fd9e15cbdc89bc // .quad -2234456023654168132
-	QUAD $0x15f1ca820511c36d // .quad 1581267603963364205
-	QUAD $0xb3fe18116fe3a163 // .quad -5476913633665244829
-	QUAD $0x118e3b9b37416924 // .quad 1265014083170691364
-	QUAD $0x866359b57fd29bd1 // .quad -8763061813864391727
-	QUAD $0x1c16c5c525357507 // .quad 2024022533073106183
-	QUAD $0xd1e91491330ee30e // .quad -3321100636349603058
-	QUAD $0x16789e3750f790d2 // .quad 1619218026458484946
-	QUAD $0x74ba76da8f3f1c0b // .quad 8411165935146048523
-	QUAD $0x11fa182c40c60d75 // .quad 1295374421166787957
-	QUAD $0xedf72490e531c678 // .quad -1299529762733963656
-	QUAD $0x1cc359e067a348bb // .quad 2072599073866860731
-	QUAD $0x8b2c1d40b75b052d // .quad -8418321439670991571
-	QUAD $0x1702ae4d1fb5d3c9 // .quad 1658079259093488585
-	QUAD $0x6f567dcd5f7c0424 // .quad 8022738107230848036
-	QUAD $0x12688b70e62b0fd4 // .quad 1326463407274790868
-	QUAD $0x7ef0c94898c66d06 // .quad 9147032156827446534
-	QUAD $0x1d74124e3d11b2ed // .quad 2122341451639665389
-	QUAD $0x98c0a106e09ebd9f // .quad -7439769533505684065
-	QUAD $0x17900ea4fda7c257 // .quad 1697873161311732311
-	QUAD $0x470080d24d4bcae6 // .quad 5116230817421183718
-	QUAD $0x12d9a550caec9b79 // .quad 1358298529049385849
-	QUAD $0xd800ce1d487944a2 // .quad -2882077136351837022
-	QUAD $0x1e29088144adc58e // .quad 2173277646479017358
-	QUAD $0x1333d8176d2dd082 // .quad 1383687105660440706
-	QUAD $0x1820d39a9d57d13f // .quad 1738622117183213887
-	QUAD $0xa8f646792424a6ce // .quad -6271747944955468082
-	QUAD $0x134d76154aaca765 // .quad 1390897693746571109
-	QUAD $0x74bd3d8ea03aa47d // .quad 8411947361780802685
-	QUAD $0x1ee25688777aa56f // .quad 2225436309994513775
-	QUAD $0x5d64313ee6955064 // .quad 6729557889424642148
-	QUAD $0x18b51206c5fbb78c // .quad 1780349047995611020
-	QUAD $0x4ab68dcbebaaa6b7 // .quad 5383646311539713719
-	QUAD $0x13c40e6bd1962c70 // .quad 1424279238396488816
-	QUAD $0x1124161312aaa457 // .quad 1235136468979721303
-	QUAD $0x1fa01712e8f0471a // .quad 2278846781434382106
-	QUAD $0xda8344dc0eeee9df // .quad -2701239639558133281
-	QUAD $0x194cdf4253f36c14 // .quad 1823077425147505684
-	QUAD $0xe2029d7cd8bf2180 // .quad -2160991711646506624
-	QUAD $0x143d7f6843292343 // .quad 1458461940118004547
-	QUAD $0x4e687dfd7a328133 // .quad 5649904260166615347
-	QUAD $0x103132b9cf541c36 // .quad 1166769552094403638
-	QUAD $0x4a40c9959050ceb8 // .quad 5350498001524674232
-	QUAD $0x19e851294bb9c6bd // .quad 1866831283351045821
-	QUAD $0x0833d477a6a70bc6 // .quad 591049586477829062
-	QUAD $0x14b9da876fc7d231 // .quad 1493465026680836657
-	QUAD $0xa02976c61eec096b // .quad -6905857960301557397
-	QUAD $0x1094aed2bfd30e8d // .quad 1194772021344669325
-	QUAD $0x004257a364acdbdf // .quad 18673707743239135
-	QUAD $0x1a877e1dffb81749 // .quad 1911635234151470921
-	QUAD $0xcd01dfb5ea23e319 // .quad -3674409848547319015
-	QUAD $0x153931b1996012a0 // .quad 1529308187321176736
-	QUAD $0x70ce4c91881cb5ae // .quad 8128518565387875758
-	QUAD $0x10fa8e27ade6754d // .quad 1223446549856941389
-	QUAD $0x1ae3adb5a69455e2 // .quad 1937583260394870242
-	QUAD $0x1b2a7d0c4970bbaf // .quad 1957514479771106223
-	QUAD $0x7be957c4854377e8 // .quad 8928764237799716840
-	QUAD $0x15bb973d078d62f2 // .quad 1566011583816884978
-	QUAD $0xc987796a0435f987 // .quad -3925035053985957497
-	QUAD $0x1162df64060ab58e // .quad 1252809267053507982
-	QUAD $0x75a58f1006bcc271 // .quad 8477339172590109297
-	QUAD $0x1bd1656cd67788e4 // .quad 2004494827285612772
-	QUAD $0xf7b7a5a66bca3527 // .quad -596826291411733209
-	QUAD $0x16411df0ab92d3e9 // .quad 1603595861828490217
-	QUAD $0x5fc61e1ebca1c41f // .quad 6901236596354434079
-	QUAD $0x11cdb18d560f0fee // .quad 1282876689462792174
-	QUAD $0xffa363646102d365 // .quad -26067890058636443
-	QUAD $0x1c7c4f4889b1b316 // .quad 2052602703140467478
-	QUAD $0x32e91c504d9bdc51 // .quad 3668494502695001169
-	QUAD $0x16c9d906d48e28df // .quad 1642082162512373983
-	QUAD $0x8f20e37371497d0e // .quad -8133250842069730034
-	QUAD $0x123b140576d820b2 // .quad 1313665730009899186
-	QUAD $0x7e9b0585820f2e7c // .quad 9122891541139893884
-	QUAD $0x1d2b533bf159cdea // .quad 2101865168015838698
-	QUAD $0xcbaf379e01a5beca // .quad -3769733211313815862
-	QUAD $0x1755dc2ff447d7ee // .quad 1681492134412670958
-	QUAD $0x0958f94b348498a1 // .quad 673562245690857633
-	QUAD $0x12ab168cc36cacbf // .quad 1345193707530136767
-
+	QUAD $0x0000000000000001  // .quad 1
+	QUAD $0x2000000000000000  // .quad 2305843009213693952
+	QUAD $0x999999999999999a  // .quad -7378697629483820646
+	QUAD $0x1999999999999999  // .quad 1844674407370955161
+	QUAD $0x47ae147ae147ae15  // .quad 5165088340638674453
+	QUAD $0x147ae147ae147ae1  // .quad 1475739525896764129
+	QUAD $0x6c8b4395810624de  // .quad 7821419487252849886
+	QUAD $0x10624dd2f1a9fbe7  // .quad 1180591620717411303
+	QUAD $0x7a786c226809d496  // .quad 8824922364862649494
+	QUAD $0x1a36e2eb1c432ca5  // .quad 1888946593147858085
+	QUAD $0x61f9f01b866e43ab  // .quad 7059937891890119595
+	QUAD $0x14f8b588e368f084  // .quad 1511157274518286468
+	QUAD $0xb4c7f34938583622  // .quad -5420096130713635294
+	QUAD $0x10c6f7a0b5ed8d36  // .quad 1208925819614629174
+	QUAD $0x87a6520ec08d236a  // .quad -8672153809141816470
+	QUAD $0x1ad7f29abcaf4857  // .quad 1934281311383406679
+	QUAD $0x9fb841a566d74f88  // .quad -6937723047313453176
+	QUAD $0x15798ee2308c39df  // .quad 1547425049106725343
+	QUAD $0xe62d01511f12a607  // .quad -1860829623108852217
+	QUAD $0x112e0be826d694b2  // .quad 1237940039285380274
+	QUAD $0xd6ae6881cb5109a4  // .quad -2977327396974163548
+	QUAD $0x1b7cdfd9d7bdbab7  // .quad 1980704062856608439
+	QUAD $0xdef1ed34a2a73aea  // .quad -2381861917579330838
+	QUAD $0x15fd7fe17964955f  // .quad 1584563250285286751
+	QUAD $0x7f27f0f6e885c8bb  // .quad 9162556910162266299
+	QUAD $0x119799812dea1119  // .quad 1267650600228229401
+	QUAD $0x650cb4be40d60df8  // .quad 7281393426775805432
+	QUAD $0x1c25c268497681c2  // .quad 2028240960365167042
+	QUAD $0xea70909833de7193  // .quad -1553582888063176301
+	QUAD $0x16849b86a12b9b01  // .quad 1622592768292133633
+	QUAD $0x21f3a6e0297ec143  // .quad 2446482504291369283
+	QUAD $0x1203af9ee756159b  // .quad 1298074214633706907
+	QUAD $0x6985d7cd0f313537  // .quad 7603720821608101175
+	QUAD $0x1cd2b297d889bc2b  // .quad 2076918743413931051
+	QUAD $0x2137dfd73f5a90f9  // .quad 2393627842544570617
+	QUAD $0x170ef54646d49689  // .quad 1661534994731144841
+	QUAD $0xe75fe645cc4873fa  // .quad -1774446540706253830
+	QUAD $0x12725dd1d243aba0  // .quad 1329227995784915872
+	QUAD $0xa5663d3c7a0d865d  // .quad -6528463279871916451
+	QUAD $0x1d83c94fb6d2ac34  // .quad 2126764793255865396
+	QUAD $0x511e976394d79eb1  // .quad 5845275820328197809
+	QUAD $0x179ca10c9242235d  // .quad 1701411834604692317
+	QUAD $0xda7edf82dd794bc1  // .quad -2702476973221262399
+	QUAD $0x12e3b40a0e9b4f7d  // .quad 1361129467683753853
+	QUAD $0x2a6498d1625bac68  // .quad 3054734472329800808
+	QUAD $0x1e392010175ee596  // .quad 2177807148294006166
+	QUAD $0xeeb6e0a781e2f053  // .quad -1245561236878069677
+	QUAD $0x182db34012b25144  // .quad 1742245718635204932
+	QUAD $0x58924d52ce4f26a9  // .quad 6382248639981364905
+	QUAD $0x1357c299a88ea76a  // .quad 1393796574908163946
+	QUAD $0x27507bb7b07ea441  // .quad 2832900194486363201
+	QUAD $0x1ef2d0f5da7dd8aa  // .quad 2230074519853062314
+	QUAD $0x52a6c95fc0655034  // .quad 5955668970331000884
+	QUAD $0x18c240c4aecb13bb  // .quad 1784059615882449851
+	QUAD $0x0eebd44c99eaa690  // .quad 1075186361522890384
+	QUAD $0x13ce9a36f23c0fc9  // .quad 1427247692705959881
+	QUAD $0xb17953adc3110a80  // .quad -5658399451047196032
+	QUAD $0x1fb0f6be50601941  // .quad 2283596308329535809
+	QUAD $0xc12ddc8b02740867  // .quad -4526719560837756825
+	QUAD $0x195a5efea6b34767  // .quad 1826877046663628647
+	QUAD $0x3424b06f3529a052  // .quad 3757321980813615186
+	QUAD $0x14484bfeebc29f86  // .quad 1461501637330902918
+	QUAD $0x901d59f290ee19db  // .quad -8062188859574838821
+	QUAD $0x1039d66589687f9e  // .quad 1169201309864722334
+	QUAD $0x4cfbc31db4b0295f  // .quad 5547241898389809503
+	QUAD $0x19f623d5a8a73297  // .quad 1870722095783555735
+	QUAD $0x3d9635b15d59bab2  // .quad 4437793518711847602
+	QUAD $0x14c4e977ba1f5bac  // .quad 1496577676626844588
+	QUAD $0x97ab5e277de16228  // .quad -7517811629256252888
+	QUAD $0x109d8792fb4c4956  // .quad 1197262141301475670
+	QUAD $0xf2abc9d8c9689d0d  // .quad -960452162584273651
+	QUAD $0x1a95a5b7f87a0ef0  // .quad 1915619426082361072
+	QUAD $0x5bbca17a3aba173e  // .quad 6610335899416401726
+	QUAD $0x154484932d2e725a  // .quad 1532495540865888858
+	QUAD $0xafca1ac82efb45cb  // .quad -5779777724692609589
+	QUAD $0x11039d428a8b8eae  // .quad 1225996432692711086
+	QUAD $0xb2dcf7a6b1920945  // .quad -5558295544766265019
+	QUAD $0x1b38fb9daa78e44a  // .quad 1961594292308337738
+	QUAD $0xf57d92ebc141a104  // .quad -757287621071101692
+	QUAD $0x15c72fb1552d836e  // .quad 1569275433846670190
+	QUAD $0xc46475896767b403  // .quad -4295178911598791677
+	QUAD $0x116c262777579c58  // .quad 1255420347077336152
+	QUAD $0x6d6d88dbd8a5ecd2  // .quad 7885109000409574610
+	QUAD $0x1be03d0bf225c6f4  // .quad 2008672555323737844
+	QUAD $0x8abe071646eb23db  // .quad -8449308058639981605
+	QUAD $0x164cfda3281e38c3  // .quad 1606938044258990275
+	QUAD $0x6efe6c11d255b649  // .quad 7997948812055656009
+	QUAD $0x11d7314f534b609c  // .quad 1285550435407192220
+	QUAD $0xb197134fb6ef8a0e  // .quad -5650025974420502002
+	QUAD $0x1c8b821885456760  // .quad 2056880696651507552
+	QUAD $0x27ac0f72f8bfa1a5  // .quad 2858676849947419045
+	QUAD $0x16d601ad376ab91a  // .quad 1645504557321206042
+	QUAD $0xb95672c260994e1e  // .quad -5091756149525885410
+	QUAD $0x1244ce242c5560e1  // .quad 1316403645856964833
+	QUAD $0xf5571e03cdc21695  // .quad -768112209757596011
+	QUAD $0x1d3ae36d13bbce35  // .quad 2106245833371143733
+	QUAD $0x2aac18030b01abab  // .quad 3074859046935833515
+	QUAD $0x17624f8a762fd82b  // .quad 1684996666696914987
+	QUAD $0xbbbce0026f348956  // .quad -4918810391935153834
+	QUAD $0x12b50c6ec4f31355  // .quad 1347997333357531989
+	QUAD $0x92c7ccd0b1eda889  // .quad -7870096627096246135
+	QUAD $0x1dee7a4ad4b81eef  // .quad 2156795733372051183
+	QUAD $0xdbd30a408e57ba07  // .quad -2606728486935086585
+	QUAD $0x17f1fb6f10934bf2  // .quad 1725436586697640946
+	QUAD $0x7ca8d50071dfc806  // .quad 8982663654677661702
+	QUAD $0x1327fc58da0f6ff5  // .quad 1380349269358112757
+	QUAD $0xfaa7bb33e9660cd6  // .quad -385133411483382570
+	QUAD $0x1ea6608e29b24cbb  // .quad 2208558830972980411
+	QUAD $0x9552fc298784d711  // .quad -7686804358670526703
+	QUAD $0x18851a0b548ea3c9  // .quad 1766847064778384329
+	QUAD $0xaaa8c9bad2d0ac0e  // .quad -6149443486936421362
+	QUAD $0x139dae6f76d88307  // .quad 1413477651822707463
+	QUAD $0xdddadc5e1e1aace3  // .quad -2460411949614453533
+	QUAD $0x1f62b0b257c0d1a5  // .quad 2261564242916331941
+	QUAD $0x7e48b04b4b488a4f  // .quad 9099716884534168143
+	QUAD $0x191bc08eac9a4151  // .quad 1809251394333065553
+	QUAD $0xcb6d59d5d5d3a1d9  // .quad -3788272936598396455
+	QUAD $0x141633a556e1cdda  // .quad 1447401115466452442
+	QUAD $0x3c577b1177dc817b  // .quad 4348079280205103483
+	QUAD $0x1011c2eaabe7d7e2  // .quad 1157920892373161954
+	QUAD $0xc6f25e825960cf2a  // .quad -4111119595897565398
+	QUAD $0x19b604aaaca62636  // .quad 1852673427797059126
+	QUAD $0x6bf518684780a5bb  // .quad 7779150767507678651
+	QUAD $0x14919d5556eb51c5  // .quad 1482138742237647301
+	QUAD $0x232a79ed06008496  // .quad 2533971799264232598
+	QUAD $0x10747ddddf22a7d1  // .quad 1185710993790117841
+	QUAD $0xd1dd8fe1a3340756  // .quad -3324342750661048490
+	QUAD $0x1a53fc9631d10c81  // .quad 1897137590064188545
+	QUAD $0xa7e4731ae8f66c45  // .quad -6348823015270749115
+	QUAD $0x150ffd44f4a73d34  // .quad 1517710072051350836
+	QUAD $0x531d28e253f8569e  // .quad 5988988032009131678
+	QUAD $0x10d9976a5d52975d  // .quad 1214168057641080669
+	QUAD $0xeb61db03b98d5762  // .quad -1485665593011120286
+	QUAD $0x1af5bf109550f22e  // .quad 1942668892225729070
+	QUAD $0xbc4e48cfc7a445e8  // .quad -4877881289150806552
+	QUAD $0x159165a6ddda5b58  // .quad 1554135113780583256
+	QUAD $0x6371d3d96c836b20  // .quad 7165741412905085728
+	QUAD $0x11411e1f17e1e2ad  // .quad 1243308091024466605
+	QUAD $0x9f1c8628ad9f11cd  // .quad -6981557813061414451
+	QUAD $0x1b9b6364f3030448  // .quad 1989292945639146568
+	QUAD $0xe5b06b53be18db0b  // .quad -1895897435707221237
+	QUAD $0x1615e91d8f359d06  // .quad 1591434356511317254
+	QUAD $0xeaf3890fcb4715a2  // .quad -1516717948565776990
+	QUAD $0x11ab20e472914a6b  // .quad 1273147485209053803
+	QUAD $0x44b8db4c7871bc37  // .quad 4951948911778577463
+	QUAD $0x1c45016d841baa46  // .quad 2037035976334486086
+	QUAD $0x03c715d6c6c1635f  // .quad 272210314680951647
+	QUAD $0x169d9abe03495505  // .quad 1629628781067588869
+	QUAD $0x3638de456bcde919  // .quad 3907117066486671641
+	QUAD $0x1217aefe69077737  // .quad 1303703024854071095
+	QUAD $0x56c163a2461641c1  // .quad 6251387306378674625
+	QUAD $0x1cf2b1970e725858  // .quad 2085924839766513752
+	QUAD $0xdf011c81d1ab67ce  // .quad -2377587784380880946
+	QUAD $0x17288e1271f51379  // .quad 1668739871813211001
+	QUAD $0x7f3416ce4155eca5  // .quad 9165976216721026213
+	QUAD $0x1286d80ec190dc61  // .quad 1334991897450568801
+	QUAD $0x6520247d3556476e  // .quad 7286864317269821294
+	QUAD $0x1da48ce468e7c702  // .quad 2135987035920910082
+	QUAD $0xea801d30f7783925  // .quad -1549206175667963611
+	QUAD $0x17b6d71d20b96c01  // .quad 1708789628736728065
+	QUAD $0xbb99b0f3f92cfa84  // .quad -4928713755276281212
+	QUAD $0x12f8ac174d612334  // .quad 1367031702989382452
+	QUAD $0x5f5c4e532847f739  // .quad 6871453250525591353
+	QUAD $0x1e5aacf215683854  // .quad 2187250724783011924
+	QUAD $0x7f7d0b75b9d32c2e  // .quad 9186511415162383406
+	QUAD $0x18488a5b44536043  // .quad 1749800579826409539
+	QUAD $0x9930d5f7c7dc2358  // .quad -7408186126837734568
+	QUAD $0x136d3b7c36a919cf  // .quad 1399840463861127631
+	QUAD $0x8eb4898c72f9d226  // .quad -8163748988198464986
+	QUAD $0x1f152bf9f10e8fb2  // .quad 2239744742177804210
+	QUAD $0x722a07a38f2e41b8  // .quad 8226396068408869304
+	QUAD $0x18ddbcc7f40ba628  // .quad 1791795793742243368
+	QUAD $0xc1bb394fa5be9afa  // .quad -4486929589498635526
+	QUAD $0x13e497065cd61e86  // .quad 1433436634993794694
+	QUAD $0x9c5ec2190930f7f6  // .quad -7179087343197816842
+	QUAD $0x1fd424d6faf030d7  // .quad 2293498615990071511
+	QUAD $0x49e56814075a5ff8  // .quad 5324776569667477496
+	QUAD $0x197683df2f268d79  // .quad 1834798892792057209
+	QUAD $0x6e51201005e1e660  // .quad 7949170070475892320
+	QUAD $0x145ecfe5bf520ac7  // .quad 1467839114233645767
+	QUAD $0xf1da800cd181851a  // .quad -1019361573103106790
+	QUAD $0x104bd984990e6f05  // .quad 1174271291386916613
+	QUAD $0x4fc400148268d4f5  // .quad 5747719112518849781
+	QUAD $0x1a12f5a0f4e3e4d6  // .quad 1878834066219066582
+	QUAD $0xd96999aa01ed772b  // .quad -2780522339468740821
+	QUAD $0x14dbf7b3f71cb711  // .quad 1503067252975253265
+	QUAD $0xadee1488018ac5bc  // .quad -5913766686316902980
+	QUAD $0x10aff95cc5b09274  // .quad 1202453802380202612
+	QUAD $0x497ceda668de092c  // .quad 5295368560860596524
+	QUAD $0x1ab328946f80ea54  // .quad 1923926083808324180
+	QUAD $0x3aca57b853e4d424  // .quad 4236294848688477220
+	QUAD $0x155c2076bf9a5510  // .quad 1539140867046659344
+	QUAD $0x623b7960431d7683  // .quad 7078384693692692099
+	QUAD $0x1116805effaeaa73  // .quad 1231312693637327475
+	QUAD $0x9d2bf566d1c8bd9e  // .quad -7121328563801244258
+	QUAD $0x1b5733cb32b110b8  // .quad 1970100309819723960
+	QUAD $0x7dbcc452416d647f  // .quad 9060332407926645887
+	QUAD $0x15df5ca28ef40d60  // .quad 1576080247855779168
+	QUAD $0xcafd69db678ab6cc  // .quad -3819780517884414260
+	QUAD $0x117f7d4ed8c33de6  // .quad 1260864198284623334
+	QUAD $0xab2f0fc572778adf  // .quad -6111648828615062817
+	QUAD $0x1bff2ee48e052fd7  // .quad 2017382717255397335
+	QUAD $0x88f273045b92d580  // .quad -8578667877633960576
+	QUAD $0x1665bf1d3e6a8cac  // .quad 1613906173804317868
+	QUAD $0xd3f528d049424466  // .quad -3173585487365258138
+	QUAD $0x11eaff4a98553d56  // .quad 1291124939043454294
+	QUAD $0xb988414d4203a0a3  // .quad -5077736779784413021
+	QUAD $0x1cab3210f3bb9557  // .quad 2065799902469526871
+	QUAD $0x6139cdd76802e6e9  // .quad 7005857020398200553
+	QUAD $0x16ef5b40c2fc7779  // .quad 1652639921975621497
+	QUAD $0xe761717920025254  // .quad -1774012013165260204
+	QUAD $0x125915cd68c9f92d  // .quad 1322111937580497197
+	QUAD $0xa568b58e999d5086  // .quad -6527768035806326650
+	QUAD $0x1d5b561574765b7c  // .quad 2115379100128795516
+	QUAD $0x5120913ee14aa6d2  // .quad 5845832015580669650
+	QUAD $0x177c44ddf6c515fd  // .quad 1692303280103036413
+	QUAD $0xa74d40ff1aa21f0e  // .quad -6391380831761195250
+	QUAD $0x12c9d0b1923744ca  // .quad 1353842624082429130
+	QUAD $0x0baece64f769cb4a  // .quad 841837113407818570
+	QUAD $0x1e0fb44f50586e11  // .quad 2166148198531886609
+	QUAD $0x3c8bd850c5ee3c3b  // .quad 4362818505468165179
+	QUAD $0x180c903f7379f1a7  // .quad 1732918558825509287
+	QUAD $0xca0979da37f1c9c9  // .quad -3888442825109288503
+	QUAD $0x133d4032c2c7f485  // .quad 1386334847060407429
+	QUAD $0xa9a8c2f6bfe942db  // .quad -6221508520174861605
+	QUAD $0x1ec866b79e0cba6f  // .quad 2218135755296651887
+	QUAD $0x2153cf2bccba9be3  // .quad 2401490813343931363
+	QUAD $0x18a0522c7e709526  // .quad 1774508604237321510
+	QUAD $0x1aa9728970954982  // .quad 1921192650675145090
+	QUAD $0x13b374f06526ddb8  // .quad 1419606883389857208
+	QUAD $0xf775840f1a88759d  // .quad -615440573661678179
+	QUAD $0x1f8587e7083e2f8c  // .quad 2271371013423771532
+	QUAD $0x5f9136727ba05e17  // .quad 6886345170554478103
+	QUAD $0x19379fec0698260a  // .quad 1817096810739017226
+	QUAD $0x1940f85b9619e4df  // .quad 1819727321701672159
+	QUAD $0x142c7ff0054684d5  // .quad 1453677448591213781
+	QUAD $0xe100c6afab47ea4c  // .quad -2233566957380572596
+	QUAD $0x1023998cd1053710  // .quad 1162941958872971024
+	QUAD $0xce67a44c453fdd47  // .quad -3573707131808916153
+	QUAD $0x19d28f47b4d524e7  // .quad 1860707134196753639
+	QUAD $0xd852e9d69dccb106  // .quad -2858965705447132922
+	QUAD $0x14a8729fc3ddb71f  // .quad 1488565707357402911
+	QUAD $0x79dbee454b0a2738  // .quad 8780873879868024632
+	QUAD $0x1086c219697e2c19  // .quad 1190852565885922329
+	QUAD $0x295fe3a211a9d859  // .quad 2981351763563108441
+	QUAD $0x1a71368f0f30468f  // .quad 1905364105417475727
+	QUAD $0xbab31c81a7bb137a  // .quad -4993616218633333894
+	QUAD $0x15275ed8d8f36ba5  // .quad 1524291284333980581
+	QUAD $0x6228e39aec95a92f  // .quad 7073153469319063855
+	QUAD $0x10ec4be0ad8f8951  // .quad 1219433027467184465
+	QUAD $0x9d0e38f7e0ef7517  // .quad -7129698522799049449
+	QUAD $0x1b13ac9aaf4c0ee8  // .quad 1951092843947495144
+	QUAD $0xb0d82d931a592a79  // .quad -5703758818239239559
+	QUAD $0x15a956e225d67253  // .quad 1560874275157996115
+	QUAD $0x8d79be0f4847552e  // .quad -8252355869333301970
+	QUAD $0x11544581b7dec1dc  // .quad 1248699420126396892
+	QUAD $0x158f967eda0bbb7c  // .quad 1553625868034358140
+	QUAD $0x1bba08cf8c979c94  // .quad 1997919072202235028
+	QUAD $0x77a611ff14d62f97  // .quad 8621598323911307159
+	QUAD $0x162e6d72d6dfb076  // .quad 1598335257761788022
+	QUAD $0xf951a7ff43de8c79  // .quad -481418970354774919
+	QUAD $0x11bebdf578b2f391  // .quad 1278668206209430417
+	QUAD $0xc21c3ffed2fdad8e  // .quad -4459619167309550194
+	QUAD $0x1c6463225ab7ec1c  // .quad 2045869129935088668
+	QUAD $0x01b0333242648ad8  // .quad 121653480894270168
+	QUAD $0x16b6b5b5155ff017  // .quad 1636695303948070935
+	QUAD $0x0159c28e9b83a246  // .quad 97322784715416134
+	QUAD $0x122bc490dde659ac  // .quad 1309356243158456748
+	QUAD $0xcef604175f3903a3  // .quad -3533632359197244509
+	QUAD $0x1d12d41afca3c2ac  // .quad 2094969989053530796
+	QUAD $0x725e69ac4c2d9c83  // .quad 8241140556867935363
+	QUAD $0x17424348ca1c9bbd  // .quad 1675975991242824637
+	QUAD $0xf5185489d68ae39c  // .quad -785785183989472356
+	QUAD $0x129b69070816e2fd  // .quad 1340780792994259709
+	QUAD $0xee8d540fbdab05c6  // .quad -1257256294383155770
+	QUAD $0x1dc574d80cf16b2f  // .quad 2145249268790815535
+	QUAD $0xbed77672fe226b05  // .quad -4695153850248434939
+	QUAD $0x17d12a4670c1228c  // .quad 1716199415032652428
+	QUAD $0xff12c528cb4ebc04  // .quad -66774265456837628
+	QUAD $0x130dbb6b8d674ed6  // .quad 1372959532026121942
+	QUAD $0xcb513b74787df9a0  // .quad -3796187639472850528
+	QUAD $0x1e7c5f127bd87e24  // .quad 2196735251241795108
+	QUAD $0x090dc929f9fe614d  // .quad 652398703163629901
+	QUAD $0x18637f41fcad31b7  // .quad 1757388200993436087
+	QUAD $0xa0d7d42194cb810a  // .quad -6856778666952916726
+	QUAD $0x1382cc34ca2427c5  // .quad 1405910560794748869
+	QUAD $0x67bfb9cf5478ce77  // .quad 7475898206584884855
+	QUAD $0x1f37ad21436d0c6f  // .quad 2249456897271598191
+	QUAD $0x1fcc94a5dd2d71f9  // .quad 2291369750525997561
+	QUAD $0x18f9574dcf8a7059  // .quad 1799565517817278553
+	QUAD $0x7fd6dd517dbdf4c7  // .quad 9211793429904618695
+	QUAD $0x13faac3e3fa1f37a  // .quad 1439652414253822842
+	QUAD $0xffbe2ee8c92fee0b  // .quad -18525771120251381
+	QUAD $0x1ff779fd329cb8c3  // .quad 2303443862806116547
+	QUAD $0x6631bf20a0f324d6  // .quad 7363877012587619542
+	QUAD $0x1992c7fdc216fa36  // .quad 1842755090244893238
+	QUAD $0xb827cc1a1a5c1d78  // .quad -5176944834155635336
+	QUAD $0x14756ccb01abfb5e  // .quad 1474204072195914590
+	QUAD $0x935309ae7b7ce460  // .quad -7830904682066418592
+	QUAD $0x105df0a267bcc918  // .quad 1179363257756731672
+	QUAD $0x1eeb42b0c594a099  // .quad 2227947767661371545
+	QUAD $0x1a2fe76a3f9474f4  // .quad 1886981212410770676
+	QUAD $0xe58902270476e6e1  // .quad -1906990600612813087
+	QUAD $0x14f31f8832dd2a5c  // .quad 1509584969928616540
+	QUAD $0xb7a0ce859d2bebe7  // .quad -5214941295232160793
+	QUAD $0x10c27fa028b0eeb0  // .quad 1207667975942893232
+	QUAD $0x59014a6f61dfdfd8  // .quad 6413489186596184024
+	QUAD $0x1ad0cc33744e4ab4  // .quad 1932268761508629172
+	QUAD $0xe0cdd525e7e64cad  // .quad -2247906280206873427
+	QUAD $0x1573d68f903ea229  // .quad 1545815009206903337
+	QUAD $0x4d7177518651d6f1  // .quad 5580372605318321905
+	QUAD $0x11297872d9cbb4ee  // .quad 1236652007365522670
+	QUAD $0x7be8bee8d6e957e8  // .quad 8928596168509315048
+	QUAD $0x1b758d848fac54b0  // .quad 1978643211784836272
+	QUAD $0xfcba3253df211320  // .quad -235820694676368608
+	QUAD $0x15f7a46a0c89dd59  // .quad 1582914569427869017
+	QUAD $0x63c8284318e74280  // .quad 7190041073742725760
+	QUAD $0x1192e9ee706e4aae  // .quad 1266331655542295214
+	QUAD $0x060d0d3827d86a66  // .quad 436019273762630246
+	QUAD $0x1c1e43171a4a1117  // .quad 2026130648867672343
+	QUAD $0x6b3da42cecad21eb  // .quad 7727513048493924843
+	QUAD $0x167e9c127b6e7412  // .quad 1620904519094137874
+	QUAD $0x88fe1cf0bd574e56  // .quad -8575384820172501418
+	QUAD $0x11fee341fc585cdb  // .quad 1296723615275310299
+	QUAD $0x419694b462254a23  // .quad 4726128361433549347
+	QUAD $0x1ccb0536608d615f  // .quad 2074757784440496479
+	QUAD $0x67abaa29e81dd4e9  // .quad 7470251503888749801
+	QUAD $0x1708d0f84d3de77f  // .quad 1659806227552397183
+	QUAD $0xb95621bb2017dd87  // .quad -5091845241114731129
+	QUAD $0x126d73f9d764b932  // .quad 1327844982041917746
+	QUAD $0xc223692b668c95a5  // .quad -4457603571041659483
+	QUAD $0x1d7becc2f23ac1ea  // .quad 2124551971267068394
+	QUAD $0xce82ba891ed6de1d  // .quad -3566082856833327587
+	QUAD $0x179657025b6234bb  // .quad 1699641577013654715
+	QUAD $0xa53562074bdf1818  // .quad -6542215100208572392
+	QUAD $0x12deac01e2b4f6fc  // .quad 1359713261610923772
+	QUAD $0x3b889cd87964f359  // .quad 4289851098633925465
+	QUAD $0x1e3113363787f194  // .quad 2175541218577478036
+	QUAD $0xfc6d4a46c783f5e1  // .quad -257467935834769951
+	QUAD $0x18274291c6065adc  // .quad 1740432974861982428
+	QUAD $0x30576e9f06032b1a  // .quad 3483374466074094362
+	QUAD $0x13529ba7d19eaf17  // .quad 1392346379889585943
+	QUAD $0x1a257dcb3cd1de90  // .quad 1884050330976640656
+	QUAD $0x1eea92a61c311825  // .quad 2227754207823337509
+	QUAD $0x481dfe3c30a7e540  // .quad 5196589079523222848
+	QUAD $0x18bba884e35a79b7  // .quad 1782203366258670007
+	QUAD $0xd34b31c9c0865100  // .quad -3221426365865242368
+	QUAD $0x13c9539d82aec7c5  // .quad 1425762693006936005
+	QUAD $0x5211e942cda3b4cd  // .quad 5913764258841343181
+	QUAD $0x1fa885c8d117a609  // .quad 2281220308811097609
+	QUAD $0x74db21023e1c90a4  // .quad 8420360221814984868
+	QUAD $0x19539e3a40dfb807  // .quad 1824976247048878087
+	QUAD $0xf715b401cb4a0d50  // .quad -642409452031832752
+	QUAD $0x1442e4fb67196005  // .quad 1459980997639102469
+	QUAD $0xf8de299b09080aa7  // .quad -513927561625466201
+	QUAD $0x103583fc527ab337  // .quad 1167984798111281975
+	QUAD $0x8e304291a80cddd7  // .quad -8200981728084566569
+	QUAD $0x19ef3993b72ab859  // .quad 1868775676978051161
+	QUAD $0x3e8d020e200a4b13  // .quad 4507261061758077715
+	QUAD $0x14bf6142f8eef9e1  // .quad 1495020541582440929
+	QUAD $0x653d9b3e80083c0f  // .quad 7295157664148372495
+	QUAD $0x10991a9bfa58c7e7  // .quad 1196016433265952743
+	QUAD $0x6ec8f864000d2ce4  // .quad 7982903447895485668
+	QUAD $0x1a8e90f9908e0ca5  // .quad 1913626293225524389
+	QUAD $0x8bd3f9e999a423ea  // .quad -8371072500651252758
+	QUAD $0x153eda614071a3b7  // .quad 1530901034580419511
+	QUAD $0x3ca994bae1501cbb  // .quad 4371188443704728763
+	QUAD $0x10ff151a99f482f9  // .quad 1224720827664335609
+	QUAD $0xc775bac49bb3612b  // .quad -4074144934298164949
+	QUAD $0x1b31bb5dc320d18e  // .quad 1959553324262936974
+	QUAD $0xd2c4956a16291a89  // .quad -3259315947438531959
+	QUAD $0x15c162b168e70e0b  // .quad 1567642659410349579
+	QUAD $0xdbd0778811ba7ba1  // .quad -2607452757950825567
+	QUAD $0x11678227871f3e6f  // .quad 1254114127528279663
+	QUAD $0x2c80bf401c5d929b  // .quad 3206773216762499739
+	QUAD $0x1bd8d03f3e9863e6  // .quad 2006582604045247462
+	QUAD $0xbd33cc3349e47549  // .quad -4813279056073820855
+	QUAD $0x16470cff6546b651  // .quad 1605266083236197969
+	QUAD $0xca8fd68f6e505dd4  // .quad -3850623244859056684
+	QUAD $0x11d270cc51055ea7  // .quad 1284212866588958375
+	QUAD $0x4419574be3b3c953  // .quad 4907049252451240275
+	QUAD $0x1c83e7ad4e6efdd9  // .quad 2054740586542333401
+	QUAD $0x0347790982f63aa9  // .quad 236290587219081897
+	QUAD $0x16cfec8aa52597e1  // .quad 1643792469233866721
+	QUAD $0xcf6c60d468c4fbba  // .quad -3500316344966644806
+	QUAD $0x123ff06eea847980  // .quad 1315033975387093376
+	QUAD $0xe57a34870e07f92a  // .quad -1911157337204721366
+	QUAD $0x1d331a4b10d3f59a  // .quad 2104054360619349402
+	QUAD $0x512e906c0b399422  // .quad 5849771759720043554
+	QUAD $0x175c1508da432ae2  // .quad 1683243488495479522
+	QUAD $0xda8ba6bcd5c7a9b5  // .quad -2698880221707785803
+	QUAD $0x12b010d3e1cf5581  // .quad 1346594790796383617
+	QUAD $0x90df712e22d90f87  // .quad -8007557169474367609
+	QUAD $0x1de6815302e5559c  // .quad 2154551665274213788
+	QUAD $0xda4c5a8b4f140c6c  // .quad -2716696920837583764
+	QUAD $0x17eb9aa8cf1dde16  // .quad 1723641332219371030
+	QUAD $0xaea37ba2a5a9a38a  // .quad -5862706351411977334
+	QUAD $0x1322e220a5b17e78  // .quad 1378913065775496824
+	QUAD $0x7dd25f6aa2a905a9  // .quad 9066413911450387881
+	QUAD $0x1e9e369aa2b59727  // .quad 2206260905240794919
+	QUAD $0x97db7f888220d154  // .quad -7504264129807330988
+	QUAD $0x187e92154ef7ac1f  // .quad 1765008724192635935
+	QUAD $0x797c6606ce80a777  // .quad 8753983955121776503
+	QUAD $0x139874ddd8c6234c  // .quad 1412006979354108748
+	QUAD $0x8f2d700ae4010bf1  // .quad -8129718560256619535
+	QUAD $0x1f5a549627a36bad  // .quad 2259211166966573997
+	QUAD $0x0c2459a25000d65a  // .quad 874922781278525018
+	QUAD $0x191510781fb5efbe  // .quad 1807368933573259198
+	QUAD $0x701d1481d99a4515  // .quad 8078635854506640661
+	QUAD $0x1410d9f9b2f7f2fe  // .quad 1445895146858607358
+	QUAD $0xc017439b147b6a77  // .quad -4605137760620418441
+	QUAD $0x100d7b2e28c65bfe  // .quad 1156716117486885886
+	QUAD $0xccf205c4ed9243f2  // .quad -3678871602250759182
+	QUAD $0x19af2b7d0e0a2cca  // .quad 1850745787979017418
+	QUAD $0x0a5b37d0be0e9cc2  // .quad 746251532941302978
+	QUAD $0x148c22ca71a1bd6f  // .quad 1480596630383213935
+	QUAD $0x0848f973cb3ee3ce  // .quad 597001226353042382
+	QUAD $0x10701bd527b4978c  // .quad 1184477304306571148
+	QUAD $0xda0e5bec78649fb0  // .quad -2734146852577042512
+	QUAD $0x1a4cf9550c5425ac  // .quad 1895163686890513836
+	QUAD $0x7b3eaff060507fc0  // .quad 8880728962164096960
+	QUAD $0x150a6110d6a9b7bd  // .quad 1516130949512411069
+	QUAD $0x95cbbff380406633  // .quad -7652812089236363725
+	QUAD $0x10d51a73deee2c97  // .quad 1212904759609928855
+	QUAD $0xefac665266cd7052  // .quad -1176452898552450990
+	QUAD $0x1aee90b964b04758  // .quad 1940647615375886168
+	QUAD $0x2623850eb8a459db  // .quad 2748186495899949531
+	QUAD $0x158ba6fab6f36c47  // .quad 1552518092300708935
+	QUAD $0x1e82d0d893b6ae49  // .quad 2198549196719959625
+	QUAD $0x113c85955f29236c  // .quad 1242014473840567148
+	QUAD $0xfd9e1af41f8ab075  // .quad -171670099989974923
+	QUAD $0x1b9408eefea838ac  // .quad 1987223158144907436
+	QUAD $0x97b1af29b2d559f7  // .quad -7516033709475800585
+	QUAD $0x16100725988693bd  // .quad 1589778526515925949
+	QUAD $0xac8e25baf5777b2c  // .quad -6012826967580640468
+	QUAD $0x11a66c1e139edc97  // .quad 1271822821212740759
+	QUAD $0x7a7d092b2258c513  // .quad 8826220925580526867
+	QUAD $0x1c3d79c9b8fe2dbf  // .quad 2034916513940385215
+	QUAD $0x61fda0ef4ead6a76  // .quad 7060976740464421494
+	QUAD $0x169794a160cb57cc  // .quad 1627933211152308172
+	QUAD $0xe7fe1a590bbdeec5  // .quad -1729916237112283451
+	QUAD $0x1212dd4de7091309  // .quad 1302346568921846537
+	QUAD $0xa6635d5b45fcb13a  // .quad -6457214794121563846
+	QUAD $0x1ceafbafd80e84dc  // .quad 2083754510274954460
+	QUAD $0x851c4aaf6b308dc8  // .quad -8855120650039161400
+	QUAD $0x172262f3133ed0b0  // .quad 1667003608219963568
+	QUAD $0xd0e36ef2bc26d7d4  // .quad -3394747705289418796
+	QUAD $0x1281e8c275cbda26  // .quad 1333602886575970854
+	QUAD $0xb49f17eac6a48c86  // .quad -5431596328463070074
+	QUAD $0x1d9ca79d894629d7  // .quad 2133764618521553367
+	QUAD $0x2a18dfef0550706b  // .quad 3033420566713364587
+	QUAD $0x17b08617a104ee46  // .quad 1707011694817242694
+	QUAD $0x54e0b3259dd9f389  // .quad 6116085268112601993
+	QUAD $0x12f39e794d9d8b6b  // .quad 1365609355853794155
+	QUAD $0x87cdeb6f62f65274  // .quad -8661007644729388428
+	QUAD $0x1e5297287c2f4578  // .quad 2184974969366070648
+	QUAD $0xd30b22bf825ea85d  // .quad -3239457301041600419
+	QUAD $0x18421286c9bf6ac6  // .quad 1747979975492856518
+	QUAD $0x0f3c1bcc684bb9e4  // .quad 1097782973908629988
+	QUAD $0x13680ed23aff889f  // .quad 1398383980394285215
+	QUAD $0x18602c7a4079296d  // .quad 1756452758253807981
+	QUAD $0x1f0ce4839198da98  // .quad 2237414368630856344
+	QUAD $0x46b356c833942124  // .quad 5094511021344956708
+	QUAD $0x18d71d360e13e213  // .quad 1789931494904685075
+	QUAD $0x388f78a029434db6  // .quad 4075608817075965366
+	QUAD $0x13df4a91a4dcb4dc  // .quad 1431945195923748060
+	QUAD $0x5a7f2766a86baf8a  // .quad 6520974107321544586
+	QUAD $0x1fcbaa82a1612160  // .quad 2291112313477996896
+	QUAD $0x153285ebb9efbfa2  // .quad 1527430471115325346
+	QUAD $0x196fbb9bb44db44d  // .quad 1832889850782397517
+	QUAD $0xaa8ed189618c994e  // .quad -6156753252591560370
+	QUAD $0x145962e2f6a4903d  // .quad 1466311880625918013
+	QUAD $0xeed8a7a11ad6e10c  // .quad -1236053787331337972
+	QUAD $0x1047824f2bb6d9ca  // .quad 1173049504500734410
+	QUAD $0x7e27729b5e249b45  // .quad 9090360384495590213
+	QUAD $0x1a0c03b1df8af611  // .quad 1876879207201175057
+	QUAD $0xfe85f549181d4904  // .quad -106409321887348476
+	QUAD $0x14d6695b193bf80d  // .quad 1501503365760940045
+	QUAD $0xcb9e5dd4134aa0d0  // .quad -3774476272251789104
+	QUAD $0x10ab877c142ff9a4  // .quad 1201202692608752036
+	QUAD $0xdf63c9535211014d  // .quad -2349813220860952243
+	QUAD $0x1aac0bf9b9e65c3a  // .quad 1921924308174003258
+	QUAD $0x191ca10f74da6771  // .quad 1809498238053148529
+	QUAD $0x15566ffafb1eb02f  // .quad 1537539446539202607
+	QUAD $0xadb080d92a4852c1  // .quad -5931099039041301823
+	QUAD $0x1111f32f2f4bc025  // .quad 1230031557231362085
+	QUAD $0x15e7348eaa0d5134  // .quad 1578287981759648052
+	QUAD $0x1b4feb7eb212cd09  // .quad 1968050491570179337
+	QUAD $0xab1f5d3eee710dc4  // .quad -6116067244076102204
+	QUAD $0x15d98932280f0a6d  // .quad 1574440393256143469
+	QUAD $0xbc1917658b8da49d  // .quad -4892853795260881763
+	QUAD $0x117ad428200c0857  // .quad 1259552314604914775
+	QUAD $0x2cf4f23c127c3a94  // .quad 3239480371808320148
+	QUAD $0x1bf7b9d9cce00d59  // .quad 2015283703367863641
+	QUAD $0xf0c3f4fcdb969543  // .quad -1097764517295254205
+	QUAD $0x165fc7e170b33de0  // .quad 1612226962694290912
+	QUAD $0x5a365d9716121103  // .quad 6500486015647617283
+	QUAD $0x11e6398126f5cb1a  // .quad 1289781570155432730
+	QUAD $0x9056fc24f01ce804  // .quad -8045966448673363964
+	QUAD $0x1ca38f350b22de90  // .quad 2063650512248692368
+	QUAD $0xd9df301d8ce3ecd0  // .quad -2747424344196780848
+	QUAD $0x16e93f5da2824ba6  // .quad 1650920409798953894
+	QUAD $0xe17f59b13d8323da  // .quad -2197939475357424678
+	QUAD $0x125432b14ecea2eb  // .quad 1320736327839163115
+	QUAD $0x68cbc2b52f38395c  // .quad 7551343283653851484
+	QUAD $0x1d53844ee47dd179  // .quad 2113178124542660985
+	QUAD $0x53d6355dbf602de3  // .quad 6041074626923081187
+	QUAD $0x177603725064a794  // .quad 1690542499634128788
+	QUAD $0xa9782ab165e68b1c  // .quad -6235186742687266020
+	QUAD $0x12c4cf8ea6b6ec76  // .quad 1352433999707303030
+	QUAD $0x0f26aab56fd744fa  // .quad 1091747655926105338
+	QUAD $0x1e07b27dd78b13f1  // .quad 2163894399531684849
+	QUAD $0x3f52222abfdf6a62  // .quad 4562746939482794594
+	QUAD $0x18062864ac6f4327  // .quad 1731115519625347879
+	QUAD $0x65db4e88997f884e  // .quad 7339546366328145998
+	QUAD $0x1338205089f29c1f  // .quad 1384892415700278303
+	QUAD $0x6fc54a7428cc0d4a  // .quad 8053925371383123274
+	QUAD $0x1ec033b40fea9365  // .quad 2215827865120445285
+	QUAD $0x596aa1f68709a43b  // .quad 6443140297106498619
+	QUAD $0x1899c2f673220f84  // .quad 1772662292096356228
+	QUAD $0xadeee7f86c07b696  // .quad -5913534206540532074
+	QUAD $0x13ae3591f5b4d936  // .quad 1418129833677084982
+	QUAD $0x497e3ff3e00c5756  // .quad 5295740528502789974
+	QUAD $0x1f7d228322baf524  // .quad 2269007733883335972
+	QUAD $0xd464fff64cd6ac45  // .quad -3142105206681588667
+	QUAD $0x1930e868e89590e9  // .quad 1815206187106668777
+	QUAD $0x4383fff83d7889d1  // .quad 4865013464138549713
+	QUAD $0x14272053ed4473ee  // .quad 1452164949685335022
+	QUAD $0xcf9cccc69793a174  // .quad -3486686858172980876
+	QUAD $0x101f4d0ff1038ff1  // .quad 1161731959748268017
+	QUAD $0x7f6147a425b90252  // .quad 9178696285890871890
+	QUAD $0x19cbae7fe805b31c  // .quad 1858771135597228828
+	QUAD $0xcc4dd2e9b7c7350f  // .quad -3725089415513033457
+	QUAD $0x14a2f1ffecd15c16  // .quad 1487016908477783062
+	QUAD $0x3d0b0f215fd290d9  // .quad 4398626097073393881
+	QUAD $0x10825b3323dab012  // .quad 1189613526782226450
+	QUAD $0x61ab4b689950e7c1  // .quad 7037801755317430209
+	QUAD $0x1a6a2b85062ab350  // .quad 1903381642851562320
+	QUAD $0x4e22a2ba1440b967  // .quad 5630241404253944167
+	QUAD $0x1521bc6a6b555c40  // .quad 1522705314281249856
+	QUAD $0x0b4ee894dd009453  // .quad 814844308661245011
+	QUAD $0x10e7c9eebc4449cd  // .quad 1218164251424999885
+	QUAD $0x1217da87c800ed51  // .quad 1303750893857992017
+	QUAD $0x1b0c764ac6d3a948  // .quad 1949062802279999816
+	QUAD $0xdb46486ca000bdda  // .quad -2646348099655516710
+	QUAD $0x15a391d56bdc876c  // .quad 1559250241823999852
+	QUAD $0x490506bd4ccd64af  // .quad 5261619149759407279
+	QUAD $0x114fa7ddefe39f8a  // .quad 1247400193459199882
+	QUAD $0xa8080ac87ae23ab1  // .quad -6338804619352589647
+	QUAD $0x1bb2a62fe638ff43  // .quad 1995840309534719811
+	QUAD $0x5339a239fbe82ef4  // .quad 5997002748743659252
+	QUAD $0x162884f31e93ff69  // .quad 1596672247627775849
+	QUAD $0x75c7b4fb2fecf25d  // .quad 8486951013736837725
+	QUAD $0x11ba03f5b20fff87  // .quad 1277337798102220679
+	QUAD $0x22d92191e647ea2e  // .quad 2511075177753209390
+	QUAD $0x1c5cd322b67fff3f  // .quad 2043740476963553087
+	QUAD $0xb57a8141850654f2  // .quad -5369837487281253134
+	QUAD $0x16b0a8e891ffff65  // .quad 1634992381570842469
+	QUAD $0xc4620101373843f5  // .quad -4295869989825002507
+	QUAD $0x1226ed86db3332b7  // .quad 1307993905256673975
+	QUAD $0x3a366801f1f39fee  // .quad 4194654460505726958
+	QUAD $0x1d0b15a491eb8459  // .quad 2092790248410678361
+	QUAD $0xfb5eb99b27f6198b  // .quad -333625246337328757
+	QUAD $0x173c115074bc69e0  // .quad 1674232198728542688
+	QUAD $0x2f7efae2865e7ad6  // .quad 3422448617672047318
+	QUAD $0x129674405d6387e7  // .quad 1339385758982834151
+	QUAD $0xe597f7d0d6fd9156  // .quad -1902779841208544938
+	QUAD $0x1dbd86cd6238d971  // .quad 2143017214372534641
+	QUAD $0x8479930d78cadaab  // .quad -8900921502450656597
+	QUAD $0x17cad23de82d7ac1  // .quad 1714413771498027713
+	QUAD $0xd06142712d6f1556  // .quad -3431388387218614954
+	QUAD $0x1308a831868ac89a  // .quad 1371531017198422170
+	QUAD $0x4d686a4eaf182222  // .quad 5577825024675947042
+	QUAD $0x1e74404f3daada91  // .quad 2194449627517475473
+	QUAD $0xa453883ef279b4e8  // .quad -6605786424484973336
+	QUAD $0x185d003f6488aeda  // .quad 1755559702013980378
+	QUAD $0xe9dc6cff28615d87  // .quad -1595280324846068345
+	QUAD $0x137d99cc506d58ae  // .quad 1404447761611184302
+	QUAD $0xa960ae650d6895a4  // .quad -6241797334495619676
+	QUAD $0x1f2f5c7a1a488de4  // .quad 2247116418577894884
+	QUAD $0xbab3beb73ded4483  // .quad -4993437867596495741
+	QUAD $0x18f2b061aea07183  // .quad 1797693134862315907
+	QUAD $0x2ef6322c318a9d36  // .quad 3383947335406624054
+	QUAD $0x13f559e7bee6c136  // .quad 1438154507889852726
+	QUAD $0xe4bd1d13827761f0  // .quad -1964381892833222160
+	QUAD $0x1feef63f97d79b89  // .quad 2301047212623764361
+	QUAD $0x83ca7da9352c4e5a  // .quad -8950203143750398374
+	QUAD $0x198bf832dfdfafa1  // .quad 1840837770099011489
+	QUAD $0x9ca1fe20f756a515  // .quad -7160162515000318699
+	QUAD $0x146ff9c24cb2f2e7  // .quad 1472670216079209191
+	QUAD $0x4a1b31b3f9121daa  // .quad 5339916432225476010
+	QUAD $0x1059949b708f28b9  // .quad 1178136172863367353
+	QUAD $0x435eb5ecc1b695dd  // .quad 4854517476818851293
+	QUAD $0x1a28edc580e50df5  // .quad 1885017876581387765
+	QUAD $0x35e55e57015ede4a  // .quad 3883613981455081034
+	QUAD $0x14ed8b04671da4c4  // .quad 1508014301265110212
+	QUAD $0xc4b77eac0118b1d5  // .quad -4271806444319755819
+	QUAD $0x10be08d0527e1d69  // .quad 1206411441012088169
+	QUAD $0xa12597799b5ab622  // .quad -6834890310911609310
+	QUAD $0x1ac9a7b3b7302f0f  // .quad 1930258305619341071
+	QUAD $0x4db7ac6149155e81  // .quad 5600134195496443521
+	QUAD $0x156e1fc2f8f358d9  // .quad 1544206644495472857
+	QUAD $0xd7c6238107444b9b  // .quad -2898590273086665829
+	QUAD $0x1124e63593f5e0ad  // .quad 1235365315596378285
+	QUAD $0x593d059b3ed3ac2b  // .quad 6430302007287065643
+	QUAD $0x1b6e3d2286563449  // .quad 1976584504954205257
+	QUAD $0xe0fd9e15cbdc89bc  // .quad -2234456023654168132
+	QUAD $0x15f1ca820511c36d  // .quad 1581267603963364205
+	QUAD $0xb3fe18116fe3a163  // .quad -5476913633665244829
+	QUAD $0x118e3b9b37416924  // .quad 1265014083170691364
+	QUAD $0x866359b57fd29bd1  // .quad -8763061813864391727
+	QUAD $0x1c16c5c525357507  // .quad 2024022533073106183
+	QUAD $0xd1e91491330ee30e  // .quad -3321100636349603058
+	QUAD $0x16789e3750f790d2  // .quad 1619218026458484946
+	QUAD $0x74ba76da8f3f1c0b  // .quad 8411165935146048523
+	QUAD $0x11fa182c40c60d75  // .quad 1295374421166787957
+	QUAD $0xedf72490e531c678  // .quad -1299529762733963656
+	QUAD $0x1cc359e067a348bb  // .quad 2072599073866860731
+	QUAD $0x8b2c1d40b75b052d  // .quad -8418321439670991571
+	QUAD $0x1702ae4d1fb5d3c9  // .quad 1658079259093488585
+	QUAD $0x6f567dcd5f7c0424  // .quad 8022738107230848036
+	QUAD $0x12688b70e62b0fd4  // .quad 1326463407274790868
+	QUAD $0x7ef0c94898c66d06  // .quad 9147032156827446534
+	QUAD $0x1d74124e3d11b2ed  // .quad 2122341451639665389
+	QUAD $0x98c0a106e09ebd9f  // .quad -7439769533505684065
+	QUAD $0x17900ea4fda7c257  // .quad 1697873161311732311
+	QUAD $0x470080d24d4bcae6  // .quad 5116230817421183718
+	QUAD $0x12d9a550caec9b79  // .quad 1358298529049385849
+	QUAD $0xd800ce1d487944a2  // .quad -2882077136351837022
+	QUAD $0x1e29088144adc58e  // .quad 2173277646479017358
+	QUAD $0x1333d8176d2dd082  // .quad 1383687105660440706
+	QUAD $0x1820d39a9d57d13f  // .quad 1738622117183213887
+	QUAD $0xa8f646792424a6ce  // .quad -6271747944955468082
+	QUAD $0x134d76154aaca765  // .quad 1390897693746571109
+	QUAD $0x74bd3d8ea03aa47d  // .quad 8411947361780802685
+	QUAD $0x1ee25688777aa56f  // .quad 2225436309994513775
+	QUAD $0x5d64313ee6955064  // .quad 6729557889424642148
+	QUAD $0x18b51206c5fbb78c  // .quad 1780349047995611020
+	QUAD $0x4ab68dcbebaaa6b7  // .quad 5383646311539713719
+	QUAD $0x13c40e6bd1962c70  // .quad 1424279238396488816
+	QUAD $0x1124161312aaa457  // .quad 1235136468979721303
+	QUAD $0x1fa01712e8f0471a  // .quad 2278846781434382106
+	QUAD $0xda8344dc0eeee9df  // .quad -2701239639558133281
+	QUAD $0x194cdf4253f36c14  // .quad 1823077425147505684
+	QUAD $0xe2029d7cd8bf2180  // .quad -2160991711646506624
+	QUAD $0x143d7f6843292343  // .quad 1458461940118004547
+	QUAD $0x4e687dfd7a328133  // .quad 5649904260166615347
+	QUAD $0x103132b9cf541c36  // .quad 1166769552094403638
+	QUAD $0x4a40c9959050ceb8  // .quad 5350498001524674232
+	QUAD $0x19e851294bb9c6bd  // .quad 1866831283351045821
+	QUAD $0x0833d477a6a70bc6  // .quad 591049586477829062
+	QUAD $0x14b9da876fc7d231  // .quad 1493465026680836657
+	QUAD $0xa02976c61eec096b  // .quad -6905857960301557397
+	QUAD $0x1094aed2bfd30e8d  // .quad 1194772021344669325
+	QUAD $0x004257a364acdbdf  // .quad 18673707743239135
+	QUAD $0x1a877e1dffb81749  // .quad 1911635234151470921
+	QUAD $0xcd01dfb5ea23e319  // .quad -3674409848547319015
+	QUAD $0x153931b1996012a0  // .quad 1529308187321176736
+	QUAD $0x70ce4c91881cb5ae  // .quad 8128518565387875758
+	QUAD $0x10fa8e27ade6754d  // .quad 1223446549856941389
+	QUAD $0x1ae3adb5a69455e2  // .quad 1937583260394870242
+	QUAD $0x1b2a7d0c4970bbaf  // .quad 1957514479771106223
+	QUAD $0x7be957c4854377e8  // .quad 8928764237799716840
+	QUAD $0x15bb973d078d62f2  // .quad 1566011583816884978
+	QUAD $0xc987796a0435f987  // .quad -3925035053985957497
+	QUAD $0x1162df64060ab58e  // .quad 1252809267053507982
+	QUAD $0x75a58f1006bcc271  // .quad 8477339172590109297
+	QUAD $0x1bd1656cd67788e4  // .quad 2004494827285612772
+	QUAD $0xf7b7a5a66bca3527  // .quad -596826291411733209
+	QUAD $0x16411df0ab92d3e9  // .quad 1603595861828490217
+	QUAD $0x5fc61e1ebca1c41f  // .quad 6901236596354434079
+	QUAD $0x11cdb18d560f0fee  // .quad 1282876689462792174
+	QUAD $0xffa363646102d365  // .quad -26067890058636443
+	QUAD $0x1c7c4f4889b1b316  // .quad 2052602703140467478
+	QUAD $0x32e91c504d9bdc51  // .quad 3668494502695001169
+	QUAD $0x16c9d906d48e28df  // .quad 1642082162512373983
+	QUAD $0x8f20e37371497d0e  // .quad -8133250842069730034
+	QUAD $0x123b140576d820b2  // .quad 1313665730009899186
+	QUAD $0x7e9b0585820f2e7c  // .quad 9122891541139893884
+	QUAD $0x1d2b533bf159cdea  // .quad 2101865168015838698
+	QUAD $0xcbaf379e01a5beca  // .quad -3769733211313815862
+	QUAD $0x1755dc2ff447d7ee  // .quad 1681492134412670958
+	QUAD $0x0958f94b348498a1  // .quad 673562245690857633
+	QUAD $0x12ab168cc36cacbf  // .quad 1345193707530136767
 _DOUBLE_POW5_SPLIT:
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1000000000000000 // .quad 1152921504606846976
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1400000000000000 // .quad 1441151880758558720
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1900000000000000 // .quad 1801439850948198400
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1f40000000000000 // .quad 2251799813685248000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1388000000000000 // .quad 1407374883553280000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x186a000000000000 // .quad 1759218604441600000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1e84800000000000 // .quad 2199023255552000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1312d00000000000 // .quad 1374389534720000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x17d7840000000000 // .quad 1717986918400000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1dcd650000000000 // .quad 2147483648000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x12a05f2000000000 // .quad 1342177280000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x174876e800000000 // .quad 1677721600000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1d1a94a200000000 // .quad 2097152000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x12309ce540000000 // .quad 1310720000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x16bcc41e90000000 // .quad 1638400000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1c6bf52634000000 // .quad 2048000000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x11c37937e0800000 // .quad 1280000000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x16345785d8a00000 // .quad 1600000000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1bc16d674ec80000 // .quad 2000000000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1158e460913d0000 // .quad 1250000000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x15af1d78b58c4000 // .quad 1562500000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1b1ae4d6e2ef5000 // .quad 1953125000000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x10f0cf064dd59200 // .quad 1220703125000000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x152d02c7e14af680 // .quad 1525878906250000000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x1a784379d99db420 // .quad 1907348632812500000
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x108b2a2c28029094 // .quad 1192092895507812500
-	QUAD $0x0000000000000000 // .quad 0
-	QUAD $0x14adf4b7320334b9 // .quad 1490116119384765625
-	QUAD $0x4000000000000000 // .quad 4611686018427387904
-	QUAD $0x19d971e4fe8401e7 // .quad 1862645149230957031
-	QUAD $0x8800000000000000 // .quad -8646911284551352320
-	QUAD $0x1027e72f1f128130 // .quad 1164153218269348144
-	QUAD $0xaa00000000000000 // .quad -6196953087261802496
-	QUAD $0x1431e0fae6d7217c // .quad 1455191522836685180
-	QUAD $0xd480000000000000 // .quad -3134505340649865216
-	QUAD $0x193e5939a08ce9db // .quad 1818989403545856475
-	QUAD $0xc9a0000000000000 // .quad -3918131675812331520
-	QUAD $0x1f8def8808b02452 // .quad 2273736754432320594
-	QUAD $0xbe04000000000000 // .quad -4754675306596401152
-	QUAD $0x13b8b5b5056e16b3 // .quad 1421085471520200371
-	QUAD $0xad85000000000000 // .quad -5943344133245501440
-	QUAD $0x18a6e32246c99c60 // .quad 1776356839400250464
-	QUAD $0xd8e6400000000000 // .quad -2817494148129488896
-	QUAD $0x1ed09bead87c0378 // .quad 2220446049250313080
-	QUAD $0x878fe80000000000 // .quad -8678462870222012416
-	QUAD $0x13426172c74d822b // .quad 1387778780781445675
-	QUAD $0x6973e20000000000 // .quad 7598665485932036096
-	QUAD $0x1812f9cf7920e2b6 // .quad 1734723475976807094
-	QUAD $0x03d0da8000000000 // .quad 274959820560269312
-	QUAD $0x1e17b84357691b64 // .quad 2168404344971008868
-	QUAD $0x8262889000000000 // .quad -9051522149004607488
-	QUAD $0x12ced32a16a1b11e // .quad 1355252715606880542
-	QUAD $0x22fb2ab400000000 // .quad 2520655369026404352
-	QUAD $0x178287f49c4a1d66 // .quad 1694065894508600678
-	QUAD $0xabb9f56100000000 // .quad -6072552825571770368
-	QUAD $0x1d6329f1c35ca4bf // .quad 2117582368135750847
-	QUAD $0xcb54395ca0000000 // .quad -3795345515982356480
-	QUAD $0x125dfa371a19e6f7 // .quad 1323488980084844279
-	QUAD $0xbe2947b3c8000000 // .quad -4744181894977945600
-	QUAD $0x16f578c4e0a060b5 // .quad 1654361225106055349
-	QUAD $0x2db399a0ba000000 // .quad 3293144668132343808
-	QUAD $0x1cb2d6f618c878e3 // .quad 2067951531382569187
-	QUAD $0xfc90400474400000 // .quad -247627591630979072
-	QUAD $0x11efc659cf7d4b8d // .quad 1292469707114105741
-	QUAD $0x7bb4500591500000 // .quad 8913837547316051968
-	QUAD $0x166bb7f0435c9e71 // .quad 1615587133892632177
-	QUAD $0xdaa16406f5a40000 // .quad -2692761121137098752
-	QUAD $0x1c06a5ec5433c60d // .quad 2019483917365790221
-	QUAD $0xa8a4de8459868000 // .quad -6294661719138074624
-	QUAD $0x118427b3b4a05bc8 // .quad 1262177448353618888
-	QUAD $0xd2ce16256fe82000 // .quad -3256641130495205376
-	QUAD $0x15e531a0a1c872ba // .quad 1577721810442023610
-	QUAD $0x87819baecbe22800 // .quad -8682487431546394624
-	QUAD $0x1b5e7e08ca3a8f69 // .quad 1972152263052529513
-	QUAD $0xf4b1014d3f6d5900 // .quad -814868626289108736
-	QUAD $0x111b0ec57e6499a1 // .quad 1232595164407830945
-	QUAD $0x71dd41a08f48af40 // .quad 8204786253993389888
-	QUAD $0x1561d276ddfdc00a // .quad 1540743955509788682
-	QUAD $0x0e549208b31adb10 // .quad 1032610780636961552
-	QUAD $0x1aba4714957d300d // .quad 1925929944387235853
-	QUAD $0x28f4db456ff0c8ea // .quad 2951224747111794922
-	QUAD $0x10b46c6cdd6e3e08 // .quad 1203706215242022408
-	QUAD $0x33321216cbecfb24 // .quad 3689030933889743652
-	QUAD $0x14e1878814c9cd8a // .quad 1504632769052528010
-	QUAD $0xbffe969c7ee839ed // .quad -4612083369492596243
-	QUAD $0x1a19e96a19fc40ec // .quad 1880790961315660012
-	QUAD $0xf7ff1e21cf512434 // .quad -576709096719178700
-	QUAD $0x105031e2503da893 // .quad 1175494350822287507
-	QUAD $0xf5fee5aa43256d41 // .quad -720886370898973375
-	QUAD $0x14643e5ae44d12b8 // .quad 1469367938527859384
-	QUAD $0x337e9f14d3eec892 // .quad 3710578054803671186
-	QUAD $0x197d4df19d605767 // .quad 1836709923159824231
-	QUAD $0x005e46da08ea7ab6 // .quad 26536550077201078
-	QUAD $0x1fdca16e04b86d41 // .quad 2295887403949780289
-	QUAD $0xa03aec4845928cb2 // .quad -6900943683842831182
-	QUAD $0x13e9e4e4c2f34448 // .quad 1434929627468612680
-	QUAD $0xc849a75a56f72fde // .quad -4014493586376151074
-	QUAD $0x18e45e1df3b0155a // .quad 1793662034335765850
-	QUAD $0x7a5c1130ecb4fbd6 // .quad 8816941072311974870
-	QUAD $0x1f1d75a5709c1ab1 // .quad 2242077542919707313
-	QUAD $0xec798abe93f11d65 // .quad -1406940857446097563
-	QUAD $0x13726987666190ae // .quad 1401298464324817070
-	QUAD $0xa797ed6e38ed64bf // .quad -6370362090235009857
-	QUAD $0x184f03e93ff9f4da // .quad 1751623080406021338
-	QUAD $0x517de8c9c728bdef // .quad 5872105442488401391
-	QUAD $0x1e62c4e38ff87211 // .quad 2189528850507526673
-	QUAD $0xd2eeb17e1c7976b5 // .quad -3247463126085830987
-	QUAD $0x12fdbb0e39fb474a // .quad 1368455531567204170
-	QUAD $0x87aa5ddda397d462 // .quad -8671014926034676638
-	QUAD $0x17bd29d1c87a191d // .quad 1710569414459005213
-	QUAD $0xe994f5550c7dc97b // .quad -1615396620688569989
-	QUAD $0x1dac74463a989f64 // .quad 2138211768073756516
-	QUAD $0x11fd195527ce9ded // .quad 1296220121283337709
-	QUAD $0x128bc8abe49f639f // .quad 1336382355046097823
-	QUAD $0xd67c5faa71c24568 // .quad -2991410866823215768
-	QUAD $0x172ebad6ddc73c86 // .quad 1670477943807622278
-	QUAD $0x8c1b77950e32d6c2 // .quad -8350949601956407614
-	QUAD $0x1cfa698c95390ba8 // .quad 2088097429759527848
-	QUAD $0x57912abd28dfc639 // .quad 6309871544845715001
-	QUAD $0x121c81f7dd43a749 // .quad 1305060893599704905
-	QUAD $0xad75756c7317b7c8 // .quad -5947718624225019960
-	QUAD $0x16a3a275d494911b // .quad 1631326116999631131
-	QUAD $0x98d2d2c78fdda5ba // .quad -7434648280281274950
-	QUAD $0x1c4c8b1349b9b562 // .quad 2039157646249538914
-	QUAD $0x9f83c3bcb9ea8794 // .quad -6952498184389490796
-	QUAD $0x11afd6ec0e14115d // .quad 1274473528905961821
-	QUAD $0x0764b4abe8652979 // .quad 532749306367912313
-	QUAD $0x161bcca7119915b5 // .quad 1593091911132452277
-	QUAD $0x493de1d6e27e73d7 // .quad 5277622651387278295
-	QUAD $0x1ba2bfd0d5ff5b22 // .quad 1991364888915565346
-	QUAD $0x6dc6ad264d8f0866 // .quad 7910200175544436838
-	QUAD $0x1145b7e285bf98f5 // .quad 1244603055572228341
-	QUAD $0xc938586fe0f2ca80 // .quad -3947307835851617664
-	QUAD $0x159725db272f7f32 // .quad 1555753819465285426
-	QUAD $0x7b866e8bd92f7d20 // .quad 8900923260467641632
-	QUAD $0x1afcef51f0fb5eff // .quad 1944692274331606783
-	QUAD $0xad34051767bdae34 // .quad -5966138008276193740
-	QUAD $0x10de1593369d1b5f // .quad 1215432671457254239
-	QUAD $0x9881065d41ad19c1 // .quad -7457672510345242175
-	QUAD $0x15159af804446237 // .quad 1519290839321567799
-	QUAD $0x7ea147f492186032 // .quad 9124653435777998898
-	QUAD $0x1a5b01b605557ac5 // .quad 1899113549151959749
-	QUAD $0x6f24ccf8db4f3c1f // .quad 8008751406574943263
-	QUAD $0x1078e111c3556cbb // .quad 1186945968219974843
-	QUAD $0x4aee003712230b27 // .quad 5399253239791291175
-	QUAD $0x14971956342ac7ea // .quad 1483682460274968554
-	QUAD $0xdda98044d6abcdf0 // .quad -2474305487115661840
-	QUAD $0x19bcdfabc13579e4 // .quad 1854603075343710692
-	QUAD $0x0a89f02b062b60b6 // .quad 759402079766405302
-	QUAD $0x10160bcb58c16c2f // .quad 1159126922089819183
-	QUAD $0xcd2c6c35c7b638e4 // .quad -3662433418719381276
-	QUAD $0x141b8ebe2ef1c73a // .quad 1448908652612273978
-	QUAD $0x8077874339a3c71d // .quad -9189727791826614499
-	QUAD $0x1922726dbaae3909 // .quad 1811135815765342473
-	QUAD $0xe0956914080cb8e4 // .quad -2263787702928492316
-	QUAD $0x1f6b0f092959c74b // .quad 2263919769706678091
-	QUAD $0x6c5d61ac8507f38e // .quad 7808504722524468110
-	QUAD $0x13a2e965b9d81c8f // .quad 1414949856066673807
-	QUAD $0x4774ba17a649f072 // .quad 5148944884728197234
-	QUAD $0x188ba3bf284e23b3 // .quad 1768687320083342259
-	QUAD $0x1951e89d8fdc6c8f // .quad 1824495087482858639
-	QUAD $0x1eae8caef261aca0 // .quad 2210859150104177824
-	QUAD $0x0fd3316279e9c3d9 // .quad 1140309429676786649
-	QUAD $0x132d17ed577d0be4 // .quad 1381786968815111140
-	QUAD $0x13c7fdbb186434cf // .quad 1425386787095983311
-	QUAD $0x17f85de8ad5c4edd // .quad 1727233711018888925
-	QUAD $0x58b9fd29de7d4203 // .quad 6393419502297367043
-	QUAD $0x1df67562d8b36294 // .quad 2159042138773611156
-	QUAD $0xb7743e3a2b0e4942 // .quad -5227484847918921406
-	QUAD $0x12ba095dc7701d9c // .quad 1349401336733506972
-	QUAD $0xe5514dc8b5d1db92 // .quad -1922670041471263854
-	QUAD $0x17688bb5394c2503 // .quad 1686751670916883715
-	QUAD $0xdea5a13ae3465277 // .quad -2403337551839079817
-	QUAD $0x1d42aea2879f2e44 // .quad 2108439588646104644
-	QUAD $0x0b2784c4ce0bf38a // .quad 803757039314269066
-	QUAD $0x1249ad2594c37ceb // .quad 1317774742903815403
-	QUAD $0xcdf165f6018ef06d // .quad -3606989719284551571
-	QUAD $0x16dc186ef9f45c25 // .quad 1647218428629769253
-	QUAD $0x416dbf7381f2ac88 // .quad 4714634887749086344
-	QUAD $0x1c931e8ab871732f // .quad 2059023035787211567
-	QUAD $0x88e497a83137abd5 // .quad -8582568241225290795
-	QUAD $0x11dbf316b346e7fd // .quad 1286889397367007229
-	QUAD $0xeb1dbd923d8596ca // .quad -1504838264676837686
-	QUAD $0x1652efdc6018a1fc // .quad 1608611746708759036
-	QUAD $0x25e52cf6cce6fc7d // .quad 2730638187581340797
-	QUAD $0x1be7abd3781eca7c // .quad 2010764683385948796
-	QUAD $0x97af3c1a40105dce // .quad -7516723169616437810
-	QUAD $0x1170cb642b133e8d // .quad 1256727927116217997
-	QUAD $0xfd9b0b20d0147542 // .quad -172531925165771454
-	QUAD $0x15ccfe3d35d80e30 // .quad 1570909908895272496
-	QUAD $0x3d01cde904199292 // .quad 4396021111970173586
-	QUAD $0x1b403dcc834e11bd // .quad 1963637386119090621
-	QUAD $0x462120b1a28ffb9b // .quad 5053356204195052443
-	QUAD $0x1108269fd210cb16 // .quad 1227273366324431638
-	QUAD $0xd7a968de0b33fa82 // .quad -2906676781610960254
-	QUAD $0x154a3047c694fddb // .quad 1534091707905539547
-	QUAD $0xcd93c3158e00f923 // .quad -3633345977013700317
-	QUAD $0x1a9cbc59b83a3d52 // .quad 1917614634881924434
-	QUAD $0xc07c59ed78c09bb6 // .quad -4576684244847256650
-	QUAD $0x10a1f5b813246653 // .quad 1198509146801202771
-	QUAD $0xb09b7068d6f0c2a3 // .quad -5720855306059070813
-	QUAD $0x14ca732617ed7fe8 // .quad 1498136433501503464
-	QUAD $0xdcc24c830cacf34c // .quad -2539383114146450612
-	QUAD $0x19fd0fef9de8dfe2 // .quad 1872670541876879330
-	QUAD $0xc9f96fd1e7ec180f // .quad -3892957455555225585
-	QUAD $0x103e29f5c2b18bed // .quad 1170419088673049581
-	QUAD $0x3c77cbc661e71e13 // .quad 4357175217410743827
-	QUAD $0x144db473335deee9 // .quad 1463023860841311977
-	QUAD $0x8b95beb7fa60e598 // .quad -8388589033518733928
-	QUAD $0x1961219000356aa3 // .quad 1828779826051639971
-	QUAD $0x6e7b2e65f8f91efe // .quad 7961007781811134206
-	QUAD $0x1fb969f40042c54c // .quad 2285974782564549964
-	QUAD $0xc50cfcffbb9bb35f // .quad -4247742173222816929
-	QUAD $0x13d3e2388029bb4f // .quad 1428734239102843727
-	QUAD $0xb6503c3faa82a037 // .quad -5309677716528521161
-	QUAD $0x18c8dac6a0342a23 // .quad 1785917798878554659
-	QUAD $0xa3e44b4f95234844 // .quad -6637097145660651452
-	QUAD $0x1efb1178484134ac // .quad 2232397248598193324
-	QUAD $0xe66eaf11bd360d2b // .quad -1842342706824213205
-	QUAD $0x135ceaeb2d28c0eb // .quad 1395248280373870827
-	QUAD $0xe00a5ad62c839075 // .quad -2302928383530266507
-	QUAD $0x183425a5f872f126 // .quad 1744060350467338534
-	QUAD $0x980cf18bb7a47493 // .quad -7490346497840221037
-	QUAD $0x1e412f0f768fad70 // .quad 2180075438084173168
-	QUAD $0x5f0816f752c6c8dc // .quad 6847748484918331612
-	QUAD $0x12e8bd69aa19cc66 // .quad 1362547148802608230
-	QUAD $0xf6ca1cb527787b13 // .quad -663686430706861293
-	QUAD $0x17a2ecc414a03f7f // .quad 1703183936003260287
-	QUAD $0xf47ca3e2715699d7 // .quad -829608038383576617
-	QUAD $0x1d8ba7f519c84f5f // .quad 2128979920004075359
-	QUAD $0xf8cde66d86d62026 // .quad -518505023989735386
-	QUAD $0x127748f9301d319b // .quad 1330612450002547099
-	QUAD $0xf7016008e88ba830 // .quad -648131279987169232
-	QUAD $0x17151b377c247e02 // .quad 1663265562503183874
-	QUAD $0xb4c1b80b22ae923c // .quad -5421850118411349444
-	QUAD $0x1cda62055b2d9d83 // .quad 2079081953128979843
-	QUAD $0x50f91306f5ad1b65 // .quad 5834715712847682405
-	QUAD $0x12087d4358fc8272 // .quad 1299426220705612402
-	QUAD $0xe53757c8b318623f // .quad -1929977395795172801
-	QUAD $0x168a9c942f3ba30e // .quad 1624282775882015502
-	QUAD $0x9e852dbadfde7acf // .quad -7024157763171353905
-	QUAD $0x1c2d43b93b0a8bd2 // .quad 2030353469852519378
-	QUAD $0xa3133c94cbeb0cc1 // .quad -6695941611195790143
-	QUAD $0x119c4a53c4e69763 // .quad 1268970918657824611
-	QUAD $0x8bd80bb9fee5cff1 // .quad -8369927013994737679
-	QUAD $0x16035ce8b6203d3c // .quad 1586213648322280764
-	QUAD $0xaece0ea87e9f43ee // .quad -5850722749066034194
-	QUAD $0x1b843422e3a84c8b // .quad 1982767060402850955
-	QUAD $0x4d40c9294f238a75 // .quad 5566670318688504437
-	QUAD $0x1132a095ce492fd7 // .quad 1239229412751781847
-	QUAD $0x2090fb73a2ec6d12 // .quad 2346651879933242642
-	QUAD $0x157f48bb41db7bcd // .quad 1549036765939727309
-	QUAD $0x68b53a508ba78856 // .quad 7545000868343941206
-	QUAD $0x1adf1aea12525ac0 // .quad 1936295957424659136
-	QUAD $0x417144725748b536 // .quad 4715625542714963254
-	QUAD $0x10cb70d24b7378b8 // .quad 1210184973390411960
-	QUAD $0x51cd958eed1ae283 // .quad 5894531928393704067
-	QUAD $0x14fe4d06de5056e6 // .quad 1512731216738014950
-	QUAD $0xe640faf2a8619b24 // .quad -1855207126362645724
-	QUAD $0x1a3de04895e46c9f // .quad 1890914020922518687
-	QUAD $0xefe89cd7a93d00f7 // .quad -1159504453976653577
-	QUAD $0x1066ac2d5daec3e3 // .quad 1181821263076574179
-	QUAD $0xebe2c40d938c4134 // .quad -1449380567470816972
-	QUAD $0x14805738b51a74dc // .quad 1477276578845717724
-	QUAD $0x26db7510f86f5181 // .quad 2799960309088866689
-	QUAD $0x19a06d06e2611214 // .quad 1846595723557147156
-	QUAD $0x9849292a9b4592f1 // .quad -7473396843674234127
-	QUAD $0x100444244d7cab4c // .quad 1154122327223216972
-	QUAD $0xbe5b73754216f7ad // .quad -4730060036165404755
-	QUAD $0x1405552d60dbd61f // .quad 1442652909029021215
-	QUAD $0xadf25052929cb598 // .quad -5912575045206755944
-	QUAD $0x1906aa78b912cba7 // .quad 1803316136286276519
-	QUAD $0x996ee4673743e2ff // .quad -7390718806508444929
-	QUAD $0x1f485516e7577e91 // .quad 2254145170357845649
-	QUAD $0xffe54ec0828a6ddf // .quad -7513235640390177
-	QUAD $0x138d352e5096af1a // .quad 1408840731473653530
-	QUAD $0xbfdea270a32d0957 // .quad -4621077562977875625
-	QUAD $0x18708279e4bc5ae1 // .quad 1761050914342066913
-	QUAD $0x2fd64b0ccbf84bad // .quad 3447025083132431277
-	QUAD $0x1e8ca3185deb719a // .quad 2201313642927583642
-	QUAD $0x5de5eee7ff7b2f4c // .quad 6766076695385157452
-	QUAD $0x1317e5ef3ab32700 // .quad 1375821026829739776
-	QUAD $0x755f6aa1ff59fb1f // .quad 8457595869231446815
-	QUAD $0x17dddf6b095ff0c0 // .quad 1719776283537174720
-	QUAD $0x92b7454a7f3079e7 // .quad -7874749237170243097
-	QUAD $0x1dd55745cbb7ecf0 // .quad 2149720354421468400
-	QUAD $0x5bb28b4e8f7e4c30 // .quad 6607496772837067824
-	QUAD $0x12a5568b9f52f416 // .quad 1343575221513417750
-	QUAD $0xf29f2e22335ddf3c // .quad -964001070808441028
-	QUAD $0x174eac2e8727b11b // .quad 1679469026891772187
-	QUAD $0xef46f9aac035570b // .quad -1205001338510551285
-	QUAD $0x1d22573a28f19d62 // .quad 2099336283614715234
-	QUAD $0xd58c5c0ab8215667 // .quad -3058968845782788505
-	QUAD $0x123576845997025d // .quad 1312085177259197021
-	QUAD $0x4aef730d6629ac01 // .quad 5399660979626290177
-	QUAD $0x16c2d4256ffcc2f5 // .quad 1640106471573996277
-	QUAD $0x9dab4fd0bfb41701 // .quad -7085481830749300991
-	QUAD $0x1c73892ecbfbf3b2 // .quad 2050133089467495346
-	QUAD $0xa28b11e277d08e60 // .quad -6734269153432007072
-	QUAD $0x11c835bd3f7d784f // .quad 1281333180917184591
-	QUAD $0x8b2dd65b15c4b1f9 // .quad -8417836441790008839
-	QUAD $0x163a432c8f5cd663 // .quad 1601666476146480739
-	QUAD $0x6df94bf1db35de77 // .quad 7924448521472040567
-	QUAD $0x1bc8d3f7b3340bfc // .quad 2002083095183100924
-	QUAD $0xc4bbcf772901ab0a // .quad -4270591710934750454
-	QUAD $0x115d847ad000877d // .quad 1251301934489438077
-	QUAD $0x35eac354f34215cd // .quad 3885132398186337741
-	QUAD $0x15b4e5998400a95d // .quad 1564127418111797597
-	QUAD $0x8365742a30129b40 // .quad -8978642557549241536
-	QUAD $0x1b221effe500d3b4 // .quad 1955159272639746996
-	QUAD $0xd21f689a5e0ba108 // .quad -3305808589254582008
-	QUAD $0x10f5535fef208450 // .quad 1221974545399841872
-	QUAD $0x06a742c0f58e894a // .quad 479425281859160394
-	QUAD $0x1532a837eae8a565 // .quad 1527468181749802341
-	QUAD $0x4851137132f22b9d // .quad 5210967620751338397
-	QUAD $0x1a7f5245e5a2cebe // .quad 1909335227187252926
-	QUAD $0xed32ac26bfd75b42 // .quad -1354831255457801406
-	QUAD $0x108f936baf85c136 // .quad 1193334516992033078
-	QUAD $0xa87f57306fcd3212 // .quad -6305225087749639662
-	QUAD $0x14b378469b673184 // .quad 1491668146240041348
-	QUAD $0xd29f2cfc8bc07e97 // .quad -3269845341259661673
-	QUAD $0x19e056584240fde5 // .quad 1864585182800051685
-	QUAD $0xa3a37c1dd7584f1e // .quad -6655339356714676450
-	QUAD $0x102c35f729689eaf // .quad 1165365739250032303
-	QUAD $0x8c8c5b254d2e62e6 // .quad -8319174195893345562
-	QUAD $0x14374374f3c2c65b // .quad 1456707174062540379
-	QUAD $0x6faf71eea079fb9f // .quad 8047776328842869663
-	QUAD $0x1945145230b377f2 // .quad 1820883967578175474
-	QUAD $0x0b9b4e6a48987a87 // .quad 836348374198811271
-	QUAD $0x1f965966bce055ef // .quad 2276104959472719343
-	QUAD $0x674111026d5f4c94 // .quad 7440246761515338900
-	QUAD $0x13bdf7e0360c35b5 // .quad 1422565599670449589
-	QUAD $0xc111554308b71fba // .quad -4534749603387990086
-	QUAD $0x18ad75d8438f4322 // .quad 1778206999588061986
-	QUAD $0x7155aa93cae4e7a8 // .quad 8166621051047176104
-	QUAD $0x1ed8d34e547313eb // .quad 2222758749485077483
-	QUAD $0x26d58a9c5ecf10c9 // .quad 2798295147690791113
-	QUAD $0x13478410f4c7ec73 // .quad 1389224218428173427
-	QUAD $0xf08aed437682d4fb // .quad -1113817083813899013
-	QUAD $0x1819651531f9e78f // .quad 1736530273035216783
-	QUAD $0xecada89454238a3a // .quad -1392271354767373766
-	QUAD $0x1e1fbe5a7e786173 // .quad 2170662841294020979
-	QUAD $0x73ec895cb4963664 // .quad 8353202440125167204
-	QUAD $0x12d3d6f88f0b3ce8 // .quad 1356664275808763112
-	QUAD $0x90e7abb3e1bbc3fd // .quad -8005241023553092611
-	QUAD $0x1788ccb6b2ce0c22 // .quad 1695830344760953890
-	QUAD $0x352196a0da2ab4fd // .quad 3828506775840797949
-	QUAD $0x1d6affe45f818f2b // .quad 2119787930951192363
-	QUAD $0x0134fe24885ab11e // .quad 86973725686804766
-	QUAD $0x1262dfeebbb0f97b // .quad 1324867456844495227
-	QUAD $0xc1823dadaa715d65 // .quad -4502968861318881947
-	QUAD $0x16fb97ea6a9d37d9 // .quad 1656084321055619033
-	QUAD $0x31e2cd19150db4bf // .quad 3594660960206173375
-	QUAD $0x1cba7de5054485d0 // .quad 2070105401319523792
-	QUAD $0x1f2dc02fad2890f7 // .quad 2246663100128858359
-	QUAD $0x11f48eaf234ad3a2 // .quad 1293815875824702370
-	QUAD $0xa6f9303b9872b535 // .quad -6415043161693702859
-	QUAD $0x1671b25aec1d888a // .quad 1617269844780877962
-	QUAD $0x50b77c4a7e8f6282 // .quad 5816254103165035138
-	QUAD $0x1c0e1ef1a724eaad // .quad 2021587305976097453
-	QUAD $0x5272adae8f199d91 // .quad 5941001823691840913
-	QUAD $0x1188d357087712ac // .quad 1263492066235060908
-	QUAD $0x670f591a32e004f6 // .quad 7426252279614801142
-	QUAD $0x15eb082cca94d757 // .quad 1579365082793826135
-	QUAD $0x40d32f60bf980633 // .quad 4671129331091113523
-	QUAD $0x1b65ca37fd3a0d2d // .quad 1974206353492282669
-	QUAD $0x4883fd9c77bf03e0 // .quad 5225298841145639904
-	QUAD $0x111f9e62fe44483c // .quad 1233878970932676668
-	QUAD $0x5aa4fd0395aec4d8 // .quad 6531623551432049880
-	QUAD $0x156785fbbdd55a4b // .quad 1542348713665845835
-	QUAD $0x314e3c447b1a760e // .quad 3552843420862674446
-	QUAD $0x1ac1677aad4ab0de // .quad 1927935892082307294
-	QUAD $0xded0e5aaccf089c9 // .quad -2391158880388216375
-	QUAD $0x10b8e0acac4eae8a // .quad 1204959932551442058
-	QUAD $0x96851f15802cac3b // .quad -7600634618912658373
-	QUAD $0x14e718d7d7625a2d // .quad 1506199915689302573
-	QUAD $0xfc2666dae037d74a // .quad -277421236786047158
-	QUAD $0x1a20df0dcd3af0b8 // .quad 1882749894611628216
-	QUAD $0x9d980048cc22e68e // .quad -7090917300632361330
-	QUAD $0x10548b68a044d673 // .quad 1176718684132267635
-	QUAD $0x84fe005aff2ba032 // .quad -8863646625790451662
-	QUAD $0x1469ae42c8560c10 // .quad 1470898355165334544
-	QUAD $0xa63d8071bef6883e // .quad -6467872263810676674
-	QUAD $0x198419d37a6b8f14 // .quad 1838622943956668180
-	QUAD $0xcfcce08e2eb42a4e // .quad -3473154311335957938
-	QUAD $0x1fe52048590672d9 // .quad 2298278679945835225
-	QUAD $0x21e00c58dd309a70 // .quad 2440964573842414192
-	QUAD $0x13ef342d37a407c8 // .quad 1436424174966147016
-	QUAD $0x2a580f6f147cc10d // .quad 3051205717303017741
-	QUAD $0x18eb0138858d09ba // .quad 1795530218707683770
-	QUAD $0xb4ee134ad99bf150 // .quad -5409364890226003632
-	QUAD $0x1f25c186a6f04c28 // .quad 2244412773384604712
-	QUAD $0x7114cc0ec80176d2 // .quad 8148361989677217490
-	QUAD $0x137798f428562f99 // .quad 1402757983365377945
-	QUAD $0xcd59ff127a01d486 // .quad -3649605568185641850
-	QUAD $0x18557f31326bbb7f // .quad 1753447479206722431
-	QUAD $0xc0b07ed7188249a8 // .quad -4562006960232052312
-	QUAD $0x1e6adefd7f06aa5f // .quad 2191809349008403039
-	QUAD $0xd86e4f466f516e09 // .quad -2851254350145032695
-	QUAD $0x1302cb5e6f642a7b // .quad 1369880843130251899
-	QUAD $0xce89e3180b25c98b // .quad -3564067937681290869
-	QUAD $0x17c37e360b3d351a // .quad 1712351053912814874
-	QUAD $0x822c5bde0def3bee // .quad -9066770940529001490
-	QUAD $0x1db45dc38e0c8261 // .quad 2140438817391018593
-	QUAD $0xf15bb96ac8b58575 // .quad -1055045819403238027
-	QUAD $0x1290ba9a38c7d17c // .quad 1337774260869386620
-	QUAD $0x2db2a7c57ae2e6d2 // .quad 3292878744173340370
-	QUAD $0x1734e940c6f9c5dc // .quad 1672217826086733276
-	QUAD $0x391f51b6d99ba086 // .quad 4116098430216675462
-	QUAD $0x1d022390f8b83753 // .quad 2090272282608416595
-	QUAD $0x03b3931248014454 // .quad 266718509671728212
-	QUAD $0x1221563a9b732294 // .quad 1306420176630260372
-	QUAD $0x04a077d6da019569 // .quad 333398137089660265
-	QUAD $0x16a9abc9424feb39 // .quad 1633025220787825465
-	QUAD $0x45c895cc9081fac3 // .quad 5028433689789463235
-	QUAD $0x1c5416bb92e3e607 // .quad 2041281525984781831
-	QUAD $0x8b9d5d9fda513cba // .quad -8386443989950055238
-	QUAD $0x11b48e353bce6fc4 // .quad 1275800953740488644
-	QUAD $0xae84b507d0e58be8 // .quad -5871368969010181144
-	QUAD $0x1621b1c28ac20bb5 // .quad 1594751192175610805
-	QUAD $0x1a25e249c51eeee3 // .quad 1884160825592049379
-	QUAD $0x1baa1e332d728ea3 // .quad 1993438990219513507
-	QUAD $0xf057ad6e1b33554d // .quad -1128242493218663091
-	QUAD $0x114a52dffc679925 // .quad 1245899368887195941
-	QUAD $0x6c6d98c9a2002aa1 // .quad 7813068920331446945
-	QUAD $0x159ce797fb817f6f // .quad 1557374211108994927
-	QUAD $0x4788fefc0a803549 // .quad 5154650131986920777
-	QUAD $0x1b04217dfa61df4b // .quad 1946717763886243659
-	QUAD $0x0cb59f5d8690214e // .quad 915813323278131534
-	QUAD $0x10e294eebc7d2b8f // .quad 1216698602428902287
-	QUAD $0xcfe30734e83429a1 // .quad -3466919364329723487
-	QUAD $0x151b3a2a6b9c7672 // .quad 1520873253036127858
-	QUAD $0x83dbc9022241340a // .quad -8945335223839542262
-	QUAD $0x1a6208b50683940f // .quad 1901091566295159823
-	QUAD $0xb2695da15568c086 // .quad -5590834514899713914
-	QUAD $0x107d457124123c89 // .quad 1188182228934474889
-	QUAD $0x1f03b509aac2f0a7 // .quad 2234828893230133415
-	QUAD $0x149c96cd6d16cbac // .quad 1485227786168093612
-	QUAD $0x26c4a24c1573acd1 // .quad 2793536116537666769
-	QUAD $0x19c3bc80c85c7e97 // .quad 1856534732710117015
-	QUAD $0x783ae56f8d684c03 // .quad 8663489100477123587
-	QUAD $0x101a55d07d39cf1e // .quad 1160334207943823134
-	QUAD $0x16499ecb70c25f03 // .quad 1605989338741628675
-	QUAD $0x1420eb449c8842e6 // .quad 1450417759929778918
-	QUAD $0x9bdc067e4cf2f6c4 // .quad -7215885363427739964
-	QUAD $0x19292615c3aa539f // .quad 1813022199912223647
-	QUAD $0x82d3081de02fb476 // .quad -9019856704284674954
-	QUAD $0x1f736f9b3494e887 // .quad 2266277749890279559
-	QUAD $0xb1c3e512ac1dd0c9 // .quad -5637410440177921847
-	QUAD $0x13a825c100dd1154 // .quad 1416423593681424724
-	QUAD $0xde34de57572544fc // .quad -2435077031795014404
-	QUAD $0x18922f31411455a9 // .quad 1770529492101780905
-	QUAD $0x55c215ed2cee963b // .quad 6179525747111007803
-	QUAD $0x1eb6bafd91596b14 // .quad 2213161865127226132
-	QUAD $0xb5994db43c151de5 // .quad -5361168444910395931
-	QUAD $0x133234de7ad7e2ec // .quad 1383226165704516332
-	QUAD $0xe2ffa1214b1a655e // .quad -2089774537710607010
-	QUAD $0x17fec216198ddba7 // .quad 1729032707130645415
-	QUAD $0xdbbf89699de0feb6 // .quad -2612218172138258762
-	QUAD $0x1dfe729b9ff15291 // .quad 2161290883913306769
-	QUAD $0x2957b5e202ac9f31 // .quad 2979049660840976177
-	QUAD $0x12bf07a143f6d39b // .quad 1350806802445816731
-	QUAD $0xf3ada35a8357c6fe // .quad -887873942376167682
-	QUAD $0x176ec98994f48881 // .quad 1688508503057270913
-	QUAD $0x70990c31242db8bd // .quad 8113529608884566205
-	QUAD $0x1d4a7bebfa31aaa2 // .quad 2110635628821588642
-	QUAD $0x865fa79eb69c9376 // .quad -8764102049729309834
-	QUAD $0x124e8d737c5f0aa5 // .quad 1319147268013492901
-	QUAD $0xe7f791866443b854 // .quad -1731755525306861484
-	QUAD $0x16e230d05b76cd4e // .quad 1648934085016866126
-	QUAD $0xa1f575e7fd54a669 // .quad -6776380425060964759
-	QUAD $0x1c9abd04725480a2 // .quad 2061167606271082658
-	QUAD $0xa53969b0fe54e801 // .quad -6541080774876796927
-	QUAD $0x11e0b622c774d065 // .quad 1288229753919426661
-	QUAD $0x0e87c41d3dea2202 // .quad 1047021068258779650
-	QUAD $0x1658e3ab7952047f // .quad 1610287192399283327
-	QUAD $0xd229b5248d64aa82 // .quad -3302909683103913342
-	QUAD $0x1bef1c9657a6859e // .quad 2012858990499104158
-	QUAD $0x435a1136d85eea91 // .quad 4853210475701136017
-	QUAD $0x117571ddf6c81383 // .quad 1258036869061940099
-	QUAD $0x143095848e76a536 // .quad 1454827076199032118
-	QUAD $0x15d2ce55747a1864 // .quad 1572546086327425124
-	QUAD $0x193cbae5b2144e83 // .quad 1818533845248790147
-	QUAD $0x1b4781ead1989e7d // .quad 1965682607909281405
-	QUAD $0x2fc5f4cf8f4cb112 // .quad 3442426662494187794
-	QUAD $0x110cb132c2ff630e // .quad 1228551629943300878
-	QUAD $0xbbb77203731fdd56 // .quad -4920338708737041066
-	QUAD $0x154fdd7f73bf3bd1 // .quad 1535689537429126097
-	QUAD $0x2aa54e844fe7d4ac // .quad 3072948650933474476
-	QUAD $0x1aa3d4df50af0ac6 // .quad 1919611921786407622
-	QUAD $0xdaa75112b1f0e4eb // .quad -2691093111593966357
-	QUAD $0x10a6650b926d66bb // .quad 1199757451116504763
-	QUAD $0xd15125575e6d1e26 // .quad -3363866389492457946
-	QUAD $0x14cffe4e7708c06a // .quad 1499696813895630954
-	QUAD $0x85a56ead360865b0 // .quad -8816519005292960336
-	QUAD $0x1a03fde214caf085 // .quad 1874621017369538693
-	QUAD $0x7387652c41c53f8e // .quad 8324733676974063502
-	QUAD $0x10427ead4cfed653 // .quad 1171638135855961683
-	QUAD $0x50693e7752368f71 // .quad 5794231077790191473
-	QUAD $0x14531e58a03e8be8 // .quad 1464547669819952104
-	QUAD $0x64838e1526c4334e // .quad 7242788847237739342
-	QUAD $0x1967e5eec84e2ee2 // .quad 1830684587274940130
-	QUAD $0xfda4719a70754022 // .quad -169885977807601630
-	QUAD $0x1fc1df6a7a61ba9a // .quad 2288355734093675162
-	QUAD $0xde86c70086494815 // .quad -2412021745343444971
-	QUAD $0x13d92ba28c7d14a0 // .quad 1430222333808546976
-	QUAD $0x162878c0a7db9a1a // .quad 1596658836748081690
-	QUAD $0x18cf768b2f9c59c9 // .quad 1787777917260683721
-	QUAD $0x5bb296f0d1d280a1 // .quad 6607509564362490017
-	QUAD $0x1f03542dfb83703b // .quad 2234722396575854651
-	QUAD $0x194f9e5683239064 // .quad 1823850468512862308
-	QUAD $0x1362149cbd322625 // .quad 1396701497859909157
-	QUAD $0x5fa385ec23ec747e // .quad 6891499104068465790
-	QUAD $0x183a99c3ec7eafae // .quad 1745876872324886446
-	QUAD $0xf78c67672ce7919d // .quad -608998156769193571
-	QUAD $0x1e494034e79e5b99 // .quad 2182346090406108057
-	QUAD $0x3ab7c0a07c10bb02 // .quad 4231062170446641922
-	QUAD $0x12edc82110c2f940 // .quad 1363966306503817536
-	QUAD $0x4965b0c89b14e9c3 // .quad 5288827713058302403
-	QUAD $0x17a93a2954f3b790 // .quad 1704957883129771920
-	QUAD $0x5bbf1cfac1da2433 // .quad 6611034641322878003
-	QUAD $0x1d9388b3aa30a574 // .quad 2131197353912214900
-	QUAD $0xb957721cb92856a0 // .quad -5091475386027977056
-	QUAD $0x127c35704a5e6768 // .quad 1331998346195134312
-	QUAD $0xe7ad4ea3e7726c48 // .quad -1752658214107583416
-	QUAD $0x171b42cc5cf60142 // .quad 1664997932743917890
-	QUAD $0xa198a24ce14f075a // .quad -6802508786061867174
-	QUAD $0x1ce2137f74338193 // .quad 2081247415929897363
-	QUAD $0x44ff65700cd16498 // .quad 4971804045566108824
-	QUAD $0x120d4c2fa8a030fc // .quad 1300779634956185852
-	QUAD $0x563f3ecc1005bdbe // .quad 6214755056957636030
-	QUAD $0x16909f3b92c83d3b // .quad 1625974543695232315
-	QUAD $0x2bcf0e7f14072d2e // .quad 3156757802769657134
-	QUAD $0x1c34c70a777a4c8a // .quad 2032468179619040394
-	QUAD $0x5b61690f6c847c3d // .quad 6584659645158423613
-	QUAD $0x11a0fc668aac6fd6 // .quad 1270292612261900246
-	QUAD $0xf239c35347a59b4c // .quad -992547480406746292
-	QUAD $0x16093b802d578bcb // .quad 1587865765327375307
-	QUAD $0xeec83428198f021f // .quad -1240684350508432865
-	QUAD $0x1b8b8a6038ad6ebe // .quad 1984832206659219134
-	QUAD $0x553d20990ff96153 // .quad 6142101308573311315
-	QUAD $0x1137367c236c6537 // .quad 1240520129162011959
-	QUAD $0x2a8c68bf53f7b9a8 // .quad 3065940617289251240
-	QUAD $0x1585041b2c477e85 // .quad 1550650161452514949
-	QUAD $0x752f82ef28f5a812 // .quad 8444111790038951954
-	QUAD $0x1ae64521f7595e26 // .quad 1938312701815643686
-	QUAD $0x093db1d57999890b // .quad 665883850346957067
-	QUAD $0x10cfeb353a97dad8 // .quad 1211445438634777304
-	QUAD $0x0b8d1e4ad7ffeb4e // .quad 832354812933696334
-	QUAD $0x1503e602893dd18e // .quad 1514306798293471630
-	QUAD $0x8e7065dd8dffe622 // .quad -8182928520687655390
-	QUAD $0x1a44df832b8d45f1 // .quad 1892883497866839537
-	QUAD $0xf9063faa78bfefd5 // .quad -502644307002396715
-	QUAD $0x106b0bb1fb384bb6 // .quad 1183052186166774710
-	QUAD $0xb747cf9516efebca // .quad -5239991402180383798
-	QUAD $0x1485ce9e7a065ea4 // .quad 1478815232708468388
-	QUAD $0xe519c37a5cabe6bd // .quad -1938303234298091843
-	QUAD $0x19a742461887f64d // .quad 1848519040885585485
-	QUAD $0xaf301a2c79eb7036 // .quad -5823125539863695306
-	QUAD $0x1008896bcf54f9f0 // .quad 1155324400553490928
-	QUAD $0xdafc20b798664c43 // .quad -2667220906402231229
-	QUAD $0x140aabc6c32a386c // .quad 1444155500691863660
-	QUAD $0x11bb28e57e7fdf54 // .quad 1277659885424598868
-	QUAD $0x190d56b873f4c688 // .quad 1805194375864829576
-	QUAD $0x1629f31ede1fd72a // .quad 1597074856780748586
-	QUAD $0x1f50ac6690f1f82a // .quad 2256492969831036970
-	QUAD $0x4dda37f34ad3e67a // .quad 5609857803915355770
-	QUAD $0x13926bc01a973b1a // .quad 1410308106144398106
-	QUAD $0xe150c5f01d88e019 // .quad -2211049781960581095
-	QUAD $0x187706b0213d09e0 // .quad 1762885132680497632
-	QUAD $0x19a4f76c24eb181f // .quad 1847873790976661535
-	QUAD $0x1e94c85c298c4c59 // .quad 2203606415850622041
-	QUAD $0xb0071aa39712ef13 // .quad -5762607908280668397
-	QUAD $0x131cfd3999f7afb7 // .quad 1377254009906638775
-	QUAD $0x9c08e14c7cd7aad8 // .quad -7203259885350835496
-	QUAD $0x17e43c8800759ba5 // .quad 1721567512383298469
-	QUAD $0x030b199f9c0d958e // .quad 219297180166231438
-	QUAD $0x1ddd4baa0093028f // .quad 2151959390479123087
-	QUAD $0x61e6f003c1887d79 // .quad 7054589765244976505
-	QUAD $0x12aa4f4a405be199 // .quad 1344974619049451929
-	QUAD $0xba60ac04b1ea9cd7 // .quad -5016820848725943081
-	QUAD $0x1754e31cd072d9ff // .quad 1681218273811814911
-	QUAD $0xa8f8d705de65440d // .quad -6271026060907428851
-	QUAD $0x1d2a1be4048f907f // .quad 2101522842264768639
-	QUAD $0xc99b8663aaff4a88 // .quad -3919391288067143032
-	QUAD $0x123a516e82d9ba4f // .quad 1313451776415480399
-	QUAD $0xbc0267fc95bf1d2a // .quad -4899239110083928790
-	QUAD $0x16c8e5ca239028e3 // .quad 1641814720519350499
-	QUAD $0xab0301fbbb2ee474 // .quad -6124048887604910988
-	QUAD $0x1c7b1f3cac74331c // .quad 2052268400649188124
-	QUAD $0xeae1e13d54fd4ec9 // .quad -1521687545539375415
-	QUAD $0x11ccf385ebc89ff1 // .quad 1282667750405742577
-	QUAD $0x659a598caa3ca27b // .quad 7321262604930556539
-	QUAD $0x1640306766bac7ee // .quad 1603334688007178222
-	QUAD $0xff00efefd4cbcb1a // .quad -71793780691580134
-	QUAD $0x1bd03c81406979e9 // .quad 2004168360008972777
-	QUAD $0x3f6095f5e4ff5ef0 // .quad 4566814905495150320
-	QUAD $0x116225d0c841ec32 // .quad 1252605225005607986
-	QUAD $0xcf38bb735e3f36ac // .quad -3514853404985837908
-	QUAD $0x15baaf44fa52673e // .quad 1565756531257009982
-	QUAD $0x8306ea5035cf0457 // .quad -9005252774659685289
-	QUAD $0x1b295b1638e7010e // .quad 1957195664071262478
-	QUAD $0x11e4527221a162b6 // .quad 1289246043478778550
-	QUAD $0x10f9d8ede39060a9 // .quad 1223247290044539049
-	QUAD $0x565d670eaa09bb64 // .quad 6223243572775861092
-	QUAD $0x15384f295c7478d3 // .quad 1529059112555673811
-	QUAD $0x2bf4c0d2548c2a3d // .quad 3167368447542438461
-	QUAD $0x1a8662f3b3919708 // .quad 1911323890694592264
-	QUAD $0x1b78f88374d79a66 // .quad 1979605279714024038
-	QUAD $0x1093fdd8503afe65 // .quad 1194577431684120165
-	QUAD $0x625736a4520d8100 // .quad 7086192618069917952
-	QUAD $0x14b8fd4e6449bdfe // .quad 1493221789605150206
-	QUAD $0xfaed044d6690e140 // .quad -365631264267378368
-	QUAD $0x19e73ca1fd5c2d7d // .quad 1866527237006437757
-	QUAD $0xbcd422b0601a8cc8 // .quad -4840205558594499384
-	QUAD $0x103085e53e599c6e // .quad 1166579523129023598
-	QUAD $0x6c092b5c78212ffa // .quad 7784801107039039482
-	QUAD $0x143ca75e8df0038a // .quad 1458224403911279498
-	QUAD $0x070b763396297bf8 // .quad 507629346944023544
-	QUAD $0x194bd136316c046d // .quad 1822780504889099373
-	QUAD $0x48ce53c07bb3daf6 // .quad 5246222702107417334
-	QUAD $0x1f9ec583bdc70588 // .quad 2278475631111374216
-	QUAD $0x2d80f4584d5068da // .quad 3278889188817135834
-	QUAD $0x13c33b72569c6375 // .quad 1424047269444608885
-	QUAD $0x78e1316e60a48310 // .quad 8710297504448807696
-	QUAD $0x18b40a4eec437c52 // .quad 1780059086805761106
-
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1000000000000000  // .quad 1152921504606846976
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1400000000000000  // .quad 1441151880758558720
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1900000000000000  // .quad 1801439850948198400
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1f40000000000000  // .quad 2251799813685248000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1388000000000000  // .quad 1407374883553280000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x186a000000000000  // .quad 1759218604441600000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1e84800000000000  // .quad 2199023255552000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1312d00000000000  // .quad 1374389534720000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x17d7840000000000  // .quad 1717986918400000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1dcd650000000000  // .quad 2147483648000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x12a05f2000000000  // .quad 1342177280000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x174876e800000000  // .quad 1677721600000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1d1a94a200000000  // .quad 2097152000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x12309ce540000000  // .quad 1310720000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x16bcc41e90000000  // .quad 1638400000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1c6bf52634000000  // .quad 2048000000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x11c37937e0800000  // .quad 1280000000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x16345785d8a00000  // .quad 1600000000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1bc16d674ec80000  // .quad 2000000000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1158e460913d0000  // .quad 1250000000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x15af1d78b58c4000  // .quad 1562500000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1b1ae4d6e2ef5000  // .quad 1953125000000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x10f0cf064dd59200  // .quad 1220703125000000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x152d02c7e14af680  // .quad 1525878906250000000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x1a784379d99db420  // .quad 1907348632812500000
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x108b2a2c28029094  // .quad 1192092895507812500
+	QUAD $0x0000000000000000  // .quad 0
+	QUAD $0x14adf4b7320334b9  // .quad 1490116119384765625
+	QUAD $0x4000000000000000  // .quad 4611686018427387904
+	QUAD $0x19d971e4fe8401e7  // .quad 1862645149230957031
+	QUAD $0x8800000000000000  // .quad -8646911284551352320
+	QUAD $0x1027e72f1f128130  // .quad 1164153218269348144
+	QUAD $0xaa00000000000000  // .quad -6196953087261802496
+	QUAD $0x1431e0fae6d7217c  // .quad 1455191522836685180
+	QUAD $0xd480000000000000  // .quad -3134505340649865216
+	QUAD $0x193e5939a08ce9db  // .quad 1818989403545856475
+	QUAD $0xc9a0000000000000  // .quad -3918131675812331520
+	QUAD $0x1f8def8808b02452  // .quad 2273736754432320594
+	QUAD $0xbe04000000000000  // .quad -4754675306596401152
+	QUAD $0x13b8b5b5056e16b3  // .quad 1421085471520200371
+	QUAD $0xad85000000000000  // .quad -5943344133245501440
+	QUAD $0x18a6e32246c99c60  // .quad 1776356839400250464
+	QUAD $0xd8e6400000000000  // .quad -2817494148129488896
+	QUAD $0x1ed09bead87c0378  // .quad 2220446049250313080
+	QUAD $0x878fe80000000000  // .quad -8678462870222012416
+	QUAD $0x13426172c74d822b  // .quad 1387778780781445675
+	QUAD $0x6973e20000000000  // .quad 7598665485932036096
+	QUAD $0x1812f9cf7920e2b6  // .quad 1734723475976807094
+	QUAD $0x03d0da8000000000  // .quad 274959820560269312
+	QUAD $0x1e17b84357691b64  // .quad 2168404344971008868
+	QUAD $0x8262889000000000  // .quad -9051522149004607488
+	QUAD $0x12ced32a16a1b11e  // .quad 1355252715606880542
+	QUAD $0x22fb2ab400000000  // .quad 2520655369026404352
+	QUAD $0x178287f49c4a1d66  // .quad 1694065894508600678
+	QUAD $0xabb9f56100000000  // .quad -6072552825571770368
+	QUAD $0x1d6329f1c35ca4bf  // .quad 2117582368135750847
+	QUAD $0xcb54395ca0000000  // .quad -3795345515982356480
+	QUAD $0x125dfa371a19e6f7  // .quad 1323488980084844279
+	QUAD $0xbe2947b3c8000000  // .quad -4744181894977945600
+	QUAD $0x16f578c4e0a060b5  // .quad 1654361225106055349
+	QUAD $0x2db399a0ba000000  // .quad 3293144668132343808
+	QUAD $0x1cb2d6f618c878e3  // .quad 2067951531382569187
+	QUAD $0xfc90400474400000  // .quad -247627591630979072
+	QUAD $0x11efc659cf7d4b8d  // .quad 1292469707114105741
+	QUAD $0x7bb4500591500000  // .quad 8913837547316051968
+	QUAD $0x166bb7f0435c9e71  // .quad 1615587133892632177
+	QUAD $0xdaa16406f5a40000  // .quad -2692761121137098752
+	QUAD $0x1c06a5ec5433c60d  // .quad 2019483917365790221
+	QUAD $0xa8a4de8459868000  // .quad -6294661719138074624
+	QUAD $0x118427b3b4a05bc8  // .quad 1262177448353618888
+	QUAD $0xd2ce16256fe82000  // .quad -3256641130495205376
+	QUAD $0x15e531a0a1c872ba  // .quad 1577721810442023610
+	QUAD $0x87819baecbe22800  // .quad -8682487431546394624
+	QUAD $0x1b5e7e08ca3a8f69  // .quad 1972152263052529513
+	QUAD $0xf4b1014d3f6d5900  // .quad -814868626289108736
+	QUAD $0x111b0ec57e6499a1  // .quad 1232595164407830945
+	QUAD $0x71dd41a08f48af40  // .quad 8204786253993389888
+	QUAD $0x1561d276ddfdc00a  // .quad 1540743955509788682
+	QUAD $0x0e549208b31adb10  // .quad 1032610780636961552
+	QUAD $0x1aba4714957d300d  // .quad 1925929944387235853
+	QUAD $0x28f4db456ff0c8ea  // .quad 2951224747111794922
+	QUAD $0x10b46c6cdd6e3e08  // .quad 1203706215242022408
+	QUAD $0x33321216cbecfb24  // .quad 3689030933889743652
+	QUAD $0x14e1878814c9cd8a  // .quad 1504632769052528010
+	QUAD $0xbffe969c7ee839ed  // .quad -4612083369492596243
+	QUAD $0x1a19e96a19fc40ec  // .quad 1880790961315660012
+	QUAD $0xf7ff1e21cf512434  // .quad -576709096719178700
+	QUAD $0x105031e2503da893  // .quad 1175494350822287507
+	QUAD $0xf5fee5aa43256d41  // .quad -720886370898973375
+	QUAD $0x14643e5ae44d12b8  // .quad 1469367938527859384
+	QUAD $0x337e9f14d3eec892  // .quad 3710578054803671186
+	QUAD $0x197d4df19d605767  // .quad 1836709923159824231
+	QUAD $0x005e46da08ea7ab6  // .quad 26536550077201078
+	QUAD $0x1fdca16e04b86d41  // .quad 2295887403949780289
+	QUAD $0xa03aec4845928cb2  // .quad -6900943683842831182
+	QUAD $0x13e9e4e4c2f34448  // .quad 1434929627468612680
+	QUAD $0xc849a75a56f72fde  // .quad -4014493586376151074
+	QUAD $0x18e45e1df3b0155a  // .quad 1793662034335765850
+	QUAD $0x7a5c1130ecb4fbd6  // .quad 8816941072311974870
+	QUAD $0x1f1d75a5709c1ab1  // .quad 2242077542919707313
+	QUAD $0xec798abe93f11d65  // .quad -1406940857446097563
+	QUAD $0x13726987666190ae  // .quad 1401298464324817070
+	QUAD $0xa797ed6e38ed64bf  // .quad -6370362090235009857
+	QUAD $0x184f03e93ff9f4da  // .quad 1751623080406021338
+	QUAD $0x517de8c9c728bdef  // .quad 5872105442488401391
+	QUAD $0x1e62c4e38ff87211  // .quad 2189528850507526673
+	QUAD $0xd2eeb17e1c7976b5  // .quad -3247463126085830987
+	QUAD $0x12fdbb0e39fb474a  // .quad 1368455531567204170
+	QUAD $0x87aa5ddda397d462  // .quad -8671014926034676638
+	QUAD $0x17bd29d1c87a191d  // .quad 1710569414459005213
+	QUAD $0xe994f5550c7dc97b  // .quad -1615396620688569989
+	QUAD $0x1dac74463a989f64  // .quad 2138211768073756516
+	QUAD $0x11fd195527ce9ded  // .quad 1296220121283337709
+	QUAD $0x128bc8abe49f639f  // .quad 1336382355046097823
+	QUAD $0xd67c5faa71c24568  // .quad -2991410866823215768
+	QUAD $0x172ebad6ddc73c86  // .quad 1670477943807622278
+	QUAD $0x8c1b77950e32d6c2  // .quad -8350949601956407614
+	QUAD $0x1cfa698c95390ba8  // .quad 2088097429759527848
+	QUAD $0x57912abd28dfc639  // .quad 6309871544845715001
+	QUAD $0x121c81f7dd43a749  // .quad 1305060893599704905
+	QUAD $0xad75756c7317b7c8  // .quad -5947718624225019960
+	QUAD $0x16a3a275d494911b  // .quad 1631326116999631131
+	QUAD $0x98d2d2c78fdda5ba  // .quad -7434648280281274950
+	QUAD $0x1c4c8b1349b9b562  // .quad 2039157646249538914
+	QUAD $0x9f83c3bcb9ea8794  // .quad -6952498184389490796
+	QUAD $0x11afd6ec0e14115d  // .quad 1274473528905961821
+	QUAD $0x0764b4abe8652979  // .quad 532749306367912313
+	QUAD $0x161bcca7119915b5  // .quad 1593091911132452277
+	QUAD $0x493de1d6e27e73d7  // .quad 5277622651387278295
+	QUAD $0x1ba2bfd0d5ff5b22  // .quad 1991364888915565346
+	QUAD $0x6dc6ad264d8f0866  // .quad 7910200175544436838
+	QUAD $0x1145b7e285bf98f5  // .quad 1244603055572228341
+	QUAD $0xc938586fe0f2ca80  // .quad -3947307835851617664
+	QUAD $0x159725db272f7f32  // .quad 1555753819465285426
+	QUAD $0x7b866e8bd92f7d20  // .quad 8900923260467641632
+	QUAD $0x1afcef51f0fb5eff  // .quad 1944692274331606783
+	QUAD $0xad34051767bdae34  // .quad -5966138008276193740
+	QUAD $0x10de1593369d1b5f  // .quad 1215432671457254239
+	QUAD $0x9881065d41ad19c1  // .quad -7457672510345242175
+	QUAD $0x15159af804446237  // .quad 1519290839321567799
+	QUAD $0x7ea147f492186032  // .quad 9124653435777998898
+	QUAD $0x1a5b01b605557ac5  // .quad 1899113549151959749
+	QUAD $0x6f24ccf8db4f3c1f  // .quad 8008751406574943263
+	QUAD $0x1078e111c3556cbb  // .quad 1186945968219974843
+	QUAD $0x4aee003712230b27  // .quad 5399253239791291175
+	QUAD $0x14971956342ac7ea  // .quad 1483682460274968554
+	QUAD $0xdda98044d6abcdf0  // .quad -2474305487115661840
+	QUAD $0x19bcdfabc13579e4  // .quad 1854603075343710692
+	QUAD $0x0a89f02b062b60b6  // .quad 759402079766405302
+	QUAD $0x10160bcb58c16c2f  // .quad 1159126922089819183
+	QUAD $0xcd2c6c35c7b638e4  // .quad -3662433418719381276
+	QUAD $0x141b8ebe2ef1c73a  // .quad 1448908652612273978
+	QUAD $0x8077874339a3c71d  // .quad -9189727791826614499
+	QUAD $0x1922726dbaae3909  // .quad 1811135815765342473
+	QUAD $0xe0956914080cb8e4  // .quad -2263787702928492316
+	QUAD $0x1f6b0f092959c74b  // .quad 2263919769706678091
+	QUAD $0x6c5d61ac8507f38e  // .quad 7808504722524468110
+	QUAD $0x13a2e965b9d81c8f  // .quad 1414949856066673807
+	QUAD $0x4774ba17a649f072  // .quad 5148944884728197234
+	QUAD $0x188ba3bf284e23b3  // .quad 1768687320083342259
+	QUAD $0x1951e89d8fdc6c8f  // .quad 1824495087482858639
+	QUAD $0x1eae8caef261aca0  // .quad 2210859150104177824
+	QUAD $0x0fd3316279e9c3d9  // .quad 1140309429676786649
+	QUAD $0x132d17ed577d0be4  // .quad 1381786968815111140
+	QUAD $0x13c7fdbb186434cf  // .quad 1425386787095983311
+	QUAD $0x17f85de8ad5c4edd  // .quad 1727233711018888925
+	QUAD $0x58b9fd29de7d4203  // .quad 6393419502297367043
+	QUAD $0x1df67562d8b36294  // .quad 2159042138773611156
+	QUAD $0xb7743e3a2b0e4942  // .quad -5227484847918921406
+	QUAD $0x12ba095dc7701d9c  // .quad 1349401336733506972
+	QUAD $0xe5514dc8b5d1db92  // .quad -1922670041471263854
+	QUAD $0x17688bb5394c2503  // .quad 1686751670916883715
+	QUAD $0xdea5a13ae3465277  // .quad -2403337551839079817
+	QUAD $0x1d42aea2879f2e44  // .quad 2108439588646104644
+	QUAD $0x0b2784c4ce0bf38a  // .quad 803757039314269066
+	QUAD $0x1249ad2594c37ceb  // .quad 1317774742903815403
+	QUAD $0xcdf165f6018ef06d  // .quad -3606989719284551571
+	QUAD $0x16dc186ef9f45c25  // .quad 1647218428629769253
+	QUAD $0x416dbf7381f2ac88  // .quad 4714634887749086344
+	QUAD $0x1c931e8ab871732f  // .quad 2059023035787211567
+	QUAD $0x88e497a83137abd5  // .quad -8582568241225290795
+	QUAD $0x11dbf316b346e7fd  // .quad 1286889397367007229
+	QUAD $0xeb1dbd923d8596ca  // .quad -1504838264676837686
+	QUAD $0x1652efdc6018a1fc  // .quad 1608611746708759036
+	QUAD $0x25e52cf6cce6fc7d  // .quad 2730638187581340797
+	QUAD $0x1be7abd3781eca7c  // .quad 2010764683385948796
+	QUAD $0x97af3c1a40105dce  // .quad -7516723169616437810
+	QUAD $0x1170cb642b133e8d  // .quad 1256727927116217997
+	QUAD $0xfd9b0b20d0147542  // .quad -172531925165771454
+	QUAD $0x15ccfe3d35d80e30  // .quad 1570909908895272496
+	QUAD $0x3d01cde904199292  // .quad 4396021111970173586
+	QUAD $0x1b403dcc834e11bd  // .quad 1963637386119090621
+	QUAD $0x462120b1a28ffb9b  // .quad 5053356204195052443
+	QUAD $0x1108269fd210cb16  // .quad 1227273366324431638
+	QUAD $0xd7a968de0b33fa82  // .quad -2906676781610960254
+	QUAD $0x154a3047c694fddb  // .quad 1534091707905539547
+	QUAD $0xcd93c3158e00f923  // .quad -3633345977013700317
+	QUAD $0x1a9cbc59b83a3d52  // .quad 1917614634881924434
+	QUAD $0xc07c59ed78c09bb6  // .quad -4576684244847256650
+	QUAD $0x10a1f5b813246653  // .quad 1198509146801202771
+	QUAD $0xb09b7068d6f0c2a3  // .quad -5720855306059070813
+	QUAD $0x14ca732617ed7fe8  // .quad 1498136433501503464
+	QUAD $0xdcc24c830cacf34c  // .quad -2539383114146450612
+	QUAD $0x19fd0fef9de8dfe2  // .quad 1872670541876879330
+	QUAD $0xc9f96fd1e7ec180f  // .quad -3892957455555225585
+	QUAD $0x103e29f5c2b18bed  // .quad 1170419088673049581
+	QUAD $0x3c77cbc661e71e13  // .quad 4357175217410743827
+	QUAD $0x144db473335deee9  // .quad 1463023860841311977
+	QUAD $0x8b95beb7fa60e598  // .quad -8388589033518733928
+	QUAD $0x1961219000356aa3  // .quad 1828779826051639971
+	QUAD $0x6e7b2e65f8f91efe  // .quad 7961007781811134206
+	QUAD $0x1fb969f40042c54c  // .quad 2285974782564549964
+	QUAD $0xc50cfcffbb9bb35f  // .quad -4247742173222816929
+	QUAD $0x13d3e2388029bb4f  // .quad 1428734239102843727
+	QUAD $0xb6503c3faa82a037  // .quad -5309677716528521161
+	QUAD $0x18c8dac6a0342a23  // .quad 1785917798878554659
+	QUAD $0xa3e44b4f95234844  // .quad -6637097145660651452
+	QUAD $0x1efb1178484134ac  // .quad 2232397248598193324
+	QUAD $0xe66eaf11bd360d2b  // .quad -1842342706824213205
+	QUAD $0x135ceaeb2d28c0eb  // .quad 1395248280373870827
+	QUAD $0xe00a5ad62c839075  // .quad -2302928383530266507
+	QUAD $0x183425a5f872f126  // .quad 1744060350467338534
+	QUAD $0x980cf18bb7a47493  // .quad -7490346497840221037
+	QUAD $0x1e412f0f768fad70  // .quad 2180075438084173168
+	QUAD $0x5f0816f752c6c8dc  // .quad 6847748484918331612
+	QUAD $0x12e8bd69aa19cc66  // .quad 1362547148802608230
+	QUAD $0xf6ca1cb527787b13  // .quad -663686430706861293
+	QUAD $0x17a2ecc414a03f7f  // .quad 1703183936003260287
+	QUAD $0xf47ca3e2715699d7  // .quad -829608038383576617
+	QUAD $0x1d8ba7f519c84f5f  // .quad 2128979920004075359
+	QUAD $0xf8cde66d86d62026  // .quad -518505023989735386
+	QUAD $0x127748f9301d319b  // .quad 1330612450002547099
+	QUAD $0xf7016008e88ba830  // .quad -648131279987169232
+	QUAD $0x17151b377c247e02  // .quad 1663265562503183874
+	QUAD $0xb4c1b80b22ae923c  // .quad -5421850118411349444
+	QUAD $0x1cda62055b2d9d83  // .quad 2079081953128979843
+	QUAD $0x50f91306f5ad1b65  // .quad 5834715712847682405
+	QUAD $0x12087d4358fc8272  // .quad 1299426220705612402
+	QUAD $0xe53757c8b318623f  // .quad -1929977395795172801
+	QUAD $0x168a9c942f3ba30e  // .quad 1624282775882015502
+	QUAD $0x9e852dbadfde7acf  // .quad -7024157763171353905
+	QUAD $0x1c2d43b93b0a8bd2  // .quad 2030353469852519378
+	QUAD $0xa3133c94cbeb0cc1  // .quad -6695941611195790143
+	QUAD $0x119c4a53c4e69763  // .quad 1268970918657824611
+	QUAD $0x8bd80bb9fee5cff1  // .quad -8369927013994737679
+	QUAD $0x16035ce8b6203d3c  // .quad 1586213648322280764
+	QUAD $0xaece0ea87e9f43ee  // .quad -5850722749066034194
+	QUAD $0x1b843422e3a84c8b  // .quad 1982767060402850955
+	QUAD $0x4d40c9294f238a75  // .quad 5566670318688504437
+	QUAD $0x1132a095ce492fd7  // .quad 1239229412751781847
+	QUAD $0x2090fb73a2ec6d12  // .quad 2346651879933242642
+	QUAD $0x157f48bb41db7bcd  // .quad 1549036765939727309
+	QUAD $0x68b53a508ba78856  // .quad 7545000868343941206
+	QUAD $0x1adf1aea12525ac0  // .quad 1936295957424659136
+	QUAD $0x417144725748b536  // .quad 4715625542714963254
+	QUAD $0x10cb70d24b7378b8  // .quad 1210184973390411960
+	QUAD $0x51cd958eed1ae283  // .quad 5894531928393704067
+	QUAD $0x14fe4d06de5056e6  // .quad 1512731216738014950
+	QUAD $0xe640faf2a8619b24  // .quad -1855207126362645724
+	QUAD $0x1a3de04895e46c9f  // .quad 1890914020922518687
+	QUAD $0xefe89cd7a93d00f7  // .quad -1159504453976653577
+	QUAD $0x1066ac2d5daec3e3  // .quad 1181821263076574179
+	QUAD $0xebe2c40d938c4134  // .quad -1449380567470816972
+	QUAD $0x14805738b51a74dc  // .quad 1477276578845717724
+	QUAD $0x26db7510f86f5181  // .quad 2799960309088866689
+	QUAD $0x19a06d06e2611214  // .quad 1846595723557147156
+	QUAD $0x9849292a9b4592f1  // .quad -7473396843674234127
+	QUAD $0x100444244d7cab4c  // .quad 1154122327223216972
+	QUAD $0xbe5b73754216f7ad  // .quad -4730060036165404755
+	QUAD $0x1405552d60dbd61f  // .quad 1442652909029021215
+	QUAD $0xadf25052929cb598  // .quad -5912575045206755944
+	QUAD $0x1906aa78b912cba7  // .quad 1803316136286276519
+	QUAD $0x996ee4673743e2ff  // .quad -7390718806508444929
+	QUAD $0x1f485516e7577e91  // .quad 2254145170357845649
+	QUAD $0xffe54ec0828a6ddf  // .quad -7513235640390177
+	QUAD $0x138d352e5096af1a  // .quad 1408840731473653530
+	QUAD $0xbfdea270a32d0957  // .quad -4621077562977875625
+	QUAD $0x18708279e4bc5ae1  // .quad 1761050914342066913
+	QUAD $0x2fd64b0ccbf84bad  // .quad 3447025083132431277
+	QUAD $0x1e8ca3185deb719a  // .quad 2201313642927583642
+	QUAD $0x5de5eee7ff7b2f4c  // .quad 6766076695385157452
+	QUAD $0x1317e5ef3ab32700  // .quad 1375821026829739776
+	QUAD $0x755f6aa1ff59fb1f  // .quad 8457595869231446815
+	QUAD $0x17dddf6b095ff0c0  // .quad 1719776283537174720
+	QUAD $0x92b7454a7f3079e7  // .quad -7874749237170243097
+	QUAD $0x1dd55745cbb7ecf0  // .quad 2149720354421468400
+	QUAD $0x5bb28b4e8f7e4c30  // .quad 6607496772837067824
+	QUAD $0x12a5568b9f52f416  // .quad 1343575221513417750
+	QUAD $0xf29f2e22335ddf3c  // .quad -964001070808441028
+	QUAD $0x174eac2e8727b11b  // .quad 1679469026891772187
+	QUAD $0xef46f9aac035570b  // .quad -1205001338510551285
+	QUAD $0x1d22573a28f19d62  // .quad 2099336283614715234
+	QUAD $0xd58c5c0ab8215667  // .quad -3058968845782788505
+	QUAD $0x123576845997025d  // .quad 1312085177259197021
+	QUAD $0x4aef730d6629ac01  // .quad 5399660979626290177
+	QUAD $0x16c2d4256ffcc2f5  // .quad 1640106471573996277
+	QUAD $0x9dab4fd0bfb41701  // .quad -7085481830749300991
+	QUAD $0x1c73892ecbfbf3b2  // .quad 2050133089467495346
+	QUAD $0xa28b11e277d08e60  // .quad -6734269153432007072
+	QUAD $0x11c835bd3f7d784f  // .quad 1281333180917184591
+	QUAD $0x8b2dd65b15c4b1f9  // .quad -8417836441790008839
+	QUAD $0x163a432c8f5cd663  // .quad 1601666476146480739
+	QUAD $0x6df94bf1db35de77  // .quad 7924448521472040567
+	QUAD $0x1bc8d3f7b3340bfc  // .quad 2002083095183100924
+	QUAD $0xc4bbcf772901ab0a  // .quad -4270591710934750454
+	QUAD $0x115d847ad000877d  // .quad 1251301934489438077
+	QUAD $0x35eac354f34215cd  // .quad 3885132398186337741
+	QUAD $0x15b4e5998400a95d  // .quad 1564127418111797597
+	QUAD $0x8365742a30129b40  // .quad -8978642557549241536
+	QUAD $0x1b221effe500d3b4  // .quad 1955159272639746996
+	QUAD $0xd21f689a5e0ba108  // .quad -3305808589254582008
+	QUAD $0x10f5535fef208450  // .quad 1221974545399841872
+	QUAD $0x06a742c0f58e894a  // .quad 479425281859160394
+	QUAD $0x1532a837eae8a565  // .quad 1527468181749802341
+	QUAD $0x4851137132f22b9d  // .quad 5210967620751338397
+	QUAD $0x1a7f5245e5a2cebe  // .quad 1909335227187252926
+	QUAD $0xed32ac26bfd75b42  // .quad -1354831255457801406
+	QUAD $0x108f936baf85c136  // .quad 1193334516992033078
+	QUAD $0xa87f57306fcd3212  // .quad -6305225087749639662
+	QUAD $0x14b378469b673184  // .quad 1491668146240041348
+	QUAD $0xd29f2cfc8bc07e97  // .quad -3269845341259661673
+	QUAD $0x19e056584240fde5  // .quad 1864585182800051685
+	QUAD $0xa3a37c1dd7584f1e  // .quad -6655339356714676450
+	QUAD $0x102c35f729689eaf  // .quad 1165365739250032303
+	QUAD $0x8c8c5b254d2e62e6  // .quad -8319174195893345562
+	QUAD $0x14374374f3c2c65b  // .quad 1456707174062540379
+	QUAD $0x6faf71eea079fb9f  // .quad 8047776328842869663
+	QUAD $0x1945145230b377f2  // .quad 1820883967578175474
+	QUAD $0x0b9b4e6a48987a87  // .quad 836348374198811271
+	QUAD $0x1f965966bce055ef  // .quad 2276104959472719343
+	QUAD $0x674111026d5f4c94  // .quad 7440246761515338900
+	QUAD $0x13bdf7e0360c35b5  // .quad 1422565599670449589
+	QUAD $0xc111554308b71fba  // .quad -4534749603387990086
+	QUAD $0x18ad75d8438f4322  // .quad 1778206999588061986
+	QUAD $0x7155aa93cae4e7a8  // .quad 8166621051047176104
+	QUAD $0x1ed8d34e547313eb  // .quad 2222758749485077483
+	QUAD $0x26d58a9c5ecf10c9  // .quad 2798295147690791113
+	QUAD $0x13478410f4c7ec73  // .quad 1389224218428173427
+	QUAD $0xf08aed437682d4fb  // .quad -1113817083813899013
+	QUAD $0x1819651531f9e78f  // .quad 1736530273035216783
+	QUAD $0xecada89454238a3a  // .quad -1392271354767373766
+	QUAD $0x1e1fbe5a7e786173  // .quad 2170662841294020979
+	QUAD $0x73ec895cb4963664  // .quad 8353202440125167204
+	QUAD $0x12d3d6f88f0b3ce8  // .quad 1356664275808763112
+	QUAD $0x90e7abb3e1bbc3fd  // .quad -8005241023553092611
+	QUAD $0x1788ccb6b2ce0c22  // .quad 1695830344760953890
+	QUAD $0x352196a0da2ab4fd  // .quad 3828506775840797949
+	QUAD $0x1d6affe45f818f2b  // .quad 2119787930951192363
+	QUAD $0x0134fe24885ab11e  // .quad 86973725686804766
+	QUAD $0x1262dfeebbb0f97b  // .quad 1324867456844495227
+	QUAD $0xc1823dadaa715d65  // .quad -4502968861318881947
+	QUAD $0x16fb97ea6a9d37d9  // .quad 1656084321055619033
+	QUAD $0x31e2cd19150db4bf  // .quad 3594660960206173375
+	QUAD $0x1cba7de5054485d0  // .quad 2070105401319523792
+	QUAD $0x1f2dc02fad2890f7  // .quad 2246663100128858359
+	QUAD $0x11f48eaf234ad3a2  // .quad 1293815875824702370
+	QUAD $0xa6f9303b9872b535  // .quad -6415043161693702859
+	QUAD $0x1671b25aec1d888a  // .quad 1617269844780877962
+	QUAD $0x50b77c4a7e8f6282  // .quad 5816254103165035138
+	QUAD $0x1c0e1ef1a724eaad  // .quad 2021587305976097453
+	QUAD $0x5272adae8f199d91  // .quad 5941001823691840913
+	QUAD $0x1188d357087712ac  // .quad 1263492066235060908
+	QUAD $0x670f591a32e004f6  // .quad 7426252279614801142
+	QUAD $0x15eb082cca94d757  // .quad 1579365082793826135
+	QUAD $0x40d32f60bf980633  // .quad 4671129331091113523
+	QUAD $0x1b65ca37fd3a0d2d  // .quad 1974206353492282669
+	QUAD $0x4883fd9c77bf03e0  // .quad 5225298841145639904
+	QUAD $0x111f9e62fe44483c  // .quad 1233878970932676668
+	QUAD $0x5aa4fd0395aec4d8  // .quad 6531623551432049880
+	QUAD $0x156785fbbdd55a4b  // .quad 1542348713665845835
+	QUAD $0x314e3c447b1a760e  // .quad 3552843420862674446
+	QUAD $0x1ac1677aad4ab0de  // .quad 1927935892082307294
+	QUAD $0xded0e5aaccf089c9  // .quad -2391158880388216375
+	QUAD $0x10b8e0acac4eae8a  // .quad 1204959932551442058
+	QUAD $0x96851f15802cac3b  // .quad -7600634618912658373
+	QUAD $0x14e718d7d7625a2d  // .quad 1506199915689302573
+	QUAD $0xfc2666dae037d74a  // .quad -277421236786047158
+	QUAD $0x1a20df0dcd3af0b8  // .quad 1882749894611628216
+	QUAD $0x9d980048cc22e68e  // .quad -7090917300632361330
+	QUAD $0x10548b68a044d673  // .quad 1176718684132267635
+	QUAD $0x84fe005aff2ba032  // .quad -8863646625790451662
+	QUAD $0x1469ae42c8560c10  // .quad 1470898355165334544
+	QUAD $0xa63d8071bef6883e  // .quad -6467872263810676674
+	QUAD $0x198419d37a6b8f14  // .quad 1838622943956668180
+	QUAD $0xcfcce08e2eb42a4e  // .quad -3473154311335957938
+	QUAD $0x1fe52048590672d9  // .quad 2298278679945835225
+	QUAD $0x21e00c58dd309a70  // .quad 2440964573842414192
+	QUAD $0x13ef342d37a407c8  // .quad 1436424174966147016
+	QUAD $0x2a580f6f147cc10d  // .quad 3051205717303017741
+	QUAD $0x18eb0138858d09ba  // .quad 1795530218707683770
+	QUAD $0xb4ee134ad99bf150  // .quad -5409364890226003632
+	QUAD $0x1f25c186a6f04c28  // .quad 2244412773384604712
+	QUAD $0x7114cc0ec80176d2  // .quad 8148361989677217490
+	QUAD $0x137798f428562f99  // .quad 1402757983365377945
+	QUAD $0xcd59ff127a01d486  // .quad -3649605568185641850
+	QUAD $0x18557f31326bbb7f  // .quad 1753447479206722431
+	QUAD $0xc0b07ed7188249a8  // .quad -4562006960232052312
+	QUAD $0x1e6adefd7f06aa5f  // .quad 2191809349008403039
+	QUAD $0xd86e4f466f516e09  // .quad -2851254350145032695
+	QUAD $0x1302cb5e6f642a7b  // .quad 1369880843130251899
+	QUAD $0xce89e3180b25c98b  // .quad -3564067937681290869
+	QUAD $0x17c37e360b3d351a  // .quad 1712351053912814874
+	QUAD $0x822c5bde0def3bee  // .quad -9066770940529001490
+	QUAD $0x1db45dc38e0c8261  // .quad 2140438817391018593
+	QUAD $0xf15bb96ac8b58575  // .quad -1055045819403238027
+	QUAD $0x1290ba9a38c7d17c  // .quad 1337774260869386620
+	QUAD $0x2db2a7c57ae2e6d2  // .quad 3292878744173340370
+	QUAD $0x1734e940c6f9c5dc  // .quad 1672217826086733276
+	QUAD $0x391f51b6d99ba086  // .quad 4116098430216675462
+	QUAD $0x1d022390f8b83753  // .quad 2090272282608416595
+	QUAD $0x03b3931248014454  // .quad 266718509671728212
+	QUAD $0x1221563a9b732294  // .quad 1306420176630260372
+	QUAD $0x04a077d6da019569  // .quad 333398137089660265
+	QUAD $0x16a9abc9424feb39  // .quad 1633025220787825465
+	QUAD $0x45c895cc9081fac3  // .quad 5028433689789463235
+	QUAD $0x1c5416bb92e3e607  // .quad 2041281525984781831
+	QUAD $0x8b9d5d9fda513cba  // .quad -8386443989950055238
+	QUAD $0x11b48e353bce6fc4  // .quad 1275800953740488644
+	QUAD $0xae84b507d0e58be8  // .quad -5871368969010181144
+	QUAD $0x1621b1c28ac20bb5  // .quad 1594751192175610805
+	QUAD $0x1a25e249c51eeee3  // .quad 1884160825592049379
+	QUAD $0x1baa1e332d728ea3  // .quad 1993438990219513507
+	QUAD $0xf057ad6e1b33554d  // .quad -1128242493218663091
+	QUAD $0x114a52dffc679925  // .quad 1245899368887195941
+	QUAD $0x6c6d98c9a2002aa1  // .quad 7813068920331446945
+	QUAD $0x159ce797fb817f6f  // .quad 1557374211108994927
+	QUAD $0x4788fefc0a803549  // .quad 5154650131986920777
+	QUAD $0x1b04217dfa61df4b  // .quad 1946717763886243659
+	QUAD $0x0cb59f5d8690214e  // .quad 915813323278131534
+	QUAD $0x10e294eebc7d2b8f  // .quad 1216698602428902287
+	QUAD $0xcfe30734e83429a1  // .quad -3466919364329723487
+	QUAD $0x151b3a2a6b9c7672  // .quad 1520873253036127858
+	QUAD $0x83dbc9022241340a  // .quad -8945335223839542262
+	QUAD $0x1a6208b50683940f  // .quad 1901091566295159823
+	QUAD $0xb2695da15568c086  // .quad -5590834514899713914
+	QUAD $0x107d457124123c89  // .quad 1188182228934474889
+	QUAD $0x1f03b509aac2f0a7  // .quad 2234828893230133415
+	QUAD $0x149c96cd6d16cbac  // .quad 1485227786168093612
+	QUAD $0x26c4a24c1573acd1  // .quad 2793536116537666769
+	QUAD $0x19c3bc80c85c7e97  // .quad 1856534732710117015
+	QUAD $0x783ae56f8d684c03  // .quad 8663489100477123587
+	QUAD $0x101a55d07d39cf1e  // .quad 1160334207943823134
+	QUAD $0x16499ecb70c25f03  // .quad 1605989338741628675
+	QUAD $0x1420eb449c8842e6  // .quad 1450417759929778918
+	QUAD $0x9bdc067e4cf2f6c4  // .quad -7215885363427739964
+	QUAD $0x19292615c3aa539f  // .quad 1813022199912223647
+	QUAD $0x82d3081de02fb476  // .quad -9019856704284674954
+	QUAD $0x1f736f9b3494e887  // .quad 2266277749890279559
+	QUAD $0xb1c3e512ac1dd0c9  // .quad -5637410440177921847
+	QUAD $0x13a825c100dd1154  // .quad 1416423593681424724
+	QUAD $0xde34de57572544fc  // .quad -2435077031795014404
+	QUAD $0x18922f31411455a9  // .quad 1770529492101780905
+	QUAD $0x55c215ed2cee963b  // .quad 6179525747111007803
+	QUAD $0x1eb6bafd91596b14  // .quad 2213161865127226132
+	QUAD $0xb5994db43c151de5  // .quad -5361168444910395931
+	QUAD $0x133234de7ad7e2ec  // .quad 1383226165704516332
+	QUAD $0xe2ffa1214b1a655e  // .quad -2089774537710607010
+	QUAD $0x17fec216198ddba7  // .quad 1729032707130645415
+	QUAD $0xdbbf89699de0feb6  // .quad -2612218172138258762
+	QUAD $0x1dfe729b9ff15291  // .quad 2161290883913306769
+	QUAD $0x2957b5e202ac9f31  // .quad 2979049660840976177
+	QUAD $0x12bf07a143f6d39b  // .quad 1350806802445816731
+	QUAD $0xf3ada35a8357c6fe  // .quad -887873942376167682
+	QUAD $0x176ec98994f48881  // .quad 1688508503057270913
+	QUAD $0x70990c31242db8bd  // .quad 8113529608884566205
+	QUAD $0x1d4a7bebfa31aaa2  // .quad 2110635628821588642
+	QUAD $0x865fa79eb69c9376  // .quad -8764102049729309834
+	QUAD $0x124e8d737c5f0aa5  // .quad 1319147268013492901
+	QUAD $0xe7f791866443b854  // .quad -1731755525306861484
+	QUAD $0x16e230d05b76cd4e  // .quad 1648934085016866126
+	QUAD $0xa1f575e7fd54a669  // .quad -6776380425060964759
+	QUAD $0x1c9abd04725480a2  // .quad 2061167606271082658
+	QUAD $0xa53969b0fe54e801  // .quad -6541080774876796927
+	QUAD $0x11e0b622c774d065  // .quad 1288229753919426661
+	QUAD $0x0e87c41d3dea2202  // .quad 1047021068258779650
+	QUAD $0x1658e3ab7952047f  // .quad 1610287192399283327
+	QUAD $0xd229b5248d64aa82  // .quad -3302909683103913342
+	QUAD $0x1bef1c9657a6859e  // .quad 2012858990499104158
+	QUAD $0x435a1136d85eea91  // .quad 4853210475701136017
+	QUAD $0x117571ddf6c81383  // .quad 1258036869061940099
+	QUAD $0x143095848e76a536  // .quad 1454827076199032118
+	QUAD $0x15d2ce55747a1864  // .quad 1572546086327425124
+	QUAD $0x193cbae5b2144e83  // .quad 1818533845248790147
+	QUAD $0x1b4781ead1989e7d  // .quad 1965682607909281405
+	QUAD $0x2fc5f4cf8f4cb112  // .quad 3442426662494187794
+	QUAD $0x110cb132c2ff630e  // .quad 1228551629943300878
+	QUAD $0xbbb77203731fdd56  // .quad -4920338708737041066
+	QUAD $0x154fdd7f73bf3bd1  // .quad 1535689537429126097
+	QUAD $0x2aa54e844fe7d4ac  // .quad 3072948650933474476
+	QUAD $0x1aa3d4df50af0ac6  // .quad 1919611921786407622
+	QUAD $0xdaa75112b1f0e4eb  // .quad -2691093111593966357
+	QUAD $0x10a6650b926d66bb  // .quad 1199757451116504763
+	QUAD $0xd15125575e6d1e26  // .quad -3363866389492457946
+	QUAD $0x14cffe4e7708c06a  // .quad 1499696813895630954
+	QUAD $0x85a56ead360865b0  // .quad -8816519005292960336
+	QUAD $0x1a03fde214caf085  // .quad 1874621017369538693
+	QUAD $0x7387652c41c53f8e  // .quad 8324733676974063502
+	QUAD $0x10427ead4cfed653  // .quad 1171638135855961683
+	QUAD $0x50693e7752368f71  // .quad 5794231077790191473
+	QUAD $0x14531e58a03e8be8  // .quad 1464547669819952104
+	QUAD $0x64838e1526c4334e  // .quad 7242788847237739342
+	QUAD $0x1967e5eec84e2ee2  // .quad 1830684587274940130
+	QUAD $0xfda4719a70754022  // .quad -169885977807601630
+	QUAD $0x1fc1df6a7a61ba9a  // .quad 2288355734093675162
+	QUAD $0xde86c70086494815  // .quad -2412021745343444971
+	QUAD $0x13d92ba28c7d14a0  // .quad 1430222333808546976
+	QUAD $0x162878c0a7db9a1a  // .quad 1596658836748081690
+	QUAD $0x18cf768b2f9c59c9  // .quad 1787777917260683721
+	QUAD $0x5bb296f0d1d280a1  // .quad 6607509564362490017
+	QUAD $0x1f03542dfb83703b  // .quad 2234722396575854651
+	QUAD $0x194f9e5683239064  // .quad 1823850468512862308
+	QUAD $0x1362149cbd322625  // .quad 1396701497859909157
+	QUAD $0x5fa385ec23ec747e  // .quad 6891499104068465790
+	QUAD $0x183a99c3ec7eafae  // .quad 1745876872324886446
+	QUAD $0xf78c67672ce7919d  // .quad -608998156769193571
+	QUAD $0x1e494034e79e5b99  // .quad 2182346090406108057
+	QUAD $0x3ab7c0a07c10bb02  // .quad 4231062170446641922
+	QUAD $0x12edc82110c2f940  // .quad 1363966306503817536
+	QUAD $0x4965b0c89b14e9c3  // .quad 5288827713058302403
+	QUAD $0x17a93a2954f3b790  // .quad 1704957883129771920
+	QUAD $0x5bbf1cfac1da2433  // .quad 6611034641322878003
+	QUAD $0x1d9388b3aa30a574  // .quad 2131197353912214900
+	QUAD $0xb957721cb92856a0  // .quad -5091475386027977056
+	QUAD $0x127c35704a5e6768  // .quad 1331998346195134312
+	QUAD $0xe7ad4ea3e7726c48  // .quad -1752658214107583416
+	QUAD $0x171b42cc5cf60142  // .quad 1664997932743917890
+	QUAD $0xa198a24ce14f075a  // .quad -6802508786061867174
+	QUAD $0x1ce2137f74338193  // .quad 2081247415929897363
+	QUAD $0x44ff65700cd16498  // .quad 4971804045566108824
+	QUAD $0x120d4c2fa8a030fc  // .quad 1300779634956185852
+	QUAD $0x563f3ecc1005bdbe  // .quad 6214755056957636030
+	QUAD $0x16909f3b92c83d3b  // .quad 1625974543695232315
+	QUAD $0x2bcf0e7f14072d2e  // .quad 3156757802769657134
+	QUAD $0x1c34c70a777a4c8a  // .quad 2032468179619040394
+	QUAD $0x5b61690f6c847c3d  // .quad 6584659645158423613
+	QUAD $0x11a0fc668aac6fd6  // .quad 1270292612261900246
+	QUAD $0xf239c35347a59b4c  // .quad -992547480406746292
+	QUAD $0x16093b802d578bcb  // .quad 1587865765327375307
+	QUAD $0xeec83428198f021f  // .quad -1240684350508432865
+	QUAD $0x1b8b8a6038ad6ebe  // .quad 1984832206659219134
+	QUAD $0x553d20990ff96153  // .quad 6142101308573311315
+	QUAD $0x1137367c236c6537  // .quad 1240520129162011959
+	QUAD $0x2a8c68bf53f7b9a8  // .quad 3065940617289251240
+	QUAD $0x1585041b2c477e85  // .quad 1550650161452514949
+	QUAD $0x752f82ef28f5a812  // .quad 8444111790038951954
+	QUAD $0x1ae64521f7595e26  // .quad 1938312701815643686
+	QUAD $0x093db1d57999890b  // .quad 665883850346957067
+	QUAD $0x10cfeb353a97dad8  // .quad 1211445438634777304
+	QUAD $0x0b8d1e4ad7ffeb4e  // .quad 832354812933696334
+	QUAD $0x1503e602893dd18e  // .quad 1514306798293471630
+	QUAD $0x8e7065dd8dffe622  // .quad -8182928520687655390
+	QUAD $0x1a44df832b8d45f1  // .quad 1892883497866839537
+	QUAD $0xf9063faa78bfefd5  // .quad -502644307002396715
+	QUAD $0x106b0bb1fb384bb6  // .quad 1183052186166774710
+	QUAD $0xb747cf9516efebca  // .quad -5239991402180383798
+	QUAD $0x1485ce9e7a065ea4  // .quad 1478815232708468388
+	QUAD $0xe519c37a5cabe6bd  // .quad -1938303234298091843
+	QUAD $0x19a742461887f64d  // .quad 1848519040885585485
+	QUAD $0xaf301a2c79eb7036  // .quad -5823125539863695306
+	QUAD $0x1008896bcf54f9f0  // .quad 1155324400553490928
+	QUAD $0xdafc20b798664c43  // .quad -2667220906402231229
+	QUAD $0x140aabc6c32a386c  // .quad 1444155500691863660
+	QUAD $0x11bb28e57e7fdf54  // .quad 1277659885424598868
+	QUAD $0x190d56b873f4c688  // .quad 1805194375864829576
+	QUAD $0x1629f31ede1fd72a  // .quad 1597074856780748586
+	QUAD $0x1f50ac6690f1f82a  // .quad 2256492969831036970
+	QUAD $0x4dda37f34ad3e67a  // .quad 5609857803915355770
+	QUAD $0x13926bc01a973b1a  // .quad 1410308106144398106
+	QUAD $0xe150c5f01d88e019  // .quad -2211049781960581095
+	QUAD $0x187706b0213d09e0  // .quad 1762885132680497632
+	QUAD $0x19a4f76c24eb181f  // .quad 1847873790976661535
+	QUAD $0x1e94c85c298c4c59  // .quad 2203606415850622041
+	QUAD $0xb0071aa39712ef13  // .quad -5762607908280668397
+	QUAD $0x131cfd3999f7afb7  // .quad 1377254009906638775
+	QUAD $0x9c08e14c7cd7aad8  // .quad -7203259885350835496
+	QUAD $0x17e43c8800759ba5  // .quad 1721567512383298469
+	QUAD $0x030b199f9c0d958e  // .quad 219297180166231438
+	QUAD $0x1ddd4baa0093028f  // .quad 2151959390479123087
+	QUAD $0x61e6f003c1887d79  // .quad 7054589765244976505
+	QUAD $0x12aa4f4a405be199  // .quad 1344974619049451929
+	QUAD $0xba60ac04b1ea9cd7  // .quad -5016820848725943081
+	QUAD $0x1754e31cd072d9ff  // .quad 1681218273811814911
+	QUAD $0xa8f8d705de65440d  // .quad -6271026060907428851
+	QUAD $0x1d2a1be4048f907f  // .quad 2101522842264768639
+	QUAD $0xc99b8663aaff4a88  // .quad -3919391288067143032
+	QUAD $0x123a516e82d9ba4f  // .quad 1313451776415480399
+	QUAD $0xbc0267fc95bf1d2a  // .quad -4899239110083928790
+	QUAD $0x16c8e5ca239028e3  // .quad 1641814720519350499
+	QUAD $0xab0301fbbb2ee474  // .quad -6124048887604910988
+	QUAD $0x1c7b1f3cac74331c  // .quad 2052268400649188124
+	QUAD $0xeae1e13d54fd4ec9  // .quad -1521687545539375415
+	QUAD $0x11ccf385ebc89ff1  // .quad 1282667750405742577
+	QUAD $0x659a598caa3ca27b  // .quad 7321262604930556539
+	QUAD $0x1640306766bac7ee  // .quad 1603334688007178222
+	QUAD $0xff00efefd4cbcb1a  // .quad -71793780691580134
+	QUAD $0x1bd03c81406979e9  // .quad 2004168360008972777
+	QUAD $0x3f6095f5e4ff5ef0  // .quad 4566814905495150320
+	QUAD $0x116225d0c841ec32  // .quad 1252605225005607986
+	QUAD $0xcf38bb735e3f36ac  // .quad -3514853404985837908
+	QUAD $0x15baaf44fa52673e  // .quad 1565756531257009982
+	QUAD $0x8306ea5035cf0457  // .quad -9005252774659685289
+	QUAD $0x1b295b1638e7010e  // .quad 1957195664071262478
+	QUAD $0x11e4527221a162b6  // .quad 1289246043478778550
+	QUAD $0x10f9d8ede39060a9  // .quad 1223247290044539049
+	QUAD $0x565d670eaa09bb64  // .quad 6223243572775861092
+	QUAD $0x15384f295c7478d3  // .quad 1529059112555673811
+	QUAD $0x2bf4c0d2548c2a3d  // .quad 3167368447542438461
+	QUAD $0x1a8662f3b3919708  // .quad 1911323890694592264
+	QUAD $0x1b78f88374d79a66  // .quad 1979605279714024038
+	QUAD $0x1093fdd8503afe65  // .quad 1194577431684120165
+	QUAD $0x625736a4520d8100  // .quad 7086192618069917952
+	QUAD $0x14b8fd4e6449bdfe  // .quad 1493221789605150206
+	QUAD $0xfaed044d6690e140  // .quad -365631264267378368
+	QUAD $0x19e73ca1fd5c2d7d  // .quad 1866527237006437757
+	QUAD $0xbcd422b0601a8cc8  // .quad -4840205558594499384
+	QUAD $0x103085e53e599c6e  // .quad 1166579523129023598
+	QUAD $0x6c092b5c78212ffa  // .quad 7784801107039039482
+	QUAD $0x143ca75e8df0038a  // .quad 1458224403911279498
+	QUAD $0x070b763396297bf8  // .quad 507629346944023544
+	QUAD $0x194bd136316c046d  // .quad 1822780504889099373
+	QUAD $0x48ce53c07bb3daf6  // .quad 5246222702107417334
+	QUAD $0x1f9ec583bdc70588  // .quad 2278475631111374216
+	QUAD $0x2d80f4584d5068da  // .quad 3278889188817135834
+	QUAD $0x13c33b72569c6375  // .quad 1424047269444608885
+	QUAD $0x78e1316e60a48310  // .quad 8710297504448807696
+	QUAD $0x18b40a4eec437c52  // .quad 1780059086805761106
 _Digits:
-	QUAD $0x3330323031303030; QUAD $0x3730363035303430 // .ascii 16, '0001020304050607'
-	QUAD $0x3131303139303830; QUAD $0x3531343133313231 // .ascii 16, '0809101112131415'
-	QUAD $0x3931383137313631; QUAD $0x3332323231323032 // .ascii 16, '1617181920212223'
-	QUAD $0x3732363235323432; QUAD $0x3133303339323832 // .ascii 16, '2425262728293031'
-	QUAD $0x3533343333333233; QUAD $0x3933383337333633 // .ascii 16, '3233343536373839'
-	QUAD $0x3334323431343034; QUAD $0x3734363435343434 // .ascii 16, '4041424344454647'
-	QUAD $0x3135303539343834; QUAD $0x3535343533353235 // .ascii 16, '4849505152535455'
-	QUAD $0x3935383537353635; QUAD $0x3336323631363036 // .ascii 16, '5657585960616263'
-	QUAD $0x3736363635363436; QUAD $0x3137303739363836 // .ascii 16, '6465666768697071'
-	QUAD $0x3537343733373237; QUAD $0x3937383737373637 // .ascii 16, '7273747576777879'
-	QUAD $0x3338323831383038; QUAD $0x3738363835383438 // .ascii 16, '8081828384858687'
-	QUAD $0x3139303939383838; QUAD $0x3539343933393239 // .ascii 16, '8889909192939495'
-	QUAD $0x3939383937393639                           // .ascii 8, '96979899'
-
+	QUAD $0x3330323031303030; QUAD $0x3730363035303430  // .ascii 16, '0001020304050607'
+	QUAD $0x3131303139303830; QUAD $0x3531343133313231  // .ascii 16, '0809101112131415'
+	QUAD $0x3931383137313631; QUAD $0x3332323231323032  // .ascii 16, '1617181920212223'
+	QUAD $0x3732363235323432; QUAD $0x3133303339323832  // .ascii 16, '2425262728293031'
+	QUAD $0x3533343333333233; QUAD $0x3933383337333633  // .ascii 16, '3233343536373839'
+	QUAD $0x3334323431343034; QUAD $0x3734363435343434  // .ascii 16, '4041424344454647'
+	QUAD $0x3135303539343834; QUAD $0x3535343533353235  // .ascii 16, '4849505152535455'
+	QUAD $0x3935383537353635; QUAD $0x3336323631363036  // .ascii 16, '5657585960616263'
+	QUAD $0x3736363635363436; QUAD $0x3137303739363836  // .ascii 16, '6465666768697071'
+	QUAD $0x3537343733373237; QUAD $0x3937383737373637  // .ascii 16, '7273747576777879'
+	QUAD $0x3338323831383038; QUAD $0x3738363835383438  // .ascii 16, '8081828384858687'
+	QUAD $0x3139303939383838; QUAD $0x3539343933393239  // .ascii 16, '8889909192939495'
+	QUAD $0x3939383937393639  // .ascii 8, '96979899'
 _VecShiftShuffles:
-	QUAD $0x0706050403020100; QUAD $0x0f0e0d0c0b0a0908 // .ascii 16, '\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f'
-	QUAD $0x0807060504030201; QUAD $0xff0f0e0d0c0b0a09 // .ascii 16, '\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff'
-	QUAD $0x0908070605040302; QUAD $0xffff0f0e0d0c0b0a // .ascii 16, '\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff'
-	QUAD $0x0a09080706050403; QUAD $0xffffff0f0e0d0c0b // .ascii 16, '\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff'
-	QUAD $0x0b0a090807060504; QUAD $0xffffffff0f0e0d0c // .ascii 16, '\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff'
-	QUAD $0x0c0b0a0908070605; QUAD $0xffffffffff0f0e0d // .ascii 16, '\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff'
-	QUAD $0x0d0c0b0a09080706; QUAD $0xffffffffffff0f0e // .ascii 16, '\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff'
-	QUAD $0x0e0d0c0b0a090807; QUAD $0xffffffffffffff0f // .ascii 16, '\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff'
-	QUAD $0x0f0e0d0c0b0a0908; QUAD $0xffffffffffffffff // .ascii 16, '\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff\xff'
-
+	QUAD $0x0706050403020100; QUAD $0x0f0e0d0c0b0a0908  // .ascii 16, '\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f'
+	QUAD $0x0807060504030201; QUAD $0xff0f0e0d0c0b0a09  // .ascii 16, '\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff'
+	QUAD $0x0908070605040302; QUAD $0xffff0f0e0d0c0b0a  // .ascii 16, '\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff'
+	QUAD $0x0a09080706050403; QUAD $0xffffff0f0e0d0c0b  // .ascii 16, '\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff'
+	QUAD $0x0b0a090807060504; QUAD $0xffffffff0f0e0d0c  // .ascii 16, '\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff'
+	QUAD $0x0c0b0a0908070605; QUAD $0xffffffffff0f0e0d  // .ascii 16, '\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff'
+	QUAD $0x0d0c0b0a09080706; QUAD $0xffffffffffff0f0e  // .ascii 16, '\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff'
+	QUAD $0x0e0d0c0b0a090807; QUAD $0xffffffffffffff0f  // .ascii 16, '\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff'
+	QUAD $0x0f0e0d0c0b0a0908; QUAD $0xffffffffffffffff  // .ascii 16, '\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff\xff'
 __SingleQuoteTab:
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000030303030755c                           // .asciz 8, '\\u0000\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000031303030755c                           // .asciz 8, '\\u0001\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000032303030755c                           // .asciz 8, '\\u0002\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000033303030755c                           // .asciz 8, '\\u0003\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000034303030755c                           // .asciz 8, '\\u0004\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000035303030755c                           // .asciz 8, '\\u0005\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000036303030755c                           // .asciz 8, '\\u0006\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000037303030755c                           // .asciz 8, '\\u0007\x00\x00'
-	QUAD $0x0000000000000002                           // .quad 2
-	QUAD $0x000000000000625c                           // .asciz 8, '\\b\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000002                           // .quad 2
-	QUAD $0x000000000000745c                           // .asciz 8, '\\t\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000002                           // .quad 2
-	QUAD $0x0000000000006e5c                           // .asciz 8, '\\n\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000062303030755c                           // .asciz 8, '\\u000b\x00\x00'
-	QUAD $0x0000000000000002                           // .quad 2
-	QUAD $0x000000000000665c                           // .asciz 8, '\\f\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000002                           // .quad 2
-	QUAD $0x000000000000725c                           // .asciz 8, '\\r\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000065303030755c                           // .asciz 8, '\\u000e\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000066303030755c                           // .asciz 8, '\\u000f\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000030313030755c                           // .asciz 8, '\\u0010\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000031313030755c                           // .asciz 8, '\\u0011\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000032313030755c                           // .asciz 8, '\\u0012\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000033313030755c                           // .asciz 8, '\\u0013\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000034313030755c                           // .asciz 8, '\\u0014\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000035313030755c                           // .asciz 8, '\\u0015\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000036313030755c                           // .asciz 8, '\\u0016\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000037313030755c                           // .asciz 8, '\\u0017\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000038313030755c                           // .asciz 8, '\\u0018\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000039313030755c                           // .asciz 8, '\\u0019\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000061313030755c                           // .asciz 8, '\\u001a\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000062313030755c                           // .asciz 8, '\\u001b\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000063313030755c                           // .asciz 8, '\\u001c\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000064313030755c                           // .asciz 8, '\\u001d\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000065313030755c                           // .asciz 8, '\\u001e\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000066313030755c                           // .asciz 8, '\\u001f\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000002                           // .quad 2
-	QUAD $0x000000000000225c                           // .asciz 8, '\\"\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000002                           // .quad 2
-	QUAD $0x0000000000005c5c                           // .asciz 8, '\\\\\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000030303030755c  // .asciz 8, '\\u0000\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000031303030755c  // .asciz 8, '\\u0001\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000032303030755c  // .asciz 8, '\\u0002\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000033303030755c  // .asciz 8, '\\u0003\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000034303030755c  // .asciz 8, '\\u0004\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000035303030755c  // .asciz 8, '\\u0005\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000036303030755c  // .asciz 8, '\\u0006\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000037303030755c  // .asciz 8, '\\u0007\x00\x00'
+	QUAD $0x0000000000000002  // .quad 2
+	QUAD $0x000000000000625c  // .asciz 8, '\\b\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000002  // .quad 2
+	QUAD $0x000000000000745c  // .asciz 8, '\\t\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000002  // .quad 2
+	QUAD $0x0000000000006e5c  // .asciz 8, '\\n\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000062303030755c  // .asciz 8, '\\u000b\x00\x00'
+	QUAD $0x0000000000000002  // .quad 2
+	QUAD $0x000000000000665c  // .asciz 8, '\\f\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000002  // .quad 2
+	QUAD $0x000000000000725c  // .asciz 8, '\\r\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000065303030755c  // .asciz 8, '\\u000e\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000066303030755c  // .asciz 8, '\\u000f\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000030313030755c  // .asciz 8, '\\u0010\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000031313030755c  // .asciz 8, '\\u0011\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000032313030755c  // .asciz 8, '\\u0012\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000033313030755c  // .asciz 8, '\\u0013\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000034313030755c  // .asciz 8, '\\u0014\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000035313030755c  // .asciz 8, '\\u0015\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000036313030755c  // .asciz 8, '\\u0016\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000037313030755c  // .asciz 8, '\\u0017\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000038313030755c  // .asciz 8, '\\u0018\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000039313030755c  // .asciz 8, '\\u0019\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000061313030755c  // .asciz 8, '\\u001a\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000062313030755c  // .asciz 8, '\\u001b\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000063313030755c  // .asciz 8, '\\u001c\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000064313030755c  // .asciz 8, '\\u001d\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000065313030755c  // .asciz 8, '\\u001e\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000066313030755c  // .asciz 8, '\\u001f\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000002  // .quad 2
+	QUAD $0x000000000000225c  // .asciz 8, '\\"\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000002  // .quad 2
+	QUAD $0x0000000000005c5c  // .asciz 8, '\\\\\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 __DoubleQuoteTab:
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0030303030755c5c                           // .asciz 8, '\\\\u0000\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0031303030755c5c                           // .asciz 8, '\\\\u0001\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0032303030755c5c                           // .asciz 8, '\\\\u0002\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0033303030755c5c                           // .asciz 8, '\\\\u0003\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0034303030755c5c                           // .asciz 8, '\\\\u0004\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0035303030755c5c                           // .asciz 8, '\\\\u0005\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0036303030755c5c                           // .asciz 8, '\\\\u0006\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0037303030755c5c                           // .asciz 8, '\\\\u0007\x00'
-	QUAD $0x0000000000000003                           // .quad 3
-	QUAD $0x0000000000625c5c                           // .asciz 8, '\\\\b\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000003                           // .quad 3
-	QUAD $0x0000000000745c5c                           // .asciz 8, '\\\\t\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000003                           // .quad 3
-	QUAD $0x00000000006e5c5c                           // .asciz 8, '\\\\n\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0062303030755c5c                           // .asciz 8, '\\\\u000b\x00'
-	QUAD $0x0000000000000003                           // .quad 3
-	QUAD $0x0000000000665c5c                           // .asciz 8, '\\\\f\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000003                           // .quad 3
-	QUAD $0x0000000000725c5c                           // .asciz 8, '\\\\r\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0065303030755c5c                           // .asciz 8, '\\\\u000e\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0066303030755c5c                           // .asciz 8, '\\\\u000f\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0030313030755c5c                           // .asciz 8, '\\\\u0010\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0031313030755c5c                           // .asciz 8, '\\\\u0011\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0032313030755c5c                           // .asciz 8, '\\\\u0012\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0033313030755c5c                           // .asciz 8, '\\\\u0013\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0034313030755c5c                           // .asciz 8, '\\\\u0014\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0035313030755c5c                           // .asciz 8, '\\\\u0015\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0036313030755c5c                           // .asciz 8, '\\\\u0016\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0037313030755c5c                           // .asciz 8, '\\\\u0017\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0038313030755c5c                           // .asciz 8, '\\\\u0018\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0039313030755c5c                           // .asciz 8, '\\\\u0019\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0061313030755c5c                           // .asciz 8, '\\\\u001a\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0062313030755c5c                           // .asciz 8, '\\\\u001b\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0063313030755c5c                           // .asciz 8, '\\\\u001c\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0064313030755c5c                           // .asciz 8, '\\\\u001d\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0065313030755c5c                           // .asciz 8, '\\\\u001e\x00'
-	QUAD $0x0000000000000007                           // .quad 7
-	QUAD $0x0066313030755c5c                           // .asciz 8, '\\\\u001f\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000004                           // .quad 4
-	QUAD $0x00000000225c5c5c                           // .asciz 8, '\\\\\\"\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000004                           // .quad 4
-	QUAD $0x000000005c5c5c5c                           // .asciz 8, '\\\\\\\\\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0030303030755c5c  // .asciz 8, '\\\\u0000\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0031303030755c5c  // .asciz 8, '\\\\u0001\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0032303030755c5c  // .asciz 8, '\\\\u0002\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0033303030755c5c  // .asciz 8, '\\\\u0003\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0034303030755c5c  // .asciz 8, '\\\\u0004\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0035303030755c5c  // .asciz 8, '\\\\u0005\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0036303030755c5c  // .asciz 8, '\\\\u0006\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0037303030755c5c  // .asciz 8, '\\\\u0007\x00'
+	QUAD $0x0000000000000003  // .quad 3
+	QUAD $0x0000000000625c5c  // .asciz 8, '\\\\b\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000003  // .quad 3
+	QUAD $0x0000000000745c5c  // .asciz 8, '\\\\t\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000003  // .quad 3
+	QUAD $0x00000000006e5c5c  // .asciz 8, '\\\\n\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0062303030755c5c  // .asciz 8, '\\\\u000b\x00'
+	QUAD $0x0000000000000003  // .quad 3
+	QUAD $0x0000000000665c5c  // .asciz 8, '\\\\f\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000003  // .quad 3
+	QUAD $0x0000000000725c5c  // .asciz 8, '\\\\r\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0065303030755c5c  // .asciz 8, '\\\\u000e\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0066303030755c5c  // .asciz 8, '\\\\u000f\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0030313030755c5c  // .asciz 8, '\\\\u0010\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0031313030755c5c  // .asciz 8, '\\\\u0011\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0032313030755c5c  // .asciz 8, '\\\\u0012\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0033313030755c5c  // .asciz 8, '\\\\u0013\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0034313030755c5c  // .asciz 8, '\\\\u0014\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0035313030755c5c  // .asciz 8, '\\\\u0015\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0036313030755c5c  // .asciz 8, '\\\\u0016\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0037313030755c5c  // .asciz 8, '\\\\u0017\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0038313030755c5c  // .asciz 8, '\\\\u0018\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0039313030755c5c  // .asciz 8, '\\\\u0019\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0061313030755c5c  // .asciz 8, '\\\\u001a\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0062313030755c5c  // .asciz 8, '\\\\u001b\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0063313030755c5c  // .asciz 8, '\\\\u001c\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0064313030755c5c  // .asciz 8, '\\\\u001d\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0065313030755c5c  // .asciz 8, '\\\\u001e\x00'
+	QUAD $0x0000000000000007  // .quad 7
+	QUAD $0x0066313030755c5c  // .asciz 8, '\\\\u001f\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000004  // .quad 4
+	QUAD $0x00000000225c5c5c  // .asciz 8, '\\\\\\"\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000004  // .quad 4
+	QUAD $0x000000005c5c5c5c  // .asciz 8, '\\\\\\\\\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 __UnquoteTab:
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000220000; QUAD $0x2f00000000000000 // .ascii 16, '\x00\x00"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000005c00000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\\\x00\x00\x00'
-	QUAD $0x000c000000080000; QUAD $0x000a000000000000 // .ascii 16, '\x00\x00\x08\x00\x00\x00\x0c\x00\x00\x00\x00\x00\x00\x00\n\x00'
-	LONG $0x000d0000; WORD $0xff09                     // .ascii 6, '\x00\x00\r\x00\t\xff'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; WORD $0x0000             // .space 10, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000220000; QUAD $0x2f00000000000000  // .ascii 16, '\x00\x00"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000005c00000000  // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\\\x00\x00\x00'
+	QUAD $0x000c000000080000; QUAD $0x000a000000000000  // .ascii 16, '\x00\x00\x08\x00\x00\x00\x0c\x00\x00\x00\x00\x00\x00\x00\n\x00'
+	LONG $0x000d0000; WORD $0xff09  // .ascii 6, '\x00\x00\r\x00\t\xff'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; WORD $0x0000  // .space 10, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 __HtmlQuoteTab:
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000036323030755c                           // .asciz 8, '\\u0026\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000063333030755c                           // .asciz 8, '\\u003c\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000065333030755c                           // .asciz 8, '\\u003e\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000038323032755c                           // .asciz 8, '\\u2028\x00\x00'
-	QUAD $0x0000000000000006                           // .quad 6
-	QUAD $0x000039323032755c                           // .asciz 8, '\\u2029\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000036323030755c  // .asciz 8, '\\u0026\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000063333030755c  // .asciz 8, '\\u003c\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000065333030755c  // .asciz 8, '\\u003e\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000038323032755c  // .asciz 8, '\\u2028\x00\x00'
+	QUAD $0x0000000000000006  // .quad 6
+	QUAD $0x000039323032755c  // .asciz 8, '\\u2029\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 _LSHIFT_TAB:
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000                           // .space 8, '\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000001                                   // .long 1
-	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000001                                   // .long 1
-	QUAD $0x0000000000003532; QUAD $0x0000000000000000 // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000001                                   // .long 1
-	QUAD $0x0000000000353231; QUAD $0x0000000000000000 // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000002                                   // .long 2
-	QUAD $0x0000000000353236; QUAD $0x0000000000000000 // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000002                                   // .long 2
-	QUAD $0x0000000035323133; QUAD $0x0000000000000000 // .asciz 16, '3125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000002                                   // .long 2
-	QUAD $0x0000003532363531; QUAD $0x0000000000000000 // .asciz 16, '15625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000003                                   // .long 3
-	QUAD $0x0000003532313837; QUAD $0x0000000000000000 // .asciz 16, '78125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000003                                   // .long 3
-	QUAD $0x0000353236303933; QUAD $0x0000000000000000 // .asciz 16, '390625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000003                                   // .long 3
-	QUAD $0x0035323133353931; QUAD $0x0000000000000000 // .asciz 16, '1953125\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000004                                   // .long 4
-	QUAD $0x0035323635363739; QUAD $0x0000000000000000 // .asciz 16, '9765625\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000004                                   // .long 4
-	QUAD $0x3532313832383834; QUAD $0x0000000000000000 // .asciz 16, '48828125\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000004                                   // .long 4
-	QUAD $0x3236303431343432; QUAD $0x0000000000000035 // .asciz 16, '244140625\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000004                                   // .long 4
-	QUAD $0x3133303730323231; QUAD $0x0000000000003532 // .asciz 16, '1220703125\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000005                                   // .long 5
-	QUAD $0x3635313533303136; QUAD $0x0000000000003532 // .asciz 16, '6103515625\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000005                                   // .long 5
-	QUAD $0x3837353731353033; QUAD $0x0000000000353231 // .asciz 16, '30517578125\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000005                                   // .long 5
-	QUAD $0x3938373835323531; QUAD $0x0000000035323630 // .asciz 16, '152587890625\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000006                                   // .long 6
-	QUAD $0x3534393339323637; QUAD $0x0000000035323133 // .asciz 16, '762939453125\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000006                                   // .long 6
-	QUAD $0x3237393634313833; QUAD $0x0000003532363536 // .asciz 16, '3814697265625\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000006                                   // .long 6
-	QUAD $0x3638343337303931; QUAD $0x0000353231383233 // .asciz 16, '19073486328125\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000007                                   // .long 7
-	QUAD $0x3133343736333539; QUAD $0x0000353236303436 // .asciz 16, '95367431640625\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000007                                   // .long 7
-	QUAD $0x3531373338363734; QUAD $0x0035323133303238 // .asciz 16, '476837158203125\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000007                                   // .long 7
-	QUAD $0x3735383134383332; QUAD $0x3532363531303139 // .asciz 16, '2384185791015625'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000007                                   // .long 7
-	QUAD $0x3832393032393131; QUAD $0x3231383730353539 // .asciz 16, '1192092895507812'
-	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000008                                   // .long 8
-	QUAD $0x3434363430363935; QUAD $0x3236303933353737 // .asciz 16, '5960464477539062'
-	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000008                                   // .long 8
-	QUAD $0x3232333230383932; QUAD $0x3133353936373833 // .asciz 16, '2980232238769531'
-	QUAD $0x0000000000003532; QUAD $0x0000000000000000 // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000008                                   // .long 8
-	QUAD $0x3136313130393431; QUAD $0x3536373438333931 // .asciz 16, '1490116119384765'
-	QUAD $0x0000000000353236; QUAD $0x0000000000000000 // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000009                                   // .long 9
-	QUAD $0x3530383530353437; QUAD $0x3832383332393639 // .asciz 16, '7450580596923828'
-	QUAD $0x0000000000353231; QUAD $0x0000000000000000 // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000009                                   // .long 9
-	QUAD $0x3230393235323733; QUAD $0x3431393136343839 // .asciz 16, '3725290298461914'
-	QUAD $0x0000000035323630; QUAD $0x0000000000000000 // .asciz 16, '0625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000009                                   // .long 9
-	QUAD $0x3135343632363831; QUAD $0x3735393033323934 // .asciz 16, '1862645149230957'
-	QUAD $0x0000003532313330; QUAD $0x0000000000000000 // .asciz 16, '03125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000a                                   // .long 10
-	QUAD $0x3735323233313339; QUAD $0x3538373435313634 // .asciz 16, '9313225746154785'
-	QUAD $0x0000003532363531; QUAD $0x0000000000000000 // .asciz 16, '15625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000a                                   // .long 10
-	QUAD $0x3832313636353634; QUAD $0x3239333737303337 // .asciz 16, '4656612873077392'
-	QUAD $0x0000353231383735; QUAD $0x0000000000000000 // .asciz 16, '578125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000a                                   // .long 10
-	QUAD $0x3436303338323332; QUAD $0x3639363833353633 // .asciz 16, '2328306436538696'
-	QUAD $0x0035323630393832; QUAD $0x0000000000000000 // .asciz 16, '2890625\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000a                                   // .long 10
-	QUAD $0x3233353134363131; QUAD $0x3834333936323831 // .asciz 16, '1164153218269348'
-	QUAD $0x3532313335343431; QUAD $0x0000000000000000 // .asciz 16, '14453125\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000b                                   // .long 11
-	QUAD $0x3036363730323835; QUAD $0x3034373634333139 // .asciz 16, '5820766091346740'
-	QUAD $0x3532363536323237; QUAD $0x0000000000000000 // .asciz 16, '72265625\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000b                                   // .long 11
-	QUAD $0x3033383330313932; QUAD $0x3037333337363534 // .asciz 16, '2910383045673370'
-	QUAD $0x3231383233313633; QUAD $0x0000000000000035 // .asciz 16, '361328125\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000b                                   // .long 11
-	QUAD $0x3531393135353431; QUAD $0x3538363633383232 // .asciz 16, '1455191522836685'
-	QUAD $0x3630343636303831; QUAD $0x0000000000003532 // .asciz 16, '1806640625\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000c                                   // .long 12
-	QUAD $0x3637353935373237; QUAD $0x3532343338313431 // .asciz 16, '7275957614183425'
-	QUAD $0x3133303233333039; QUAD $0x0000000000003532 // .asciz 16, '9033203125\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000c                                   // .long 12
-	QUAD $0x3838373937333633; QUAD $0x3231373139303730 // .asciz 16, '3637978807091712'
-	QUAD $0x3531303636313539; QUAD $0x0000000000353236 // .asciz 16, '95166015625\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000c                                   // .long 12
-	QUAD $0x3439383938313831; QUAD $0x3635383534353330 // .asciz 16, '1818989403545856'
-	QUAD $0x3730303338353734; QUAD $0x0000000035323138 // .asciz 16, '475830078125\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000d                                   // .long 13
-	QUAD $0x3037343934393039; QUAD $0x3238323932373731 // .asciz 16, '9094947017729282'
-	QUAD $0x3933303531393733; QUAD $0x0000000035323630 // .asciz 16, '379150390625\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000d                                   // .long 13
-	QUAD $0x3533373437343534; QUAD $0x3134363436383830 // .asciz 16, '4547473508864641'
-	QUAD $0x3931353735393831; QUAD $0x0000003532313335 // .asciz 16, '1895751953125\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000d                                   // .long 13
-	QUAD $0x3736333733373232; QUAD $0x3032333233343435 // .asciz 16, '2273736754432320'
-	QUAD $0x3935373837343935; QUAD $0x0000353236353637 // .asciz 16, '59478759765625\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000d                                   // .long 13
-	QUAD $0x3338363836333131; QUAD $0x3036313631323737 // .asciz 16, '1136868377216160'
-	QUAD $0x3937333933373932; QUAD $0x0035323138323838 // .asciz 16, '297393798828125\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000e                                   // .long 14
-	QUAD $0x3831343334383635; QUAD $0x3130383038303638 // .asciz 16, '5684341886080801'
-	QUAD $0x3939383639363834; QUAD $0x0035323630343134 // .asciz 16, '486968994140625\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000e                                   // .long 14
-	QUAD $0x3930373132343832; QUAD $0x3030343034303334 // .asciz 16, '2842170943040400'
-	QUAD $0x3934343834333437; QUAD $0x3532313330373037 // .asciz 16, '7434844970703125'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000e                                   // .long 14
-	QUAD $0x3435383031323431; QUAD $0x3030323032353137 // .asciz 16, '1421085471520200'
-	QUAD $0x3432323437313733; QUAD $0x3236353135333538 // .asciz 16, '3717422485351562'
-	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000f                                   // .long 15
-	QUAD $0x3337323435303137; QUAD $0x3130303130363735 // .asciz 16, '7105427357601001'
-	QUAD $0x3432313137383538; QUAD $0x3231383735373632 // .asciz 16, '8587112426757812'
-	QUAD $0x0000000000000035; QUAD $0x0000000000000000 // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000f                                   // .long 15
-	QUAD $0x3633313732353533; QUAD $0x3030353030383837 // .asciz 16, '3552713678800500'
-	QUAD $0x3236353533393239; QUAD $0x3630393837333331 // .asciz 16, '9293556213378906'
-	QUAD $0x0000000000003532; QUAD $0x0000000000000000 // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x0000000f                                   // .long 15
-	QUAD $0x3836353336373731; QUAD $0x3035323030343933 // .asciz 16, '1776356839400250'
-	QUAD $0x3138373736343634; QUAD $0x3335343938363630 // .asciz 16, '4646778106689453'
-	QUAD $0x0000000000353231; QUAD $0x0000000000000000 // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000010                                   // .long 16
-	QUAD $0x3134383731383838; QUAD $0x3235323130303739 // .asciz 16, '8881784197001252'
-	QUAD $0x3530393833333233; QUAD $0x3536323734343333 // .asciz 16, '3233890533447265'
-	QUAD $0x0000000000353236; QUAD $0x0000000000000000 // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000010                                   // .long 16
-	QUAD $0x3032393830343434; QUAD $0x3632363030353839 // .asciz 16, '4440892098500626'
-	QUAD $0x3235343936313631; QUAD $0x3233363332373636 // .asciz 16, '1616945266723632'
-	QUAD $0x0000000035323138; QUAD $0x0000000000000000 // .asciz 16, '8125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000010                                   // .long 16
-	QUAD $0x3036343430323232; QUAD $0x3331333035323934 // .asciz 16, '2220446049250313'
-	QUAD $0x3632373438303830; QUAD $0x3631383136333333 // .asciz 16, '0808472633361816'
-	QUAD $0x0000003532363034; QUAD $0x0000000000000000 // .asciz 16, '40625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000010                                   // .long 16
-	QUAD $0x3033323230313131; QUAD $0x3635313532363432 // .asciz 16, '1110223024625156'
-	QUAD $0x3336333234303435; QUAD $0x3830393038363631 // .asciz 16, '5404236316680908'
-	QUAD $0x0000353231333032; QUAD $0x0000000000000000 // .asciz 16, '203125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000011                                   // .long 17
-	QUAD $0x3135313131353535; QUAD $0x3238373532313332 // .asciz 16, '5551115123125782'
-	QUAD $0x3531383131323037; QUAD $0x3134353430343338 // .asciz 16, '7021181583404541'
-	QUAD $0x0000353236353130; QUAD $0x0000000000000000 // .asciz 16, '015625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000011                                   // .long 17
-	QUAD $0x3537353535373732; QUAD $0x3139383236353136 // .asciz 16, '2775557561562891'
-	QUAD $0x3730393530313533; QUAD $0x3037323230373139 // .asciz 16, '3510590791702270'
-	QUAD $0x0035323138373035; QUAD $0x0000000000000000 // .asciz 16, '5078125\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000011                                   // .long 17
-	QUAD $0x3738373737383331; QUAD $0x3534343138373038 // .asciz 16, '1387778780781445'
-	QUAD $0x3335393235353736; QUAD $0x3533313135383539 // .asciz 16, '6755295395851135'
-	QUAD $0x3532363039333532; QUAD $0x0000000000000000 // .asciz 16, '25390625\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000012                                   // .long 18
-	QUAD $0x3933393838333936; QUAD $0x3832323730393330 // .asciz 16, '6938893903907228'
-	QUAD $0x3936373436373733; QUAD $0x3637363535323937 // .asciz 16, '3776476979255676'
-	QUAD $0x3532313335393632; QUAD $0x0000000000000000 // .asciz 16, '26953125\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000012                                   // .long 18
-	QUAD $0x3936343439363433; QUAD $0x3431363335393135 // .asciz 16, '3469446951953614'
-	QUAD $0x3438333238383831; QUAD $0x3833383732363938 // .asciz 16, '1888238489627838'
-	QUAD $0x3236353637343331; QUAD $0x0000000000000035 // .asciz 16, '134765625\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000012                                   // .long 18
-	QUAD $0x3433323734333731; QUAD $0x3730383637393537 // .asciz 16, '1734723475976807'
-	QUAD $0x3239313134343930; QUAD $0x3931393331383434 // .asciz 16, '0944119244813919'
-	QUAD $0x3138323833373630; QUAD $0x0000000000003532 // .asciz 16, '0673828125\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-	LONG $0x00000013                                   // .long 19
-	QUAD $0x3337313633373638; QUAD $0x3533303438383937 // .asciz 16, '8673617379884035'
-	QUAD $0x3236393530323734; QUAD $0x3539353936303432 // .asciz 16, '4720596224069595'
-	QUAD $0x3630343139363333; QUAD $0x0000000000003532 // .asciz 16, '3369140625\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	LONG $0x00000000                                   // .asciz 4, '\x00\x00\x00\x00'
-
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000  // .space 8, '\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000001  // .long 1
+	QUAD $0x0000000000000035; QUAD $0x0000000000000000  // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000001  // .long 1
+	QUAD $0x0000000000003532; QUAD $0x0000000000000000  // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000001  // .long 1
+	QUAD $0x0000000000353231; QUAD $0x0000000000000000  // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000002  // .long 2
+	QUAD $0x0000000000353236; QUAD $0x0000000000000000  // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000002  // .long 2
+	QUAD $0x0000000035323133; QUAD $0x0000000000000000  // .asciz 16, '3125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000002  // .long 2
+	QUAD $0x0000003532363531; QUAD $0x0000000000000000  // .asciz 16, '15625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000003  // .long 3
+	QUAD $0x0000003532313837; QUAD $0x0000000000000000  // .asciz 16, '78125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000003  // .long 3
+	QUAD $0x0000353236303933; QUAD $0x0000000000000000  // .asciz 16, '390625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000003  // .long 3
+	QUAD $0x0035323133353931; QUAD $0x0000000000000000  // .asciz 16, '1953125\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000004  // .long 4
+	QUAD $0x0035323635363739; QUAD $0x0000000000000000  // .asciz 16, '9765625\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000004  // .long 4
+	QUAD $0x3532313832383834; QUAD $0x0000000000000000  // .asciz 16, '48828125\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000004  // .long 4
+	QUAD $0x3236303431343432; QUAD $0x0000000000000035  // .asciz 16, '244140625\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000004  // .long 4
+	QUAD $0x3133303730323231; QUAD $0x0000000000003532  // .asciz 16, '1220703125\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000005  // .long 5
+	QUAD $0x3635313533303136; QUAD $0x0000000000003532  // .asciz 16, '6103515625\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000005  // .long 5
+	QUAD $0x3837353731353033; QUAD $0x0000000000353231  // .asciz 16, '30517578125\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000005  // .long 5
+	QUAD $0x3938373835323531; QUAD $0x0000000035323630  // .asciz 16, '152587890625\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000006  // .long 6
+	QUAD $0x3534393339323637; QUAD $0x0000000035323133  // .asciz 16, '762939453125\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000006  // .long 6
+	QUAD $0x3237393634313833; QUAD $0x0000003532363536  // .asciz 16, '3814697265625\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000006  // .long 6
+	QUAD $0x3638343337303931; QUAD $0x0000353231383233  // .asciz 16, '19073486328125\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000007  // .long 7
+	QUAD $0x3133343736333539; QUAD $0x0000353236303436  // .asciz 16, '95367431640625\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000007  // .long 7
+	QUAD $0x3531373338363734; QUAD $0x0035323133303238  // .asciz 16, '476837158203125\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000007  // .long 7
+	QUAD $0x3735383134383332; QUAD $0x3532363531303139  // .asciz 16, '2384185791015625'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000007  // .long 7
+	QUAD $0x3832393032393131; QUAD $0x3231383730353539  // .asciz 16, '1192092895507812'
+	QUAD $0x0000000000000035; QUAD $0x0000000000000000  // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000008  // .long 8
+	QUAD $0x3434363430363935; QUAD $0x3236303933353737  // .asciz 16, '5960464477539062'
+	QUAD $0x0000000000000035; QUAD $0x0000000000000000  // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000008  // .long 8
+	QUAD $0x3232333230383932; QUAD $0x3133353936373833  // .asciz 16, '2980232238769531'
+	QUAD $0x0000000000003532; QUAD $0x0000000000000000  // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000008  // .long 8
+	QUAD $0x3136313130393431; QUAD $0x3536373438333931  // .asciz 16, '1490116119384765'
+	QUAD $0x0000000000353236; QUAD $0x0000000000000000  // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000009  // .long 9
+	QUAD $0x3530383530353437; QUAD $0x3832383332393639  // .asciz 16, '7450580596923828'
+	QUAD $0x0000000000353231; QUAD $0x0000000000000000  // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000009  // .long 9
+	QUAD $0x3230393235323733; QUAD $0x3431393136343839  // .asciz 16, '3725290298461914'
+	QUAD $0x0000000035323630; QUAD $0x0000000000000000  // .asciz 16, '0625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000009  // .long 9
+	QUAD $0x3135343632363831; QUAD $0x3735393033323934  // .asciz 16, '1862645149230957'
+	QUAD $0x0000003532313330; QUAD $0x0000000000000000  // .asciz 16, '03125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000a  // .long 10
+	QUAD $0x3735323233313339; QUAD $0x3538373435313634  // .asciz 16, '9313225746154785'
+	QUAD $0x0000003532363531; QUAD $0x0000000000000000  // .asciz 16, '15625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000a  // .long 10
+	QUAD $0x3832313636353634; QUAD $0x3239333737303337  // .asciz 16, '4656612873077392'
+	QUAD $0x0000353231383735; QUAD $0x0000000000000000  // .asciz 16, '578125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000a  // .long 10
+	QUAD $0x3436303338323332; QUAD $0x3639363833353633  // .asciz 16, '2328306436538696'
+	QUAD $0x0035323630393832; QUAD $0x0000000000000000  // .asciz 16, '2890625\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000a  // .long 10
+	QUAD $0x3233353134363131; QUAD $0x3834333936323831  // .asciz 16, '1164153218269348'
+	QUAD $0x3532313335343431; QUAD $0x0000000000000000  // .asciz 16, '14453125\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000b  // .long 11
+	QUAD $0x3036363730323835; QUAD $0x3034373634333139  // .asciz 16, '5820766091346740'
+	QUAD $0x3532363536323237; QUAD $0x0000000000000000  // .asciz 16, '72265625\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000b  // .long 11
+	QUAD $0x3033383330313932; QUAD $0x3037333337363534  // .asciz 16, '2910383045673370'
+	QUAD $0x3231383233313633; QUAD $0x0000000000000035  // .asciz 16, '361328125\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000b  // .long 11
+	QUAD $0x3531393135353431; QUAD $0x3538363633383232  // .asciz 16, '1455191522836685'
+	QUAD $0x3630343636303831; QUAD $0x0000000000003532  // .asciz 16, '1806640625\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000c  // .long 12
+	QUAD $0x3637353935373237; QUAD $0x3532343338313431  // .asciz 16, '7275957614183425'
+	QUAD $0x3133303233333039; QUAD $0x0000000000003532  // .asciz 16, '9033203125\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000c  // .long 12
+	QUAD $0x3838373937333633; QUAD $0x3231373139303730  // .asciz 16, '3637978807091712'
+	QUAD $0x3531303636313539; QUAD $0x0000000000353236  // .asciz 16, '95166015625\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000c  // .long 12
+	QUAD $0x3439383938313831; QUAD $0x3635383534353330  // .asciz 16, '1818989403545856'
+	QUAD $0x3730303338353734; QUAD $0x0000000035323138  // .asciz 16, '475830078125\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000d  // .long 13
+	QUAD $0x3037343934393039; QUAD $0x3238323932373731  // .asciz 16, '9094947017729282'
+	QUAD $0x3933303531393733; QUAD $0x0000000035323630  // .asciz 16, '379150390625\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000d  // .long 13
+	QUAD $0x3533373437343534; QUAD $0x3134363436383830  // .asciz 16, '4547473508864641'
+	QUAD $0x3931353735393831; QUAD $0x0000003532313335  // .asciz 16, '1895751953125\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000d  // .long 13
+	QUAD $0x3736333733373232; QUAD $0x3032333233343435  // .asciz 16, '2273736754432320'
+	QUAD $0x3935373837343935; QUAD $0x0000353236353637  // .asciz 16, '59478759765625\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000d  // .long 13
+	QUAD $0x3338363836333131; QUAD $0x3036313631323737  // .asciz 16, '1136868377216160'
+	QUAD $0x3937333933373932; QUAD $0x0035323138323838  // .asciz 16, '297393798828125\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000e  // .long 14
+	QUAD $0x3831343334383635; QUAD $0x3130383038303638  // .asciz 16, '5684341886080801'
+	QUAD $0x3939383639363834; QUAD $0x0035323630343134  // .asciz 16, '486968994140625\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000e  // .long 14
+	QUAD $0x3930373132343832; QUAD $0x3030343034303334  // .asciz 16, '2842170943040400'
+	QUAD $0x3934343834333437; QUAD $0x3532313330373037  // .asciz 16, '7434844970703125'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000e  // .long 14
+	QUAD $0x3435383031323431; QUAD $0x3030323032353137  // .asciz 16, '1421085471520200'
+	QUAD $0x3432323437313733; QUAD $0x3236353135333538  // .asciz 16, '3717422485351562'
+	QUAD $0x0000000000000035; QUAD $0x0000000000000000  // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000f  // .long 15
+	QUAD $0x3337323435303137; QUAD $0x3130303130363735  // .asciz 16, '7105427357601001'
+	QUAD $0x3432313137383538; QUAD $0x3231383735373632  // .asciz 16, '8587112426757812'
+	QUAD $0x0000000000000035; QUAD $0x0000000000000000  // .asciz 16, '5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000f  // .long 15
+	QUAD $0x3633313732353533; QUAD $0x3030353030383837  // .asciz 16, '3552713678800500'
+	QUAD $0x3236353533393239; QUAD $0x3630393837333331  // .asciz 16, '9293556213378906'
+	QUAD $0x0000000000003532; QUAD $0x0000000000000000  // .asciz 16, '25\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x0000000f  // .long 15
+	QUAD $0x3836353336373731; QUAD $0x3035323030343933  // .asciz 16, '1776356839400250'
+	QUAD $0x3138373736343634; QUAD $0x3335343938363630  // .asciz 16, '4646778106689453'
+	QUAD $0x0000000000353231; QUAD $0x0000000000000000  // .asciz 16, '125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000010  // .long 16
+	QUAD $0x3134383731383838; QUAD $0x3235323130303739  // .asciz 16, '8881784197001252'
+	QUAD $0x3530393833333233; QUAD $0x3536323734343333  // .asciz 16, '3233890533447265'
+	QUAD $0x0000000000353236; QUAD $0x0000000000000000  // .asciz 16, '625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000010  // .long 16
+	QUAD $0x3032393830343434; QUAD $0x3632363030353839  // .asciz 16, '4440892098500626'
+	QUAD $0x3235343936313631; QUAD $0x3233363332373636  // .asciz 16, '1616945266723632'
+	QUAD $0x0000000035323138; QUAD $0x0000000000000000  // .asciz 16, '8125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000010  // .long 16
+	QUAD $0x3036343430323232; QUAD $0x3331333035323934  // .asciz 16, '2220446049250313'
+	QUAD $0x3632373438303830; QUAD $0x3631383136333333  // .asciz 16, '0808472633361816'
+	QUAD $0x0000003532363034; QUAD $0x0000000000000000  // .asciz 16, '40625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000010  // .long 16
+	QUAD $0x3033323230313131; QUAD $0x3635313532363432  // .asciz 16, '1110223024625156'
+	QUAD $0x3336333234303435; QUAD $0x3830393038363631  // .asciz 16, '5404236316680908'
+	QUAD $0x0000353231333032; QUAD $0x0000000000000000  // .asciz 16, '203125\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000011  // .long 17
+	QUAD $0x3135313131353535; QUAD $0x3238373532313332  // .asciz 16, '5551115123125782'
+	QUAD $0x3531383131323037; QUAD $0x3134353430343338  // .asciz 16, '7021181583404541'
+	QUAD $0x0000353236353130; QUAD $0x0000000000000000  // .asciz 16, '015625\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000011  // .long 17
+	QUAD $0x3537353535373732; QUAD $0x3139383236353136  // .asciz 16, '2775557561562891'
+	QUAD $0x3730393530313533; QUAD $0x3037323230373139  // .asciz 16, '3510590791702270'
+	QUAD $0x0035323138373035; QUAD $0x0000000000000000  // .asciz 16, '5078125\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000011  // .long 17
+	QUAD $0x3738373737383331; QUAD $0x3534343138373038  // .asciz 16, '1387778780781445'
+	QUAD $0x3335393235353736; QUAD $0x3533313135383539  // .asciz 16, '6755295395851135'
+	QUAD $0x3532363039333532; QUAD $0x0000000000000000  // .asciz 16, '25390625\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000012  // .long 18
+	QUAD $0x3933393838333936; QUAD $0x3832323730393330  // .asciz 16, '6938893903907228'
+	QUAD $0x3936373436373733; QUAD $0x3637363535323937  // .asciz 16, '3776476979255676'
+	QUAD $0x3532313335393632; QUAD $0x0000000000000000  // .asciz 16, '26953125\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000012  // .long 18
+	QUAD $0x3936343439363433; QUAD $0x3431363335393135  // .asciz 16, '3469446951953614'
+	QUAD $0x3438333238383831; QUAD $0x3833383732363938  // .asciz 16, '1888238489627838'
+	QUAD $0x3236353637343331; QUAD $0x0000000000000035  // .asciz 16, '134765625\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000012  // .long 18
+	QUAD $0x3433323734333731; QUAD $0x3730383637393537  // .asciz 16, '1734723475976807'
+	QUAD $0x3239313134343930; QUAD $0x3931393331383434  // .asciz 16, '0944119244813919'
+	QUAD $0x3138323833373630; QUAD $0x0000000000003532  // .asciz 16, '0673828125\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
+	LONG $0x00000013  // .long 19
+	QUAD $0x3337313633373638; QUAD $0x3533303438383937  // .asciz 16, '8673617379884035'
+	QUAD $0x3236393530323734; QUAD $0x3539353936303432  // .asciz 16, '4720596224069595'
+	QUAD $0x3630343139363333; QUAD $0x0000000000003532  // .asciz 16, '3369140625\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000  // .asciz 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	LONG $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
 _P10_TAB:
-	QUAD $0x3ff0000000000000 // .quad 4607182418800017408
-	QUAD $0x4024000000000000 // .quad 4621819117588971520
-	QUAD $0x4059000000000000 // .quad 4636737291354636288
-	QUAD $0x408f400000000000 // .quad 4652007308841189376
-	QUAD $0x40c3880000000000 // .quad 4666723172467343360
-	QUAD $0x40f86a0000000000 // .quad 4681608360884174848
-	QUAD $0x412e848000000000 // .quad 4696837146684686336
-	QUAD $0x416312d000000000 // .quad 4711630319722168320
-	QUAD $0x4197d78400000000 // .quad 4726483295884279808
-	QUAD $0x41cdcd6500000000 // .quad 4741671816366391296
-	QUAD $0x4202a05f20000000 // .quad 4756540486875873280
-	QUAD $0x42374876e8000000 // .quad 4771362005757984768
-	QUAD $0x426d1a94a2000000 // .quad 4786511204640096256
-	QUAD $0x42a2309ce5400000 // .quad 4801453603149578240
-	QUAD $0x42d6bcc41e900000 // .quad 4816244402031689728
-	QUAD $0x430c6bf526340000 // .quad 4831355200913801216
-	QUAD $0x4341c37937e08000 // .quad 4846369599423283200
-	QUAD $0x4376345785d8a000 // .quad 4861130398305394688
-	QUAD $0x43abc16d674ec800 // .quad 4876203697187506176
-	QUAD $0x43e158e460913d00 // .quad 4891288408196988160
-	QUAD $0x4415af1d78b58c40 // .quad 4906019910204099648
-	QUAD $0x444b1ae4d6e2ef50 // .quad 4921056587992461136
-	QUAD $0x4480f0cf064dd592 // .quad 4936209963552724370
-
+	QUAD $0x3ff0000000000000  // .quad 0x3ff0000000000000
+	QUAD $0x4024000000000000  // .quad 0x4024000000000000
+	QUAD $0x4059000000000000  // .quad 0x4059000000000000
+	QUAD $0x408f400000000000  // .quad 0x408f400000000000
+	QUAD $0x40c3880000000000  // .quad 0x40c3880000000000
+	QUAD $0x40f86a0000000000  // .quad 0x40f86a0000000000
+	QUAD $0x412e848000000000  // .quad 0x412e848000000000
+	QUAD $0x416312d000000000  // .quad 0x416312d000000000
+	QUAD $0x4197d78400000000  // .quad 0x4197d78400000000
+	QUAD $0x41cdcd6500000000  // .quad 0x41cdcd6500000000
+	QUAD $0x4202a05f20000000  // .quad 0x4202a05f20000000
+	QUAD $0x42374876e8000000  // .quad 0x42374876e8000000
+	QUAD $0x426d1a94a2000000  // .quad 0x426d1a94a2000000
+	QUAD $0x42a2309ce5400000  // .quad 0x42a2309ce5400000
+	QUAD $0x42d6bcc41e900000  // .quad 0x42d6bcc41e900000
+	QUAD $0x430c6bf526340000  // .quad 0x430c6bf526340000
+	QUAD $0x4341c37937e08000  // .quad 0x4341c37937e08000
+	QUAD $0x4376345785d8a000  // .quad 0x4376345785d8a000
+	QUAD $0x43abc16d674ec800  // .quad 0x43abc16d674ec800
+	QUAD $0x43e158e460913d00  // .quad 0x43e158e460913d00
+	QUAD $0x4415af1d78b58c40  // .quad 0x4415af1d78b58c40
+	QUAD $0x444b1ae4d6e2ef50  // .quad 0x444b1ae4d6e2ef50
+	QUAD $0x4480f0cf064dd592  // .quad 0x4480f0cf064dd592
 _first:
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0 // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
-	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1 // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
-	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1 // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
-	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1 // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
-	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1 // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
-	QUAD $0x020202020202f1f1; QUAD $0x0202020202020202 // .ascii 16, '\xf1\xf1\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02'
-	QUAD $0x0202020202020202; QUAD $0x0202020202020202 // .ascii 16, '\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02'
-	QUAD $0x0303030303030313; QUAD $0x0303230303030303 // .ascii 16, '\x13\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03#\x03\x03'
-	QUAD $0xf1f1f14404040434; QUAD $0xf1f1f1f1f1f1f1f1 // .ascii 16, '4\x04\x04\x04D\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
-
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf0f0f0f0f0f0f0f0; QUAD $0xf0f0f0f0f0f0f0f0  // .ascii 16, '\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0\xf0'
+	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1  // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
+	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1  // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
+	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1  // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
+	QUAD $0xf1f1f1f1f1f1f1f1; QUAD $0xf1f1f1f1f1f1f1f1  // .ascii 16, '\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
+	QUAD $0x020202020202f1f1; QUAD $0x0202020202020202  // .ascii 16, '\xf1\xf1\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02'
+	QUAD $0x0202020202020202; QUAD $0x0202020202020202  // .ascii 16, '\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02'
+	QUAD $0x0303030303030313; QUAD $0x0303230303030303  // .ascii 16, '\x13\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03#\x03\x03'
+	QUAD $0xf1f1f14404040434; QUAD $0xf1f1f1f1f1f1f1f1  // .ascii 16, '4\x04\x04\x04D\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1\xf1'
 _ranges:
-	BYTE $0x80 // .byte 128
-	BYTE $0xbf // .byte 191
-	BYTE $0xa0 // .byte 160
-	BYTE $0xbf // .byte 191
-	BYTE $0x80 // .byte 128
-	BYTE $0x9f // .byte 159
-	BYTE $0x90 // .byte 144
-	BYTE $0xbf // .byte 191
-	BYTE $0x80 // .byte 128
-	BYTE $0x8f // .byte 143
+	BYTE $0x80  // .byte 128
+	BYTE $0xbf  // .byte 191
+	BYTE $0xa0  // .byte 160
+	BYTE $0xbf  // .byte 191
+	BYTE $0x80  // .byte 128
+	BYTE $0x9f  // .byte 159
+	BYTE $0x90  // .byte 144
+	BYTE $0xbf  // .byte 191
+	BYTE $0x80  // .byte 128
+	BYTE $0x8f  // .byte 143
 
 TEXT ·__f64toa(SB), NOSPLIT | NOFRAME, $0 - 24
 	NO_LOCAL_POINTERS
@@ -11421,10 +10722,10 @@ _entry:
 	JBE  _stack_grow
 
 _f64toa:
-	MOVQ  out+0(FP), DI
+	MOVQ out+0(FP), DI
 	MOVSD val+8(FP), X0
-	CALL  ·__native_entry__+630(SB) // _f64toa
-	MOVQ  AX, ret+16(FP)
+	CALL ·__native_entry__+570(SB)  // _f64toa
+	MOVQ AX, ret+16(FP)
 	RET
 
 _stack_grow:
@@ -11436,7 +10737,7 @@ TEXT ·__html_escape(SB), NOSPLIT | NOFRAME, $0 - 40
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -72(SP), R12
+	LEAQ -64(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11445,7 +10746,7 @@ _html_escape:
 	MOVQ nb+8(FP), SI
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
-	CALL ·__native_entry__+8160(SB) // _html_escape
+	CALL ·__native_entry__+8304(SB)  // _html_escape
 	MOVQ AX, ret+32(FP)
 	RET
 
@@ -11465,7 +10766,7 @@ _entry:
 _i64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__native_entry__+3642(SB) // _i64toa
+	CALL ·__native_entry__+3653(SB)  // _i64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -11486,7 +10787,7 @@ _lspace:
 	MOVQ sp+0(FP), DI
 	MOVQ nb+8(FP), SI
 	MOVQ off+16(FP), DX
-	CALL ·__native_entry__+301(SB) // _lspace
+	CALL ·__native_entry__+251(SB)  // _lspace
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -11506,7 +10807,7 @@ _entry:
 _lzero:
 	MOVQ p+0(FP), DI
 	MOVQ n+8(FP), SI
-	CALL ·__native_entry__+13(SB) // _lzero
+	CALL ·__native_entry__+13(SB)  // _lzero
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -11529,7 +10830,7 @@ _quote:
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+4955(SB) // _quote
+	CALL ·__native_entry__+4970(SB)  // _quote
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -11542,7 +10843,7 @@ TEXT ·__skip_array(SB), NOSPLIT | NOFRAME, $0 - 32
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -160(SP), R12
+	LEAQ -152(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11550,7 +10851,7 @@ _skip_array:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+17370(SB) // _skip_array
+	CALL ·__native_entry__+17488(SB)  // _skip_array
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -11563,7 +10864,7 @@ TEXT ·__skip_object(SB), NOSPLIT | NOFRAME, $0 - 32
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -160(SP), R12
+	LEAQ -152(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11571,7 +10872,7 @@ _skip_object:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+17407(SB) // _skip_object
+	CALL ·__native_entry__+17525(SB)  // _skip_object
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -11584,7 +10885,7 @@ TEXT ·__skip_one(SB), NOSPLIT | NOFRAME, $0 - 32
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -160(SP), R12
+	LEAQ -152(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11592,7 +10893,7 @@ _skip_one:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+15518(SB) // _skip_one
+	CALL ·__native_entry__+15672(SB)  // _skip_one
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -11612,7 +10913,7 @@ _entry:
 _u64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__native_entry__+3735(SB) // _u64toa
+	CALL ·__native_entry__+3748(SB)  // _u64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -11625,7 +10926,7 @@ TEXT ·__unquote(SB), NOSPLIT | NOFRAME, $0 - 48
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -88(SP), R12
+	LEAQ -80(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11635,7 +10936,7 @@ _unquote:
 	MOVQ dp+16(FP), DX
 	MOVQ ep+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+6005(SB) // _unquote
+	CALL ·__native_entry__+6010(SB)  // _unquote
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -11648,7 +10949,7 @@ TEXT ·__validate_one(SB), NOSPLIT | NOFRAME, $0 - 32
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -160(SP), R12
+	LEAQ -152(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11656,7 +10957,7 @@ _validate_one:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+20488(SB) // _validate_one
+	CALL ·__native_entry__+20427(SB)  // _validate_one
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -11669,7 +10970,7 @@ TEXT ·__value(SB), NOSPLIT | NOFRAME, $0 - 48
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -400(SP), R12
+	LEAQ -408(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11679,7 +10980,7 @@ _value:
 	MOVQ p+16(FP), DX
 	MOVQ v+24(FP), CX
 	MOVQ allow_control+32(FP), R8
-	CALL ·__native_entry__+10880(SB) // _value
+	CALL ·__native_entry__+10907(SB)  // _value
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -11692,7 +10993,7 @@ TEXT ·__vnumber(SB), NOSPLIT | NOFRAME, $0 - 24
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -312(SP), R12
+	LEAQ -320(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11700,8 +11001,8 @@ _vnumber:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+13676(SB), AX // _vnumber
-	JMP  AX
+	LEAQ ·__native_entry__+13686(SB), AX  // _vnumber
+	JMP AX
 
 _stack_grow:
 	CALL runtime·morestack_noctxt<>(SB)
@@ -11720,8 +11021,8 @@ _vsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+14990(SB), AX // _vsigned
-	JMP  AX
+	LEAQ ·__native_entry__+15116(SB), AX  // _vsigned
+	JMP AX
 
 _stack_grow:
 	CALL runtime·morestack_noctxt<>(SB)
@@ -11732,7 +11033,7 @@ TEXT ·__vstring(SB), NOSPLIT | NOFRAME, $0 - 24
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -128(SP), R12
+	LEAQ -120(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11740,8 +11041,8 @@ _vstring:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+12641(SB), AX // _vstring
-	JMP  AX
+	LEAQ ·__native_entry__+12639(SB), AX  // _vstring
+	JMP AX
 
 _stack_grow:
 	CALL runtime·morestack_noctxt<>(SB)
@@ -11752,7 +11053,7 @@ TEXT ·__vunsigned(SB), NOSPLIT | NOFRAME, $0 - 24
 
 _entry:
 	MOVQ (TLS), R14
-	LEAQ -8(SP), R12
+	LEAQ -16(SP), R12
 	CMPQ R12, 16(R14)
 	JBE  _stack_grow
 
@@ -11760,8 +11061,8 @@ _vunsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+15249(SB), AX // _vunsigned
-	JMP  AX
+	LEAQ ·__native_entry__+15396(SB), AX  // _vunsigned
+	JMP AX
 
 _stack_grow:
 	CALL runtime·morestack_noctxt<>(SB)

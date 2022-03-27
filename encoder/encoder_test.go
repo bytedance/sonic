@@ -234,6 +234,44 @@ func TestEncoder_EscapeHTML(t *testing.T) {
     }
 }
 
+type validTest struct {
+    data string
+    pos  int
+}
+
+func TestValidJsonOk(t *testing.T) {
+    tests := []validTest{ 
+        { `null`, 0}, 
+        { ` 123`, 1},
+        { "  \"\u2028\\\"\\u2029 你好\"", 2},
+        { `   {"key":123}`, 3},
+        { `    [true, false, {}, [], [{}]]`, 4},
+    }
+    for _, in := range(tests) {
+        ok, start := Valid([]byte(in.data))
+        require.True(t, ok)
+        require.Equal(t, start, in.pos)
+    }
+}
+
+func TestValidJsonFalse(t *testing.T) {
+    tests := []validTest {
+        { `nul`, 2},
+        { `fale`, 3},
+        { `-1.23e`, 4},
+        {  "\u2028\\\"\\u2029 你好", 0},
+        { "\"\xf8\x90\x90\x80\x80\"",  0},
+        { "{\"\xff\":123}",  1},
+        { "{{}}", 1},
+    }
+    for _, in := range(tests) {
+        ok, start := Valid([]byte(in.data))
+        require.False(t, ok)
+        println(in.data)
+        require.Equal(t, start, in.pos)
+    }
+}
+
 func TestEncoder_Marshal_EscapeHTML_LargeJson(t *testing.T) {
     buf1, err1 := Encode(&_BindingValue, SortMapKeys | EscapeHTML)
     require.NoError(t, err1)

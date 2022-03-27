@@ -1024,7 +1024,11 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, in
             case FSM_KEY: {
                 FSM_CHAR('"');
                 FSM_REPL(self, FSM_ELEM);
-                FSM_XERR(skip_string(src, p));
+                if (validate_flag == VALID_DEFAULT) {
+                    FSM_XERR(skip_string(src, p));
+                } else if (validate_flag == VALID_FULL) {
+                    FSM_XERR(validate_string(src, p));
+                }
                 continue;
             }
 
