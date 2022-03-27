@@ -121,6 +121,7 @@ long skip_object(const GoString *src, long *p, StateMachine *m);
 long skip_string(const GoString *src, long *p);
 long skip_negative(const GoString *src, long *p);
 long skip_positive(const GoString *src, long *p);
+long skip_number(const GoString *src, long *p);
 
 bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
 double atof_native(const char *sp, ssize_t nb, char* dbuf, ssize_t cap);

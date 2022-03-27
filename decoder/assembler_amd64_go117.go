@@ -591,15 +591,6 @@ func (self *_Assembler) check_err() {
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
 }
 
-func (self *_Assembler) check_err_num() {
-    self.Emit("MOVQ" , _VAR_st_Vt, _AX)         // MOVQ st.Vt, AX
-    self.Emit("TESTQ", _AX, _AX)                // CMPQ AX, ${native.V_STRING}
-    self.Sjmp("JNS"  , "check_err_end_{n}")    
-    self.Emit("CMPQ" , _AX, jit.Imm(-int64(types.ERR_FLOAT_INFINITY)))
-    self.Sjmp("JNE"  , _LB_parsing_error_v)
-    self.Link("check_err_end_{n}")
-}
-
 func (self *_Assembler) check_eof(d int64) {
     if d == 1 {
         self.Emit("CMPQ", _IC, _IL)         // CMPQ IC, IL
@@ -943,6 +934,7 @@ func (self *_Assembler) mapassign_utext(t reflect.Type, addressable bool) {
 
 var (
     _F_skip_one = jit.Imm(int64(native.S_skip_one))
+    _F_skip_number = jit.Imm(int64(native.S_skip_number))
 )
 
 func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool) {
@@ -1173,13 +1165,21 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.Emit("MOVQ", jit.Imm(0), _VAR_fl)
     self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm('"'))
-    self.Sjmp("JNE", "_parse_number_{n}")
+    self.Sjmp("JNE", "_skip_number_{n}")
     self.Emit("MOVQ", jit.Imm(1), _VAR_fl)
     self.Emit("ADDQ", jit.Imm(1), _IC)
-    self.Link("_parse_number_{n}")
-    self.call_vf(_F_vnumber)
-    self.check_err_num()
-    self.slice_from(_VAR_st_Ep, 0)              // SLICE st.Ep, $0
+    self.Link("_skip_number_{n}")
+
+    /* call skip_number */
+    self.Emit("LEAQ", _ARG_s, _DI)                      // LEAQ  s<>+0(FP), DI
+    self.Emit("MOVQ", _IC, _ARG_ic)                     // MOVQ  IC, ic<>+16(FP)
+    self.Emit("LEAQ", _ARG_ic, _SI)                     // LEAQ  ic<>+16(FP), SI
+    self.callc(_F_skip_number)                          // CALL  _F_skip_number
+    self.Emit("MOVQ", _ARG_ic, _IC)                     // MOVQ  ic<>+16(FP), IC
+    self.Emit("TESTQ", _AX, _AX)                        // TESTQ AX, AX
+    self.Sjmp("JS"   , _LB_parsing_error_v)             // JS    _parse_error_v
+
+    self.slice_from_r(_AX, 0)
     self.Emit("BTQ", jit.Imm(_F_copy_string), _ARG_fv)
     self.Sjmp("JNC", "_num_write_{n}")
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9

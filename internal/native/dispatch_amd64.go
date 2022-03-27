@@ -51,6 +51,7 @@ var (
     S_skip_one    uintptr
     S_skip_array  uintptr
     S_skip_object uintptr
+    S_skip_number uintptr
 )
 
 //go:nosplit
@@ -113,6 +114,7 @@ func useAVX() {
     S_skip_one    = avx.S_skip_one
     S_skip_array  = avx.S_skip_array
     S_skip_object = avx.S_skip_object
+    S_skip_number = avx.S_skip_number
 }
 
 func useAVX2() {
@@ -130,6 +132,7 @@ func useAVX2() {
     S_skip_one    = avx2.S_skip_one
     S_skip_array  = avx2.S_skip_array
     S_skip_object = avx2.S_skip_object
+    S_skip_number = avx2.S_skip_number
 }
 
 func init() {

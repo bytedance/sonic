@@ -1135,7 +1135,7 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, in
         }                                               \
     }
 
-static inline long skip_number(const char *sp, size_t nb) {
+static inline long do_skip_number(const char *sp, size_t nb) {
     long         di = -1;
     long         ei = -1;
     long         si = -1;
@@ -1380,7 +1380,7 @@ long validate_string(const GoString *src, long *p) {
 
 long skip_negative(const GoString *src, long *p) {
     long i = *p;
-    long r = skip_number(src->buf + i, src->len - i);
+    long r = do_skip_number(src->buf + i, src->len - i);
 
     /* check for errors */
     if (r < 0) {
@@ -1395,7 +1395,7 @@ long skip_negative(const GoString *src, long *p) {
 
 long skip_positive(const GoString *src, long *p) {
     long i = *p - 1;
-    long r = skip_number(src->buf + i, src->len - i);
+    long r = do_skip_number(src->buf + i, src->len - i);
 
     /* check for errors */
     if (r < 0) {
@@ -1405,6 +1405,35 @@ long skip_positive(const GoString *src, long *p) {
 
     /* update value pointer */
     *p += r - 1;
+    return i;
+}
+
+long skip_number(const GoString *src, long *p) {
+    const char* ss = src->buf;
+    const char* sp = src->buf + *p;
+    size_t nb = src->len;
+    long i = *p;
+    long r;
+    bool neg = *sp == '-';
+
+    sp += neg;
+    nb -= neg;
+    if (unlikely(nb <= 0)) {
+        *p = sp - ss;
+        return -ERR_EOF;
+    }
+
+    if (unlikely(i < nb && (*sp > '9' || *sp < '0'))) {
+        *p = sp - ss;
+        return -ERR_INVAL;
+    }
+
+    r = do_skip_number(sp, nb);
+    if (unlikely(r < 0)) {
+        *p = sp - (r + 1) - ss;
+        return -ERR_INVAL;
+    }
+    *p = sp + r - ss;
     return i;
 }
 
