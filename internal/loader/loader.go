@@ -41,7 +41,7 @@ func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{})
     m := mmap(n)
     v := fmt.Sprintf("runtime.__%s_%x", fn, m)
     argsptr, localsptr := stackMap(faker)
-    registerFunction(v, m, fp, args, uintptr(len(self)), argsptr, localsptr)
+    registerFunction(v, m, uintptr(n), fp, args, uintptr(len(self)), argsptr, localsptr)
 
     /* reference as a slice */
     s := *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader {
