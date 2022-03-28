@@ -1370,7 +1370,7 @@ static inline long skip_number(const char *sp, size_t nb) {
         }
     }
 check_index:
-    if (di == 0 || si == 0 || ei == 0) {
+    if (di == 0 || si == 0 || ei == 0 || sp - ss == 0) {
         return -1;
     } else if (di == sp - ss - 1|| si == sp - ss - 1 || ei == sp - ss - 1) {
         return -(sp - ss);
@@ -1446,7 +1446,7 @@ long skip_negative(const GoString *src, long *p) {
     long r = skip_number(src->buf + i, src->len - i);
 
     /* check for errors */
-    if (r < 0) {
+    if (r <= 0) {
         *p -= r + 1;
         return -ERR_INVAL;
     }

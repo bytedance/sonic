@@ -20,7 +20,7 @@ var (
     _subr__skip_one     = __native_entry__() + 15998
     _subr__u64toa       = __native_entry__() + 3748
     _subr__unquote      = __native_entry__() + 6010
-    _subr__validate_one = __native_entry__() + 21520
+    _subr__validate_one = __native_entry__() + 21544
     _subr__value        = __native_entry__() + 11233
     _subr__vnumber      = __native_entry__() + 14012
     _subr__vsigned      = __native_entry__() + 15442

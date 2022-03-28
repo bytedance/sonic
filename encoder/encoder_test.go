@@ -273,6 +273,7 @@ func TestValidJsonFalse(t *testing.T) {
         { "{{}}", 1},
         { `"\"\x\""`, 4},
         { `"\"\uD88X\""`, 8},
+        { "{\"\":[-]}", 5},
     }
     for _, in := range(tests) {
         println(in.data)
