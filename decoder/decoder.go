@@ -33,6 +33,8 @@ const (
     _F_disable_urc
     _F_disable_unknown
     _F_copy_string
+
+    _F_allow_control = 31
 )
 
 // Decoder is the decoder context object

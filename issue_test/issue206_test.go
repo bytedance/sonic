@@ -31,6 +31,7 @@ import (
 var issue_19x_idata = "\"" + strings.Repeat("9", 1000) + "\""
 var issue_19x_fdata = "\"" + strings.Repeat("9", 100) + "." + strings.Repeat("9", 1000) + "\""
 var issue_19x_ndata = strings.Repeat("9", 1000)
+var issue_19x_invalid = strings.Repeat("9", 100) + "abc99"
 
 func TestDecodeLongStringToJsonNumber(t *testing.T) {
     var objs, obje json.Number 
@@ -45,6 +46,13 @@ func TestDecodeLongStringToJsonNumber(t *testing.T) {
     require.Equal(t, erre, errs)
     require.Equal(t, fobje, fobjs)
 
+    var objs2, obje2 json.Number 
+    errs = sonic.UnmarshalString(issue_19x_invalid, &objs2)
+    erre = json.Unmarshal([]byte(issue_19x_invalid), &obje2)
+    require.NotNil(t, erre)
+    require.NotNil(t, errs)
+
+
     var iobjs, iobje interface{}
     dc := decoder.NewDecoder(issue_19x_ndata)
     dc.UseNumber()
@@ -54,4 +62,15 @@ func TestDecodeLongStringToJsonNumber(t *testing.T) {
     erre = r.Decode(&iobje)
     require.Equal(t, erre, errs)
     require.Equal(t, iobje, iobjs)
+
+    var iobjs2, iobje2 interface{}
+    dc = decoder.NewDecoder(issue_19x_invalid)
+    dc.UseNumber()
+    errs = dc.Decode(&iobjs2)
+    r = json.NewDecoder(bytes.NewBufferString(issue_19x_invalid))
+    r.UseNumber()
+    erre = r.Decode(&iobje2)
+    require.Equal(t, erre, errs)
+    require.Equal(t, iobje2, iobjs2)
+    // spew.Dump(iobje2)
 }
