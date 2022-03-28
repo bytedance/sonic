@@ -257,48 +257,30 @@ func TestNative_VstringEscapeEOF(t *testing.T) {
     assert.Equal(t, int64(0), v.Iv)
 }
 
+type validTest struct {
+    data string
+    pos  int
+    ret  int
+}
+
 func TestNative_ValidateOne(t *testing.T) {
-    {
-        p := 0
-        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\n\\r\\b\\f😁ſ景\xef\xbf\xbf\xf4\x8f\xbf\xbf\xc2\x80xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, len(s), p)
-        assert.Equal(t, 0, r)
+    success := 0
+    invChar := -int(types.ERR_INVALID_CHAR)
+    tests := []validTest {
+        {"\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\n\\r\\b\\f😁ſ景\xef\xbf\xbf\xf4\x8f\xbf\xbf\xc2\x80xxxxxxxxxxxxxxx\"", 84, success},
+        {"\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\bxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x", 64, invChar},
+        {"\"\x00\"x", 1, invChar},
+        {"\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\x80xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x", 64, invChar},
+        {"\"\x80\"x", 1, invChar},
+        {"\"\xed\xbf\xbf\"x", 1, invChar},
     }
-    {
+    for _, in := range tests {
         p := 0
-        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\bxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
+        s := in.data
+        println(in.data)
         r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 64, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"\x00\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 1, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\x80xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 64, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"\x80\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 1, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"\xed\xbf\xbf\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 1, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
+        assert.Equal(t, in.pos, p)
+        assert.Equal(t, in.ret, r)
     }
 }
 
