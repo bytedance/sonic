@@ -99,7 +99,7 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
 }
 
 static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
-    char     ch;
+    char     ch = 0;
     uint64_t es;
     uint64_t fe;
     uint64_t os;
@@ -381,7 +381,7 @@ static inline ssize_t valid_many_escapes(const char* sp, size_t nb, uint64_t em,
 
 
 static inline ssize_t advance_validate_string(const GoString *src, long p, int64_t *ep) {
-    char     ch;
+    char     ch = 0;
     uint64_t es;
     uint64_t fe;
     uint64_t os;
@@ -598,6 +598,7 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
 
     /* handle the remaining bytes with scalar code */
     while (nb-- > 0 && (ch = *sp++) != '"') {
+
         if (unlikely(ch == '\\')) {
             if (nb == 0) {
                 return -ERR_EOF;

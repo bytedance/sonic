@@ -15,17 +15,17 @@ var (
     _subr__lspace       = __native_entry__() + 379
     _subr__lzero        = __native_entry__() + 13
     _subr__quote        = __native_entry__() + 5325
-    _subr__skip_array   = __native_entry__() + 20591
-    _subr__skip_object  = __native_entry__() + 20628
-    _subr__skip_one     = __native_entry__() + 18778
+    _subr__skip_array   = __native_entry__() + 20597
+    _subr__skip_object  = __native_entry__() + 20634
+    _subr__skip_one     = __native_entry__() + 18784
     _subr__u64toa       = __native_entry__() + 4003
     _subr__unquote      = __native_entry__() + 7158
-    _subr__validate_one = __native_entry__() + 24962
+    _subr__validate_one = __native_entry__() + 24961
     _subr__value        = __native_entry__() + 13876
-    _subr__vnumber      = __native_entry__() + 16792
-    _subr__vsigned      = __native_entry__() + 18222
+    _subr__vnumber      = __native_entry__() + 16798
+    _subr__vsigned      = __native_entry__() + 18228
     _subr__vstring      = __native_entry__() + 15885
-    _subr__vunsigned    = __native_entry__() + 18502
+    _subr__vunsigned    = __native_entry__() + 18508
 )
 
 const (

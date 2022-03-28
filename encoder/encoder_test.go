@@ -264,6 +264,7 @@ func TestValidJsonOk(t *testing.T) {
 
 func TestValidJsonFalse(t *testing.T) {
     tests := []validTest {
+        { `t`, 0},
         { `nul`, 2},
         { `fale`, 3},
         { `-1.23e`, 4},
@@ -274,6 +275,7 @@ func TestValidJsonFalse(t *testing.T) {
         { `"\"\x\""`, 4},
         { `"\"\uD88X\""`, 8},
         { "{\"\":[-]}", 5},
+        { "\"00000000000000000000000000000000", 32},
     }
     for _, in := range(tests) {
         println(in.data)
@@ -284,6 +286,9 @@ func TestValidJsonFalse(t *testing.T) {
         require.Equal(t, start, in.pos)
     }
 }
+
+// func TestValidJsonMemBound(t *testing.T) {
+// }
 
 func TestEncoder_Marshal_EscapeHTML_LargeJson(t *testing.T) {
     buf1, err1 := Encode(&_BindingValue, SortMapKeys | EscapeHTML)
