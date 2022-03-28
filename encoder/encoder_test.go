@@ -25,6 +25,7 @@ import (
     `sync`
     `testing`
     `time`
+    `unicode/utf8`
 
     gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
@@ -240,16 +241,23 @@ type validTest struct {
 }
 
 func TestValidJsonOk(t *testing.T) {
-    tests := []validTest{ 
+    tests := []validTest{
         { `null`, 0}, 
         { ` 123`, 1},
         { "  \"\u2028\\\"\\u2029 你好\"", 2},
         { `   {"key":123}`, 3},
         { `    [true, false, {}, [], [{}]]`, 4},
+        {"{\"S\":\"\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\\f\"}", 0},
+
+         /* not valid the escaped surrogate half */
+        { "\"\\uDE1D\"", 0},
+        { "\"\\uDB00\\uDB00\"", 0},
     }
     for _, in := range(tests) {
         ok, start := Valid([]byte(in.data))
+        jok := json.Valid([]byte(in.data)) && utf8.Valid([]byte(in.data))
         require.True(t, ok)
+        require.True(t, jok)
         require.Equal(t, start, in.pos)
     }
 }
@@ -263,11 +271,15 @@ func TestValidJsonFalse(t *testing.T) {
         { "\"\xf8\x90\x90\x80\x80\"",  0},
         { "{\"\xff\":123}",  1},
         { "{{}}", 1},
+        { `"\"\x\""`, 4},
+        { `"\"\uD88X\""`, 8},
     }
     for _, in := range(tests) {
-        ok, start := Valid([]byte(in.data))
-        require.False(t, ok)
         println(in.data)
+        ok, start := Valid([]byte(in.data))
+        jok := json.Valid([]byte(in.data)) && utf8.Valid([]byte(in.data))
+        require.False(t, jok)
+        require.False(t, ok)
         require.Equal(t, start, in.pos)
     }
 }

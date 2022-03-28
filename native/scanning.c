@@ -343,6 +343,43 @@ static inline int _mm256_cchars_mask(__m256i v) {
 
 #endif
 
+static inline int hasescape(uint64_t em, long q) {
+    if (em == 0) {
+        return -1;
+    }
+    int i = __builtin_ctzll(em);
+    if (i > q) {
+        return -1;
+    }
+    return i;
+}
+
+static inline uint64_t clear_bits(uint64_t m, int n) {
+    if (n >= 64) {
+        return 0;
+    }
+    return m >> n << n;
+}
+
+static inline ssize_t valid_many_escapes(const char* sp, size_t nb, uint64_t em, uint64_t qm, ssize_t* erp) {
+    const char* ss = sp;
+    long qp = qm == 0 ? 64 : __builtin_ctzll(qm);
+    int  en;
+    int ret;
+
+    /* check the escaped chars */
+    while ((en = hasescape(em, qp)) != -1) {
+        ret = valid_escaped(sp + en, nb - en, erp);
+        if (unlikely(ret < 0)) {
+            *erp = en + *erp;
+            return ret;
+        }
+        em = clear_bits(em, ret + en);
+    }
+    return 0;
+}
+
+
 static inline ssize_t advance_validate_string(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t es;
@@ -354,6 +391,8 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
     uint64_t cr = 0;
     long     qp = 0;
     long     np = 0;
+    ssize_t  erp = -1;
+    ssize_t  ret;
 
     /* prevent out-of-bounds accessing */
     if (unlikely(src->len == p)) {
@@ -452,6 +491,11 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         /** mask all the escaped quotes */
         if (unlikely(m1 != 0 || cr != 0)) {
             m0_mask(add64)
+            ret = valid_many_escapes(sp, nb, m1, m0, &erp);
+            if (unlikely(ret < 0)) {
+                *ep = sp + erp - ss;
+                return ret;
+            }
         }
 
         /* get the position of end quote */
@@ -508,6 +552,11 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         /** mask all the escaped quotes */
         if (unlikely(m1 != 0 || cr != 0)) {
             m0_mask(add32)
+            ret = valid_many_escapes(sp, nb, m1, m0, &erp);
+            if (unlikely(ret < 0)) {
+                *ep = sp + erp - ss;
+                return ret;
+            }
         }
 
         /* get the position of end quote */
@@ -537,8 +586,13 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         if (nb == 0) {
             return -ERR_EOF;
         } else {
-            ep_setc()
-            sp++, nb--;
+            ret = valid_escaped(sp - 1, nb + 1, &erp); 
+            if (unlikely(ret < 0)) {
+                *ep = sp - 1 + erp - ss;
+                return ret;
+            }
+            sp += ret - 1;
+            nb -= ret - 1;
         }
     }
 
@@ -548,8 +602,13 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
             if (nb == 0) {
                 return -ERR_EOF;
             } else {
-                ep_setc()
-                sp++, nb--;
+                ret = valid_escaped(sp - 1, nb + 1, &erp); 
+                if (unlikely(ret < 0)) {
+                    *ep = sp - 1 + erp - ss;
+                    return ret;
+                }
+                sp += ret - 1;
+                nb -= ret - 1;
             }
         } else if (unlikely( ch >= 0 && ch <= 0x1f)) { // control chars
             ep_setc()

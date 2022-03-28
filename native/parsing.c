@@ -633,6 +633,58 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
     return dp + nb - p;
 }
 
+// if valid return 0, otherwise, return the error code, *sp == '\\'
+ssize_t valid_escaped(const char *sp, ssize_t nb, ssize_t *ep) {
+    ssize_t      x = nb;
+    const char * s = sp;
+
+    char     cc;
+    uint32_t r0;
+    uint32_t r1;
+
+    /* skip the plain text */
+    sp += 2;
+    nb -= 2;
+
+    /* check for EOF */
+    if (nb < 0) {
+        *ep = x;
+        return -ERR_EOF;
+    }
+
+    /* check for escape sequence */
+    if ((cc = _UnquoteTab[(uint8_t)sp[-1]]) == 0) {
+        *ep = sp - s;
+        return -ERR_ESCAPE;
+    }
+
+    /* check for simple escape sequence */
+    if (cc != -1) {
+        return sp - s;
+    }
+
+    /* must have at least 4 characters */
+    if (nb < 4) {
+        *ep = x;
+        return -ERR_EOF;
+    }
+
+    /* check for hexadecimal characters */
+    if (!unhex16_is(sp)) {
+        *ep = sp - s;
+        for (int i = 0; i < 4 && ishex(*sp); i++, sp++) ++*ep;
+        ++*ep;
+        return -ERR_INVAL;
+    }
+
+    /* decode the code-point */
+    sp += 4;
+    nb -= 4;
+
+    /* calculate the result length */
+    return sp - s;
+}
+
 static inline __m128i _mm_find_html(__m128i vv) {
     __m128i e1 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('<'));
     __m128i e2 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('>'));
