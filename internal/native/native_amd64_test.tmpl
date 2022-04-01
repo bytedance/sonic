@@ -563,3 +563,11 @@ func TestNative_SkipObject(t *testing.T) {
     __skip_object(&s, &p, &types.StateMachine{})
     assert.Equal(t, p, 15)
 }
+
+func TestNative_SkipNumber(t *testing.T) {
+    p := 0
+    s := `-1.23e+12`
+    q := __skip_number(&s, &p)
+    assert.Equal(t, 9, p)
+    assert.Equal(t, 0, q)
+}

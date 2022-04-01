@@ -266,21 +266,16 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", _IL, _SI)         // MOVQ IL, SI
     self.Emit("MOVQ", _IC, _DX)         // MOVQ IC, DX
     self.Emit("LEAQ", _VAR_ss, _CX)     // LEAQ ss, CX
-    self.Emit("MOVL", jit.Imm(1), _R8)  // MOVL $1, R8
+    self.Emit("MOVQ", _VAR_df, _R8)     // MOVQ $df, R8
+    self.Emit("BTSQ", jit.Imm(_F_allow_control), _R8)  // ANDQ $1<<_F_allow_control, R8
     self.call(_F_value)                 // CALL value
     self.Emit("MOVQ", _AX, _IC)         // MOVQ AX, IC
 
     /* check for errors */
     self.Emit("MOVQ" , _VAR_ss_Vt, _AX)     // MOVQ  ss.Vt, AX
     self.Emit("TESTQ", _AX, _AX)            // TESTQ AX, AX
+    self.Sjmp("JS"   , "_parsing_error")
     self.Sjmp("JZ"   , "_invalid_vtype")    // JZ    _invalid_vtype
-    self.Sjmp("JNS"  , "_not_sign")        // JNS    
-    self.Emit("CMPQ" , _AX, jit.Imm(-int64(types.ERR_FLOAT_INFINITY)))
-    self.Sjmp("JNE"  , "_parsing_error")
-    self.Emit("BTQ"  , jit.Imm(_F_use_number), _VAR_df)     // BTQ     _F_use_number, df
-    self.Sjmp("JNC"  , "_parsing_error")
-    self.Emit("MOVQ" , jit.Imm(int64(types.V_DOUBLE)), _AX)
-    self.Link("_not_sign")
     self.Emit("CMPQ" , _AX, _V_max)         // CMPQ  AX, _V_max
     self.Sjmp("JA"   , "_invalid_vtype")    // JA    _invalid_vtype
 

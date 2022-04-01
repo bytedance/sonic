@@ -108,7 +108,7 @@ ssize_t quote(const char *sp, ssize_t nb, char *dp, ssize_t *dn, uint64_t flags)
 ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flags);
 ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn);
 
-long value(const char *s, size_t n, long p, JsonState *ret, int allow_control);
+long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags);
 void vstring(const GoString *src, long *p, JsonState *ret);
 void vnumber(const GoString *src, long *p, JsonState *ret);
 void vsigned(const GoString *src, long *p, JsonState *ret);
@@ -121,6 +121,7 @@ long skip_object(const GoString *src, long *p, StateMachine *m);
 long skip_string(const GoString *src, long *p);
 long skip_negative(const GoString *src, long *p);
 long skip_positive(const GoString *src, long *p);
+long skip_number(const GoString *src, long *p);
 
 bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
 double atof_native(const char *sp, ssize_t nb, char* dbuf, ssize_t cap);

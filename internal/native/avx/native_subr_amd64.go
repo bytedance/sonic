@@ -15,17 +15,18 @@ var (
     _subr__lspace       = __native_entry__() + 301
     _subr__lzero        = __native_entry__() + 13
     _subr__quote        = __native_entry__() + 4955
-    _subr__skip_array   = __native_entry__() + 17370
-    _subr__skip_object  = __native_entry__() + 17407
-    _subr__skip_one     = __native_entry__() + 15518
+    _subr__skip_array   = __native_entry__() + 17551
+    _subr__skip_number  = __native_entry__() + 20669
+    _subr__skip_object  = __native_entry__() + 17588
+    _subr__skip_one     = __native_entry__() + 15699
     _subr__u64toa       = __native_entry__() + 3735
     _subr__unquote      = __native_entry__() + 6005
-    _subr__validate_one = __native_entry__() + 20488
+    _subr__validate_one = __native_entry__() + 20786
     _subr__value        = __native_entry__() + 10880
-    _subr__vnumber      = __native_entry__() + 13676
-    _subr__vsigned      = __native_entry__() + 14990
-    _subr__vstring      = __native_entry__() + 12641
-    _subr__vunsigned    = __native_entry__() + 15249
+    _subr__vnumber      = __native_entry__() + 13857
+    _subr__vsigned      = __native_entry__() + 15171
+    _subr__vstring      = __native_entry__() + 12822
+    _subr__vunsigned    = __native_entry__() + 15430
 )
 
 const (
@@ -36,12 +37,13 @@ const (
     _stack__lzero = 8
     _stack__quote = 80
     _stack__skip_array = 160
+    _stack__skip_number = 96
     _stack__skip_object = 160
     _stack__skip_one = 160
     _stack__u64toa = 8
     _stack__unquote = 88
     _stack__validate_one = 160
-    _stack__value = 400
+    _stack__value = 416
     _stack__vnumber = 312
     _stack__vsigned = 16
     _stack__vstring = 128
@@ -56,6 +58,7 @@ var (
     _ = _subr__lzero
     _ = _subr__quote
     _ = _subr__skip_array
+    _ = _subr__skip_number
     _ = _subr__skip_object
     _ = _subr__skip_one
     _ = _subr__u64toa
@@ -76,6 +79,7 @@ const (
     _ = _stack__lzero
     _ = _stack__quote
     _ = _stack__skip_array
+    _ = _stack__skip_number
     _ = _stack__skip_object
     _ = _stack__skip_one
     _ = _stack__u64toa

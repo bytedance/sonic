@@ -51,8 +51,20 @@ static inline char isspace(char ch) {
     return ch == ' ' || ch == '\r' || ch == '\n' | ch == '\t';
 }
 
-static inline void vdigits(const GoString *src, long *p, JsonState *ret) {
+const int MASK_USE_NUMBER = 1<<1;
+
+static inline void vdigits(const GoString *src, long *p, JsonState *ret, uint64_t flag) {
     --*p;
+    if (flag & MASK_USE_NUMBER) {
+        long i = skip_number(src, p);
+        if (i < 0) {
+            ret->vt = i;
+            return;
+        }
+        ret->vt = V_DOUBLE;
+        ret->ep = i;
+        return;
+    }
     vnumber(src, p, ret);
 }
 
@@ -572,9 +584,12 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
 
 /** Value Scanning Routines **/
 
-long value(const char *s, size_t n, long p, JsonState *ret, int allow_control) {
+const uint64_t MASK_ALLOW_CONTROL = 1ul<<31;
+
+long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
     long     q = p;
     GoString m = {.buf = s, .len = n};
+    bool allow_control = (flags&MASK_ALLOW_CONTROL) != 0;
 
     /* parse the next identifier, q is UNSAFE, may cause out-of-bounds accessing */
     switch (advance_ns(&m, &q)) {
@@ -588,7 +603,7 @@ long value(const char *s, size_t n, long p, JsonState *ret, int allow_control) {
         case '6' : /* fallthrough */
         case '7' : /* fallthrough */
         case '8' : /* fallthrough */
-        case '9' : vdigits(&m, &q, ret)                                 ; return q;
+        case '9' : vdigits(&m, &q, ret, flags)                          ; return q;
         case '"' : vstring(&m, &q, ret)                                 ; return q;
         case 'n' : ret->vt = advance_dword(&m, &q, 1, V_NULL, VS_NULL)  ; return q;
         case 't' : ret->vt = advance_dword(&m, &q, 1, V_TRUE, VS_TRUE)  ; return q;
@@ -1135,7 +1150,7 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, in
         }                                               \
     }
 
-static inline long skip_number(const char *sp, size_t nb) {
+static inline long do_skip_number(const char *sp, size_t nb) {
     long         di = -1;
     long         ei = -1;
     long         si = -1;
@@ -1380,7 +1395,7 @@ long validate_string(const GoString *src, long *p) {
 
 long skip_negative(const GoString *src, long *p) {
     long i = *p;
-    long r = skip_number(src->buf + i, src->len - i);
+    long r = do_skip_number(src->buf + i, src->len - i);
 
     /* check for errors */
     if (r < 0) {
@@ -1395,7 +1410,7 @@ long skip_negative(const GoString *src, long *p) {
 
 long skip_positive(const GoString *src, long *p) {
     long i = *p - 1;
-    long r = skip_number(src->buf + i, src->len - i);
+    long r = do_skip_number(src->buf + i, src->len - i);
 
     /* check for errors */
     if (r < 0) {
@@ -1405,6 +1420,35 @@ long skip_positive(const GoString *src, long *p) {
 
     /* update value pointer */
     *p += r - 1;
+    return i;
+}
+
+long skip_number(const GoString *src, long *p) {
+    const char* ss = src->buf;
+    const char* sp = src->buf + *p;
+    size_t nb = src->len;
+    long i = *p;
+    long r;
+    bool neg = *sp == '-';
+
+    sp += neg;
+    nb -= neg;
+    if (unlikely(nb <= 0)) {
+        *p = sp - ss;
+        return -ERR_EOF;
+    }
+
+    if (unlikely(i < nb && (*sp > '9' || *sp < '0'))) {
+        *p = sp - ss;
+        return -ERR_INVAL;
+    }
+
+    r = do_skip_number(sp, nb);
+    if (unlikely(r < 0)) {
+        *p = sp - (r + 1) - ss;
+        return -ERR_INVAL;
+    }
+    *p = sp + r - ss;
     return i;
 }
 
