@@ -159,6 +159,8 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         minpc       : minpc,
         maxpc       : maxpc,
         modulename  : name,
+        gcdata: uintptr(unsafe.Pointer(&emptyByte)),
+        gcbss: uintptr(unsafe.Pointer(&emptyByte)),
     }
 
     /* verify and register the new module */
