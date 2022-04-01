@@ -28,7 +28,6 @@ import (
 // This list must match the list in cmd/internal/objabi/funcid.go.
 type funcFlag uint8
 
-
 type _Func struct {
     entryOff    uint32 // start pc
     nameoff     int32   // function name
@@ -186,6 +185,8 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         minpc       : minpc,
         maxpc       : maxpc,
         modulename  : name,
+        gcdata: uintptr(unsafe.Pointer(&emptyByte)),
+        gcbss: uintptr(unsafe.Pointer(&emptyByte)),
         gofunc: base,
     }
 

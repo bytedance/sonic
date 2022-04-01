@@ -126,8 +126,6 @@ func makePCtab(fp int) []byte {
     return append([]byte{0}, encodeVariant((fp + 1) << 1)...)
 }
 
-var emptyByte byte
-
 func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
     minpc := pc
     maxpc := pc + size

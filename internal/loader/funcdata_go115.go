@@ -98,8 +98,6 @@ var findFuncTab = &_FindFuncBucket {
     idx: 1,
 }
 
-var emptyByte byte
-
 func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
     minpc := pc
     maxpc := pc + size

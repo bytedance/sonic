@@ -1,3 +1,21 @@
+// +build !race
+
+/*
+ * Copyright 2021 ByteDance Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package issue_test
 
 import (
@@ -6,22 +24,32 @@ import (
     `os/exec`
     `plugin`
     `runtime`
-    `strings`
     `testing`
     `reflect`
 
     _ `github.com/bytedance/sonic`
 )
 
-func init() {
-    if !strings.Contains(runtime.Version(), "go1.15") {
-        return
+func buildPlugin() {
+    out := bytes.NewBuffer(nil)
+    bin0, err := exec.LookPath("rm")
+    if err != nil {
+        panic(err)
     }
+    cmd0 := exec.Cmd{
+        Path: bin0,
+        Args: []string{"rm", "-f", "plugin/plugin."+runtime.Version()+".so"},
+        Stdout: out,
+        Stderr: out,
+    }
+    if err := cmd0.Run(); err != nil {
+        panic(string(out.Bytes()))
+    }
+    out.Reset()
     bin, err := exec.LookPath("go")
     if err != nil {
         panic(err)
     }
-    out := bytes.NewBuffer(nil)
     cmd := exec.Cmd{
         Path: bin,
         Args: []string{"go", "build", "-buildmode", "plugin", "-o", "plugin/plugin."+runtime.Version()+".so", "plugin/main.go"},
@@ -33,10 +61,9 @@ func init() {
     }
 }
 
+
 func TestPlugin(t *testing.T) {
-    if !strings.Contains(runtime.Version(), "go1.15") {
-        return
-    }
+    buildPlugin()
     p, err := plugin.Open("plugin/plugin."+runtime.Version()+".so")
     if err != nil {
         t.Fatal(err)
