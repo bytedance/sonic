@@ -53,6 +53,8 @@ var (
     modList []*_ModuleData
 )
 
+var emptyByte byte
+
 func encodeVariant(v int) []byte {
     var u int
     var r []byte

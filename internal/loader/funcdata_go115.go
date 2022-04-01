@@ -98,7 +98,7 @@ var findFuncTab = &_FindFuncBucket {
     idx: 1,
 }
 
-func registerFunction(name string, pc uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
+func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
     minpc := pc
     maxpc := pc + size
 
@@ -155,6 +155,8 @@ func registerFunction(name string, pc uintptr, fp int, args int, size uintptr, a
         minpc       : minpc,
         maxpc       : maxpc,
         modulename  : name,
+        gcdata: uintptr(unsafe.Pointer(&emptyByte)),
+        gcbss: uintptr(unsafe.Pointer(&emptyByte)),
     }
 
     /* verify and register the new module */
