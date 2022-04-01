@@ -53,7 +53,7 @@ static inline char isspace(char ch) {
 
 const int MASK_USE_NUMBER = 1<<1;
 
-static inline void vdigits(const GoString *src, long *p, JsonState *ret, int flag) {
+static inline void vdigits(const GoString *src, long *p, JsonState *ret, uint64_t flag) {
     --*p;
     if (flag & MASK_USE_NUMBER) {
         long i = skip_number(src, p);

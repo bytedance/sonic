@@ -74,3 +74,25 @@ func TestDecodeLongStringToJsonNumber(t *testing.T) {
     require.Equal(t, iobje2, iobjs2)
     // spew.Dump(iobje2)
 }
+
+var jsonNumberBig = "\"" + strings.Repeat("9", 10) + "." + strings.Repeat("9", 100) + "\""
+
+func BenchmarkDecodeJsonNumber_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(jsonNumberBig)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        var obj json.Number 
+        _ = sonic.UnmarshalString(jsonNumberBig, &obj)
+    }
+}
+
+func BenchmarkDecodeUseNumber_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(jsonNumberBig)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        var obj interface{} 
+        dc := decoder.NewDecoder(jsonNumberBig)
+        dc.UseNumber()
+        _ = dc.Decode(&obj)
+    }
+}
