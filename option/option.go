@@ -16,15 +16,23 @@
 
 package option
 
+import (
+    `sync`
+)
+
 // CompileOptions includes all options for encoder or decoder compiler.
 type CompileOptions struct {
     // the depth for recursive compile
     RecursiveDepth int
+    // SliceOrMapNoNull indicates encoder to output "[]" or "{}" chars
+    // while encountering a nil value of slice or map type, insetead of "null"
+    SliceOrMapNoNull bool
 }
 
 func DefaultCompileOptions() CompileOptions {
     return CompileOptions{
         RecursiveDepth: 0,
+        SliceOrMapNoNull: false,
     }
 }
 
@@ -42,4 +50,36 @@ func WithCompileRecursiveDepth(depth int) CompileOption {
             o.RecursiveDepth = depth
         }
 }
+
+// SliceOrMapNoNull indicates encoder to output "[]" or "{}" chars
+// while encountering a nil value of slice or map type, insetead of "null"
+func WithSliceOrMapNoNull(no bool) CompileOption {
+    return func(o *CompileOptions) {
+            o.SliceOrMapNoNull = no
+        }
+}
+
+var (
+	global CompileOptions = DefaultCompileOptions()
+    // Settled bool
+    globalMux sync.RWMutex
+)
  
+func SetCompileOptions(opts ...CompileOption) CompileOptions {
+    // if Settled {
+    //     panic("compile options can only be set once!")
+    // }
+    globalMux.Lock()
+    defer globalMux.Unlock()
+    for _, opt := range opts {
+        opt(&global)
+    }
+    return global
+}
+
+func GetCompileOptions() (ret CompileOptions) {
+    globalMux.RLock() 
+    ret = global
+    globalMux.RUnlock()
+    return
+}

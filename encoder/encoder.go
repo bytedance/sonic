@@ -231,11 +231,7 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
-    cfg := option.DefaultCompileOptions()
-    for _, opt := range opts {
-        opt(&cfg)
-        break
-    }
+    cfg := option.SetCompileOptions(opts...)
     return pretouchRec(map[reflect.Type]bool{vt:true}, cfg)
 }
 

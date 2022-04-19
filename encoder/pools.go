@@ -17,13 +17,14 @@
 package encoder
 
 import (
-    `bytes`
-    `sync`
-    `unsafe`
-    `errors`
+	`bytes`
+	`errors`
+	`sync`
+	`unsafe`
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/internal/caching`
+	`github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/option`
 )
 
 const (
@@ -130,7 +131,7 @@ func freeBuffer(p *bytes.Buffer) {
 }
 
 func makeEncoder(vt *rt.GoType) (interface{}, error) {
-    if pp, err := newCompiler().compile(vt.Pack()); err != nil {
+    if pp, err := newCompiler().apply(option.GetCompileOptions()).compile(vt.Pack()); err != nil {
         return nil, err
     } else {
         return newAssembler(pp).Load(), nil

@@ -90,11 +90,13 @@ const (
 )
 
 const (
-    _IM_null = 0x6c6c756e           // 'null'
-    _IM_true = 0x65757274           // 'true'
-    _IM_fals = 0x736c6166           // 'fals' ('false' without the 'e')
-    _IM_open = 0x00225c22           // '"\"∅'
-    _IM_mulv = -0x5555555555555555
+    _IM_null   = 0x6c6c756e           // 'null'
+    _IM_true   = 0x65757274           // 'true'
+    _IM_fals   = 0x736c6166           // 'fals' ('false' without the 'e')
+    _IM_open   = 0x00225c22           // '"\"∅'
+    _IM_array  = 0x5d5b               // '[]'
+    _IM_object = 0x7d7b               // '{}'
+    _IM_mulv   = -0x5555555555555555
 )
 
 const (
@@ -207,6 +209,8 @@ func (self *_Assembler) compile() {
 
 var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_null           : (*_Assembler)._asm_OP_null,
+    _OP_empty_arr      : (*_Assembler)._asm_OP_empty_arr,
+    _OP_empty_obj      : (*_Assembler)._asm_OP_empty_obj, 
     _OP_bool           : (*_Assembler)._asm_OP_bool,
     _OP_i8             : (*_Assembler)._asm_OP_i8,
     _OP_i16            : (*_Assembler)._asm_OP_i16,
@@ -763,6 +767,18 @@ func (self *_Assembler) _asm_OP_null(_ *_Instr) {
     self.check_size(4)
     self.Emit("MOVL", jit.Imm(_IM_null), jit.Sib(_RP, _RL, 1, 0))  // MOVL $'null', (RP)(RL*1)
     self.Emit("ADDQ", jit.Imm(4), _RL)                             // ADDQ $4, RL
+}
+
+func (self *_Assembler) _asm_OP_empty_arr(_ *_Instr) {
+    self.check_size(2)
+    self.Emit("MOVW", jit.Imm(_IM_array), jit.Sib(_RP, _RL, 1, 0)) 
+    self.Emit("ADDQ", jit.Imm(2), _RL)                            
+}
+
+func (self *_Assembler) _asm_OP_empty_obj(_ *_Instr) {
+    self.check_size(2)
+    self.Emit("MOVW", jit.Imm(_IM_object), jit.Sib(_RP, _RL, 1, 0))  
+    self.Emit("ADDQ", jit.Imm(2), _RL)                            
 }
 
 func (self *_Assembler) _asm_OP_bool(_ *_Instr) {

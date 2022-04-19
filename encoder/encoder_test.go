@@ -17,19 +17,21 @@
 package encoder
 
 import (
-    `bytes`
-    `encoding/json`
-    `runtime`
-    `runtime/debug`
-    `strconv`
-    `sync`
-    `testing`
-    `time`
+	`bytes`
+	`encoding/json`
+	`runtime`
+	`runtime/debug`
+	`strconv`
+	`sync`
+	`testing`
+	`time`
 
-    gojson `github.com/goccy/go-json`
-    `github.com/json-iterator/go`
-    `github.com/stretchr/testify/require`
-    `github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/option`
+	gojson `github.com/goccy/go-json`
+	`github.com/json-iterator/go`
+	`github.com/stretchr/testify/assert`
+	`github.com/stretchr/testify/require`
 )
 
 func TestMain(m *testing.M) {
@@ -74,6 +76,40 @@ func TestGC(t *testing.T) {
         }(wg, n)
     }
     wg.Wait()
+}
+
+func TestOptionSliceOrMapNoNull(t *testing.T) {
+    type sample struct {
+        M map[string]interface{}
+        S []interface{}
+        A [0]interface{}
+        MP *map[string]interface{}
+        SP *[]interface{}
+        AP *[0]interface{}
+    }
+    obj := sample{}
+    option.SetCompileOptions(option.WithSliceOrMapNoNull(true))
+    out, err := Encode(obj, 0)
+    if err != nil {
+        t.Fatal(err)
+    }
+    assert.Equal(t, `{"M":{},"S":[],"A":[],"MP":null,"SP":null,"AP":null}`, string(out))
+   
+    type sample2 struct {
+        M map[string]interface{}
+        S []interface{}
+        A [0]interface{}
+        MP *map[string]interface{}
+        SP *[]interface{}
+        AP *[0]interface{}
+    }
+    obj2 := sample2{}
+    option.SetCompileOptions(option.WithSliceOrMapNoNull(false))
+    out, err = Encode(obj2, 0)
+    if err != nil {
+        t.Fatal(err)
+    }
+    assert.Equal(t, `{"M":null,"S":null,"A":[],"MP":null,"SP":null,"AP":null}`, string(out))
 }
 
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {

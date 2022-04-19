@@ -32,6 +32,8 @@ type _Op uint8
 
 const (
     _OP_null _Op = iota + 1
+    _OP_empty_arr 
+    _OP_empty_obj
     _OP_bool
     _OP_i8
     _OP_i16
@@ -93,6 +95,8 @@ const (
 
 var _OpNames = [256]string {
     _OP_null           : "null",
+    _OP_empty_arr    : "empty_array",
+    _OP_empty_obj      : "empty_object",
     _OP_bool           : "bool",
     _OP_i8             : "i8",
     _OP_i16            : "i16",
@@ -481,19 +485,19 @@ func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
     }
 }
 
-func (self *_Compiler) compileNil(p *_Program, sp int, vt reflect.Type, fn func(*_Program, int, reflect.Type)) {
+func (self *_Compiler) compileNil(p *_Program, sp int, vt reflect.Type, nil_op _Op, fn func(*_Program, int, reflect.Type)) {
     x := p.pc()
     p.add(_OP_is_nil)
     fn(p, sp, vt)
     e := p.pc()
     p.add(_OP_goto)
     p.pin(x)
-    p.add(_OP_null)
+    p.add(nil_op)
     p.pin(e)
 }
 
 func (self *_Compiler) compilePtr(p *_Program, sp int, vt reflect.Type) {
-    self.compileNil(p, sp, vt, self.compilePtrBody)
+    self.compileNil(p, sp, vt, _OP_null, self.compilePtrBody)
 }
 
 func (self *_Compiler) compilePtrBody(p *_Program, sp int, vt reflect.Type) {
@@ -505,7 +509,11 @@ func (self *_Compiler) compilePtrBody(p *_Program, sp int, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileMap(p *_Program, sp int, vt reflect.Type) {
-    self.compileNil(p, sp, vt, self.compileMapBody)
+    if self.opts.SliceOrMapNoNull {
+        self.compileNil(p, sp, vt, _OP_empty_obj, self.compileMapBody)
+    }else{
+        self.compileNil(p, sp, vt, _OP_null, self.compileMapBody)
+    }
 }
 
 func (self *_Compiler) compileMapBody(p *_Program, sp int, vt reflect.Type) {
@@ -591,7 +599,11 @@ func (self *_Compiler) compileMapBodyUtextPtr(p *_Program, vk reflect.Type) {
 }
 
 func (self *_Compiler) compileSlice(p *_Program, sp int, vt reflect.Type) {
-    self.compileNil(p, sp, vt, self.compileSliceBody)
+    if self.opts.SliceOrMapNoNull {
+        self.compileNil(p, sp, vt, _OP_empty_arr, self.compileSliceBody)
+    }else{
+        self.compileNil(p, sp, vt, _OP_null, self.compileSliceBody)
+    }
 }
 
 func (self *_Compiler) compileSliceBody(p *_Program, sp int, vt reflect.Type) {

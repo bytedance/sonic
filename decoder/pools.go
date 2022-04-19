@@ -17,13 +17,14 @@
 package decoder
 
 import (
-    `errors`
-    `sync`
-    `unsafe`
+	`errors`
+	`sync`
+	`unsafe`
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/internal/caching`
+	`github.com/bytedance/sonic/internal/native/types`
+	`github.com/bytedance/sonic/internal/rt`
+	`github.com/bytedance/sonic/option`
 )
 
 const (
@@ -148,7 +149,7 @@ func referenceFields(v *caching.FieldMap) int64 {
 }
 
 func makeDecoder(vt *rt.GoType) (interface{}, error) {
-    if pp, err := newCompiler().compile(vt.Pack()); err != nil {
+    if pp, err := newCompiler().apply(option.GetCompileOptions()).compile(vt.Pack()); err != nil {
         return nil, err
     } else {
         return newAssembler(pp).Load(), nil
