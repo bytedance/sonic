@@ -17,44 +17,43 @@
 package issue_test
 
 import (
-	"fmt"
-	"sync"
-	"testing"
+    `sync`
+    `testing`
 
-	// "github.com/bytedance/sonic"
-	"github.com/bytedance/sonic"
+    `github.com/bytedance/sonic`
 )
 
 type ByteStruct struct {
-	Bytes    []byte
+    Bytes    []byte
 }
 
 type ObjStruct struct {
-	Obj ByteStruct
+    Obj ByteStruct
 }
 
 func TestIssue213(t *testing.T) {
-	// bytes := []byte("{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\"}}") // this is OK
-	bytes := []byte("{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\", \"你好U世界\":0}}")
-	fmt.Println(string(bytes))
-	wg := sync.WaitGroup{}
-	for i:=0;i<1000;i++{
-		wg.Add(1)
-		go func(){
-			defer wg.Done()
-			var o *ObjStruct
-			fmt.Println("sonic   :", sonic.Unmarshal(bytes, &o), o.Obj)
-		}()
-	}
-	wg.Wait()
+    // bytes := []byte("{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\"}}") // this is OK
+    bytes := []byte("{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\", \"x\":0}}")
+    wg := sync.WaitGroup{}
+    for i:=0;i<1000;i++{
+        wg.Add(1)
+        go func(){
+            defer wg.Done()
+            var o *ObjStruct
+            if err := sonic.Unmarshal(bytes, &o); err != nil {
+                t.Fatal(err)
+            }
+        }()
+    }
+    wg.Wait()
 }
 
-func BenchmarkUnknowFields(b *testing.B) {
-	// bytes := []byte("{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\"}}") // this is OK
-	js := "{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\", \"你好U世界\":0}}"
-	b.ResetTimer()
-	for i:=0; i<b.N; i++ {
-		var o *ObjStruct
-		_ = sonic.UnmarshalString(js, &o)
-	}
+func BenchmarkIssue213(b *testing.B) {
+    // bytes := []byte("{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\"}}") // this is OK
+    js := "{\"Obj\":{\"Bytes\":\"eyJUZXN0Q29kZSI6MjIyMiwiVGVzdFN0cmluZyI6InRlc3Rfc3RyaW5n\", \"x\":0}}"
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        var o *ObjStruct
+        _ = sonic.UnmarshalString(js, &o)
+    }
 }
