@@ -3,7 +3,7 @@
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT (just-in-time compiling) and SIMD (single-instruction-multiple-data).
 
 ## Requirement
-- Go 1.15/1.16/1.17
+- Go 1.15/1.16/1.17/1.18
 - Linux/darwin OS
 - Amd64 CPU with AVX instruction set
 
@@ -151,7 +151,7 @@ v := map[string]string{"&&":{"<>"}}
 ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
 ```
 ### Compact Format
-Sonic encodes premitive objects (struct/map...) as compact-format JSON by default, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting them for performance concern. We provide option `encoder.CompactMarshaler` to add compacting process.
+Sonic encodes primitive objects (struct/map...) as compact-format JSON by default, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting them for performance concerns. We provide the option `encoder.CompactMarshaler` to add compacting process.
 
 ### Print Syntax Error
 ```go
@@ -255,10 +255,10 @@ import (
 ```
 
 ### Copy string
-When decoding **string values without any escaped characters**, sonic refers them from origin JSON buffer instead of mallocing a new buffer to copy. This helps a lot for CPU performance, but may leave the whole JSON buffer in memory as long as the decoded objects are being used. In practice, we found the extra memory introduced by referring JSON buffer is usually 20% ~ 80% of decoded objects. Once a application holds these objects for a long time (for example, cache the decoded objects for reusing), its inuse memory on server may go up. We provide option `decoder.CopyString()` for users to choose not to refer the JSON buffer, which may cause the decline of CPU performance in some degree.
+When decoding **string values without any escaped characters**, sonic references them from the origin JSON buffer instead of mallocing a new buffer to copy. This helps a lot for CPU performance but may leave the whole JSON buffer in memory as long as the decoded objects are being used. In practice, we found the extra memory introduced by referring JSON buffer is usually 20% ~ 80% of decoded objects. Once an application holds these objects for a long time (for example, cache the decoded objects for reusing), its in-use memory on the server may go up. We provide the option `decoder.CopyString()` for users to choose not to reference the JSON buffer, which may cause a decline in CPU performance to some degree.
 
 ### Pass string or []byte?
-For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString()` and `GetFromString()` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte. We also provides API `MarshalString()` for convenient **nocopy-cast** of encoded json []byte, which is safe since sonic's output bytes is always duplicated and unique.
+For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString()` and `GetFromString()` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte. We also provide API `MarshalString()` for convenient **nocopy-cast** of encoded JSON []byte, which is safe since sonic's output bytes is always duplicated and unique.
 
 ### Accelerate `encoding.TextMarshaler`
 To ensure data security, sonic.Encoder quotes and escapes string values from `encoding.TextMarshaler` interfaces by default, which may degrade performance much if most of your data is in form of them. We provide `encoder.NoQuoteTextMarshaler` to skip these operations, which means you **MUST** ensure their output string escaped and quoted in accordance with [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
