@@ -147,7 +147,7 @@ On account of the performance loss (roughly 15%), sonic doesn't enable this feat
 ```go
 import "github.com/bytedance/sonic"
 
-v := map[string]string{"&&":{"<>"}}
+v := map[string]string{"&&":"<>"}
 ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
 ```
 ### Compact Format
