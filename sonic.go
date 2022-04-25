@@ -28,16 +28,17 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
-// Marshal returns the JSON encoding bytes of v.
+// Marshal returns the JSON encoding bytes of v, with faster config.
 func Marshal(val interface{}) ([]byte, error) {
     return encoder.Encode(val, 0)
 }
 
-// MarshalString returns the JSON encoding string of v.
+// MarshalString is like Marshal, except its output is string.
 func MarshalString(val interface{}) (string, error) {
     buf, err := encoder.Encode(val, 0)
     return rt.Mem2Str(buf), err
 }
+
 
 // Unmarshal parses the JSON-encoded data and stores the result in the value
 // pointed to by v.

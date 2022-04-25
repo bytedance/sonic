@@ -1,4 +1,4 @@
-name: Push Check Go1.15
+name: Push Check Go1.14
 
 on: push
 
@@ -11,7 +11,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15
+          go-version: 1.14
 
       - uses: actions/cache@v2
         with:
@@ -20,8 +20,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Unit Test
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -covermode=atomic -coverprofile=coverage.out ./...
-      
       - name: Compatible Test
         run: cd ./compat && GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -covermode=atomic -coverprofile=coverage.out ./...
