@@ -16,31 +16,32 @@
 
 package compat
 
-import "unsafe"
+import (
+	`unsafe`
+)
 
-
-type GoSlice struct {
+type goSlice struct {
     Ptr unsafe.Pointer
     Len int
     Cap int
 }
 
-type GoString struct {
+type goString struct {
     Ptr unsafe.Pointer
     Len int
 }
 
 //go:nosplit
 func mem2Str(v []byte) (s string) {
-    (*GoString)(unsafe.Pointer(&s)).Len = (*GoSlice)(unsafe.Pointer(&v)).Len
-    (*GoString)(unsafe.Pointer(&s)).Ptr = (*GoSlice)(unsafe.Pointer(&v)).Ptr
+    (*goString)(unsafe.Pointer(&s)).Len = (*goSlice)(unsafe.Pointer(&v)).Len
+    (*goString)(unsafe.Pointer(&s)).Ptr = (*goSlice)(unsafe.Pointer(&v)).Ptr
     return
 }
 
 //go:nosplit
 func str2Mem(s string) (v []byte) {
-    (*GoSlice)(unsafe.Pointer(&v)).Cap = (*GoString)(unsafe.Pointer(&s)).Len
-    (*GoSlice)(unsafe.Pointer(&v)).Len = (*GoString)(unsafe.Pointer(&s)).Len
-    (*GoSlice)(unsafe.Pointer(&v)).Ptr = (*GoString)(unsafe.Pointer(&s)).Ptr
+    (*goSlice)(unsafe.Pointer(&v)).Cap = (*goString)(unsafe.Pointer(&s)).Len
+    (*goSlice)(unsafe.Pointer(&v)).Len = (*goString)(unsafe.Pointer(&s)).Len
+    (*goSlice)(unsafe.Pointer(&v)).Ptr = (*goString)(unsafe.Pointer(&s)).Ptr
     return
 }

@@ -17,11 +17,11 @@
 package compat
 
 import (
-	"encoding/json"
-	"testing"
+    `encoding/json`
+    `testing`
 
-	jsoniter "github.com/json-iterator/go"
-	"github.com/stretchr/testify/require"
+    jsoniter `github.com/json-iterator/go`
+    `github.com/stretchr/testify/require`
 )
 
 var jt = jsoniter.Config{

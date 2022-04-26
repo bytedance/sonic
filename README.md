@@ -100,7 +100,8 @@ output, err := sonic.Marshal(&data)
 err := sonic.Unmarshal(output, &data) 
  ```
 
-### Use Number/Use Int64
+### Options
+#### - Use Number/Use Int64
  ```go
 import "github.com/bytedance/sonic/decoder"
 
@@ -127,8 +128,8 @@ jm := root.InterfaceUseNumber().(json.Number) // jn == jm
 fn := root.Float64()
 fm := root.Interface().(float64) // jn == jm
  ```
- 
-### Sort Keys
+
+#### - Sort Keys
 On account of the performance loss from sorting (roughly 10%), sonic doesn't enable this feature by default. If your component depends on it to work (like [zstd](https://github.com/facebook/zstd)), Use it like this:
 ```go
 import "github.com/bytedance/sonic"
@@ -142,16 +143,19 @@ v, err := encoder.Encode(m, encoder.SortMapKeys)
 var root := sonic.Get(JSON)
 err := root.SortKeys()
 ```
-### Escape HTML
+#### - Escape HTML
 On account of the performance loss (roughly 15%), sonic doesn't enable this feature by default. You can use `encoder.EscapeHTML` option to open this feature (align with `encoding/json.HTMLEscape`).
 ```go
 import "github.com/bytedance/sonic"
 
-v := map[string]string{"&&":{"<>"}}
-ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
+v := map[string]string{"&&":"<>"}
+ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":"\u003c\u003e"}`
 ```
-### Compact Format
+#### - Compact Format
 Sonic encodes primitive objects (struct/map...) as compact-format JSON by default, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting them for performance concerns. We provide the option `encoder.CompactMarshaler` to add compacting process.
+
+#### - Copy string
+When decoding **string values without any escaped characters**, sonic references them from the origin JSON buffer instead of mallocing a new buffer to copy. This helps a lot for CPU performance but may leave the whole JSON buffer in memory as long as the decoded objects are being used. In practice, we found the extra memory introduced by referring JSON buffer is usually 20% ~ 80% of decoded objects. Once an application holds these objects for a long time (for example, cache the decoded objects for reusing), its in-use memory on the server may go up. We provide the option `decoder.CopyString()` for users to choose not to reference the JSON buffer, which may cause a decline in CPU performance to some degree.
 
 ### Print Syntax Error
 ```go
@@ -233,6 +237,11 @@ println(string(buf) == string(exp)) // true
 - iteration: `Values()`, `Properties()`, `ForEach()`, `SortKeys()`
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
+### Compatibility
+sonic **DOSE NOT** support all mainstream environments, due to the cost and difficulty of developing high-performance program. For those who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs in package `github.com/bytedance/sonic/compat`
+- `Marshal()`|`Unmarshal()`: uses sonic's fastest config by default on sonic-supporting environment, and falls back to `github.com/json-iterator/go` with fastest config.
+- `MarshalStd()`|`UnmarshalStd()`: uses sonic's std-compatible config by default on not-sonic-supporting environment, and falls back to `encoding/json`.
+
 ## Tips
 
 ### Pretouch
@@ -253,9 +262,6 @@ import (
     err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
  }
 ```
-
-### Copy string
-When decoding **string values without any escaped characters**, sonic references them from the origin JSON buffer instead of mallocing a new buffer to copy. This helps a lot for CPU performance but may leave the whole JSON buffer in memory as long as the decoded objects are being used. In practice, we found the extra memory introduced by referring JSON buffer is usually 20% ~ 80% of decoded objects. Once an application holds these objects for a long time (for example, cache the decoded objects for reusing), its in-use memory on the server may go up. We provide the option `decoder.CopyString()` for users to choose not to reference the JSON buffer, which may cause a decline in CPU performance to some degree.
 
 ### Pass string or []byte?
 For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString()` and `GetFromString()` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte. We also provide API `MarshalString()` for convenient **nocopy-cast** of encoded JSON []byte, which is safe since sonic's output bytes is always duplicated and unique.

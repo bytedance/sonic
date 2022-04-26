@@ -19,10 +19,10 @@
 package compat
 
 import (
-	"github.com/bytedance/sonic/decoder"
-	"github.com/bytedance/sonic/encoder"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/encoder`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 // Marshal returns the JSON encoding string of v, with faster config.
