@@ -632,7 +632,7 @@ var (
 
 func (self *_Assembler) go_panic() {
     self.Link(_LB_panic)
-    self.Emit("MOVQ", _SP_p, jit.Ptr(_SP_p, 8))
+    self.Emit("MOVQ", _SP_p, jit.Ptr(_SP, 8))
     self.call_go(_F_panic)
 }
 
@@ -642,7 +642,7 @@ func (self *_Assembler) encode_string(doubleQuote bool) {
     self.Sjmp("JZ"   , "_str_empty_{n}")        // JZ    _str_empty_{n}
     self.Emit("CMPQ", jit.Ptr(_SP_p, 0), jit.Imm(0))
     self.Sjmp("JNE"   , "_str_next_{n}") 
-    self.Emit("MOVQ", jit.Imm(int64(panicNilPointerOfNonEmptyString)), jit.Ptr(_SP_p, 0))
+    self.Emit("MOVQ", jit.Imm(int64(panicNilPointerOfNonEmptyString)), jit.Ptr(_SP, 0))
     self.Sjmp("JMP", _LB_panic)
     self.Link("_str_next_{n}")
 
@@ -885,7 +885,7 @@ func (self *_Assembler) _asm_OP_number(_ *_Instr) {
     self.Emit("MOVQ" , jit.Ptr(_SP_p, 0), _AX)          // MOVQ    (SP.p), AX
     self.Emit("TESTQ", _AX, _AX)                        // TESTQ   AX, AX
     self.Sjmp("JNZ"   , "_number_next_{n}") 
-    self.Emit("MOVQ", jit.Imm(int64(panicNilPointerOfNonEmptyString)), jit.Ptr(_SP_p, 0))
+    self.Emit("MOVQ", jit.Imm(int64(panicNilPointerOfNonEmptyString)), jit.Ptr(_SP, 0))
     self.Sjmp("JMP", _LB_panic)
     self.Link("_number_next_{n}")
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))            // MOVQ    AX, (SP)

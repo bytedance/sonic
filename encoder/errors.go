@@ -52,7 +52,7 @@ func error_marshaler(ret []byte, pos int) error {
 }
 
 const (
-    panicNilPointerOfNonEmptyString int = iota
+    panicNilPointerOfNonEmptyString int = 1 + iota
 )
 
 func goPanic(code int, val unsafe.Pointer) {
