@@ -106,6 +106,7 @@ const (
     _LB_error_too_deep        = "_error_too_deep"
     _LB_error_invalid_number  = "_error_invalid_number"
     _LB_error_nan_or_infinite = "_error_nan_or_infinite"
+    _LB_panic = "_panic"
 )
 
 var (
@@ -273,6 +274,7 @@ func (self *_Assembler) builtins() {
     self.error_too_deep()
     self.error_invalid_number()
     self.error_nan_or_infinite()
+    self.go_panic()
 }
 
 func (self *_Assembler) epilogue() {
@@ -625,12 +627,24 @@ func (self *_Assembler) error_nan_or_infinite()  {
 
 var (
     _F_quote = jit.Imm(int64(native.S_quote))
+    _F_panic = jit.Func(goPanic)
 )
+
+func (self *_Assembler) go_panic() {
+    self.Link(_LB_panic)
+    self.Emit("MOVQ", _SP_p, jit.Ptr(_SP_p, 8))
+    self.call_go(_F_panic)
+}
 
 func (self *_Assembler) encode_string(doubleQuote bool) {
     self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _AX)  // MOVQ  8(SP.p), AX
     self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
     self.Sjmp("JZ"   , "_str_empty_{n}")        // JZ    _str_empty_{n}
+    self.Emit("CMPQ", jit.Ptr(_SP_p, 0), jit.Imm(0))
+    self.Sjmp("JNE"   , "_str_next_{n}") 
+    self.Emit("MOVQ", jit.Imm(int64(panicNilPointerOfNonEmptyString)), jit.Ptr(_SP_p, 0))
+    self.Sjmp("JMP", _LB_panic)
+    self.Link("_str_next_{n}")
 
     /* openning quote, check for double quote */
     if !doubleQuote {
@@ -865,10 +879,15 @@ func (self *_Assembler) _asm_OP_quote(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_number(_ *_Instr) {
-    self.Emit("MOVQ" , jit.Ptr(_SP_p, 0), _AX)          // MOVQ    (SP.p), AX
     self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _CX)          // MOVQ    (SP.p), CX
     self.Emit("TESTQ", _CX, _CX)                        // TESTQ   CX, CX
     self.Sjmp("JZ"   , "_empty_{n}")                    // JZ      _empty_{n}
+    self.Emit("MOVQ" , jit.Ptr(_SP_p, 0), _AX)          // MOVQ    (SP.p), AX
+    self.Emit("TESTQ", _AX, _AX)                        // TESTQ   AX, AX
+    self.Sjmp("JNZ"   , "_number_next_{n}") 
+    self.Emit("MOVQ", jit.Imm(int64(panicNilPointerOfNonEmptyString)), jit.Ptr(_SP_p, 0))
+    self.Sjmp("JMP", _LB_panic)
+    self.Link("_number_next_{n}")
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 0))            // MOVQ    AX, (SP)
     self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 8))            // MOVQ    CX, 8(SP)
     self.call_go(_F_isValidNumber)                      // CALL_GO isValidNumber

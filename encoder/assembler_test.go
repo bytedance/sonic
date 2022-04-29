@@ -17,17 +17,18 @@
 package encoder
 
 import (
-    `encoding/hex`
-    `encoding/json`
-    `math`
-    `reflect`
-    `runtime`
-    `testing`
-    `unsafe`
+	"encoding/hex"
+	"encoding/json"
+	"math"
+	"reflect"
+	"runtime"
+	"strings"
+	"testing"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAssembler_CompileAndLoad(t *testing.T) {
@@ -374,4 +375,38 @@ func TestAssembler_TwitterJSON_Structure(t *testing.T) {
     assert.Nil(t, e)
     println(string(m))
     runtime.KeepAlive(s)
+}
+
+func TestScratchedString(t *testing.T) {
+    fatal := *(*string)(unsafe.Pointer(&rt.GoString{nil, 1}))
+    defer func(){
+        if v := recover(); v == nil {
+            t.Fatal()
+        } else if s, ok := v.(string); !ok {
+            t.Fatal(v)
+        }else{
+            if !strings.Contains(s, "has nil pointer while its length is not zero") {
+                t.Fatal(s)
+            }
+        }
+    }()
+    _, _ = Encode(fatal, 0)
+    t.Fatal()
+}
+
+func TestScratchedNumber(t *testing.T) {
+    fatal := *(*json.Number)(unsafe.Pointer(&rt.GoString{nil, 1}))
+    defer func(){
+        if v := recover(); v == nil {
+            t.Fatal()
+        } else if s, ok := v.(string); !ok {
+            t.Fatal(v)
+        }else{
+            if !strings.Contains(s, "has nil pointer while its length is not zero") {
+                t.Fatal(s)
+            }
+        }
+    }()
+    _, _ = Encode(fatal, 0)
+    t.Fatal()
 }
