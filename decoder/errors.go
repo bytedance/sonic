@@ -32,6 +32,7 @@ type SyntaxError struct {
     Pos  int
     Src  string
     Code types.ParsingError
+    Msg  string
 }
 
 func (self SyntaxError) Error() string {
@@ -73,11 +74,18 @@ func (self SyntaxError) Description() string {
     return fmt.Sprintf(
         "Syntax error at index %d: %s\n\n\t%s\n\t%s^%s\n",
         self.Pos,
-        self.Code.Message(),
+        self.Message(),
         self.Src[p:q],
         strings.Repeat(".", x),
         strings.Repeat(".", y),
     )
+}
+
+func (self SyntaxError) Message() string {
+    if self.Msg == "" {
+        return self.Code.Message()
+    }
+    return self.Msg
 }
 
 func clamp_zero(v int) int {
