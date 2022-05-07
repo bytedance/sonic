@@ -1,4 +1,4 @@
-// +build go1.19 !amd64 !linux,!darwin
+// +build !go1.15 go1.19 !amd64 !linux,!darwin
 
 /*
  * Copyright 2021 ByteDance Inc.
