@@ -28,17 +28,26 @@ var jt = jsoniter.Config{
     ValidateJsonRawMessage: true,
 }.Froze()
 
-func TestMarshalMarshal(t *testing.T){
+func TestMarshalDefault(t *testing.T){
     var obj = map[string]interface{}{
-        "c": "<&> [ ] ",
+        "c": json.RawMessage(" [ \"<&>\" ] "),
     }
     sout, serr := Marshal(obj)
     jout, jerr := jt.Marshal(obj)
     require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
+
+    // obj = map[string]interface{}{
+    //     "a": json.RawMessage(" [} "),
+    // }
+    // sout, serr = Marshal(obj)
+    // jout, jerr = jt.Marshal(obj)
+    // require.NotNil(t, jerr)
+    // require.NotNil(t, serr)
+    // require.Equal(t, string(jout), string(sout))
 }
 
-func TestUnmarshal(t *testing.T){
+func TestUnmarshalDefault(t *testing.T) {
     var sobj = map[string]interface{}{}
     var jobj = map[string]interface{}{}
     var data = []byte(`{"a":1.00000001E-10}`)
@@ -47,22 +56,28 @@ func TestUnmarshal(t *testing.T){
     jerr := jt.UnmarshalFromString(str, &jobj)
     require.Equal(t, jerr, serr)
     require.Equal(t, jobj, sobj)
-    // data[2] = '0'
-    // require.Equal(t, jobj, sobj)
 }
 
-func TestMarshalStd(t *testing.T){
+func TestMarshalStd(t *testing.T) {
     var obj = map[string]interface{}{
-        "c": "<&>",
-        "b": json.RawMessage(" [ ] "),
+        "c": json.RawMessage(" [ \"<&>\" ] "),
     }
     sout, serr := MarshalStd(obj)
     jout, jerr := json.Marshal(obj)
     require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
+
+    obj = map[string]interface{}{
+        "a": json.RawMessage(" [} "),
+    }
+    sout, serr = MarshalStd(obj)
+    jout, jerr = json.Marshal(obj)
+    require.NotNil(t, jerr)
+    require.NotNil(t, serr)
+    require.Equal(t, string(jout), string(sout))
 }
 
-func TestUnmarshalStd(t *testing.T){
+func TestUnmarshalStd(t *testing.T) {
     var sobj = map[string]interface{}{}
     var jobj = map[string]interface{}{}
     var data = []byte(`{"a":1.00000001E-10}`)

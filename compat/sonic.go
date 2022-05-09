@@ -19,89 +19,56 @@
 package compat
 
 import (
-    `github.com/bytedance/sonic/decoder`
-    `github.com/bytedance/sonic/encoder`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"io"
+
+	"github.com/bytedance/sonic/decoder"
+	"github.com/bytedance/sonic/encoder"
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 // Marshal returns the JSON encoding string of v, with faster config.
 func Marshal(val interface{}) ([]byte, error) {
-    return encoder.Encode(val, 0)
+    return ConfigDefault.Marshal(val)
 }
 
 // MarshalString is like Marshal, except its output is string.
 func MarshalString(val interface{}) (string, error) {
-    buf, err := encoder.Encode(val, 0)
-    return rt.Mem2Str(buf), err
+    return ConfigDefault.MarshalToString(val)
 }
 
 // Unmarshal parses the JSON-encoded data and stores the result in the value
 // pointed to by v, with faster config.
 func Unmarshal(buf []byte, val interface{}) error {
-    return UnmarshalString(string(buf), val)
+    return ConfigDefault.Unmarshal(buf, val)
 }
 
 // UnmarshalString is like Unmarshal, except buf is a string.
 func UnmarshalString(buf string, val interface{}) error {
-    dec := decoder.NewDecoder(buf)
-    err := dec.Decode(val)
-    pos := dec.Pos()
-
-    /* check for errors */
-    if err != nil {
-        return err
-    }
-
-    /* skip all the trailing spaces */
-    if pos != len(buf) {
-        for pos < len(buf) && (types.SPACE_MASK & (1 << buf[pos])) != 0 {
-            pos++
-        }
-    }
-
-    /* then it must be at EOF */
-    if pos == len(buf) {
-        return nil
-    }
-
-    /* junk after JSON value */
-    return decoder.SyntaxError {
-        Src  : buf,
-        Pos  : dec.Pos(),
-        Code : types.ERR_INVALID_CHAR,
-    }
+    return ConfigDefault.UnmarshalFromString(buf, val)
 }
 
 // MarshalStd returns the JSON encoding string of v, compatibly with encoding/json.
 func MarshalStd(val interface{}) ([]byte, error) {
-    return encoder.Encode(val, encoder.EscapeHTML|encoder.SortMapKeys|encoder.CompactMarshaler)
+    return ConfigStd.Marshal(val)
 }
 
 // MarshalStringStd is like MarshalStd, except its output is string.
 func MarshalStringStd(val interface{}) (string, error) {
-    buf, err := encoder.Encode(val, encoder.EscapeHTML|encoder.SortMapKeys|encoder.CompactMarshaler)
-    return rt.Mem2Str(buf), err
+    return ConfigStd.MarshalToString(val)
 }
 
 // UnmarshalStd parses the JSON-encoded data and stores the result in the value
 // pointed to by v, compatibly with encoding/json.
 func UnmarshalStd(buf []byte, val interface{}) error {
-    return UnmarshalString(string(buf), val)
+    return ConfigStd.Unmarshal(buf, val)
 }
 
 // UnmarshalStringStd is like UnmarshalStd, except buf is a string.
 func UnmarshalStringStd(buf string, val interface{}) error {
-    dec := decoder.NewDecoder(buf)
-    dec.CopyString()
-    err := dec.Decode(val)
-    pos := dec.Pos()
+    return ConfigStd.UnmarshalFromString(buf, val)
+}
 
-    /* check for errors */
-    if err != nil {
-        return err
-    }
-
+func checkTrailings(buf string, pos int) error {
     /* skip all the trailing spaces */
     if pos != len(buf) {
         for pos < len(buf) && (types.SPACE_MASK & (1 << buf[pos])) != 0 {
@@ -117,7 +84,86 @@ func UnmarshalStringStd(buf string, val interface{}) error {
     /* junk after JSON value */
     return decoder.SyntaxError {
         Src  : buf,
-        Pos  : dec.Pos(),
+        Pos  : pos,
         Code : types.ERR_INVALID_CHAR,
     }
+}
+
+type frozenConfig struct {
+    Config
+    encoderOpts encoder.Options
+    decoderOpts decoder.Options
+}
+
+func (cfg Config) Froze() API {
+    api := &frozenConfig{Config: cfg}
+    if cfg.EscapeHTML {
+        api.encoderOpts |= encoder.EscapeHTML
+    }
+    if cfg.SortMapKeys {
+        api.encoderOpts |= encoder.SortMapKeys
+    }
+    if cfg.CompactMarshaler {
+        api.encoderOpts |= encoder.CompactMarshaler
+    }
+    if cfg.NoQuoteTextMarshaler {
+        api.encoderOpts |= encoder.NoQuoteTextMarshaler
+    }
+    if cfg.UseInt64 {
+        api.decoderOpts |= decoder.OptionUseInt64
+    }
+    if cfg.UseNumber {
+        api.decoderOpts |= decoder.OptionUseNumber
+    }
+    if cfg.DisallowUnknownFields {
+        api.decoderOpts |= decoder.OptionDisableUnknown
+    }
+    if cfg.CopyString {
+        api.decoderOpts |= decoder.OptionCopyString
+    }
+    return api
+}
+
+func (cfg *frozenConfig) Marshal(val interface{}) ([]byte, error) {
+    return encoder.Encode(val, cfg.encoderOpts)
+}
+
+func (cfg *frozenConfig) MarshalToString(val interface{}) (string, error) {
+    buf, err := encoder.Encode(val, cfg.encoderOpts)
+    return mem2Str(buf), err
+}
+
+func (cfg *frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([]byte, error) {
+    return encoder.EncodeIndented(val, prefix, indent, cfg.encoderOpts)
+}
+
+func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
+    dec := decoder.NewDecoder(buf)
+    dec.SetOptions(cfg.decoderOpts)
+
+    err := dec.Decode(val)
+    pos := dec.Pos()
+
+    /* check for errors */
+    if err != nil {
+        return err
+    }
+    return checkTrailings(buf, pos)
+}
+
+func (cfg *frozenConfig) Unmarshal(buf []byte, val interface{}) error {
+    return cfg.UnmarshalFromString(string(buf), val)
+}
+
+func (cfg *frozenConfig) NewEncoder(writer io.Writer) Encoder {
+    panic("not implement yet!")
+}
+
+func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
+    panic("not implement yet!")
+}
+
+func (cfg *frozenConfig) Valid(data []byte) bool {
+    ok, _ := encoder.Valid(data)
+    return ok
 }

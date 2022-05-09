@@ -27,6 +27,15 @@ import (
     `github.com/bytedance/sonic/option`
 )
 
+type Options uint64
+
+// Decoder is the decoder context object
+type Decoder struct {
+    i int
+    f uint64
+    s string
+}
+
 const (
     _F_use_int64 = iota
     _F_use_number
@@ -37,11 +46,19 @@ const (
     _F_allow_control = 31
 )
 
-// Decoder is the decoder context object
-type Decoder struct {
-    i int
-    f uint64
-    s string
+const (
+    OptionUseInt64         Options = 1 << _F_use_int64
+    OptionUseNumber        Options = 1 << _F_use_number
+    OptionUseUnicodeErrors Options = 1 << _F_disable_urc
+    OptionDisableUnknown   Options = 1 << _F_disable_unknown
+    OptionCopyString       Options = 1 << _F_copy_string
+)
+
+func (self *Decoder) SetOptions(opts Options) {
+    if (opts & 1<<_F_use_number != 0) && (opts & 1<<_F_use_int64 != 0) {
+        panic("can't set OptionUseInt64 and OptionUseNumber both!")
+    }
+    self.f = uint64(opts)
 }
 
 // NewDecoder creates a new decoder instance.
