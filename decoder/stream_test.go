@@ -1,7 +1,6 @@
 package decoder
 
 import (
-    `bytes`
     `encoding/json`
     `io`
     `io/ioutil`
@@ -13,10 +12,12 @@ import (
     `github.com/stretchr/testify/require`
 )
 
-var _Single_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"} b {}`
-var _Double_JSON = `{"aaaaa":"bbbbb"}          {"11111":"22222"} b {}`     
-var _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}{ } {"11111":"` + 
-    strings.Repeat("2",1024)+`"} b {}`
+var (
+	_Single_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}`
+    _Double_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}    {"11111":"` + strings.Repeat("2",1024) + `"}`     
+    _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}{ } {"11111":"` + 
+	strings.Repeat("2",1024)+`"} b {}`
+)
 
 func TestDecodeMulti(t *testing.T) {
     var str = _Triple_JSON
@@ -24,21 +25,25 @@ func TestDecodeMulti(t *testing.T) {
     var r1 = strings.NewReader(str)
     var v1 map[string]interface{}
     var d1 = jsoniter.NewDecoder(r1)
-    es1 := d1.Decode(&v1)
     var r2 = strings.NewReader(str)
     var v2 map[string]interface{}
-    var d2 = NewStreamDecoder(r2)
+	var d2 = NewStreamDecoder(r2)
+
+	require.Equal(t, d1.More(), d2.More())
+	es1 := d1.Decode(&v1)
     ee1 := d2.Decode(&v2)
     assert.Equal(t, es1, ee1)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
+	require.Equal(t, d1.More(), d2.More())
     es4 := d1.Decode(&v1)
     ee4 := d2.Decode(&v2)
     assert.Equal(t, es4, ee4)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
+	require.Equal(t, d1.More(), d2.More())
     es2 := d1.Decode(&v1)
     ee2 := d2.Decode(&v2)
     assert.Equal(t, es2, ee2)
@@ -46,11 +51,13 @@ func TestDecodeMulti(t *testing.T) {
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
     // fmt.Printf("v:%#v\n", v1)
 
+	require.Equal(t, d1.More(), d2.More())
     es3 := d1.Decode(&v1)
     assert.NotNil(t, es3)
     ee3 := d2.Decode(&v2)
     assert.NotNil(t, ee3)
 
+	require.Equal(t, d1.More(), d2.More())
     es5 := d1.Decode(&v1)
     assert.NotNil(t, es5)
     ee5 := d2.Decode(&v2)
@@ -105,35 +112,41 @@ var testHalts = func () map[int]bool {
 
 func TestDecodeHalt(t *testing.T) {
     var str = _Triple_JSON
-    var r1 = NewHaltReader(str, testHalts())
-    var v1 map[string]interface{}
-    var d1 = jsoniter.NewDecoder(r1)
+	var r1 = NewHaltReader(str, testHalts())
+	var r2 = NewHaltReader(str, testHalts())
+	var v1 map[string]interface{}
+	var v2 map[string]interface{}
+	var d1 = jsoniter.NewDecoder(r1)
+	var d2 = NewStreamDecoder(r2)
+
+	require.Equal(t, d1.More(), d2.More())
     err1 := d1.Decode(&v1)
-    var r2 = NewHaltReader(str, testHalts())
-    var v2 map[string]interface{}
-    var d2 = NewStreamDecoder(r2)
     err2 := d2.Decode(&v2)
     assert.Equal(t, err1, err2)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
+	require.Equal(t, d1.More(), d2.More())
     es4 := d1.Decode(&v1)
     ee4 := d2.Decode(&v2)
     assert.Equal(t, es4, ee4)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
+	require.Equal(t, d1.More(), d2.More())
     es2 := d1.Decode(&v1)
     ee2 := d2.Decode(&v2)
     assert.Equal(t, es2, ee2)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
+	require.Equal(t, d1.More(), d2.More())
     es3 := d1.Decode(&v1)
     assert.NotNil(t, es3)
     ee3 := d2.Decode(&v2)
     assert.NotNil(t, ee3)
 
+	require.Equal(t, d1.More(), d2.More())
     es5 := d1.Decode(&v1)
     assert.NotNil(t, es5)
     ee5 := d2.Decode(&v2)
@@ -154,10 +167,12 @@ func TestBuffered(t *testing.T) {
     require.Nil(t, err1)
     left2, err2 := ioutil.ReadAll(d2.Buffered())
     require.Nil(t, err2)
-    require.Equal(t, d1.InputOffset(), d2.InputOffset())
-    if !bytes.Contains(left2, left1) {
-        t.Fatal(string(left2), string(left1))
-    }
+	require.Equal(t, d1.InputOffset(), d2.InputOffset())
+	min := len(left1)
+	if min > len(left2) {
+		min = len(left2)
+	}
+	require.Equal(t, left1[:min], left2[:min])
 
     es4 := d1.Decode(&v1)
     ee4 := d2.Decode(&v2)
@@ -207,7 +222,7 @@ func TestMore(t *testing.T) {
     require.Equal(t, d1.More(), d2.More())
 }
 
-func BenchmarkDecode_Std(b *testing.B) {
+func BenchmarkDecodeStream_Std(b *testing.B) {
     b.Run("single", func (b *testing.B) {
         var str = _Single_JSON
         for i:=0; i<b.N; i++ {
@@ -241,7 +256,7 @@ func BenchmarkDecode_Std(b *testing.B) {
     })
 }
 
-func BenchmarkDecode_Jsoniter(b *testing.B) {
+func BenchmarkDecodeStream_Jsoniter(b *testing.B) {
     b.Run("single", func (b *testing.B) {
         var str = _Single_JSON
         for i:=0; i<b.N; i++ {
@@ -275,15 +290,15 @@ func BenchmarkDecode_Jsoniter(b *testing.B) {
     })
 }
 
-func BenchmarkDecodeError_Sonic(b *testing.B) {
-    var str = `\b测试1234`
-    for i:=0; i<b.N; i++ {
-        var v1 map[string]interface{}
-        _ = NewDecoder(str).Decode(&v1)
-    }
-}
+// func BenchmarkDecodeError_Sonic(b *testing.B) {
+//     var str = `\b测试1234`
+//     for i:=0; i<b.N; i++ {
+//         var v1 map[string]interface{}
+//         _ = NewDecoder(str).Decode(&v1)
+//     }
+// }
 
-func BenchmarkDecode_Compat(b *testing.B) {
+func BenchmarkDecodeStream_Sonic(b *testing.B) {
     b.Run("single", func (b *testing.B) {
         var str = _Single_JSON
         for i:=0; i<b.N; i++ {
