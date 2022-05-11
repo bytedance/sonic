@@ -62,10 +62,15 @@ const (
 // Encoder represents a specific set of encoder configurations.
 type Encoder struct {
     Opts Options
+    prefix string
+    indent string
 }
 
 // Encode returns the JSON encoding of v.
 func (self *Encoder) Encode(v interface{}) ([]byte, error) {
+    if self.indent != "" || self.prefix != "" { 
+        return EncodeIndented(v, self.prefix, self.indent, self.Opts)
+    }
     return Encode(v, self.Opts)
 }
 
@@ -73,6 +78,44 @@ func (self *Encoder) Encode(v interface{}) ([]byte, error) {
 func (self *Encoder) SortKeys() *Encoder {
     self.Opts |= SortMapKeys
     return self
+}
+
+// SetEscapeHTML specifies if option EscapeHTML opens
+func (self *Encoder) SetEscapeHTML(f bool) *Encoder {
+    if f {
+        self.Opts |= EscapeHTML
+    } else {
+        self.Opts &= ^EscapeHTML
+    }
+    return self
+}
+
+// SetCompactMarshaler specifies if option CompactMarshaler opens
+func (self *Encoder) SetCompactMarshaler(f bool) *Encoder {
+    if f {
+        self.Opts |= CompactMarshaler
+    } else {
+        self.Opts &= ^CompactMarshaler
+    }
+    return self
+}
+
+// SetNoQuoteTextMarshaler specifies if option NoQuoteTextMarshaler opens
+func (self *Encoder) SetNoQuoteTextMarshaler(f bool) *Encoder {
+    if f {
+        self.Opts |= NoQuoteTextMarshaler
+    } else {
+        self.Opts &= ^NoQuoteTextMarshaler
+    }
+    return self
+}
+
+// SetIndent instructs the encoder to format each subsequent encoded
+// value as if indented by the package-level function EncodeIndent().
+// Calling SetIndent("", "") disables indentation.
+func (enc *Encoder) SetIndent(prefix, indent string) {
+    enc.prefix = prefix
+    enc.indent = indent
 }
 
 // Quote returns the JSON-quoted version of s.
