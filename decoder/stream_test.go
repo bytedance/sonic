@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 ByteDance Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package decoder
 
 import (
@@ -13,10 +29,10 @@ import (
 )
 
 var (
-	_Single_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}`
+    _Single_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}`
     _Double_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}    {"11111":"` + strings.Repeat("2",1024) + `"}`     
     _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}{ } {"11111":"` + 
-	strings.Repeat("2",1024)+`"} b {}`
+    strings.Repeat("2",1024)+`"} b {}`
 )
 
 func TestDecodeMulti(t *testing.T) {
@@ -27,23 +43,23 @@ func TestDecodeMulti(t *testing.T) {
     var d1 = jsoniter.NewDecoder(r1)
     var r2 = strings.NewReader(str)
     var v2 map[string]interface{}
-	var d2 = NewStreamDecoder(r2)
+    var d2 = NewStreamDecoder(r2)
 
-	require.Equal(t, d1.More(), d2.More())
-	es1 := d1.Decode(&v1)
+    require.Equal(t, d1.More(), d2.More())
+    es1 := d1.Decode(&v1)
     ee1 := d2.Decode(&v2)
     assert.Equal(t, es1, ee1)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es4 := d1.Decode(&v1)
     ee4 := d2.Decode(&v2)
     assert.Equal(t, es4, ee4)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es2 := d1.Decode(&v1)
     ee2 := d2.Decode(&v2)
     assert.Equal(t, es2, ee2)
@@ -51,13 +67,13 @@ func TestDecodeMulti(t *testing.T) {
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
     // fmt.Printf("v:%#v\n", v1)
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es3 := d1.Decode(&v1)
     assert.NotNil(t, es3)
     ee3 := d2.Decode(&v2)
     assert.NotNil(t, ee3)
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es5 := d1.Decode(&v1)
     assert.NotNil(t, es5)
     ee5 := d2.Decode(&v2)
@@ -112,41 +128,41 @@ var testHalts = func () map[int]bool {
 
 func TestDecodeHalt(t *testing.T) {
     var str = _Triple_JSON
-	var r1 = NewHaltReader(str, testHalts())
-	var r2 = NewHaltReader(str, testHalts())
-	var v1 map[string]interface{}
-	var v2 map[string]interface{}
-	var d1 = jsoniter.NewDecoder(r1)
-	var d2 = NewStreamDecoder(r2)
+    var r1 = NewHaltReader(str, testHalts())
+    var r2 = NewHaltReader(str, testHalts())
+    var v1 map[string]interface{}
+    var v2 map[string]interface{}
+    var d1 = jsoniter.NewDecoder(r1)
+    var d2 = NewStreamDecoder(r2)
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     err1 := d1.Decode(&v1)
     err2 := d2.Decode(&v2)
     assert.Equal(t, err1, err2)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es4 := d1.Decode(&v1)
     ee4 := d2.Decode(&v2)
     assert.Equal(t, es4, ee4)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es2 := d1.Decode(&v1)
     ee2 := d2.Decode(&v2)
     assert.Equal(t, es2, ee2)
     assert.Equal(t, v1, v2)
     // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es3 := d1.Decode(&v1)
     assert.NotNil(t, es3)
     ee3 := d2.Decode(&v2)
     assert.NotNil(t, ee3)
 
-	require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es5 := d1.Decode(&v1)
     assert.NotNil(t, es5)
     ee5 := d2.Decode(&v2)
@@ -167,12 +183,12 @@ func TestBuffered(t *testing.T) {
     require.Nil(t, err1)
     left2, err2 := ioutil.ReadAll(d2.Buffered())
     require.Nil(t, err2)
-	require.Equal(t, d1.InputOffset(), d2.InputOffset())
-	min := len(left1)
-	if min > len(left2) {
-		min = len(left2)
-	}
-	require.Equal(t, left1[:min], left2[:min])
+    require.Equal(t, d1.InputOffset(), d2.InputOffset())
+    min := len(left1)
+    if min > len(left2) {
+        min = len(left2)
+    }
+    require.Equal(t, left1[:min], left2[:min])
 
     es4 := d1.Decode(&v1)
     ee4 := d2.Decode(&v2)

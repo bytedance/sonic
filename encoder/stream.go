@@ -21,15 +21,20 @@ import (
     `io`
 )
 
+// StreamEncoder uses io.Writer as 
 type StreamEncoder struct {
     w io.Writer
     Encoder
 }
 
-func NewStreamEncoder(writer io.Writer) *StreamEncoder {
-    return &StreamEncoder{w: writer}
+// NewStreamEncoder adapts to encoding/json.NewDecoder API.
+//
+// NewStreamEncoder returns a new encoder that write to w.
+func NewStreamEncoder(w io.Writer) *StreamEncoder {
+    return &StreamEncoder{w: w}
 }
 
+// Encode encodes interface{} as JSON to io.Writer
 func (enc *StreamEncoder) Encode(val interface{}) (err error) {
     out := newBytes()
 

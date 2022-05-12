@@ -81,33 +81,30 @@ func (self *Encoder) SortKeys() *Encoder {
 }
 
 // SetEscapeHTML specifies if option EscapeHTML opens
-func (self *Encoder) SetEscapeHTML(f bool) *Encoder {
+func (self *Encoder) SetEscapeHTML(f bool) {
     if f {
         self.Opts |= EscapeHTML
     } else {
         self.Opts &= ^EscapeHTML
     }
-    return self
 }
 
 // SetCompactMarshaler specifies if option CompactMarshaler opens
-func (self *Encoder) SetCompactMarshaler(f bool) *Encoder {
+func (self *Encoder) SetCompactMarshaler(f bool) {
     if f {
         self.Opts |= CompactMarshaler
     } else {
         self.Opts &= ^CompactMarshaler
     }
-    return self
 }
 
 // SetNoQuoteTextMarshaler specifies if option NoQuoteTextMarshaler opens
-func (self *Encoder) SetNoQuoteTextMarshaler(f bool) *Encoder {
+func (self *Encoder) SetNoQuoteTextMarshaler(f bool) {
     if f {
         self.Opts |= NoQuoteTextMarshaler
     } else {
         self.Opts &= ^NoQuoteTextMarshaler
     }
-    return self
 }
 
 // SetIndent instructs the encoder to format each subsequent encoded

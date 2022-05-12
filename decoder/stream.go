@@ -34,8 +34,8 @@ type StreamDecoder struct {
     r       io.Reader
     buf     []byte
     scanp   int
-	scanned int64
-	err     error
+    scanned int64
+    err     error
     Decoder
 }
 
@@ -45,6 +45,9 @@ var bufPool = sync.Pool{
     },
 }
 
+// NewStreamDecoder adapts to encoding/json.NewDecoder API.
+//
+// NewStreamDecoder returns a new decoder that reads from r.
 func NewStreamDecoder(r io.Reader) *StreamDecoder {
     return &StreamDecoder{r : r}
 }
@@ -54,9 +57,9 @@ func NewStreamDecoder(r io.Reader) *StreamDecoder {
 // Either io error from underlying io.Reader (except io.EOF) 
 // or syntax error from data will be recorded and stop subsequently decoding.
 func (self *StreamDecoder) Decode(val interface{}) (err error) {
-	if self.err != nil {
-		return self.err
-	}
+    if self.err != nil {
+        return self.err
+    }
 
     var buf = self.buf[self.scanp:]
     var p = 0
@@ -65,8 +68,8 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
         buf = bufPool.Get().([]byte)
         recycle = true
     }
-	
-	var first = true
+    
+    var first = true
 read_more:
     for {
         l := len(buf)
@@ -83,31 +86,31 @@ read_more:
         if n > 0 || first {
             break
         }
-	}
-	first = false
+    }
+    first = false
 
-	if len(buf) > 0 {
-		self.Decoder.Reset(string(buf))
-		err = self.Decoder.Decode(val)
-		if err != nil {
-			if ee, ok := err.(SyntaxError); ok && ee.Code == types.ERR_EOF {
-				goto read_more
-			}
-			self.err = err
-		}
+    if len(buf) > 0 {
+        self.Decoder.Reset(string(buf))
+        err = self.Decoder.Decode(val)
+        if err != nil {
+            if ee, ok := err.(SyntaxError); ok && ee.Code == types.ERR_EOF {
+                goto read_more
+            }
+            self.err = err
+        }
 
-		p = self.Decoder.Pos()
-		self.scanned += int64(p)
-		self.scanp = 0
-	}
+        p = self.Decoder.Pos()
+        self.scanned += int64(p)
+        self.scanp = 0
+    }
     
     if len(buf) > p {
-		// remain undecoded bytes, so copy them into self.buf
+        // remain undecoded bytes, so copy them into self.buf
         self.buf = append(self.buf[:0], buf[p:]...)
     } else {
-		self.buf = nil
-		recycle = true
-	}
+        self.buf = nil
+        recycle = true
+    }
 
     if recycle {
         buf = buf[:0]
@@ -131,9 +134,9 @@ func (self *StreamDecoder) Buffered() io.Reader {
 // More reports whether there is another element in the
 // current array or object being parsed.
 func (self *StreamDecoder) More() bool {
-	if self.err != nil {
-		return false
-	}
+    if self.err != nil {
+        return false
+    }
     c, err := self.peek()
     return err == nil && c != ']' && c != '}'
 }
@@ -185,13 +188,13 @@ func (self *StreamDecoder) refill() error {
 }
 
 func realloc(buf *[]byte) {
-	l := uint(len(*buf))
-	c := uint(cap(*buf))
+    l := uint(len(*buf))
+    c := uint(cap(*buf))
     if c - l <= c >> minLeftBufferShift {
-		e := l+(l>>minLeftBufferShift)
-		if e < defaultBufferSize {
-			e = defaultBufferSize
-		}
+        e := l+(l>>minLeftBufferShift)
+        if e < defaultBufferSize {
+            e = defaultBufferSize
+        }
         tmp := make([]byte, l, e)
         copy(tmp, *buf)
         *buf = tmp
