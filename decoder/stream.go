@@ -70,6 +70,7 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
     }
     
     var first = true
+    var repeat = true
 read_more:
     for {
         l := len(buf)
@@ -77,6 +78,7 @@ read_more:
         n, err := self.r.Read(buf[l:cap(buf)])
         buf = buf[:l+n]
         if err != nil {
+            repeat = false
             if err == io.EOF {
                 break
             }
@@ -93,7 +95,7 @@ read_more:
         self.Decoder.Reset(string(buf))
         err = self.Decoder.Decode(val)
         if err != nil {
-            if ee, ok := err.(SyntaxError); ok && ee.Code == types.ERR_EOF {
+            if ee, ok := err.(SyntaxError); repeat && ok && ee.Code == types.ERR_EOF {
                 goto read_more
             }
             self.err = err
