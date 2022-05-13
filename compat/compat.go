@@ -82,23 +82,11 @@ func (cfg Config) Froze() API {
     if cfg.SortMapKeys {
         jcfg.SortMapKeys = cfg.SortMapKeys
     }
-    if cfg.CompactMarshaler {
-        
-    }
-    if cfg.NoQuoteTextMarshaler {
-        
-    }
-    if cfg.UseInt64 {
-        
-    }
     if cfg.UseNumber {
         jcfg.UseNumber = cfg.UseNumber
     }
     if cfg.DisallowUnknownFields {
         jcfg.DisallowUnknownFields = cfg.DisallowUnknownFields
-    }
-    if cfg.CopyString {
-
     }
     jcfg.ValidateJsonRawMessage = true
     api.ja = jcfg.Froze()
@@ -126,11 +114,11 @@ func (cfg *frozenConfig) Unmarshal(data []byte, v interface{}) error {
 }
 
 func (cfg *frozenConfig) NewEncoder(writer io.Writer) Encoder {
-    panic("not implement yet!")
+    return cfg.ja.NewEncoder(writer)
 }
 
 func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
-    panic("not implement yet!")
+    return cfg.ja.NewDecoder(reader)
 }
 
 func (cfg *frozenConfig) Valid(data []byte) bool {

@@ -41,7 +41,7 @@ var (
 	}.Froze()
 
     ConfigFastest = Config{
-		NoQuoteTextMarshaler: false,
+		NoQuoteTextMarshaler: true,
 	}.Froze()
 )
 
@@ -59,9 +59,15 @@ type API interface {
 }
 
 type Encoder interface {
-	Encode(val interface{}) ([]byte, error)
+	Encode(val interface{}) error
+	SetEscapeHTML(on bool)
+	SetIndent(prefix, indent string)
 }
 
 type Decoder interface {
-	Decode(buf []byte, val interface{}) (error)
+	Decode(val interface{}) error
+	Buffered() io.Reader
+	DisallowUnknownFields()
+	More() bool
+	UseNumber()
 }

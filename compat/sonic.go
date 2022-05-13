@@ -156,11 +156,15 @@ func (cfg *frozenConfig) Unmarshal(buf []byte, val interface{}) error {
 }
 
 func (cfg *frozenConfig) NewEncoder(writer io.Writer) Encoder {
-    panic("not implement yet!")
+    enc := encoder.NewStreamEncoder(writer)
+    enc.Opts = cfg.encoderOpts
+    return enc
 }
 
 func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
-    panic("not implement yet!")
+    dec := decoder.NewStreamDecoder(reader)
+    dec.SetOptions(cfg.decoderOpts)
+    return dec
 }
 
 func (cfg *frozenConfig) Valid(data []byte) bool {

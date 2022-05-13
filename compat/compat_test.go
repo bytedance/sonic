@@ -17,6 +17,7 @@
 package compat
 
 import (
+    `bytes`
     `encoding/json`
     `testing`
 
@@ -88,4 +89,121 @@ func TestUnmarshalStd(t *testing.T) {
     require.Equal(t, jobj, sobj)
     data[2] = '0'
     require.Equal(t, jobj, sobj)
+}
+
+func TestEncoderDefault(t *testing.T) {
+    var o = map[string]interface{}{
+        "a": "<>",
+        // "b": json.RawMessage(" [ ] "),
+    }
+    var w1 = bytes.NewBuffer(nil)
+    var w2 = bytes.NewBuffer(nil)
+    var enc1 = jt.NewEncoder(w1)
+    var enc2 = ConfigDefault.NewEncoder(w2)
+
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+
+    enc1.SetEscapeHTML(true)
+    enc2.SetEscapeHTML(true)
+    enc1.SetIndent("", "  ")
+    enc2.SetIndent("", "  ")
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+    
+    enc1.SetEscapeHTML(false)
+    enc2.SetEscapeHTML(false)
+    enc1.SetIndent("", "")
+    enc2.SetIndent("", "")
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+}
+
+func TestEncoderStd(t *testing.T) {
+    var o = map[string]interface{}{
+        "a": "<>",
+        "b": json.RawMessage(" [ ] "),
+    }
+    var w1 = bytes.NewBuffer(nil)
+    var w2 = bytes.NewBuffer(nil)
+    var enc1 = json.NewEncoder(w1)
+    var enc2 = ConfigStd.NewEncoder(w2)
+
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+
+    enc1.SetEscapeHTML(true)
+    enc2.SetEscapeHTML(true)
+    enc1.SetIndent("\n", "  ")
+    enc2.SetIndent("\n", "  ")
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+    
+    enc1.SetEscapeHTML(false)
+    enc2.SetEscapeHTML(false)
+    enc1.SetIndent("", "")
+    enc2.SetIndent("", "")
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+}
+
+func TestDecoderStd(t *testing.T) {
+    var o1 = map[string]interface{}{}
+    var o2 = map[string]interface{}{}
+    var s = `{"a":"b"} {"1":"2"} a {}`
+    var w1 = bytes.NewBuffer([]byte(s))
+    var w2 = bytes.NewBuffer([]byte(s))
+    var enc1 = json.NewDecoder(w1)
+    var enc2 = ConfigStd.NewDecoder(w2)
+
+    require.Equal(t, enc1.More(), enc2.More())
+    require.Nil(t, enc1.Decode(&o1))
+    require.Nil(t, enc2.Decode(&o2))
+    require.Equal(t, w1.String(), w2.String())
+
+    require.Equal(t, enc1.More(), enc2.More())
+    require.Nil(t, enc1.Decode(&o1))
+    require.Nil(t, enc2.Decode(&o2))
+    require.Equal(t, w1.String(), w2.String())
+    
+    require.Equal(t, enc1.More(), enc2.More())
+    require.NotNil(t, enc1.Decode(&o1))
+    require.NotNil(t, enc2.Decode(&o2))
+    require.Equal(t, w1.String(), w2.String())
+}
+
+func TestDecoderDefault(t *testing.T) {
+    var o1 = map[string]interface{}{}
+    var o2 = map[string]interface{}{}
+    var s = `{"a":"b"} {"1":"2"} a {}`
+    var w1 = bytes.NewBuffer([]byte(s))
+    var w2 = bytes.NewBuffer([]byte(s))
+    var enc1 = jt.NewDecoder(w1)
+    var enc2 = ConfigDefault.NewDecoder(w2)
+
+    require.Equal(t, enc1.More(), enc2.More())
+    require.Nil(t, enc1.Decode(&o1))
+    require.Nil(t, enc2.Decode(&o2))
+    require.Equal(t, w1.String(), w2.String())
+
+    require.Equal(t, enc1.More(), enc2.More())
+    require.Nil(t, enc1.Decode(&o1))
+    require.Nil(t, enc2.Decode(&o2))
+    require.Equal(t, w1.String(), w2.String())
+    
+    require.Equal(t, enc1.More(), enc2.More())
+    require.NotNil(t, enc1.Decode(&o1))
+    require.NotNil(t, enc2.Decode(&o2))
+    require.Equal(t, w1.String(), w2.String())
+
+    require.Equal(t, enc1.More(), enc2.More())
+    require.NotNil(t, enc1.Decode(&o1))
+    require.NotNil(t, enc2.Decode(&o2))
+    require.Equal(t, w1.String(), w2.String())
 }
