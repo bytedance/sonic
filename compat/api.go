@@ -82,3 +82,45 @@ type Decoder interface {
     More() bool
     UseNumber()
 }
+
+// Marshal returns the JSON encoding string of v, with faster config.
+func Marshal(val interface{}) ([]byte, error) {
+    return ConfigDefault.Marshal(val)
+}
+
+// MarshalString is like Marshal, except its output is string.
+func MarshalString(val interface{}) (string, error) {
+    return ConfigDefault.MarshalToString(val)
+}
+
+// Unmarshal parses the JSON-encoded data and stores the result in the value
+// pointed to by v, with faster config.
+func Unmarshal(buf []byte, val interface{}) error {
+    return ConfigDefault.Unmarshal(buf, val)
+}
+
+// UnmarshalString is like Unmarshal, except buf is a string.
+func UnmarshalString(buf string, val interface{}) error {
+    return ConfigDefault.UnmarshalFromString(buf, val)
+}
+
+// MarshalStd returns the JSON encoding string of v, compatibly with encoding/json.
+func MarshalStd(val interface{}) ([]byte, error) {
+    return ConfigStd.Marshal(val)
+}
+
+// MarshalStringStd is like MarshalStd, except its output is string.
+func MarshalStringStd(val interface{}) (string, error) {
+    return ConfigStd.MarshalToString(val)
+}
+
+// UnmarshalStd parses the JSON-encoded data and stores the result in the value
+// pointed to by v, compatibly with encoding/json.
+func UnmarshalStd(buf []byte, val interface{}) error {
+    return ConfigStd.Unmarshal(buf, val)
+}
+
+// UnmarshalStringStd is like UnmarshalStd, except buf is a string.
+func UnmarshalStringStd(buf string, val interface{}) error {
+    return ConfigStd.UnmarshalFromString(buf, val)
+}

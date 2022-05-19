@@ -17,12 +17,13 @@
 package compat
 
 import (
-    `bytes`
-    `encoding/json`
-    `testing`
+	"bytes"
+	"encoding/json"
+	"sync"
+	"testing"
 
-    jsoniter `github.com/json-iterator/go`
-    `github.com/stretchr/testify/require`
+	jsoniter "github.com/json-iterator/go"
+	"github.com/stretchr/testify/require"
 )
 
 var jt = jsoniter.Config{
@@ -60,24 +61,31 @@ func TestUnmarshalDefault(t *testing.T) {
 }
 
 func TestMarshalStd(t *testing.T) {
+    t.Parallel()
+    var wg = sync.WaitGroup{}
     for i:=0; i<1000; i++ {
-        var obj = map[string]interface{}{
-            "c": json.RawMessage(" [ \"<&>\" ] "),
-            "b": json.RawMessage(" [ ] "),
-        }
-        sout, serr := MarshalStd(obj)
-        jout, jerr := json.Marshal(obj)
-        require.Equal(t, jerr, serr)
-        require.Equal(t, string(jout), string(sout))
-        obj = map[string]interface{}{
-            "a": json.RawMessage(" [} "),
-        }
-        sout, serr = MarshalStd(obj)
-        jout, jerr = json.Marshal(obj)
-        require.NotNil(t, jerr)
-        require.NotNil(t, serr)
-        require.Equal(t, string(jout), string(sout))
+        wg.Add(1)
+        go func(){
+            defer wg.Done()
+            var obj = map[string]interface{}{
+                "c": json.RawMessage(" [ \"<&>\" ] "),
+                "b": json.RawMessage(" [ ] "),
+            }
+            sout, serr := MarshalStd(obj)
+            jout, jerr := json.Marshal(obj)
+            require.Equal(t, jerr, serr)
+            require.Equal(t, string(jout), string(sout))
+            obj = map[string]interface{}{
+                "a": json.RawMessage(" [} "),
+            }
+            sout, serr = MarshalStd(obj)
+            jout, jerr = json.Marshal(obj)
+            require.NotNil(t, jerr)
+            require.NotNil(t, serr)
+            require.Equal(t, string(jout), string(sout))
+        }()
     }
+    wg.Wait()
 }
 
 func TestUnmarshalStd(t *testing.T) {

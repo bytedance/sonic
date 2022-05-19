@@ -25,49 +25,6 @@ import (
     jsoniter `github.com/json-iterator/go`
 )
 
-// Marshal returns the JSON encoding string of v with faster config.
-func Marshal(val interface{}) ([]byte, error) {
-    return ConfigDefault.Marshal(val)
-}
-
-// MarshalString is like MarshalStd, except its output is string.
-func MarshalString(val interface{}) (string, error) {
-   return ConfigDefault.MarshalToString(val)
-}
-
-// Unmarshal parses the JSON-encoded data and stores the result in the value
-// pointed to by v, with faster config.
-func Unmarshal(buf []byte, val interface{}) error {
-    return ConfigDefault.Unmarshal(buf, val)
-}
-
-// UnmarshalStringStd is like Unmarshal, except buf is a string.
-func UnmarshalString(buf string, val interface{}) error {
-    return ConfigDefault.UnmarshalFromString(buf, val)
-}
-
-// MarshalStd returns the JSON encoding string of v, compatibly with encoding/json.
-func MarshalStd(val interface{}) ([]byte, error) {
-    return json.Marshal(val)
-}
-
-// MarshalStringStd is like MarshalStd, except its output is string.
-func MarshalStringStd(val interface{}) (string, error) {
-    buf, err := json.Marshal(val)
-    return mem2Str(buf), err
-}
-
-// UnmarshalStd parses the JSON-encoded data and stores the result in the value
-// pointed to by v, compatibly with encoding/json.
-func UnmarshalStd(buf []byte, val interface{}) error {
-    return json.Unmarshal(buf, val)
-}
-
-// UnmarshalStringStd is like Unmarshal, except buf is a string.
-func UnmarshalStringStd(buf string, val interface{}) error {
-    return json.Unmarshal(str2Mem(buf), val)
-}
-
 type frozenConfig struct {
     Config
     ja jsoniter.API
@@ -96,14 +53,15 @@ func (cfg Config) Froze() API {
 
 func (cfg *frozenConfig) Marshal(val interface{}) ([]byte, error) {
     if v := ConfigStd.(*frozenConfig); cfg == v {
-        return MarshalStd(val)
+        return json.Marshal(val)
     }
     return cfg.ja.Marshal(val)
 }
 
 func (cfg *frozenConfig) MarshalToString(val interface{}) (string, error) {
     if v := ConfigStd.(*frozenConfig); cfg == v {
-        return MarshalStringStd(val)
+        buf, err := json.Marshal(val)
+        return mem2Str(buf), err    
     }
     return cfg.ja.MarshalToString(val)
 }
@@ -115,16 +73,16 @@ func (cfg *frozenConfig) MarshalIndent(v interface{}, prefix, indent string) ([]
     return cfg.ja.MarshalIndent(v, prefix, indent)
 }
 
-func (cfg *frozenConfig) UnmarshalFromString(str string, v interface{}) error {
+func (cfg *frozenConfig) UnmarshalFromString(str string, val interface{}) error {
     if v := ConfigStd.(*frozenConfig); cfg == v {
-        return UnmarshalStringStd(str, v)
+        return json.Unmarshal(str2Mem(str), val)
     }
-    return cfg.ja.UnmarshalFromString(str, v)
+    return cfg.ja.UnmarshalFromString(str, val)
 }
 
 func (cfg *frozenConfig) Unmarshal(data []byte, v interface{}) error {
     if v := ConfigStd.(*frozenConfig); cfg == v {
-        return UnmarshalStd(data, v)
+        return json.Unmarshal(data, v)
     }
     return cfg.ja.Unmarshal(data, v)
 }
