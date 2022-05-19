@@ -1,4 +1,5 @@
-// +build !race
+//go:build (linux && !race) || (unix && !race)
+// +build linux,!race unix,!race
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -23,9 +24,9 @@ import (
     `fmt`
     `os/exec`
     `plugin`
+    `reflect`
     `runtime`
     `testing`
-    `reflect`
 
     _ `github.com/bytedance/sonic`
 )
@@ -37,8 +38,8 @@ func buildPlugin() {
         panic(err)
     }
     cmd0 := exec.Cmd{
-        Path: bin0,
-        Args: []string{"rm", "-f", "plugin/plugin."+runtime.Version()+".so"},
+        Path:   bin0,
+        Args:   []string{"rm", "-f", "plugin/plugin." + runtime.Version() + ".so"},
         Stdout: out,
         Stderr: out,
     }
@@ -51,8 +52,8 @@ func buildPlugin() {
         panic(err)
     }
     cmd := exec.Cmd{
-        Path: bin,
-        Args: []string{"go", "build", "-buildmode", "plugin", "-o", "plugin/plugin."+runtime.Version()+".so", "plugin/main.go"},
+        Path:   bin,
+        Args:   []string{"go", "build", "-buildmode", "plugin", "-o", "plugin/plugin." + runtime.Version() + ".so", "plugin/main.go"},
         Stdout: out,
         Stderr: out,
     }
@@ -61,10 +62,9 @@ func buildPlugin() {
     }
 }
 
-
 func TestPlugin(t *testing.T) {
     buildPlugin()
-    p, err := plugin.Open("plugin/plugin."+runtime.Version()+".so")
+    p, err := plugin.Open("plugin/plugin." + runtime.Version() + ".so")
     if err != nil {
         t.Fatal(err)
     }
