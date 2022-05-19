@@ -166,13 +166,10 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
 
     /* return the stack into pool */
-    if err != nil {
-        resetStack(stk)
-    }
     freeStack(stk)
 
     /* EscapeHTML needs to allocate a new buffer*/
-    if opts & EscapeHTML != 0 {
+    if err == nil && opts & EscapeHTML != 0 {
         dest := HTMLEscape(nil, *buf)
         freeBytes(*buf) // free origin used buffer
         *buf = dest

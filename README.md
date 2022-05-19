@@ -239,8 +239,9 @@ println(string(buf) == string(exp)) // true
 
 ### Compatibility
 sonic **DOSE NOT** support all mainstream environments, due to the cost and difficulty of developing high-performance program. For those who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs in package `github.com/bytedance/sonic/compat`
-- `Marshal()`|`Unmarshal()`: uses sonic's fastest config by default on sonic-supporting environment, and falls back to `github.com/json-iterator/go` with fastest config.
-- `MarshalStd()`|`UnmarshalStd()`: uses sonic's std-compatible config by default on not-sonic-supporting environment, and falls back to `encoding/json`.
+- `ConfigDefault`: uses sonic's default config (`EscapeHTML=false`,`SortKeys=false`) to run on sonic-supporting environment, and falls back to `github.com/json-iterator/go` with corresponding config.
+- `ConfigStd`: uses std-compatible config to run on sonic-supporting environment, and falls back to `encoding/json`.
+- `ConfigFastest`: uses fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment, which may be unsafe.
 
 ## Tips
 

@@ -17,14 +17,39 @@
 package compat
 
 import (
-	"bytes"
-	"encoding/json"
-	"sync"
-	"testing"
+    `bytes`
+    `encoding/json`
+    `os`
+    `runtime`
+    `runtime/debug`
+    `sync`
+    `testing`
+    `time`
 
-	jsoniter "github.com/json-iterator/go"
-	"github.com/stretchr/testify/require"
+    jsoniter `github.com/json-iterator/go`
+    `github.com/stretchr/testify/require`
 )
+
+var (
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC") != ""
+    debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
+)
+
+func TestMain(m *testing.M) {
+    go func ()  {
+        if !debugAsyncGC {
+            return 
+        }
+        println("Begin GC looping...")
+        for {
+            runtime.GC()
+            debug.FreeOSMemory() 
+        }
+        println("stop GC looping!")
+    }()
+    time.Sleep(time.Millisecond)
+    m.Run()
+}
 
 var jt = jsoniter.Config{
     ValidateJsonRawMessage: true,
