@@ -60,8 +60,6 @@ func TestUnmarshalDefault(t *testing.T) {
 }
 
 func TestMarshalStd(t *testing.T) {
-    
-
     for i:=0; i<1000; i++ {
         var obj = map[string]interface{}{
             "c": json.RawMessage(" [ \"<&>\" ] "),
@@ -80,9 +78,6 @@ func TestMarshalStd(t *testing.T) {
         require.NotNil(t, serr)
         require.Equal(t, string(jout), string(sout))
     }
-    
-
-    
 }
 
 func TestUnmarshalStd(t *testing.T) {

@@ -19,11 +19,11 @@
 package compat
 
 import (
-	"io"
+    `io`
 
-	"github.com/bytedance/sonic/decoder"
-	"github.com/bytedance/sonic/encoder"
-	"github.com/bytedance/sonic/internal/native/types"
+    `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/encoder`
+    `github.com/bytedance/sonic/internal/native/types`
 )
 
 // Marshal returns the JSON encoding string of v, with faster config.
@@ -95,6 +95,7 @@ type frozenConfig struct {
     decoderOpts decoder.Options
 }
 
+// Froze convert a Config to API
 func (cfg Config) Froze() API {
     api := &frozenConfig{Config: cfg}
     if cfg.EscapeHTML {
