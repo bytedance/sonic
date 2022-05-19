@@ -94,33 +94,57 @@ func (cfg Config) Froze() API {
 }
 
 func (cfg *frozenConfig) Marshal(val interface{}) ([]byte, error) {
+    if cfg = &ConfigStd {
+        return json.Marshal(val)
+    }
     return cfg.ja.Marshal(val)
 }
 
 func (cfg *frozenConfig) MarshalToString(val interface{}) (string, error) {
+    if cfg = &ConfigStd {
+        return MarshalStringStd(val)
+    }
     return cfg.ja.MarshalToString(val)
 }
 
 func (cfg *frozenConfig) MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
+    if cfg = &ConfigStd {
+        return json.MarshalIndent(val, prefix, indent)
+    }
     return cfg.ja.MarshalIndent(v, prefix, indent)
 }
 
 func (cfg *frozenConfig) UnmarshalFromString(str string, v interface{}) error {
+    if cfg = &ConfigStd {
+        return UnmarshalStringStd(str, v)
+    }
     return cfg.ja.UnmarshalFromString(str, v)
 }
 
 func (cfg *frozenConfig) Unmarshal(data []byte, v interface{}) error {
+    if cfg = &ConfigStd {
+        return json.Unmarshal(data, v)
+    }
     return cfg.ja.Unmarshal(data, v)
 }
 
 func (cfg *frozenConfig) NewEncoder(writer io.Writer) Encoder {
+    if cfg = &ConfigStd {
+        return json.NewEncoder(writer)
+    }
     return cfg.ja.NewEncoder(writer)
 }
 
 func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
+    if cfg = &ConfigStd {
+        return json.NewDecoder(reader)
+    }
     return cfg.ja.NewDecoder(reader)
 }
 
 func (cfg *frozenConfig) Valid(data []byte) bool {
+    if cfg = &ConfigStd {
+        return json.Valid(data)
+    }
     return cfg.ja.Valid(data)
 }

@@ -132,7 +132,7 @@ func TestEncoderDefault(t *testing.T) {
 func TestEncoderStd(t *testing.T) {
     var o = map[string]interface{}{
         "a": "<>",
-        "b": json.RawMessage("[]"),
+        "b": json.RawMessage(" [ ] "),
     }
     var w1 = bytes.NewBuffer(nil)
     var w2 = bytes.NewBuffer(nil)
