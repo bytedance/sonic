@@ -18,9 +18,9 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Unit Test
-        run: go test -v -gcflags -d=checkptr=0 -race -covermode atomic -coverprofile coverage.out ./...
+        run: go test -v -gcflags -d=checkptr=0 -covermode atomic -coverprofile coverage.out ./...
         env:
           GOMAXPROCS: 4
 
       - name: Generic Test
-        run: go test -v -gcflags -d=checkptr=0 -race -covermode atomic ./generic_test
+        run: go test -v -gcflags -d=checkptr=0 -covermode atomic ./generic_test
