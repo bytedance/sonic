@@ -27,7 +27,6 @@ import (
     `unsafe`
     
     `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
@@ -1117,12 +1116,8 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
     self.Emit("MOVQ" , _SI, jit.Ptr(_VP, 16))           // MOVQ   SI, 16(VP)
     self.malloc(_SI, _SI)                               // MALLOC SI, SI
 
-    /* check for AVX2 support */
-    if !cpu.HasAVX2 {
-        self.Emit("XORL", _CX, _CX)                     // XORL CX, CX
-    } else {
-        self.Emit("MOVL", jit.Imm(_MODE_AVX2), _CX)     // MOVL $_MODE_AVX2, CX
-    }
+    // TODO: due to base64x's bug, only use AVX mode now
+    self.Emit("XORL", _CX, _CX)                     // XORL CX, CX
 
     /* call the decoder */
     self.Emit("XORL" , _DX, _DX)                // XORL  DX, DX
