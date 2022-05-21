@@ -166,7 +166,7 @@ var (
 
 var (
     _REG_ffi = []obj.Addr{_RP, _RL, _RC}
-    _REG_enc = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q}
+    _REG_enc = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RL}
     _REG_jsr = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _LR}
     _REG_all = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
 )
