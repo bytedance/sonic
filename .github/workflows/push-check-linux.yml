@@ -1,9 +1,12 @@
-name: Push Check Go1.17
+name: Push Check Go1.15~1.17 on Linux
 
 on: push
 
 jobs:
   build:
+    strategy:
+      matrix:
+        go-version: [1.15, 1.16, 1.17]
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
@@ -11,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: ${{ matrix.go-version }}
 
       - uses: actions/cache@v2
         with:
@@ -21,4 +24,4 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Unit Test
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race -covermode=atomic -coverprofile=coverage.out ./...
+        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -covermode=atomic -coverprofile=coverage.out ./...

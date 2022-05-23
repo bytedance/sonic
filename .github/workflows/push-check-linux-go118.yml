@@ -1,4 +1,4 @@
-name: Push Check Go1.18
+name: Push Check Go1.18 on Linux
 
 on: push
 
@@ -21,10 +21,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Unit Test
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race -covermode=atomic -coverprofile=coverage.out ./...
+        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./...
       
       - name: Generic Test
         run: go test -v -gcflags=-d=checkptr=0 -race -covermode=atomic ./generic_test
-
-      - name: Compat Test
-        run: go test -v -gcflags=-d=checkptr=0 -race -covermode=atomic ./compat
