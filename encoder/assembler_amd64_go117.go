@@ -80,6 +80,7 @@ const (
 const (
     _FP_loffs = _FP_fargs + _FP_saves
     _FP_offs  = _FP_loffs + _FP_locals
+    // _FP_offs  = _FP_loffs + _FP_locals + _FP_debug
     _FP_size  = _FP_offs + 8     // 8 bytes for the parent frame pointer
     _FP_base  = _FP_size + 8     // 8 bytes for the return address
 )
@@ -170,9 +171,9 @@ var (
     _REG_ffi = []obj.Addr{ _RP, _RL, _RC}
     _REG_b64 = []obj.Addr{_SP_p, _SP_q}
 
-    _REG_all  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
+    _REG_all = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RP, _RL, _RC}
     _REG_ms  = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _LR}
-    _REG_enc = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q}
+    _REG_enc = []obj.Addr{_ST, _SP_x, _SP_f, _SP_p, _SP_q, _RL}
 )
 
 type _Assembler struct {
@@ -288,9 +289,9 @@ func (self *_Assembler) epilogue() {
     self.Link(_LB_error)
     self.Emit("MOVQ", _ARG_rb, _CX)                 // MOVQ rb<>+0(FP), CX
     self.Emit("MOVQ", _RL, jit.Ptr(_CX, 8))         // MOVQ RL, 8(CX)
-    self.Emit("MOVQ", jit.Imm(0), _ARG_rb)                 // MOVQ AX, rb<>+0(FP)
-    self.Emit("MOVQ", jit.Imm(0), _ARG_vp)                 // MOVQ BX, vp<>+8(FP)
-    self.Emit("MOVQ", jit.Imm(0), _ARG_sb)                 // MOVQ CX, sb<>+16(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_rb)          // MOVQ AX, rb<>+0(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vp)          // MOVQ BX, vp<>+8(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sb)          // MOVQ CX, sb<>+16(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
