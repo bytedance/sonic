@@ -1,6 +1,6 @@
-name: Pull Request Check
+name: Push Check Go1.18
 
-on: pull_request
+on: push
 
 jobs:
   build:
@@ -8,13 +8,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Check Branch
-        run: ./check_branch_name.sh ${{ github.head_ref }}
-
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17.1
+          go-version: 1.18
 
       - uses: actions/cache@v2
         with:
@@ -23,5 +20,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Benchmark
-        run: sh bench.sh
+      - name: Unit Test
+        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./...
+      
+      - name: Generic Test
+        run: go test -v -gcflags=-d=checkptr=0 -race ./generic_test
