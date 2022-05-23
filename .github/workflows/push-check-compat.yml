@@ -4,21 +4,18 @@ on: push
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        go-version: [1.14.x, 1.18.x]
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.14
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}
+          go-version: ${{ matrix.go-version }}
 
       - name: Compat Test
-        run: cd ./compat && go test -v -gcflags=-d=checkptr=0 -race -covermode=atomic ./...
+        run: cd ./compat && go test -v -gcflags=-d=checkptr=0 ./...
