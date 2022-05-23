@@ -1,6 +1,3 @@
-//go:build linux || darwin
-// +build linux darwin
-
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -28,9 +25,14 @@ import (
 )
 
 const (
-    _AP = syscall.MAP_ANON  | syscall.MAP_PRIVATE
-    _RX = syscall.PROT_READ | syscall.PROT_EXEC
-    _RW = syscall.PROT_READ | syscall.PROT_WRITE
+    MEM_COMMIT  = 0x00001000
+    MEM_RESERVE = 0x00002000
+)
+
+var (
+    libKernel32                = syscall.NewLazyDLL("KERNEL32.DLL")
+    libKernel32_VirtualAlloc   = libKernel32.NewProc("VirtualAlloc")
+    libKernel32_VirtualProtect = libKernel32.NewProc("VirtualProtect")
 )
 
 type Loader   []byte
@@ -64,15 +66,47 @@ func (self Loader) Load(fn string, fp int, args int) (f Function) {
 }
 
 func mmap(nb int) uintptr {
-    if m, _, e := syscall.RawSyscall6(syscall.SYS_MMAP, 0, uintptr(nb), _RW, _AP, 0, 0); e != 0 {
-        panic(e)
-    } else {
-        return m
-    }
-}
-
-func mprotect(p uintptr, nb int) {
-    if _, _, err := syscall.RawSyscall(syscall.SYS_MPROTECT, p, uintptr(nb), _RX); err != 0 {
+    addr, err := winapi_VirtualAlloc(0, nb, MEM_COMMIT|MEM_RESERVE, syscall.PAGE_READWRITE)
+    if err != nil {
         panic(err)
     }
+    return addr
+}
+
+func mprotect(p uintptr, nb int) (oldProtect int) {
+    err := winapi_VirtualProtect(p, nb, syscall.PAGE_EXECUTE_READ, &oldProtect)
+    if err != nil {
+        panic(err)
+    }
+    return
+}
+
+// winapi_VirtualAlloc allocate memory
+// Doc: https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
+func winapi_VirtualAlloc(lpAddr uintptr, dwSize int, flAllocationType int, flProtect int) (uintptr, error) {
+    r1, _, err := libKernel32_VirtualAlloc.Call(
+        lpAddr,
+        uintptr(dwSize),
+        uintptr(flAllocationType),
+        uintptr(flProtect),
+    )
+    if r1 == 0 {
+        return 0, err
+    }
+    return r1, nil
+}
+
+// winapi_VirtualProtect change memory protection
+// Doc: https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect
+func winapi_VirtualProtect(lpAddr uintptr, dwSize int, flNewProtect int, lpflOldProtect *int) error {
+    r1, _, err := libKernel32_VirtualProtect.Call(
+        lpAddr,
+        uintptr(dwSize),
+        uintptr(flNewProtect),
+        uintptr(unsafe.Pointer(lpflOldProtect)),
+    )
+    if r1 == 0 {
+        return err
+    }
+    return nil
 }
