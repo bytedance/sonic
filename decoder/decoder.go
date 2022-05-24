@@ -54,6 +54,12 @@ func (self *Decoder) Pos() int {
     return self.i
 }
 
+func (self *Decoder) Reset(s string) {
+    self.s = s
+    self.i = 0
+    // self.f = 0
+}
+
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
@@ -75,9 +81,6 @@ func (self *Decoder) Decode(val interface{}) error {
     nb, err := decodeTypedPointer(self.s, self.i, etp, vp, sb, self.f)
 
     /* return the stack back */
-    if err != nil {
-        resetStack(sb)
-    }
     self.i = nb
     freeStack(sb)
 
