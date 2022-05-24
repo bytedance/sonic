@@ -14,41 +14,41 @@
  * limitations under the License.
  */
 
- package sonic
+package sonic
 
- import (
-	 `io`
- )
+import (
+    `io`
+)
  
  // Config is a combination of sonic/encoder.Options and sonic/decoder.Options
  type Config struct {
-	 EscapeHTML                    bool
-	 SortMapKeys                   bool
-	 CompactMarshaler              bool
-	 NoQuoteTextMarshaler          bool
-	 UseInt64                      bool
-	 UseNumber                     bool
-	 UseUnicodeErrors              bool
-	 DisallowUnknownFields         bool
-	 CopyString                    bool
+    EscapeHTML                    bool
+    SortMapKeys                   bool
+    CompactMarshaler              bool
+    NoQuoteTextMarshaler          bool
+    UseInt64                      bool
+    UseNumber                     bool
+    UseUnicodeErrors              bool
+    DisallowUnknownFields         bool
+    CopyString                    bool
  }
  
  var (
-	 // ConfigDefault is the default config of APIs, aiming at efficiency and safty.
-	 ConfigDefault = Config{}.Froze()
+    // ConfigDefault is the default config of APIs, aiming at efficiency and safty.
+    ConfigDefault = Config{}.Froze()
  
-	 // ConfigStd is the standard config of APIs, aiming at being compatible with encoding/json.
-	 ConfigStd = Config{
-		 EscapeHTML : true,
-		 SortMapKeys: true,
-		 CompactMarshaler: true,
-		 CopyString : true,
-	 }.Froze()
+    // ConfigStd is the standard config of APIs, aiming at being compatible with encoding/json.
+    ConfigStd = Config{
+        EscapeHTML : true,
+        SortMapKeys: true,
+        CompactMarshaler: true,
+        CopyString : true,
+    }.Froze()
  
-	 // ConfigFastest is the fastest config of APIs, aiming at speed.
-	 ConfigFastest = Config{
-		 NoQuoteTextMarshaler: true,
-	 }.Froze()
+    // ConfigFastest is the fastest config of APIs, aiming at speed.
+    ConfigFastest = Config{
+        NoQuoteTextMarshaler: true,
+    }.Froze()
  )
  
  
@@ -56,38 +56,38 @@
  // This interface is inspired by github.com/json-iterator/go,
  // and has same behaviors under equavilent config.
  type API interface {
-	 // MarshalToString returns the JSON encoding string of v
-	 MarshalToString(v interface{}) (string, error)
-	 // Marshal returns the JSON encoding bytes of v.
-	 Marshal(v interface{}) ([]byte, error)
-	 // MarshalIndent returns the JSON encoding bytes with indent and prefix.
-	 MarshalIndent(v interface{}, prefix, indent string) ([]byte, error)
-	 // UnmarshalFromString parses the JSON-encoded bytes and stores the result in the value pointed to by v.
-	 UnmarshalFromString(str string, v interface{}) error
-	 // Unmarshal parses the JSON-encoded string and stores the result in the value pointed to by v.
-	 Unmarshal(data []byte, v interface{}) error
-	 // NewEncoder create a Encoder holding writer
-	 NewEncoder(writer io.Writer) Encoder
-	 // NewDecoder create a Decoder holding reader
-	 NewDecoder(reader io.Reader) Decoder
-	 // Valid validates the JSON-encoded bytes and reportes if it is valid
-	 Valid(data []byte) bool
+    // MarshalToString returns the JSON encoding string of v
+    MarshalToString(v interface{}) (string, error)
+    // Marshal returns the JSON encoding bytes of v.
+    Marshal(v interface{}) ([]byte, error)
+    // MarshalIndent returns the JSON encoding bytes with indent and prefix.
+    MarshalIndent(v interface{}, prefix, indent string) ([]byte, error)
+    // UnmarshalFromString parses the JSON-encoded bytes and stores the result in the value pointed to by v.
+    UnmarshalFromString(str string, v interface{}) error
+    // Unmarshal parses the JSON-encoded string and stores the result in the value pointed to by v.
+    Unmarshal(data []byte, v interface{}) error
+    // NewEncoder create a Encoder holding writer
+    NewEncoder(writer io.Writer) Encoder
+    // NewDecoder create a Decoder holding reader
+    NewDecoder(reader io.Reader) Decoder
+    // Valid validates the JSON-encoded bytes and reportes if it is valid
+    Valid(data []byte) bool
  }
  
  // Encoder encodes JSON into io.Writer
  type Encoder interface {
-	 Encode(val interface{}) error
-	 SetEscapeHTML(on bool)
-	 SetIndent(prefix, indent string)
+    Encode(val interface{}) error
+    SetEscapeHTML(on bool)
+    SetIndent(prefix, indent string)
  }
  
  // Decoder decodes JSON from io.Read
  type Decoder interface {
-	 Decode(val interface{}) error
-	 Buffered() io.Reader
-	 DisallowUnknownFields()
-	 More() bool
-	 UseNumber()
+    Decode(val interface{}) error
+    Buffered() io.Reader
+    DisallowUnknownFields()
+    More() bool
+    UseNumber()
  }
 
  // Marshal returns the JSON encoding bytes of v.
