@@ -26,10 +26,10 @@ import (
     `testing`
     `time`
 
+    `github.com/bytedance/sonic/internal/rt`
     gojson `github.com/goccy/go-json`
     `github.com/json-iterator/go`
     `github.com/stretchr/testify/require`
-    `github.com/bytedance/sonic/internal/rt`
 )
 
 func TestMain(m *testing.M) {
@@ -154,6 +154,18 @@ func TestEncoder_FieldStringize(t *testing.T) {
     r, e := Encode(v, 0)
     require.NoError(t, e)
     println(string(r))
+}
+
+func TestEncodeErrorAndScratchBuf(t *testing.T) {
+    var obj = map[string]interface{}{
+        "a": json.RawMessage(" [} "),
+    }
+    buf := make([]byte, 0, 10)
+    _ = EncodeInto(&buf, obj, 0)
+    if len(buf) < 0 || len(buf) > 10 {
+        println(buf)
+        t.Fatal()
+    }
 }
 
 type MarshalerImpl struct {
