@@ -97,8 +97,35 @@ var data YourSchema
 // Marshal
 output, err := sonic.Marshal(&data) 
 // Unmarshal
-err := sonic.Unmarshal(output, &data) 
+err := sonic.Unmarshal(output, &data)
  ```
+
+### Streaming IO
+Sonic supports to decode json from `io.Reader` or encode objects into `io.Writer`, aiming at handling multiple values as well as reducing memory consuming.
+- encoder
+```go
+import "github.com/bytedance/sonic/encoder"
+
+var o1 =  map[string]interface{}{
+         "a": "b"
+}
+var o2 = 1
+var w = bytes.NewBuffer(nil)
+var enc = encoder.NewStreamEncoder(w)
+enc.Encode(o)
+println(w1.String()) // "{\"a\":\"b\"}\n1"
+```
+- decoder
+```go
+import "github.com/bytedance/sonic/decoder"
+
+var o =  map[string]interface{}{}
+var r = strings.NewReader(`{"a":"b"}{"1":"2"}`)
+var dec = decoder.NewStreamDecoder(r)
+dec.Decode(&o)
+dec.Decode(&o)
+fmt.Printf("%+v", o) // map[1:2 a:b]
+```
 
 ### Use Number/Use Int64
  ```go
