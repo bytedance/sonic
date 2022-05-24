@@ -1,3 +1,5 @@
+// +build amd64
+
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -18,6 +20,7 @@
 package sonic
 
 import (
+    `io`
     `reflect`
 
     `github.com/bytedance/sonic/ast`
@@ -28,36 +31,7 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
-// Marshal returns the JSON encoding bytes of v.
-func Marshal(val interface{}) ([]byte, error) {
-    return encoder.Encode(val, 0)
-}
-
-// MarshalString returns the JSON encoding string of v.
-func MarshalString(val interface{}) (string, error) {
-    buf, err := encoder.Encode(val, 0)
-    return rt.Mem2Str(buf), err
-}
-
-// Unmarshal parses the JSON-encoded data and stores the result in the value
-// pointed to by v.
-// NOTICE: This API copies given buffer by default,
-// if you want to pass JSON more efficiently, use UnmarshalString instead.
-func Unmarshal(buf []byte, val interface{}) error {
-    return UnmarshalString(string(buf), val)
-}
-
-// UnmarshalString is like Unmarshal, except buf is a string.
-func UnmarshalString(buf string, val interface{}) error {
-    dec := decoder.NewDecoder(buf)
-    err := dec.Decode(val)
-    pos := dec.Pos()
-
-    /* check for errors */
-    if err != nil {
-        return err
-    }
-
+func checkTrailings(buf string, pos int) error {
     /* skip all the trailing spaces */
     if pos != len(buf) {
         for pos < len(buf) && (types.SPACE_MASK & (1 << buf[pos])) != 0 {
@@ -73,9 +47,101 @@ func UnmarshalString(buf string, val interface{}) error {
     /* junk after JSON value */
     return decoder.SyntaxError {
         Src  : buf,
-        Pos  : dec.Pos(),
+        Pos  : pos,
         Code : types.ERR_INVALID_CHAR,
     }
+}
+
+type frozenConfig struct {
+    Config
+    encoderOpts encoder.Options
+    decoderOpts decoder.Options
+}
+
+// Froze convert the Config to API
+func (cfg Config) Froze() API {
+    api := &frozenConfig{Config: cfg}
+    if cfg.EscapeHTML {
+        api.encoderOpts |= encoder.EscapeHTML
+    }
+    if cfg.SortMapKeys {
+        api.encoderOpts |= encoder.SortMapKeys
+    }
+    if cfg.CompactMarshaler {
+        api.encoderOpts |= encoder.CompactMarshaler
+    }
+    if cfg.NoQuoteTextMarshaler {
+        api.encoderOpts |= encoder.NoQuoteTextMarshaler
+    }
+    if cfg.UseInt64 {
+        api.decoderOpts |= decoder.OptionUseInt64
+    }
+    if cfg.UseNumber {
+        api.decoderOpts |= decoder.OptionUseNumber
+    }
+    if cfg.DisallowUnknownFields {
+        api.decoderOpts |= decoder.OptionDisableUnknown
+    }
+    if cfg.CopyString {
+        api.decoderOpts |= decoder.OptionCopyString
+    }
+    return api
+}
+
+// Marshal is implemented by sonic
+func (cfg *frozenConfig) Marshal(val interface{}) ([]byte, error) {
+    return encoder.Encode(val, cfg.encoderOpts)
+}
+
+// MarshalToString is implemented by sonic
+func (cfg *frozenConfig) MarshalToString(val interface{}) (string, error) {
+    buf, err := encoder.Encode(val, cfg.encoderOpts)
+    return rt.Mem2Str(buf), err
+}
+
+// MarshalIndent is implemented by sonic
+func (cfg *frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([]byte, error) {
+    return encoder.EncodeIndented(val, prefix, indent, cfg.encoderOpts)
+}
+
+// UnmarshalFromString is implemented by sonic
+func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
+    dec := decoder.NewDecoder(buf)
+    dec.SetOptions(cfg.decoderOpts)
+
+    err := dec.Decode(val)
+    pos := dec.Pos()
+
+    /* check for errors */
+    if err != nil {
+        return err
+    }
+    return checkTrailings(buf, pos)
+}
+
+// Unmarshal is implemented by sonic
+func (cfg *frozenConfig) Unmarshal(buf []byte, val interface{}) error {
+    return cfg.UnmarshalFromString(string(buf), val)
+}
+
+// NewEncoder is implemented by sonic
+func (cfg *frozenConfig) NewEncoder(writer io.Writer) Encoder {
+    enc := encoder.NewStreamEncoder(writer)
+    enc.Opts = cfg.encoderOpts
+    return enc
+}
+
+// NewDecoder is implemented by sonic
+func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
+    dec := decoder.NewStreamDecoder(reader)
+    dec.SetOptions(cfg.decoderOpts)
+    return dec
+}
+
+// Valid is implemented by sonic
+func (cfg *frozenConfig) Valid(data []byte) bool {
+    ok, _ := encoder.Valid(data)
+    return ok
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
