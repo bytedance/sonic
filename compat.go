@@ -24,7 +24,14 @@ func (cfg *frozenConfig) marshalOptions(val interface{}, prefix, indent string) 
     enc.SetEscapeHTML(cfg.EscapeHTML)
     enc.SetIndent(prefix, indent)
     err := enc.Encode(val)
-    return w.Bytes(), err
+	out := w.Bytes()
+
+	// json.Encoder always appends '\n' after encoding,
+	// which is not same with json.Marshal()
+	if len(out) > 0 && out[len(out)-1] == '\n' {
+		out = out[:len(out)-1]
+	}
+	return out, err
 }
 
 // Marshal is implemented by sonic
