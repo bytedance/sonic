@@ -1,4 +1,4 @@
-name: Push Check Linux
+name: Push Check ARM
 
 on: push
 
@@ -6,8 +6,8 @@ jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.15.x, 1.16.x, 1.17.x]
-    runs-on: self-hosted
+        go-version: [1.15.x, 1.18.x]
+    runs-on: [self-hosted, arm]
     steps:
       - uses: actions/checkout@v2
 
@@ -23,5 +23,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Unit Test
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 ./...
+      - name: Compatibility Test
+        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 .
