@@ -1,17 +1,20 @@
-name: Push Check Go1.18
+name: Push Check Windows
 
 on: push
 
 jobs:
   build:
-    runs-on: self-hosted
+    strategy:
+      matrix:
+        go-version: [1.15.x, 1.18.x]
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
 
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: ${{ matrix.go-version }}
 
       - uses: actions/cache@v2
         with:
@@ -20,8 +23,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Unit Test
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./...
-      
-      - name: Generic Test
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./generic_test
+      - name: Compatibility Test
+        run: go test -v -gcflags=-d=checkptr=0 .
