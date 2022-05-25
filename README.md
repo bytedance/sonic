@@ -4,7 +4,7 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 
 ## Requirement
 - Go 1.15/1.16/1.17/1.18
-- Linux/darwin OS
+- Linux/MacOS/Windows
 - Amd64 CPU with AVX instruction set
 
 ## Features
@@ -260,6 +260,12 @@ println(string(buf) == string(exp)) // true
 - iteration: `Values()`, `Properties()`, `ForEach()`, `SortKeys()`
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
+## Compatibility
+Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
+- `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options like `SortKeys=false` will be invalid.
+- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It whill fall back to `encoding/json`.
+- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options will be invalid.
+
 ## Tips
 
 ### Pretouch
@@ -317,3 +323,6 @@ Why? Because `ast.Node` stores its children using `array`:
 - Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while `ast.Node` can parse them **on demand**.
 
 **CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}` 
+
+## Community
+Sonic is a subproject of [CloudWeGo](https://www.cloudwego.io/). We are committed to building a cloud native ecosystem.

@@ -24,4 +24,4 @@ jobs:
         run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./...
       
       - name: Generic Test
-        run: go test -v -gcflags=-d=checkptr=0 -race ./generic_test
+        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./generic_test
