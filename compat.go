@@ -19,9 +19,9 @@
 package sonic
 
 import (
-    "bytes"
-    "encoding/json"
-    "io"
+    `bytes`
+    `encoding/json`
+    `io`
 )
 
 type frozenConfig struct {
