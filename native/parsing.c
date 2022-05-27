@@ -250,17 +250,114 @@ static inline ssize_t memcchr_quote(const char *sp, ssize_t nb, char *dp, ssize_
     }
 }
 
+
+static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
+    uint32_t     mm;
+    const char * ss = sp;
+    const char * ds = dp;
+    size_t cn = 0;
+
+simd_copy:
+
+#if USE_AVX2
+    /* 32-byte loop, full store */
+    while (nb >= 32) {
+        __m256i vv = _mm256_loadu_si256  ((const void *)sp);
+        __m256i rv = _mm256_find_quote   (vv);
+                     _mm256_storeu_si256 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm256_movemask_epi8(rv)) != 0) {
+            cn = __builtin_ctz(mm);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
+            goto escape;
+        }
+
+        /* move to next block */
+        sp += 32;
+        dp += 32;
+        nb -= 32;
+    }
+
+    /* clear upper half to avoid AVX-SSE transition penalty */
+    _mm256_zeroupper();
+#endif
+
+    /* 16-byte loop, full store */
+    while (nb >= 16) {
+        __m128i vv = _mm_loadu_si128  ((const void *)sp);
+        __m128i rv = _mm_find_quote   (vv);
+                     _mm_storeu_si128 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm_movemask_epi8(rv)) != 0) {
+            cn =  __builtin_ctz(mm);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
+            goto escape;
+        }
+
+        /* move to next block */
+        sp += 16;
+        dp += 16;
+        nb -= 16;
+    }
+
+    /* handle the remaining bytes with scalar code */
+    while (nb > 0) {
+        if (_SingleQuoteTab[*(uint8_t *)sp].n) {
+            goto escape;
+        } else {
+            nb--;
+            *dp++ = *sp++;
+        }
+    }
+
+    /* all quote done */
+    return dp - ds;
+
+escape:
+     /* get the escape entry, handle consecutive quotes */
+    while (nb > 0) {
+        uint8_t ch = *(uint8_t *)sp;
+        int nc = tab[ch].n;
+
+        /* copy and find escape chars */
+        if (nc == 0) {
+            goto simd_copy;
+        }
+
+        /* copy the quoted value */
+        *(uint64_t *)dp = *(const uint64_t *)tab[ch].s;
+        sp++;
+        nb--;
+        dp += nc;
+    };
+    return dp - ds;
+}
+
 ssize_t quote(const char *sp, ssize_t nb, char *dp, ssize_t *dn, uint64_t flags) {
     ssize_t          nd = *dn;
     const char *     ds = dp;
     const char *     ss = sp;
     const quoted_t * tab;
+    size_t max_size = 0;
 
     /* select quoting table */
     if (!(flags & F_DBLUNQ)) {
         tab = _SingleQuoteTab;
+        max_size = nb * 6;
     } else {
         tab = _DoubleQuoteTab;
+        max_size = nb * 7;
+    }
+
+    if (dn >= max_size) {
+        *dn = memcchr_quote_unsafe(sp, nb, dp, tab);
+        return nb;
     }
 
     /* find the special characters, copy on the fly */
