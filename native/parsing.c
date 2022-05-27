@@ -250,6 +250,17 @@ static inline ssize_t memcchr_quote(const char *sp, ssize_t nb, char *dp, ssize_
     }
 }
 
+static const bool _EscTab[256] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x00-0x0F
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x10-0x1F
+    //   '"'
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x20-0x2F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x30-0x3F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x40-0x4F
+    //                                 '""
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, // 0x50-0x5F
+    // 0x60-0xFF are zeroes
+};
 
 static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
     uint32_t     mm;
@@ -307,7 +318,7 @@ simd_copy:
 
     /* handle the remaining bytes with scalar code */
     while (nb > 0) {
-        if (_SingleQuoteTab[*(uint8_t *)sp].n) {
+        if (_EscTab[*(uint8_t *)sp]) {
             goto escape;
         } else {
             nb--;

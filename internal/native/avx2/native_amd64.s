@@ -325,7 +325,7 @@ LBB2_8:
 	LONG    $0x4ff56941; WORD $0x1293; BYTE $0x00 // imull        $1217359, %r13d, %esi
 	MOVQ    R13, AX
 	SHLQ    $4, AX
-	LONG    $0x8a0d8d48; WORD $0x008d; BYTE $0x00 // leaq         $36234(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
+	LONG    $0x520d8d48; WORD $0x008d; BYTE $0x00 // leaq         $36178(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
 	MOVQ    R10, R12
 	ORQ     $2, R12
 	MOVQ    0(AX)(CX*1), R11
@@ -411,7 +411,7 @@ LBB2_22:
 	SHRL    $19, SI
 	MOVLQSX AX, DI
 	SHLQ    $4, DI
-	LONG    $0xbd1d8d4c; WORD $0x00a1; BYTE $0x00 // leaq         $41405(%rip), %r11  /* _DOUBLE_POW5_SPLIT(%rip) */
+	LONG    $0x851d8d4c; WORD $0x00a1; BYTE $0x00 // leaq         $41349(%rip), %r11  /* _DOUBLE_POW5_SPLIT(%rip) */
 	MOVQ    R10, CX
 	ORQ     $2, CX
 	MOVQ    0(DI)(R11*1), R9
@@ -810,7 +810,7 @@ LBB2_67:
 	LEAQ 1(R12), BX
 	MOVQ BX, SI
 	MOVL R15, DX
-	LONG $0x005710e8; BYTE $0x00 // callq        _print_mantissa
+	LONG $0x0056d8e8; BYTE $0x00 // callq        _print_mantissa
 	MOVB 1(R12), AX
 	MOVB AX, 0(R12)
 	MOVL $1, AX
@@ -839,7 +839,7 @@ LBB2_74:
 	LEAL    0(CX)(CX*1), AX
 	LEAL    0(AX)(AX*4), AX
 	SUBL    AX, R14
-	LONG    $0xcd058d48; WORD $0x00b0; BYTE $0x00 // leaq         $45261(%rip), %rax  /* _Digits(%rip) */
+	LONG    $0x95058d48; WORD $0x00b0; BYTE $0x00 // leaq         $45205(%rip), %rax  /* _Digits(%rip) */
 	MOVWLZX 0(AX)(CX*2), AX
 	MOVL    BX, CX
 	MOVW    AX, 0(R12)(CX*1)
@@ -874,7 +874,7 @@ LBB2_75:
 	CMPL    R14, $10
 	JL      LBB2_77
 	MOVLQSX R14, AX
-	LONG    $0x640d8d48; WORD $0x00b0; BYTE $0x00 // leaq         $45156(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0x2c0d8d48; WORD $0x00b0; BYTE $0x00 // leaq         $45100(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
 	MOVL    BX, CX
 	MOVW    AX, 0(R12)(CX*1)
@@ -893,7 +893,7 @@ LBB2_80:
 	MOVL  BX, SI
 	ADDQ  -56(BP), SI
 	MOVL  R15, DX
-	LONG  $0x00560fe8; BYTE $0x00 // callq        _print_mantissa
+	LONG  $0x0055d7e8; BYTE $0x00 // callq        _print_mantissa
 	TESTL R12, R12
 	JE    LBB2_81
 	LEAL  0(R12)(BX*1), AX
@@ -974,7 +974,7 @@ LBB2_85:
 	ADDQ BX, R12
 	MOVQ R12, SI
 	MOVL R15, DX
-	LONG $0x005533e8; BYTE $0x00 // callq        _print_mantissa
+	LONG $0x0054fbe8; BYTE $0x00 // callq        _print_mantissa
 	ADDL BX, R15
 	MOVL R15, BX
 	MOVL -44(BP), R9
@@ -1128,7 +1128,7 @@ _u64toa:
 	ADDQ    AX, AX
 	CMPL    SI, $1000
 	JB      LBB4_3
-	LONG    $0x4f0d8d48; WORD $0x00ad; BYTE $0x00 // leaq         $44367(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0x170d8d48; WORD $0x00ad; BYTE $0x00 // leaq         $44311(%rip), %rcx  /* _Digits(%rip) */
 	MOVB    0(DX)(CX*1), CX
 	MOVB    CX, 0(DI)
 	MOVL    $1, CX
@@ -1142,14 +1142,14 @@ LBB4_3:
 LBB4_4:
 	MOVWLZX DX, DX
 	ORQ     $1, DX
-	LONG    $0x2e358d48; WORD $0x00ad; BYTE $0x00 // leaq         $44334(%rip), %rsi  /* _Digits(%rip) */
+	LONG    $0xf6358d48; WORD $0x00ac; BYTE $0x00 // leaq         $44278(%rip), %rsi  /* _Digits(%rip) */
 	MOVB    0(DX)(SI*1), DX
 	MOVL    CX, SI
 	ADDL    $1, CX
 	MOVB    DX, 0(DI)(SI*1)
 
 LBB4_6:
-	LONG $0x1c158d48; WORD $0x00ad; BYTE $0x00 // leaq         $44316(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0xe4158d48; WORD $0x00ac; BYTE $0x00 // leaq         $44260(%rip), %rdx  /* _Digits(%rip) */
 	MOVB 0(AX)(DX*1), DX
 	MOVL CX, SI
 	ADDL $1, CX
@@ -1158,7 +1158,7 @@ LBB4_6:
 LBB4_7:
 	MOVWLZX AX, AX
 	ORQ     $1, AX
-	LONG    $0x03158d48; WORD $0x00ad; BYTE $0x00 // leaq         $44291(%rip), %rdx  /* _Digits(%rip) */
+	LONG    $0xcb158d48; WORD $0x00ac; BYTE $0x00 // leaq         $44235(%rip), %rdx  /* _Digits(%rip) */
 	MOVB    0(AX)(DX*1), AX
 	MOVL    CX, DX
 	ADDL    $1, CX
@@ -1205,7 +1205,7 @@ LBB4_8:
 	ADDQ    R11, R11
 	CMPL    SI, $10000000
 	JB      LBB4_11
-	LONG    $0x6b058d48; WORD $0x00ac; BYTE $0x00 // leaq         $44139(%rip), %rax  /* _Digits(%rip) */
+	LONG    $0x33058d48; WORD $0x00ac; BYTE $0x00 // leaq         $44083(%rip), %rax  /* _Digits(%rip) */
 	MOVB    0(R10)(AX*1), AX
 	MOVB    AX, 0(DI)
 	MOVL    $1, CX
@@ -1219,14 +1219,14 @@ LBB4_11:
 LBB4_12:
 	MOVL R10, AX
 	ORQ  $1, AX
-	LONG $0x46358d48; WORD $0x00ac; BYTE $0x00 // leaq         $44102(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0x0e358d48; WORD $0x00ac; BYTE $0x00 // leaq         $44046(%rip), %rsi  /* _Digits(%rip) */
 	MOVB 0(AX)(SI*1), AX
 	MOVL CX, SI
 	ADDL $1, CX
 	MOVB AX, 0(DI)(SI*1)
 
 LBB4_14:
-	LONG $0x34058d48; WORD $0x00ac; BYTE $0x00 // leaq         $44084(%rip), %rax  /* _Digits(%rip) */
+	LONG $0xfc058d48; WORD $0x00ab; BYTE $0x00 // leaq         $44028(%rip), %rax  /* _Digits(%rip) */
 	MOVB 0(R9)(AX*1), AX
 	MOVL CX, SI
 	ADDL $1, CX
@@ -1235,7 +1235,7 @@ LBB4_14:
 LBB4_15:
 	MOVWLZX R9, AX
 	ORQ     $1, AX
-	LONG    $0x19358d48; WORD $0x00ac; BYTE $0x00 // leaq         $44057(%rip), %rsi  /* _Digits(%rip) */
+	LONG    $0xe1358d48; WORD $0x00ab; BYTE $0x00 // leaq         $44001(%rip), %rsi  /* _Digits(%rip) */
 	MOVB    0(AX)(SI*1), AX
 	MOVL    CX, DX
 	MOVB    AX, 0(DI)(DX*1)
@@ -1317,7 +1317,7 @@ LBB4_16:
 	MOVL $16, CX
 	SUBL AX, CX
 	SHLQ $4, AX
-	LONG $0x8f158d48; WORD $0x00ab; BYTE $0x00 // leaq         $43919(%rip), %rdx  /* _VecShiftShuffles(%rip) */
+	LONG $0x57158d48; WORD $0x00ab; BYTE $0x00 // leaq         $43863(%rip), %rdx  /* _VecShiftShuffles(%rip) */
 	LONG $0x0071e2c4; WORD $0x1004             // vpshufb      (%rax,%rdx), %xmm1, %xmm0
 	LONG $0x077ffac5                           // vmovdqu      %xmm0, (%rdi)
 	MOVL CX, AX
@@ -1343,7 +1343,7 @@ LBB4_20:
 	CMPL    DX, $99
 	JA      LBB4_22
 	MOVL    DX, AX
-	LONG    $0x720d8d48; WORD $0x00aa; BYTE $0x00 // leaq         $43634(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0x3a0d8d48; WORD $0x00aa; BYTE $0x00 // leaq         $43578(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
 	MOVW    AX, 0(DI)
 	MOVL    $2, CX
@@ -1366,7 +1366,7 @@ LBB4_22:
 	WORD    $0xc96b; BYTE $0x64                   // imull        $100, %ecx, %ecx
 	SUBL    CX, AX
 	MOVWLZX AX, AX
-	LONG    $0x290d8d48; WORD $0x00aa; BYTE $0x00 // leaq         $43561(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0xf10d8d48; WORD $0x00a9; BYTE $0x00 // leaq         $43505(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
 	MOVW    AX, 1(DI)
 	MOVL    $3, CX
@@ -1376,7 +1376,7 @@ LBB4_24:
 	WORD    $0xc86b; BYTE $0x64                   // imull        $100, %eax, %ecx
 	SUBL    CX, DX
 	MOVWLZX AX, AX
-	LONG    $0x0b0d8d48; WORD $0x00aa; BYTE $0x00 // leaq         $43531(%rip), %rcx  /* _Digits(%rip) */
+	LONG    $0xd30d8d48; WORD $0x00a9; BYTE $0x00 // leaq         $43475(%rip), %rcx  /* _Digits(%rip) */
 	MOVWLZX 0(CX)(AX*2), AX
 	MOVW    AX, 0(DI)
 	MOVWLZX DX, AX
@@ -1468,602 +1468,585 @@ _quote:
 	WORD  $0x5441                               // pushq        %r12
 	BYTE  $0x53                                 // pushq        %rbx
 	SUBQ  $40, SP
-	MOVQ  CX, R13
-	MOVQ  SI, R10
-	MOVQ  0(CX), SI
+	MOVQ  CX, R15
+	MOVQ  0(CX), R10
 	TESTB $1, R8
-	LONG  $0xb0058d4c; WORD $0x00a9; BYTE $0x00 // leaq         $43440(%rip), %r8  /* __SingleQuoteTab(%rip) */
-	LONG  $0xa93d8d4c; WORD $0x00b9; BYTE $0x00 // leaq         $47529(%rip), %r15  /* __DoubleQuoteTab(%rip) */
-	LONG  $0xf8440f4d                           // cmoveq       %r8, %r15
-	LEAQ  0(R10*8), AX
-	CMPQ  SI, AX
-	JGE   LBB5_96
-	MOVQ  DX, R11
-	MOVQ  DI, R12
-	TESTQ R10, R10
-	JE    LBB5_118
-	MOVQ  SI, R14
-	QUAD  $0xffffff150d6f7ec5                   // vmovdqu      $-235(%rip), %ymm9  /* LCPI5_0(%rip) */
-	QUAD  $0xffffff2d156f7ec5                   // vmovdqu      $-211(%rip), %ymm10  /* LCPI5_1(%rip) */
-	QUAD  $0xffffff451d6f7ec5                   // vmovdqu      $-187(%rip), %ymm11  /* LCPI5_2(%rip) */
+	MOVQ  SI, R8
+	LONG  $0x78058d48; WORD $0x00a9; BYTE $0x00 // leaq         $43384(%rip), %rax  /* __SingleQuoteTab(%rip) */
+	LONG  $0x71358d4c; WORD $0x00b9; BYTE $0x00 // leaq         $47473(%rip), %r14  /* __DoubleQuoteTab(%rip) */
+	LONG  $0xf0440f4c                           // cmoveq       %rax, %r14
+	LEAQ  0(SI*8), AX
+	CMPQ  R10, AX
+	JGE   LBB5_95
+	MOVQ  DX, R12
+	MOVQ  DI, R9
+	TESTQ R8, R8
+	JE    LBB5_117
+	QUAD  $0xffffff180d6f7ec5                   // vmovdqu      $-232(%rip), %ymm9  /* LCPI5_0(%rip) */
+	QUAD  $0xffffff30156f7ec5                   // vmovdqu      $-208(%rip), %ymm10  /* LCPI5_1(%rip) */
+	QUAD  $0xffffff481d6f7ec5                   // vmovdqu      $-184(%rip), %ymm11  /* LCPI5_2(%rip) */
 	LONG  $0x763d41c4; BYTE $0xc0               // vpcmpeqd     %ymm8, %ymm8, %ymm8
 	MOVQ  DI, AX
 	MOVQ  DX, -80(BP)
-	MOVQ  DX, R11
-	MOVQ  R15, -64(BP)
+	MOVQ  DX, R12
+	MOVQ  R14, -64(BP)
 
 LBB5_3:
-	CMPQ  R10, $32
-	SETGE CX
-	MOVQ  R14, -56(BP)
-	MOVQ  AX, -48(BP)
-	MOVQ  R13, DX
-	JL    LBB5_15
-	MOVQ  R14, R13
 	MOVQ  AX, R9
-	MOVQ  R11, R12
-	MOVQ  R10, R15
-	CMPQ  R14, $32
+	CMPQ  R8, $32
+	SETGE CX
+	MOVQ  R10, R14
+	MOVQ  R12, SI
+	MOVQ  R8, R11
+	MOVQ  AX, R13
 	JL    LBB5_10
-	XORL  R12, R12
-	MOVQ  R10, AX
-	MOVQ  -56(BP), BX
+	CMPQ  R10, $32
+	JL    LBB5_10
+	XORL  SI, SI
+	MOVQ  R8, DX
+	MOVQ  R10, BX
 
 LBB5_6:
-	MOVQ  -48(BP), CX
-	LONG  $0x6f7ea1c4; WORD $0x2104 // vmovdqu      (%rcx,%r12), %ymm0
+	LONG  $0x6f7ec1c4; WORD $0x3104 // vmovdqu      (%r9,%rsi), %ymm0
 	LONG  $0xc864b5c5               // vpcmpgtb     %ymm0, %ymm9, %ymm1
 	LONG  $0xd074adc5               // vpcmpeqb     %ymm0, %ymm10, %ymm2
 	LONG  $0xd874a5c5               // vpcmpeqb     %ymm0, %ymm11, %ymm3
 	LONG  $0xd2ebe5c5               // vpor         %ymm2, %ymm3, %ymm2
-	LONG  $0x7f7e81c4; WORD $0x2304 // vmovdqu      %ymm0, (%r11,%r12)
+	LONG  $0x7f7ec1c4; WORD $0x3404 // vmovdqu      %ymm0, (%r12,%rsi)
 	LONG  $0x647dc1c4; BYTE $0xc0   // vpcmpgtb     %ymm8, %ymm0, %ymm0
 	LONG  $0xc0dbf5c5               // vpand        %ymm0, %ymm1, %ymm0
 	LONG  $0xc0ebedc5               // vpor         %ymm0, %ymm2, %ymm0
-	LONG  $0xc8d7fdc5               // vpmovmskb    %ymm0, %ecx
-	TESTL CX, CX
-	JNE   LBB5_14
-	LEAQ  -32(AX), R15
-	LEAQ  -32(BX), R13
-	ADDQ  $32, R12
-	CMPQ  AX, $64
+	LONG  $0xc0d7fdc5               // vpmovmskb    %ymm0, %eax
+	TESTL AX, AX
+	JNE   LBB5_20
+	LEAQ  -32(DX), R11
+	LEAQ  -32(BX), R14
+	ADDQ  $32, SI
+	CMPQ  DX, $64
 	SETGE CX
 	JL    LBB5_9
-	MOVQ  R15, AX
+	MOVQ  R11, DX
 	CMPQ  BX, $63
-	MOVQ  R13, BX
+	MOVQ  R14, BX
 	JG    LBB5_6
 
 LBB5_9:
-	MOVQ -48(BP), AX
-	LEAQ 0(AX)(R12*1), R9
-	ADDQ R11, R12
+	LEAQ 0(R9)(SI*1), R13
+	ADDQ R12, SI
 
 LBB5_10:
 	TESTB CX, CX
-	JE    LBB5_16
+	JE    LBB5_14
+	MOVQ  R9, DX
+	LONG  $0x6f7ec1c4; WORD $0x0045 // vmovdqu      (%r13), %ymm0
+	LONG  $0xc864b5c5               // vpcmpgtb     %ymm0, %ymm9, %ymm1
+	LONG  $0xd074adc5               // vpcmpeqb     %ymm0, %ymm10, %ymm2
+	LONG  $0xd874a5c5               // vpcmpeqb     %ymm0, %ymm11, %ymm3
+	LONG  $0xd2ebe5c5               // vpor         %ymm2, %ymm3, %ymm2
+	LONG  $0x647dc1c4; BYTE $0xc0   // vpcmpgtb     %ymm8, %ymm0, %ymm0
+	LONG  $0xc0dbf5c5               // vpand        %ymm0, %ymm1, %ymm0
+	LONG  $0xc0ebedc5               // vpor         %ymm0, %ymm2, %ymm0
+	LONG  $0xc0d7fdc5               // vpmovmskb    %ymm0, %eax
+	MOVQ  $4294967296, CX
+	ORQ   CX, AX
+	BSFQ  AX, R9
+	LONG  $0x6f7ac1c4; WORD $0x0045 // vmovdqu      (%r13), %xmm0
+	LONG  $0x16f9e3c4; WORD $0x01c0 // vpextrq      $1, %xmm0, %rax
+	LONG  $0x7ef9e1c4; BYTE $0xc1   // vmovq        %xmm0, %rcx
+	CMPQ  R9, R14
+	JLE   LBB5_21
+	CMPQ  R14, $16
+	JB    LBB5_36
+	MOVQ  CX, 0(SI)
+	MOVQ  AX, 8(SI)
+	LEAQ  16(R13), R11
+	ADDQ  $16, SI
+	LEAQ  -16(R14), CX
+	MOVQ  DX, R9
+	CMPQ  CX, $8
+	JAE   LBB5_51
 
-LBB5_11:
-	LONG $0x6f7ec1c4; BYTE $0x01   // vmovdqu      (%r9), %ymm0
-	LONG $0xc864b5c5               // vpcmpgtb     %ymm0, %ymm9, %ymm1
-	LONG $0xd074adc5               // vpcmpeqb     %ymm0, %ymm10, %ymm2
-	LONG $0xd874a5c5               // vpcmpeqb     %ymm0, %ymm11, %ymm3
-	LONG $0xd2ebe5c5               // vpor         %ymm2, %ymm3, %ymm2
-	LONG $0x647dc1c4; BYTE $0xc0   // vpcmpgtb     %ymm8, %ymm0, %ymm0
-	LONG $0xc0dbf5c5               // vpand        %ymm0, %ymm1, %ymm0
-	LONG $0xc0ebedc5               // vpor         %ymm0, %ymm2, %ymm0
-	LONG $0xc0d7fdc5               // vpmovmskb    %ymm0, %eax
-	MOVQ $4294967296, CX
-	ORQ  CX, AX
-	BSFQ AX, R8
-	LONG $0x6f7ac1c4; BYTE $0x01   // vmovdqu      (%r9), %xmm0
-	LONG $0x16f9e3c4; WORD $0x01c0 // vpextrq      $1, %xmm0, %rax
-	LONG $0x7ef9e1c4; BYTE $0xc1   // vmovq        %xmm0, %rcx
-	CMPQ R8, R13
-	JLE  LBB5_22
-	CMPQ R13, $16
-	JB   LBB5_37
-	MOVQ CX, 0(R12)
-	MOVQ AX, 8(R12)
-	LEAQ 16(R9), BX
-	ADDQ $16, R12
-	LEAQ -16(R13), CX
-	CMPQ CX, $8
-	JAE  LBB5_52
-
-LBB5_39:
+LBB5_38:
 	CMPQ CX, $4
-	JB   LBB5_40
+	JB   LBB5_39
 
-LBB5_53:
-	MOVL 0(BX), AX
-	MOVL AX, 0(R12)
-	ADDQ $4, BX
-	ADDQ $4, R12
+LBB5_52:
+	MOVL 0(R11), AX
+	MOVL AX, 0(SI)
+	ADDQ $4, R11
+	ADDQ $4, SI
 	ADDQ $-4, CX
 	CMPQ CX, $2
-	JAE  LBB5_54
+	JAE  LBB5_53
+
+LBB5_40:
+	TESTQ CX, CX
+	JE    LBB5_42
 
 LBB5_41:
-	TESTQ CX, CX
-	JE    LBB5_43
+	MOVB 0(R11), AX
+	MOVB AX, 0(SI)
 
 LBB5_42:
-	MOVB 0(BX), AX
-	MOVB AX, 0(R12)
-
-LBB5_43:
-	ADDQ R9, R13
-	NOTQ R13
-	MOVQ -48(BP), R12
-	ADDQ R12, R13
-	MOVQ R13, R9
-	MOVQ -64(BP), R15
-	JMP  LBB5_44
+	ADDQ R13, R14
+	NOTQ R14
+	ADDQ R9, R14
+	MOVQ R14, R13
+	JMP  LBB5_43
 
 LBB5_14:
-	BSFL CX, R9
-	ADDQ R12, R9
-	MOVQ -64(BP), R15
-	MOVQ -48(BP), R12
-
-LBB5_44:
-	MOVQ -56(BP), R14
-	MOVQ DX, R13
-	JMP  LBB5_79
-
-LBB5_15:
-	MOVQ  R14, R13
-	MOVQ  AX, R9
-	MOVQ  R11, R12
-	MOVQ  R10, R15
-	TESTB CX, CX
-	JNE   LBB5_11
-
-LBB5_16:
+	MOVQ  R9, -56(BP)
 	WORD  $0xf8c5; BYTE $0x77     // vzeroupper
-	CMPQ  R15, $16
-	SETGE R8
-	MOVQ  DX, -72(BP)
-	JL    LBB5_24
-	CMPQ  R13, $16
-	JL    LBB5_24
-	MOVQ  R10, BX
-	MOVQ  -48(BP), R10
-	SUBQ  R9, R10
-	QUAD  $0xfffffd310d6f7ec5     // vmovdqu      $-719(%rip), %ymm9  /* LCPI5_0(%rip) */
-	QUAD  $0xfffffd49156f7ec5     // vmovdqu      $-695(%rip), %ymm10  /* LCPI5_1(%rip) */
-	QUAD  $0xfffffd611d6f7ec5     // vmovdqu      $-671(%rip), %ymm11  /* LCPI5_2(%rip) */
+	CMPQ  R11, $16
+	SETGE R9
+	MOVQ  R15, -72(BP)
+	MOVQ  R8, -48(BP)
+	JL    LBB5_23
+	CMPQ  R14, $16
+	JL    LBB5_23
+	MOVQ  -56(BP), CX
+	SUBQ  R13, CX
+	QUAD  $0xfffffd750d6f7ec5     // vmovdqu      $-651(%rip), %ymm9  /* LCPI5_0(%rip) */
+	QUAD  $0xfffffd8d156f7ec5     // vmovdqu      $-627(%rip), %ymm10  /* LCPI5_1(%rip) */
+	QUAD  $0xfffffda51d6f7ec5     // vmovdqu      $-603(%rip), %ymm11  /* LCPI5_2(%rip) */
 	LONG  $0x763d41c4; BYTE $0xc0 // vpcmpeqd     %ymm8, %ymm8, %ymm8
-	QUAD  $0xfffffd743d6ffac5     // vmovdqu      $-652(%rip), %xmm7  /* LCPI5_3(%rip) */
-	QUAD  $0xfffffd7c256ffac5     // vmovdqu      $-644(%rip), %xmm4  /* LCPI5_4(%rip) */
-	QUAD  $0xfffffd842d6ffac5     // vmovdqu      $-636(%rip), %xmm5  /* LCPI5_5(%rip) */
+	QUAD  $0xfffffdb83d6ffac5     // vmovdqu      $-584(%rip), %xmm7  /* LCPI5_3(%rip) */
+	QUAD  $0xfffffdc0256ffac5     // vmovdqu      $-576(%rip), %xmm4  /* LCPI5_4(%rip) */
+	QUAD  $0xfffffdc82d6ffac5     // vmovdqu      $-568(%rip), %xmm5  /* LCPI5_5(%rip) */
 	LONG  $0xf676c9c5             // vpcmpeqd     %xmm6, %xmm6, %xmm6
 
-LBB5_19:
-	LONG  $0x6f7ac1c4; BYTE $0x01   // vmovdqu      (%r9), %xmm0
+LBB5_17:
+	LONG  $0x6f7ac1c4; WORD $0x0045 // vmovdqu      (%r13), %xmm0
 	LONG  $0xc864c1c5               // vpcmpgtb     %xmm0, %xmm7, %xmm1
 	LONG  $0xd474f9c5               // vpcmpeqb     %xmm4, %xmm0, %xmm2
 	LONG  $0xdd74f9c5               // vpcmpeqb     %xmm5, %xmm0, %xmm3
 	LONG  $0xd2ebe1c5               // vpor         %xmm2, %xmm3, %xmm2
-	LONG  $0x7f7ac1c4; WORD $0x2404 // vmovdqu      %xmm0, (%r12)
+	LONG  $0x067ffac5               // vmovdqu      %xmm0, (%rsi)
 	LONG  $0xc664f9c5               // vpcmpgtb     %xmm6, %xmm0, %xmm0
 	LONG  $0xc0dbf1c5               // vpand        %xmm0, %xmm1, %xmm0
 	LONG  $0xc0ebe9c5               // vpor         %xmm0, %xmm2, %xmm0
 	LONG  $0xc0d7f9c5               // vpmovmskb    %xmm0, %eax
 	TESTL AX, AX
-	JNE   LBB5_36
-	ADDQ  $16, R9
-	ADDQ  $16, R12
-	LEAQ  -16(R15), AX
-	LEAQ  -16(R13), DX
-	CMPQ  R15, $32
-	SETGE R8
-	JL    LBB5_25
-	ADDQ  $-16, R10
-	MOVQ  AX, R15
-	CMPQ  R13, $31
-	MOVQ  DX, R13
-	JG    LBB5_19
-	JMP   LBB5_25
+	JNE   LBB5_35
+	ADDQ  $16, R13
+	ADDQ  $16, SI
+	LEAQ  -16(R11), R15
+	LEAQ  -16(R14), R8
+	CMPQ  R11, $32
+	SETGE R9
+	JL    LBB5_24
+	ADDQ  $-16, CX
+	MOVQ  R15, R11
+	CMPQ  R14, $31
+	MOVQ  R8, R14
+	JG    LBB5_17
+	JMP   LBB5_24
 
-LBB5_22:
-	CMPL R8, $16
-	JB   LBB5_45
-	MOVQ CX, 0(R12)
-	MOVQ AX, 8(R12)
-	LEAQ 16(R9), CX
-	ADDQ $16, R12
-	LEAQ -16(R8), BX
-	MOVQ -64(BP), R15
-	MOVQ DX, R13
-	CMPQ BX, $8
-	JAE  LBB5_55
+LBB5_20:
+	BSFL AX, R13
+	ADDQ SI, R13
 
-LBB5_47:
-	CMPQ BX, $4
-	JB   LBB5_48
+LBB5_43:
+	MOVQ -64(BP), R14
 
-LBB5_56:
-	MOVL 0(CX), AX
-	MOVL AX, 0(R12)
-	ADDQ $4, CX
-	ADDQ $4, R12
-	ADDQ $-4, BX
-	CMPQ BX, $2
-	JAE  LBB5_57
-
-LBB5_49:
-	TESTQ BX, BX
-	JE    LBB5_51
-
-LBB5_50:
-	MOVB 0(CX), AX
-	MOVB AX, 0(R12)
-
-LBB5_51:
-	MOVQ -48(BP), R12
-	SUBQ R12, R9
-	ADDQ R8, R9
+LBB5_77:
+	MOVQ $12884901889, R11
 	JMP  LBB5_78
 
-LBB5_24:
-	MOVQ R10, BX
-	MOVQ R13, DX
-	MOVQ R15, AX
-	QUAD $0xfffffc190d6f7ec5     // vmovdqu      $-999(%rip), %ymm9  /* LCPI5_0(%rip) */
-	QUAD $0xfffffc31156f7ec5     // vmovdqu      $-975(%rip), %ymm10  /* LCPI5_1(%rip) */
-	QUAD $0xfffffc491d6f7ec5     // vmovdqu      $-951(%rip), %ymm11  /* LCPI5_2(%rip) */
-	LONG $0x763d41c4; BYTE $0xc0 // vpcmpeqd     %ymm8, %ymm8, %ymm8
-	QUAD $0xfffffc5c3d6ffac5     // vmovdqu      $-932(%rip), %xmm7  /* LCPI5_3(%rip) */
-	QUAD $0xfffffc64256ffac5     // vmovdqu      $-924(%rip), %xmm4  /* LCPI5_4(%rip) */
-	QUAD $0xfffffc6c2d6ffac5     // vmovdqu      $-916(%rip), %xmm5  /* LCPI5_5(%rip) */
-	LONG $0xf676c9c5             // vpcmpeqd     %xmm6, %xmm6, %xmm6
-
-LBB5_25:
-	TESTB R8, R8
-	JE    LBB5_29
-	LONG  $0x6f7ac1c4; BYTE $0x01 // vmovdqu      (%r9), %xmm0
-	LONG  $0xc864c1c5             // vpcmpgtb     %xmm0, %xmm7, %xmm1
-	LONG  $0xd474f9c5             // vpcmpeqb     %xmm4, %xmm0, %xmm2
-	LONG  $0xdd74f9c5             // vpcmpeqb     %xmm5, %xmm0, %xmm3
-	LONG  $0xd2ebe1c5             // vpor         %xmm2, %xmm3, %xmm2
-	LONG  $0xde64f9c5             // vpcmpgtb     %xmm6, %xmm0, %xmm3
-	LONG  $0xcbdbf1c5             // vpand        %xmm3, %xmm1, %xmm1
-	LONG  $0xc9ebe9c5             // vpor         %xmm1, %xmm2, %xmm1
-	LONG  $0xc1d7f9c5             // vpmovmskb    %xmm1, %eax
-	ORL   $65536, AX
-	BSFL  AX, R8
-	LONG  $0x7ef9e1c4; BYTE $0xc0 // vmovq        %xmm0, %rax
-	CMPQ  DX, R8
-	MOVQ  -64(BP), R15
-	JGE   LBB5_58
-	CMPQ  DX, $8
-	MOVQ  -72(BP), R13
-	JB    LBB5_66
-	MOVQ  AX, 0(R12)
-	LEAQ  8(R9), R8
-	ADDQ  $8, R12
-	LEAQ  -8(DX), CX
-	JMP   LBB5_67
-
-LBB5_29:
-	TESTQ AX, AX
-	MOVQ  -64(BP), R15
-	JLE   LBB5_60
-	TESTQ DX, DX
-	JLE   LBB5_60
-	MOVQ  AX, R14
-	XORL  AX, AX
-	XORL  SI, SI
-	MOVQ  BX, R10
-
-LBB5_32:
-	MOVQ    DX, R13
-	MOVBLZX 0(R9)(AX*1), CX
-	MOVQ    CX, BX
-	SHLQ    $4, BX
-	LONG    $0xaf158d48; WORD $0x00a5; BYTE $0x00 // leaq         $42415(%rip), %rdx  /* __SingleQuoteTab(%rip) */
-	CMPQ    0(BX)(DX*1), $0
-	JNE     LBB5_63
-	LEAQ    0(R14)(SI*1), R8
-	MOVB    CX, 0(R12)(AX*1)
-	LEAQ    -1(SI), BX
-	CMPQ    R8, $2
-	JL      LBB5_35
-	MOVQ    R13, DX
-	ADDQ    R13, SI
-	ADDQ    $1, AX
-	CMPQ    SI, $1
-	MOVQ    BX, SI
-	JG      LBB5_32
-
-LBB5_35:
-	SUBQ BX, R9
-	MOVQ R14, AX
-	ADDQ BX, AX
-	JMP  LBB5_61
-
-LBB5_36:
-	BSFW    AX, AX
-	MOVWLZX AX, R9
-	SUBQ    R10, R9
-	MOVQ    -72(BP), R13
-	MOVQ    BX, R10
-	MOVQ    -64(BP), R15
-	MOVQ    -48(BP), R12
-	JMP     LBB5_78
-
-LBB5_37:
-	MOVQ R9, BX
-	MOVQ R13, CX
+LBB5_21:
+	CMPL R9, $16
+	JB   LBB5_44
+	MOVQ CX, 0(SI)
+	MOVQ AX, 8(SI)
+	LEAQ 16(R13), BX
+	ADDQ $16, SI
+	LEAQ -16(R9), CX
+	MOVQ -64(BP), R14
+	MOVQ $12884901889, R11
 	CMPQ CX, $8
-	JB   LBB5_39
+	JAE  LBB5_54
 
-LBB5_52:
-	MOVQ 0(BX), AX
-	MOVQ AX, 0(R12)
-	ADDQ $8, BX
-	ADDQ $8, R12
-	ADDQ $-8, CX
+LBB5_46:
 	CMPQ CX, $4
-	JAE  LBB5_53
-
-LBB5_40:
-	CMPQ CX, $2
-	JB   LBB5_41
-
-LBB5_54:
-	MOVWLZX 0(BX), AX
-	MOVW    AX, 0(R12)
-	ADDQ    $2, BX
-	ADDQ    $2, R12
-	ADDQ    $-2, CX
-	TESTQ   CX, CX
-	JNE     LBB5_42
-	JMP     LBB5_43
-
-LBB5_45:
-	MOVQ R9, CX
-	MOVQ R8, BX
-	MOVQ -64(BP), R15
-	MOVQ DX, R13
-	CMPQ BX, $8
 	JB   LBB5_47
 
 LBB5_55:
-	MOVQ 0(CX), AX
-	MOVQ AX, 0(R12)
-	ADDQ $8, CX
-	ADDQ $8, R12
-	ADDQ $-8, BX
-	CMPQ BX, $4
+	MOVL 0(BX), AX
+	MOVL AX, 0(SI)
+	ADDQ $4, BX
+	ADDQ $4, SI
+	ADDQ $-4, CX
+	CMPQ CX, $2
 	JAE  LBB5_56
 
 LBB5_48:
-	CMPQ BX, $2
-	JB   LBB5_49
-
-LBB5_57:
-	MOVWLZX 0(CX), AX
-	MOVW    AX, 0(R12)
-	ADDQ    $2, CX
-	ADDQ    $2, R12
-	ADDQ    $-2, BX
-	TESTQ   BX, BX
-	JNE     LBB5_50
-	JMP     LBB5_51
-
-LBB5_58:
-	CMPL R8, $8
-	MOVQ -72(BP), R13
-	JB   LBB5_72
-	MOVQ AX, 0(R12)
-	LEAQ 8(R9), R10
-	ADDQ $8, R12
-	LEAQ -8(R8), CX
-	JMP  LBB5_73
-
-LBB5_60:
-	MOVQ BX, R10
-
-LBB5_61:
-	MOVQ  -48(BP), R12
-	MOVQ  -56(BP), R14
-	TESTQ AX, AX
-	JE    LBB5_64
-	NOTQ  R9
-	ADDQ  R12, R9
-	JMP   LBB5_65
-
-LBB5_63:
-	MOVQ -48(BP), R12
-	SUBQ R12, R9
-	SUBQ SI, R9
-	MOVQ -72(BP), R13
-	JMP  LBB5_78
-
-LBB5_64:
-	SUBQ R12, R9
-
-LBB5_65:
-	MOVQ -72(BP), R13
-	JMP  LBB5_79
-
-LBB5_66:
-	MOVQ R9, R8
-	MOVQ DX, CX
-
-LBB5_67:
-	MOVQ BX, R10
-	CMPQ CX, $4
-	JB   LBB5_68
-	MOVL 0(R8), AX
-	MOVL AX, 0(R12)
-	ADDQ $4, R8
-	ADDQ $4, R12
-	ADDQ $-4, CX
-	CMPQ CX, $2
-	JAE  LBB5_93
-
-LBB5_69:
 	TESTQ CX, CX
-	JE    LBB5_71
+	JE    LBB5_50
 
-LBB5_70:
-	MOVB 0(R8), AX
-	MOVB AX, 0(R12)
+LBB5_49:
+	MOVB 0(BX), AX
+	MOVB AX, 0(SI)
 
-LBB5_71:
-	ADDQ R9, DX
-	NOTQ DX
-	MOVQ -48(BP), R12
-	ADDQ R12, DX
+LBB5_50:
+	SUBQ DX, R13
+	ADDQ R9, R13
 	MOVQ DX, R9
 	JMP  LBB5_78
 
-LBB5_68:
-	CMPQ CX, $2
-	JB   LBB5_69
+LBB5_23:
+	MOVQ R14, R8
+	MOVQ R11, R15
+	QUAD $0xfffffc470d6f7ec5     // vmovdqu      $-953(%rip), %ymm9  /* LCPI5_0(%rip) */
+	QUAD $0xfffffc5f156f7ec5     // vmovdqu      $-929(%rip), %ymm10  /* LCPI5_1(%rip) */
+	QUAD $0xfffffc771d6f7ec5     // vmovdqu      $-905(%rip), %ymm11  /* LCPI5_2(%rip) */
+	LONG $0x763d41c4; BYTE $0xc0 // vpcmpeqd     %ymm8, %ymm8, %ymm8
+	QUAD $0xfffffc8a3d6ffac5     // vmovdqu      $-886(%rip), %xmm7  /* LCPI5_3(%rip) */
+	QUAD $0xfffffc92256ffac5     // vmovdqu      $-878(%rip), %xmm4  /* LCPI5_4(%rip) */
+	QUAD $0xfffffc9a2d6ffac5     // vmovdqu      $-870(%rip), %xmm5  /* LCPI5_5(%rip) */
+	LONG $0xf676c9c5             // vpcmpeqd     %xmm6, %xmm6, %xmm6
 
-LBB5_93:
-	MOVWLZX 0(R8), AX
-	MOVW    AX, 0(R12)
-	ADDQ    $2, R8
-	ADDQ    $2, R12
-	ADDQ    $-2, CX
-	TESTQ   CX, CX
-	JNE     LBB5_70
-	JMP     LBB5_71
+LBB5_24:
+	TESTB R9, R9
+	JE    LBB5_28
+	LONG  $0x6f7ac1c4; WORD $0x0045 // vmovdqu      (%r13), %xmm0
+	LONG  $0xc864c1c5               // vpcmpgtb     %xmm0, %xmm7, %xmm1
+	LONG  $0xd474f9c5               // vpcmpeqb     %xmm4, %xmm0, %xmm2
+	LONG  $0xdd74f9c5               // vpcmpeqb     %xmm5, %xmm0, %xmm3
+	LONG  $0xd2ebe1c5               // vpor         %xmm2, %xmm3, %xmm2
+	LONG  $0xde64f9c5               // vpcmpgtb     %xmm6, %xmm0, %xmm3
+	LONG  $0xcbdbf1c5               // vpand        %xmm3, %xmm1, %xmm1
+	LONG  $0xc9ebe9c5               // vpor         %xmm1, %xmm2, %xmm1
+	LONG  $0xc1d7f9c5               // vpmovmskb    %xmm1, %eax
+	ORL   $65536, AX
+	BSFL  AX, R9
+	LONG  $0x7ef9e1c4; BYTE $0xc0   // vmovq        %xmm0, %rax
+	CMPQ  R8, R9
+	MOVQ  -64(BP), R14
+	JGE   LBB5_57
+	CMPQ  R8, $8
+	MOVQ  -72(BP), R15
+	MOVQ  $12884901889, R11
+	JB    LBB5_65
+	MOVQ  AX, 0(SI)
+	LEAQ  8(R13), R9
+	ADDQ  $8, SI
+	LEAQ  -8(R8), CX
+	JMP   LBB5_66
 
-LBB5_72:
-	MOVQ R9, R10
-	MOVQ R8, CX
+LBB5_28:
+	TESTQ R15, R15
+	MOVQ  -64(BP), R14
+	LONG  $0xc31d8d4c; WORD $0x00a5; BYTE $0x00 // leaq         $42435(%rip), %r11  /* __SingleQuoteTab(%rip) */
+	JLE   LBB5_59
+	TESTQ R8, R8
+	JLE   LBB5_59
+	XORL  DX, DX
+	XORL  CX, CX
+	MOVQ  -56(BP), R9
 
-LBB5_73:
-	CMPQ CX, $4
-	JB   LBB5_74
-	MOVL 0(R10), AX
-	MOVL AX, 0(R12)
-	ADDQ $4, R10
-	ADDQ $4, R12
-	ADDQ $-4, CX
-	CMPQ CX, $2
-	JAE  LBB5_95
-
-LBB5_75:
-	TESTQ CX, CX
-	JE    LBB5_77
-
-LBB5_76:
-	MOVB 0(R10), AX
-	MOVB AX, 0(R12)
-
-LBB5_77:
-	MOVQ -48(BP), R12
-	SUBQ R12, R9
-	ADDQ R8, R9
-	MOVQ BX, R10
-
-LBB5_78:
-	MOVQ -56(BP), R14
-
-LBB5_79:
-	TESTQ R9, R9
-	JS    LBB5_121
-	ADDQ  R9, R11
-	CMPQ  R10, R9
-	JE    LBB5_117
-	SUBQ  R9, R14
-	JMP   LBB5_83
-
-LBB5_82:
-	ADDQ CX, R11
-	ADDQ $1, R9
-	CMPQ R10, R9
-	JE   LBB5_117
-
-LBB5_83:
-	MOVBLZX 0(R12)(R9*1), AX
+LBB5_31:
+	MOVBLZX 0(R13)(DX*1), BX
+	MOVQ    BX, AX
 	SHLQ    $4, AX
-	MOVQ    0(R15)(AX*1), BX
-	TESTL   BX, BX
-	JE      LBB5_91
-	MOVLQSX BX, CX
-	SUBQ    CX, R14
-	JL      LBB5_119
-	SHLQ    $32, BX
-	LEAQ    0(R15)(AX*1), SI
-	ADDQ    $8, SI
-	MOVQ    $12884901889, DX
-	CMPQ    BX, DX
-	JL      LBB5_87
-	MOVL    0(SI), SI
-	MOVL    SI, 0(R11)
-	LEAQ    0(R15)(AX*1), SI
-	ADDQ    $12, SI
-	LEAQ    4(R11), R8
-	LEAQ    -4(CX), BX
-	CMPQ    BX, $2
-	JGE     LBB5_88
-	JMP     LBB5_89
+	CMPQ    0(AX)(R11*1), $0
+	JNE     LBB5_62
+	LEAQ    0(R15)(CX*1), R9
+	MOVB    BX, 0(SI)(DX*1)
+	LEAQ    -1(CX), AX
+	CMPQ    R9, $2
+	MOVQ    -56(BP), R9
+	JL      LBB5_34
+	ADDQ    R8, CX
+	ADDQ    $1, DX
+	CMPQ    CX, $1
+	MOVQ    AX, CX
+	JG      LBB5_31
 
-LBB5_87:
-	MOVQ R11, R8
-	MOVQ CX, BX
-	CMPQ BX, $2
-	JL   LBB5_89
+LBB5_34:
+	SUBQ AX, R13
+	ADDQ AX, R15
+	MOVQ -48(BP), R8
+	JMP  LBB5_60
 
-LBB5_88:
-	MOVWLZX 0(SI), AX
-	MOVW    AX, 0(R8)
-	ADDQ    $2, SI
-	ADDQ    $2, R8
-	ADDQ    $-2, BX
-
-LBB5_89:
-	TESTQ   BX, BX
-	JLE     LBB5_82
-	MOVBLZX 0(SI), AX
-	MOVB    AX, 0(R8)
-	JMP     LBB5_82
-
-LBB5_91:
-	LEAQ 0(R12)(R9*1), AX
-	SUBQ R9, R10
-	JNE  LBB5_3
-	JMP  LBB5_117
-
-LBB5_74:
-	CMPQ CX, $2
-	JB   LBB5_75
-
-LBB5_95:
-	MOVWLZX 0(R10), AX
-	MOVW    AX, 0(R12)
-	ADDQ    $2, R10
-	ADDQ    $2, R12
-	ADDQ    $-2, CX
-	TESTQ   CX, CX
-	JNE     LBB5_76
+LBB5_35:
+	BSFW    AX, AX
+	MOVWLZX AX, R13
+	SUBQ    CX, R13
+	MOVQ    -72(BP), R15
+	MOVQ    -48(BP), R8
+	MOVQ    -64(BP), R14
+	MOVQ    -56(BP), R9
 	JMP     LBB5_77
 
-LBB5_96:
-	QUAD $0xfffff82f0d6f7ec5     // vmovdqu      $-2001(%rip), %ymm9  /* LCPI5_0(%rip) */
-	QUAD $0xfffff847156f7ec5     // vmovdqu      $-1977(%rip), %ymm10  /* LCPI5_1(%rip) */
-	QUAD $0xfffff85f1d6f7ec5     // vmovdqu      $-1953(%rip), %ymm11  /* LCPI5_2(%rip) */
-	LONG $0x763d41c4; BYTE $0xc0 // vpcmpeqd     %ymm8, %ymm8, %ymm8
-	MOVQ DX, SI
-	MOVQ R10, BX
+LBB5_36:
+	MOVQ R13, R11
+	MOVQ R14, CX
+	MOVQ DX, R9
+	CMPQ CX, $8
+	JB   LBB5_38
 
-LBB5_97:
+LBB5_51:
+	MOVQ 0(R11), AX
+	MOVQ AX, 0(SI)
+	ADDQ $8, R11
+	ADDQ $8, SI
+	ADDQ $-8, CX
+	CMPQ CX, $4
+	JAE  LBB5_52
+
+LBB5_39:
+	CMPQ CX, $2
+	JB   LBB5_40
+
+LBB5_53:
+	MOVWLZX 0(R11), AX
+	MOVW    AX, 0(SI)
+	ADDQ    $2, R11
+	ADDQ    $2, SI
+	ADDQ    $-2, CX
+	TESTQ   CX, CX
+	JNE     LBB5_41
+	JMP     LBB5_42
+
+LBB5_44:
+	MOVQ R13, BX
+	MOVQ R9, CX
+	MOVQ -64(BP), R14
+	MOVQ $12884901889, R11
+	CMPQ CX, $8
+	JB   LBB5_46
+
+LBB5_54:
+	MOVQ 0(BX), AX
+	MOVQ AX, 0(SI)
+	ADDQ $8, BX
+	ADDQ $8, SI
+	ADDQ $-8, CX
+	CMPQ CX, $4
+	JAE  LBB5_55
+
+LBB5_47:
+	CMPQ CX, $2
+	JB   LBB5_48
+
+LBB5_56:
+	MOVWLZX 0(BX), AX
+	MOVW    AX, 0(SI)
+	ADDQ    $2, BX
+	ADDQ    $2, SI
+	ADDQ    $-2, CX
+	TESTQ   CX, CX
+	JNE     LBB5_49
+	JMP     LBB5_50
+
+LBB5_57:
+	CMPL R9, $8
+	MOVQ -72(BP), R15
+	JB   LBB5_71
+	MOVQ AX, 0(SI)
+	LEAQ 8(R13), R11
+	ADDQ $8, SI
+	LEAQ -8(R9), CX
+	JMP  LBB5_72
+
+LBB5_59:
+	MOVQ -48(BP), R8
+	MOVQ -56(BP), R9
+
+LBB5_60:
+	MOVQ  $12884901889, R11
+	TESTQ R15, R15
+	JE    LBB5_63
+	NOTQ  R13
+	ADDQ  R9, R13
+	JMP   LBB5_64
+
+LBB5_62:
+	SUBQ R9, R13
+	SUBQ CX, R13
+	MOVQ -72(BP), R15
+	MOVQ -48(BP), R8
+	JMP  LBB5_77
+
+LBB5_63:
+	SUBQ R9, R13
+
+LBB5_64:
+	MOVQ -72(BP), R15
+	JMP  LBB5_78
+
+LBB5_65:
+	MOVQ R13, R9
+	MOVQ R8, CX
+
+LBB5_66:
+	CMPQ CX, $4
+	JB   LBB5_67
+	MOVL 0(R9), AX
+	MOVL AX, 0(SI)
+	ADDQ $4, R9
+	ADDQ $4, SI
+	ADDQ $-4, CX
+	CMPQ CX, $2
+	JAE  LBB5_92
+
+LBB5_68:
+	TESTQ CX, CX
+	JE    LBB5_70
+
+LBB5_69:
+	MOVB 0(R9), AX
+	MOVB AX, 0(SI)
+
+LBB5_70:
+	ADDQ R13, R8
+	NOTQ R8
+	MOVQ -56(BP), R9
+	ADDQ R9, R8
+	MOVQ R8, R13
+	MOVQ -48(BP), R8
+
+LBB5_78:
+	TESTQ R13, R13
+	JS    LBB5_120
+	ADDQ  R13, R12
+	CMPQ  R8, R13
+	JE    LBB5_116
+	SUBQ  R13, R10
+	JMP   LBB5_82
+
+LBB5_81:
+	ADDQ CX, R12
+	ADDQ $1, R13
+	CMPQ R8, R13
+	JE   LBB5_116
+
+LBB5_82:
+	MOVBLZX 0(R9)(R13*1), DX
+	SHLQ    $4, DX
+	MOVQ    0(R14)(DX*1), AX
+	TESTL   AX, AX
+	JE      LBB5_90
+	MOVLQSX AX, CX
+	SUBQ    CX, R10
+	JL      LBB5_118
+	SHLQ    $32, AX
+	LEAQ    0(R14)(DX*1), SI
+	ADDQ    $8, SI
+	CMPQ    AX, R11
+	JL      LBB5_86
+	MOVL    0(SI), AX
+	MOVL    AX, 0(R12)
+	LEAQ    0(R14)(DX*1), SI
+	ADDQ    $12, SI
+	LEAQ    4(R12), BX
+	LEAQ    -4(CX), DX
+	CMPQ    DX, $2
+	JGE     LBB5_87
+	JMP     LBB5_88
+
+LBB5_86:
+	MOVQ R12, BX
+	MOVQ CX, DX
+	CMPQ DX, $2
+	JL   LBB5_88
+
+LBB5_87:
+	MOVWLZX 0(SI), AX
+	MOVW    AX, 0(BX)
+	ADDQ    $2, SI
+	ADDQ    $2, BX
+	ADDQ    $-2, DX
+
+LBB5_88:
+	TESTQ   DX, DX
+	JLE     LBB5_81
+	MOVBLZX 0(SI), AX
+	MOVB    AX, 0(BX)
+	JMP     LBB5_81
+
+LBB5_90:
+	LEAQ 0(R9)(R13*1), AX
+	SUBQ R13, R8
+	JNE  LBB5_3
+	JMP  LBB5_116
+
+LBB5_67:
+	CMPQ CX, $2
+	JB   LBB5_68
+
+LBB5_92:
+	MOVWLZX 0(R9), AX
+	MOVW    AX, 0(SI)
+	ADDQ    $2, R9
+	ADDQ    $2, SI
+	ADDQ    $-2, CX
+	TESTQ   CX, CX
+	JNE     LBB5_69
+	JMP     LBB5_70
+
+LBB5_71:
+	MOVQ R13, R11
+	MOVQ R9, CX
+
+LBB5_72:
+	MOVQ -48(BP), R8
+	CMPQ CX, $4
+	JB   LBB5_73
+	MOVL 0(R11), AX
+	MOVL AX, 0(SI)
+	ADDQ $4, R11
+	ADDQ $4, SI
+	ADDQ $-4, CX
+	CMPQ CX, $2
+	JAE  LBB5_94
+
+LBB5_74:
+	TESTQ CX, CX
+	JE    LBB5_76
+
+LBB5_75:
+	MOVB 0(R11), AX
+	MOVB AX, 0(SI)
+
+LBB5_76:
+	MOVQ -56(BP), AX
+	SUBQ AX, R13
+	ADDQ R9, R13
+	MOVQ AX, R9
+	JMP  LBB5_77
+
+LBB5_73:
+	CMPQ CX, $2
+	JB   LBB5_74
+
+LBB5_94:
+	MOVWLZX 0(R11), AX
+	MOVW    AX, 0(SI)
+	ADDQ    $2, R11
+	ADDQ    $2, SI
+	ADDQ    $-2, CX
+	TESTQ   CX, CX
+	JNE     LBB5_75
+	JMP     LBB5_76
+
+LBB5_95:
+	QUAD $0xfffff8630d6f7ec5                   // vmovdqu      $-1949(%rip), %ymm9  /* LCPI5_0(%rip) */
+	QUAD $0xfffff87b156f7ec5                   // vmovdqu      $-1925(%rip), %ymm10  /* LCPI5_1(%rip) */
+	QUAD $0xfffff8931d6f7ec5                   // vmovdqu      $-1901(%rip), %ymm11  /* LCPI5_2(%rip) */
+	LONG $0x763d41c4; BYTE $0xc0               // vpcmpeqd     %ymm8, %ymm8, %ymm8
+	LONG $0x740d8d4c; WORD $0x00c2; BYTE $0x00 // leaq         $49780(%rip), %r9  /* __EscTab(%rip) */
+	MOVQ DX, SI
+	MOVQ R8, BX
+
+LBB5_96:
 	CMPQ BX, $32
-	JL   LBB5_102
+	JL   LBB5_101
 	MOVQ BX, CX
 	NEGQ CX
 	ADDQ $32, BX
 
-LBB5_99:
+LBB5_98:
 	LONG  $0x076ffec5             // vmovdqu      (%rdi), %ymm0
 	LONG  $0xc864b5c5             // vpcmpgtb     %ymm0, %ymm9, %ymm1
 	LONG  $0xd074adc5             // vpcmpeqb     %ymm0, %ymm10, %ymm2
@@ -2075,33 +2058,33 @@ LBB5_99:
 	LONG  $0xc0ebedc5             // vpor         %ymm0, %ymm2, %ymm0
 	LONG  $0xc0d7fdc5             // vpmovmskb    %ymm0, %eax
 	TESTL AX, AX
-	JNE   LBB5_111
+	JNE   LBB5_110
 	ADDQ  $32, DI
 	ADDQ  $32, SI
 	ADDQ  $32, CX
 	ADDQ  $-32, BX
 	CMPQ  BX, $63
-	JG    LBB5_99
+	JG    LBB5_98
 	NEGQ  CX
 	MOVQ  CX, BX
 
-LBB5_102:
+LBB5_101:
 	WORD $0xf8c5; BYTE $0x77     // vzeroupper
 	CMPQ BX, $16
-	JL   LBB5_107
+	JL   LBB5_106
 	MOVQ BX, CX
 	NEGQ CX
 	ADDQ $16, BX
-	QUAD $0xfffff7980d6f7ec5     // vmovdqu      $-2152(%rip), %ymm9  /* LCPI5_0(%rip) */
-	QUAD $0xfffff7b0156f7ec5     // vmovdqu      $-2128(%rip), %ymm10  /* LCPI5_1(%rip) */
-	QUAD $0xfffff7c81d6f7ec5     // vmovdqu      $-2104(%rip), %ymm11  /* LCPI5_2(%rip) */
+	QUAD $0xfffff7c50d6f7ec5     // vmovdqu      $-2107(%rip), %ymm9  /* LCPI5_0(%rip) */
+	QUAD $0xfffff7dd156f7ec5     // vmovdqu      $-2083(%rip), %ymm10  /* LCPI5_1(%rip) */
+	QUAD $0xfffff7f51d6f7ec5     // vmovdqu      $-2059(%rip), %ymm11  /* LCPI5_2(%rip) */
 	LONG $0x763d41c4; BYTE $0xc0 // vpcmpeqd     %ymm8, %ymm8, %ymm8
-	QUAD $0xfffff7db3d6ffac5     // vmovdqu      $-2085(%rip), %xmm7  /* LCPI5_3(%rip) */
-	QUAD $0xfffff7e3256ffac5     // vmovdqu      $-2077(%rip), %xmm4  /* LCPI5_4(%rip) */
-	QUAD $0xfffff7eb2d6ffac5     // vmovdqu      $-2069(%rip), %xmm5  /* LCPI5_5(%rip) */
+	QUAD $0xfffff8083d6ffac5     // vmovdqu      $-2040(%rip), %xmm7  /* LCPI5_3(%rip) */
+	QUAD $0xfffff810256ffac5     // vmovdqu      $-2032(%rip), %xmm4  /* LCPI5_4(%rip) */
+	QUAD $0xfffff8182d6ffac5     // vmovdqu      $-2024(%rip), %xmm5  /* LCPI5_5(%rip) */
 	LONG $0xf676c9c5             // vpcmpeqd     %xmm6, %xmm6, %xmm6
 
-LBB5_104:
+LBB5_103:
 	LONG  $0x076ffac5 // vmovdqu      (%rdi), %xmm0
 	LONG  $0xc864c1c5 // vpcmpgtb     %xmm0, %xmm7, %xmm1
 	LONG  $0xd474f9c5 // vpcmpeqb     %xmm4, %xmm0, %xmm2
@@ -2113,66 +2096,64 @@ LBB5_104:
 	LONG  $0xc0ebe9c5 // vpor         %xmm0, %xmm2, %xmm0
 	LONG  $0xc0d7f9c5 // vpmovmskb    %xmm0, %eax
 	TESTL AX, AX
-	JNE   LBB5_112
+	JNE   LBB5_111
 	ADDQ  $16, DI
 	ADDQ  $16, SI
 	ADDQ  $16, CX
 	ADDQ  $-16, BX
 	CMPQ  BX, $31
-	JG    LBB5_104
+	JG    LBB5_103
 	NEGQ  CX
 	MOVQ  CX, BX
-	JMP   LBB5_108
+	JMP   LBB5_107
 
-LBB5_107:
-	QUAD $0xfffff7150d6f7ec5     // vmovdqu      $-2283(%rip), %ymm9  /* LCPI5_0(%rip) */
-	QUAD $0xfffff72d156f7ec5     // vmovdqu      $-2259(%rip), %ymm10  /* LCPI5_1(%rip) */
-	QUAD $0xfffff7451d6f7ec5     // vmovdqu      $-2235(%rip), %ymm11  /* LCPI5_2(%rip) */
+LBB5_106:
+	QUAD $0xfffff7420d6f7ec5     // vmovdqu      $-2238(%rip), %ymm9  /* LCPI5_0(%rip) */
+	QUAD $0xfffff75a156f7ec5     // vmovdqu      $-2214(%rip), %ymm10  /* LCPI5_1(%rip) */
+	QUAD $0xfffff7721d6f7ec5     // vmovdqu      $-2190(%rip), %ymm11  /* LCPI5_2(%rip) */
 	LONG $0x763d41c4; BYTE $0xc0 // vpcmpeqd     %ymm8, %ymm8, %ymm8
 
-LBB5_108:
+LBB5_107:
 	TESTQ BX, BX
-	JLE   LBB5_116
+	JLE   LBB5_115
 
-LBB5_109:
+LBB5_108:
 	MOVBLZX 0(DI), AX
-	MOVQ    AX, CX
-	SHLQ    $4, CX
-	CMPQ    0(CX)(R8*1), $0
-	JNE     LBB5_114
+	CMPB    0(AX)(R9*1), $0
+	JNE     LBB5_113
 	LEAQ    -1(BX), CX
 	ADDQ    $1, DI
 	MOVB    AX, 0(SI)
 	ADDQ    $1, SI
 	CMPQ    BX, $1
 	MOVQ    CX, BX
-	JG      LBB5_109
-	JMP     LBB5_116
+	JG      LBB5_108
+	JMP     LBB5_115
+
+LBB5_110:
+	BSFL AX, AX
+	JMP  LBB5_112
 
 LBB5_111:
-	BSFL AX, AX
-	JMP  LBB5_113
-
-LBB5_112:
 	BSFW    AX, AX
 	MOVWLZX AX, AX
 
-LBB5_113:
+LBB5_112:
 	ADDQ  AX, DI
 	ADDQ  AX, CX
 	NEGQ  CX
 	ADDQ  AX, SI
 	MOVQ  CX, BX
 	TESTQ CX, CX
-	JLE   LBB5_116
+	JLE   LBB5_115
 
-LBB5_114:
+LBB5_113:
 	MOVBLZX 0(DI), CX
 	SHLQ    $4, CX
-	MOVQ    0(R15)(CX*1), AX
+	MOVQ    0(R14)(CX*1), AX
 	TESTL   AX, AX
-	JE      LBB5_97
-	MOVQ    8(R15)(CX*1), CX
+	JE      LBB5_96
+	MOVQ    8(R14)(CX*1), CX
 	MOVQ    CX, 0(SI)
 	ADDQ    $1, DI
 	LEAQ    -1(BX), CX
@@ -2180,34 +2161,34 @@ LBB5_114:
 	ADDQ    AX, SI
 	CMPQ    BX, $1
 	MOVQ    CX, BX
-	JG      LBB5_114
+	JG      LBB5_113
+
+LBB5_115:
+	SUBQ DX, SI
+	MOVQ SI, 0(R15)
+	JMP  LBB5_119
 
 LBB5_116:
-	SUBQ DX, SI
-	MOVQ SI, 0(R13)
-	JMP  LBB5_120
-
-LBB5_117:
-	ADDQ R9, R12
+	ADDQ R13, R9
 	MOVQ -80(BP), DX
 
+LBB5_117:
+	SUBQ DX, R12
+	MOVQ R12, 0(R15)
+	SUBQ DI, R9
+	MOVQ R9, R8
+	JMP  LBB5_119
+
 LBB5_118:
-	SUBQ DX, R11
-	MOVQ R11, 0(R13)
-	SUBQ DI, R12
-	MOVQ R12, R10
-	JMP  LBB5_120
+	SUBQ -80(BP), R12
+	MOVQ R12, 0(R15)
+	SUBQ R9, DI
+	NOTQ R13
+	ADDQ DI, R13
+	MOVQ R13, R8
 
 LBB5_119:
-	SUBQ -80(BP), R11
-	MOVQ R11, 0(R13)
-	SUBQ R12, DI
-	NOTQ R9
-	ADDQ DI, R9
-	MOVQ R9, R10
-
-LBB5_120:
-	MOVQ R10, AX
+	MOVQ R8, AX
 	ADDQ $40, SP
 	BYTE $0x5b               // popq         %rbx
 	WORD $0x5c41             // popq         %r12
@@ -2218,16 +2199,16 @@ LBB5_120:
 	WORD $0xf8c5; BYTE $0x77 // vzeroupper
 	RET
 
-LBB5_121:
+LBB5_120:
 	MOVQ -80(BP), AX
-	ADDQ R9, AX
+	ADDQ R13, AX
 	NOTQ AX
-	ADDQ R11, AX
-	MOVQ AX, 0(R13)
-	SUBQ R12, DI
-	ADDQ R9, DI
-	MOVQ DI, R10
-	JMP  LBB5_120
+	ADDQ R12, AX
+	MOVQ AX, 0(R15)
+	SUBQ R9, DI
+	ADDQ R13, DI
+	MOVQ DI, R8
+	JMP  LBB5_119
 
 LCPI6_0:
 	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
@@ -2366,7 +2347,7 @@ LBB6_41:
 LBB6_43:
 	ADDQ    R14, R8
 	MOVBLZX -1(R11), AX
-	LONG    $0xca0d8d48; WORD $0x00be; BYTE $0x00 // leaq         $48842(%rip), %rcx  /* __UnquoteTab(%rip) */
+	LONG    $0xca0d8d48; WORD $0x00bf; BYTE $0x00 // leaq         $49098(%rip), %rcx  /* __UnquoteTab(%rip) */
 	MOVB    0(AX)(CX*1), AX
 	CMPB    AX, $-1
 	JE      LBB6_46
@@ -3177,7 +3158,7 @@ _html_escape:
 	QUAD  $0xffffff1d256ffec5                   // vmovdqu      $-227(%rip), %ymm4  /* LCPI7_1(%rip) */
 	QUAD  $0xffffff352d6ffec5                   // vmovdqu      $-203(%rip), %ymm5  /* LCPI7_2(%rip) */
 	QUAD  $0xffffff4d356ffec5                   // vmovdqu      $-179(%rip), %ymm6  /* LCPI7_3(%rip) */
-	LONG  $0x45358d4c; WORD $0x00b4; BYTE $0x00 // leaq         $46149(%rip), %r14  /* __HtmlQuoteTab(%rip) */
+	LONG  $0x45358d4c; WORD $0x00b5; BYTE $0x00 // leaq         $46405(%rip), %r14  /* __HtmlQuoteTab(%rip) */
 	MOVQ  -48(BP), R11
 	MOVQ  -56(BP), R15
 
@@ -3386,7 +3367,7 @@ LBB7_58:
 	CMPQ R13, AX
 	JGE  LBB7_59
 	CMPQ R13, $8
-	LONG $0x55358d4c; WORD $0x00b1; BYTE $0x00 // leaq         $45397(%rip), %r14  /* __HtmlQuoteTab(%rip) */
+	LONG $0x55358d4c; WORD $0x00b2; BYTE $0x00 // leaq         $45653(%rip), %r14  /* __HtmlQuoteTab(%rip) */
 	JB   LBB7_70
 	MOVQ CX, 0(R8)
 	LEAQ 8(R12), AX
@@ -3519,7 +3500,7 @@ LBB7_22:
 
 LBB7_59:
 	CMPL AX, $8
-	LONG $0xd4358d4c; WORD $0x00af; BYTE $0x00 // leaq         $45012(%rip), %r14  /* __HtmlQuoteTab(%rip) */
+	LONG $0xd4358d4c; WORD $0x00b0; BYTE $0x00 // leaq         $45268(%rip), %r14  /* __HtmlQuoteTab(%rip) */
 	JB   LBB7_60
 	MOVQ CX, 0(R8)
 	LEAQ 8(R12), R10
@@ -3616,7 +3597,7 @@ LBB7_57:
 	SUBQ R11, R12
 
 LBB7_82:
-	LONG $0xfe358d4c; WORD $0x00ae; BYTE $0x00 // leaq         $44798(%rip), %r14  /* __HtmlQuoteTab(%rip) */
+	LONG $0xfe358d4c; WORD $0x00af; BYTE $0x00 // leaq         $45054(%rip), %r14  /* __HtmlQuoteTab(%rip) */
 
 LBB7_83:
 	TESTQ R12, R12
@@ -5817,7 +5798,7 @@ LBB15_61:
 	CMPL  SI, $23
 	JL    LBB15_70
 	LEAL  -22(SI), AX
-	LONG  $0x740d8d48; WORD $0x00be; BYTE $0x00 // leaq         $48756(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG  $0x740d8d48; WORD $0x00bf; BYTE $0x00 // leaq         $49012(%rip), %rcx  /* _P10_TAB(%rip) */
 	LONG  $0x0459fbc5; BYTE $0xc1               // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
 	LONG  $0x4511fbc5; BYTE $0xc0               // vmovsd       %xmm0, $-64(%rbp)
 	MOVL  $22, AX
@@ -5827,7 +5808,7 @@ LBB15_67:
 	CMPL SI, $-22
 	JB   LBB15_74
 	NEGL SI
-	LONG $0x55058d48; WORD $0x00be; BYTE $0x00 // leaq         $48725(%rip), %rax  /* _P10_TAB(%rip) */
+	LONG $0x55058d48; WORD $0x00bf; BYTE $0x00 // leaq         $48981(%rip), %rax  /* _P10_TAB(%rip) */
 	LONG $0x045efbc5; BYTE $0xf0               // vdivsd       (%rax,%rsi,8), %xmm0, %xmm0
 	LONG $0x4511fbc5; BYTE $0xc0               // vmovsd       %xmm0, $-64(%rbp)
 	JMP  LBB15_78
@@ -5842,7 +5823,7 @@ LBB15_71:
 	LONG $0xc82ef9c5                           // vucomisd     %xmm0, %xmm1
 	JA   LBB15_74
 	MOVL AX, AX
-	LONG $0x260d8d48; WORD $0x00be; BYTE $0x00 // leaq         $48678(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0x260d8d48; WORD $0x00bf; BYTE $0x00 // leaq         $48934(%rip), %rcx  /* _P10_TAB(%rip) */
 	LONG $0x0459fbc5; BYTE $0xc1               // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
 	LONG $0x4511fbc5; BYTE $0xc0               // vmovsd       %xmm0, $-64(%rbp)
 	JMP  LBB15_78
@@ -7139,8 +7120,8 @@ _utf8_validate:
 	MOVQ  $-1, AX
 	TESTQ SI, SI
 	JLE   LBB24_35
-	LONG  $0xda058d4c; WORD $0x00af; BYTE $0x00 // leaq         $45018(%rip), %r8  /* _first(%rip) */
-	LONG  $0xd30d8d4c; WORD $0x00b0; BYTE $0x00 // leaq         $45267(%rip), %r9  /* _ranges(%rip) */
+	LONG  $0xda058d4c; WORD $0x00b0; BYTE $0x00 // leaq         $45274(%rip), %r8  /* _first(%rip) */
+	LONG  $0xd30d8d4c; WORD $0x00b1; BYTE $0x00 // leaq         $45523(%rip), %r9  /* _ranges(%rip) */
 	LONG  $0x84158d4c; WORD $0x0001; BYTE $0x00 // leaq         $388(%rip), %r10  /* LJTI24_0(%rip) */
 	MOVQ  DI, R11
 
@@ -8122,7 +8103,7 @@ _left_shift:
 	BYTE    $0x53                                 // pushq        %rbx
 	MOVL    SI, CX
 	IMUL3Q  $104, CX, R14
-	LONG    $0xcb158d48; WORD $0x008a; BYTE $0x00 // leaq         $35531(%rip), %rdx  /* _LSHIFT_TAB(%rip) */
+	LONG    $0xcb158d48; WORD $0x008b; BYTE $0x00 // leaq         $35787(%rip), %rdx  /* _LSHIFT_TAB(%rip) */
 	MOVL    0(R14)(DX*1), R8
 	MOVQ    0(DI), R11
 	MOVLQSX 16(DI), R9
@@ -11789,6 +11770,25 @@ __DoubleQuoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
+__EscTab:
+	QUAD $0x0101010101010101; QUAD $0x0101010101010101     // .ascii 16, '\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+	QUAD $0x0101010101010101; QUAD $0x0101010101010101     // .ascii 16, '\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+	QUAD $0x0000000000010000; QUAD $0x0000000000000000     // .ascii 16, '\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; LONG $0x00000000; BYTE $0x01 // .ascii 13, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+	WORD $0x0000; BYTE $0x00                               // .space 3, '\x00\x00\x00'
+
 __UnquoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -12649,7 +12649,7 @@ _html_escape:
 	MOVQ nb+8(FP), SI
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
-	CALL ·__native_entry__+10528(SB) // _html_escape
+	CALL ·__native_entry__+10472(SB) // _html_escape
 	MOVQ AX, ret+32(FP)
 	RET
 
@@ -12754,7 +12754,7 @@ _skip_array:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+21082(SB) // _skip_array
+	CALL ·__native_entry__+21026(SB) // _skip_array
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -12774,7 +12774,7 @@ _entry:
 _skip_number:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
-	CALL ·__native_entry__+24553(SB) // _skip_number
+	CALL ·__native_entry__+24497(SB) // _skip_number
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -12795,7 +12795,7 @@ _skip_object:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+21119(SB) // _skip_object
+	CALL ·__native_entry__+21063(SB) // _skip_object
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -12816,7 +12816,7 @@ _skip_one:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+19310(SB) // _skip_one
+	CALL ·__native_entry__+19254(SB) // _skip_one
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -12859,7 +12859,7 @@ _unquote:
 	MOVQ dp+16(FP), DX
 	MOVQ ep+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+7278(SB) // _unquote
+	CALL ·__native_entry__+7222(SB) // _unquote
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -12880,7 +12880,7 @@ _validate_one:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+24670(SB) // _validate_one
+	CALL ·__native_entry__+24614(SB) // _validate_one
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -12903,7 +12903,7 @@ _value:
 	MOVQ p+16(FP), DX
 	MOVQ v+24(FP), CX
 	MOVQ allow_control+32(FP), R8
-	CALL ·__native_entry__+14359(SB) // _value
+	CALL ·__native_entry__+14303(SB) // _value
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -12924,7 +12924,7 @@ _vnumber:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+17423(SB), AX // _vnumber
+	LEAQ ·__native_entry__+17367(SB), AX // _vnumber
 	JMP  AX
 
 _stack_grow:
@@ -12944,7 +12944,7 @@ _vsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+18728(SB), AX // _vsigned
+	LEAQ ·__native_entry__+18672(SB), AX // _vsigned
 	JMP  AX
 
 _stack_grow:
@@ -12964,7 +12964,7 @@ _vstring:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+16519(SB), AX // _vstring
+	LEAQ ·__native_entry__+16463(SB), AX // _vstring
 	JMP  AX
 
 _stack_grow:
@@ -12984,7 +12984,7 @@ _vunsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+19008(SB), AX // _vunsigned
+	LEAQ ·__native_entry__+18952(SB), AX // _vunsigned
 	JMP  AX
 
 _stack_grow:
