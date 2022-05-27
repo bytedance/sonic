@@ -18,10 +18,10 @@
 #include <stdint.h>
 
 /** String Quoting **/
-
+#define MAX_ESCAPED_BYTES 8
 typedef struct {
     const long n;
-    const char s[8];
+    const char s[MAX_ESCAPED_BYTES];
 } quoted_t;
 
 static const quoted_t _SingleQuoteTab[256] = {
@@ -258,7 +258,6 @@ static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp,
     size_t cn = 0;
 
 simd_copy:
-
 #if USE_AVX2
     /* 32-byte loop, full store */
     while (nb >= 32) {
@@ -330,7 +329,10 @@ escape:
             goto simd_copy;
         }
 
-        /* copy the quoted value */
+        /* copy the quoted value.
+         * Note: dp always has at least 8 bytes (MAX_ESCAPED_BYTES) here.
+         * so, we not use memcpy_p8(dp, tab[ch].s, nc);
+         */
         *(uint64_t *)dp = *(const uint64_t *)tab[ch].s;
         sp++;
         nb--;
@@ -344,18 +346,15 @@ ssize_t quote(const char *sp, ssize_t nb, char *dp, ssize_t *dn, uint64_t flags)
     const char *     ds = dp;
     const char *     ss = sp;
     const quoted_t * tab;
-    size_t max_size = 0;
 
     /* select quoting table */
     if (!(flags & F_DBLUNQ)) {
         tab = _SingleQuoteTab;
-        max_size = nb * 6;
     } else {
         tab = _DoubleQuoteTab;
-        max_size = nb * 7;
     }
 
-    if (dn >= max_size) {
+    if (*dn >= nb * MAX_ESCAPED_BYTES) {
         *dn = memcchr_quote_unsafe(sp, nb, dp, tab);
         return nb;
     }
@@ -925,3 +924,5 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
     *dn = dp - ds;
     return sp - ss;
 }
+
+#undef MAX_ESCAPED_BYTES
