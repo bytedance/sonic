@@ -262,13 +262,21 @@ static const bool _EscTab[256] = {
     // 0x60-0xFF are zeroes
 };
 
+static inline uint8_t escape_mask4(const char *sp) {
+    return _EscTab[*(uint8_t *)(sp)] | (_EscTab[*(uint8_t *)(sp + 1)] << 1) | (_EscTab[*(uint8_t *)(sp + 2)] << 2) | (_EscTab[*(uint8_t *)(sp + 3)]  << 3);
+}
+
 static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
     uint32_t     mm;
     const char * ss = sp;
     const char * ds = dp;
     size_t cn = 0;
+    uint8_t ch;
 
 simd_copy:
+
+    if (nb < 16) goto scalar_copy;
+
 #if USE_AVX2
     /* 32-byte loop, full store */
     while (nb >= 32) {
@@ -317,29 +325,62 @@ simd_copy:
     }
 
     /* handle the remaining bytes with scalar code */
-    while (nb > 0) {
-        if (_EscTab[*(uint8_t *)sp]) {
+    // while (nb > 0) {
+    //     if (_EscTab[*(uint8_t *)sp]) {
+    //         goto escape;
+    //     } else {
+    //         nb--;
+    //         *dp++ = *sp++;
+    //     }
+    // }
+    // optimize: loop unrolling here
+
+scalar_copy:
+    if (nb >= 8) {
+        uint8_t mask1 = escape_mask4(sp);
+        *(uint64_t *)dp = *(const uint64_t *)sp;
+        if (unlikely(mask1)) {
+            cn =  __builtin_ctz(mask1);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
             goto escape;
-        } else {
-            nb--;
-            *dp++ = *sp++;
         }
+        uint8_t mask2 = escape_mask4(sp + 4);
+        if (unlikely(mask2)) {
+            cn =  __builtin_ctz(mask2);
+            sp += cn + 4;
+            nb -= cn + 4;
+            dp += cn + 4;
+            goto escape;
+        }
+        dp += 8, sp += 8, nb -= 8;
     }
 
+    if (nb >= 4) {
+        uint8_t mask2 = escape_mask4(sp);
+        *(uint32_t *)dp = *(const uint32_t *)sp;
+        if (unlikely(mask2)) {
+            cn =  __builtin_ctz(mask2);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
+            goto escape;
+        }
+        dp += 4, sp += 4, nb -= 4;
+    }
+
+    while (nb > 0) {
+        if (unlikely(_EscTab[*(uint8_t *)(sp)])) goto escape;
+        *dp++ = *sp++, nb--;
+    }
     /* all quote done */
     return dp - ds;
-
 escape:
      /* get the escape entry, handle consecutive quotes */
-    while (nb > 0) {
+     do {
         uint8_t ch = *(uint8_t *)sp;
         int nc = tab[ch].n;
-
-        /* copy and find escape chars */
-        if (nc == 0) {
-            goto simd_copy;
-        }
-
         /* copy the quoted value.
          * Note: dp always has at least 8 bytes (MAX_ESCAPED_BYTES) here.
          * so, we not use memcpy_p8(dp, tab[ch].s, nc);
@@ -348,7 +389,12 @@ escape:
         sp++;
         nb--;
         dp += nc;
-    };
+        if (nb <= 0) break;
+        /* copy and find escape chars */
+        if (_EscTab[*(uint8_t *)(sp)] == 0) {
+            goto simd_copy;
+        }
+    } while (true);
     return dp - ds;
 }
 
