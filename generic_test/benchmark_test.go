@@ -78,7 +78,7 @@ func runUnmarshal(b *testing.B) {
 			run := func(b *testing.B) {
 				val = tt.new()
 				if err := lib.unmarshal(tt.data, val); err != nil {
-					b.Fatalf("Unmarshal error: %v", err)
+					b.Fatalf("%s Unmarshal error: %v", lib.name, err)
 				}
 			}
 
@@ -91,7 +91,7 @@ func runUnmarshal(b *testing.B) {
 					panic(err)
 				}
 				if !reflect.DeepEqual(val1, val2) {
-					b.Fatalf("Unmarshal output mismatch:\ngot  %v\nwant %v", val2, val1)
+					b.Fatalf("%s Unmarshal output mismatch:\ngot  %v\nwant %v", lib.name, val2, val1)
 				}
 			}
 
@@ -119,29 +119,29 @@ func runMarshal(b *testing.B) {
 
 			run := func(b *testing.B) {
 				if _, err := lib.marshal(tt.val); err != nil {
-					b.Fatalf("Marshal error: %v", err)
+					b.Fatalf("%s Marshal error: %v", lib.name, err)
 				}
 			}
 
 			valid := func(b *testing.B) {
 				// some details are different with encoding/json, so we compare the unmarshal results from marshaled buffer
-				var stdbuf, sonicbuf []byte
-				stdbuf, err := lib.marshal(tt.val)
+				var buf1, buf2 []byte
+				buf1, err := json.Marshal(tt.val)
 				if err != nil {
 					b.Fatalf("encoding/json Marshal error: %v", err)
 				}
-				sonicbuf, err = json.Marshal(tt.val); 
+				buf2, err = lib.marshal(tt.val); 
 				if err != nil {
-					b.Fatalf("sonic Marshal error: %v", err)
+					b.Fatalf("%s Marshal error: %v", lib.name, err)
 				}
-				var stdv, sonicv any = tt.new(), tt.new()
-				if err := json.Unmarshal(stdbuf, stdv); err != nil {
+				var val1, val2 = tt.new(), tt.new()
+				if err := json.Unmarshal(buf1, val1); err != nil {
 					b.Fatalf("encoding/json Unmarshal again error: %v", err)
 				}
-				if err := lib.unmarshal(sonicbuf, sonicv); err != nil {
-					b.Fatalf("sonic Unmarshal again error: %v", err)
+				if err := lib.unmarshal(buf2, val2); err != nil {
+					b.Fatalf("%s Unmarshal again error: %v", lib.name, err)
 				}
-				if !reflect.DeepEqual(stdv, sonicv) {
+				if !reflect.DeepEqual(val1, val2) {
 					b.Fatalf("Unmarshal again output mismatch\n")
 				}
 			}
