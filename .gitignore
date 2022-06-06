@@ -46,3 +46,5 @@ junit.xml
 *.out
 ast/test.out
 ast/bench.sh
+
+!testdata/*.json.gz
