@@ -25,3 +25,4 @@ jobs:
       
       - name: Generic Test
         run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./generic_test
+        run: GOMAXPROCS=1 go test -benchmem -run=^$ -bench . -v ./generic_test

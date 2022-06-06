@@ -19,6 +19,7 @@
 package generic_test
 
 import(
+	`os`
 	`testing`
 	`reflect`
 	`fmt`
@@ -32,9 +33,10 @@ import(
 	jsonv2 `github.com/go-json-experiment/json`
 )
 
+var validFlag = os.Getenv("SONIC_VALID_GENERIC_BENCH")  != ""
 type jsonLibEntry struct {
-	name string
-	marshal  func(any) ([]byte, error)
+	name      string
+	marshal   func(any) ([]byte, error)
 	unmarshal func([]byte, any) error
 }
 
@@ -147,7 +149,9 @@ func runMarshal(b *testing.B) {
 			name := fmt.Sprintf("%s_%s", tt.name, lib.name)
 			b.Run(name, func(b *testing.B) {
 				pretouch()
-				valid(b)
+				if (validFlag) {
+					valid(b)
+				}
 				b.ResetTimer()
 				b.ReportAllocs()
 				b.SetBytes(int64(len(tt.data)))
