@@ -24,16 +24,17 @@ import(
 	`reflect`
 	`fmt`
 	`github.com/bytedance/sonic`
-	`github.com/bytedance/sonic/encoder`
-	`github.com/bytedance/sonic/decoder`
-	`github.com/bytedance/sonic/internal/rt`
 	`encoding/json`
 	gojson `github.com/goccy/go-json`
 	jsoniter `github.com/json-iterator/go`
 	jsonv2 `github.com/go-json-experiment/json`
 )
 
-var validFlag = os.Getenv("SONIC_VALID_GENERIC_BENCH")  != ""
+var (
+	validFlag = os.Getenv("SONIC_VALID_GENERIC_BENCH")  != ""
+	pretouchFlag = os.Getenv("SONIC_NO_PRETOUCH_BENCH") == ""
+)
+
 type jsonLibEntry struct {
 	name      string
 	marshal   func(any) ([]byte, error)
@@ -41,22 +42,21 @@ type jsonLibEntry struct {
 }
 
 func sonicMarshalStd(v any) ([]byte, error) {
-	return encoder.Encode(v, encoder.CompatibleWithStd)
+	return sonic.ConfigStd.Marshal(v)
 }
 
-func sonicUnmarshalCopy(data []byte, v any) error {
-	dc := decoder.NewDecoder(rt.Mem2Str(data))
-	dc.CopyString()
-	return dc.Decode(&v)
+func sonicUnmarshalStd(data []byte, v any) error {
+	return sonic.ConfigStd.Unmarshal(data, v)
 }
 
 var jsonLibs = []jsonLibEntry {
 	{"Std", json.Marshal, json.Unmarshal},
-	{"JsonV2", jsonv2.Marshal, jsonv2.Unmarshal},
+	{"StdV2", jsonv2.Marshal, jsonv2.Unmarshal},
 	{"Sonic", sonic.Marshal, sonic.Unmarshal},
-	{"SonicStd", sonicMarshalStd, sonicUnmarshalCopy},
+	{"SonicStd", sonicMarshalStd, sonicUnmarshalStd},
 	{"GoJson", gojson.Marshal, gojson.Unmarshal},
 	{"JsonIter", jsoniter.Marshal, jsoniter.Unmarshal},
+	{"JsonIterStd", jsoniter.ConfigCompatibleWithStandardLibrary.Marshal, jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal},
 }
 
 func BenchmarkUnmarshal(b *testing.B)     { 
@@ -97,7 +97,9 @@ func runUnmarshal(b *testing.B) {
 
 			name := fmt.Sprintf("%s_%s", tt.name, lib.name)
 			b.Run(name, func(b *testing.B) {
-				pretouch()
+				if pretouchFlag {
+					pretouch()
+				}
 				valid(b)
 				b.ResetTimer()
 				b.ReportAllocs()
@@ -148,7 +150,9 @@ func runMarshal(b *testing.B) {
 
 			name := fmt.Sprintf("%s_%s", tt.name, lib.name)
 			b.Run(name, func(b *testing.B) {
-				pretouch()
+				if pretouchFlag {
+					pretouch()
+				}
 				if (validFlag) {
 					valid(b)
 				}
