@@ -57,6 +57,8 @@ const (
     // NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler 
     // is always escaped string and needs no quoting
     NoQuoteTextMarshaler Options = 1 << bitNoQuoteTextMarshaler
+
+    CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
 )
 
 // Encoder represents a specific set of encoder configurations.

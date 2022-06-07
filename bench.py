@@ -56,11 +56,10 @@ def compare(args):
     (fd, diff) = tempfile.mkstemp()
     run("git diff > %s"%diff)
 
-    # early return if currrent is main branch and not diff found.
-    # notice that, the new file won't be counted in.
+    # early return if currrent is main branch.
     print ("Current branch: %s"%(current_branch))
-    if current_branch == "main" and os.stat(diff).st_size == 0:
-        print ("No change found.")
+    if current_branch == "main":
+        print ("Cannot compare at the main branch.Please build a new branch")
         return None
 
     # benchmark current branch    

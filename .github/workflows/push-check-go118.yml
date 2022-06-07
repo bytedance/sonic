@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: [self-hosted, X64]
     steps:
       - uses: actions/checkout@v2
 
@@ -25,3 +25,6 @@ jobs:
       
       - name: Generic Test
         run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./generic_test
+
+      - name: Benchmark
+        run: go test -benchmem -run=^$ -bench . -v ./generic_test
