@@ -59,15 +59,23 @@ var jsonLibs = []jsonLibEntry {
 	{"JsonIterStd", jsoniter.ConfigCompatibleWithStandardLibrary.Marshal, jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal},
 }
 
-func BenchmarkUnmarshal(b *testing.B)     { 
-	runUnmarshal(b)
+func BenchmarkUnmarshalConcrete(b *testing.B)     { 
+	runUnmarshalC(b)
 }
 
-func BenchmarkMarshal(b *testing.B)     { 
-	runMarshal(b) 
+func BenchmarkUnmarshalInterface(b *testing.B)     { 
+	runUnmarshalI(b)
 }
 
-func runUnmarshal(b *testing.B) {
+func BenchmarkMarshalConcrete(b *testing.B)     { 
+	runMarshalC(b) 
+}
+
+func BenchmarkMarshalInterface(b *testing.B)     { 
+	runMarshalI(b) 
+}
+
+func runUnmarshalC(b *testing.B) {
 	for _, tt := range jsonTestdata() {
 		for _, lib := range jsonLibs {
 			var val any = tt.new()
@@ -112,7 +120,52 @@ func runUnmarshal(b *testing.B) {
 	}
 }
 
-func runMarshal(b *testing.B) {
+func runUnmarshalI(b *testing.B) {
+	for _, tt := range jsonTestdata() {
+		for _, lib := range jsonLibs {
+			var val any = tt.newI()
+			pretouch := func() {
+				_ = lib.unmarshal(tt.data, val)
+			}
+	
+			run := func(b *testing.B) {
+				val = tt.newI()
+				if err := lib.unmarshal(tt.data, val); err != nil {
+					b.Fatalf("%s Unmarshal error: %v", lib.name, err)
+				}
+			}
+
+			valid := func(b *testing.B) {
+				val1, val2 := tt.newI(), tt.newI()
+				if err := json.Unmarshal(tt.data, val1); err != nil {
+					panic(err)
+				}
+				if err := lib.unmarshal(tt.data, val2); err != nil {
+					panic(err)
+				}
+				if !reflect.DeepEqual(val1, val2) {
+					b.Fatalf("%s Unmarshal output mismatch:\ngot  %v\nwant %v", lib.name, val2, val1)
+				}
+			}
+
+			name := fmt.Sprintf("%s_%s", tt.name, lib.name)
+			b.Run(name, func(b *testing.B) {
+				if pretouchFlag {
+					pretouch()
+				}
+				valid(b)
+				b.ResetTimer()
+				b.ReportAllocs()
+				b.SetBytes(int64(len(tt.data)))
+				for i := 0; i < b.N; i++ {
+					run(b)
+				}
+			})
+		}
+	}
+}
+
+func runMarshalC(b *testing.B) {
 	for _, tt := range jsonTestdata() {
 		for _, lib := range jsonLibs {
 			pretouch := func() {
@@ -133,6 +186,61 @@ func runMarshal(b *testing.B) {
 					b.Fatalf("encoding/json Marshal error: %v", err)
 				}
 				buf2, err = lib.marshal(tt.val); 
+				if err != nil {
+					b.Fatalf("%s Marshal error: %v", lib.name, err)
+				}
+				var val1, val2 = tt.new(), tt.new()
+				if err := json.Unmarshal(buf1, val1); err != nil {
+					b.Fatalf("encoding/json Unmarshal again error: %v", err)
+				}
+				if err := lib.unmarshal(buf2, val2); err != nil {
+					b.Fatalf("%s Unmarshal again error: %v", lib.name, err)
+				}
+				if !reflect.DeepEqual(val1, val2) {
+					b.Fatalf("Unmarshal again output mismatch\n")
+				}
+			}
+
+			name := fmt.Sprintf("%s_%s", tt.name, lib.name)
+			b.Run(name, func(b *testing.B) {
+				if pretouchFlag {
+					pretouch()
+				}
+				if (validFlag) {
+					valid(b)
+				}
+				b.ResetTimer()
+				b.ReportAllocs()
+				b.SetBytes(int64(len(tt.data)))
+				for i := 0; i < b.N; i++ {
+					run(b)
+				}
+			})
+		}
+	}
+}
+
+func runMarshalI(b *testing.B) {
+	for _, tt := range jsonTestdata() {
+		for _, lib := range jsonLibs {
+			pretouch := func() {
+				_, _ = lib.marshal(tt.valI)
+			}
+
+			run := func(b *testing.B) {
+				if _, err := lib.marshal(tt.valI); err != nil {
+					b.Fatalf("%s Marshal error: %v", lib.name, err)
+				}
+			}
+
+			valid := func(b *testing.B) {
+				// some details are different with encoding/json, so we compare the unmarshal results from marshaled buffer
+				var buf1, buf2 []byte
+				buf1, err := json.Marshal(tt.valI)
+				if err != nil {
+					b.Fatalf("encoding/json Marshal error: %v", err)
+				}
+				buf2, err = lib.marshal(tt.valI); 
 				if err != nil {
 					b.Fatalf("%s Marshal error: %v", lib.name, err)
 				}

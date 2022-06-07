@@ -35,7 +35,9 @@ type jsonTestdataEntry struct {
 	name string
 	data []byte
 	val  any
+	valI any
 	new  func() any // nil if there is no concrete type for this
+	newI func() any
 }
 
 var (
@@ -95,14 +97,21 @@ func jsonTestdata() []jsonTestdataEntry {
 				newFn = func() any { return new(twitterRoot) }
 			}
 
+			var newFnI = func() any { return new(any) }
+
 			// Fill into value
 			var val any = newFn()
 			err = json.Unmarshal(data, val)
 			if err != nil {
 				panic(err)
 			}
+			var valI any = newFnI()
+			err = json.Unmarshal(data, valI)
+			if err != nil {
+				panic(err)
+			}
 						
-			jsonTestdataLazy = append(jsonTestdataLazy, jsonTestdataEntry{name, data, val, newFn})
+			jsonTestdataLazy = append(jsonTestdataLazy, jsonTestdataEntry{name, data, val, valI, newFn, newFnI})
 		}
 	})
 	return jsonTestdataLazy
