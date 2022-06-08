@@ -19,7 +19,7 @@ import os
 import subprocess
 import argparse
 
-repeat_time = 10
+repeat_time = 5
 gbench_prefix = "SONIC_NO_ASYNC_GC=1 go test -benchmem -run=none -count=%d "%(repeat_time)
 
 def run(cmd):
@@ -93,12 +93,17 @@ def main():
         help='Specify the filter for golang benchmark')
     argparser.add_argument('-c', '--compare', dest='compare', action='store_true', required=False,
         help='Compare with the main benchmarking')
+    argparser.add_argument('-t', '--times', dest='times', required=False,
+        help='benchmark the times')
     args = argparser.parse_args()
     
     if args.filter:
         gbench_args = "-bench=%s"%(args.filter)
     else:
         gbench_args = "-bench=."
+        
+    if args.times:
+        gbench_args += " -benchtime=%s"%(args.times)
 
     if args.compare:
         target = compare(gbench_args)
