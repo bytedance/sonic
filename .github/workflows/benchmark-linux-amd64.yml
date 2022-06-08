@@ -26,5 +26,5 @@ jobs:
       - name: Benchmark
         run: sh bench.sh
 
-      - name: Diff
-        run: ./bench.py -b '"^Benchmark.*Sonic"' -c
+      # - name: Diff
+      #   run: ./bench.py -b '"^Benchmark.*Sonic"' -c
