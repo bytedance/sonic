@@ -10,9 +10,9 @@ cd $pwd/decoder
 go test -benchmem -run=^$ -benchtime=100000x -bench "^(BenchmarkDecoder_.*)$"
 
 cd $pwd/ast
-go test -benchmem -run=^$ -benchtime=100000x -bench "^(BenchmarkGet.*|BenchmarkEncode.*)$"
+go test -benchmem -run=^$ -benchtime=1000000x -bench "^(BenchmarkGet.*|BenchmarkSet.*)$"
 
-go test -benchmem -run=^$ -benchtime=10000x -bench "^(BenchmarkParser_.*)$"
+go test -benchmem -run=^$ -benchtime=10000x -bench "^(BenchmarkParser_.*|BenchmarkEncode.*)$"
 
 go test -benchmem -run=^$ -benchtime=10000000x -bench "^(BenchmarkNodeGetByPath|BenchmarkStructGetByPath|BenchmarkNodeIndex|BenchmarkStructIndex|BenchmarkSliceIndex|BenchmarkMapIndex|BenchmarkNodeGet|BenchmarkSliceGet|BenchmarkMapGet|BenchmarkNodeSet|BenchmarkMapSet|BenchmarkNodeSetByIndex|BenchmarkSliceSetByIndex|BenchmarkStructSetByIndex|BenchmarkNodeUnset|BenchmarkMapUnset|BenchmarkNodUnsetByIndex|BenchmarkSliceUnsetByIndex|BenchmarkNodeAdd|BenchmarkSliceAdd|BenchmarkMapAdd)$"
 

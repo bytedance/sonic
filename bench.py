@@ -28,6 +28,16 @@ def run(cmd):
         print ("Failed to run cmd: %s"%(cmd))
         exit(1)
 
+def run_s(cmd):
+    print (cmd)
+    try:
+        res = os.popen(cmd)
+    except subprocess.CalledProcessError as e:
+        if e.returncode:
+            print (e.output)
+            exit(1)
+    return res.read()
+
 def run_r(cmd):
     print (cmd)
     try:
@@ -41,12 +51,12 @@ def run_r(cmd):
 
 def compare(args):
     # detech current branch.
-    result = run_r("git branch")
-    current_branch = None
-    for br in result.split('\n'):
-        if br.startswith("* "):
-            current_branch = br.lstrip('* ')
-            break
+    # result = run_r("git branch")
+    current_branch = run_s("git status | head -n1 | sed 's/On branch //'")
+    # for br in result.split('\n'):
+    #     if br.startswith("* "):
+    #         current_branch = br.lstrip('* ')
+    #         break
 
     if not current_branch:
         print ("Failed to detech current branch")
@@ -70,7 +80,7 @@ def compare(args):
     run("git checkout -- .")
     if current_branch != "main":
         run("git checkout main")
-    run("git pull origin main")
+    run("git pull --allow-unrelated-histories origin main")
 
     # benchmark main branch
     (fd, main) = tempfile.mkstemp(".main.txt")
@@ -93,12 +103,17 @@ def main():
         help='Specify the filter for golang benchmark')
     argparser.add_argument('-c', '--compare', dest='compare', action='store_true', required=False,
         help='Compare with the main benchmarking')
+    argparser.add_argument('-t', '--times', dest='times', required=False,
+        help='benchmark the times')
     args = argparser.parse_args()
     
     if args.filter:
         gbench_args = "-bench=%s"%(args.filter)
     else:
         gbench_args = "-bench=."
+        
+    if args.times:
+        gbench_args += " -benchtime=%s"%(args.times)
 
     if args.compare:
         target = compare(gbench_args)
