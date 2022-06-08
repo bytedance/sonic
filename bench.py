@@ -28,6 +28,16 @@ def run(cmd):
         print ("Failed to run cmd: %s"%(cmd))
         exit(1)
 
+def run_s(cmd):
+    print (cmd)
+    try:
+        res = os.popen(cmd)
+    except subprocess.CalledProcessError as e:
+        if e.returncode:
+            print (e.output)
+            exit(1)
+    return res.read()
+
 def run_r(cmd):
     print (cmd)
     try:
@@ -41,12 +51,12 @@ def run_r(cmd):
 
 def compare(args):
     # detech current branch.
-    result = run_r("git branch")
-    current_branch = None
-    for br in result.split('\n'):
-        if br.startswith("* "):
-            current_branch = br.lstrip('* ')
-            break
+    # result = run_r("git branch")
+    current_branch = run_s("git status | head -n1 | sed 's/On branch //'")
+    # for br in result.split('\n'):
+    #     if br.startswith("* "):
+    #         current_branch = br.lstrip('* ')
+    #         break
 
     if not current_branch:
         print ("Failed to detech current branch")
