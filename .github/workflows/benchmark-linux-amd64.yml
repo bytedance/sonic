@@ -4,7 +4,7 @@ on: pull_request
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: [self-hosted, X64]
     steps:
       - uses: actions/checkout@v2
 
@@ -25,3 +25,6 @@ jobs:
 
       - name: Benchmark
         run: sh bench.sh
+
+      - name: Diff
+        run: ./bench.py -b '"^Benchmark.*Sonic"' -c

@@ -144,7 +144,7 @@ func TestEncodeNode(t *testing.T) {
     }
 }
 
-func BenchmarkEncodeRaw(b *testing.B) {
+func BenchmarkEncodeRaw_Sonic(b *testing.B) {
     data := _TwitterJson
     root, e := NewSearcher(data).GetByPath()
     if e != nil {
@@ -164,7 +164,7 @@ func BenchmarkEncodeRaw(b *testing.B) {
     }
 }
 
-func BenchmarkEncodeSkip(b *testing.B) {
+func BenchmarkEncodeSkip_Sonic(b *testing.B) {
     data := _TwitterJson
     root, e := NewParser(data).Parse()
     if e != 0 {
@@ -185,7 +185,7 @@ func BenchmarkEncodeSkip(b *testing.B) {
     }
 }
 
-func BenchmarkEncodeLoad(b *testing.B) {
+func BenchmarkEncodeLoad_Sonic(b *testing.B) {
     data := _TwitterJson
     root, e := NewParser(data).Parse()
     if e != 0 {
