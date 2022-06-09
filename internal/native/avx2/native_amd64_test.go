@@ -63,8 +63,8 @@ func TestNative_Quote(t *testing.T) {
         require.NoError(t, types.ParsingError(-rv))
     }
     assert.Equal(t, len(s), rv)
-    assert.Equal(t, 27, len(d))
-    assert.Equal(t, `hello\b\f\n\r\t\\\"景world`, string(d))
+    assert.Equal(t, 35, len(d))
+    assert.Equal(t, `hello\u0008\u000c\n\r\t\\\"景world`, string(d))
 }
 
 func TestNative_QuoteNoMem(t *testing.T) {
@@ -73,9 +73,9 @@ func TestNative_QuoteNoMem(t *testing.T) {
     dp := (*rt.GoSlice)(unsafe.Pointer(&d))
     sp := (*rt.GoString)(unsafe.Pointer(&s))
     rv := __quote(sp.Ptr, sp.Len, dp.Ptr, &dp.Len, 0)
-    assert.Equal(t, -8, rv)
-    assert.Equal(t, 9, len(d))
-    assert.Equal(t, `hello\b\f`, string(d))
+    assert.Equal(t, -6, rv)
+    assert.Equal(t, 5, len(d))
+    assert.Equal(t, `hello`, string(d))
 }
 
 func TestNative_DoubleQuote(t *testing.T) {
@@ -88,8 +88,8 @@ func TestNative_DoubleQuote(t *testing.T) {
         require.NoError(t, types.ParsingError(-rv))
     }
     assert.Equal(t, len(s), rv)
-    assert.Equal(t, 36, len(d))
-    assert.Equal(t, `hello\\b\\f\\n\\r\\t\\\\\\\"景world`, string(d))
+    assert.Equal(t, 44, len(d))
+    assert.Equal(t, `hello\\u0008\\u000c\\n\\r\\t\\\\\\\"景world`, string(d))
 }
 
 func TestNative_Unquote(t *testing.T) {
