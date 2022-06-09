@@ -677,8 +677,8 @@ func (self *_ValueDecoder) compile() {
     self.Emit("NEGQ" , _AX)                     // NEGQ  AX
     self.Emit("MOVQ" , _AX, _EP)                // MOVQ  AX, EP
     self.Link("_error")                         // _error:
-    self.Emit("PXOR" , _X0, _X0)                // PXOR  X0, X0
-    self.Emit("MOVOU", _X0, jit.Ptr(_VP, 0))    // MOVOU X0, (VP)
+    // self.Emit("PXOR" , _X0, _X0)                // PXOR  X0, X0
+    // self.Emit("MOVOU", _X0, jit.Ptr(_VP, 0))    // MOVOU X0, (VP)
     self.Sjmp("JMP"  , "_epilogue")             // JMP   _epilogue
 
     /* invalid value type, never returns */
