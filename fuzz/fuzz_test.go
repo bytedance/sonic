@@ -52,7 +52,7 @@ func FuzzMain(f *testing.F) {
 }
 
 func fuzzMain(t *testing.T, data []byte) {
-    fuzzValidate(t, data)
+    // fuzzValidate(t, data)
     fuzzHtmlEscape(t, data)
     // Only fuzz the validate json here, because the default configuration does not have validation in SONIC.
     if !utf8.Valid(data) || !json.Valid(data) {
