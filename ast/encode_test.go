@@ -90,7 +90,7 @@ func TestEncodeValue(t *testing.T) {
         {NewArray([]Node{}), "[]", false},
         {NewArray([]Node{NewBool(true), NewString("true"), NewString("\t")}), `[true,"true","\t"]`, false},
         {NewObject([]Pair{Pair{"a", NewNull()}, Pair{"b", NewNumber("0")}}), `{"a":null,"b":0}`, false},
-        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}), `{"\ta":"\t","\bb":"\b","\nb":"\n","\ra":"\r"}`, false},
+        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}), `{"\ta":"\t","\u0008b":"\u0008","\nb":"\n","\ra":"\r"}`, false},
         {NewObject([]Pair{}), `{}`, false},
         {NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, false},
         {NewAny(obj), string(buf), false},
