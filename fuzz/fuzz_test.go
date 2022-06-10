@@ -1,3 +1,4 @@
+//go:build go1.18
 // +build go1.18
 
 /*
@@ -19,17 +20,18 @@
 package sonic_fuzz
 
 import (
-	`encoding/json`
-    `testing`
-    `unicode/utf8`
-    `reflect`
-    `os`
-    `runtime`
-    `runtime/debug`
-    `time`
+	"encoding/json"
+	"os"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"testing"
+	"time"
+	"unicode/utf8"
 
-    `github.com/bytedance/sonic`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 func FuzzMain(f *testing.F) {
@@ -73,11 +75,12 @@ func fuzzMain(t *testing.T, data []byte) {
         sv, jv := typ(), typ()
         serr := sonic.Unmarshal([]byte(data), sv)
         jerr := json.Unmarshal([]byte(data), jv)
-        require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", reflect.TypeOf(jv))
+        require.Equalf(t, jerr != nil, serr != nil, "different error in sonic unmarshal %v", reflect.TypeOf(jv))
         if jerr != nil {
+            _ = spew.Sprintf("data: %v\nexp: %#+v\ngot: %#+v", data, jv, sv)
             return
         }
-        require.Equal(t, sv, jv, "different result in sonic unmarshal %v", reflect.TypeOf(jv))
+        require.Equal(t, jv, sv, "different result in sonic unmarshal %v", reflect.TypeOf(jv))
         sout, serr := sonic.Marshal(sv)
         jout, jerr := json.Marshal(jv)
         require.NoError(t, serr, "error in sonic marshal %v", reflect.TypeOf(jv))
