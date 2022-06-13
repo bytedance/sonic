@@ -19,117 +19,117 @@
 package sonic_fuzz
 
 import (
-	`encoding/json`
-	`math/rand`
-	`fmt`
-	`reflect`
-	`strconv`
-	`strings`
-	`testing`
+    `encoding/json`
+    `math/rand`
+    `fmt`
+    `reflect`
+    `strconv`
+    `strings`
+    `testing`
 
-	`github.com/bytedance/sonic`
-	`github.com/stretchr/testify/require`
+    `github.com/bytedance/sonic`
+    `github.com/stretchr/testify/require`
 )
 
 func generateNullType() reflect.Type {
-	tab := []reflect.Type {
-		reflect.TypeOf(int(0)),
-		reflect.TypeOf(uint(0)),
-		reflect.TypeOf("string"),
-		reflect.TypeOf(struct{}{}),
-		reflect.TypeOf(json.Number("0")),
-		reflect.TypeOf([]interface{}{}),
-		reflect.TypeOf(map[string]interface{}{}),
-	}
-	return tab[int(rand.Int() % len(tab))]
+    tab := []reflect.Type {
+        reflect.TypeOf(int(0)),
+        reflect.TypeOf(uint(0)),
+        reflect.TypeOf("string"),
+        reflect.TypeOf(struct{}{}),
+        reflect.TypeOf(json.Number("0")),
+        reflect.TypeOf([]interface{}{}),
+        reflect.TypeOf(map[string]interface{}{}),
+    }
+    return tab[int(rand.Int() % len(tab))]
 }
 
 func generateNumberType() reflect.Type {
-	tab := []reflect.Type {
-		reflect.TypeOf(float64(0)),
-		reflect.TypeOf(int64(0)),
-		reflect.TypeOf(uintptr(0)),
-		reflect.TypeOf(uint64(0)),
-		reflect.TypeOf(json.Number("0")),
-	}
-	return tab[int(rand.Int() % len(tab))]
+    tab := []reflect.Type {
+        reflect.TypeOf(float64(0)),
+        reflect.TypeOf(int64(0)),
+        reflect.TypeOf(uintptr(0)),
+        reflect.TypeOf(uint64(0)),
+        reflect.TypeOf(json.Number("0")),
+    }
+    return tab[int(rand.Int() % len(tab))]
 }
 
 func generatePointerType(ft reflect.Type) reflect.Type {
-	if ft == nil {
-		ft = generateNullType()
-	}
-	ftp := reflect.TypeOf(reflect.New(ft).Interface())
-	ftpp := reflect.TypeOf(reflect.New(ftp).Interface())
-	ftppp := reflect.TypeOf(reflect.New(ftpp).Interface())
-	tab := []reflect.Type { ft, ftp, ftpp, ftppp }
-	return tab[int(rand.Int() % len(tab))]
+    if ft == nil {
+        ft = generateNullType()
+    }
+    ftp := reflect.TypeOf(reflect.New(ft).Interface())
+    ftpp := reflect.TypeOf(reflect.New(ftp).Interface())
+    ftppp := reflect.TypeOf(reflect.New(ftpp).Interface())
+    tab := []reflect.Type { ft, ftp, ftpp, ftppp }
+    return tab[int(rand.Int() % len(tab))]
 }
 
 func generateJSONTag(name string) reflect.StructTag {
-	var opt string
-	name = strings.Split(name, ",")[0] // remove origin "," in tag name
-	switch int(rand.Int() % 5) {
-		case 0: return reflect.StructTag(`json:"-"`) // always omitted
-		case 1: return reflect.StructTag("") // empty tag
-		case 2: opt = "" // empty opt
-		case 3: opt = "omitempty"
-		case 4: opt = "string"
-	}
-	return reflect.StructTag(fmt.Sprintf(`json:"%s,%s"`, name, opt))
+    var opt string
+    name = strings.Split(name, ",")[0] // remove origin "," in tag name
+    switch int(rand.Int() % 5) {
+        case 0: return reflect.StructTag(`json:"-"`) // always omitted
+        case 1: return reflect.StructTag("") // empty tag
+        case 2: opt = "" // empty opt
+        case 3: opt = "omitempty"
+        case 4: opt = "string"
+    }
+    return reflect.StructTag(fmt.Sprintf(`json:"%s,%s"`, name, opt))
 }
 
 // Map2StructType generate random dynamic Golang Struct by Golang Map
 func Map2StructType(m map[string]interface{}, maxDepth int) reflect.Type {
-	if maxDepth <= 0 {
-		return reflect.TypeOf(map[string]interface{}{})
-	}
-	fields := make([]reflect.StructField, 0)
-	i := 0
-	for k, v := range m {
-		/* skip the empty key */
-		if k == "" {
-			continue
-		}
+    if maxDepth <= 0 {
+        return reflect.TypeOf(map[string]interface{}{})
+    }
+    fields := make([]reflect.StructField, 0)
+    i := 0
+    for k, v := range m {
+        /* skip the empty key */
+        if k == "" {
+            continue
+        }
 
-		/* set exported field name */
-		fn := "F" + strconv.Itoa(i)
+        /* set exported field name */
+        fn := "F" + strconv.Itoa(i)
 
-		/* set field type */
-		ft := reflect.TypeOf(v)
-		if ft == nil {
-			ft = generateNullType()
+        /* set field type */
+        ft := reflect.TypeOf(v)
+        if ft == nil {
+            ft = generateNullType()
 
-		} else {
-			switch ft.Kind() {
-				case reflect.Map: ft = Map2StructType(v.(map[string]interface{}), maxDepth-1)
-				case reflect.Float64: ft = generateNumberType()
-			}
-		}
-		ft = generatePointerType(ft)
-		ef := reflect.StructField {
-			Name: fn,
-			Type: ft,
-			Tag : generateJSONTag(k),
-		}
-		fields = append(fields, ef)
-		i += 1
+        } else {
+            switch ft.Kind() {
+                case reflect.Map: ft = Map2StructType(v.(map[string]interface{}), maxDepth-1)
+                case reflect.Float64: ft = generateNumberType()
+            }
+        }
+        ft = generatePointerType(ft)
+        ef := reflect.StructField {
+            Name: fn,
+            Type: ft,
+            Tag : generateJSONTag(k),
+        }
+        fields = append(fields, ef)
+        i += 1
 
-		/* insert some private field randomly */
-		if int(rand.Int() % 3) != 0 {
-			continue
-		}
-		fn = "p" + strconv.Itoa(i)
-		pf := reflect.StructField {
-			Name: fn,
-			Type: ft,
-			PkgPath: "sonic_fuzz",
-		}
-		fields = append(fields, pf)
+        /* insert some private field randomly */
+        if int(rand.Int() % 3) != 0 {
+            continue
+        }
+        fn = "p" + strconv.Itoa(i)
+        pf := reflect.StructField {
+            Name: fn,
+            Type: ft,
+            PkgPath: "sonic_fuzz",
+        }
+        fields = append(fields, pf)
 
-	}
-	rt := reflect.StructOf(fields)
-	return rt
+    }
+    rt := reflect.StructOf(fields)
+    return rt
 }
 
 const _MAX_STRUCT_DEPTH = 30
@@ -137,29 +137,29 @@ const _MAX_STRUCT_DEPTH = 30
 // fuzzDynamicStruct is schema-based fuzz testing, 
 // a struct type is a JSON schema.
 func fuzzDynamicStruct(t *testing.T, data []byte, v map[string]interface{}) {
-	typ  := Map2StructType(v, _MAX_STRUCT_DEPTH)
-	sv  := reflect.New(typ).Interface()
-	jv  := reflect.New(typ).Interface()
+    typ  := Map2StructType(v, _MAX_STRUCT_DEPTH)
+    sv  := reflect.New(typ).Interface()
+    jv  := reflect.New(typ).Interface()
 
-	// Pretouch fuzz
-	err := sonic.Pretouch(typ)
-	require.NoErrorf(t, err, "error in sonic pretouch struct %v", typ)
+    // Pretouch fuzz
+    err := sonic.Pretouch(typ)
+    require.NoErrorf(t, err, "error in sonic pretouch struct %v", typ)
 
-	// Unmarshal fuzz
-	serr := sonic.Unmarshal(data, &sv)
-	jerr := json.Unmarshal(data, &jv)
-	require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", typ)
-	if serr != nil {
-		return
-	}
-	require.Equal(t, sv, jv, "different result in sonic unmarshal %v", typ)
+    // Unmarshal fuzz
+    serr := sonic.Unmarshal(data, &sv)
+    jerr := json.Unmarshal(data, &jv)
+    require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", typ)
+    if serr != nil {
+        return
+    }
+    require.Equal(t, sv, jv, "different result in sonic unmarshal %v", typ)
 
-	// Marshal fuzz
-	sout, serr := sonic.Marshal(sv)
-	jout, jerr := json.Marshal(jv)
-	require.NoError(t, serr, "error in sonic marshal %v", typ)
-	require.NoError(t, jerr, "error in json marshal %v", typ)
-	// not comparing here because sonic marshal is different from encoding/json, as:
-	// require.Equalf(t, sout, jout, "different in sonic marshal %#v", typ)
-	var _, _ = sout, jout
+    // Marshal fuzz
+    sout, serr := sonic.Marshal(sv)
+    jout, jerr := json.Marshal(jv)
+    require.NoError(t, serr, "error in sonic marshal %v", typ)
+    require.NoError(t, jerr, "error in json marshal %v", typ)
+    // not comparing here because sonic marshal is different from encoding/json, as:
+    // require.Equalf(t, sout, jout, "different in sonic marshal %#v", typ)
+    var _, _ = sout, jout
 }

@@ -20,18 +20,18 @@
 package sonic_fuzz
 
 import (
-	"encoding/json"
-	"os"
-	"reflect"
-	"runtime"
-	"runtime/debug"
-	"testing"
-	"time"
-	"unicode/utf8"
+    `encoding/json`
+    `os`
+    `reflect`
+    `runtime`
+    `runtime/debug`
+    `testing`
+    `time`
+    `unicode/utf8`
 
-	"github.com/bytedance/sonic"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic`
+    `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/require`
 )
 
 func FuzzMain(f *testing.F) {
@@ -101,49 +101,49 @@ func fuzzMain(t *testing.T, data []byte) {
 }
 
 type S struct {
-	A int    `json:",omitempty"`
-	B string `json:"B1,omitempty"`
-	C float64
-	D bool
-	E uint8
-	// F []byte // unmarshal []byte is different with encoding/json
-	G interface{}
-	H map[string]interface{}
-	I map[string]string
-	J []interface{}
-	K []string
-	L S1
-	M *S1
-	N *int
-	O **int
+    A int    `json:",omitempty"`
+    B string `json:"B1,omitempty"`
+    C float64
+    D bool
+    E uint8
+    // F []byte // unmarshal []byte is different with encoding/json
+    G interface{}
+    H map[string]interface{}
+    I map[string]string
+    J []interface{}
+    K []string
+    L S1
+    M *S1
+    N *int
+    O **int
     P int `json:",string"`
     Q float64 `json:",string"`
-	R int `json:"-"`
-	T struct {}
-	U [2]int
-	V uintptr
+    R int `json:"-"`
+    T struct {}
+    U [2]int
+    V uintptr
     W json.Number
     X json.RawMessage
     Y Marshaller 
-	Z TextMarshaller
+    Z TextMarshaller
 }
 
 
 type S1 struct {
-	A int
-	B string
+    A int
+    B string
 }
 
 type Marshaller struct {
-	v string
+    v string
 }
 
 func (m *Marshaller) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.v)
+    return json.Marshal(m.v)
 }
 
 func (m *Marshaller) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &m.v)
+    return json.Unmarshal(data, &m.v)
 }
 
 type TextMarshaller struct {
