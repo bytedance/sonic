@@ -17,10 +17,13 @@
 package decoder
 
 import (
+    `encoding/json`
+    `strings`
     `testing`
 
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func make_err(src string, pos int) SyntaxError {
@@ -56,4 +59,24 @@ func TestErrors_ShortDescription(t *testing.T) {
 
 func TestErrors_EmptyDescription(t *testing.T) {
     println(make_err("", 0).Description())
+}
+
+func TestErrorInvalidValue(t *testing.T) {
+    var data = `{"a":1,"b":[ }},"c":3}`
+    var obje, objs map[string]interface{}
+    erre := json.NewDecoder(strings.NewReader(data)).Decode(&obje)
+    dc := NewStreamDecoder(strings.NewReader(data))
+    dc.SetOptions(OptionValidateJSON)
+    errs := dc.Decode(&objs)
+    require.Equal(t, erre == nil, errs == nil)
+    require.Equal(t, obje, objs)
+
+    data = `{"a":1,"b":2,"c":3}`
+    obje, objs = map[string]interface{}{}, map[string]interface{}{}
+    erre = json.NewDecoder(strings.NewReader(data)).Decode(&obje)
+    dc = NewStreamDecoder(strings.NewReader(data))
+    dc.SetOptions(OptionValidateJSON)
+    errs = dc.Decode(&objs)
+    require.Equal(t, erre == nil, errs == nil)
+    require.Equal(t, obje, objs)
 }

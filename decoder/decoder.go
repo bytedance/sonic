@@ -33,6 +33,7 @@ const (
     _F_disable_urc
     _F_disable_unknown
     _F_copy_string
+    _F_validate_json
 
     _F_allow_control = 31
 )
@@ -45,6 +46,8 @@ const (
     OptionUseUnicodeErrors Options = 1 << _F_disable_urc
     OptionDisableUnknown   Options = 1 << _F_disable_unknown
     OptionCopyString       Options = 1 << _F_copy_string
+    // validate JSON before decoding, thus decoded object won't be modified if JSON is invalid
+    OptionValidateJSON     Options = 1 << _F_validate_json
 )
 
 func (self *Decoder) SetOptions(opts Options) {
@@ -81,6 +84,14 @@ func (self *Decoder) Reset(s string) {
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
+    if (self.f & uint64(OptionValidateJSON)) != 0 {
+        ret, start := valid(self.s)
+        if ret < 0 {
+            return error_wrap(self.s, start, types.ParsingError(-ret))
+        }
+        self.i = start
+    }
+
     vv := rt.UnpackEface(val)
     vp := vv.Value
 

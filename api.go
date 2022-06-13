@@ -31,6 +31,7 @@ import (
     UseUnicodeErrors              bool
     DisallowUnknownFields         bool
     CopyString                    bool
+    ValidateJSONBeforeDecode      bool
  }
  
  var (
@@ -43,6 +44,7 @@ import (
         SortMapKeys: true,
         CompactMarshaler: true,
         CopyString : true,
+        ValidateJSONBeforeDecode: true,
     }.Froze()
  
     // ConfigFastest is the fastest config of APIs, aiming at speed.

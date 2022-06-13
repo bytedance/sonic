@@ -22,6 +22,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
 
@@ -40,4 +41,20 @@ func decodeJsonUnmarshaler(vv interface{}, s string) error {
 
 func decodeTextUnmarshaler(vv interface{}, s string) error {
     return vv.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(s))
+}
+
+
+func valid(s string) (ret int, start int) {
+    n := len(s)
+    if n == 0 {
+        return -1, -1
+    }
+    p := 0
+    m := types.NewStateMachine()
+    start = native.ValidateOne(&s, &p, m)
+    types.FreeStateMachine(m) 
+    if start < 0 {
+        return start, p-1
+    }
+    return 0, start
 }
