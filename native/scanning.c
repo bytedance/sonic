@@ -1381,14 +1381,6 @@ long validate_string(const GoString *src, long *p) {
         *p = e == -ERR_EOF ? src->len : v;
         return e;
     }
-
-    /* check for errors in UTF-8 validate */
-    ssize_t nb = e - *p - 1;
-    ssize_t r = utf8_validate(src->buf + *p, nb);
-    if (r >= 0) {
-        *p += r;
-        return -ERR_INVAL;
-    }
     *p = e;
     return q;
 }
