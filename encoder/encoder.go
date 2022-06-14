@@ -59,7 +59,11 @@ const (
     // is always escaped string and needs no quoting
     NoQuoteTextMarshaler Options = 1 << bitNoQuoteTextMarshaler
 
+    // NoNullSliceOrMap indicates all empty Array or Object are encoded as '[]' or '{}',
+    // instead of 'null'
     NoNullSliceOrMap     Options = 1 << bitNoNullSliceOrMap
+  
+    CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
 )
 
 // Encoder represents a specific set of encoder configurations.

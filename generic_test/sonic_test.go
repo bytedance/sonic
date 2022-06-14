@@ -19,11 +19,11 @@
 package generic_test
 
 import (
-	`testing`
+    `testing`
     `reflect`
     
     `github.com/bytedance/sonic`
-	`github.com/bytedance/sonic/option`
+    `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/ast`
 )
 
@@ -56,8 +56,8 @@ func getAny[S Str, B Bytes, T SliceAny](src S, path T) (ast.Node, error) {
 }
 
 func pretouchAny[T Any](v T, opts ...option.CompileOption) error {
-	rt := reflect.TypeOf(v)
-	return sonic.Pretouch(rt, opts...)
+    rt := reflect.TypeOf(v)
+    return sonic.Pretouch(rt, opts...)
 }
 
 type Basic interface {
@@ -73,8 +73,8 @@ func marshalBasic[B Bytes, T Basic](val T) (B, error) {
 }
 
 func pretouchBasic[T Basic](v T, opts ...option.CompileOption) error {
-	rt := reflect.TypeOf(v)
-	return sonic.Pretouch(rt, opts...)
+    rt := reflect.TypeOf(v)
+    return sonic.Pretouch(rt, opts...)
 }
 
 type Float64 float64
@@ -88,22 +88,22 @@ func TestGenericAPI(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-	t.Logf("%s", out)
-	
-	var x0 = struct{
-		A []Any `json:"a"`
-	}{}
-	if err := pretouchAny(x0); err != nil {
-		t.Fatal(err)
-	}
-	if err := unmarshalAny(`{"a":[true,0.5,"hello world"]}`, &x0); err != nil {
+    t.Logf("%s", out)
+    
+    var x0 = struct{
+        A []Any `json:"a"`
+    }{}
+    if err := pretouchAny(x0); err != nil {
+        t.Fatal(err)
+    }
+    if err := unmarshalAny(`{"a":[true,0.5,"hello world"]}`, &x0); err != nil {
         t.Fatal(t)
     }
     out0, err := marshalAny(x0)
     if err != nil {
         t.Fatal(err)
     }
-	t.Logf("%s", out0)
+    t.Logf("%s", out0)
 
     var x1 int
     if err := unmarshalBasic(`1`, &x1); err != nil {
@@ -115,8 +115,8 @@ func TestGenericAPI(t *testing.T) {
     }
     t.Logf("%s", out1)
 
-	var x2 Float64 = 1
-	// if err := unmarshalBasic(`1`, &x2); err != nil {
+    var x2 Float64 = 1
+    // if err := unmarshalBasic(`1`, &x2); err != nil {
     //     t.Fatal(t)
     // }
     out2, err := marshalBasic(x2)
@@ -133,20 +133,20 @@ func TestGenericAPI(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-	t.Logf("%s", out3)
+    t.Logf("%s", out3)
 
-	var x4 Float64 = 1
-	if err := pretouchBasic(x4); err != nil {
-		t.Fatal(err)
-	}
-	// if err := unmarshalBasic(`0.5`, &x4); err != nil {
+    var x4 Float64 = 1
+    if err := pretouchBasic(x4); err != nil {
+        t.Fatal(err)
+    }
+    // if err := unmarshalBasic(`0.5`, &x4); err != nil {
     //     t.Fatal(t)
     // }
     out4, err := marshalBasic(x4)
     if err != nil {
         t.Fatal(err)
     }
-	t.Logf("%s", out4)
+    t.Logf("%s", out4)
 
     root, err := getAny(`{"a":[true,1,"hello world"]}`, []interface{}{"a", 1})
     if err != nil {

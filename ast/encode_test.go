@@ -90,7 +90,7 @@ func TestEncodeValue(t *testing.T) {
         {NewArray([]Node{}), "[]", false},
         {NewArray([]Node{NewBool(true), NewString("true"), NewString("\t")}), `[true,"true","\t"]`, false},
         {NewObject([]Pair{Pair{"a", NewNull()}, Pair{"b", NewNumber("0")}}), `{"a":null,"b":0}`, false},
-        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}), `{"\ta":"\t","\bb":"\b","\nb":"\n","\ra":"\r"}`, false},
+        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}), `{"\ta":"\t","\u0008b":"\u0008","\nb":"\n","\ra":"\r"}`, false},
         {NewObject([]Pair{}), `{}`, false},
         {NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, false},
         {NewAny(obj), string(buf), false},
@@ -144,7 +144,7 @@ func TestEncodeNode(t *testing.T) {
     }
 }
 
-func BenchmarkEncodeRaw(b *testing.B) {
+func BenchmarkEncodeRaw_Sonic(b *testing.B) {
     data := _TwitterJson
     root, e := NewSearcher(data).GetByPath()
     if e != nil {
@@ -164,7 +164,7 @@ func BenchmarkEncodeRaw(b *testing.B) {
     }
 }
 
-func BenchmarkEncodeSkip(b *testing.B) {
+func BenchmarkEncodeSkip_Sonic(b *testing.B) {
     data := _TwitterJson
     root, e := NewParser(data).Parse()
     if e != 0 {
@@ -185,7 +185,7 @@ func BenchmarkEncodeSkip(b *testing.B) {
     }
 }
 
-func BenchmarkEncodeLoad(b *testing.B) {
+func BenchmarkEncodeLoad_Sonic(b *testing.B) {
     data := _TwitterJson
     root, e := NewParser(data).Parse()
     if e != 0 {

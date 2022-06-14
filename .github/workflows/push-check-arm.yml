@@ -1,20 +1,21 @@
-name: Pull Request Benchmark
+name: Push Check ARM
 
-on: pull_request
+on: push
 
 jobs:
   build:
-    runs-on: self-hosted
+    strategy:
+      matrix:
+        go-version: [1.15.x, 1.18.x]
+        os: [arm, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-
-      - name: Check Branch
-        run: ./check_branch_name.sh ${{ github.head_ref }}
 
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17.1
+          go-version: ${{ matrix.go-version }}
 
       - uses: actions/cache@v2
         with:
@@ -23,5 +24,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Benchmark
-        run: sh bench.sh
+      - name: Compatibility Test
+        run: go test -v -gcflags=-d=checkptr=0 .
