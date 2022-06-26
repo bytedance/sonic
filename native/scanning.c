@@ -110,7 +110,7 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
     }
 }
 
-static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
+static inline ssize_t advance_string_old(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t es;
     uint64_t fe;
@@ -580,6 +580,10 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
     } else {
         return -ERR_EOF;
     }
+}
+
+static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
+    return advance_validate_string(src, p, ep);
 }
 
 /** Value Scanning Routines **/
