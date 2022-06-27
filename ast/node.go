@@ -261,6 +261,26 @@ func (self *Node) String() (string, error) {
     }
 }
 
+// Str returns string value (unescaped) only if node type is V_STRING type,
+// or a go string of V_ANY type.
+// In other cases, it will return empty string.
+func (self *Node) Str() (string, error) {
+    if err := self.checkRaw(); err != nil {
+        return "", err
+    }
+    switch self.t {
+        case types.V_NULL    : return "", nil
+        case types.V_STRING  : return addr2str(self.p, self.v), nil
+        case _V_ANY          :        
+            if v, ok := self.packAny().(string); ok {
+                return v, nil
+            } else {
+                return "", ErrUnsupportType
+            }
+        default              : return "", ErrUnsupportType
+    }
+}
+
 // Float64 as above.
 func (self *Node) Float64() (float64, error) {
     if err := self.checkRaw(); err != nil {
@@ -1410,7 +1430,10 @@ func newBytes(v []byte) Node {
     }
 }
 
-// NewString creates a node of type string
+// NewString creates a node of type V_STRING. 
+// v is considered to be a valid UTF-8 string,
+// which means it won't be validated and unescaped.
+// when the node is encoded to json, v will be escaped.
 func NewString(v string) Node {
     return Node{
         t: types.V_STRING,
