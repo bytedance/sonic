@@ -165,7 +165,7 @@ func (self *Node) checkRaw() error {
     return nil
 }
 
-// Bool_E returns bool value represented by this node
+// Bool returns bool value represented by this node
 //
 // If node type is not types.V_TRUE or types.V_FALSE, 
 // V_RAW (must be a bool json value), or V_ANY (must be a bool type)
@@ -187,7 +187,7 @@ func (self *Node) Bool() (bool, error) {
     }
 }
 
-// Int64 as above.
+// Int64 casts the node to int64 value, including V_NUMBER, V_TRUE, V_FALSE, V_ANY
 func (self *Node) Int64() (int64, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
@@ -215,7 +215,33 @@ func (self *Node) Int64() (int64, error) {
     }
 }
 
-// Number as above.
+// StrictInt64 exports underlying int64 value, including V_NUMBER, V_ANY
+func (self *Node) StrictInt64() (int64, error) {
+    if err := self.checkRaw(); err != nil {
+        return 0, err
+    }
+    switch self.t {
+        case _V_NUMBER        : return numberToInt64(self)
+        case _V_ANY           :  
+            any := self.packAny()
+            switch v := any.(type) {
+                case int   : return int64(v), nil
+                case int8  : return int64(v), nil
+                case int16 : return int64(v), nil
+                case int32 : return int64(v), nil
+                case int64 : return int64(v), nil
+                case uint  : return int64(v), nil
+                case uint8 : return int64(v), nil
+                case uint16: return int64(v), nil
+                case uint32: return int64(v), nil
+                case uint64: return int64(v), nil
+                default: return 0, ErrUnsupportType
+            }
+        default               : return 0, ErrUnsupportType
+    }
+}
+
+// Number casts node to float64, including V_NUMBER, V_TRUE, V_FALSE, V_ANY of json.Number
 func (self *Node) Number() (json.Number, error) {
     if err := self.checkRaw(); err != nil {
         return json.Number(""), err
@@ -224,6 +250,23 @@ func (self *Node) Number() (json.Number, error) {
         case _V_NUMBER        : return toNumber(self)  , nil
         case types.V_TRUE     : return json.Number("1"), nil
         case types.V_FALSE    : return json.Number("0"), nil
+        case _V_ANY        :        
+            if v, ok := self.packAny().(json.Number); ok {
+                return v, nil
+            } else {
+                return json.Number(""), ErrUnsupportType
+            }
+        default               : return json.Number(""), ErrUnsupportType
+    }
+}
+
+// Number exports underlying float64 value, including V_NUMBER, V_ANY of json.Number
+func (self *Node) StrictNumber() (json.Number, error) {
+    if err := self.checkRaw(); err != nil {
+        return json.Number(""), err
+    }
+    switch self.t {
+        case _V_NUMBER        : return toNumber(self)  , nil
         case _V_ANY        :        
             if v, ok := self.packAny().(json.Number); ok {
                 return v, nil
@@ -261,7 +304,26 @@ func (self *Node) String() (string, error) {
     }
 }
 
-// Float64 as above.
+// StrictString returns string value (unescaped), includeing V_STRING, V_ANY of string.
+// In other cases, it will return empty string.
+func (self *Node) StrictString() (string, error) {
+    if err := self.checkRaw(); err != nil {
+        return "", err
+    }
+    switch self.t {
+        case types.V_NULL    : return "", nil
+        case types.V_STRING  : return addr2str(self.p, self.v), nil
+        case _V_ANY          :        
+            if v, ok := self.packAny().(string); ok {
+                return v, nil
+            } else {
+                return "", ErrUnsupportType
+            }
+        default              : return "", ErrUnsupportType
+    }
+}
+
+// Float64 casts node to float64, includeing V_NUMBER, V_TRUE, V_FALSE, V_ANY
 func (self *Node) Float64() (float64, error) {
     if err := self.checkRaw(); err != nil {
         return 0.0, err
@@ -270,6 +332,24 @@ func (self *Node) Float64() (float64, error) {
         case _V_NUMBER       : return numberToFloat64(self)
         case types.V_TRUE    : return 1.0, nil
         case types.V_FALSE   : return 0.0, nil
+        case _V_ANY        :        
+            any := self.packAny()
+            switch v := any.(type) {
+                case float32 : return float64(v), nil
+                case float64 : return float64(v), nil
+                default      : return 0, ErrUnsupportType
+            }
+        default              : return 0.0, ErrUnsupportType
+    }
+}
+
+// Float64 exports underlying float64 value, includeing V_NUMBER, V_ANY 
+func (self *Node) StrictFloat64() (float64, error) {
+    if err := self.checkRaw(); err != nil {
+        return 0.0, err
+    }
+    switch self.t {
+        case _V_NUMBER       : return numberToFloat64(self)
         case _V_ANY        :        
             any := self.packAny()
             switch v := any.(type) {
@@ -1410,7 +1490,10 @@ func newBytes(v []byte) Node {
     }
 }
 
-// NewString creates a node of type string
+// NewString creates a node of type V_STRING. 
+// v is considered to be a valid UTF-8 string,
+// which means it won't be validated and unescaped.
+// when the node is encoded to json, v will be escaped.
 func NewString(v string) Node {
     return Node{
         t: types.V_STRING,
