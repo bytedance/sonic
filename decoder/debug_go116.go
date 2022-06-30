@@ -33,7 +33,7 @@ var (
 )
 
 var (
-    _Instr_End _Instr = newInsOp(_OP_null)
+    _Instr_End _Instr = newInsOp(_OP_any)
 
     _F_gc       = jit.Func(runtime.GC)
     _F_force_gc = jit.Func(debug.FreeOSMemory)
