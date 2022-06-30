@@ -22,6 +22,7 @@ package sonic
 import (
     `io`
     `reflect`
+    `unsafe`
 
     `github.com/bytedance/sonic/ast`
     `github.com/bytedance/sonic/decoder`
@@ -121,7 +122,7 @@ func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error 
 
 // Unmarshal is implemented by sonic
 func (cfg *frozenConfig) Unmarshal(buf []byte, val interface{}) error {
-    return cfg.UnmarshalFromString(string(buf), val)
+    return cfg.UnmarshalFromString(bytesToString(buf), val)
 }
 
 // NewEncoder is implemented by sonic
@@ -166,11 +167,16 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 //     - Integer means searching current node as array
 //     - String means searching current node as object
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(string(src), path...)
+    return GetFromString(bytesToString(src), path...)
 }
 
 // GetFromString is same with Get except src is string,
 // which can reduce unnecessary memory copy.
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
+}
+
+// convert bytes to string without memory allocation
+func bytesToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }

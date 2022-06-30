@@ -22,6 +22,7 @@ import (
     `bytes`
     `encoding/json`
     `io`
+    `unsafe`
 )
 
 type frozenConfig struct {
@@ -61,7 +62,7 @@ func (cfg *frozenConfig) Marshal(val interface{}) ([]byte, error) {
 // MarshalToString is implemented by sonic
 func (cfg *frozenConfig) MarshalToString(val interface{}) (string, error) {
     out, err := cfg.Marshal(val)
-    return string(out), err
+    return bytesToString(out), err
 }
 
 // MarshalIndent is implemented by sonic
@@ -87,7 +88,7 @@ func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error 
 
 // Unmarshal is implemented by sonic
 func (cfg *frozenConfig) Unmarshal(buf []byte, val interface{}) error {
-    return cfg.UnmarshalFromString(string(buf), val)
+    return cfg.UnmarshalFromString(bytesToString(buf), val)
 }
 
 // NewEncoder is implemented by sonic
@@ -114,4 +115,9 @@ func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
 // Valid is implemented by sonic
 func (cfg *frozenConfig) Valid(data []byte) bool {
     return json.Valid(data)
+}
+
+// convert bytes to string without memory allocation
+func bytesToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
