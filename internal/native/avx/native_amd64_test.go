@@ -237,11 +237,11 @@ func TestNative_Vstring(t *testing.T) {
     var v types.JsonState
     i := 0
     s := `test"test\n2"`
-    __vstring(&s, &i, &v)
+    __vstring(&s, &i, &v, 0)
     assert.Equal(t, 5, i)
     assert.Equal(t, -1, v.Ep)
     assert.Equal(t, int64(0), v.Iv)
-    __vstring(&s, &i, &v)
+    __vstring(&s, &i, &v, 0)
     assert.Equal(t, 13, i)
     assert.Equal(t, 9, v.Ep)
     assert.Equal(t, int64(5), v.Iv)
@@ -251,7 +251,7 @@ func TestNative_VstringEscapeEOF(t *testing.T) {
     var v types.JsonState
     i := 0
     s := `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"x`
-    __vstring(&s, &i, &v)
+    __vstring(&s, &i, &v, 0)
     assert.Equal(t, 95, i)
     assert.Equal(t, 63, v.Ep)
     assert.Equal(t, int64(0), v.Iv)
@@ -312,7 +312,7 @@ func TestNative_VstringHangUpOnRandomData(t *testing.T) {
     p := 1
     s := rt.Mem2Str(v)
     var js types.JsonState
-    __vstring(&s, &p, &js)
+    __vstring(&s, &p, &js, 0)
     fmt.Printf("js: %s\n", spew.Sdump(js))
 }
 

@@ -15,6 +15,8 @@
  */
 
 #include "native.h"
+#include "xprintf.c"
+// #define xprintf(...) 
 
 static const char *CS_ARRAY  = "[]{},\"[]{},\"[]{}";
 static const char *CS_OBJECT = "[]{},:\"[]{}:,\"[]";
@@ -228,7 +230,7 @@ static inline ssize_t advance_string_old(const GoString *src, long p, int64_t *e
         m0 = ((uint64_t)s3 << 48) | ((uint64_t)s2 << 32) | ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t3 << 48) | ((uint64_t)t2 << 32) | ((uint64_t)t1 << 16) | (uint64_t)t0;
 #endif
-
+        xprintf("LOOP64: m0 is %d m1 is %d cr %d\n", m0, m1, cr);
         /** update first quote position */
         if (unlikely(m1 != 0)) {
             ep_setx(sp - ss + __builtin_ctzll(m1))
@@ -238,7 +240,7 @@ static inline ssize_t advance_string_old(const GoString *src, long p, int64_t *e
         if (unlikely(m1 != 0 || cr != 0)) {
             m0_mask(add64)
         }
-
+        xprintf("LOOP64: m0 is %d m1 is %d cr %d\n", m0, m1, cr);
         /* check for end quote */
         if (m0 != 0) {
             return sp - ss + __builtin_ctzll(m0) + 1;
@@ -273,7 +275,7 @@ static inline ssize_t advance_string_old(const GoString *src, long p, int64_t *e
         m0 = ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 16) | (uint64_t)t0;
 #endif
-
+        xprintf("LOOP32: m0 is %d m1 is %d \n", m0, m1);
         /** update first quote position */
         if (unlikely(m1 != 0)) {
             ep_setx(sp - ss + __builtin_ctzll(m1))
@@ -283,7 +285,7 @@ static inline ssize_t advance_string_old(const GoString *src, long p, int64_t *e
         if (unlikely(m1 != 0 || cr != 0)) {
             m0_mask(add32)
         }
-
+        xprintf("LOOP32: m0 is %d m1 is %d \n", m0, m1);
         /* check for end quote */
         if (m0 != 0) {
             return sp - ss + __builtin_ctzll(m0) + 1;
@@ -340,6 +342,11 @@ static inline int _mm_cchars_mask(__m128i v) {
     return    _mm_movemask_epi8 (_mm_andnot_si128 (e2, e1));
 }
 
+// ascii: 0x00 ~ 0x7F
+static inline int _mm_nonascii_mask(__m128i v) {
+    return _mm_movemask_epi8(v);
+}
+
 #if USE_AVX2
 
 static inline int _mm256_get_mask(__m256i v, __m256i t) {
@@ -353,33 +360,137 @@ static inline int _mm256_cchars_mask(__m256i v) {
     return    _mm256_movemask_epi8 (_mm256_andnot_si256 (e2, e1));
 }
 
+// ascii: 0x00 ~ 0x7F
+static inline int _mm256_nonascii_mask(__m256i v) {
+    return _mm256_movemask_epi8(v);
+}
+
 #endif
+
+// reference from: https://github.com/ibireme/yyjson/blob/master/src/yyjson.c#L4067
+static inline ssize_t valid_utf8_4byte(uint32_t ubin) {
+    /*
+     Each unicode code point is encoded as 1 to 4 bytes in UTF-8 encoding,
+     we use 4-byte mask and pattern value to validate UTF-8 byte sequence,
+     this requires the input data to have 4-byte zero padding.
+     ---------------------------------------------------
+     1 byte
+     unicode range [U+0000, U+007F]
+     unicode min   [.......0]
+     unicode max   [.1111111]
+     bit pattern   [0.......]
+     ---------------------------------------------------
+     2 byte
+     unicode range [U+0080, U+07FF]
+     unicode min   [......10 ..000000]
+     unicode max   [...11111 ..111111]
+     bit require   [...xxxx. ........] (1E 00)
+     bit mask      [xxx..... xx......] (E0 C0)
+     bit pattern   [110..... 10......] (C0 80)
+     // 1101 0100 10110000
+     // 0001 1110
+     ---------------------------------------------------
+     3 byte
+     unicode range [U+0800, U+FFFF]
+     unicode min   [........ ..100000 ..000000]
+     unicode max   [....1111 ..111111 ..111111]
+     bit require   [....xxxx ..x..... ........] (0F 20 00)
+     bit mask      [xxxx.... xx...... xx......] (F0 C0 C0)
+     bit pattern   [1110.... 10...... 10......] (E0 80 80)
+     ---------------------------------------------------
+     3 byte invalid (reserved for surrogate halves)
+     unicode range [U+D800, U+DFFF]
+     unicode min   [....1101 ..100000 ..000000]
+     unicode max   [....1101 ..111111 ..111111]
+     bit mask      [....xxxx ..x..... ........] (0F 20 00)
+     bit pattern   [....1101 ..1..... ........] (0D 20 00)
+     ---------------------------------------------------
+     4 byte
+     unicode range [U+10000, U+10FFFF]
+     unicode min   [........ ...10000 ..000000 ..000000]
+     unicode max   [.....100 ..001111 ..111111 ..111111]
+     bit err0      [.....100 ........ ........ ........] (04 00 00 00)
+     bit err1      [.....011 ..110000 ........ ........] (03 30 00 00)
+     bit require   [.....xxx ..xx.... ........ ........] (07 30 00 00)
+     bit mask      [xxxxx... xx...... xx...... xx......] (F8 C0 C0 C0)
+     bit pattern   [11110... 10...... 10...... 10......] (F0 80 80 80)
+     ---------------------------------------------------
+     */
+    const uint32_t b1_mask = 0x00000080UL;
+    const uint32_t b1_patt = 0x00000000UL;
+    const uint32_t b2_mask = 0x0000C0E0UL;
+    const uint32_t b2_patt = 0x000080C0UL;
+    const uint32_t b2_requ = 0x0000001EUL;
+    const uint32_t b3_mask = 0x00C0C0F0UL;
+    const uint32_t b3_patt = 0x008080E0UL;
+    const uint32_t b3_requ = 0x0000200FUL;
+    const uint32_t b3_erro = 0x0000200DUL;
+    const uint32_t b4_mask = 0xC0C0C0F8UL;
+    const uint32_t b4_patt = 0x808080F0UL;
+    const uint32_t b4_requ = 0x00003007UL;
+    const uint32_t b4_err0 = 0x00000004UL;
+    const uint32_t b4_err1 = 0x00003003UL;
+
+#define is_valid_seq_1(uni) ( \
+    ((uni & b1_mask) == b1_patt) \
+)
+
+#define is_valid_seq_2(uni) ( \
+    ((uni & b2_mask) == b2_patt) && \
+    ((uni & b2_requ)) \
+)
+    
+#define is_valid_seq_3(uni) ( \
+    ((uni & b3_mask) == b3_patt) && \
+    ((tmp = (uni & b3_requ))) && \
+    ((tmp != b3_erro)) \
+)
+    
+#define is_valid_seq_4(uni) ( \
+    ((uni & b4_mask) == b4_patt) && \
+    ((tmp = (uni & b4_requ))) && \
+    ((tmp & b4_err0) == 0 || (tmp & b4_err1) == 0) \
+)
+    uint32_t tmp = 0;
+    xprintf("valid utf8 binary is %d\n", ubin);
+    if (is_valid_seq_3(ubin)) return 3;
+    if (is_valid_seq_2(ubin)) return 2;
+    if (is_valid_seq_4(ubin)) return 4;
+    return 0;
+}
+
+static inline uint32_t less4byte_to_uint32(const char* sp, size_t nb) {
+    // assert(nb >= 1 && nb <= 3);
+    if (nb == 1) return *(uint8_t*)sp;
+    if (nb == 2) return *(uint16_t*)sp;
+    uint32_t hi_1 = (*(uint8_t*)(sp + 2));
+    uint32_t lo_2 = *(uint16_t*)(sp);
+    return hi_1 << 16 | lo_2;
+}
 
 static inline ssize_t advance_validate_string(const GoString *src, long p, int64_t *ep) {
     char     ch;
-    uint64_t es;
-    uint64_t fe;
-    uint64_t os;
-    uint64_t m0;
-    uint64_t m1;
-    uint64_t m2;
+    uint64_t m0, m1, m2, m3;
+    uint64_t es, fe, os;
     uint64_t cr = 0;
     long     qp = 0;
     long     np = 0;
-
-    /* prevent out-of-bounds accessing */
-    if (unlikely(src->len == p)) {
-        return -ERR_EOF;
-    }
+    long     up = 0;
 
     /* buffer pointers */
     size_t       nb = src->len;
     const char * sp = src->buf;
     const char * ss = src->buf;
 
-#define ep_init()   *ep = -1;
-#define ep_setc()   ep_setx(sp - ss - 1)
-#define ep_setx(x)  if (*ep == -1) { *ep = (x); }
+    /* prevent out-of-bounds accessing */
+    if (unlikely(nb == p)) {
+        return -ERR_EOF;
+    }
+
+#define ep_init()    *ep = -1;
+#define ep_setc()    ep_setx(sp - ss - 1)
+#define ep_setx(x)   if (*ep == -1) { *ep = (x); }
+#define ep_seterr(x)  *ep = (x);
 
     /* seek to `p` */
     nb -= p;
@@ -397,6 +508,7 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
     uint32_t s0, s1;
     uint32_t t0, t1;
     uint32_t c0, c1;
+    uint32_t u0, u1;
 #else
     /* initialize vectors */
     __m128i v0;
@@ -410,6 +522,7 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
     uint32_t s0, s1, s2, s3;
     uint32_t t0, t1, t2, t3;
     uint32_t c0, c1, c2, c3;
+    uint32_t u0, u1, u2, u3;
 #endif
 
 #define m0_mask(add)                \
@@ -419,6 +532,7 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
     es  = add(os, m1, &cr) << 1;    \
     m0 &= ~(fe & (es ^ EVEN_MASK));
 
+simd_advance:
     /* 64-byte SIMD loop */
     while (likely(nb >= 64)) {
 #if USE_AVX2
@@ -430,9 +544,12 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         t1 = _mm256_get_mask(v1, cx);
         c0 = _mm256_cchars_mask(v0);
         c1 = _mm256_cchars_mask(v1);
+        u0 = _mm256_nonascii_mask(v0);
+        u1 = _mm256_nonascii_mask(v1);
         m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
         m2 = ((uint64_t)c1 << 32) | (uint64_t)c0;
+        m3 = ((uint64_t)u1 << 32) | (uint64_t)u0;
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -450,12 +567,17 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         c1 = _mm_cchars_mask(v1);
         c2 = _mm_cchars_mask(v2);
         c3 = _mm_cchars_mask(v3);
+        u0 = _mm_nonascii_mask(v0);
+        u1 = _mm_nonascii_mask(v1);
+        u2 = _mm_nonascii_mask(v2);
+        u3 = _mm_nonascii_mask(v3);
         m0 = ((uint64_t)s3 << 48) | ((uint64_t)s2 << 32) | ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t3 << 48) | ((uint64_t)t2 << 32) | ((uint64_t)t1 << 16) | (uint64_t)t0;
         m2 = ((uint64_t)c3 << 48) | ((uint64_t)c2 << 32) | ((uint64_t)c1 << 16) | (uint64_t)c0;
+        m3 = ((uint64_t)u3 << 48) | ((uint64_t)u2 << 32) | ((uint64_t)u1 << 16) | (uint64_t)u0;
 
 #endif
-
+        xprintf("LOOP64: m0 is %d m1 is %d cr %d\n", m0, m1, cr);
         /** update first quote position */
         if (unlikely(m1 != 0)) {
             ep_setx(sp - ss + __builtin_ctzll(m1))
@@ -465,22 +587,47 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         if (unlikely(m1 != 0 || cr != 0)) {
             m0_mask(add64)
         }
+        xprintf("LOOP64: m0 is %d m1 is %d cr %d\n", m0, m1, cr);
 
+        // xprintf("LOOP64: m0 is %d m1 is %d m2 is %d m3 is %d \n", m0, m1, m2, m3);
+        // /** update first quote position */
+        // if (unlikely(m1 != 0)) {
+        //     ep_setx(sp - ss + __builtin_ctzll(m1))
+        // }
+
+        // /** mask all the escaped quotes */
+        // if (unlikely(m1 != 0 || cr != 0)) {
+        //     m0_mask(add64)
+        // }
+        // xprintf("LOOP64: m0 is %d m1 is %d m2 is %d m3 is %d \n", m0, m1, m2, m3);
+
+        qp = m0 ? __builtin_ctzll(m0) : 64;
+        np = m2 ? __builtin_ctzll(m2) : 64;
+        up = m3 ? __builtin_ctzll(m3) : 64;
+        xprintf("LOOP64: start sp is %d remain %d\n", sp - ss, nb);
+        xprintf("LOOP64: qp up np is %d %d %d\n", qp, up, np);
         /* get the position of end quote */
         if (m0 != 0) {
-            qp = sp - ss + __builtin_ctzll(m0) + 1;
+            // qp = sp - ss + __builtin_ctzll(m0) + 1;
             /* check control chars in JSON string */
-            if (unlikely(m2 !=0 && (np = sp - ss + __builtin_ctzll(m2)) < qp)) {
-                ep_setx(np) // set error position
+            if (unlikely(np < qp)) {
+                ep_seterr(sp - ss + np) // set error position
                 return -ERR_INVAL;
             }
-            return qp;
+            if (up < qp) {
+                goto valid_utf8;
+            }
+            return sp - ss + qp + 1;
         }
 
         /* check control chars in JSON string */
         if (unlikely(m2 != 0)) {
-            ep_setx(sp - ss + __builtin_ctzll(m2))
+            ep_setx(sp - ss + np)
             return -ERR_INVAL;
+        }
+
+        if (unlikely(m3 != 0)) {
+            goto valid_utf8;
         }
 
         /* move to the next block */
@@ -495,9 +642,11 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         s0 = _mm256_get_mask (v0, cq);
         t0 = _mm256_get_mask (v0, cx);
         c0 = _mm256_cchars_mask(v0);
+        u0 = _mm256_nonascii_mask(v0);
         m0 = (uint64_t)s0;
         m1 = (uint64_t)t0;
         m2 = (uint64_t)c0;
+        m3 = (uint64_t)u0;
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -507,11 +656,14 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         t1 = _mm_get_mask(v1, cx);
         c0 = _mm_cchars_mask(v0);
         c1 = _mm_cchars_mask(v1);
+        u0 = _mm_nonascii_mask(v0);
+        u1 = _mm_nonascii_mask(v1);
         m0 = ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 16) | (uint64_t)t0;
         m2 = ((uint64_t)c1 << 16) | (uint64_t)c0;
+        m3 = ((uint64_t)u1 << 16) | (uint64_t)u0;
 #endif
-
+        xprintf("LOOP32: m0 is %d m1 is %d m2 is %d m3 is %d \n", m0, m1, m2, m3);
         /** update first quote position */
         if (unlikely(m1 != 0)) {
             ep_setx(sp - ss + __builtin_ctzll(m1))
@@ -521,24 +673,39 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         if (unlikely(m1 != 0 || cr != 0)) {
             m0_mask(add32)
         }
-
+        xprintf("LOOP32: m0 is %d m1 is %d m2 is %d m3 is %d \n", m0, m1, m2, m3);
+        qp = m0 ? __builtin_ctzll(m0) : 64;
+        up = m3 ? __builtin_ctzll(m3) : 64;
+        np = m2 ? __builtin_ctzll(m2) : 64;
+        xprintf("LOOP32: start sp is %d remain %d\n", sp - ss, nb);
+        xprintf("LOOP32: qp up np is %d %d %d\n", qp, up, np);
         /* get the position of end quote */
         if (m0 != 0) {
-            qp = sp - ss + __builtin_ctzll(m0) + 1;
+            // qp = sp - ss + __builtin_ctzll(m0) + 1;
             /* check control chars in JSON string */
-            if (unlikely(m2 !=0 && (np = sp - ss + __builtin_ctzll(m2)) < qp)) {
-                ep_setx(np) // set error position
+            // if (unlikely(m2 !=0 && (np = sp - ss + __builtin_ctzll(m2)) < qp)) {
+            //     ep_setx(np) // set error position
+            //     return -ERR_INVAL;
+            // }
+            if (unlikely(np < qp)) {
+                ep_seterr(sp - ss + np)
                 return -ERR_INVAL;
             }
-            return qp;
+            if (up < qp) {
+                goto valid_utf8;
+            }
+            return sp - ss + qp + 1;
         }
 
         /* check control chars in JSON string */
         if (unlikely(m2 != 0)) {
-            ep_setx(sp - ss + __builtin_ctzll(m2))
+            ep_seterr(sp - ss + __builtin_ctzll(m2))
             return -ERR_INVAL;
         }
 
+        if (m3 != 0) {
+            goto valid_utf8;
+        }
         /* move to the next block */
         sp += 32;
         nb -= 32;
@@ -554,46 +721,101 @@ static inline ssize_t advance_validate_string(const GoString *src, long p, int64
         }
     }
 
+remain:
     /* handle the remaining bytes with scalar code */
-    while (nb-- > 0 && (ch = *sp++) != '"') {
+    xprintf("REMAIN: sp@ %d remain %d\n", sp - ss, nb);
+    while (nb > 0) {
+        xprintf("valid sp is %d nb is %d\n", *sp, nb);
+        ch = *sp;
+        if (ch == '"') {
+            xprintf("RET is %d\n", sp - ss + 1);
+            return sp - ss + 1;
+        }
+
+        /* valid the escaped chars */
         if (unlikely(ch == '\\')) {
-            if (nb == 0) {
+            if (nb == 1) {
                 return -ERR_EOF;
-            } else {
-                ep_setc()
-                sp++, nb--;
             }
-        } else if (unlikely( ch >= 0 && ch <= 0x1f)) { // control chars
-            ep_setc()
+            xprintf("add 2\n");
+            ep_setx(sp - ss)
+            sp += 2, nb -= 2;
+            continue;
+        }
+
+        /* valid unescaped chars */
+        if (unlikely( ch >= 0 && ch <= 0x1f)) { // control chars
+            ep_seterr(sp - ss)
             return -ERR_INVAL;
         }
+
+        /* valid utf8 chars */
+        if (ch & 0x80) {
+            uint32_t ubin = nb >= 4 ? *(uint32_t*)sp : less4byte_to_uint32(sp, nb);
+            xprintf("check valid utf8 in %d uval is %d \n", sp - ss, ubin);
+            if ((up = valid_utf8_4byte(ubin))) {
+                sp += up, nb -= up;
+                continue;
+            }
+            ep_seterr(sp - ss)
+            return -ERR_INVAL;
+        }
+
+        sp++, nb--;
     }
+    xprintf("REMAIN FINAL: sp@ %d remain %d *ep is %d\n", sp - ss, nb, *ep);
+    xprintf("RET is EOF\n");
+    return -ERR_EOF;
+
+valid_utf8:
+    xprintf("UTF8: sp@ %d, nb @ %d\n", sp, nb);
+    sp += up, nb -= up;
+    // xprintf("valid utf8 in up %d, abs is %d\n", up, sp - ss);
+    while (likely(nb >= 4)) {
+        up = valid_utf8_4byte(*(uint32_t*)sp);
+        if (unlikely(up == 0)) {
+            xprintf("found error invalid utf8 in %d, last val is %d cur val is %d, %s\n", up, *(uint32_t*)(sp + up - 4), *(uint8_t*)(sp + up), sp);
+            ep_seterr(sp - ss)
+            return -ERR_INVAL;
+        }
+        // check continous utf-8
+        sp += up, nb -= up;
+        if (nb > 0 && (*(uint8_t*)sp & 0x80)) {
+            xprintf("continous check utf-8 %d\n", *(uint8_t*)sp);
+            continue;
+        }
+        xprintf("cur sp is %d\n", *(uint8_t*)sp);
+        /* clear the last carried bit */
+        cr = 0;
+        goto simd_advance;
+    }
+    goto remain;
 
 #undef ep_init
 #undef ep_setc
 #undef ep_setx
+#undef ep_seterr
 #undef m0_mask
-
-    /* check for quotes */
-    if (ch == '"') {
-        return sp - ss;
-    } else {
-        return -ERR_EOF;
-    }
 }
 
 static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
+    int64_t old_ep;
+    advance_string_old(src, p, &old_ep);
+    xprintf("=====new advance string=======\n");
     return advance_validate_string(src, p, ep);
 }
 
 /** Value Scanning Routines **/
 
-const uint64_t MASK_ALLOW_CONTROL = 1ul<<31;
+// mask from decoder/decoder.go
+static const uint64_t MASK_ALLOW_CONTROL   = 1ul << 31;
+static const uint64_t MASK_VALIDATE_STRING = 1ul << 5;
 
 long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
     long     q = p;
     GoString m = {.buf = s, .len = n};
     bool allow_control = (flags&MASK_ALLOW_CONTROL) != 0;
+    bool valid_string = (flags&MASK_ALLOW_CONTROL) != 0;
 
     /* parse the next identifier, q is UNSAFE, may cause out-of-bounds accessing */
     switch (advance_ns(&m, &q)) {
@@ -608,7 +830,8 @@ long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
         case '7' : /* fallthrough */
         case '8' : /* fallthrough */
         case '9' : vdigits(&m, &q, ret, flags)                          ; return q;
-        case '"' : vstring(&m, &q, ret)                                 ; return q;
+        // TODO: add valid string flags
+        case '"' : vstring(&m, &q, ret, valid_string)                   ; return q;
         case 'n' : ret->vt = advance_dword(&m, &q, 1, V_NULL, VS_NULL)  ; return q;
         case 't' : ret->vt = advance_dword(&m, &q, 1, V_TRUE, VS_TRUE)  ; return q;
         case 'f' : ret->vt = advance_dword(&m, &q, 0, V_FALSE, VS_ALSE) ; return q;
@@ -623,10 +846,17 @@ long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
     }
 }
 
-void vstring(const GoString *src, long *p, JsonState *ret) {
+void vstring(const GoString *src, long *p, JsonState *ret, uint64_t flags) {
     int64_t v = -1;
     int64_t i = *p;
-    ssize_t e = advance_string(src, i, &v);
+    ssize_t e;
+    if (flags & (1ul << 5)) {
+        xprintf("Vstring: has validate %d\n", flags);
+        e = advance_validate_string(src, i, &v);
+    } else {
+        xprintf("Vstring: test not validate %d\n", flags);
+        e = advance_string_old(src, i, &v);
+    }
 
     /* check for errors */
     if (e < 0) {

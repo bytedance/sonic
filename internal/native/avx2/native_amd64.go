@@ -72,7 +72,7 @@ func __value(s unsafe.Pointer, n int, p int, v *types.JsonState, allow_control i
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func __vstring(s *string, p *int, v *types.JsonState)
+func __vstring(s *string, p *int, v *types.JsonState, flags uint64)
 
 //go:nosplit
 //go:noescape

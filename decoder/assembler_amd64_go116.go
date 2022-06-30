@@ -591,7 +591,8 @@ func (self *_Assembler) check_eof(d int64) {
     }
 }
 
-func (self *_Assembler) parse_string() {
+func (self *_Assembler) parse_string() {    // parse_string has a validate flag params in the last
+    self.Emit("MOVQ", _ARG_fv, _CX)
     self.call_vf(_F_vstring)
     self.check_err()
 }

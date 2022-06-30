@@ -282,7 +282,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", _IC, _DX)         // MOVQ IC, DX
     self.Emit("LEAQ", _VAR_ss, _CX)     // LEAQ ss, CX
     self.Emit("MOVQ", _VAR_df, _R8)     // MOVQ $df, R8
-    self.Emit("BTSQ", jit.Imm(_F_allow_control), _R8)  // ANDQ $1<<_F_allow_control, R8
+    // self.Emit("BTSQ", jit.Imm(_F_allow_control), _R8)  // ANDQ $1<<_F_allow_control, R8
     self.callc(_F_value)               // CALL value
     self.Emit("MOVQ", _AX, _IC)         // MOVQ AX, IC
 

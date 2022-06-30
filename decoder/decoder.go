@@ -33,6 +33,7 @@ const (
     _F_disable_urc
     _F_disable_unknown
     _F_copy_string
+    _F_validate_string
 
     _F_allow_control = 31
 )
@@ -45,6 +46,7 @@ const (
     OptionUseUnicodeErrors Options = 1 << _F_disable_urc
     OptionDisableUnknown   Options = 1 << _F_disable_unknown
     OptionCopyString       Options = 1 << _F_copy_string
+    OptionValidateString   Options = 1 << _F_copy_string
 )
 
 func (self *Decoder) SetOptions(opts Options) {
@@ -81,6 +83,7 @@ func (self *Decoder) Reset(s string) {
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
+    println("[Begin] self.f is ", self.f)
     vv := rt.UnpackEface(val)
     vp := vv.Value
 
@@ -137,6 +140,13 @@ func (self *Decoder) DisallowUnknownFields() {
 // CopyString causes the Decoder to decode string values by copying instead of referring.
 func (self *Decoder) CopyString() {
     self.f |= 1 << _F_copy_string
+}
+
+// ValidString causes the Decoder to validate string values when decoding string value 
+// in JSON. Validation is that, returning error when unescaped control chars(0x00-0x1f) or
+// invalid UTF-8 chars in JSON string.
+func (self *Decoder) ValidString() {
+    self.f |= 1 << _F_validate_string
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in

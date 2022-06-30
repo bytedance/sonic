@@ -35,8 +35,10 @@ import (
     `testing`
     `time`
     `unsafe`
+    "unicode/utf8"
 
     `github.com/bytedance/sonic/decoder`
+    `github.com/davecgh/go-spew/spew`
 )
 
 type T struct {
@@ -410,6 +412,8 @@ type unmarshalTest struct {
     useNumber             bool
     golden                bool
     disallowUnknownFields bool
+    validEscapeUnicode    bool
+    validString           bool
 }
 
 type B struct {
@@ -696,11 +700,13 @@ var unmarshalTests = []unmarshalTest{
         in:  "\"hello\xffworld\"",
         ptr: new(string),
         out: "hello\xffworld",
+        validString: false,
     },
     {
         in:  "\"hello\xc2\xc2world\"",
         ptr: new(string),
         out: "hello\xc2\xc2world",
+        validString: false,
     },
     {
         in:  "\"hello\xc2\xffworld\"",
@@ -999,6 +1005,17 @@ var unmarshalTests = []unmarshalTest{
         ptr: new(map[string]json.Number),
         err: fmt.Errorf("json: invalid number literal, trying to unmarshal %q into Number", `"invalid"`),
     },
+    {in: `\u`, ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validString: true},
+    {in: `\u`, ptr: new(string), err: fmt.Errorf("json: invald char"), validString: true},
+
+    {in: "\"\x00\"", ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validString: true},
+    {in: "\"\x00\"", ptr: new(string), err: fmt.Errorf("json: invald char"), validString: true},
+    {in: "\"\xff\"", ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validString: true},
+    {in: "\"\xff\"", ptr: new(string), err: fmt.Errorf("json: invald char"), validString: true},
+    {in: "\"\x00\"", ptr: new(interface{}), out: interface{}("\x00"), validString: false},
+    {in: "\"\x00\"", ptr: new(string), out: "\x00", validString: false},
+    {in: "\"\xff\"", ptr: new(interface{}), out: interface{}("\xff"), validString: false},
+    {in: "\"\xff\"", ptr: new(string), out: "\xff", validString: false},
 }
 
 func trim(b []byte) []byte {
@@ -1128,14 +1145,23 @@ func TestUnmarshal(t *testing.T) {
         }
 
         dec := decoder.NewDecoder(tt.in)
+        validUtf8 := true
         if tt.useNumber {
             dec.UseNumber()
         }
         if tt.disallowUnknownFields {
             dec.DisallowUnknownFields()
         }
-        if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil) {
-            t.Errorf("#%d: %v, want %v", i, err, tt.err)
+        if tt.validString {
+            println("[GO] sould valid string")
+            dec.ValidString()
+            validUtf8 = utf8.Valid([]byte(tt.in))
+        } else {
+            println("[GO] sould not valid string")
+        }
+        if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil && validUtf8) {
+            spew.Dump(tt.in)
+            t.Fatalf("#%d: %v, want %v", i, err, tt.err)
             continue
         } else if err != nil {
             continue
@@ -2203,7 +2229,7 @@ func TestInvalidStringOption(t *testing.T) {
     if err != nil {
         t.Fatalf("Marshal: %v", err)
     }
-
+    println("data is : ", string(data))
     err = Unmarshal(data, &item)
     if err != nil {
         t.Fatalf("Unmarshal: %v", err)
@@ -2469,4 +2495,107 @@ func TestChangeTool(t *testing.T) {
         t.Fatalf("exp:%v, got:%v", "xxxx", a.T)
     }
 
+}
+
+func TestRandomUnmarshalWithValidString(t *testing.T) {
+    rand.Seed(time.Now().UnixNano())
+    b := make([]byte, 1000)
+    for i := 0; i < 100000; i++ {
+        n, err := rand.Read(b[:rand.Int()%len(b)])
+        if err != nil {
+            t.Fatal("get random data failed:", err)
+        }
+
+        var su0, ju0 string
+        data := append([]byte{'"'}, b[:n]...)
+        data = append(data, '"')
+        jerr0 := json.Unmarshal(data, &ju0)
+        valid0 := utf8.Valid(data)
+
+        serr0 := Unmarshal(data, &su0)
+        jok := jerr0 == nil && valid0
+        sok := serr0 == nil
+        if (sok != jok) {
+            spew.Dump(data, jerr0, valid0, serr0)
+            t.Fatal("unmarshal data should failed: ", sok, jok)
+        }
+        // if jerr0 != nil {
+        //     t.Fatal("unmarshal data failed: encoding/json", jerr)
+        // }
+
+
+        sm, err := json.Marshal(string(b[:n]))
+        if err != nil {
+            t.Fatal("marshal data failed:",err)
+        }
+        var su, ju string
+        // println("data is :", string(sm))
+        jerr := json.Unmarshal(sm[:], &ju)
+        if jerr != nil {
+            t.Fatal("unmarshal data failed: encoding/json", jerr)
+        }
+        if serr := Unmarshal(sm[:], &su); serr != nil {
+            spew.Dump(sm)
+            spew.Dump([]byte(ju))
+            fmt.Println(utf8.Valid(sm))
+            fmt.Println(utf8.Valid([]byte(ju)))
+            t.Fatal("unmarshal data failed:", serr)
+        }
+        _ = su
+    }
+}
+
+func TestSpecialCase(t *testing.T) {
+    data := []byte{'"', 0xc2, 0x88}
+    data = append(data, []byte(`\"\u0011\u0017\u001b\ufffd\ufffd'x\u000e޺Y\u000b\u0015\ufffd\ufffd"`)...)
+    var su, ju string
+    // println("data is :", string(data))
+    spew.Dump([]byte(data))
+    jerr := json.Unmarshal(data, &ju)
+    if jerr != nil {
+        t.Fatal("unmarshal data failed: encoding/json", jerr)
+    }
+    if serr := Unmarshal(data, &su); serr != nil {
+        t.Fatal("unmarshal data failed:", serr)
+    }
+
+    utf := []byte{0xd4, 0xb0} // invalid utf-8 as the 
+    fmt.Print(utf8.Valid(utf))
+}
+
+func TestSpecialCase2(t *testing.T) {
+    data := []byte{'"'}
+    data = append(data, []byte(`\"\u0011\u0017\u001b\ufffd\ufffd'x\u000e޺Y\u000b\u0015\ufffd\ufffd"`)...)
+    var su, ju string
+    // println("data is :", string(data))
+    spew.Dump([]byte(data))
+    jerr := json.Unmarshal(data, &ju)
+    if jerr != nil {
+        t.Fatal("unmarshal data failed: encoding/json", jerr)
+    }
+    if serr := Unmarshal(data, &su); serr != nil {
+        t.Fatal("unmarshal data failed:", serr)
+    }
+
+    utf := []byte{0xd4, 0xb0} // invalid utf-8 as the 
+    fmt.Print(utf8.Valid(utf))
+}
+
+
+func TestSpecialCase3(t *testing.T) {
+    data := []byte{}
+    data = append(data, []byte(`"\ufffd"`)...)
+    var su, ju string
+    // println("data is :", string(data))
+    spew.Dump([]byte(data))
+    jerr := json.Unmarshal(data, &ju)
+    if jerr != nil {
+        t.Fatal("unmarshal data failed: encoding/json", jerr)
+    }
+    if serr := Unmarshal(data, &su); serr != nil {
+        t.Fatal("unmarshal data failed:", serr)
+    }
+
+    utf := []byte{0xd4, 0xb0} // invalid utf-8 as the 
+    fmt.Print(utf8.Valid(utf))
 }
