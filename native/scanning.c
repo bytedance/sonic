@@ -15,8 +15,7 @@
  */
 
 #include "native.h"
-#include "xprintf.c"
-#define xprintf(...) 
+// #define xprintf(...) 
 
 static const char *CS_ARRAY  = "[]{},\"[]{},\"[]{}";
 static const char *CS_OBJECT = "[]{},:\"[]{}:,\"[]";
@@ -616,6 +615,7 @@ simd_advance:
             /* check control chars in JSON string */
             if (unlikely(np < qp)) {
                 ep_seterr(sp - ss + np) // set error position
+                xprintf("ret 64 np < qp");
                 return -ERR_INVAL;
             }
             if (up < qp) {
@@ -627,6 +627,7 @@ simd_advance:
         /* check control chars in JSON string */
         if (unlikely(m2 != 0)) {
             ep_setx(sp - ss + np)
+            xprintf("ret 64 m2 != 0");
             return -ERR_INVAL;
         }
 
@@ -804,6 +805,8 @@ valid_utf8:
 
 static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep, uint64_t flags) {
     if (flags & MASK_VALIDATE_STRING) {
+        ssize_t old = advance_string_default(src, p, ep);
+        xprintf("old advance_string_defaul retuen %d ep is %d\n", old, *ep);
         return advance_string_validate(src, p, ep);
     } else {
         return advance_string_default(src, p, ep);
@@ -849,7 +852,7 @@ void vstring(const GoString *src, long *p, JsonState *ret, uint64_t flags) {
     int64_t v = -1;
     int64_t i = *p;
     ssize_t e = advance_string(src, i, &v, flags);
-
+    xprintf("advacne string ret e is %d, v is %d\n", e, v);
     /* check for errors */
     if (e < 0) {
         *p = src->len;

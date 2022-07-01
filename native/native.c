@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include "xprintf.c"
 #include "native.h"
 #include "fastbytes.c"
 #include "fastfloat.c"
