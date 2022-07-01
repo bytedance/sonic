@@ -110,7 +110,7 @@ func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error 
     dec.SetOptions(cfg.decoderOpts)
 
     err := dec.Decode(val)
-    // dec.ValidString()
+    dec.ValidString()
     pos := dec.Pos()
 
     /* check for errors */

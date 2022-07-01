@@ -16,13 +16,17 @@
 
 #include "native.h"
 #include "xprintf.c"
-// #define xprintf(...) 
+#define xprintf(...) 
 
 static const char *CS_ARRAY  = "[]{},\"[]{},\"[]{}";
 static const char *CS_OBJECT = "[]{},:\"[]{}:,\"[]";
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
+
+// NOTE: mask referenced from decoder/decoder.go
+static const uint64_t MASK_VALIDATE_STRING = 1ul << 5;
+static const uint64_t MASK_ALLOW_CONTROL   = 1ul << 31;
 
 static const double P10_TAB[23] = {
     /* <= the connvertion to double is not exact when less than 1 => */     1e-000,
@@ -112,7 +116,7 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
     }
 }
 
-static inline ssize_t advance_string_old(const GoString *src, long p, int64_t *ep) {
+static inline ssize_t advance_string_default(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t es;
     uint64_t fe;
@@ -468,7 +472,7 @@ static inline uint32_t less4byte_to_uint32(const char* sp, size_t nb) {
     return hi_1 << 16 | lo_2;
 }
 
-static inline ssize_t advance_validate_string(const GoString *src, long p, int64_t *ep) {
+static inline ssize_t advance_string_validate(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t m0, m1, m2, m3;
     uint64_t es, fe, os;
@@ -798,25 +802,20 @@ valid_utf8:
 #undef m0_mask
 }
 
-static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep) {
-    int64_t old_ep;
-    advance_string_old(src, p, &old_ep);
-    xprintf("=====new advance string=======\n");
-    return advance_validate_string(src, p, ep);
+static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep, uint64_t flags) {
+    if (flags & MASK_VALIDATE_STRING) {
+        return advance_string_validate(src, p, ep);
+    } else {
+        return advance_string_default(src, p, ep);
+    }
 }
 
 /** Value Scanning Routines **/
 
-// mask from decoder/decoder.go
-static const uint64_t MASK_ALLOW_CONTROL   = 1ul << 31;
-static const uint64_t MASK_VALIDATE_STRING = 1ul << 5;
-
 long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
     long     q = p;
     GoString m = {.buf = s, .len = n};
-    bool allow_control = (flags&MASK_ALLOW_CONTROL) != 0;
-    bool valid_string = (flags&MASK_ALLOW_CONTROL) != 0;
-
+    bool allow_control = (flags & MASK_ALLOW_CONTROL) != 0;
     /* parse the next identifier, q is UNSAFE, may cause out-of-bounds accessing */
     switch (advance_ns(&m, &q)) {
         case '-' : /* fallthrough */
@@ -831,7 +830,7 @@ long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
         case '8' : /* fallthrough */
         case '9' : vdigits(&m, &q, ret, flags)                          ; return q;
         // TODO: add valid string flags
-        case '"' : vstring(&m, &q, ret, valid_string)                   ; return q;
+        case '"' : vstring(&m, &q, ret, flags)                          ; return q;
         case 'n' : ret->vt = advance_dword(&m, &q, 1, V_NULL, VS_NULL)  ; return q;
         case 't' : ret->vt = advance_dword(&m, &q, 1, V_TRUE, VS_TRUE)  ; return q;
         case 'f' : ret->vt = advance_dword(&m, &q, 0, V_FALSE, VS_ALSE) ; return q;
@@ -849,14 +848,7 @@ long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
 void vstring(const GoString *src, long *p, JsonState *ret, uint64_t flags) {
     int64_t v = -1;
     int64_t i = *p;
-    ssize_t e;
-    if (flags & (1ul << 5)) {
-        xprintf("Vstring: has validate %d\n", flags);
-        e = advance_validate_string(src, i, &v);
-    } else {
-        xprintf("Vstring: test not validate %d\n", flags);
-        e = advance_string_old(src, i, &v);
-    }
+    ssize_t e = advance_string(src, i, &v, flags);
 
     /* check for errors */
     if (e < 0) {
@@ -1593,7 +1585,7 @@ long skip_object(const GoString *src, long *p, StateMachine *m) {
 long skip_string(const GoString *src, long *p) {
     int64_t v;
     ssize_t q = *p - 1;
-    ssize_t e = advance_string(src, *p, &v);
+    ssize_t e = advance_string_default(src, *p, &v);
 
     /* check for errors, and update the position */
     if (e >= 0) {
@@ -1608,7 +1600,7 @@ long skip_string(const GoString *src, long *p) {
 long validate_string(const GoString *src, long *p) {
     int64_t v;
     ssize_t q = *p - 1;
-    ssize_t e = advance_validate_string(src, *p, &v);
+    ssize_t e = advance_string_validate(src, *p, &v);
 
     /* check for errors in string advance */
     if (e < 0) {

@@ -15,18 +15,18 @@ var (
     _subr__lspace       = __native_entry__() + 251
     _subr__lzero        = __native_entry__() + 13
     _subr__quote        = __native_entry__() + 4498
-    _subr__skip_array   = __native_entry__() + 22345
-    _subr__skip_number  = __native_entry__() + 24185
-    _subr__skip_object  = __native_entry__() + 22382
-    _subr__skip_one     = __native_entry__() + 20179
+    _subr__skip_array   = __native_entry__() + 18700
+    _subr__skip_number  = __native_entry__() + 23073
+    _subr__skip_object  = __native_entry__() + 18737
+    _subr__skip_one     = __native_entry__() + 16639
     _subr__u64toa       = __native_entry__() + 3300
     _subr__unquote      = __native_entry__() + 6037
-    _subr__validate_one = __native_entry__() + 24302
+    _subr__validate_one = __native_entry__() + 23190
     _subr__value        = __native_entry__() + 12636
-    _subr__vnumber      = __native_entry__() + 18292
-    _subr__vsigned      = __native_entry__() + 19597
-    _subr__vstring      = __native_entry__() + 14532
-    _subr__vunsigned    = __native_entry__() + 19877
+    _subr__vnumber      = __native_entry__() + 14752
+    _subr__vsigned      = __native_entry__() + 16057
+    _subr__vstring      = __native_entry__() + 14561
+    _subr__vunsigned    = __native_entry__() + 16337
 )
 
 const (
@@ -36,17 +36,17 @@ const (
     _stack__lspace = 8
     _stack__lzero = 8
     _stack__quote = 80
-    _stack__skip_array = 176
+    _stack__skip_array = 160
     _stack__skip_number = 80
-    _stack__skip_object = 176
-    _stack__skip_one = 176
+    _stack__skip_object = 160
+    _stack__skip_one = 160
     _stack__u64toa = 8
     _stack__unquote = 72
-    _stack__validate_one = 176
+    _stack__validate_one = 160
     _stack__value = 416
     _stack__vnumber = 312
     _stack__vsigned = 16
-    _stack__vstring = 1008
+    _stack__vstring = 144
     _stack__vunsigned = 24
 )
 
