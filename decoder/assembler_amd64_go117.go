@@ -151,7 +151,7 @@ var (
     _ARG_ic = jit.Ptr(_SP, _FP_base + 16)
     _ARG_vp = jit.Ptr(_SP, _FP_base + 24)
     _ARG_sb = jit.Ptr(_SP, _FP_base + 32)
-    _ARG_fv = jit.Ptr(_SP, _FP_base + 48)
+    _ARG_fv = jit.Ptr(_SP, _FP_base + 40)
 )
 
 var (
