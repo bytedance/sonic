@@ -35,6 +35,20 @@ var (
     strings.Repeat("2",1024)+`"} b {}`
 )
 
+func TestDecodeEmpty(t *testing.T) {
+    var str = ``
+    var r1 = strings.NewReader(str)
+    var v1 interface{}
+    var d1 = json.NewDecoder(r1)
+    var r2 = strings.NewReader(str)
+    var v2 interface{}
+    var d2 = NewStreamDecoder(r2)
+    es1 := d1.Decode(&v1)
+    ee1 := d2.Decode(&v2)
+    assert.Equal(t, es1, ee1)
+    assert.Equal(t, v1, v2)
+}
+
 func TestDecodeSingle(t *testing.T) {
     var str = _Single_JSON
 

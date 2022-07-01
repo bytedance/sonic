@@ -80,6 +80,9 @@ read_more:
         if err != nil {
             repeat = false
             if err == io.EOF {
+                if len(buf) == 0 {
+                    return err
+                }
                 break
             }
             self.err = err
