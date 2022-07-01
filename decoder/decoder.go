@@ -83,7 +83,6 @@ func (self *Decoder) Reset(s string) {
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
-    println("[Begin] self.f is ", self.f)
     vv := rt.UnpackEface(val)
     vp := vv.Value
 

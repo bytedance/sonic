@@ -2599,3 +2599,18 @@ func TestSpecialCase3(t *testing.T) {
     utf := []byte{0xd4, 0xb0} // invalid utf-8 as the 
     fmt.Print(utf8.Valid(utf))
 }
+
+func TestSpecialUnmarshal(t *testing.T) {
+    data := []byte{'"', '\xff', '"'}
+    var su, ju string
+    // println("data is :", string(data))
+    fmt.Print(utf8.Valid(data))
+    spew.Dump([]byte(data))
+    jerr := json.Unmarshal(data, &ju)
+    if jerr != nil {
+        t.Fatal("unmarshal data failed: encoding/json", jerr)
+    }
+    if serr := Unmarshal(data, &su); serr != nil {
+        t.Fatal("unmarshal data failed:", serr)
+    }
+}
