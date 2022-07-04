@@ -22,11 +22,14 @@ import (
     `reflect`
     `runtime`
     `unsafe`
+    `fmt`
+    `os`
 
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
+    `github.com/davecgh/go-spew/spew`
 )
 
 // Options is a set of encoding options.
@@ -144,6 +147,20 @@ func Quote(s string) string {
 
 // Encode returns the JSON encoding of val, encoded with opts.
 func Encode(val interface{}, opts Options) ([]byte, error) {
+    defer func(){
+        if v := recover(); v != nil {
+            fmt.Fprintf(os.Stderr, "panic is %#v\n", v)
+            fmt.Fprintf(os.Stderr, "Opt is %#v\n", opts)
+            if jout, jerr := json.Marshal(val); jerr == nil {
+                fmt.Fprintf(os.Stderr,"encoding/json encoded is %s\n", string(jout))
+            } else {
+                fmt.Fprintf(os.Stderr,"encoding/json encoded error is %#v\n", jerr)
+            }
+            fmt.Fprintf(os.Stderr,"val is %s\n", spew.Sdump(&val))
+            panic(v)
+        }
+    }()
+
     buf := newBytes()
     err := EncodeInto(&buf, val, opts)
 

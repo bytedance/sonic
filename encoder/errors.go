@@ -58,7 +58,7 @@ const (
 func goPanic(code int, val unsafe.Pointer) {
     switch(code){
     case panicNilPointerOfNonEmptyString:
-        panic(fmt.Sprintf("val: %#v has nil pointer while its length is not zero!", (*rt.GoString)(val)))
+        panic(fmt.Sprintf("val: %#v has nil pointer while its length is not zero! string address is %#v\n", (*rt.GoString)(val), val))
     default:
         panic("encoder error!")
     }
