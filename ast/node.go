@@ -156,11 +156,11 @@ func (self *Node) Raw() (string, error) {
 }
 
 func (self *Node) checkRaw() error {
-    if self.IsRaw() {
-        self.parseRaw(false)
-    }
     if err := self.Check(); err != nil {
         return err
+    }
+    if self.IsRaw() {
+        self.parseRaw(false)
     }
     return nil
 }

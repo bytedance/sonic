@@ -535,9 +535,9 @@ func (self *_Assembler) call_encoder(pc obj.Addr) {
 
 func (self *_Assembler) call_marshaler(fn obj.Addr, it *rt.GoType, vt reflect.Type) {
     switch vt.Kind() {
-        case reflect.Interface : self.call_marshaler_i(fn, it)
-        case reflect.Ptr       : self.call_marshaler_v(fn, it, vt, true)
-        default                : self.call_marshaler_v(fn, it, vt, false)
+        case reflect.Interface        : self.call_marshaler_i(fn, it)
+        case reflect.Ptr, reflect.Map : self.call_marshaler_v(fn, it, vt, true)
+        default                       : self.call_marshaler_v(fn, it, vt, false)
     }
 }
 
