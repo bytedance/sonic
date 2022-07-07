@@ -46,7 +46,7 @@ const (
     OptionUseUnicodeErrors Options = 1 << _F_disable_urc
     OptionDisableUnknown   Options = 1 << _F_disable_unknown
     OptionCopyString       Options = 1 << _F_copy_string
-    OptionValidateString   Options = 1 << _F_copy_string
+    OptionValidateString   Options = 1 << _F_validate_string
 )
 
 func (self *Decoder) SetOptions(opts Options) {
