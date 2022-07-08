@@ -20,6 +20,7 @@ import (
     `encoding/json`
     `runtime`
     `runtime/debug`
+    `strings`
     `sync`
     `testing`
     `time`
@@ -84,6 +85,39 @@ var _BindingValue TwitterStruct
 
 func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
+}
+
+func TestDecodeCorrupt(t *testing.T) {
+    var ds = []string{
+        `{,}`,
+        `{,"a"}`,
+        `{"a":}`,
+        `{"a":1,}`,
+        `{"a":1,"b"}`,
+        `{"a":1,"b":}`,
+        `{,"a":1 "b":2}`,
+        `{"a",:1 "b":2}`,
+        `{"a":,1 "b":2}`,
+        `{"a":1 "b",:2}`,
+        `{"a":1 "b":,2}`,
+        `{"a":1 "b":2,}`,
+        `{"a":1 "b":2}`,
+        `[,]`,
+        `[,1]`,
+        `[1,]`,
+        `[,1,2]`,
+        `[1,2,]`,
+    }
+    for _, d := range ds {
+        var o interface{}
+        _, err := decode(d, &o, false)
+        if err == nil {
+            t.Fatalf("%#v", d)
+        }
+        if !strings.Contains(err.Error(), "invalid char"){
+            t.Fatal(err.Error())
+        }
+    }
 }
 
 func decode(s string, v interface{}, copy bool) (int, error) {
