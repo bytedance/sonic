@@ -63,6 +63,7 @@ const (
     // instead of 'null'
     NoNullSliceOrMap     Options = 1 << bitNoNullSliceOrMap
   
+    // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
 )
 
