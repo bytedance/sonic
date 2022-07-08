@@ -85,6 +85,9 @@ func (cfg Config) Froze() API {
     if cfg.CopyString {
         api.decoderOpts |= decoder.OptionCopyString
     }
+    if cfg.NoNullSliceOrMap {
+        api.encoderOpts |= encoder.NoNullSliceOrMap
+    }
     return api
 }
 

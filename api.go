@@ -31,6 +31,7 @@ import (
     UseUnicodeErrors              bool
     DisallowUnknownFields         bool
     CopyString                    bool
+    NoNullSliceOrMap              bool
  }
  
  var (
