@@ -17,18 +17,19 @@
 package ast
 
 import (
-    `encoding/json`
-    `fmt`
-    `reflect`
-    `runtime`
-    `runtime/debug`
-    `strconv`
-    `testing`
+   `encoding/json`
+   `errors`
+   `fmt`
+   `reflect`
+   `runtime`
+   `runtime/debug`
+   `strconv`
+   `testing`
 
-    `github.com/bytedance/sonic/encoder`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/assert`
+   `github.com/bytedance/sonic/encoder`
+   `github.com/bytedance/sonic/internal/native/types`
+   `github.com/bytedance/sonic/internal/rt`
+   `github.com/stretchr/testify/assert`
 )
 
 
@@ -232,6 +233,7 @@ func TestTypeCast(t *testing.T) {
         exp interface{}
         err error
     }
+    var nonEmptyErr error = errors.New("")
     a1 := NewAny(1)
     lazyArray, _ := NewParser("[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]").Parse()
     lazyObject, _ := NewParser(`{"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16}`).Parse()
@@ -282,6 +284,8 @@ func TestTypeCast(t *testing.T) {
         {"Bool", NewRaw("false"), false, nil},
         {"Int64", NewRaw("true"), int64(1), nil},
         {"Int64", NewRaw("false"), int64(0), nil},
+        {"Int64", NewRaw("\"1\""), int64(1), nil},
+        {"Int64", NewRaw("\"1.0\""), int64(0), nonEmptyErr},
         {"Int64", NewAny(int(0)), int64(0), nil},
         {"Int64", NewAny(int8(0)), int64(0), nil},
         {"Int64", NewAny(int16(0)), int64(0), nil},
@@ -308,6 +312,8 @@ func TestTypeCast(t *testing.T) {
         {"StrictInt64", NewRaw("0"), int64(0), nil},
         {"Float64", NewRaw("true"), float64(1), nil},
         {"Float64", NewRaw("false"), float64(0), nil},
+        {"Float64", NewRaw("\"1.0\""), float64(1.0), nil},
+        {"Float64", NewRaw("\"xx\""), float64(0), nonEmptyErr},
         {"Float64", Node{}, float64(0), ErrUnsupportType},
         {"Float64", NewAny(float32(0)), float64(0), nil},
         {"Float64", NewAny(float64(0)), float64(0), nil},
@@ -321,6 +327,9 @@ func TestTypeCast(t *testing.T) {
         {"Number", Node{}, json.Number(""), ErrUnsupportType},
         {"Number", NewAny(json.Number("0")), json.Number("0"), nil},
         {"Number", NewRaw("0.0"), json.Number("0.0"), nil},
+        {"Number", NewRaw("\"1\""), json.Number("1"), nil},
+        {"Number", NewRaw("\"1.1\""), json.Number("1.1"), nil},
+        {"Number", NewRaw("\"0.x0\""), json.Number(""), nonEmptyErr},
         {"Number", NewRaw("true"), json.Number("1"), nil},
         {"Number", NewRaw("false"), json.Number("0"), nil},
         {"StrictNumber", NewRaw("true"), json.Number(""), ErrUnsupportType},
@@ -380,8 +389,13 @@ func TestTypeCast(t *testing.T) {
         if !reflect.DeepEqual(rets[0].Interface(), c.exp) {
             t.Fatal(i, rets[0].Interface(), c.exp)
         }
-        if rets[1].Interface() != c.err {
-            t.Fatal(i, rets[1].Interface())
+        v := rets[1].Interface();
+        if c.err == nonEmptyErr {
+            if reflect.ValueOf(v).IsNil() {
+                t.Fatal(i, v)
+            }
+        } else if  v != c.err {
+            t.Fatal(i, v)
         }
     }
 }
