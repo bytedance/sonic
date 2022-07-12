@@ -139,12 +139,14 @@ const (
     _S_arr
     _S_arr_0
     _S_obj
-    _S_obj_x
+    _S_obj_0
     _S_obj_delim
+    _S_obj_sep
 )
 
 const (
-    _S_omask = (1 << _S_obj) | (1 << _S_obj_x)
+    _S_omask_key = (1 << _S_obj_0) | (1 << _S_obj_sep)
+    _S_omask_end = (1 << _S_obj_0) | (1 << _S_obj)
     _S_vmask = (1 << _S_val) | (1 << _S_arr_0)
 )
 
@@ -375,7 +377,7 @@ func (self *_ValueDecoder) compile() {
     self.Sjmp("JNC" , "_invalid_char")                                  // JNC     _invalid_char
     self.call_go(_F_makemap_small)                                      // CALL_GO runtime.makemap_small
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)                        // MOVQ    ST.Sp, CX
-    self.Emit("MOVQ", jit.Imm(_S_obj), jit.Sib(_ST, _CX, 8, _ST_Vt))    // MOVQ    _S_obj, ST.Vt[CX]
+    self.Emit("MOVQ", jit.Imm(_S_obj_0), jit.Sib(_ST, _CX, 8, _ST_Vt))    // MOVQ    _S_obj_0, ST.Vt[CX]
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vp), _SI)                // MOVQ    ST.Vp[CX], SI
     self.Emit("MOVQ", _T_map, _DX)                                      // MOVQ    _T_map, DX
     self.Emit("MOVQ", _DX, jit.Ptr(_SI, 0))                             // MOVQ    DX, (SI)
@@ -402,7 +404,7 @@ func (self *_ValueDecoder) compile() {
 
     /* strings with no escape sequences */
     self.Link("_noescape")                                  // _noescape:
-    self.Emit("MOVL", jit.Imm(_S_omask), _DI)               // MOVL _S_omask, DI
+    self.Emit("MOVL", jit.Imm(_S_omask_key), _DI)               // MOVL _S_omask, DI
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ ST.Sp, CX
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _SI)    // MOVQ ST.Vt[CX], SI
     self.Emit("BTQ" , _SI, _DI)                             // BTQ  SI, DI
@@ -541,16 +543,18 @@ func (self *_ValueDecoder) compile() {
     self.Sjmp("JMP" , "_next")                                              // JMP  _next
 
     /** V_ELEM_SEP **/
-    self.Link("_decode_V_ELEM_SEP")                             // _decode_V_ELEM_SEP:
-    self.Emit("MOVQ"    , jit.Imm(_S_obj), _AX)                 // MOVQ     _S_obj, AX
-    self.Emit("MOVQ"    , jit.Imm(_S_obj_x), _DX)               // MOVQ     _S_obj_x, DX
-    self.Emit("MOVQ"    , jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ     ST.Sp, CX
-    self.Emit("CMPXCHGQ", _DX, jit.Sib(_ST, _CX, 8, _ST_Vt))    // CMPXCHGQ DX, ST.Vt[CX]
-    self.Sjmp("JZ"      , "_next")                              // JZ       _next
-    self.Emit("CMPQ"    , _AX, jit.Imm(_S_arr))                 // CMPQ     _AX, _S_arr
-    self.Sjmp("JNE"     , "_invalid_char")                      // JNE      _invalid_char
+    self.Link("_decode_V_ELEM_SEP")                          // _decode_V_ELEM_SEP:
+    self.Emit("MOVQ" , jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ     ST.Sp, CX
+    self.Emit("MOVQ" , jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)    // MOVQ     ST.Vt[CX], AX
+    self.Emit("CMPQ" , _AX, jit.Imm(_S_arr))      
+    self.Sjmp("JE"   , "_array_sep")                         // JZ       _next
+    self.Emit("CMPQ" , _AX, jit.Imm(_S_obj))                 // CMPQ     _AX, _S_arr
+    self.Sjmp("JNE"  , "_invalid_char")                      // JNE      _invalid_char
+    self.Emit("MOVQ" , jit.Imm(_S_obj_sep), jit.Sib(_ST, _CX, 8, _ST_Vt))
+    self.Sjmp("JMP"  , "_next")                              // JMP      _next
 
     /* arrays */
+    self.Link("_array_sep")
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vp), _SI)    // MOVQ ST.Vp[CX], SI
     self.Emit("MOVQ", jit.Ptr(_SI, 8), _SI)                 // MOVQ 8(SI), SI
     self.Emit("MOVQ", jit.Ptr(_SI, 8), _DX)                 // MOVQ 8(SI), DX
@@ -597,10 +601,11 @@ func (self *_ValueDecoder) compile() {
 
     /** V_OBJECT_END **/
     self.Link("_decode_V_OBJECT_END")                       // _decode_V_OBJECT_END:
+    self.Emit("MOVL", jit.Imm(_S_omask_end), _DI)           // MOVL _S_omask, DI
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)            // MOVQ ST.Sp, CX
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)    // MOVQ ST.Vt[CX], AX
-    self.Emit("CMPQ", _AX, jit.Imm(_S_obj))                 // CMPQ AX, _S_obj
-    self.Sjmp("JNE" , "_invalid_char")                      // JNE  _invalid_char
+    self.Emit("BTQ" , _AX, _DI)                    
+    self.Sjmp("JNC" , "_invalid_char")                      // JNE  _invalid_char
     self.Emit("XORL", _AX, _AX)                             // XORL AX, AX
     self.Emit("SUBQ", jit.Imm(1), jit.Ptr(_ST, _ST_Sp))     // SUBQ $1, ST.Sp
     self.Emit("MOVQ", _AX, jit.Sib(_ST, _CX, 8, _ST_Vp))    // MOVQ AX, ST.Vp[CX]

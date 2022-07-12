@@ -19,13 +19,13 @@
 package sonic
 
 import (
-    `os`
     `bytes`
     `encoding`
     `encoding/json`
     `fmt`
     `log`
     `math`
+    `os`
     `reflect`
     `regexp`
     `runtime`
@@ -36,6 +36,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/encoder`
+    `github.com/stretchr/testify/assert`
 )
 
 var (
@@ -1152,4 +1153,19 @@ func TestMarshalerError(t *testing.T) {
             t.Errorf("MarshalerError test %d, got: %s, want: %s", i, got, tt.want)
         }
     }
+}
+
+func TestMarshalNullNil(t *testing.T) {
+    var v = struct {
+        A []int
+        B map[string]int
+    }{}
+    o, e := Marshal(v)
+    assert.Nil(t, e)
+    assert.Equal(t, `{"A":null,"B":null}`, string(o))
+    o, e = Config{
+        NoNullSliceOrMap: true,
+    }.Froze().Marshal(v)
+    assert.Nil(t, e)
+    assert.Equal(t, `{"A":[],"B":{}}`, string(o))
 }

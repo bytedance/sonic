@@ -76,6 +76,56 @@ func TestGC(t *testing.T) {
     wg.Wait()
 }
 
+type sample struct {
+    M map[string]interface{}
+    S []interface{}
+    A [0]interface{}
+    MP *map[string]interface{}
+    SP *[]interface{}
+    AP *[0]interface{}
+}
+
+func TestOptionSliceOrMapNoNull(t *testing.T) {
+    obj := sample{}
+    out, err := Encode(obj, NoNullSliceOrMap)
+    if err != nil {
+        t.Fatal(err)
+    }
+    require.Equal(t, `{"M":{},"S":[],"A":[],"MP":null,"SP":null,"AP":null}`, string(out))
+   
+    obj2 := sample{}
+    out, err = Encode(obj2, 0)
+    if err != nil {
+        t.Fatal(err)
+    }
+    require.Equal(t, `{"M":null,"S":null,"A":[],"MP":null,"SP":null,"AP":null}`, string(out))
+}
+
+func BenchmarkOptionSliceOrMapNoNull(b *testing.B) {
+    b.Run("true", func (b *testing.B) {
+        obj := sample{}
+        _, err := Encode(obj, NoNullSliceOrMap)
+        if err != nil {
+            b.Fatal(err)
+        }
+        b.ResetTimer()
+        for i:=0;i<b.N;i++{
+            _, _ = Encode(obj, NoNullSliceOrMap)
+        }
+    })
+   
+    b.Run("false", func (b *testing.B) {
+        obj2 := sample{}
+        _, err := Encode(obj2, 0)
+        if err != nil {
+            b.Fatal(err)
+        }
+        for i:=0;i<b.N;i++{
+            _, _ = Encode(obj2, 0)
+        }
+    })
+}
+
 func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string) {
     require.Equal(t, exp, fn(arg))
 }

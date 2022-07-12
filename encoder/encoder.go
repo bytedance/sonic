@@ -37,6 +37,7 @@ const (
     bitEscapeHTML          
     bitCompactMarshaler
     bitNoQuoteTextMarshaler
+    bitNoNullSliceOrMap
 )
 
 const (
@@ -52,12 +53,17 @@ const (
 
     // CompactMarshaler indicates that the output JSON from json.Marshaler 
     // is always compact and needs no validation 
-    CompactMarshaler   Options = 1 << bitCompactMarshaler
+    CompactMarshaler     Options = 1 << bitCompactMarshaler
 
     // NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler 
     // is always escaped string and needs no quoting
     NoQuoteTextMarshaler Options = 1 << bitNoQuoteTextMarshaler
 
+    // NoNullSliceOrMap indicates all empty Array or Object are encoded as '[]' or '{}',
+    // instead of 'null'
+    NoNullSliceOrMap     Options = 1 << bitNoNullSliceOrMap
+  
+    // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
 )
 

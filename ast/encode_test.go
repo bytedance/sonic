@@ -85,7 +85,7 @@ func TestEncodeValue(t *testing.T) {
         {NewBool(false), "false", false},
         {NewNumber("0.0"), "0.0", false},
         {NewString(""), `""`, false},
-        {NewString("\"\""), `"\"\""`, false},
+        {NewString(`\"\"`), `"\\\"\\\""`, false},
         {NewString(_TwitterJson), string(quote), false},
         {NewArray([]Node{}), "[]", false},
         {NewArray([]Node{NewBool(true), NewString("true"), NewString("\t")}), `[true,"true","\t"]`, false},
