@@ -187,13 +187,14 @@ func (self *Node) Bool() (bool, error) {
     }
 }
 
-// Int64 casts the node to int64 value, including V_NUMBER, V_TRUE, V_FALSE, V_ANY
+// Int64 casts the node to int64 value, including V_NUMBER, V_TRUE, V_FALSE, V_ANY,
+// V_STRING of invalid digits
 func (self *Node) Int64() (int64, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
     }
     switch self.t {
-        case _V_NUMBER        : return numberToInt64(self)
+        case _V_NUMBER, types.V_STRING : return numberToInt64(self)
         case types.V_TRUE     : return 1, nil
         case types.V_FALSE    : return 0, nil
         case _V_ANY           :  
@@ -241,13 +242,22 @@ func (self *Node) StrictInt64() (int64, error) {
     }
 }
 
-// Number casts node to float64, including V_NUMBER, V_TRUE, V_FALSE, V_ANY of json.Number
+// Number casts node to float64, including V_NUMBER, V_TRUE, V_FALSE, V_ANY of json.Number,
+// V_STRING of invalid digits
 func (self *Node) Number() (json.Number, error) {
     if err := self.checkRaw(); err != nil {
         return json.Number(""), err
     }
     switch self.t {
         case _V_NUMBER        : return toNumber(self)  , nil
+        case types.V_STRING : 
+            if _, err := numberToInt64(self); err == nil {
+                return toNumber(self), nil
+            } else if _, err := numberToFloat64(self); err == nil {
+                return toNumber(self), nil
+            } else {
+                return json.Number(""), err
+            }
         case types.V_TRUE     : return json.Number("1"), nil
         case types.V_FALSE    : return json.Number("0"), nil
         case _V_ANY        :        
@@ -329,7 +339,7 @@ func (self *Node) Float64() (float64, error) {
         return 0.0, err
     }
     switch self.t {
-        case _V_NUMBER       : return numberToFloat64(self)
+        case _V_NUMBER, types.V_STRING : return numberToFloat64(self)
         case types.V_TRUE    : return 1.0, nil
         case types.V_FALSE   : return 0.0, nil
         case _V_ANY        :        
