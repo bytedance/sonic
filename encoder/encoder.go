@@ -177,6 +177,7 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
             out := bytes.NewBuffer(nil)
             fmt.Fprintf(out, "panic: %#v\n", v)
             fmt.Fprintf(out, "recover: options is %#v\n", opts)
+            fmt.Fprintf(out, "recover: buf is %#v\n", (*rt.GoSlice)(unsafe.Pointer(buf)))
             out.WriteString("recover: val is \n")
             spew.Fdump(out, val)
             out.WriteByte('\n')
