@@ -147,25 +147,6 @@ func Quote(s string) string {
 
 // Encode returns the JSON encoding of val, encoded with opts.
 func Encode(val interface{}, opts Options) ([]byte, error) {
-    defer func(){
-        if v := recover(); v != nil {
-            out := bytes.NewBuffer(nil)
-            fmt.Fprintf(out, "panic: %#v\n", v)
-            fmt.Fprintf(out, "recover: options is %#v\n", opts)
-            out.WriteString("recover: val is \n")
-            spew.Fdump(out, val)
-            out.WriteByte('\n')
-            if jout, jerr := json.Marshal(val); jerr == nil {
-                out.WriteString("recover: encoding/json encoded is \n")
-                out.Write(jout)
-            } else {
-                fmt.Fprintf(out, "recover: encoding/json encoded error is %v\n", jerr)
-            }
-            os.Stderr.Write(out.Bytes())
-            panic(out.String())
-        }
-    }()
-
     buf := newBytes()
     err := EncodeInto(&buf, val, opts)
 
@@ -191,6 +172,25 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
 // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating
 // a new one.
 func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
+    defer func(){
+        if v := recover(); v != nil {
+            out := bytes.NewBuffer(nil)
+            fmt.Fprintf(out, "panic: %#v\n", v)
+            fmt.Fprintf(out, "recover: options is %#v\n", opts)
+            out.WriteString("recover: val is \n")
+            spew.Fdump(out, val)
+            out.WriteByte('\n')
+            if jout, jerr := json.Marshal(val); jerr == nil {
+                out.WriteString("recover: encoding/json encoded is \n")
+                out.Write(jout)
+            } else {
+                fmt.Fprintf(out, "recover: encoding/json encoded error is %v\n", jerr)
+            }
+            os.Stderr.Write(out.Bytes())
+            panic(out.String())
+        }
+    }()
+
     stk := newStack()
     efv := rt.UnpackEface(val)
     err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
