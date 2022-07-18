@@ -149,15 +149,20 @@ func Quote(s string) string {
 func Encode(val interface{}, opts Options) ([]byte, error) {
     defer func(){
         if v := recover(); v != nil {
-            fmt.Fprintf(os.Stderr, "panic is %#v\n", v)
-            fmt.Fprintf(os.Stderr, "Opt is %#v\n", opts)
+            out := bytes.NewBuffer(nil)
+            fmt.Fprintf(out, "panic: %#v\n", v)
+            fmt.Fprintf(out, "recover: options is %#v\n", opts)
+            out.WriteString("recover: val is \n")
+            spew.Fdump(out, val)
+            out.WriteByte('\n')
             if jout, jerr := json.Marshal(val); jerr == nil {
-                fmt.Fprintf(os.Stderr,"encoding/json encoded is %s\n", string(jout))
+                out.WriteString("recover: encoding/json encoded is \n")
+                out.Write(jout)
             } else {
-                fmt.Fprintf(os.Stderr,"encoding/json encoded error is %#v\n", jerr)
+                fmt.Fprintf(out, "recover: encoding/json encoded error is %v\n", jerr)
             }
-            fmt.Fprintf(os.Stderr,"val is %s\n", spew.Sdump(&val))
-            panic(v)
+            os.Stderr.Write(out.Bytes())
+            panic(out.String())
         }
     }()
 
