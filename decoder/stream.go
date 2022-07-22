@@ -94,11 +94,12 @@ read_more:
     }
     first = false
 
-    if len(buf) > 0 {
+    l := len(buf)
+    if l > 0 {
         self.Decoder.Reset(string(buf))
         err = self.Decoder.Decode(val)
         if err != nil {
-            if ee, ok := err.(SyntaxError); repeat && ok && ee.Code == types.ERR_EOF {
+            if repeat && repeatable(err, l) {
                 goto read_more
             }
             self.err = err
@@ -109,7 +110,7 @@ read_more:
         self.scanp = 0
     }
     
-    if len(buf) > p {
+    if l > p {
         // remain undecoded bytes, so copy them into self.buf
         self.buf = append(self.buf[:0], buf[p:]...)
     } else {
@@ -122,6 +123,15 @@ read_more:
         bufPool.Put(buf)
     }
     return err
+}
+
+func repeatable(err  error, l int) bool {
+    if ee, ok := err.(SyntaxError); ok {
+        if  ee.Code == types.ERR_EOF  {
+            return true
+        }
+    }
+    return false
 }
 
 // InputOffset returns the input stream byte offset of the current decoder position. 
