@@ -48,7 +48,7 @@ const (
 )
 
 func (self *Decoder) SetOptions(opts Options) {
-    if (opts & 1<<_F_use_number != 0) && (opts & 1<<_F_use_int64 != 0) {
+    if (opts & OptionUseNumber != 0) && (opts & OptionUseInt64 != 0) {
         panic("can't set OptionUseInt64 and OptionUseNumber both!")
     }
     self.f = uint64(opts)
