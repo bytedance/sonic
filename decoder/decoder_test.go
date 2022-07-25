@@ -275,6 +275,15 @@ func TestDecoder_Binding(t *testing.T) {
     spew.Dump(v)
 }
 
+func TestDecoder_SetOption(t *testing.T) {
+    var v interface{}
+    d := NewDecoder("123")
+    d.SetOptions(OptionUseInt64)
+    err := d.Decode(&v)
+    assert.NoError(t, err)
+    assert.Equal(t, v, int64(123))
+}
+
 func TestDecoder_MapWithIndirectElement(t *testing.T) {
     var v map[string]struct { A [129]byte }
     _, err := decode(`{"":{"A":[1,2,3,4,5]}}`, &v, false)
