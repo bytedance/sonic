@@ -99,7 +99,7 @@ read_more:
         self.Decoder.Reset(string(buf))
         err = self.Decoder.Decode(val)
         if err != nil {
-            if repeat && repeatable(err, l) {
+            if repeat && repeatable(err) {
                 goto read_more
             }
             self.err = err
@@ -125,11 +125,9 @@ read_more:
     return err
 }
 
-func repeatable(err  error, l int) bool {
-    if ee, ok := err.(SyntaxError); ok {
-        if  ee.Code == types.ERR_EOF  {
-            return true
-        }
+func repeatable(err error) bool {
+    if ee, ok := err.(SyntaxError); ok && ee.Code == types.ERR_EOF {
+        return true
     }
     return false
 }
