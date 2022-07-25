@@ -1003,6 +1003,9 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, in
     /* run until no more nested values */
     while (self->sp) {
         ch = advance_ns(src, p);
+        if (ch  == 0) {
+            return -ERR_EOF;
+        }
         vt = self->vt[self->sp - 1];
 
         /* set the start address if any */
@@ -1115,7 +1118,6 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, in
                 }
                 break;
             }
-            case  0  : return -ERR_EOF;
             default  : return -ERR_INVAL;
         }
     }
