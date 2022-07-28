@@ -17,19 +17,39 @@
 package encoder
 
 import (
-	"encoding/hex"
-	"encoding/json"
-	"math"
-	"reflect"
-	"runtime"
-	"strings"
-	"testing"
-	"unsafe"
+    `encoding/hex`
+    `encoding/json`
+    `math`
+    `reflect`
+    `runtime`
+    `strings`
+    `testing`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/assert"
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/assert`
 )
+
+func TestEncoderMemoryCorruption(t *testing.T) {
+    println("TestEncoderMemoryCorruption")
+    var m = map[string]interface{}{
+        "1": map[string]interface{} {
+            `"`+strings.Repeat("a", _MaxBuffer - 38)+`"`: "b",
+            "1": map[string]int32{
+                "b": 1658219785,
+            },
+        },
+    }
+    out, err := Encode(m, SortMapKeys)
+    if err != nil {
+        t.Fatal(err)
+    }
+    println(len(out))
+    if err := json.Unmarshal(out, &m); err != nil {
+        t.Fatal(err)
+    }
+}
 
 func TestAssembler_CompileAndLoad(t *testing.T) {
     p, err := newCompiler().compile(reflect.TypeOf((*bool)(nil)))
