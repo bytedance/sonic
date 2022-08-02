@@ -17,14 +17,18 @@
 package decoder
 
 import (
-    `encoding/json`
-    `reflect`
-    `runtime`
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"os"
+	"reflect"
+	"runtime"
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/option`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
+	"github.com/davecgh/go-spew/spew"
 )
 
 const (
@@ -81,6 +85,27 @@ func (self *Decoder) Reset(s string) {
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
+    defer func(){
+        if v := recover(); v != nil {
+            out := bytes.NewBuffer(nil)
+            fmt.Fprintf(out, "panic: %#v\n", v)
+            fmt.Fprintf(out, "recover: options is %x\n", self.f)
+            fmt.Fprintf(out, "recover: val addr is %x\n", rt.UnpackEface(val).Value)
+            fmt.Fprintf(out, "recover: src is %s\n", self.s)
+            os.Stderr.Write(out.Bytes())
+            out.Reset()
+            if jerr := json.Unmarshal([]byte(self.s), val); jerr == nil {
+                out.WriteString("recover: encoding/json decoded val is \n")
+                spew.Fdump(out, val)
+                out.WriteByte('\n')
+            } else {
+                fmt.Fprintf(out, "recover: encoding/json decoded error is %v\n", jerr)
+            }
+            os.Stderr.Write(out.Bytes())
+            panic(out.String())
+        }
+    }()
+
     vv := rt.UnpackEface(val)
     vp := vv.Value
 

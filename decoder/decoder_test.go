@@ -17,20 +17,21 @@
 package decoder
 
 import (
-    `encoding/json`
-    `runtime`
-    `runtime/debug`
-    `strings`
-    `sync`
-    `testing`
-    `time`
+	"encoding/json"
+	"fmt"
+	"runtime"
+	"runtime/debug"
+	"strings"
+	"sync"
+	"testing"
+	"time"
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/davecgh/go-spew/spew`
-    gojson `github.com/goccy/go-json`
-    `github.com/json-iterator/go`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/davecgh/go-spew/spew"
+	gojson "github.com/goccy/go-json"
+	"github.com/json-iterator/go"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -85,6 +86,24 @@ var _BindingValue TwitterStruct
 
 func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
+}
+
+type panicUnmarshaler struct {}
+
+func (p *panicUnmarshaler) UnmarshalJSON(_ []byte) error {
+    panic("unmarshal error")
+}
+
+func TestDecodeRecover(t *testing.T) {
+    defer func() {
+        if r := recover(); r == nil {
+            t.Fatal(r)
+        } else {
+            fmt.Printf("%v", r)
+        }
+    }()
+    var p = new(panicUnmarshaler)
+    decode("{}", p, false)
 }
 
 func TestDecodeCorrupt(t *testing.T) {
