@@ -215,7 +215,7 @@ input := []byte(`{"key1":[{},{"key2":{"key3":[1,2,3]}}]}`)
 root, err := sonic.Get(input)
 raw := root.Raw() // == string(input)
 
-// multiple pathes
+// multiple paths
 root, err := sonic.Get(input, "key1", 1, "key2")
 sub := root.Get("key3").Index(2).Int64() // == 3
 ```
@@ -261,9 +261,10 @@ println(string(buf) == string(exp)) // true
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
 ## Compatibility
-Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
+Sonic **DOES NOT** attempt to support all environments, due to the difficulty of developing high-performance codes. For 
+developers who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
 - `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options like `SortKeys=false` will be invalid.
-- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It whill fall back to `encoding/json`.
+- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It will fall back to `encoding/json`.
 - `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options will be invalid.
 
 ## Tips
