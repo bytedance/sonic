@@ -92,6 +92,7 @@ func (self *Decoder) Decode(val interface{}) error {
             fmt.Fprintf(out, "recover: options is %x\n", self.f)
             fmt.Fprintf(out, "recover: val addr is %x\n", rt.UnpackEface(val).Value)
             fmt.Fprintf(out, "recover: src is %s\n", self.s)
+            msg := string(out.Bytes())
             os.Stderr.Write(out.Bytes())
             out.Reset()
             if jerr := json.Unmarshal([]byte(self.s), val); jerr == nil {
@@ -102,7 +103,7 @@ func (self *Decoder) Decode(val interface{}) error {
                 fmt.Fprintf(out, "recover: encoding/json decoded error is %v\n", jerr)
             }
             os.Stderr.Write(out.Bytes())
-            panic(out.String())
+            panic(msg)
         }
     }()
 
