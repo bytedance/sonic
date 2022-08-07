@@ -111,7 +111,6 @@ func (cfg *frozenConfig) MarshalIndent(val interface{}, prefix, indent string) (
 func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
     dec := decoder.NewDecoder(buf)
     dec.SetOptions(cfg.decoderOpts)
-    dec.ValidString()
 
     err := dec.Decode(val)
     pos := dec.Pos()
