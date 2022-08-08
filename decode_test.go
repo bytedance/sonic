@@ -35,7 +35,7 @@ import (
     `testing`
     `time`
     `unsafe`
-    "unicode/utf8"
+    `unicode/utf8`
 
     `github.com/bytedance/sonic/decoder`
     `github.com/davecgh/go-spew/spew`
@@ -412,7 +412,6 @@ type unmarshalTest struct {
     useNumber             bool
     golden                bool
     disallowUnknownFields bool
-    validEscapeUnicode    bool
     validString           bool
 }
 
@@ -2226,7 +2225,6 @@ func TestInvalidStringOption(t *testing.T) {
     if err != nil {
         t.Fatalf("Marshal: %v", err)
     }
-    println("data is : ", string(data))
     err = Unmarshal(data, &item)
     if err != nil {
         t.Fatalf("Unmarshal: %v", err)

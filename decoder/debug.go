@@ -1,5 +1,3 @@
-// +build go1.15,!go1.17
-
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -19,13 +17,14 @@
 package decoder
 
 import (
-    `os`
-    `strings`
-    `runtime`
-    `runtime/debug`
+	`os`
+	`runtime`
+	`runtime/debug`
+	`strings`
 
-    `github.com/bytedance/sonic/internal/jit`
+	`github.com/bytedance/sonic/internal/jit`
 )
+
 
 var (
     debugSyncGC  = os.Getenv("SONIC_SYNC_GC") != ""
@@ -33,15 +32,20 @@ var (
 )
 
 var (
-    _Instr_End _Instr = newInsOp(_OP_any)
+    _Instr_End _Instr = newInsOp(_OP_nil_1)
 
     _F_gc       = jit.Func(runtime.GC)
     _F_force_gc = jit.Func(debug.FreeOSMemory)
     _F_println  = jit.Func(println_wrapper)
+    _F_print    = jit.Func(print)
 )
 
 func println_wrapper(i int, op1 int, op2 int){
     println(i, " Intrs ", op1, _OpNames[op1], "next: ", op2, _OpNames[op2])
+}
+
+func print(i int){
+    println(i)
 }
 
 func (self *_Assembler) force_gc() {
