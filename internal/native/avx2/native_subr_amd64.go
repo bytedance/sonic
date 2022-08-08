@@ -15,13 +15,13 @@ var (
     _subr__lspace       = __native_entry__() + 379
     _subr__lzero        = __native_entry__() + 13
     _subr__quote        = __native_entry__() + 4842
-    _subr__skip_array   = __native_entry__() + 20480
-    _subr__skip_number  = __native_entry__() + 24724
-    _subr__skip_object  = __native_entry__() + 20515
+    _subr__skip_array   = __native_entry__() + 20498
+    _subr__skip_number  = __native_entry__() + 24742
+    _subr__skip_object  = __native_entry__() + 20533
     _subr__skip_one     = __native_entry__() + 18818
     _subr__u64toa       = __native_entry__() + 3544
     _subr__unquote      = __native_entry__() + 7467
-    _subr__validate_one = __native_entry__() + 24841
+    _subr__validate_one = __native_entry__() + 24859
     _subr__value        = __native_entry__() + 14548
     _subr__vnumber      = __native_entry__() + 16931
     _subr__vsigned      = __native_entry__() + 18236

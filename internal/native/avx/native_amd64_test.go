@@ -247,6 +247,28 @@ func TestNative_Vstring(t *testing.T) {
     assert.Equal(t, int64(5), v.Iv)
 }
 
+func TestNative_Vstring_ValidUnescapedChars(t *testing.T) {
+    var v types.JsonState
+    valid := 1
+    i := 0
+    s := "test\x1f\""
+    __vstring(&s, &i, &v, valid)
+    assert.Equal(t, 4, i)
+    assert.Equal(t, -1, v.Ep)
+    assert.Equal(t, int64(0), v.Iv)
+}
+
+func TestNative_Vstring_ValidUtf8(t *testing.T) {
+    var v types.JsonState
+    valid := 1
+    i := 0
+    s := "test\xff\""
+    __vstring(&s, &i, &v, valid)
+    assert.Equal(t, 5, i)
+    assert.Equal(t, -1, v.Ep)
+    assert.Equal(t, int64(0), v.Iv)
+}
+
 func TestNative_VstringEscapeEOF(t *testing.T) {
     var v types.JsonState
     i := 0
