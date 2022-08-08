@@ -22,16 +22,48 @@ import (
  
  // Config is a combination of sonic/encoder.Options and sonic/decoder.Options
  type Config struct {
+    // EscapeHTML indicates encoder to escape all HTML characters 
+    // after serializing into JSON (see https://pkg.go.dev/encoding/json#HTMLEscape).
+    // WARNING: This hurts performance A LOT, USE WITH CARE.
     EscapeHTML                    bool
+
+    // SortMapKeys indicates encoder that the keys of a map needs to be sorted 
+    // before serializing into JSON.
+    // WARNING: This hurts performance A LOT, USE WITH CARE.
     SortMapKeys                   bool
+
+    // CompactMarshaler indicates encoder that the output JSON from json.Marshaler 
+    // is always compact and needs no validation 
     CompactMarshaler              bool
+
+    // NoQuoteTextMarshaler indicates encoder that the output text from encoding.TextMarshaler 
+    // is always escaped string and needs no quoting
     NoQuoteTextMarshaler          bool
-    UseInt64                      bool
-    UseNumber                     bool
-    UseUnicodeErrors              bool
-    DisallowUnknownFields         bool
-    CopyString                    bool
+
+    // NoNullSliceOrMap indicates encoder that all empty Array or Object are encoded as '[]' or '{}',
+    // instead of 'null'
     NoNullSliceOrMap              bool
+
+    // UseInt64 indicates decoder to unmarshal an integer into an interface{} as an
+    // int64 instead of as a float64.
+    UseInt64                      bool
+
+    // UseNumber indicates decoder to unmarshal a number into an interface{} as a
+    // json.Number instead of as a float64.
+    UseNumber                     bool
+
+    // UseUnicodeErrors indicates decoder to return an error when encounter invalid
+    // UTF-8 escape sequences.
+    UseUnicodeErrors              bool
+
+    // DisallowUnknownFields indicates decoder to return an error when the destination
+    // is a struct and the input contains object keys which do not match any
+    // non-ignored, exported fields in the destination.
+    DisallowUnknownFields         bool
+
+    // CopyString indicates decoder to decode string values by copying instead of referring.
+    CopyString                    bool
+
  }
  
  var (
@@ -53,7 +85,7 @@ import (
  )
  
  
- // API a binding of specific config.
+ // API is a binding of specific config.
  // This interface is inspired by github.com/json-iterator/go,
  // and has same behaviors under equavilent config.
  type API interface {

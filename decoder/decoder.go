@@ -50,7 +50,7 @@ const (
 )
 
 func (self *Decoder) SetOptions(opts Options) {
-    if (opts & 1<<_F_use_number != 0) && (opts & 1<<_F_use_int64 != 0) {
+    if (opts & OptionUseNumber != 0) && (opts & OptionUseInt64 != 0) {
         panic("can't set OptionUseInt64 and OptionUseNumber both!")
     }
     self.f = uint64(opts)
@@ -109,34 +109,34 @@ func (self *Decoder) Decode(val interface{}) error {
     return err
 }
 
-// UseInt64 causes the Decoder to unmarshal an integer into an interface{} as an
+// UseInt64 indicates the Decoder to unmarshal an integer into an interface{} as an
 // int64 instead of as a float64.
 func (self *Decoder) UseInt64() {
     self.f  |= 1 << _F_use_int64
     self.f &^= 1 << _F_use_number
 }
 
-// UseNumber causes the Decoder to unmarshal a number into an interface{} as a
+// UseNumber indicates the Decoder to unmarshal a number into an interface{} as a
 // json.Number instead of as a float64.
 func (self *Decoder) UseNumber() {
     self.f &^= 1 << _F_use_int64
     self.f  |= 1 << _F_use_number
 }
 
-// UseUnicodeErrors causes the Decoder to return an error when encounter invalid
+// UseUnicodeErrors indicates the Decoder to return an error when encounter invalid
 // UTF-8 escape sequences.
 func (self *Decoder) UseUnicodeErrors() {
     self.f |= 1 << _F_disable_urc
 }
 
-// DisallowUnknownFields causes the Decoder to return an error when the destination
+// DisallowUnknownFields indicates the Decoder to return an error when the destination
 // is a struct and the input contains object keys which do not match any
 // non-ignored, exported fields in the destination.
 func (self *Decoder) DisallowUnknownFields() {
     self.f |= 1 << _F_disable_unknown
 }
 
-// CopyString causes the Decoder to decode string values by copying instead of referring.
+// CopyString indicates the Decoder to decode string values by copying instead of referring.
 func (self *Decoder) CopyString() {
     self.f |= 1 << _F_copy_string
 }

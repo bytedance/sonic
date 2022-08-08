@@ -832,7 +832,7 @@ func (self *_Assembler) _asm_OP_i16(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_i32(_ *_Instr) {
-    self.store_int(11, _F_i64toa, "MOVLQSX")
+    self.store_int(17, _F_i64toa, "MOVLQSX")
 }
 
 func (self *_Assembler) _asm_OP_i64(_ *_Instr) {
@@ -848,7 +848,7 @@ func (self *_Assembler) _asm_OP_u16(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_u32(_ *_Instr) {
-    self.store_int(10, _F_u64toa, "MOVLQZX")
+    self.store_int(16, _F_u64toa, "MOVLQZX")
 }
 
 func (self *_Assembler) _asm_OP_u64(_ *_Instr) {

@@ -17,6 +17,7 @@
 package decoder
 
 import (
+    `bytes`
     `encoding/json`
     `io`
     `io/ioutil`
@@ -34,6 +35,39 @@ var (
     _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}{ } {"11111":"` + 
     strings.Repeat("2",1024)+`"} b {}`
 )
+
+func TestStreamError(t *testing.T) {
+    var qs = []string{
+        `{`+strings.Repeat(" ", 1024)+`"`,
+        `{`+strings.Repeat(" ", 1024)+`"}`,
+        `{`+strings.Repeat(" ", 1024)+`""}`,
+        `{`+strings.Repeat(" ", 1024)+`"":}`,
+        `{`+strings.Repeat(" ", 1024)+`"":]`,
+        `{`+strings.Repeat(" ", 1024)+`"":1x`,
+        `{`+strings.Repeat(" ", 1024)+`"":1x}`,
+        `{`+strings.Repeat(" ", 1024)+`"":1x]`,
+        `{`+strings.Repeat(" ", 1024)+`"":t`,
+        `{`+strings.Repeat(" ", 1024)+`"":t}`,
+        `{`+strings.Repeat(" ", 1024)+`"":true]`,
+        `{`+strings.Repeat(" ", 1024)+`"":f`,
+        `{`+strings.Repeat(" ", 1024)+`"":f}`,
+        `{`+strings.Repeat(" ", 1024)+`"":false]`,
+        `{`+strings.Repeat(" ", 1024)+`"":n`,
+        `{`+strings.Repeat(" ", 1024)+`"":n}`,
+        `{`+strings.Repeat(" ", 1024)+`"":null]`,
+        `{`+strings.Repeat(" ", 1024)+`"":"`,
+        `{`+strings.Repeat(" ", 1024)+`"":"a`,
+        `{`+strings.Repeat(" ", 1024)+`"":"a}`,
+        `{`+strings.Repeat(" ", 1024)+`"":"a"`,
+        `{`+strings.Repeat(" ", 1024)+`"":"a"]`,
+    }
+
+    for i, q := range qs {
+        var qq = []byte(q[:1024]+strings.Repeat(" ", i*100)+q[1024:])
+        var obj interface{}
+        require.NotNil(t, NewStreamDecoder(bytes.NewReader(qq)).Decode(&obj))
+    }
+}
 
 func TestDecodeEmpty(t *testing.T) {
     var str = ``
