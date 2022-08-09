@@ -77,12 +77,12 @@ func HTMLEscape(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, allow_control int) int
+func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) int
 
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func SkipOne(s *string, p *int, m *types.StateMachine) int
+func SkipOne(s *string, p *int, m *types.StateMachine, flags uint64) int
 
 //go:nosplit
 //go:noescape

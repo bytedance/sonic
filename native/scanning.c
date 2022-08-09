@@ -16,13 +16,14 @@
 
 #include "native.h"
 #include "utf8.c"
+#include "test/xprintf.h"
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
 
 // NOTE: mask referenced from decoder/decoder.go
-static const uint64_t MASK_VALIDATE_STRING = 1ul << 5;
-static const uint64_t MASK_ALLOW_CONTROL   = 1ul << 31;
+static const uint64_t MASK_VALIDATE_STRING = 1ull << 5;
+static const uint64_t MASK_ALLOW_CONTROL   = 1ull << 31;
 
 static const double P10_TAB[23] = {
     /* <= the connvertion to double is not exact when less than 1 => */     1e-000,
@@ -671,9 +672,11 @@ valid_utf8:
 }
 
 static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep, uint64_t flags) {
-    if (unlikely(flags)) {
+    if ((flags & MASK_VALIDATE_STRING) != 0) {
+        xprintf("validate_string: %x", flags);
         return advance_string_validate(src, p, ep);
     } else {
+        xprintf("default_string: %x", flags);
         return advance_string_default(src, p, ep);
     }
 }
@@ -697,7 +700,7 @@ long value(const char *s, size_t n, long p, JsonState *ret, uint64_t flags) {
         case '7' : /* fallthrough */
         case '8' : /* fallthrough */
         case '9' : vdigits(&m, &q, ret, flags)                          ; return q;
-        case '"' : vstring(&m, &q, ret, flags & MASK_VALIDATE_STRING)   ; return q;
+        case '"' : vstring(&m, &q, ret, flags)                          ; return q;
         case 'n' : ret->vt = advance_dword(&m, &q, 1, V_NULL, VS_NULL)  ; return q;
         case 't' : ret->vt = advance_dword(&m, &q, 1, V_TRUE, VS_TRUE)  ; return q;
         case 'f' : ret->vt = advance_dword(&m, &q, 0, V_FALSE, VS_ALSE) ; return q;
@@ -1085,7 +1088,7 @@ static inline long fsm_push(StateMachine *self, int vt) {
     }
 }
 
-static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
+static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, uint64_t flags) {
     int  vt;
     char ch;
     long vi = -1;
@@ -1132,7 +1135,7 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
             case FSM_KEY: {
                 FSM_CHAR('"');
                 FSM_REPL(self, FSM_ELEM);
-                FSM_XERR(skip_string(src, p));
+                FSM_XERR(skip_string(src, p, flags));
                 continue;
             }
 
@@ -1170,7 +1173,7 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
                     /* the quote of the first key */
                     case '"': {
                         FSM_REPL(self, FSM_OBJ);
-                        FSM_XERR(skip_string(src, p));
+                        FSM_XERR(skip_string(src, p, flags));
                         FSM_XERR(fsm_push(self, FSM_ELEM));
                         continue;
                     }
@@ -1196,125 +1199,7 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p) {
             case 'f' : FSM_XERR(advance_dword(src, p, 0, *p - 1, VS_ALSE)); break;
             case '[' : FSM_XERR(fsm_push(self, FSM_ARR_0));                 break;
             case '{' : FSM_XERR(fsm_push(self, FSM_OBJ_0));                 break;
-            case '"' : FSM_XERR(skip_string(src, p));                       break;
-            case  0  : return -ERR_EOF;
-            default  : return -ERR_INVAL;
-        }
-    }
-
-    /* all done */
-    return vi;
-}
-
-static inline long valid_fsm_exec(StateMachine *self, const GoString *src, long *p) {
-    int  vt;
-    char ch;
-    long vi = -1;
-
-    /* run until no more nested values */
-    while (self->sp) {
-        ch = advance_ns(src, p);
-        vt = self->vt[self->sp - 1];
-
-        /* set the start address if any */
-        if (vi == -1) {
-            vi = *p - 1;
-        }
-
-        /* check for special types */
-        switch (vt) {
-            default: {
-                FSM_DROP(self);
-                break;
-            }
-
-            /* arrays */
-            case FSM_ARR: {
-                switch (ch) {
-                    case ']' : FSM_DROP(self);                    continue;
-                    case ',' : FSM_XERR(fsm_push(self, FSM_VAL)); continue;
-                    default  : return -ERR_INVAL;
-                }
-            }
-
-            /* objects */
-            case FSM_OBJ: {
-                switch (ch) {
-                    case '}' : FSM_DROP(self);                    continue;
-                    case ',' : FSM_XERR(fsm_push(self, FSM_KEY)); continue;
-                    default  : return -ERR_INVAL;
-                }
-            }
-
-            /* object keys */
-            case FSM_KEY: {
-                FSM_CHAR('"');
-                FSM_REPL(self, FSM_ELEM);
-                FSM_XERR(validate_string(src, p));
-                continue;
-            }
-
-            /* object element */
-            case FSM_ELEM: {
-                FSM_CHAR(':');
-                FSM_REPL(self, FSM_VAL);
-                continue;
-            }
-
-            /* arrays, first element */
-            case FSM_ARR_0: {
-                if (ch == ']') {
-                    FSM_DROP(self);
-                    continue;
-                } else {
-                    FSM_REPL(self, FSM_ARR);
-                    break;
-                }
-            }
-
-            /* objects, first pair */
-            case FSM_OBJ_0: {
-                switch (ch) {
-                    default: {
-                        return -ERR_INVAL;
-                    }
-
-                    /* empty object */
-                    case '}': {
-                        FSM_DROP(self);
-                        continue;
-                    }
-
-                    /* the quote of the first key */
-                    case '"': {
-                        FSM_REPL(self, FSM_OBJ);
-                        FSM_XERR(validate_string(src, p));
-                        FSM_XERR(fsm_push(self, FSM_ELEM));
-                        continue;
-                    }
-                }
-            }
-        }
-
-        /* simple values */
-        switch (ch) {
-            case '0' : /* fallthrough */
-            case '1' : /* fallthrough */
-            case '2' : /* fallthrough */
-            case '3' : /* fallthrough */
-            case '4' : /* fallthrough */
-            case '5' : /* fallthrough */
-            case '6' : /* fallthrough */
-            case '7' : /* fallthrough */
-            case '8' : /* fallthrough */
-            case '9' : FSM_XERR(skip_positive(src, p));                     break;
-            case '-' : FSM_XERR(skip_negative(src, p));                     break;
-            case 'n' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_NULL)); break;
-            case 't' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_TRUE)); break;
-            case 'f' : FSM_XERR(advance_dword(src, p, 0, *p - 1, VS_ALSE)); break;
-            case '[' : FSM_XERR(fsm_push(self, FSM_ARR_0));                 break;
-            case '{' : FSM_XERR(fsm_push(self, FSM_OBJ_0));                 break;
-            case '"' : FSM_XERR(validate_string(src, p));                   break;
+            case '"' : FSM_XERR(skip_string(src, p, flags));                       break;
             case  0  : return -ERR_EOF;
             default  : return -ERR_INVAL;
         }
@@ -1541,25 +1426,25 @@ check_index:
 #undef check_sidx
 #undef check_vidx
 
-long skip_one(const GoString *src, long *p, StateMachine *m) {
+long skip_one(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
     fsm_init(m, FSM_VAL);
-    return fsm_exec(m, src, p);
+    return fsm_exec(m, src, p, flags);
 }
 
-long skip_array(const GoString *src, long *p, StateMachine *m) {
+long skip_array(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
     fsm_init(m, FSM_ARR_0);
-    return fsm_exec(m, src, p);
+    return fsm_exec(m, src, p, flags);
 }
 
-long skip_object(const GoString *src, long *p, StateMachine *m) {
+long skip_object(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
     fsm_init(m, FSM_OBJ_0);
-    return fsm_exec(m, src, p);
+    return fsm_exec(m, src, p, flags);
 }
 
-long skip_string(const GoString *src, long *p) {
+long skip_string(const GoString *src, long *p, uint64_t flags) {
     int64_t v;
     ssize_t q = *p - 1;
-    ssize_t e = advance_string_default(src, *p, &v);
+    ssize_t e = advance_string(src, *p, &v, flags);
 
     /* check for errors, and update the position */
     if (e >= 0) {
@@ -1646,5 +1531,5 @@ long skip_number(const GoString *src, long *p) {
 
 long validate_one(const GoString *src, long *p, StateMachine *m) {
     fsm_init(m, FSM_VAL);
-    return valid_fsm_exec(m, src, p);
+    return fsm_exec(m, src, p, MASK_VALIDATE_STRING);
 }

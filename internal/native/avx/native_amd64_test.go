@@ -249,7 +249,7 @@ func TestNative_Vstring(t *testing.T) {
 
 func TestNative_Vstring_ValidUnescapedChars(t *testing.T) {
     var v types.JsonState
-    valid := 1
+    valid := uint64(types.F_VALIDATE_STRING)
     i := 0
     s := "test\x1f\""
     __vstring(&s, &i, &v, valid)
@@ -260,7 +260,7 @@ func TestNative_Vstring_ValidUnescapedChars(t *testing.T) {
 
 func TestNative_Vstring_ValidUtf8(t *testing.T) {
     var v types.JsonState
-    valid := 1
+    valid := uint64(types.F_VALIDATE_STRING)
     i := 0
     s := "test\xff\""
     __vstring(&s, &i, &v, valid)
@@ -528,36 +528,36 @@ func TestNative_Vunsigned(t *testing.T) {
 func TestNative_SkipOne(t *testing.T) {
     p := 0
     s := ` {"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
-    q := __skip_one(&s, &p, &types.StateMachine{})
+    q := __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 42, p)
     assert.Equal(t, 1, q)
     p = 0
     s = `1 2.5 -3 "asdf\nqwer" true false null {} []`
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 1, p)
     assert.Equal(t, 0, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 5, p)
     assert.Equal(t, 2, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 8, p)
     assert.Equal(t, 6, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 21, p)
     assert.Equal(t, 9, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 26, p)
     assert.Equal(t, 22, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 32, p)
     assert.Equal(t, 27, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 37, p)
     assert.Equal(t, 33, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 40, p)
     assert.Equal(t, 38, q)
-    q = __skip_one(&s, &p, &types.StateMachine{})
+    q = __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, 43, p)
     assert.Equal(t, 41, q)
 }
@@ -569,7 +569,7 @@ func TestNative_SkipOne_Error(t *testing.T) {
         `"asdf`, `"\\\"`,
     }) {
         p := 0
-        q := __skip_one(&s, &p, &types.StateMachine{})
+        q := __skip_one(&s, &p, &types.StateMachine{}, uint64(0))
         assert.True(t, q < 0)
     }
 }
@@ -577,14 +577,14 @@ func TestNative_SkipOne_Error(t *testing.T) {
 func TestNative_SkipArray(t *testing.T) {
     p := 0
     s := `null, true, false, 1, 2.0, -3, {"asdf": "wqer"}],`
-    __skip_array(&s, &p, &types.StateMachine{})
+    __skip_array(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, p, 48)
 }
 
 func TestNative_SkipObject(t *testing.T) {
     p := 0
     s := `"asdf": "wqer"},`
-    __skip_object(&s, &p, &types.StateMachine{})
+    __skip_object(&s, &p, &types.StateMachine{}, uint64(0))
     assert.Equal(t, p, 15)
 }
 

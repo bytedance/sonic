@@ -25,8 +25,8 @@ CPU_avx2		:= amd64
 TMPL_avx		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 TMPL_avx2		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 
-CFLAGS_avx		:= -msse4 -mavx -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0
-CFLAGS_avx2		:= -msse4 -mavx -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1
+CFLAGS_avx		:= -msse4 -mavx -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0 -DDEBUG=1
+CFLAGS_avx2		:= -msse4 -mavx -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1 
 
 CC_amd64		:= clang
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py

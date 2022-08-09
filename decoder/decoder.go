@@ -208,7 +208,7 @@ func Skip(data []byte) (start int, end int) {
     s := rt.Mem2Str(data)
     p := 0
     m := types.NewStateMachine()
-    ret := native.SkipOne(&s, &p, m)
+    ret := native.SkipOne(&s, &p, m, uint64(0))
     types.FreeStateMachine(m) 
     return ret, p
 }

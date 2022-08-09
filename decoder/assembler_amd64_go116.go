@@ -387,6 +387,7 @@ func (self *_Assembler) call_sf(fn obj.Addr) {
     self.Emit("MOVQ", _IC, _ARG_ic)                     // MOVQ IC, ic<>+16(FP)
     self.Emit("LEAQ", _ARG_ic, _SI)                     // LEAQ ic<>+16(FP), SI
     self.Emit("LEAQ", jit.Ptr(_ST, _FsmOffset), _DX)    // LEAQ _FsmOffset(ST), DX
+    self.Emit("MOVQ", _ARG_fv, _CX)
     self.call(fn)                                       // CALL ${fn}
     self.Emit("MOVQ", _ARG_ic, _IC)                     // MOVQ ic<>+16(FP), IC
 }
