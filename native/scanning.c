@@ -1451,23 +1451,9 @@ long skip_string(const GoString *src, long *p, uint64_t flags) {
         *p = e;
         return q;
     } else {
-        *p = src->len;
+        *p = v;
         return e;
     }
-}
-
-long validate_string(const GoString *src, long *p) {
-    int64_t v;
-    ssize_t q = *p - 1;
-    ssize_t e = advance_string_validate(src, *p, &v);
-
-    /* check for errors in string advance */
-    if (e < 0) {
-        *p = e == -ERR_EOF ? src->len : v;
-        return e;
-    }
-    *p = e;
-    return q;
 }
 
 long skip_negative(const GoString *src, long *p) {

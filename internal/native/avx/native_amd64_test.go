@@ -253,9 +253,7 @@ func TestNative_Vstring_ValidUnescapedChars(t *testing.T) {
     i := 0
     s := "test\x1f\""
     __vstring(&s, &i, &v, valid)
-    assert.Equal(t, 4, i)
-    assert.Equal(t, -1, v.Ep)
-    assert.Equal(t, int64(0), v.Iv)
+    assert.Equal(t, -int(types.ERR_INVALID_CHAR), int(v.Vt))
 }
 
 func TestNative_Vstring_ValidUtf8(t *testing.T) {
@@ -264,9 +262,7 @@ func TestNative_Vstring_ValidUtf8(t *testing.T) {
     i := 0
     s := "test\xff\""
     __vstring(&s, &i, &v, valid)
-    assert.Equal(t, 5, i)
-    assert.Equal(t, -1, v.Ep)
-    assert.Equal(t, int64(0), v.Iv)
+    assert.Equal(t, -int(types.ERR_INVALID_CHAR), int(v.Vt))
 }
 
 func TestNative_VstringEscapeEOF(t *testing.T) {
