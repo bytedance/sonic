@@ -1,3 +1,5 @@
+#ifndef UTF8_H
+#define UTF8_H
 /*
  * Copyright (C) 2019 Yaoyuan <ibireme@gmail.com>.
  *
@@ -115,3 +117,5 @@ static inline uint32_t less4byte_to_uint32(const char* sp, size_t nb) {
     uint32_t lo_2 = *(uint16_t*)(sp);
     return hi_1 << 16 | lo_2;
 }
+
+#endif

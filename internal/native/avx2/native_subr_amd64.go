@@ -15,18 +15,18 @@ var (
     _subr__lspace       = __native_entry__() + 379
     _subr__lzero        = __native_entry__() + 13
     _subr__quote        = __native_entry__() + 4842
-    _subr__skip_array   = __native_entry__() + 22754
-    _subr__skip_number  = __native_entry__() + 24647
-    _subr__skip_object  = __native_entry__() + 22789
-    _subr__skip_one     = __native_entry__() + 20945
+    _subr__skip_array   = __native_entry__() + 22748
+    _subr__skip_number  = __native_entry__() + 24641
+    _subr__skip_object  = __native_entry__() + 22783
+    _subr__skip_one     = __native_entry__() + 20939
     _subr__u64toa       = __native_entry__() + 3544
     _subr__unquote      = __native_entry__() + 7467
-    _subr__validate_one = __native_entry__() + 24764
-    _subr__value        = __native_entry__() + 14554
-    _subr__vnumber      = __native_entry__() + 19058
-    _subr__vsigned      = __native_entry__() + 20363
-    _subr__vstring      = __native_entry__() + 16717
-    _subr__vunsigned    = __native_entry__() + 20643
+    _subr__validate_one = __native_entry__() + 24758
+    _subr__value        = __native_entry__() + 14548
+    _subr__vnumber      = __native_entry__() + 19052
+    _subr__vsigned      = __native_entry__() + 20357
+    _subr__vstring      = __native_entry__() + 16711
+    _subr__vunsigned    = __native_entry__() + 20637
 )
 
 const (

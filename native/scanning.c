@@ -15,7 +15,7 @@
  */
 
 #include "native.h"
-#include "utf8.c"
+#include "utf8.h"
 #include "test/xprintf.h"
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
@@ -673,10 +673,8 @@ valid_utf8:
 
 static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep, uint64_t flags) {
     if ((flags & MASK_VALIDATE_STRING) != 0) {
-        xprintf("validate_string: %x", flags);
         return advance_string_validate(src, p, ep);
     } else {
-        xprintf("default_string: %x", flags);
         return advance_string_default(src, p, ep);
     }
 }

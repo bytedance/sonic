@@ -1,6 +1,5 @@
 
 #include <sys/types.h>
-#include "../native.h"
 
 #ifndef XPRINTF_H
 #define XPRINTF_H
@@ -117,7 +116,7 @@ static void printgostr(GoString *s)
     printch('"');
 }
 
-void xprintf(const char *fmt, ...)
+static void xprintf(const char *fmt, ...)
 {
 #ifdef DEBUG
     __builtin_va_list va;
@@ -187,4 +186,4 @@ void xprintf(const char *fmt, ...)
 #endif
 }
 
-#endif // SCANNING_H
+#endif // XPRINTF_H
