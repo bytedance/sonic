@@ -64,6 +64,9 @@ import (
     // CopyString indicates decoder to decode string values by copying instead of referring.
     CopyString                    bool
 
+    // ValidString indicates decoder to valid string values: decoder will return errors when
+    // invalid UTF-8 chars or unescaped control chars(\u0000-\u001f).
+    ValidString                    bool
  }
  
  var (
