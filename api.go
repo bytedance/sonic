@@ -65,7 +65,7 @@ import (
     CopyString                    bool
 
     // ValidString indicates decoder to valid string values: decoder will return errors when
-    // invalid UTF-8 chars or unescaped control chars(\u0000-\u001f).
+    // invalid UTF-8 chars or unescaped control chars(\u0000-\u001f) in the string value of JSON.
     ValidString                    bool
  }
  
