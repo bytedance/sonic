@@ -59,9 +59,9 @@ func generatePointerType(ft reflect.Type) reflect.Type {
 	if ft == nil {
 		ft = generateNullType()
 	}
-	ftp := reflect.TypeOf(reflect.New(ft).Interface())
-	ftpp := reflect.TypeOf(reflect.New(ftp).Interface())
-	ftppp := reflect.TypeOf(reflect.New(ftpp).Interface())
+	ftp := reflect.PtrTo(ft)
+	ftpp := reflect.PtrTo(ftp)
+	ftppp := reflect.PtrTo(ftpp)
 	tab := []reflect.Type { ft, ftp, ftpp, ftppp }
 	return tab[int(rand.Int() % len(tab))]
 }
