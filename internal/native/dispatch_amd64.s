@@ -48,7 +48,7 @@ TEXT ·Value(SB), NOSPLIT, $0 - 48
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__value(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__value(SB)
 
-TEXT ·SkipOne(SB), NOSPLIT, $0 - 32
+TEXT ·SkipOne(SB), NOSPLIT, $0 - 40
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__skip_one(SB)

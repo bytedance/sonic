@@ -319,7 +319,7 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
 
 func (self *Parser) skip() (int, types.ParsingError) {
     fsm := types.NewStateMachine()
-    start := native.SkipOne(&self.s, &self.p, fsm)
+    start := native.SkipOne(&self.s, &self.p, fsm, uint64(0))
     types.FreeStateMachine(fsm)
     
     if start < 0 {

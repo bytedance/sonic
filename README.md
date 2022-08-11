@@ -3,7 +3,7 @@
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT (just-in-time compiling) and SIMD (single-instruction-multiple-data).
 
 ## Requirement
-- Go 1.15/1.16/1.17/1.18
+- Go 1.15/1.16/1.17/1.18/1.19
 - Linux/MacOS/Windows
 - Amd64 CPU with AVX instruction set
 
@@ -261,10 +261,10 @@ println(string(buf) == string(exp)) // true
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
 ## Compatibility
-Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
-- `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options like `SortKeys=false` will be invalid.
-- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It whill fall back to `encoding/json`.
-- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options will be invalid.
+Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on Linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
+- `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with the corresponding config, and some options like `SortKeys=false` will be invalid.
+- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It will fall back to `encoding/json`.
+- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config, and some options will be invalid.
 
 ## Tips
 
