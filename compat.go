@@ -1,4 +1,4 @@
-// +build !amd64
+// +build !amd64 go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
