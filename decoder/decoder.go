@@ -141,10 +141,10 @@ func (self *Decoder) CopyString() {
     self.f |= 1 << _F_copy_string
 }
 
-// ValidString causes the Decoder to validate string values when decoding string value 
+// ValidateString causes the Decoder to validate string values when decoding string value 
 // in JSON. Validation is that, returning error when unescaped control chars(0x00-0x1f) or
 // invalid UTF-8 chars in the string value of JSON.
-func (self *Decoder) ValidString() {
+func (self *Decoder) ValidateString() {
     self.f |= 1 << _F_validate_string
 }
 

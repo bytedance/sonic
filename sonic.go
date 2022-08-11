@@ -92,7 +92,7 @@ func (cfg Config) Froze() API {
     if cfg.CopyString {
         api.decoderOpts |= decoder.OptionCopyString
     }
-    if cfg.ValidString {
+    if cfg.ValidateString {
         api.decoderOpts |= decoder.OptionValidateString
     }
     return api
