@@ -133,6 +133,7 @@ static void printgostr(GoString *s)
 
 static void xprintf(const char *fmt, ...)
 {
+#ifdef DEBUG
     __builtin_va_list va;
     char buf[256] = {};
     char *p = buf;
@@ -197,6 +198,7 @@ static void xprintf(const char *fmt, ...)
         *p = 0;
         printstr(buf);
     }
+#endif
 }
 
 #endif // XPRINTF_H
