@@ -6,7 +6,7 @@ fuzz:
 	file2fuzz -o ./testdata/fuzz/FuzzMain ./go-fuzz-corpus/json/corpus/*  ./corpus/* 
 
 run:
-	go test -fuzz=Fuzz -v
+	GOARCH=amd64 go test -fuzz=Fuzz -v
 
 clean:
 	rm -rf ./go-fuzz-corpus/
