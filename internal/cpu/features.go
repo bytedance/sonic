@@ -33,8 +33,9 @@
 	 switch v := os.Getenv("SONIC_MODE"); v {
 		 case ""       : break
 		 case "auto"   : break
+		 case "noavx"  : HasAVX = false; fallthrough
 		 case "noavx2" : HasAVX2 = false
-		 default       : panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx2'", v))
+		 default       : panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx', 'noavx2'", v))
 	 }
  }
  
