@@ -58,11 +58,6 @@ var (
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func Lzero(p unsafe.Pointer, n int) int
-
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
 func Quote(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) int
 
 //go:nosplit

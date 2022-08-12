@@ -9,44 +9,44 @@ package sse4
 func __native_entry__() uintptr
 
 var (
-    _subr__f64toa       = __native_entry__() + 525
-    _subr__html_escape  = __native_entry__() + 8988
-    _subr__i64toa       = __native_entry__() + 3051
-    _subr__lspace       = __native_entry__() + 210
-    _subr__lzero        = __native_entry__() + 13
-    _subr__quote        = __native_entry__() + 4388
-    _subr__skip_array   = __native_entry__() + 19922
-    _subr__skip_number  = __native_entry__() + 21227
-    _subr__skip_object  = __native_entry__() + 19957
-    _subr__skip_one     = __native_entry__() + 18148
-    _subr__u64toa       = __native_entry__() + 3162
-    _subr__unquote      = __native_entry__() + 5963
-    _subr__validate_one = __native_entry__() + 21344
-    _subr__value        = __native_entry__() + 11592
-    _subr__vnumber      = __native_entry__() + 16261
-    _subr__vsigned      = __native_entry__() + 17570
-    _subr__vstring      = __native_entry__() + 13499
-    _subr__vunsigned    = __native_entry__() + 17848
+    _subr__f64toa       = __native_entry__() + 688
+    _subr__html_escape  = __native_entry__() + 9984
+    _subr__i64toa       = __native_entry__() + 3488
+    _subr__lspace       = __native_entry__() + 272
+    _subr__lzero        = __native_entry__() + 16
+    _subr__quote        = __native_entry__() + 4944
+    _subr__skip_array   = __native_entry__() + 22592
+    _subr__skip_number  = __native_entry__() + 24112
+    _subr__skip_object  = __native_entry__() + 22640
+    _subr__skip_one     = __native_entry__() + 20720
+    _subr__u64toa       = __native_entry__() + 3632
+    _subr__unquote      = __native_entry__() + 6752
+    _subr__validate_one = __native_entry__() + 24256
+    _subr__value        = __native_entry__() + 13280
+    _subr__vnumber      = __native_entry__() + 18464
+    _subr__vsigned      = __native_entry__() + 20016
+    _subr__vstring      = __native_entry__() + 15392
+    _subr__vunsigned    = __native_entry__() + 20368
 )
 
 const (
-    _stack__f64toa = 136
+    _stack__f64toa = 128
     _stack__html_escape = 64
-    _stack__i64toa = 24
+    _stack__i64toa = 16
     _stack__lspace = 8
     _stack__lzero = 8
     _stack__quote = 80
-    _stack__skip_array = 144
-    _stack__skip_number = 80
-    _stack__skip_object = 144
-    _stack__skip_one = 144
+    _stack__skip_array = 128
+    _stack__skip_number = 72
+    _stack__skip_object = 128
+    _stack__skip_one = 128
     _stack__u64toa = 8
     _stack__unquote = 72
-    _stack__validate_one = 144
-    _stack__value = 416
-    _stack__vnumber = 312
+    _stack__validate_one = 128
+    _stack__value = 336
+    _stack__vnumber = 248
     _stack__vsigned = 16
-    _stack__vstring = 152
+    _stack__vstring = 144
     _stack__vunsigned = 24
 )
 

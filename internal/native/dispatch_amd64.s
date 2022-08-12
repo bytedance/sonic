@@ -18,15 +18,6 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·Lzero(SB), NOSPLIT, $0 - 24
-    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
-    JE   2(PC)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__lzero(SB)
-    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX(SB), $0
-    JE   2(PC)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__lzero(SB)
-    JMP  github·com∕bytedance∕sonic∕internal∕native∕sse4·__lzero(SB)
-
 TEXT ·Quote(SB), NOSPLIT, $0 - 48
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
