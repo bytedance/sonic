@@ -19,9 +19,9 @@ package sonic
 import (
     `io`
 )
- 
- // Config is a combination of sonic/encoder.Options and sonic/decoder.Options
- type Config struct {
+
+// Config is a combination of sonic/encoder.Options and sonic/decoder.Options
+type Config struct {
     // EscapeHTML indicates encoder to escape all HTML characters 
     // after serializing into JSON (see https://pkg.go.dev/encoding/json#HTMLEscape).
     // WARNING: This hurts performance A LOT, USE WITH CARE.
@@ -67,9 +67,9 @@ import (
     // ValidateString indicates decoder to valid string values: decoder will return errors when
     // invalid UTF-8 chars or unescaped control chars(\u0000-\u001f) in the string value of JSON.
     ValidateString                    bool
- }
+}
  
- var (
+var (
     // ConfigDefault is the default config of APIs, aiming at efficiency and safty.
     ConfigDefault = Config{}.Froze()
  
@@ -85,13 +85,13 @@ import (
     ConfigFastest = Config{
         NoQuoteTextMarshaler: true,
     }.Froze()
- )
+)
  
  
- // API is a binding of specific config.
- // This interface is inspired by github.com/json-iterator/go,
- // and has same behaviors under equavilent config.
- type API interface {
+// API is a binding of specific config.
+// This interface is inspired by github.com/json-iterator/go,
+// and has same behaviors under equavilent config.
+type API interface {
     // MarshalToString returns the JSON encoding string of v
     MarshalToString(v interface{}) (string, error)
     // Marshal returns the JSON encoding bytes of v.
@@ -108,10 +108,10 @@ import (
     NewDecoder(reader io.Reader) Decoder
     // Valid validates the JSON-encoded bytes and reportes if it is valid
     Valid(data []byte) bool
- }
- 
- // Encoder encodes JSON into io.Writer
- type Encoder interface {
+}
+
+// Encoder encodes JSON into io.Writer
+type Encoder interface {
     // Encode writes the JSON encoding of v to the stream, followed by a newline character.
     Encode(val interface{}) error
     // SetEscapeHTML specifies whether problematic HTML characters 
@@ -122,10 +122,10 @@ import (
     // as if indented by the package-level function Indent(dst, src, prefix, indent).
     // Calling SetIndent("", "") disables indentation
     SetIndent(prefix, indent string)
- }
- 
- // Decoder decodes JSON from io.Read
- type Decoder interface {
+}
+
+// Decoder decodes JSON from io.Read
+type Decoder interface {
     // Decode reads the next JSON-encoded value from its input and stores it in the value pointed to by v.
     Decode(val interface{}) error
     // Buffered returns a reader of the data remaining in the Decoder's buffer.
@@ -138,9 +138,9 @@ import (
     More() bool
     // UseNumber causes the Decoder to unmarshal a number into an interface{} as a Number instead of as a float64.
     UseNumber()
- }
+}
 
- // Marshal returns the JSON encoding bytes of v.
+// Marshal returns the JSON encoding bytes of v.
 func Marshal(val interface{}) ([]byte, error) {
     return ConfigDefault.Marshal(val)
 }

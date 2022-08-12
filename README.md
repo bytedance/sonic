@@ -275,16 +275,16 @@ import (
     "reflect"
     "github.com/bytedance/sonic"
     "github.com/bytedance/sonic/option"
- )
+)
  
- func init() {
-     var v HugeStruct
+func init() {
+    var v HugeStruct
     // For most large types (nesting depth <= 5)
-     err := sonic.Pretouch(reflect.TypeOf(v))
+    err := sonic.Pretouch(reflect.TypeOf(v))
     // If the type is too deep nesting (nesting depth > 5),
     // you can set compile recursive depth in Pretouch for better stability in JIT.
     err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
- }
+}
 ```
 
 ### Copy string
