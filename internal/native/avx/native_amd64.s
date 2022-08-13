@@ -103,8 +103,8 @@ LCPI1_2:
 
 LCPI1_3:
 	QUAD $0x0d0d0d0d0d0d0d0d; QUAD $0x0d0d0d0d0d0d0d0d // .space 16, '\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r'
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _lspace:
 	BYTE $0x55                             // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5               // movq         %rsp, %rbp
@@ -125,9 +125,9 @@ _lspace:
 LBB1_3:
 	LONG $0x0714be0f               // movsbl       (%rdi,%rax), %edx
 	WORD $0xfa83; BYTE $0x20       // cmpl         $32, %edx
-	LONG $0x0101870f; WORD $0x0000 // ja           LBB1_22, $257(%rip)
+	LONG $0x00f1870f; WORD $0x0000 // ja           LBB1_22, $241(%rip)
 	LONG $0xd0a30f49               // btq          %rdx, %r8
-	LONG $0x00f7830f; WORD $0x0000 // jae          LBB1_22, $247(%rip)
+	LONG $0x00e7830f; WORD $0x0000 // jae          LBB1_22, $231(%rip)
 	LONG $0x01508d48               // leaq         $1(%rax), %rdx
 	WORD $0x3948; BYTE $0xc1       // cmpq         %rax, %rcx
 	LONG $0x0012840f; WORD $0x0000 // je           LBB1_6, $18(%rip)
@@ -143,16 +143,16 @@ LBB1_6:
 	WORD $0x8948; BYTE $0xf2 // movq         %rsi, %rdx
 
 LBB1_7:
-	LONG $0x10fa8348                                   // cmpq         $16, %rdx
-	LONG $0x007b820f; WORD $0x0000                     // jb           LBB1_13, $123(%rip)
-	WORD $0x8948; BYTE $0xfe                           // movq         %rdi, %rsi
-	WORD $0x294c; BYTE $0xd6                           // subq         %r10, %rsi
-	QUAD $0xffffff18056ff9c5                           // vmovdqa      $-232(%rip), %xmm0  /* LCPI1_0(%rip) */
-	QUAD $0xffffff200d6ff9c5                           // vmovdqa      $-224(%rip), %xmm1  /* LCPI1_1(%rip) */
-	QUAD $0xffffff28156ff9c5                           // vmovdqa      $-216(%rip), %xmm2  /* LCPI1_2(%rip) */
-	QUAD $0xffffff301d6ff9c5                           // vmovdqa      $-208(%rip), %xmm3  /* LCPI1_3(%rip) */
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
+	LONG $0x10fa8348               // cmpq         $16, %rdx
+	LONG $0x006b820f; WORD $0x0000 // jb           LBB1_13, $107(%rip)
+	WORD $0x8948; BYTE $0xfe       // movq         %rdi, %rsi
+	WORD $0x294c; BYTE $0xd6       // subq         %r10, %rsi
+	QUAD $0xffffff28056ff9c5       // vmovdqa      $-216(%rip), %xmm0  /* LCPI1_0(%rip) */
+	QUAD $0xffffff300d6ff9c5       // vmovdqa      $-208(%rip), %xmm1  /* LCPI1_1(%rip) */
+	QUAD $0xffffff38156ff9c5       // vmovdqa      $-200(%rip), %xmm2  /* LCPI1_2(%rip) */
+	QUAD $0xffffff401d6ff9c5       // vmovdqa      $-192(%rip), %xmm3  /* LCPI1_3(%rip) */
 
+	// .p2align 4, 0x90
 LBB1_9:
 	LONG $0x6f79c1c4; BYTE $0x22   // vmovdqa      (%r10), %xmm4
 	LONG $0xe874d9c5               // vpcmpeqb     %xmm0, %xmm4, %xmm5
@@ -217,8 +217,8 @@ LBB1_17:
 LCPI2_0:
 	QUAD $0x3030303030303030; QUAD $0x3030303030303030 // .space 16, '0000000000000000'
 	QUAD $0x3030303030303030; QUAD $0x3030303030303030 // .space 16, '0000000000000000'
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _f64toa:
 	BYTE $0x55                     // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5       // movq         %rsp, %rbp
@@ -284,7 +284,7 @@ LBB2_8:
 	LONG $0x4ff56941; WORD $0x1293; BYTE $0x00 // imull        $1217359, %r13d, %esi
 	WORD $0x894c; BYTE $0xe8                   // movq         %r13, %rax
 	LONG $0x04e0c148                           // shlq         $4, %rax
-	LONG $0x5d0d8d48; WORD $0x008c; BYTE $0x00 // leaq         $35933(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
+	LONG $0x5d0d8d48; WORD $0x008b; BYTE $0x00 // leaq         $35677(%rip), %rcx  /* _DOUBLE_POW5_INV_SPLIT(%rip) */
 	WORD $0x894d; BYTE $0xd4                   // movq         %r10, %r12
 	LONG $0x02cc8349                           // orq          $2, %r12
 	LONG $0x081c8b4c                           // movq         (%rax,%rcx), %r11
@@ -371,7 +371,7 @@ LBB2_22:
 	WORD $0xeec1; BYTE $0x13                   // shrl         $19, %esi
 	WORD $0x6348; BYTE $0xf8                   // movslq       %eax, %rdi
 	LONG $0x04e7c148                           // shlq         $4, %rdi
-	LONG $0x941d8d4c; WORD $0x00a0; BYTE $0x00 // leaq         $41108(%rip), %r11  /* _DOUBLE_POW5_SPLIT(%rip) */
+	LONG $0x841d8d4c; WORD $0x009f; BYTE $0x00 // leaq         $40836(%rip), %r11  /* _DOUBLE_POW5_SPLIT(%rip) */
 	WORD $0x894c; BYTE $0xd1                   // movq         %r10, %rcx
 	LONG $0x02c98348                           // orq          $2, %rcx
 	LONG $0x1f0c8b4e                           // movq         (%rdi,%r11), %r9
@@ -775,7 +775,7 @@ LBB2_67:
 	LONG $0x245c8d49; BYTE $0x01   // leaq         $1(%r12), %rbx
 	WORD $0x8948; BYTE $0xde       // movq         %rbx, %rsi
 	WORD $0x8944; BYTE $0xfa       // movl         %r15d, %edx
-	LONG $0x005426e8; BYTE $0x00   // callq        _print_mantissa, $21542(%rip)
+	LONG $0x005336e8; BYTE $0x00   // callq        _print_mantissa, $21302(%rip)
 	LONG $0x24448a41; BYTE $0x01   // movb         $1(%r12), %al
 	LONG $0x24048841               // movb         %al, (%r12)
 	LONG $0x000001b8; BYTE $0x00   // movl         $1, %eax
@@ -804,7 +804,7 @@ LBB2_74:
 	WORD $0x048d; BYTE $0x09                   // leal         (%rcx,%rcx), %eax
 	WORD $0x048d; BYTE $0x80                   // leal         (%rax,%rax,4), %eax
 	WORD $0x2941; BYTE $0xc6                   // subl         %eax, %r14d
-	LONG $0x1e058d48; WORD $0x00af; BYTE $0x00 // leaq         $44830(%rip), %rax  /* _Digits(%rip) */
+	LONG $0xfe058d48; WORD $0x00ad; BYTE $0x00 // leaq         $44542(%rip), %rax  /* _Digits(%rip) */
 	LONG $0x4804b70f                           // movzwl       (%rax,%rcx,2), %eax
 	WORD $0xd989                               // movl         %ebx, %ecx
 	LONG $0x04894166; BYTE $0x0c               // movw         %ax, (%r12,%rcx)
@@ -839,7 +839,7 @@ LBB2_75:
 	LONG $0x0afe8341                           // cmpl         $10, %r14d
 	LONG $0x01108c0f; WORD $0x0000             // jl           LBB2_77, $272(%rip)
 	WORD $0x6349; BYTE $0xc6                   // movslq       %r14d, %rax
-	LONG $0xaa0d8d48; WORD $0x00ae; BYTE $0x00 // leaq         $44714(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x8a0d8d48; WORD $0x00ad; BYTE $0x00 // leaq         $44426(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	WORD $0xd989                               // movl         %ebx, %ecx
 	LONG $0x04894166; BYTE $0x0c               // movw         %ax, (%r12,%rcx)
@@ -858,7 +858,7 @@ LBB2_80:
 	WORD $0xde89                                             // movl         %ebx, %esi
 	LONG $0xc8750348                                         // addq         $-56(%rbp), %rsi
 	WORD $0x8944; BYTE $0xfa                                 // movl         %r15d, %edx
-	LONG $0x00530ee8; BYTE $0x00                             // callq        _print_mantissa, $21262(%rip)
+	LONG $0x00521ee8; BYTE $0x00                             // callq        _print_mantissa, $21022(%rip)
 	WORD $0x8545; BYTE $0xe4                                 // testl        %r12d, %r12d
 	LONG $0x0044840f; WORD $0x0000                           // je           LBB2_81, $68(%rip)
 	LONG $0x1c048d41                                         // leal         (%r12,%rbx), %eax
@@ -941,7 +941,7 @@ LBB2_85:
 	WORD $0x0149; BYTE $0xdc       // addq         %rbx, %r12
 	WORD $0x894c; BYTE $0xe6       // movq         %r12, %rsi
 	WORD $0x8944; BYTE $0xfa       // movl         %r15d, %edx
-	LONG $0x005200e8; BYTE $0x00   // callq        _print_mantissa, $20992(%rip)
+	LONG $0x005110e8; BYTE $0x00   // callq        _print_mantissa, $20752(%rip)
 	WORD $0x0141; BYTE $0xdf       // addl         %ebx, %r15d
 	WORD $0x8944; BYTE $0xfb       // movl         %r15d, %ebx
 	LONG $0xd44d8b44               // movl         $-44(%rbp), %r9d
@@ -953,7 +953,7 @@ LBB2_97:
 	LONG $0xfce68348                           // andq         $-4, %rsi
 	WORD $0xf748; BYTE $0xde                   // negq         %rsi
 	WORD $0xff31                               // xorl         %edi, %edi
-	QUAD $0xfffff5d5056ffdc5                   // vmovdqa      $-2603(%rip), %ymm0  /* LCPI2_0(%rip) */
+	QUAD $0xfffff5e5056ffdc5                   // vmovdqa      $-2587(%rip), %ymm0  /* LCPI2_0(%rip) */
 	LONG $0x90909090; BYTE $0x90               // .p2align 4, 0x90
 
 LBB2_98:
@@ -985,7 +985,7 @@ LBB2_99:
 	LONG $0x60c18348                                       // addq         $96, %rcx
 	LONG $0x07e2c148                                       // shlq         $7, %rdx
 	WORD $0xf631                                           // xorl         %esi, %esi
-	QUAD $0xfffff51d056ffdc5                               // vmovdqa      $-2787(%rip), %ymm0  /* LCPI2_0(%rip) */
+	QUAD $0xfffff52d056ffdc5                               // vmovdqa      $-2771(%rip), %ymm0  /* LCPI2_0(%rip) */
 	QUAD $0x9090909090909090; LONG $0x90909090; BYTE $0x90 // .p2align 4, 0x90
 
 LBB2_101:
@@ -1031,22 +1031,22 @@ LBB2_3:
 	WORD $0x8944; BYTE $0xcb     // movl         %r9d, %ebx
 
 LBB2_106:
-	WORD $0xd889                                       // movl         %ebx, %eax
-	LONG $0x38c48348                                   // addq         $56, %rsp
-	BYTE $0x5b                                         // popq         %rbx
-	WORD $0x5c41                                       // popq         %r12
-	WORD $0x5d41                                       // popq         %r13
-	WORD $0x5e41                                       // popq         %r14
-	WORD $0x5f41                                       // popq         %r15
-	BYTE $0x5d                                         // popq         %rbp
-	WORD $0xf8c5; BYTE $0x77                           // vzeroupper
-	BYTE $0xc3                                         // retq
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
+	WORD $0xd889             // movl         %ebx, %eax
+	LONG $0x38c48348         // addq         $56, %rsp
+	BYTE $0x5b               // popq         %rbx
+	WORD $0x5c41             // popq         %r12
+	WORD $0x5d41             // popq         %r13
+	WORD $0x5e41             // popq         %r14
+	WORD $0x5f41             // popq         %r15
+	BYTE $0x5d               // popq         %rbp
+	WORD $0xf8c5; BYTE $0x77 // vzeroupper
+	BYTE $0xc3               // retq
 
+	// .p2align 4, 0x90
 _i64toa:
 	WORD $0x8548; BYTE $0xf6       // testq        %rsi, %rsi
 	LONG $0x0005880f; WORD $0x0000 // js           LBB3_1, $5(%rip)
-	LONG $0x000072e9; BYTE $0x00   // jmp          _u64toa, $114(%rip)
+	LONG $0x000062e9; BYTE $0x00   // jmp          _u64toa, $98(%rip)
 
 LBB3_1:
 	BYTE $0x55                             // pushq        %rbp
@@ -1054,7 +1054,7 @@ LBB3_1:
 	WORD $0x07c6; BYTE $0x2d               // movb         $45, (%rdi)
 	LONG $0x01c78348                       // addq         $1, %rdi
 	WORD $0xf748; BYTE $0xde               // negq         %rsi
-	LONG $0x00005fe8; BYTE $0x00           // callq        _u64toa, $95(%rip)
+	LONG $0x00004fe8; BYTE $0x00           // callq        _u64toa, $79(%rip)
 	WORD $0xc083; BYTE $0x01               // addl         $1, %eax
 	BYTE $0x5d                             // popq         %rbp
 	BYTE $0xc3                             // retq
@@ -1076,15 +1076,15 @@ LCPI4_3:
 
 LCPI4_4:
 	QUAD $0x3030303030303030; QUAD $0x3030303030303030 // .space 16, '0000000000000000'
-	QUAD $0x0000000000000000                           // .p2align 3, 0x00
 
+	// .p2align 3, 0x00
 LCPI4_1:
 	QUAD $0x80003334147b20c5 // .quad -9223315738079846203
 
 LCPI4_2:
 	QUAD $0x8000200008000080 // .quad -9223336852348469120
-	QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _u64toa:
 	BYTE $0x55                                 // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
@@ -1102,7 +1102,7 @@ _u64toa:
 	WORD $0x0148; BYTE $0xc0                   // addq         %rax, %rax
 	LONG $0x03e8fe81; WORD $0x0000             // cmpl         $1000, %esi
 	LONG $0x0016820f; WORD $0x0000             // jb           LBB4_3, $22(%rip)
-	LONG $0xfc0d8d48; WORD $0x00aa; BYTE $0x00 // leaq         $43772(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xfc0d8d48; WORD $0x00a9; BYTE $0x00 // leaq         $43516(%rip), %rcx  /* _Digits(%rip) */
 	WORD $0x0c8a; BYTE $0x0a                   // movb         (%rdx,%rcx), %cl
 	WORD $0x0f88                               // movb         %cl, (%rdi)
 	LONG $0x000001b9; BYTE $0x00               // movl         $1, %ecx
@@ -1116,14 +1116,14 @@ LBB4_3:
 LBB4_4:
 	WORD $0xb70f; BYTE $0xd2                   // movzwl       %dx, %edx
 	LONG $0x01ca8348                           // orq          $1, %rdx
-	LONG $0xd4358d48; WORD $0x00aa; BYTE $0x00 // leaq         $43732(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0xd4358d48; WORD $0x00a9; BYTE $0x00 // leaq         $43476(%rip), %rsi  /* _Digits(%rip) */
 	WORD $0x148a; BYTE $0x32                   // movb         (%rdx,%rsi), %dl
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc183; BYTE $0x01                   // addl         $1, %ecx
 	WORD $0x1488; BYTE $0x37                   // movb         %dl, (%rdi,%rsi)
 
 LBB4_6:
-	LONG $0xc2158d48; WORD $0x00aa; BYTE $0x00 // leaq         $43714(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0xc2158d48; WORD $0x00a9; BYTE $0x00 // leaq         $43458(%rip), %rdx  /* _Digits(%rip) */
 	WORD $0x148a; BYTE $0x10                   // movb         (%rax,%rdx), %dl
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc183; BYTE $0x01                   // addl         $1, %ecx
@@ -1132,7 +1132,7 @@ LBB4_6:
 LBB4_7:
 	WORD $0xb70f; BYTE $0xc0                   // movzwl       %ax, %eax
 	LONG $0x01c88348                           // orq          $1, %rax
-	LONG $0xa9158d48; WORD $0x00aa; BYTE $0x00 // leaq         $43689(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0xa9158d48; WORD $0x00a9; BYTE $0x00 // leaq         $43433(%rip), %rdx  /* _Digits(%rip) */
 	WORD $0x048a; BYTE $0x10                   // movb         (%rax,%rdx), %al
 	WORD $0xca89                               // movl         %ecx, %edx
 	WORD $0xc183; BYTE $0x01                   // addl         $1, %ecx
@@ -1179,7 +1179,7 @@ LBB4_8:
 	WORD $0x014d; BYTE $0xdb                   // addq         %r11, %r11
 	LONG $0x9680fe81; WORD $0x0098             // cmpl         $10000000, %esi
 	LONG $0x0017820f; WORD $0x0000             // jb           LBB4_11, $23(%rip)
-	LONG $0x06058d48; WORD $0x00aa; BYTE $0x00 // leaq         $43526(%rip), %rax  /* _Digits(%rip) */
+	LONG $0x06058d48; WORD $0x00a9; BYTE $0x00 // leaq         $43270(%rip), %rax  /* _Digits(%rip) */
 	LONG $0x02048a41                           // movb         (%r10,%rax), %al
 	WORD $0x0788                               // movb         %al, (%rdi)
 	LONG $0x000001b9; BYTE $0x00               // movl         $1, %ecx
@@ -1193,14 +1193,14 @@ LBB4_11:
 LBB4_12:
 	WORD $0x8944; BYTE $0xd0                   // movl         %r10d, %eax
 	LONG $0x01c88348                           // orq          $1, %rax
-	LONG $0xda358d48; WORD $0x00a9; BYTE $0x00 // leaq         $43482(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0xda358d48; WORD $0x00a8; BYTE $0x00 // leaq         $43226(%rip), %rsi  /* _Digits(%rip) */
 	WORD $0x048a; BYTE $0x30                   // movb         (%rax,%rsi), %al
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc183; BYTE $0x01                   // addl         $1, %ecx
 	WORD $0x0488; BYTE $0x37                   // movb         %al, (%rdi,%rsi)
 
 LBB4_14:
-	LONG $0xc8058d48; WORD $0x00a9; BYTE $0x00 // leaq         $43464(%rip), %rax  /* _Digits(%rip) */
+	LONG $0xc8058d48; WORD $0x00a8; BYTE $0x00 // leaq         $43208(%rip), %rax  /* _Digits(%rip) */
 	LONG $0x01048a41                           // movb         (%r9,%rax), %al
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc183; BYTE $0x01                   // addl         $1, %ecx
@@ -1209,7 +1209,7 @@ LBB4_14:
 LBB4_15:
 	LONG $0xc1b70f41                           // movzwl       %r9w, %eax
 	LONG $0x01c88348                           // orq          $1, %rax
-	LONG $0xad358d48; WORD $0x00a9; BYTE $0x00 // leaq         $43437(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0xad358d48; WORD $0x00a8; BYTE $0x00 // leaq         $43181(%rip), %rsi  /* _Digits(%rip) */
 	WORD $0x048a; BYTE $0x30                   // movb         (%rax,%rsi), %al
 	WORD $0xca89                               // movl         %ecx, %edx
 	WORD $0x0488; BYTE $0x17                   // movb         %al, (%rdi,%rdx)
@@ -1247,7 +1247,7 @@ LBB4_16:
 	LONG $0xe100c269; WORD $0x05f5             // imull        $100000000, %edx, %eax
 	WORD $0xc629                               // subl         %eax, %esi
 	LONG $0xc26ef9c5                           // vmovd        %edx, %xmm0
-	QUAD $0xfffffd920d6ff9c5                   // vmovdqa      $-622(%rip), %xmm1  /* LCPI4_0(%rip) */
+	QUAD $0xfffffda20d6ff9c5                   // vmovdqa      $-606(%rip), %xmm1  /* LCPI4_0(%rip) */
 	LONG $0xd1f4f9c5                           // vpmuludq     %xmm1, %xmm0, %xmm2
 	LONG $0xd273e9c5; BYTE $0x2d               // vpsrlq       $45, %xmm2, %xmm2
 	LONG $0x002710b8; BYTE $0x00               // movl         $10000, %eax
@@ -1258,11 +1258,11 @@ LBB4_16:
 	LONG $0xf073f9c5; BYTE $0x02               // vpsllq       $2, %xmm0, %xmm0
 	LONG $0xc070fbc5; BYTE $0x50               // vpshuflw     $80, %xmm0, %xmm0
 	LONG $0xc070f9c5; BYTE $0x50               // vpshufd      $80, %xmm0, %xmm0
-	QUAD $0xfffffd941512fbc5                   // vmovddup     $-620(%rip), %xmm2  /* LCPI4_1(%rip) */
+	QUAD $0xfffffd9c1512fbc5                   // vmovddup     $-612(%rip), %xmm2  /* LCPI4_1(%rip) */
 	LONG $0xc2e4f9c5                           // vpmulhuw     %xmm2, %xmm0, %xmm0
-	QUAD $0xfffffd902512fbc5                   // vmovddup     $-624(%rip), %xmm4  /* LCPI4_2(%rip) */
+	QUAD $0xfffffd982512fbc5                   // vmovddup     $-616(%rip), %xmm4  /* LCPI4_2(%rip) */
 	LONG $0xc4e4f9c5                           // vpmulhuw     %xmm4, %xmm0, %xmm0
-	QUAD $0xfffffd542d6ff9c5                   // vmovdqa      $-684(%rip), %xmm5  /* LCPI4_3(%rip) */
+	QUAD $0xfffffd642d6ff9c5                   // vmovdqa      $-668(%rip), %xmm5  /* LCPI4_3(%rip) */
 	LONG $0xf5d5f9c5                           // vpmullw      %xmm5, %xmm0, %xmm6
 	LONG $0xf673c9c5; BYTE $0x10               // vpsllq       $16, %xmm6, %xmm6
 	LONG $0xc6f9f9c5                           // vpsubw       %xmm6, %xmm0, %xmm0
@@ -1281,7 +1281,7 @@ LBB4_16:
 	LONG $0xf273e9c5; BYTE $0x10               // vpsllq       $16, %xmm2, %xmm2
 	LONG $0xcaf9f1c5                           // vpsubw       %xmm2, %xmm1, %xmm1
 	LONG $0xc167f9c5                           // vpackuswb    %xmm1, %xmm0, %xmm0
-	QUAD $0xfffffd0e0dfcf9c5                   // vpaddb       $-754(%rip), %xmm0, %xmm1  /* LCPI4_4(%rip) */
+	QUAD $0xfffffd1e0dfcf9c5                   // vpaddb       $-738(%rip), %xmm0, %xmm1  /* LCPI4_4(%rip) */
 	LONG $0xd2efe9c5                           // vpxor        %xmm2, %xmm2, %xmm2
 	LONG $0xc274f9c5                           // vpcmpeqb     %xmm2, %xmm0, %xmm0
 	LONG $0xc0d7f9c5                           // vpmovmskb    %xmm0, %eax
@@ -1291,7 +1291,7 @@ LBB4_16:
 	LONG $0x000010b9; BYTE $0x00               // movl         $16, %ecx
 	WORD $0xc129                               // subl         %eax, %ecx
 	LONG $0x04e0c148                           // shlq         $4, %rax
-	LONG $0x26158d48; WORD $0x00a9; BYTE $0x00 // leaq         $43302(%rip), %rdx  /* _VecShiftShuffles(%rip) */
+	LONG $0x26158d48; WORD $0x00a8; BYTE $0x00 // leaq         $43046(%rip), %rdx  /* _VecShiftShuffles(%rip) */
 	LONG $0x0071e2c4; WORD $0x1004             // vpshufb      (%rax,%rdx), %xmm1, %xmm0
 	LONG $0x077ffac5                           // vmovdqu      %xmm0, (%rdi)
 	WORD $0xc889                               // movl         %ecx, %eax
@@ -1317,7 +1317,7 @@ LBB4_20:
 	WORD $0xfa83; BYTE $0x63                   // cmpl         $99, %edx
 	LONG $0x001a870f; WORD $0x0000             // ja           LBB4_22, $26(%rip)
 	WORD $0xd089                               // movl         %edx, %eax
-	LONG $0xf90d8d48; WORD $0x00a7; BYTE $0x00 // leaq         $43001(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xf90d8d48; WORD $0x00a6; BYTE $0x00 // leaq         $42745(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	WORD $0x8966; BYTE $0x07                   // movw         %ax, (%rdi)
 	LONG $0x000002b9; BYTE $0x00               // movl         $2, %ecx
@@ -1340,7 +1340,7 @@ LBB4_22:
 	WORD $0xc96b; BYTE $0x64                   // imull        $100, %ecx, %ecx
 	WORD $0xc829                               // subl         %ecx, %eax
 	WORD $0xb70f; BYTE $0xc0                   // movzwl       %ax, %eax
-	LONG $0xa90d8d48; WORD $0x00a7; BYTE $0x00 // leaq         $42921(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xa90d8d48; WORD $0x00a6; BYTE $0x00 // leaq         $42665(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	LONG $0x01478966                           // movw         %ax, $1(%rdi)
 	LONG $0x000003b9; BYTE $0x00               // movl         $3, %ecx
@@ -1350,7 +1350,7 @@ LBB4_24:
 	WORD $0xc86b; BYTE $0x64                   // imull        $100, %eax, %ecx
 	WORD $0xca29                               // subl         %ecx, %edx
 	WORD $0xb70f; BYTE $0xc0                   // movzwl       %ax, %eax
-	LONG $0x880d8d48; WORD $0x00a7; BYTE $0x00 // leaq         $42888(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x880d8d48; WORD $0x00a6; BYTE $0x00 // leaq         $42632(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	WORD $0x8966; BYTE $0x07                   // movw         %ax, (%rdi)
 	WORD $0xb70f; BYTE $0xc2                   // movzwl       %dx, %eax
@@ -1368,7 +1368,7 @@ LBB4_25:
 	WORD $0xf748; BYTE $0xe2                   // mulq         %rdx
 	LONG $0x1aeac148                           // shrq         $26, %rdx
 	LONG $0xc26ef9c5                           // vmovd        %edx, %xmm0
-	QUAD $0xfffffbb60d6ff9c5                   // vmovdqa      $-1098(%rip), %xmm1  /* LCPI4_0(%rip) */
+	QUAD $0xfffffbc60d6ff9c5                   // vmovdqa      $-1082(%rip), %xmm1  /* LCPI4_0(%rip) */
 	LONG $0xd1f4f9c5                           // vpmuludq     %xmm1, %xmm0, %xmm2
 	LONG $0xd273e9c5; BYTE $0x2d               // vpsrlq       $45, %xmm2, %xmm2
 	LONG $0x002710b8; BYTE $0x00               // movl         $10000, %eax
@@ -1379,11 +1379,11 @@ LBB4_25:
 	LONG $0xf073f9c5; BYTE $0x02               // vpsllq       $2, %xmm0, %xmm0
 	LONG $0xc070fbc5; BYTE $0x50               // vpshuflw     $80, %xmm0, %xmm0
 	LONG $0xc070f9c5; BYTE $0x50               // vpshufd      $80, %xmm0, %xmm0
-	QUAD $0xfffffbb81512fbc5                   // vmovddup     $-1096(%rip), %xmm2  /* LCPI4_1(%rip) */
+	QUAD $0xfffffbc01512fbc5                   // vmovddup     $-1088(%rip), %xmm2  /* LCPI4_1(%rip) */
 	LONG $0xc2e4f9c5                           // vpmulhuw     %xmm2, %xmm0, %xmm0
-	QUAD $0xfffffbb42512fbc5                   // vmovddup     $-1100(%rip), %xmm4  /* LCPI4_2(%rip) */
+	QUAD $0xfffffbbc2512fbc5                   // vmovddup     $-1092(%rip), %xmm4  /* LCPI4_2(%rip) */
 	LONG $0xc4e4f9c5                           // vpmulhuw     %xmm4, %xmm0, %xmm0
-	QUAD $0xfffffb782d6ff9c5                   // vmovdqa      $-1160(%rip), %xmm5  /* LCPI4_3(%rip) */
+	QUAD $0xfffffb882d6ff9c5                   // vmovdqa      $-1144(%rip), %xmm5  /* LCPI4_3(%rip) */
 	LONG $0xf5d5f9c5                           // vpmullw      %xmm5, %xmm0, %xmm6
 	LONG $0xf673c9c5; BYTE $0x10               // vpsllq       $16, %xmm6, %xmm6
 	LONG $0xc6f9f9c5                           // vpsubw       %xmm6, %xmm0, %xmm0
@@ -1404,7 +1404,7 @@ LBB4_25:
 	LONG $0xf273e9c5; BYTE $0x10               // vpsllq       $16, %xmm2, %xmm2
 	LONG $0xcaf9f1c5                           // vpsubw       %xmm2, %xmm1, %xmm1
 	LONG $0xc167f9c5                           // vpackuswb    %xmm1, %xmm0, %xmm0
-	QUAD $0xfffffb2a05fcf9c5                   // vpaddb       $-1238(%rip), %xmm0, %xmm0  /* LCPI4_4(%rip) */
+	QUAD $0xfffffb3a05fcf9c5                   // vpaddb       $-1222(%rip), %xmm0, %xmm0  /* LCPI4_4(%rip) */
 	WORD $0xc889                               // movl         %ecx, %eax
 	LONG $0x047ffac5; BYTE $0x07               // vmovdqu      %xmm0, (%rdi,%rax)
 	WORD $0xc983; BYTE $0x10                   // orl          $16, %ecx
@@ -1421,8 +1421,8 @@ LCPI5_1:
 
 LCPI5_2:
 	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _quote:
 	BYTE $0x55                                 // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
@@ -1437,20 +1437,20 @@ _quote:
 	WORD $0x8b4c; BYTE $0x11                   // movq         (%rcx), %r10
 	LONG $0x01c0f641                           // testb        $1, %r8b
 	WORD $0x8948; BYTE $0xf0                   // movq         %rsi, %rax
-	LONG $0x880d8d48; WORD $0x00a7; BYTE $0x00 // leaq         $42888(%rip), %rcx  /* __SingleQuoteTab(%rip) */
-	LONG $0x91258d4c; WORD $0x00b7; BYTE $0x00 // leaq         $46993(%rip), %r12  /* __DoubleQuoteTab(%rip) */
+	LONG $0x880d8d48; WORD $0x00a6; BYTE $0x00 // leaq         $42632(%rip), %rcx  /* __SingleQuoteTab(%rip) */
+	LONG $0x81258d4c; WORD $0x00b6; BYTE $0x00 // leaq         $46721(%rip), %r12  /* __DoubleQuoteTab(%rip) */
 	LONG $0xe1440f4c                           // cmoveq       %rcx, %r12
 	QUAD $0x00000000f50c8d48                   // leaq         (,%rsi,8), %rcx
 	WORD $0x3949; BYTE $0xca                   // cmpq         %rcx, %r10
-	LONG $0x03fc8d0f; WORD $0x0000             // jge          LBB5_56, $1020(%rip)
+	LONG $0x03ec8d0f; WORD $0x0000             // jge          LBB5_56, $1004(%rip)
 	WORD $0x894d; BYTE $0xfe                   // movq         %r15, %r14
 	WORD $0x8949; BYTE $0xf9                   // movq         %rdi, %r9
 	WORD $0x8548; BYTE $0xc0                   // testq        %rax, %rax
-	LONG $0x03dc840f; WORD $0x0000             // je           LBB5_80, $988(%rip)
+	LONG $0x03cc840f; WORD $0x0000             // je           LBB5_80, $972(%rip)
 	LONG $0xc85d894c                           // movq         %r11, $-56(%rbp)
-	QUAD $0xffffff61056ff9c5                   // vmovdqa      $-159(%rip), %xmm0  /* LCPI5_0(%rip) */
-	QUAD $0xffffff690d6ff9c5                   // vmovdqa      $-151(%rip), %xmm1  /* LCPI5_1(%rip) */
-	QUAD $0xffffff71156ff9c5                   // vmovdqa      $-143(%rip), %xmm2  /* LCPI5_2(%rip) */
+	QUAD $0xffffff71056ff9c5                   // vmovdqa      $-143(%rip), %xmm0  /* LCPI5_0(%rip) */
+	QUAD $0xffffff790d6ff9c5                   // vmovdqa      $-135(%rip), %xmm1  /* LCPI5_1(%rip) */
+	QUAD $0xffffff81156ff9c5                   // vmovdqa      $-127(%rip), %xmm2  /* LCPI5_2(%rip) */
 	LONG $0xdb76e1c5                           // vpcmpeqd     %xmm3, %xmm3, %xmm3
 	WORD $0x8948; BYTE $0xf9                   // movq         %rdi, %rcx
 	LONG $0xd07d894c                           // movq         %r15, $-48(%rbp)
@@ -1458,21 +1458,21 @@ _quote:
 	LONG $0xc065894c                           // movq         %r12, $-64(%rbp)
 
 LBB5_3:
-	WORD $0x8949; BYTE $0xc9                           // movq         %rcx, %r9
-	LONG $0x10f88348                                   // cmpq         $16, %rax
-	WORD $0x9d0f; BYTE $0xc3                           // setge        %bl
-	WORD $0x894d; BYTE $0xd4                           // movq         %r10, %r12
-	WORD $0x894d; BYTE $0xf7                           // movq         %r14, %r15
-	WORD $0x8949; BYTE $0xc3                           // movq         %rax, %r11
-	WORD $0x8949; BYTE $0xcd                           // movq         %rcx, %r13
-	LONG $0x00878c0f; WORD $0x0000                     // jl           LBB5_10, $135(%rip)
-	LONG $0x10fa8349                                   // cmpq         $16, %r10
-	LONG $0x007d8c0f; WORD $0x0000                     // jl           LBB5_10, $125(%rip)
-	WORD $0x3145; BYTE $0xff                           // xorl         %r15d, %r15d
-	WORD $0x8948; BYTE $0xc1                           // movq         %rax, %rcx
-	WORD $0x894c; BYTE $0xd2                           // movq         %r10, %rdx
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
+	WORD $0x8949; BYTE $0xc9       // movq         %rcx, %r9
+	LONG $0x10f88348               // cmpq         $16, %rax
+	WORD $0x9d0f; BYTE $0xc3       // setge        %bl
+	WORD $0x894d; BYTE $0xd4       // movq         %r10, %r12
+	WORD $0x894d; BYTE $0xf7       // movq         %r14, %r15
+	WORD $0x8949; BYTE $0xc3       // movq         %rax, %r11
+	WORD $0x8949; BYTE $0xcd       // movq         %rcx, %r13
+	LONG $0x00778c0f; WORD $0x0000 // jl           LBB5_10, $119(%rip)
+	LONG $0x10fa8349               // cmpq         $16, %r10
+	LONG $0x006d8c0f; WORD $0x0000 // jl           LBB5_10, $109(%rip)
+	WORD $0x3145; BYTE $0xff       // xorl         %r15d, %r15d
+	WORD $0x8948; BYTE $0xc1       // movq         %rax, %rcx
+	WORD $0x894c; BYTE $0xd2       // movq         %r10, %rdx
 
+	// .p2align 4, 0x90
 LBB5_6:
 	LONG $0x6f7a81c4; WORD $0x3924 // vmovdqu      (%r9,%r15), %xmm4
 	LONG $0xec64f9c5               // vpcmpgtb     %xmm4, %xmm0, %xmm5
@@ -1542,7 +1542,7 @@ LBB5_17:
 	LONG $0x74b60f43; WORD $0x000d             // movzbl       (%r13,%r9), %esi
 	WORD $0x8948; BYTE $0xf3                   // movq         %rsi, %rbx
 	LONG $0x04e3c148                           // shlq         $4, %rbx
-	LONG $0xec158d48; WORD $0x00a5; BYTE $0x00 // leaq         $42476(%rip), %rdx  /* __SingleQuoteTab(%rip) */
+	LONG $0xfc158d48; WORD $0x00a4; BYTE $0x00 // leaq         $42236(%rip), %rdx  /* __SingleQuoteTab(%rip) */
 	LONG $0x133c8348; BYTE $0x00               // cmpq         $0, (%rbx,%rdx)
 	LONG $0x008c850f; WORD $0x0000             // jne          LBB5_27, $140(%rip)
 	LONG $0x0b048d4d                           // leaq         (%r11,%rcx), %r8
@@ -1741,7 +1741,7 @@ LBB5_51:
 LBB5_53:
 	LONG $0x290c8d4b               // leaq         (%r9,%r13), %rcx
 	WORD $0x294c; BYTE $0xe8       // subq         %r13, %rax
-	LONG $0xfc5d850f; WORD $0xffff // jne          LBB5_3, $-931(%rip)
+	LONG $0xfc6d850f; WORD $0xffff // jne          LBB5_3, $-915(%rip)
 
 LBB5_79:
 	WORD $0x014d; BYTE $0xe9 // addq         %r13, %r9
@@ -1756,10 +1756,10 @@ LBB5_80:
 	LONG $0x000255e9; BYTE $0x00 // jmp          LBB5_82, $597(%rip)
 
 LBB5_56:
-	LONG $0x890d8d4c; WORD $0x00c3; BYTE $0x00 // leaq         $50057(%rip), %r9  /* __EscTab(%rip) */
-	QUAD $0xfffffb71056ff9c5                   // vmovdqa      $-1167(%rip), %xmm0  /* LCPI5_0(%rip) */
-	QUAD $0xfffffb790d6ff9c5                   // vmovdqa      $-1159(%rip), %xmm1  /* LCPI5_1(%rip) */
-	QUAD $0xfffffb81156ff9c5                   // vmovdqa      $-1151(%rip), %xmm2  /* LCPI5_2(%rip) */
+	LONG $0x790d8d4c; WORD $0x00c2; BYTE $0x00 // leaq         $49785(%rip), %r9  /* __EscTab(%rip) */
+	QUAD $0xfffffb91056ff9c5                   // vmovdqa      $-1135(%rip), %xmm0  /* LCPI5_0(%rip) */
+	QUAD $0xfffffb990d6ff9c5                   // vmovdqa      $-1127(%rip), %xmm1  /* LCPI5_1(%rip) */
+	QUAD $0xfffffba1156ff9c5                   // vmovdqa      $-1119(%rip), %xmm2  /* LCPI5_2(%rip) */
 	LONG $0xdb76e1c5                           // vpcmpeqd     %xmm3, %xmm3, %xmm3
 	WORD $0x894c; BYTE $0xfb                   // movq         %r15, %rbx
 	WORD $0x8948; BYTE $0xc6                   // movq         %rax, %rsi
@@ -1960,8 +1960,8 @@ LBB5_83:
 
 LCPI6_0:
 	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _unquote:
 	BYTE $0x55                     // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5       // movq         %rsp, %rbp
@@ -1972,10 +1972,10 @@ _unquote:
 	BYTE $0x53                     // pushq        %rbx
 	LONG $0x18ec8348               // subq         $24, %rsp
 	WORD $0x8548; BYTE $0xf6       // testq        %rsi, %rsi
-	LONG $0x0978840f; WORD $0x0000 // je           LBB6_118, $2424(%rip)
+	LONG $0x0958840f; WORD $0x0000 // je           LBB6_118, $2392(%rip)
 	WORD $0x8945; BYTE $0xc1       // movl         %r8d, %r9d
 	LONG $0x01e18341               // andl         $1, %r9d
-	QUAD $0xffffffb7056ff9c5       // vmovdqa      $-73(%rip), %xmm0  /* LCPI6_0(%rip) */
+	QUAD $0xffffffc7056ff9c5       // vmovdqa      $-57(%rip), %xmm0  /* LCPI6_0(%rip) */
 	WORD $0x8949; BYTE $0xfb       // movq         %rdi, %r11
 	WORD $0x8949; BYTE $0xf7       // movq         %rsi, %r15
 	WORD $0x8948; BYTE $0xd0       // movq         %rdx, %rax
@@ -1984,7 +1984,7 @@ LBB6_2:
 	LONG $0x5c3b8041                           // cmpb         $92, (%r11)
 	LONG $0x0014850f; WORD $0x0000             // jne          LBB6_4, $20(%rip)
 	WORD $0x3145; BYTE $0xf6                   // xorl         %r14d, %r14d
-	LONG $0x0000dce9; BYTE $0x00               // jmp          LBB6_15, $220(%rip)
+	LONG $0x0000cce9; BYTE $0x00               // jmp          LBB6_15, $204(%rip)
 	QUAD $0x9090909090909090; LONG $0x90909090 // .p2align 4, 0x90
 
 LBB6_4:
@@ -2014,7 +2014,7 @@ LBB6_6:
 
 LBB6_9:
 	WORD $0x854d; BYTE $0xe4                               // testq        %r12, %r12
-	LONG $0x08e7840f; WORD $0x0000                         // je           LBB6_119, $2279(%rip)
+	LONG $0x08c7840f; WORD $0x0000                         // je           LBB6_119, $2247(%rip)
 	WORD $0xdb31                                           // xorl         %ebx, %ebx
 	QUAD $0x9090909090909090; LONG $0x90909090; BYTE $0x90 // .p2align 4, 0x90
 
@@ -2026,27 +2026,27 @@ LBB6_11:
 	LONG $0x01c38348               // addq         $1, %rbx
 	WORD $0x3949; BYTE $0xdc       // cmpq         %rbx, %r12
 	LONG $0xffdf850f; WORD $0xffff // jne          LBB6_11, $-33(%rip)
-	LONG $0x0008b2e9; BYTE $0x00   // jmp          LBB6_119, $2226(%rip)
+	LONG $0x000892e9; BYTE $0x00   // jmp          LBB6_119, $2194(%rip)
 
 LBB6_13:
 	WORD $0x294d; BYTE $0xde       // subq         %r11, %r14
 	WORD $0x0149; BYTE $0xde       // addq         %rbx, %r14
 	LONG $0xfffe8349               // cmpq         $-1, %r14
-	LONG $0x002a850f; WORD $0x0000 // jne          LBB6_15, $42(%rip)
-	LONG $0x00089de9; BYTE $0x00   // jmp          LBB6_119, $2205(%rip)
+	LONG $0x001a850f; WORD $0x0000 // jne          LBB6_15, $26(%rip)
+	LONG $0x00087de9; BYTE $0x00   // jmp          LBB6_119, $2173(%rip)
 
 LBB6_14:
-	LONG $0xdbbc0f66                                   // bsfw         %bx, %bx
-	LONG $0xf3b70f44                                   // movzwl       %bx, %r14d
-	WORD $0x014d; BYTE $0xee                           // addq         %r13, %r14
-	LONG $0xfffe8349                                   // cmpq         $-1, %r14
-	LONG $0x0888840f; WORD $0x0000                     // je           LBB6_119, $2184(%rip)
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
+	LONG $0xdbbc0f66               // bsfw         %bx, %bx
+	LONG $0xf3b70f44               // movzwl       %bx, %r14d
+	WORD $0x014d; BYTE $0xee       // addq         %r13, %r14
+	LONG $0xfffe8349               // cmpq         $-1, %r14
+	LONG $0x0868840f; WORD $0x0000 // je           LBB6_119, $2152(%rip)
 
+	// .p2align 4, 0x90
 LBB6_15:
 	LONG $0x025e8d49               // leaq         $2(%r14), %rbx
 	WORD $0x2949; BYTE $0xdf       // subq         %rbx, %r15
-	LONG $0x0b0f880f; WORD $0x0000 // js           LBB6_155, $2831(%rip)
+	LONG $0x0aff880f; WORD $0x0000 // js           LBB6_155, $2815(%rip)
 	WORD $0x014d; BYTE $0xf3       // addq         %r14, %r11
 	LONG $0x02c38349               // addq         $2, %r11
 	WORD $0x854d; BYTE $0xc9       // testq        %r9, %r9
@@ -2055,31 +2055,31 @@ LBB6_15:
 LBB6_17:
 	WORD $0x014c; BYTE $0xf0                   // addq         %r14, %rax
 	LONG $0x5bb60f41; BYTE $0xff               // movzbl       $-1(%r11), %ebx
-	LONG $0xa4158d4c; WORD $0x00c0; BYTE $0x00 // leaq         $49316(%rip), %r10  /* __UnquoteTab(%rip) */
+	LONG $0xa4158d4c; WORD $0x00bf; BYTE $0x00 // leaq         $49060(%rip), %r10  /* __UnquoteTab(%rip) */
 	LONG $0x131c8a42                           // movb         (%rbx,%r10), %bl
 	WORD $0xfb80; BYTE $0xff                   // cmpb         $-1, %bl
 	LONG $0x0017840f; WORD $0x0000             // je           LBB6_20, $23(%rip)
 	WORD $0xdb84                               // testb        %bl, %bl
-	LONG $0x096c840f; WORD $0x0000             // je           LBB6_134, $2412(%rip)
+	LONG $0x095c840f; WORD $0x0000             // je           LBB6_134, $2396(%rip)
 	WORD $0x1888                               // movb         %bl, (%rax)
 	LONG $0x01c08348                           // addq         $1, %rax
-	LONG $0x00048be9; BYTE $0x00               // jmp          LBB6_72, $1163(%rip)
+	LONG $0x00047be9; BYTE $0x00               // jmp          LBB6_72, $1147(%rip)
 	LONG $0x90909090                           // .p2align 4, 0x90
 
 LBB6_20:
 	LONG $0x03ff8349                           // cmpq         $3, %r15
-	LONG $0x0ac28e0f; WORD $0x0000             // jle          LBB6_155, $2754(%rip)
+	LONG $0x0ab28e0f; WORD $0x0000             // jle          LBB6_155, $2738(%rip)
 	WORD $0x8b45; BYTE $0x33                   // movl         (%r11), %r14d
 	WORD $0x8945; BYTE $0xf4                   // movl         %r14d, %r12d
 	WORD $0xf741; BYTE $0xd4                   // notl         %r12d
 	LONG $0xd09e8d41; WORD $0xcfcf; BYTE $0xcf // leal         $-808464432(%r14), %ebx
 	LONG $0x80e48141; WORD $0x8080; BYTE $0x80 // andl         $-2139062144, %r12d
 	WORD $0x8541; BYTE $0xdc                   // testl        %ebx, %r12d
-	LONG $0x0813850f; WORD $0x0000             // jne          LBB6_121, $2067(%rip)
+	LONG $0x0803850f; WORD $0x0000             // jne          LBB6_121, $2051(%rip)
 	LONG $0x199e8d41; WORD $0x1919; BYTE $0x19 // leal         $421075225(%r14), %ebx
 	WORD $0x0944; BYTE $0xf3                   // orl          %r14d, %ebx
 	LONG $0x8080c3f7; WORD $0x8080             // testl        $-2139062144, %ebx
-	LONG $0x07fd850f; WORD $0x0000             // jne          LBB6_121, $2045(%rip)
+	LONG $0x07ed850f; WORD $0x0000             // jne          LBB6_121, $2029(%rip)
 	WORD $0x8944; BYTE $0xf3                   // movl         %r14d, %ebx
 	LONG $0x7f7fe381; WORD $0x7f7f             // andl         $2139062143, %ebx
 	LONG $0xc0c0ba41; WORD $0xc0c0             // movl         $-1061109568, %r10d
@@ -2087,13 +2087,13 @@ LBB6_20:
 	LONG $0x46ab8d44; WORD $0x4646; BYTE $0x46 // leal         $1179010630(%rbx), %r13d
 	WORD $0x2145; BYTE $0xe2                   // andl         %r12d, %r10d
 	WORD $0x8545; BYTE $0xea                   // testl        %r13d, %r10d
-	LONG $0x07d8850f; WORD $0x0000             // jne          LBB6_121, $2008(%rip)
+	LONG $0x07c8850f; WORD $0x0000             // jne          LBB6_121, $1992(%rip)
 	LONG $0xe0e0ba41; WORD $0xe0e0             // movl         $-522133280, %r10d
 	WORD $0x2941; BYTE $0xda                   // subl         %ebx, %r10d
 	LONG $0x3939c381; WORD $0x3939             // addl         $960051513, %ebx
 	WORD $0x2145; BYTE $0xd4                   // andl         %r10d, %r12d
 	WORD $0x8541; BYTE $0xdc                   // testl        %ebx, %r12d
-	LONG $0x07bd850f; WORD $0x0000             // jne          LBB6_121, $1981(%rip)
+	LONG $0x07ad850f; WORD $0x0000             // jne          LBB6_121, $1965(%rip)
 	WORD $0x0f41; BYTE $0xce                   // bswapl       %r14d
 	WORD $0x8944; BYTE $0xf3                   // movl         %r14d, %ebx
 	WORD $0xebc1; BYTE $0x04                   // shrl         $4, %ebx
@@ -2117,24 +2117,24 @@ LBB6_20:
 	WORD $0x854d; BYTE $0xc9                   // testq        %r9, %r9
 	LONG $0x01d6850f; WORD $0x0000             // jne          LBB6_52, $470(%rip)
 	LONG $0x02c0f641                           // testb        $2, %r8b
-	LONG $0x03d9840f; WORD $0x0000             // je           LBB6_75, $985(%rip)
+	LONG $0x03c9840f; WORD $0x0000             // je           LBB6_75, $969(%rip)
 	WORD $0x3145; BYTE $0xe4                   // xorl         %r12d, %r12d
 
 LBB6_29:
 	LONG $0x00fe8141; WORD $0x0008; BYTE $0x00 // cmpl         $2048, %r14d
-	LONG $0x03a2820f; WORD $0x0000             // jb           LBB6_73, $930(%rip)
+	LONG $0x0392820f; WORD $0x0000             // jb           LBB6_73, $914(%rip)
 	WORD $0x8944; BYTE $0xf3                   // movl         %r14d, %ebx
 	LONG $0xf800e381; WORD $0xffff             // andl         $-2048, %ebx
 	LONG $0xd800fb81; WORD $0x0000             // cmpl         $55296, %ebx
-	LONG $0x0348850f; WORD $0x0000             // jne          LBB6_69, $840(%rip)
+	LONG $0x0338850f; WORD $0x0000             // jne          LBB6_69, $824(%rip)
 	LONG $0x06fa8349                           // cmpq         $6, %r10
-	LONG $0x04df8c0f; WORD $0x0000             // jl           LBB6_87, $1247(%rip)
+	LONG $0x04cf8c0f; WORD $0x0000             // jl           LBB6_87, $1231(%rip)
 	LONG $0xfffe8141; WORD $0x00db; BYTE $0x00 // cmpl         $56319, %r14d
-	LONG $0x04d2870f; WORD $0x0000             // ja           LBB6_87, $1234(%rip)
+	LONG $0x04c2870f; WORD $0x0000             // ja           LBB6_87, $1218(%rip)
 	LONG $0x237c8043; WORD $0x5c04             // cmpb         $92, $4(%r11,%r12)
-	LONG $0x04c6850f; WORD $0x0000             // jne          LBB6_87, $1222(%rip)
+	LONG $0x04b6850f; WORD $0x0000             // jne          LBB6_87, $1206(%rip)
 	LONG $0x237c8043; WORD $0x7505             // cmpb         $117, $5(%r11,%r12)
-	LONG $0x04ba850f; WORD $0x0000             // jne          LBB6_87, $1210(%rip)
+	LONG $0x04aa850f; WORD $0x0000             // jne          LBB6_87, $1194(%rip)
 	LONG $0x236c8b47; BYTE $0x06               // movl         $6(%r11,%r12), %r13d
 	WORD $0x8944; BYTE $0xeb                   // movl         %r13d, %ebx
 	WORD $0xd3f7                               // notl         %ebx
@@ -2143,12 +2143,12 @@ LBB6_29:
 	LONG $0x8080e381; WORD $0x8080             // andl         $-2139062144, %ebx
 	WORD $0x5d89; BYTE $0xc4                   // movl         %ebx, $-60(%rbp)
 	WORD $0x8544; BYTE $0xeb                   // testl        %r13d, %ebx
-	LONG $0x0814850f; WORD $0x0000             // jne          LBB6_135, $2068(%rip)
+	LONG $0x0804850f; WORD $0x0000             // jne          LBB6_135, $2052(%rip)
 	LONG $0xc86d8b4c                           // movq         $-56(%rbp), %r13
 	LONG $0x199d8d41; WORD $0x1919; BYTE $0x19 // leal         $421075225(%r13), %ebx
 	WORD $0x0944; BYTE $0xeb                   // orl          %r13d, %ebx
 	LONG $0x8080c3f7; WORD $0x8080             // testl        $-2139062144, %ebx
-	LONG $0x07fa850f; WORD $0x0000             // jne          LBB6_135, $2042(%rip)
+	LONG $0x07ea850f; WORD $0x0000             // jne          LBB6_135, $2026(%rip)
 	LONG $0xc86d8b4c                           // movq         $-56(%rbp), %r13
 	LONG $0x7fe58141; WORD $0x7f7f; BYTE $0x7f // andl         $2139062143, %r13d
 	LONG $0xc0c0c0bb; BYTE $0xc0               // movl         $-1061109568, %ebx
@@ -2159,7 +2159,7 @@ LBB6_29:
 	WORD $0x5d8b; BYTE $0xc0                   // movl         $-64(%rbp), %ebx
 	WORD $0x5d23; BYTE $0xc4                   // andl         $-60(%rbp), %ebx
 	WORD $0x5d85; BYTE $0xd4                   // testl        %ebx, $-44(%rbp)
-	LONG $0x07cb850f; WORD $0x0000             // jne          LBB6_135, $1995(%rip)
+	LONG $0x07bb850f; WORD $0x0000             // jne          LBB6_135, $1979(%rip)
 	LONG $0xe0e0e0bb; BYTE $0xe0               // movl         $-522133280, %ebx
 	WORD $0x2944; BYTE $0xeb                   // subl         %r13d, %ebx
 	WORD $0x5d89; BYTE $0xd4                   // movl         %ebx, $-44(%rbp)
@@ -2167,7 +2167,7 @@ LBB6_29:
 	WORD $0x5d8b; BYTE $0xc4                   // movl         $-60(%rbp), %ebx
 	WORD $0x5d23; BYTE $0xd4                   // andl         $-44(%rbp), %ebx
 	WORD $0x8544; BYTE $0xeb                   // testl        %r13d, %ebx
-	LONG $0x07aa850f; WORD $0x0000             // jne          LBB6_135, $1962(%rip)
+	LONG $0x079a850f; WORD $0x0000             // jne          LBB6_135, $1946(%rip)
 	LONG $0xc86d8b4c                           // movq         $-56(%rbp), %r13
 	WORD $0x0f41; BYTE $0xcd                   // bswapl       %r13d
 	WORD $0x8944; BYTE $0xeb                   // movl         %r13d, %ebx
@@ -2189,7 +2189,7 @@ LBB6_29:
 	LONG $0xc86d0344                           // addl         $-56(%rbp), %r13d
 	LONG $0x0000e381; WORD $0x00fc             // andl         $16515072, %ebx
 	LONG $0x0000fb81; WORD $0x00dc             // cmpl         $14417920, %ebx
-	LONG $0x03f8840f; WORD $0x0000             // je           LBB6_90, $1016(%rip)
+	LONG $0x03e8840f; WORD $0x0000             // je           LBB6_90, $1000(%rip)
 	LONG $0xef00c766; BYTE $0xbf               // movw         $-16401, (%rax)
 	LONG $0xbd0240c6                           // movb         $-67, $2(%rax)
 	LONG $0x03c08348                           // addq         $3, %rax
@@ -2204,18 +2204,18 @@ LBB6_29:
 
 LBB6_42:
 	WORD $0x8545; BYTE $0xff       // testl        %r15d, %r15d
-	LONG $0x0876840f; WORD $0x0000 // je           LBB6_155, $2166(%rip)
+	LONG $0x0866840f; WORD $0x0000 // je           LBB6_155, $2150(%rip)
 	LONG $0xff7b8041; BYTE $0x5c   // cmpb         $92, $-1(%r11)
-	LONG $0x0806850f; WORD $0x0000 // jne          LBB6_146, $2054(%rip)
+	LONG $0x07f6850f; WORD $0x0000 // jne          LBB6_146, $2038(%rip)
 	LONG $0x5c3b8041               // cmpb         $92, (%r11)
 	LONG $0x0028850f; WORD $0x0000 // jne          LBB6_49, $40(%rip)
 	LONG $0x01ff8341               // cmpl         $1, %r15d
-	LONG $0x08578e0f; WORD $0x0000 // jle          LBB6_155, $2135(%rip)
+	LONG $0x08478e0f; WORD $0x0000 // jle          LBB6_155, $2119(%rip)
 	LONG $0x015b8a41               // movb         $1(%r11), %bl
 	WORD $0xfb80; BYTE $0x22       // cmpb         $34, %bl
 	LONG $0x0009840f; WORD $0x0000 // je           LBB6_48, $9(%rip)
 	WORD $0xfb80; BYTE $0x5c       // cmpb         $92, %bl
-	LONG $0x07f1850f; WORD $0x0000 // jne          LBB6_148, $2033(%rip)
+	LONG $0x07e1850f; WORD $0x0000 // jne          LBB6_148, $2017(%rip)
 
 LBB6_48:
 	LONG $0x01c38349 // addq         $1, %r11
@@ -2232,101 +2232,101 @@ LBB6_50:
 LBB6_51:
 	WORD $0x8844; BYTE $0x28     // movb         %r13b, (%rax)
 	LONG $0x01c08348             // addq         $1, %rax
-	LONG $0x0001d2e9; BYTE $0x00 // jmp          LBB6_71, $466(%rip)
+	LONG $0x0001c2e9; BYTE $0x00 // jmp          LBB6_71, $450(%rip)
 
 LBB6_52:
 	LONG $0x02c0f641               // testb        $2, %r8b
-	LONG $0x03c2840f; WORD $0x0000 // je           LBB6_93, $962(%rip)
+	LONG $0x03b2840f; WORD $0x0000 // je           LBB6_93, $946(%rip)
 	WORD $0x3145; BYTE $0xe4       // xorl         %r12d, %r12d
 
 LBB6_54:
-	LONG $0x00fe8141; WORD $0x0008; BYTE $0x00         // cmpl         $2048, %r14d
-	LONG $0x01cc820f; WORD $0x0000                     // jb           LBB6_73, $460(%rip)
-	WORD $0x8944; BYTE $0xf3                           // movl         %r14d, %ebx
-	LONG $0xf800e381; WORD $0xffff                     // andl         $-2048, %ebx
-	LONG $0xd800fb81; WORD $0x0000                     // cmpl         $55296, %ebx
-	LONG $0x0172850f; WORD $0x0000                     // jne          LBB6_69, $370(%rip)
-	WORD $0x854d; BYTE $0xd2                           // testq        %r10, %r10
-	LONG $0x07c68e0f; WORD $0x0000                     // jle          LBB6_152, $1990(%rip)
-	LONG $0x237c8043; WORD $0x5c04                     // cmpb         $92, $4(%r11,%r12)
-	LONG $0x04f1850f; WORD $0x0000                     // jne          LBB6_113, $1265(%rip)
-	LONG $0x07fa8349                                   // cmpq         $7, %r10
-	LONG $0x04d48c0f; WORD $0x0000                     // jl           LBB6_111, $1236(%rip)
-	LONG $0xfffe8141; WORD $0x00db; BYTE $0x00         // cmpl         $56319, %r14d
-	LONG $0x04c7870f; WORD $0x0000                     // ja           LBB6_111, $1223(%rip)
-	LONG $0x237c8043; WORD $0x5c05                     // cmpb         $92, $5(%r11,%r12)
-	LONG $0x04bb850f; WORD $0x0000                     // jne          LBB6_111, $1211(%rip)
-	LONG $0x237c8043; WORD $0x7506                     // cmpb         $117, $6(%r11,%r12)
-	LONG $0x04af850f; WORD $0x0000                     // jne          LBB6_111, $1199(%rip)
-	LONG $0x236c8b47; BYTE $0x07                       // movl         $7(%r11,%r12), %r13d
-	WORD $0x8944; BYTE $0xeb                           // movl         %r13d, %ebx
-	WORD $0xd3f7                                       // notl         %ebx
-	LONG $0xc86d894c                                   // movq         %r13, $-56(%rbp)
-	LONG $0xd0c58141; WORD $0xcfcf; BYTE $0xcf         // addl         $-808464432, %r13d
-	LONG $0x8080e381; WORD $0x8080                     // andl         $-2139062144, %ebx
-	WORD $0x5d89; BYTE $0xc4                           // movl         %ebx, $-60(%rbp)
-	WORD $0x8544; BYTE $0xeb                           // testl        %r13d, %ebx
-	LONG $0x073f850f; WORD $0x0000                     // jne          LBB6_149, $1855(%rip)
-	LONG $0xc86d8b4c                                   // movq         $-56(%rbp), %r13
-	LONG $0x199d8d41; WORD $0x1919; BYTE $0x19         // leal         $421075225(%r13), %ebx
-	WORD $0x0944; BYTE $0xeb                           // orl          %r13d, %ebx
-	LONG $0x8080c3f7; WORD $0x8080                     // testl        $-2139062144, %ebx
-	LONG $0x0725850f; WORD $0x0000                     // jne          LBB6_149, $1829(%rip)
-	LONG $0xc86d8b4c                                   // movq         $-56(%rbp), %r13
-	LONG $0x7fe58141; WORD $0x7f7f; BYTE $0x7f         // andl         $2139062143, %r13d
-	LONG $0xc0c0c0bb; BYTE $0xc0                       // movl         $-1061109568, %ebx
-	WORD $0x2944; BYTE $0xeb                           // subl         %r13d, %ebx
-	WORD $0x5d89; BYTE $0xc0                           // movl         %ebx, $-64(%rbp)
-	LONG $0x469d8d41; WORD $0x4646; BYTE $0x46         // leal         $1179010630(%r13), %ebx
-	WORD $0x5d89; BYTE $0xd4                           // movl         %ebx, $-44(%rbp)
-	WORD $0x5d8b; BYTE $0xc0                           // movl         $-64(%rbp), %ebx
-	WORD $0x5d23; BYTE $0xc4                           // andl         $-60(%rbp), %ebx
-	WORD $0x5d85; BYTE $0xd4                           // testl        %ebx, $-44(%rbp)
-	LONG $0x06f6850f; WORD $0x0000                     // jne          LBB6_149, $1782(%rip)
-	LONG $0xe0e0e0bb; BYTE $0xe0                       // movl         $-522133280, %ebx
-	WORD $0x2944; BYTE $0xeb                           // subl         %r13d, %ebx
-	WORD $0x5d89; BYTE $0xd4                           // movl         %ebx, $-44(%rbp)
-	LONG $0x39c58141; WORD $0x3939; BYTE $0x39         // addl         $960051513, %r13d
-	WORD $0x5d8b; BYTE $0xc4                           // movl         $-60(%rbp), %ebx
-	WORD $0x5d23; BYTE $0xd4                           // andl         $-44(%rbp), %ebx
-	WORD $0x8544; BYTE $0xeb                           // testl        %r13d, %ebx
-	LONG $0x06d5850f; WORD $0x0000                     // jne          LBB6_149, $1749(%rip)
-	LONG $0xc86d8b4c                                   // movq         $-56(%rbp), %r13
-	WORD $0x0f41; BYTE $0xcd                           // bswapl       %r13d
-	WORD $0x8944; BYTE $0xeb                           // movl         %r13d, %ebx
-	WORD $0xebc1; BYTE $0x04                           // shrl         $4, %ebx
-	WORD $0xd3f7                                       // notl         %ebx
-	LONG $0x0101e381; WORD $0x0101                     // andl         $16843009, %ebx
-	WORD $0x1c8d; BYTE $0xdb                           // leal         (%rbx,%rbx,8), %ebx
-	LONG $0x0fe58141; WORD $0x0f0f; BYTE $0x0f         // andl         $252645135, %r13d
-	WORD $0x0141; BYTE $0xdd                           // addl         %ebx, %r13d
-	WORD $0x894c; BYTE $0xeb                           // movq         %r13, %rbx
-	LONG $0x04edc141                                   // shrl         $4, %r13d
-	WORD $0x0941; BYTE $0xdd                           // orl          %ebx, %r13d
-	WORD $0x8944; BYTE $0xeb                           // movl         %r13d, %ebx
-	WORD $0xebc1; BYTE $0x08                           // shrl         $8, %ebx
-	LONG $0xff00e381; WORD $0x0000                     // andl         $65280, %ebx
-	WORD $0x5d89; BYTE $0xc8                           // movl         %ebx, $-56(%rbp)
-	LONG $0xddb60f41                                   // movzbl       %r13b, %ebx
-	WORD $0x5d03; BYTE $0xc8                           // addl         $-56(%rbp), %ebx
-	LONG $0x00e58141; WORD $0xfc00; BYTE $0x00         // andl         $16515072, %r13d
-	LONG $0x00fd8141; WORD $0xdc00; BYTE $0x00         // cmpl         $14417920, %r13d
-	LONG $0x03f1840f; WORD $0x0000                     // je           LBB6_114, $1009(%rip)
-	LONG $0xef00c766; BYTE $0xbf                       // movw         $-16401, (%rax)
-	LONG $0xbd0240c6                                   // movb         $-67, $2(%rax)
-	LONG $0x03c08348                                   // addq         $3, %rax
-	LONG $0x07c48349                                   // addq         $7, %r12
-	LONG $0xf9c28349                                   // addq         $-7, %r10
-	WORD $0x8949; BYTE $0xdd                           // movq         %rbx, %r13
-	WORD $0x8945; BYTE $0xee                           // movl         %r13d, %r14d
-	LONG $0x80fd8141; WORD $0x0000; BYTE $0x00         // cmpl         $128, %r13d
-	LONG $0xfe8b830f; WORD $0xffff                     // jae          LBB6_54, $-373(%rip)
-	WORD $0x014d; BYTE $0xdc                           // addq         %r11, %r12
-	LONG $0x04c48349                                   // addq         $4, %r12
-	WORD $0x8949; BYTE $0xdd                           // movq         %rbx, %r13
-	LONG $0xfffe63e9; BYTE $0xff                       // jmp          LBB6_51, $-413(%rip)
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
+	LONG $0x00fe8141; WORD $0x0008; BYTE $0x00 // cmpl         $2048, %r14d
+	LONG $0x01bc820f; WORD $0x0000             // jb           LBB6_73, $444(%rip)
+	WORD $0x8944; BYTE $0xf3                   // movl         %r14d, %ebx
+	LONG $0xf800e381; WORD $0xffff             // andl         $-2048, %ebx
+	LONG $0xd800fb81; WORD $0x0000             // cmpl         $55296, %ebx
+	LONG $0x0162850f; WORD $0x0000             // jne          LBB6_69, $354(%rip)
+	WORD $0x854d; BYTE $0xd2                   // testq        %r10, %r10
+	LONG $0x07b68e0f; WORD $0x0000             // jle          LBB6_152, $1974(%rip)
+	LONG $0x237c8043; WORD $0x5c04             // cmpb         $92, $4(%r11,%r12)
+	LONG $0x04e1850f; WORD $0x0000             // jne          LBB6_113, $1249(%rip)
+	LONG $0x07fa8349                           // cmpq         $7, %r10
+	LONG $0x04c48c0f; WORD $0x0000             // jl           LBB6_111, $1220(%rip)
+	LONG $0xfffe8141; WORD $0x00db; BYTE $0x00 // cmpl         $56319, %r14d
+	LONG $0x04b7870f; WORD $0x0000             // ja           LBB6_111, $1207(%rip)
+	LONG $0x237c8043; WORD $0x5c05             // cmpb         $92, $5(%r11,%r12)
+	LONG $0x04ab850f; WORD $0x0000             // jne          LBB6_111, $1195(%rip)
+	LONG $0x237c8043; WORD $0x7506             // cmpb         $117, $6(%r11,%r12)
+	LONG $0x049f850f; WORD $0x0000             // jne          LBB6_111, $1183(%rip)
+	LONG $0x236c8b47; BYTE $0x07               // movl         $7(%r11,%r12), %r13d
+	WORD $0x8944; BYTE $0xeb                   // movl         %r13d, %ebx
+	WORD $0xd3f7                               // notl         %ebx
+	LONG $0xc86d894c                           // movq         %r13, $-56(%rbp)
+	LONG $0xd0c58141; WORD $0xcfcf; BYTE $0xcf // addl         $-808464432, %r13d
+	LONG $0x8080e381; WORD $0x8080             // andl         $-2139062144, %ebx
+	WORD $0x5d89; BYTE $0xc4                   // movl         %ebx, $-60(%rbp)
+	WORD $0x8544; BYTE $0xeb                   // testl        %r13d, %ebx
+	LONG $0x072f850f; WORD $0x0000             // jne          LBB6_149, $1839(%rip)
+	LONG $0xc86d8b4c                           // movq         $-56(%rbp), %r13
+	LONG $0x199d8d41; WORD $0x1919; BYTE $0x19 // leal         $421075225(%r13), %ebx
+	WORD $0x0944; BYTE $0xeb                   // orl          %r13d, %ebx
+	LONG $0x8080c3f7; WORD $0x8080             // testl        $-2139062144, %ebx
+	LONG $0x0715850f; WORD $0x0000             // jne          LBB6_149, $1813(%rip)
+	LONG $0xc86d8b4c                           // movq         $-56(%rbp), %r13
+	LONG $0x7fe58141; WORD $0x7f7f; BYTE $0x7f // andl         $2139062143, %r13d
+	LONG $0xc0c0c0bb; BYTE $0xc0               // movl         $-1061109568, %ebx
+	WORD $0x2944; BYTE $0xeb                   // subl         %r13d, %ebx
+	WORD $0x5d89; BYTE $0xc0                   // movl         %ebx, $-64(%rbp)
+	LONG $0x469d8d41; WORD $0x4646; BYTE $0x46 // leal         $1179010630(%r13), %ebx
+	WORD $0x5d89; BYTE $0xd4                   // movl         %ebx, $-44(%rbp)
+	WORD $0x5d8b; BYTE $0xc0                   // movl         $-64(%rbp), %ebx
+	WORD $0x5d23; BYTE $0xc4                   // andl         $-60(%rbp), %ebx
+	WORD $0x5d85; BYTE $0xd4                   // testl        %ebx, $-44(%rbp)
+	LONG $0x06e6850f; WORD $0x0000             // jne          LBB6_149, $1766(%rip)
+	LONG $0xe0e0e0bb; BYTE $0xe0               // movl         $-522133280, %ebx
+	WORD $0x2944; BYTE $0xeb                   // subl         %r13d, %ebx
+	WORD $0x5d89; BYTE $0xd4                   // movl         %ebx, $-44(%rbp)
+	LONG $0x39c58141; WORD $0x3939; BYTE $0x39 // addl         $960051513, %r13d
+	WORD $0x5d8b; BYTE $0xc4                   // movl         $-60(%rbp), %ebx
+	WORD $0x5d23; BYTE $0xd4                   // andl         $-44(%rbp), %ebx
+	WORD $0x8544; BYTE $0xeb                   // testl        %r13d, %ebx
+	LONG $0x06c5850f; WORD $0x0000             // jne          LBB6_149, $1733(%rip)
+	LONG $0xc86d8b4c                           // movq         $-56(%rbp), %r13
+	WORD $0x0f41; BYTE $0xcd                   // bswapl       %r13d
+	WORD $0x8944; BYTE $0xeb                   // movl         %r13d, %ebx
+	WORD $0xebc1; BYTE $0x04                   // shrl         $4, %ebx
+	WORD $0xd3f7                               // notl         %ebx
+	LONG $0x0101e381; WORD $0x0101             // andl         $16843009, %ebx
+	WORD $0x1c8d; BYTE $0xdb                   // leal         (%rbx,%rbx,8), %ebx
+	LONG $0x0fe58141; WORD $0x0f0f; BYTE $0x0f // andl         $252645135, %r13d
+	WORD $0x0141; BYTE $0xdd                   // addl         %ebx, %r13d
+	WORD $0x894c; BYTE $0xeb                   // movq         %r13, %rbx
+	LONG $0x04edc141                           // shrl         $4, %r13d
+	WORD $0x0941; BYTE $0xdd                   // orl          %ebx, %r13d
+	WORD $0x8944; BYTE $0xeb                   // movl         %r13d, %ebx
+	WORD $0xebc1; BYTE $0x08                   // shrl         $8, %ebx
+	LONG $0xff00e381; WORD $0x0000             // andl         $65280, %ebx
+	WORD $0x5d89; BYTE $0xc8                   // movl         %ebx, $-56(%rbp)
+	LONG $0xddb60f41                           // movzbl       %r13b, %ebx
+	WORD $0x5d03; BYTE $0xc8                   // addl         $-56(%rbp), %ebx
+	LONG $0x00e58141; WORD $0xfc00; BYTE $0x00 // andl         $16515072, %r13d
+	LONG $0x00fd8141; WORD $0xdc00; BYTE $0x00 // cmpl         $14417920, %r13d
+	LONG $0x03e1840f; WORD $0x0000             // je           LBB6_114, $993(%rip)
+	LONG $0xef00c766; BYTE $0xbf               // movw         $-16401, (%rax)
+	LONG $0xbd0240c6                           // movb         $-67, $2(%rax)
+	LONG $0x03c08348                           // addq         $3, %rax
+	LONG $0x07c48349                           // addq         $7, %r12
+	LONG $0xf9c28349                           // addq         $-7, %r10
+	WORD $0x8949; BYTE $0xdd                   // movq         %rbx, %r13
+	WORD $0x8945; BYTE $0xee                   // movl         %r13d, %r14d
+	LONG $0x80fd8141; WORD $0x0000; BYTE $0x00 // cmpl         $128, %r13d
+	LONG $0xfe8b830f; WORD $0xffff             // jae          LBB6_54, $-373(%rip)
+	WORD $0x014d; BYTE $0xdc                   // addq         %r11, %r12
+	LONG $0x04c48349                           // addq         $4, %r12
+	WORD $0x8949; BYTE $0xdd                   // movq         %rbx, %r13
+	LONG $0xfffe63e9; BYTE $0xff               // jmp          LBB6_51, $-413(%rip)
 
+	// .p2align 4, 0x90
 LBB6_69:
 	WORD $0x014d; BYTE $0xdc // addq         %r11, %r12
 	LONG $0x04c48349         // addq         $4, %r12
@@ -2352,7 +2352,7 @@ LBB6_71:
 
 LBB6_72:
 	WORD $0x854d; BYTE $0xff       // testq        %r15, %r15
-	LONG $0xfa32850f; WORD $0xffff // jne          LBB6_2, $-1486(%rip)
+	LONG $0xfa52850f; WORD $0xffff // jne          LBB6_2, $-1454(%rip)
 	LONG $0x00062fe9; BYTE $0x00   // jmp          LBB6_154, $1583(%rip)
 
 LBB6_73:
@@ -2816,8 +2816,8 @@ LCPI7_2:
 
 LCPI7_3:
 	QUAD $0x3c3c3c3c3c3c3c3c; QUAD $0x3c3c3c3c3c3c3c3c // .space 16, '<<<<<<<<<<<<<<<<'
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _html_escape:
 	BYTE $0x55                                 // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
@@ -2835,11 +2835,11 @@ _html_escape:
 	LONG $0x04a28e0f; WORD $0x0000             // jle          LBB7_70, $1186(%rip)
 	LONG $0xc8458b48                           // movq         $-56(%rbp), %rax
 	WORD $0x8b4c; BYTE $0x08                   // movq         (%rax), %r9
-	QUAD $0xffffff79056ff9c5                   // vmovdqa      $-135(%rip), %xmm0  /* LCPI7_0(%rip) */
-	QUAD $0xffffff810d6ff9c5                   // vmovdqa      $-127(%rip), %xmm1  /* LCPI7_1(%rip) */
-	QUAD $0xffffff89156ff9c5                   // vmovdqa      $-119(%rip), %xmm2  /* LCPI7_2(%rip) */
-	QUAD $0xffffff911d6ff9c5                   // vmovdqa      $-111(%rip), %xmm3  /* LCPI7_3(%rip) */
-	LONG $0x0a1d8d4c; WORD $0x00b6; BYTE $0x00 // leaq         $46602(%rip), %r11  /* __HtmlQuoteTab(%rip) */
+	QUAD $0xffffff89056ff9c5                   // vmovdqa      $-119(%rip), %xmm0  /* LCPI7_0(%rip) */
+	QUAD $0xffffff910d6ff9c5                   // vmovdqa      $-111(%rip), %xmm1  /* LCPI7_1(%rip) */
+	QUAD $0xffffff99156ff9c5                   // vmovdqa      $-103(%rip), %xmm2  /* LCPI7_2(%rip) */
+	QUAD $0xffffffa11d6ff9c5                   // vmovdqa      $-95(%rip), %xmm3  /* LCPI7_3(%rip) */
+	LONG $0x1a1d8d4c; WORD $0x00b5; BYTE $0x00 // leaq         $46362(%rip), %r11  /* __HtmlQuoteTab(%rip) */
 	WORD $0x8949; BYTE $0xfc                   // movq         %rdi, %r12
 	LONG $0xd0758b4c                           // movq         $-48(%rbp), %r14
 	WORD $0x9090; BYTE $0x90                   // .p2align 4, 0x90
@@ -2949,7 +2949,7 @@ LBB7_17:
 LBB7_20:
 	WORD $0x2949; BYTE $0xcf                   // subq         %rcx, %r15
 	WORD $0x0148; BYTE $0xcb                   // addq         %rcx, %rbx
-	LONG $0x6c1d8d4c; WORD $0x00b4; BYTE $0x00 // leaq         $46188(%rip), %r11  /* __HtmlQuoteTab(%rip) */
+	LONG $0x7c1d8d4c; WORD $0x00b3; BYTE $0x00 // leaq         $45948(%rip), %r11  /* __HtmlQuoteTab(%rip) */
 	QUAD $0x9090909090909090; LONG $0x90909090 // .p2align 4, 0x90
 
 LBB7_21:
@@ -2984,7 +2984,7 @@ LBB7_24:
 LBB7_45:
 	WORD $0x294d; BYTE $0xe7                   // subq         %r12, %r15
 	WORD $0x2949; BYTE $0xc7                   // subq         %rax, %r15
-	LONG $0xf21d8d4c; WORD $0x00b3; BYTE $0x00 // leaq         $46066(%rip), %r11  /* __HtmlQuoteTab(%rip) */
+	LONG $0x021d8d4c; WORD $0x00b3; BYTE $0x00 // leaq         $45826(%rip), %r11  /* __HtmlQuoteTab(%rip) */
 	WORD $0x854d; BYTE $0xff                   // testq        %r15, %r15
 	LONG $0x0109890f; WORD $0x0000             // jns          LBB7_49, $265(%rip)
 	LONG $0x000229e9; BYTE $0x00               // jmp          LBB7_48, $553(%rip)
@@ -3199,16 +3199,16 @@ LBB7_3:
 	WORD $0x894c; BYTE $0xe0 // movq         %r12, %rax
 
 LBB7_71:
-	LONG $0x10c48348                                   // addq         $16, %rsp
-	BYTE $0x5b                                         // popq         %rbx
-	WORD $0x5c41                                       // popq         %r12
-	WORD $0x5d41                                       // popq         %r13
-	WORD $0x5e41                                       // popq         %r14
-	WORD $0x5f41                                       // popq         %r15
-	BYTE $0x5d                                         // popq         %rbp
-	BYTE $0xc3                                         // retq
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
+	LONG $0x10c48348 // addq         $16, %rsp
+	BYTE $0x5b       // popq         %rbx
+	WORD $0x5c41     // popq         %r12
+	WORD $0x5d41     // popq         %r13
+	WORD $0x5e41     // popq         %r14
+	WORD $0x5f41     // popq         %r15
+	BYTE $0x5d       // popq         %rbp
+	BYTE $0xc3       // retq
 
+	// .p2align 4, 0x90
 _atof_eisel_lemire64:
 	BYTE $0x55                     // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5       // movq         %rsp, %rbp
@@ -3234,7 +3234,7 @@ LBB8_5:
 	WORD $0xd348; BYTE $0xe7                   // shlq         %cl, %rdi
 	WORD $0xc189                               // movl         %eax, %ecx
 	LONG $0x04e1c148                           // shlq         $4, %rcx
-	LONG $0xa13d8d4c; WORD $0x0037; BYTE $0x00 // leaq         $14241(%rip), %r15  /* _POW10_M128_TAB(%rip) */
+	LONG $0x413d8d4c; WORD $0x0037; BYTE $0x00 // leaq         $14145(%rip), %r15  /* _POW10_M128_TAB(%rip) */
 	WORD $0x8948; BYTE $0xf8                   // movq         %rdi, %rax
 	LONG $0x3964f74a; BYTE $0x08               // mulq         $8(%rcx,%r15)
 	WORD $0x8949; BYTE $0xc3                   // movq         %rax, %r11
@@ -3337,23 +3337,23 @@ _decimal_to_f64:
 	LONG $0x14478b41                       // movl         $20(%r15), %eax
 	WORD $0x3145; BYTE $0xe4               // xorl         %r12d, %r12d
 	LONG $0x0001363d; BYTE $0x00           // cmpl         $310, %eax
-	LONG $0x035e8f0f; WORD $0x0000         // jg           LBB9_64, $862(%rip)
+	LONG $0x034e8f0f; WORD $0x0000         // jg           LBB9_64, $846(%rip)
 	LONG $0xfffeb63d; BYTE $0xff           // cmpl         $-330, %eax
 	LONG $0x00138d0f; WORD $0x0000         // jge          LBB9_5, $19(%rip)
 	WORD $0x3145; BYTE $0xf6               // xorl         %r14d, %r14d
-	LONG $0x00034be9; BYTE $0x00           // jmp          LBB9_64, $843(%rip)
+	LONG $0x00033be9; BYTE $0x00           // jmp          LBB9_64, $827(%rip)
 
 LBB9_4:
 	WORD $0x3145; BYTE $0xf6     // xorl         %r14d, %r14d
 	WORD $0x3145; BYTE $0xe4     // xorl         %r12d, %r12d
-	LONG $0x000340e9; BYTE $0x00 // jmp          LBB9_64, $832(%rip)
+	LONG $0x000330e9; BYTE $0x00 // jmp          LBB9_64, $816(%rip)
 
 LBB9_5:
 	WORD $0xc085                               // testl        %eax, %eax
 	LONG $0xd05d8948                           // movq         %rbx, $-48(%rbp)
 	LONG $0x005a8e0f; WORD $0x0000             // jle          LBB9_12, $90(%rip)
 	WORD $0x3145; BYTE $0xe4                   // xorl         %r12d, %r12d
-	LONG $0xa8358d4c; WORD $0x0061; BYTE $0x00 // leaq         $25000(%rip), %r14  /* _POW_TAB(%rip) */
+	LONG $0x38358d4c; WORD $0x0061; BYTE $0x00 // leaq         $24888(%rip), %r14  /* _POW_TAB(%rip) */
 	LONG $0x00002de9; BYTE $0x00               // jmp          LBB9_8, $45(%rip)
 	WORD $0x9090; BYTE $0x90                   // .p2align 4, 0x90
 
@@ -3366,7 +3366,7 @@ LBB9_10:
 LBB9_11:
 	WORD $0x894c; BYTE $0xff     // movq         %r15, %rdi
 	WORD $0xde89                 // movl         %ebx, %esi
-	LONG $0x003405e8; BYTE $0x00 // callq        _right_shift, $13317(%rip)
+	LONG $0x0033a5e8; BYTE $0x00 // callq        _right_shift, $13221(%rip)
 
 LBB9_7:
 	WORD $0x0141; BYTE $0xdc       // addl         %ebx, %r12d
@@ -3383,7 +3383,7 @@ LBB9_8:
 	LONG $0xffffd3e9; BYTE $0xff   // jmp          LBB9_7, $-45(%rip)
 
 LBB9_12:
-	LONG $0x51358d4c; WORD $0x0061; BYTE $0x00 // leaq         $24913(%rip), %r14  /* _POW_TAB(%rip) */
+	LONG $0xe1358d4c; WORD $0x0060; BYTE $0x00 // leaq         $24801(%rip), %r14  /* _POW_TAB(%rip) */
 	LONG $0x00002de9; BYTE $0x00               // jmp          LBB9_14, $45(%rip)
 
 LBB9_18:
@@ -3395,33 +3395,33 @@ LBB9_18:
 LBB9_20:
 	WORD $0x894c; BYTE $0xff     // movq         %r15, %rdi
 	WORD $0xde89                 // movl         %ebx, %esi
-	LONG $0x003186e8; BYTE $0x00 // callq        _left_shift, $12678(%rip)
+	LONG $0x003126e8; BYTE $0x00 // callq        _left_shift, $12582(%rip)
 	LONG $0x14478b41             // movl         $20(%r15), %eax
 
 LBB9_13:
 	WORD $0x2941; BYTE $0xdc // subl         %ebx, %r12d
 
 LBB9_14:
-	WORD $0xc085                                       // testl        %eax, %eax
-	LONG $0x0027880f; WORD $0x0000                     // js           LBB9_17, $39(%rip)
-	LONG $0x0042850f; WORD $0x0000                     // jne          LBB9_21, $66(%rip)
-	WORD $0x8b49; BYTE $0x0f                           // movq         (%r15), %rcx
-	WORD $0x3980; BYTE $0x35                           // cmpb         $53, (%rcx)
-	LONG $0x001e8c0f; WORD $0x0000                     // jl           LBB9_19, $30(%rip)
-	LONG $0x000031e9; BYTE $0x00                       // jmp          LBB9_21, $49(%rip)
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
+	WORD $0xc085                   // testl        %eax, %eax
+	LONG $0x0017880f; WORD $0x0000 // js           LBB9_17, $23(%rip)
+	LONG $0x0032850f; WORD $0x0000 // jne          LBB9_21, $50(%rip)
+	WORD $0x8b49; BYTE $0x0f       // movq         (%r15), %rcx
+	WORD $0x3980; BYTE $0x35       // cmpb         $53, (%rcx)
+	LONG $0x000e8c0f; WORD $0x0000 // jl           LBB9_19, $14(%rip)
+	LONG $0x000021e9; BYTE $0x00   // jmp          LBB9_21, $33(%rip)
 
+	// .p2align 4, 0x90
 LBB9_17:
 	WORD $0xf883; BYTE $0xf8       // cmpl         $-8, %eax
-	LONG $0xff9b8c0f; WORD $0xffff // jl           LBB9_18, $-101(%rip)
+	LONG $0xffab8c0f; WORD $0xffff // jl           LBB9_18, $-85(%rip)
 
 LBB9_19:
 	WORD $0xc189                   // movl         %eax, %ecx
 	WORD $0xd9f7                   // negl         %ecx
 	LONG $0x8e1c8b41               // movl         (%r14,%rcx,4), %ebx
 	LONG $0x107f8341; BYTE $0x00   // cmpl         $0, $16(%r15)
-	LONG $0xffa4850f; WORD $0xffff // jne          LBB9_20, $-92(%rip)
-	LONG $0xffffade9; BYTE $0xff   // jmp          LBB9_13, $-83(%rip)
+	LONG $0xffb4850f; WORD $0xffff // jne          LBB9_20, $-76(%rip)
+	LONG $0xffffbde9; BYTE $0xff   // jmp          LBB9_13, $-67(%rip)
 
 LBB9_21:
 	LONG $0x02fc8141; WORD $0xfffc; BYTE $0xff                           // cmpl         $-1022, %r12d
@@ -3437,7 +3437,7 @@ LBB9_21:
 LBB9_25:
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	LONG $0x00003cbe; BYTE $0x00   // movl         $60, %esi
-	LONG $0x003303e8; BYTE $0x00   // callq        _right_shift, $13059(%rip)
+	LONG $0x0032b3e8; BYTE $0x00   // callq        _right_shift, $12979(%rip)
 	LONG $0x3cc48341               // addl         $60, %r12d
 	LONG $0x88fc8341               // cmpl         $-120, %r12d
 	LONG $0xffe58c0f; WORD $0xffff // jl           LBB9_25, $-27(%rip)
@@ -3463,7 +3463,7 @@ LBB9_31:
 	WORD $0xf741; BYTE $0xdc       // negl         %r12d
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	WORD $0x8944; BYTE $0xe6       // movl         %r12d, %esi
-	LONG $0x0032afe8; BYTE $0x00   // callq        _right_shift, $12975(%rip)
+	LONG $0x00325fe8; BYTE $0x00   // callq        _right_shift, $12895(%rip)
 	LONG $0xfc02be41; WORD $0xffff // movl         $-1022, %r14d
 
 LBB9_32:
@@ -3471,7 +3471,7 @@ LBB9_32:
 	LONG $0x000d840f; WORD $0x0000 // je           LBB9_34, $13(%rip)
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	LONG $0x000035be; BYTE $0x00   // movl         $53, %esi
-	LONG $0x003071e8; BYTE $0x00   // callq        _left_shift, $12401(%rip)
+	LONG $0x003021e8; BYTE $0x00   // callq        _left_shift, $12321(%rip)
 
 LBB9_34:
 	LONG $0x14478b41                           // movl         $20(%r15), %eax
@@ -3803,7 +3803,7 @@ LBB10_39:
 LBB10_40:
 	LONG $0xe07d8d48               // leaq         $-32(%rbp), %rdi
 	LONG $0xd8758d48               // leaq         $-40(%rbp), %rsi
-	LONG $0xfff9c1e8; BYTE $0xff   // callq        _decimal_to_f64, $-1599(%rip)
+	LONG $0xfff9d1e8; BYTE $0xff   // callq        _decimal_to_f64, $-1583(%rip)
 	LONG $0x4510fbc5; BYTE $0xd8   // vmovsd       $-40(%rbp), %xmm0
 	LONG $0x30c48348               // addq         $48, %rsp
 	BYTE $0x5d                     // popq         %rbp
@@ -3827,7 +3827,7 @@ _value:
 	LONG $0xb07d8948                           // movq         %rdi, $-80(%rbp)
 	LONG $0xb8758948                           // movq         %rsi, $-72(%rbp)
 	LONG $0xd0558d48                           // leaq         $-48(%rbp), %rdx
-	LONG $0x0005aee8; BYTE $0x00               // callq        _advance_ns, $1454(%rip)
+	LONG $0x00058ee8; BYTE $0x00               // callq        _advance_ns, $1422(%rip)
 	WORD $0xbe0f; BYTE $0xc0                   // movsbl       %al, %eax
 	WORD $0xf883; BYTE $0x7d                   // cmpl         $125, %eax
 	LONG $0x00bc870f; WORD $0x0000             // ja           LBB11_11, $188(%rip)
@@ -3846,7 +3846,7 @@ LBB11_2:
 	LONG $0xb07d8d48               // leaq         $-80(%rbp), %rdi
 	LONG $0xd0758d48               // leaq         $-48(%rbp), %rsi
 	LONG $0xc8558b48               // movq         $-56(%rbp), %rdx
-	LONG $0x001357e8; BYTE $0x00   // callq        _vnumber, $4951(%rip)
+	LONG $0x001317e8; BYTE $0x00   // callq        _vnumber, $4887(%rip)
 	LONG $0xd0658b4c               // movq         $-48(%rbp), %r12
 	LONG $0x0002f3e9; BYTE $0x00   // jmp          LBB11_49, $755(%rip)
 
@@ -3868,7 +3868,7 @@ LBB11_4:
 LBB11_7:
 	WORD $0x894c; BYTE $0xe7                   // movq         %r12, %rdi
 	WORD $0x8948; BYTE $0xde                   // movq         %rbx, %rsi
-	LONG $0x0024c2e8; BYTE $0x00               // callq        _do_skip_number, $9410(%rip)
+	LONG $0x002472e8; BYTE $0x00               // callq        _do_skip_number, $9330(%rip)
 	WORD $0x8548; BYTE $0xc0                   // testq        %rax, %rax
 	LONG $0x0293880f; WORD $0x0000             // js           LBB11_45, $659(%rip)
 	WORD $0x0149; BYTE $0xc4                   // addq         %rax, %r12
@@ -3898,7 +3898,7 @@ LBB11_12:
 	LONG $0xc0558d48                           // leaq         $-64(%rbp), %rdx
 	WORD $0x894c; BYTE $0xfe                   // movq         %r15, %rsi
 	WORD $0x894c; BYTE $0xe1                   // movq         %r12, %rcx
-	LONG $0x0007d3e8; BYTE $0x00               // callq        _advance_string, $2003(%rip)
+	LONG $0x0007a3e8; BYTE $0x00               // callq        _advance_string, $1955(%rip)
 	WORD $0x8949; BYTE $0xc4                   // movq         %rax, %r12
 	WORD $0x8548; BYTE $0xc0                   // testq        %rax, %rax
 	LONG $0x0161880f; WORD $0x0000             // js           LBB11_33, $353(%rip)
@@ -4106,134 +4106,134 @@ LBB11_49:
 	// .set L11_0_set_30, LBB11_30-LJTI11_0
 	// .set L11_0_set_31, LBB11_31-LJTI11_0
 LJTI11_0:
-	LONG $0xfffffd62                                   // .long L11_0_set_10
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd86                                   // .long L11_0_set_12
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffddc                                   // .long L11_0_set_14
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffcc6                                   // .long L11_0_set_2
-	LONG $0xfffffdf0                                   // .long L11_0_set_15
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffe04                                   // .long L11_0_set_16
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffe14                                   // .long L11_0_set_17
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffe28                                   // .long L11_0_set_18
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffe5e                                   // .long L11_0_set_21
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffe95                                   // .long L11_0_set_27
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffed9                                   // .long L11_0_set_30
-	LONG $0xfffffd72                                   // .long L11_0_set_11
-	LONG $0xfffffee9                                   // .long L11_0_set_31
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
+	LONG $0xfffffd62 // .long L11_0_set_10
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd86 // .long L11_0_set_12
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffddc // .long L11_0_set_14
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffcc6 // .long L11_0_set_2
+	LONG $0xfffffdf0 // .long L11_0_set_15
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffe04 // .long L11_0_set_16
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffe14 // .long L11_0_set_17
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffe28 // .long L11_0_set_18
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffe5e // .long L11_0_set_21
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffe95 // .long L11_0_set_27
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffed9 // .long L11_0_set_30
+	LONG $0xfffffd72 // .long L11_0_set_11
+	LONG $0xfffffee9 // .long L11_0_set_31
 
+	// .p2align 4, 0x00
 LCPI12_0:
 	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
 
@@ -4245,8 +4245,8 @@ LCPI12_2:
 
 LCPI12_3:
 	QUAD $0x0d0d0d0d0d0d0d0d; QUAD $0x0d0d0d0d0d0d0d0d // .space 16, '\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r'
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _advance_ns:
 	BYTE $0x55                     // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5       // movq         %rsp, %rbp
@@ -4347,10 +4347,10 @@ LBB12_27:
 	LONG $0x0071820f; WORD $0x0000 // jb           LBB12_33, $113(%rip)
 	WORD $0x8948; BYTE $0xf9       // movq         %rdi, %rcx
 	WORD $0x294c; BYTE $0xc9       // subq         %r9, %rcx
-	QUAD $0xfffffe4e056ff9c5       // vmovdqa      $-434(%rip), %xmm0  /* LCPI12_0(%rip) */
-	QUAD $0xfffffe560d6ff9c5       // vmovdqa      $-426(%rip), %xmm1  /* LCPI12_1(%rip) */
-	QUAD $0xfffffe5e156ff9c5       // vmovdqa      $-418(%rip), %xmm2  /* LCPI12_2(%rip) */
-	QUAD $0xfffffe661d6ff9c5       // vmovdqa      $-410(%rip), %xmm3  /* LCPI12_3(%rip) */
+	QUAD $0xfffffe5e056ff9c5       // vmovdqa      $-418(%rip), %xmm0  /* LCPI12_0(%rip) */
+	QUAD $0xfffffe660d6ff9c5       // vmovdqa      $-410(%rip), %xmm1  /* LCPI12_1(%rip) */
+	QUAD $0xfffffe6e156ff9c5       // vmovdqa      $-402(%rip), %xmm2  /* LCPI12_2(%rip) */
+	QUAD $0xfffffe761d6ff9c5       // vmovdqa      $-394(%rip), %xmm3  /* LCPI12_3(%rip) */
 	LONG $0x90909090; WORD $0x9090 // .p2align 4, 0x90
 
 LBB12_29:
@@ -4446,7 +4446,7 @@ _vstring:
 	WORD $0x8b4c; BYTE $0x26                   // movq         (%rsi), %r12
 	LONG $0xd8558d48                           // leaq         $-40(%rbp), %rdx
 	WORD $0x894c; BYTE $0xe6                   // movq         %r12, %rsi
-	LONG $0x000091e8; BYTE $0x00               // callq        _advance_string, $145(%rip)
+	LONG $0x000081e8; BYTE $0x00               // callq        _advance_string, $129(%rip)
 	WORD $0x8548; BYTE $0xc0                   // testq        %rax, %rax
 	LONG $0x0027880f; WORD $0x0000             // js           LBB13_1, $39(%rip)
 	WORD $0x8948; BYTE $0x03                   // movq         %rax, (%rbx)
@@ -4482,8 +4482,8 @@ LCPI14_1:
 
 LCPI14_2:
 	QUAD $0x2020202020202020; QUAD $0x2020202020202020 // .space 16, '                '
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _advance_string:
 	BYTE $0x55                                 // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
@@ -4508,8 +4508,8 @@ _advance_string:
 	WORD $0xf748; BYTE $0xd3                   // notq         %rbx
 	QUAD $0xffffffffd045c748                   // movq         $-1, $-48(%rbp)
 	WORD $0x3145; BYTE $0xdb                   // xorl         %r11d, %r11d
-	QUAD $0xffffff64056ff9c5                   // vmovdqa      $-156(%rip), %xmm0  /* LCPI14_0(%rip) */
-	QUAD $0xffffff6c0d6ff9c5                   // vmovdqa      $-148(%rip), %xmm1  /* LCPI14_1(%rip) */
+	QUAD $0xffffff74056ff9c5                   // vmovdqa      $-140(%rip), %xmm0  /* LCPI14_0(%rip) */
+	QUAD $0xffffff7c0d6ff9c5                   // vmovdqa      $-132(%rip), %xmm1  /* LCPI14_1(%rip) */
 	QUAD $0x555555555555ba49; WORD $0x5555     // movabsq      $6148914691236517205, %r10
 	WORD $0x9090                               // .p2align 4, 0x90
 
@@ -4608,9 +4608,9 @@ LBB14_12:
 	LONG $0xd075894c                           // movq         %r14, $-48(%rbp)
 	WORD $0xf749; BYTE $0xde                   // negq         %r14
 	QUAD $0xffffffffc045c748                   // movq         $-1, $-64(%rbp)
-	QUAD $0xfffffdef056f79c5                   // vmovdqa      $-529(%rip), %xmm8  /* LCPI14_0(%rip) */
-	QUAD $0xfffffdf70d6f79c5                   // vmovdqa      $-521(%rip), %xmm9  /* LCPI14_1(%rip) */
-	QUAD $0xfffffdff156ff9c5                   // vmovdqa      $-513(%rip), %xmm2  /* LCPI14_2(%rip) */
+	QUAD $0xfffffdff056f79c5                   // vmovdqa      $-513(%rip), %xmm8  /* LCPI14_0(%rip) */
+	QUAD $0xfffffe070d6f79c5                   // vmovdqa      $-505(%rip), %xmm9  /* LCPI14_1(%rip) */
+	QUAD $0xfffffe0f156ff9c5                   // vmovdqa      $-497(%rip), %xmm2  /* LCPI14_2(%rip) */
 	LONG $0xdb76e1c5                           // vpcmpeqd     %xmm3, %xmm3, %xmm3
 
 LBB14_14:
@@ -4956,8 +4956,8 @@ LBB14_70:
 LBB14_71:
 	LONG $0x066ffac5               // vmovdqu      (%rsi), %xmm0
 	LONG $0x4e6ffac5; BYTE $0x10   // vmovdqu      $16(%rsi), %xmm1
-	QUAD $0xfffff917156ff9c5       // vmovdqa      $-1769(%rip), %xmm2  /* LCPI14_0(%rip) */
-	QUAD $0xfffff91f1d6ff9c5       // vmovdqa      $-1761(%rip), %xmm3  /* LCPI14_1(%rip) */
+	QUAD $0xfffff927156ff9c5       // vmovdqa      $-1753(%rip), %xmm2  /* LCPI14_0(%rip) */
+	QUAD $0xfffff92f1d6ff9c5       // vmovdqa      $-1745(%rip), %xmm3  /* LCPI14_1(%rip) */
 	LONG $0xe274f9c5               // vpcmpeqb     %xmm2, %xmm0, %xmm4
 	LONG $0xc4d7f9c5               // vpmovmskb    %xmm4, %eax
 	LONG $0xd274f1c5               // vpcmpeqb     %xmm2, %xmm1, %xmm2
@@ -5290,15 +5290,15 @@ LCPI15_0:
 LCPI15_1:
 	QUAD $0x4330000000000000 // .quad 0x4330000000000000
 	QUAD $0x4530000000000000 // .quad 0x4530000000000000
-	QUAD $0x0000000000000000 // .p2align 3, 0x00
 
+	// .p2align 3, 0x00
 LCPI15_2:
 	QUAD $0x430c6bf526340000 // .quad 0x430c6bf526340000
 
 LCPI15_3:
 	QUAD $0xc30c6bf526340000 // .quad 0xc30c6bf526340000
-	QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _vnumber:
 	BYTE $0x55                                 // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5                   // movq         %rsp, %rbp
@@ -5579,8 +5579,8 @@ LBB15_59:
 LBB15_69:
 	LONG $0x6ef9c1c4; BYTE $0xc4   // vmovq        %r12, %xmm0
 	LONG $0xe1af0f4c               // imulq        %rcx, %r12
-	QUAD $0xfffffc250562f9c5       // vpunpckldq   $-987(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
-	QUAD $0xfffffc2d055cf9c5       // vsubpd       $-979(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
+	QUAD $0xfffffc350562f9c5       // vpunpckldq   $-971(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
+	QUAD $0xfffffc3d055cf9c5       // vsubpd       $-963(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
 	LONG $0x1063894c               // movq         %r12, $16(%rbx)
 	LONG $0x0579e3c4; WORD $0x01c8 // vpermilpd    $1, %xmm0, %xmm1
 	LONG $0xc058f3c5               // vaddsd       %xmm0, %xmm1, %xmm0
@@ -5637,8 +5637,8 @@ LBB15_60:
 LBB15_61:
 	QUAD $0x00000000b045c748                   // movq         $0, $-80(%rbp)
 	LONG $0x6ef9c1c4; BYTE $0xc4               // vmovq        %r12, %xmm0
-	QUAD $0xfffffb740562f9c5                   // vpunpckldq   $-1164(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
-	QUAD $0xfffffb7c055cf9c5                   // vsubpd       $-1156(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
+	QUAD $0xfffffb840562f9c5                   // vpunpckldq   $-1148(%rip), %xmm0, %xmm0  /* LCPI15_0(%rip) */
+	QUAD $0xfffffb8c055cf9c5                   // vsubpd       $-1140(%rip), %xmm0, %xmm0  /* LCPI15_1(%rip) */
 	LONG $0x0579e3c4; WORD $0x01c8             // vpermilpd    $1, %xmm0, %xmm1
 	LONG $0xc058f3c5                           // vaddsd       %xmm0, %xmm1, %xmm0
 	LONG $0x4511fbc5; BYTE $0xc0               // vmovsd       %xmm0, $-64(%rbp)
@@ -5662,7 +5662,7 @@ LBB15_61:
 	WORD $0xfe83; BYTE $0x17                   // cmpl         $23, %esi
 	LONG $0x003f8c0f; WORD $0x0000             // jl           LBB15_70, $63(%rip)
 	WORD $0x468d; BYTE $0xea                   // leal         $-22(%rsi), %eax
-	LONG $0xe60d8d48; WORD $0x00b9; BYTE $0x00 // leaq         $47590(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0x460d8d48; WORD $0x00b9; BYTE $0x00 // leaq         $47430(%rip), %rcx  /* _P10_TAB(%rip) */
 	LONG $0x0459fbc5; BYTE $0xc1               // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
 	LONG $0x4511fbc5; BYTE $0xc0               // vmovsd       %xmm0, $-64(%rbp)
 	LONG $0x000016b8; BYTE $0x00               // movl         $22, %eax
@@ -5672,7 +5672,7 @@ LBB15_67:
 	WORD $0xfe83; BYTE $0xea                   // cmpl         $-22, %esi
 	LONG $0x0052820f; WORD $0x0000             // jb           LBB15_74, $82(%rip)
 	WORD $0xdef7                               // negl         %esi
-	LONG $0xc0058d48; WORD $0x00b9; BYTE $0x00 // leaq         $47552(%rip), %rax  /* _P10_TAB(%rip) */
+	LONG $0x20058d48; WORD $0x00b9; BYTE $0x00 // leaq         $47392(%rip), %rax  /* _P10_TAB(%rip) */
 	LONG $0x045efbc5; BYTE $0xf0               // vdivsd       (%rax,%rsi,8), %xmm0, %xmm0
 	LONG $0x4511fbc5; BYTE $0xc0               // vmovsd       %xmm0, $-64(%rbp)
 	LONG $0x00009de9; BYTE $0x00               // jmp          LBB15_78, $157(%rip)
@@ -5681,13 +5681,13 @@ LBB15_70:
 	WORD $0xf089 // movl         %esi, %eax
 
 LBB15_71:
-	QUAD $0xfffffaef052ef9c5                   // vucomisd     $-1297(%rip), %xmm0  /* LCPI15_2(%rip) */
+	QUAD $0xfffffaf7052ef9c5                   // vucomisd     $-1289(%rip), %xmm0  /* LCPI15_2(%rip) */
 	LONG $0x002a870f; WORD $0x0000             // ja           LBB15_74, $42(%rip)
-	QUAD $0xfffffae90d10fbc5                   // vmovsd       $-1303(%rip), %xmm1  /* LCPI15_3(%rip) */
+	QUAD $0xfffffaf10d10fbc5                   // vmovsd       $-1295(%rip), %xmm1  /* LCPI15_3(%rip) */
 	LONG $0xc82ef9c5                           // vucomisd     %xmm0, %xmm1
 	LONG $0x0018870f; WORD $0x0000             // ja           LBB15_74, $24(%rip)
 	WORD $0xc089                               // movl         %eax, %eax
-	LONG $0x860d8d48; WORD $0x00b9; BYTE $0x00 // leaq         $47494(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0xe60d8d48; WORD $0x00b8; BYTE $0x00 // leaq         $47334(%rip), %rcx  /* _P10_TAB(%rip) */
 	LONG $0x0459fbc5; BYTE $0xc1               // vmulsd       (%rcx,%rax,8), %xmm0, %xmm0
 	LONG $0x4511fbc5; BYTE $0xc0               // vmovsd       %xmm0, $-64(%rbp)
 	LONG $0x000063e9; BYTE $0x00               // jmp          LBB15_78, $99(%rip)
@@ -5698,7 +5698,7 @@ LBB15_74:
 	LONG $0xc04d8d48               // leaq         $-64(%rbp), %rcx
 	WORD $0x894c; BYTE $0xe7       // movq         %r12, %rdi
 	LONG $0xa8758948               // movq         %rsi, $-88(%rbp)
-	LONG $0xffdf2fe8; BYTE $0xff   // callq        _atof_eisel_lemire64, $-8401(%rip)
+	LONG $0xffdf7fe8; BYTE $0xff   // callq        _atof_eisel_lemire64, $-8321(%rip)
 	WORD $0xc084                   // testb        %al, %al
 	LONG $0x004d840f; WORD $0x0000 // je           LBB15_80, $77(%rip)
 	LONG $0xa8758b48               // movq         $-88(%rbp), %rsi
@@ -5708,7 +5708,7 @@ LBB15_74:
 	LONG $0xb04d8d48               // leaq         $-80(%rbp), %rcx
 	WORD $0x894c; BYTE $0xe7       // movq         %r12, %rdi
 	WORD $0x558b; BYTE $0xd4       // movl         $-44(%rbp), %edx
-	LONG $0xffdf06e8; BYTE $0xff   // callq        _atof_eisel_lemire64, $-8442(%rip)
+	LONG $0xffdf56e8; BYTE $0xff   // callq        _atof_eisel_lemire64, $-8362(%rip)
 	WORD $0xc084                   // testb        %al, %al
 	LONG $0x0024840f; WORD $0x0000 // je           LBB15_80, $36(%rip)
 	LONG $0x4d10fbc5; BYTE $0xb0   // vmovsd       $-80(%rbp), %xmm1
@@ -5729,7 +5729,7 @@ LBB15_80:
 	WORD $0x894c; BYTE $0xff     // movq         %r15, %rdi
 	LONG $0xc8558b48             // movq         $-56(%rbp), %rdx
 	LONG $0xa04d8b48             // movq         $-96(%rbp), %rcx
-	LONG $0xffe41ee8; BYTE $0xff // callq        _atof_native, $-7138(%rip)
+	LONG $0xffe45ee8; BYTE $0xff // callq        _atof_native, $-7074(%rip)
 	LONG $0x4511fbc5; BYTE $0xc0 // vmovsd       %xmm0, $-64(%rbp)
 	LONG $0x7ef9e1c4; BYTE $0xc0 // vmovq        %xmm0, %rax
 	LONG $0x000009e9; BYTE $0x00 // jmp          LBB15_83, $9(%rip)
@@ -6055,7 +6055,7 @@ LBB19_4:
 	LONG $0x007d8b49               // movq         (%r13), %rdi
 	LONG $0x08758b49               // movq         $8(%r13), %rsi
 	WORD $0x894c; BYTE $0xe2       // movq         %r12, %rdx
-	LONG $0xffe8b1e8; BYTE $0xff   // callq        _advance_ns, $-5967(%rip)
+	LONG $0xffe8d1e8; BYTE $0xff   // callq        _advance_ns, $-5935(%rip)
 	WORD $0xc084                   // testb        %al, %al
 	LONG $0x03a7840f; WORD $0x0000 // je           LBB19_57, $935(%rip)
 	WORD $0x6349; BYTE $0x17       // movslq       (%r15), %rdx
@@ -6071,7 +6071,7 @@ LBB19_7:
 	WORD $0xc783; BYTE $0xff                   // addl         $-1, %edi
 	WORD $0xff83; BYTE $0x05                   // cmpl         $5, %edi
 	LONG $0x0035870f; WORD $0x0000             // ja           LBB19_12, $53(%rip)
-	LONG $0x761d8d48; WORD $0x0004; BYTE $0x00 // leaq         $1142(%rip), %rbx  /* LJTI19_0(%rip) */
+	LONG $0x721d8d48; WORD $0x0004; BYTE $0x00 // leaq         $1138(%rip), %rbx  /* LJTI19_0(%rip) */
 	LONG $0xbb3c6348                           // movslq       (%rbx,%rdi,4), %rdi
 	WORD $0x0148; BYTE $0xdf                   // addq         %rbx, %rdi
 	JMP  DI
@@ -6115,7 +6115,7 @@ LBB19_18:
 	WORD $0x8948; BYTE $0xde       // movq         %rbx, %rsi
 	LONG $0xc0558d48               // leaq         $-64(%rbp), %rdx
 	LONG $0xb84d8b48               // movq         $-72(%rbp), %rcx
-	LONG $0xffeb0be8; BYTE $0xff   // callq        _advance_string, $-5365(%rip)
+	LONG $0xffeb1be8; BYTE $0xff   // callq        _advance_string, $-5349(%rip)
 	WORD $0x8949; BYTE $0xc5       // movq         %rax, %r13
 	WORD $0x8548; BYTE $0xc0       // testq        %rax, %rax
 	LONG $0xfef7880f; WORD $0xffff // js           LBB19_2, $-265(%rip)
@@ -6157,7 +6157,7 @@ LBB19_27:
 
 LBB19_28:
 	WORD $0xf089                               // movl         %esi, %eax
-	LONG $0x790d8d48; WORD $0x0003; BYTE $0x00 // leaq         $889(%rip), %rcx  /* LJTI19_1(%rip) */
+	LONG $0x750d8d48; WORD $0x0003; BYTE $0x00 // leaq         $885(%rip), %rcx  /* LJTI19_1(%rip) */
 	LONG $0x81046348                           // movslq       (%rcx,%rax,4), %rax
 	WORD $0x0148; BYTE $0xc8                   // addq         %rcx, %rax
 	LONG $0xffc5c749; WORD $0xffff; BYTE $0xff // movq         $-1, %r13
@@ -6172,7 +6172,7 @@ LBB19_29:
 	WORD $0x014c; BYTE $0xef                   // addq         %r13, %rdi
 	LONG $0x08708b48                           // movq         $8(%rax), %rsi
 	WORD $0x294c; BYTE $0xee                   // subq         %r13, %rsi
-	LONG $0x0006d0e8; BYTE $0x00               // callq        _do_skip_number, $1744(%rip)
+	LONG $0x0006c0e8; BYTE $0x00               // callq        _do_skip_number, $1728(%rip)
 	LONG $0xff488d48                           // leaq         $-1(%rax), %rcx
 	LONG $0xfec2c748; WORD $0xffff; BYTE $0xff // movq         $-2, %rdx
 	WORD $0x2948; BYTE $0xc2                   // subq         %rax, %rdx
@@ -6210,7 +6210,7 @@ LBB19_34:
 	WORD $0x8948; BYTE $0xde       // movq         %rbx, %rsi
 	LONG $0xc0558d48               // leaq         $-64(%rbp), %rdx
 	LONG $0xb84d8b48               // movq         $-72(%rbp), %rcx
-	LONG $0xffe9b8e8; BYTE $0xff   // callq        _advance_string, $-5704(%rip)
+	LONG $0xffe9c8e8; BYTE $0xff   // callq        _advance_string, $-5688(%rip)
 	WORD $0x8949; BYTE $0xc5       // movq         %rax, %r13
 	WORD $0x8548; BYTE $0xc0       // testq        %rax, %rax
 	LONG $0x0009890f; WORD $0x0000 // jns          LBB19_36, $9(%rip)
@@ -6247,7 +6247,7 @@ LBB19_41:
 	WORD $0x014c; BYTE $0xef       // addq         %r13, %rdi
 	LONG $0x08708b48               // movq         $8(%rax), %rsi
 	WORD $0x294c; BYTE $0xee       // subq         %r13, %rsi
-	LONG $0x0005bee8; BYTE $0x00   // callq        _do_skip_number, $1470(%rip)
+	LONG $0x0005aee8; BYTE $0x00   // callq        _do_skip_number, $1454(%rip)
 	WORD $0x8548; BYTE $0xc0       // testq        %rax, %rax
 	LONG $0x0148880f; WORD $0x0000 // js           LBB19_62, $328(%rip)
 	WORD $0x014c; BYTE $0xe8       // addq         %r13, %rax
@@ -6412,8 +6412,8 @@ LBB19_77:
 	LONG $0xffc08348             // addq         $-1, %rax
 	WORD $0x8949; BYTE $0xc5     // movq         %rax, %r13
 	LONG $0xffff09e9; BYTE $0xff // jmp          LBB19_75, $-247(%rip)
-	LONG $0x90909090             // .p2align 2, 0x90
 
+	// .p2align 2, 0x90
 	// .set L19_0_set_9, LBB19_9-LJTI19_0
 	// .set L19_0_set_13, LBB19_13-LJTI19_0
 	// .set L19_0_set_16, LBB19_16-LJTI19_0
@@ -6421,12 +6421,12 @@ LBB19_77:
 	// .set L19_0_set_22, LBB19_22-LJTI19_0
 	// .set L19_0_set_24, LBB19_24-LJTI19_0
 LJTI19_0:
-	LONG $0xfffffb93 // .long L19_0_set_9
-	LONG $0xfffffbc9 // .long L19_0_set_13
-	LONG $0xfffffbee // .long L19_0_set_16
-	LONG $0xfffffc30 // .long L19_0_set_20
-	LONG $0xfffffc45 // .long L19_0_set_22
-	LONG $0xfffffc60 // .long L19_0_set_24
+	LONG $0xfffffb97 // .long L19_0_set_9
+	LONG $0xfffffbcd // .long L19_0_set_13
+	LONG $0xfffffbf2 // .long L19_0_set_16
+	LONG $0xfffffc34 // .long L19_0_set_20
+	LONG $0xfffffc49 // .long L19_0_set_22
+	LONG $0xfffffc64 // .long L19_0_set_24
 
 	// .set L19_1_set_75, LBB19_75-LJTI19_1
 	// .set L19_1_set_74, LBB19_74-LJTI19_1
@@ -6439,131 +6439,131 @@ LJTI19_0:
 	// .set L19_1_set_50, LBB19_50-LJTI19_1
 	// .set L19_1_set_53, LBB19_53-LJTI19_1
 LJTI19_1:
-	LONG $0xfffffeed         // .long L19_1_set_75
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffda3         // .long L19_1_set_40
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffdb0         // .long L19_1_set_41
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xfffffc97         // .long L19_1_set_29
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffde8         // .long L19_1_set_43
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffe0b         // .long L19_1_set_45
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffe4c         // .long L19_1_set_48
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffe7f         // .long L19_1_set_50
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xffffffcc         // .long L19_1_set_74
-	LONG $0xfffffec3         // .long L19_1_set_53
-	QUAD $0x9090909090909090 // .p2align 4, 0x90
+	LONG $0xfffffef1                           // .long L19_1_set_75
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffda7                           // .long L19_1_set_40
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffdb4                           // .long L19_1_set_41
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xfffffc9b                           // .long L19_1_set_29
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffdec                           // .long L19_1_set_43
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffe0f                           // .long L19_1_set_45
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffe50                           // .long L19_1_set_48
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffe83                           // .long L19_1_set_50
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xffffffd0                           // .long L19_1_set_74
+	LONG $0xfffffec7                           // .long L19_1_set_53
+	QUAD $0x9090909090909090; LONG $0x90909090 // .p2align 4, 0x90
 
 _skip_array:
 	BYTE $0x55                                             // pushq        %rbp
@@ -6602,7 +6602,7 @@ _skip_string:
 	WORD $0x8b48; BYTE $0x1e       // movq         (%rsi), %rbx
 	LONG $0xe8558d48               // leaq         $-24(%rbp), %rdx
 	WORD $0x8948; BYTE $0xde       // movq         %rbx, %rsi
-	LONG $0xffe490e8; BYTE $0xff   // callq        _advance_string, $-7024(%rip)
+	LONG $0xffe4a0e8; BYTE $0xff   // callq        _advance_string, $-7008(%rip)
 	WORD $0x8548; BYTE $0xc0       // testq        %rax, %rax
 	LONG $0x0009890f; WORD $0x0000 // jns          LBB22_1, $9(%rip)
 	LONG $0xe84d8b48               // movq         $-24(%rbp), %rcx
@@ -6634,7 +6634,7 @@ _skip_negative:
 	LONG $0x08778b48               // movq         $8(%rdi), %rsi
 	WORD $0x2948; BYTE $0xde       // subq         %rbx, %rsi
 	WORD $0x8948; BYTE $0xc7       // movq         %rax, %rdi
-	LONG $0x0000bee8; BYTE $0x00   // callq        _do_skip_number, $190(%rip)
+	LONG $0x0000aee8; BYTE $0x00   // callq        _do_skip_number, $174(%rip)
 	WORD $0x8548; BYTE $0xc0       // testq        %rax, %rax
 	LONG $0x000f880f; WORD $0x0000 // js           LBB23_1, $15(%rip)
 	WORD $0x0148; BYTE $0xd8       // addq         %rbx, %rax
@@ -6676,8 +6676,8 @@ LCPI24_5:
 
 LCPI24_6:
 	QUAD $0x4545454545454545; QUAD $0x4545454545454545 // .space 16, 'EEEEEEEEEEEEEEEE'
-	QUAD $0x9090909090909090; QUAD $0x9090909090909090 // .p2align 4, 0x90
 
+	// .p2align 4, 0x90
 _do_skip_number:
 	BYTE $0x55                             // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5               // movq         %rsp, %rbp
@@ -6705,13 +6705,13 @@ LBB24_6:
 	LONG $0x02f2820f; WORD $0x0000             // jb           LBB24_7, $754(%rip)
 	LONG $0xffc2c749; WORD $0xffff; BYTE $0xff // movq         $-1, %r10
 	WORD $0xc031                               // xorl         %eax, %eax
-	QUAD $0xffffff15056f79c5                   // vmovdqa      $-235(%rip), %xmm8  /* LCPI24_0(%rip) */
-	QUAD $0xffffff1d0d6f79c5                   // vmovdqa      $-227(%rip), %xmm9  /* LCPI24_1(%rip) */
-	QUAD $0xffffff25156f79c5                   // vmovdqa      $-219(%rip), %xmm10  /* LCPI24_2(%rip) */
-	QUAD $0xffffff2d1d6f79c5                   // vmovdqa      $-211(%rip), %xmm11  /* LCPI24_3(%rip) */
-	QUAD $0xffffff35256ff9c5                   // vmovdqa      $-203(%rip), %xmm4  /* LCPI24_4(%rip) */
-	QUAD $0xffffff3d2d6ff9c5                   // vmovdqa      $-195(%rip), %xmm5  /* LCPI24_5(%rip) */
-	QUAD $0xffffff45356ff9c5                   // vmovdqa      $-187(%rip), %xmm6  /* LCPI24_6(%rip) */
+	QUAD $0xffffff25056f79c5                   // vmovdqa      $-219(%rip), %xmm8  /* LCPI24_0(%rip) */
+	QUAD $0xffffff2d0d6f79c5                   // vmovdqa      $-211(%rip), %xmm9  /* LCPI24_1(%rip) */
+	QUAD $0xffffff35156f79c5                   // vmovdqa      $-203(%rip), %xmm10  /* LCPI24_2(%rip) */
+	QUAD $0xffffff3d1d6f79c5                   // vmovdqa      $-195(%rip), %xmm11  /* LCPI24_3(%rip) */
+	QUAD $0xffffff45256ff9c5                   // vmovdqa      $-187(%rip), %xmm4  /* LCPI24_4(%rip) */
+	QUAD $0xffffff4d2d6ff9c5                   // vmovdqa      $-179(%rip), %xmm5  /* LCPI24_5(%rip) */
+	QUAD $0xffffff55356ff9c5                   // vmovdqa      $-171(%rip), %xmm6  /* LCPI24_6(%rip) */
 	LONG $0xffc1c749; WORD $0xffff; BYTE $0xff // movq         $-1, %r9
 	LONG $0xffc0c749; WORD $0xffff; BYTE $0xff // movq         $-1, %r8
 	WORD $0x8949; BYTE $0xf6                   // movq         %rsi, %r14
@@ -6800,7 +6800,7 @@ LBB24_28:
 	WORD $0x8948; BYTE $0xce                   // movq         %rcx, %rsi
 	WORD $0x2948; BYTE $0xfe                   // subq         %rdi, %rsi
 	WORD $0xc031                               // xorl         %eax, %eax
-	LONG $0xa03d8d4c; WORD $0x0001; BYTE $0x00 // leaq         $416(%rip), %r15  /* LJTI24_0(%rip) */
+	LONG $0x9c3d8d4c; WORD $0x0001; BYTE $0x00 // leaq         $412(%rip), %r15  /* LJTI24_0(%rip) */
 	LONG $0x000028e9; BYTE $0x00               // jmp          LBB24_29, $40(%rip)
 
 LBB24_31:
@@ -6943,41 +6943,41 @@ LBB24_7:
 	LONG $0xffc1c749; WORD $0xffff; BYTE $0xff // movq         $-1, %r9
 	LONG $0xffc2c749; WORD $0xffff; BYTE $0xff // movq         $-1, %r10
 	LONG $0xfffe51e9; BYTE $0xff               // jmp          LBB24_28, $-431(%rip)
-	LONG $0x90909090                           // .p2align 2, 0x90
 
+	// .p2align 2, 0x90
 	// .set L24_0_set_37, LBB24_37-LJTI24_0
 	// .set L24_0_set_40, LBB24_40-LJTI24_0
 	// .set L24_0_set_35, LBB24_35-LJTI24_0
 	// .set L24_0_set_32, LBB24_32-LJTI24_0
 LJTI24_0:
-	LONG $0xfffffeb2 // .long L24_0_set_37
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xfffffeb2 // .long L24_0_set_37
-	LONG $0xfffffec5 // .long L24_0_set_35
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xffffff02 // .long L24_0_set_40
-	LONG $0xfffffe6e // .long L24_0_set_32
-	LONG $0x90909090 // .p2align 4, 0x90
+	LONG $0xfffffeb6         // .long L24_0_set_37
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xfffffeb6         // .long L24_0_set_37
+	LONG $0xfffffec9         // .long L24_0_set_35
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xffffff06         // .long L24_0_set_40
+	LONG $0xfffffe72         // .long L24_0_set_32
+	QUAD $0x9090909090909090 // .p2align 4, 0x90
 
 _skip_positive:
 	BYTE $0x55                                 // pushq        %rbp
@@ -7079,7 +7079,7 @@ _validate_one:
 	LONG $0x000020b9; BYTE $0x00                             // movl         $32, %ecx
 	WORD $0x8948; BYTE $0xc7                                 // movq         %rax, %rdi
 	BYTE $0x5d                                               // popq         %rbp
-	LONG $0xfff24ee9; BYTE $0xff                             // jmp          _fsm_exec, $-3506(%rip)
+	LONG $0xfff25ee9; BYTE $0xff                             // jmp          _fsm_exec, $-3490(%rip)
 	QUAD $0x9090909090909090; LONG $0x90909090; WORD $0x9090 // .p2align 4, 0x90
 
 _print_mantissa:
@@ -7123,7 +7123,7 @@ _print_mantissa:
 	LONG $0x64fa6b41                           // imull        $100, %r10d, %edi
 	WORD $0xf829                               // subl         %edi, %eax
 	LONG $0xd8b70f44                           // movzwl       %ax, %r11d
-	LONG $0xbc3d8d48; WORD $0x005a; BYTE $0x00 // leaq         $23228(%rip), %rdi  /* _Digits(%rip) */
+	LONG $0x8c3d8d48; WORD $0x005a; BYTE $0x00 // leaq         $23180(%rip), %rdi  /* _Digits(%rip) */
 	LONG $0x04b70f42; BYTE $0x47               // movzwl       (%rdi,%r8,2), %eax
 	LONG $0x46894166; BYTE $0xfe               // movw         %ax, $-2(%r14)
 	LONG $0x04b70f42; BYTE $0x4f               // movzwl       (%rdi,%r9,2), %eax
@@ -7139,7 +7139,7 @@ LBB28_2:
 	LONG $0x2710ff81; WORD $0x0000             // cmpl         $10000, %edi
 	LONG $0x00af820f; WORD $0x0000             // jb           LBB28_3, $175(%rip)
 	LONG $0x1759b841; WORD $0xd1b7             // movl         $3518437209, %r8d
-	LONG $0x740d8d4c; WORD $0x005a; BYTE $0x00 // leaq         $23156(%rip), %r9  /* _Digits(%rip) */
+	LONG $0x440d8d4c; WORD $0x005a; BYTE $0x00 // leaq         $23108(%rip), %r9  /* _Digits(%rip) */
 	LONG $0x90909090                           // .p2align 4, 0x90
 
 LBB28_5:
@@ -7171,7 +7171,7 @@ LBB28_7:
 	WORD $0xd16b; BYTE $0x64                   // imull        $100, %ecx, %edx
 	WORD $0xd029                               // subl         %edx, %eax
 	WORD $0xb70f; BYTE $0xc0                   // movzwl       %ax, %eax
-	LONG $0x01158d48; WORD $0x005a; BYTE $0x00 // leaq         $23041(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0xd1158d48; WORD $0x0059; BYTE $0x00 // leaq         $22993(%rip), %rdx  /* _Digits(%rip) */
 	LONG $0x4204b70f                           // movzwl       (%rdx,%rax,2), %eax
 	LONG $0x46894166; BYTE $0xfe               // movw         %ax, $-2(%r14)
 	LONG $0xfec68349                           // addq         $-2, %r14
@@ -7181,7 +7181,7 @@ LBB28_8:
 	WORD $0xf883; BYTE $0x0a                   // cmpl         $10, %eax
 	LONG $0x0027820f; WORD $0x0000             // jb           LBB28_10, $39(%rip)
 	WORD $0xc089                               // movl         %eax, %eax
-	LONG $0xe00d8d48; WORD $0x0059; BYTE $0x00 // leaq         $23008(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xb00d8d48; WORD $0x0059; BYTE $0x00 // leaq         $22960(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	LONG $0x46894166; BYTE $0xfe               // movw         %ax, $-2(%r14)
 	BYTE $0x5b                                 // popq         %rbx
@@ -7212,7 +7212,7 @@ _left_shift:
 	BYTE $0x53                                 // pushq        %rbx
 	WORD $0xf189                               // movl         %esi, %ecx
 	LONG $0x68f16b4c                           // imulq        $104, %rcx, %r14
-	LONG $0x5a158d48; WORD $0x008d; BYTE $0x00 // leaq         $36186(%rip), %rdx  /* _LSHIFT_TAB(%rip) */
+	LONG $0xca158d48; WORD $0x008c; BYTE $0x00 // leaq         $36042(%rip), %rdx  /* _LSHIFT_TAB(%rip) */
 	LONG $0x16048b45                           // movl         (%r14,%rdx), %r8d
 	WORD $0x8b4c; BYTE $0x1f                   // movq         (%rdi), %r11
 	LONG $0x104f634c                           // movslq       $16(%rdi), %r9
@@ -8923,8 +8923,8 @@ _POW10_M128_TAB:
 	QUAD $0x4b7195f2d2d1a9fb                           // .quad 5436291095364479483
 	QUAD $0xd13eb46469447567                           // .quad -3369057127870728857
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
 
+	// .p2align 4, 0x00
 _POW_TAB:
 	LONG $0x00000001 // .long 1
 	LONG $0x00000003 // .long 3
@@ -8935,1354 +8935,1354 @@ _POW_TAB:
 	LONG $0x00000013 // .long 19
 	LONG $0x00000017 // .long 23
 	LONG $0x0000001a // .long 26
-	LONG $0x00000000 // .p2align 2, 0x00
 
+	// .p2align 2, 0x00
 _MASK_USE_NUMBER:
-	LONG $0x00000002 // .long 2
-	LONG $0x00000000 // .p2align 4, 0x00
+	LONG $0x00000002         // .long 2
+	QUAD $0x0000000000000000 // .p2align 4, 0x00
 
 _DOUBLE_POW5_INV_SPLIT:
-	QUAD $0x0000000000000001                           // .quad 1
-	QUAD $0x2000000000000000                           // .quad 2305843009213693952
-	QUAD $0x999999999999999a                           // .quad -7378697629483820646
-	QUAD $0x1999999999999999                           // .quad 1844674407370955161
-	QUAD $0x47ae147ae147ae15                           // .quad 5165088340638674453
-	QUAD $0x147ae147ae147ae1                           // .quad 1475739525896764129
-	QUAD $0x6c8b4395810624de                           // .quad 7821419487252849886
-	QUAD $0x10624dd2f1a9fbe7                           // .quad 1180591620717411303
-	QUAD $0x7a786c226809d496                           // .quad 8824922364862649494
-	QUAD $0x1a36e2eb1c432ca5                           // .quad 1888946593147858085
-	QUAD $0x61f9f01b866e43ab                           // .quad 7059937891890119595
-	QUAD $0x14f8b588e368f084                           // .quad 1511157274518286468
-	QUAD $0xb4c7f34938583622                           // .quad -5420096130713635294
-	QUAD $0x10c6f7a0b5ed8d36                           // .quad 1208925819614629174
-	QUAD $0x87a6520ec08d236a                           // .quad -8672153809141816470
-	QUAD $0x1ad7f29abcaf4857                           // .quad 1934281311383406679
-	QUAD $0x9fb841a566d74f88                           // .quad -6937723047313453176
-	QUAD $0x15798ee2308c39df                           // .quad 1547425049106725343
-	QUAD $0xe62d01511f12a607                           // .quad -1860829623108852217
-	QUAD $0x112e0be826d694b2                           // .quad 1237940039285380274
-	QUAD $0xd6ae6881cb5109a4                           // .quad -2977327396974163548
-	QUAD $0x1b7cdfd9d7bdbab7                           // .quad 1980704062856608439
-	QUAD $0xdef1ed34a2a73aea                           // .quad -2381861917579330838
-	QUAD $0x15fd7fe17964955f                           // .quad 1584563250285286751
-	QUAD $0x7f27f0f6e885c8bb                           // .quad 9162556910162266299
-	QUAD $0x119799812dea1119                           // .quad 1267650600228229401
-	QUAD $0x650cb4be40d60df8                           // .quad 7281393426775805432
-	QUAD $0x1c25c268497681c2                           // .quad 2028240960365167042
-	QUAD $0xea70909833de7193                           // .quad -1553582888063176301
-	QUAD $0x16849b86a12b9b01                           // .quad 1622592768292133633
-	QUAD $0x21f3a6e0297ec143                           // .quad 2446482504291369283
-	QUAD $0x1203af9ee756159b                           // .quad 1298074214633706907
-	QUAD $0x6985d7cd0f313537                           // .quad 7603720821608101175
-	QUAD $0x1cd2b297d889bc2b                           // .quad 2076918743413931051
-	QUAD $0x2137dfd73f5a90f9                           // .quad 2393627842544570617
-	QUAD $0x170ef54646d49689                           // .quad 1661534994731144841
-	QUAD $0xe75fe645cc4873fa                           // .quad -1774446540706253830
-	QUAD $0x12725dd1d243aba0                           // .quad 1329227995784915872
-	QUAD $0xa5663d3c7a0d865d                           // .quad -6528463279871916451
-	QUAD $0x1d83c94fb6d2ac34                           // .quad 2126764793255865396
-	QUAD $0x511e976394d79eb1                           // .quad 5845275820328197809
-	QUAD $0x179ca10c9242235d                           // .quad 1701411834604692317
-	QUAD $0xda7edf82dd794bc1                           // .quad -2702476973221262399
-	QUAD $0x12e3b40a0e9b4f7d                           // .quad 1361129467683753853
-	QUAD $0x2a6498d1625bac68                           // .quad 3054734472329800808
-	QUAD $0x1e392010175ee596                           // .quad 2177807148294006166
-	QUAD $0xeeb6e0a781e2f053                           // .quad -1245561236878069677
-	QUAD $0x182db34012b25144                           // .quad 1742245718635204932
-	QUAD $0x58924d52ce4f26a9                           // .quad 6382248639981364905
-	QUAD $0x1357c299a88ea76a                           // .quad 1393796574908163946
-	QUAD $0x27507bb7b07ea441                           // .quad 2832900194486363201
-	QUAD $0x1ef2d0f5da7dd8aa                           // .quad 2230074519853062314
-	QUAD $0x52a6c95fc0655034                           // .quad 5955668970331000884
-	QUAD $0x18c240c4aecb13bb                           // .quad 1784059615882449851
-	QUAD $0x0eebd44c99eaa690                           // .quad 1075186361522890384
-	QUAD $0x13ce9a36f23c0fc9                           // .quad 1427247692705959881
-	QUAD $0xb17953adc3110a80                           // .quad -5658399451047196032
-	QUAD $0x1fb0f6be50601941                           // .quad 2283596308329535809
-	QUAD $0xc12ddc8b02740867                           // .quad -4526719560837756825
-	QUAD $0x195a5efea6b34767                           // .quad 1826877046663628647
-	QUAD $0x3424b06f3529a052                           // .quad 3757321980813615186
-	QUAD $0x14484bfeebc29f86                           // .quad 1461501637330902918
-	QUAD $0x901d59f290ee19db                           // .quad -8062188859574838821
-	QUAD $0x1039d66589687f9e                           // .quad 1169201309864722334
-	QUAD $0x4cfbc31db4b0295f                           // .quad 5547241898389809503
-	QUAD $0x19f623d5a8a73297                           // .quad 1870722095783555735
-	QUAD $0x3d9635b15d59bab2                           // .quad 4437793518711847602
-	QUAD $0x14c4e977ba1f5bac                           // .quad 1496577676626844588
-	QUAD $0x97ab5e277de16228                           // .quad -7517811629256252888
-	QUAD $0x109d8792fb4c4956                           // .quad 1197262141301475670
-	QUAD $0xf2abc9d8c9689d0d                           // .quad -960452162584273651
-	QUAD $0x1a95a5b7f87a0ef0                           // .quad 1915619426082361072
-	QUAD $0x5bbca17a3aba173e                           // .quad 6610335899416401726
-	QUAD $0x154484932d2e725a                           // .quad 1532495540865888858
-	QUAD $0xafca1ac82efb45cb                           // .quad -5779777724692609589
-	QUAD $0x11039d428a8b8eae                           // .quad 1225996432692711086
-	QUAD $0xb2dcf7a6b1920945                           // .quad -5558295544766265019
-	QUAD $0x1b38fb9daa78e44a                           // .quad 1961594292308337738
-	QUAD $0xf57d92ebc141a104                           // .quad -757287621071101692
-	QUAD $0x15c72fb1552d836e                           // .quad 1569275433846670190
-	QUAD $0xc46475896767b403                           // .quad -4295178911598791677
-	QUAD $0x116c262777579c58                           // .quad 1255420347077336152
-	QUAD $0x6d6d88dbd8a5ecd2                           // .quad 7885109000409574610
-	QUAD $0x1be03d0bf225c6f4                           // .quad 2008672555323737844
-	QUAD $0x8abe071646eb23db                           // .quad -8449308058639981605
-	QUAD $0x164cfda3281e38c3                           // .quad 1606938044258990275
-	QUAD $0x6efe6c11d255b649                           // .quad 7997948812055656009
-	QUAD $0x11d7314f534b609c                           // .quad 1285550435407192220
-	QUAD $0xb197134fb6ef8a0e                           // .quad -5650025974420502002
-	QUAD $0x1c8b821885456760                           // .quad 2056880696651507552
-	QUAD $0x27ac0f72f8bfa1a5                           // .quad 2858676849947419045
-	QUAD $0x16d601ad376ab91a                           // .quad 1645504557321206042
-	QUAD $0xb95672c260994e1e                           // .quad -5091756149525885410
-	QUAD $0x1244ce242c5560e1                           // .quad 1316403645856964833
-	QUAD $0xf5571e03cdc21695                           // .quad -768112209757596011
-	QUAD $0x1d3ae36d13bbce35                           // .quad 2106245833371143733
-	QUAD $0x2aac18030b01abab                           // .quad 3074859046935833515
-	QUAD $0x17624f8a762fd82b                           // .quad 1684996666696914987
-	QUAD $0xbbbce0026f348956                           // .quad -4918810391935153834
-	QUAD $0x12b50c6ec4f31355                           // .quad 1347997333357531989
-	QUAD $0x92c7ccd0b1eda889                           // .quad -7870096627096246135
-	QUAD $0x1dee7a4ad4b81eef                           // .quad 2156795733372051183
-	QUAD $0xdbd30a408e57ba07                           // .quad -2606728486935086585
-	QUAD $0x17f1fb6f10934bf2                           // .quad 1725436586697640946
-	QUAD $0x7ca8d50071dfc806                           // .quad 8982663654677661702
-	QUAD $0x1327fc58da0f6ff5                           // .quad 1380349269358112757
-	QUAD $0xfaa7bb33e9660cd6                           // .quad -385133411483382570
-	QUAD $0x1ea6608e29b24cbb                           // .quad 2208558830972980411
-	QUAD $0x9552fc298784d711                           // .quad -7686804358670526703
-	QUAD $0x18851a0b548ea3c9                           // .quad 1766847064778384329
-	QUAD $0xaaa8c9bad2d0ac0e                           // .quad -6149443486936421362
-	QUAD $0x139dae6f76d88307                           // .quad 1413477651822707463
-	QUAD $0xdddadc5e1e1aace3                           // .quad -2460411949614453533
-	QUAD $0x1f62b0b257c0d1a5                           // .quad 2261564242916331941
-	QUAD $0x7e48b04b4b488a4f                           // .quad 9099716884534168143
-	QUAD $0x191bc08eac9a4151                           // .quad 1809251394333065553
-	QUAD $0xcb6d59d5d5d3a1d9                           // .quad -3788272936598396455
-	QUAD $0x141633a556e1cdda                           // .quad 1447401115466452442
-	QUAD $0x3c577b1177dc817b                           // .quad 4348079280205103483
-	QUAD $0x1011c2eaabe7d7e2                           // .quad 1157920892373161954
-	QUAD $0xc6f25e825960cf2a                           // .quad -4111119595897565398
-	QUAD $0x19b604aaaca62636                           // .quad 1852673427797059126
-	QUAD $0x6bf518684780a5bb                           // .quad 7779150767507678651
-	QUAD $0x14919d5556eb51c5                           // .quad 1482138742237647301
-	QUAD $0x232a79ed06008496                           // .quad 2533971799264232598
-	QUAD $0x10747ddddf22a7d1                           // .quad 1185710993790117841
-	QUAD $0xd1dd8fe1a3340756                           // .quad -3324342750661048490
-	QUAD $0x1a53fc9631d10c81                           // .quad 1897137590064188545
-	QUAD $0xa7e4731ae8f66c45                           // .quad -6348823015270749115
-	QUAD $0x150ffd44f4a73d34                           // .quad 1517710072051350836
-	QUAD $0x531d28e253f8569e                           // .quad 5988988032009131678
-	QUAD $0x10d9976a5d52975d                           // .quad 1214168057641080669
-	QUAD $0xeb61db03b98d5762                           // .quad -1485665593011120286
-	QUAD $0x1af5bf109550f22e                           // .quad 1942668892225729070
-	QUAD $0xbc4e48cfc7a445e8                           // .quad -4877881289150806552
-	QUAD $0x159165a6ddda5b58                           // .quad 1554135113780583256
-	QUAD $0x6371d3d96c836b20                           // .quad 7165741412905085728
-	QUAD $0x11411e1f17e1e2ad                           // .quad 1243308091024466605
-	QUAD $0x9f1c8628ad9f11cd                           // .quad -6981557813061414451
-	QUAD $0x1b9b6364f3030448                           // .quad 1989292945639146568
-	QUAD $0xe5b06b53be18db0b                           // .quad -1895897435707221237
-	QUAD $0x1615e91d8f359d06                           // .quad 1591434356511317254
-	QUAD $0xeaf3890fcb4715a2                           // .quad -1516717948565776990
-	QUAD $0x11ab20e472914a6b                           // .quad 1273147485209053803
-	QUAD $0x44b8db4c7871bc37                           // .quad 4951948911778577463
-	QUAD $0x1c45016d841baa46                           // .quad 2037035976334486086
-	QUAD $0x03c715d6c6c1635f                           // .quad 272210314680951647
-	QUAD $0x169d9abe03495505                           // .quad 1629628781067588869
-	QUAD $0x3638de456bcde919                           // .quad 3907117066486671641
-	QUAD $0x1217aefe69077737                           // .quad 1303703024854071095
-	QUAD $0x56c163a2461641c1                           // .quad 6251387306378674625
-	QUAD $0x1cf2b1970e725858                           // .quad 2085924839766513752
-	QUAD $0xdf011c81d1ab67ce                           // .quad -2377587784380880946
-	QUAD $0x17288e1271f51379                           // .quad 1668739871813211001
-	QUAD $0x7f3416ce4155eca5                           // .quad 9165976216721026213
-	QUAD $0x1286d80ec190dc61                           // .quad 1334991897450568801
-	QUAD $0x6520247d3556476e                           // .quad 7286864317269821294
-	QUAD $0x1da48ce468e7c702                           // .quad 2135987035920910082
-	QUAD $0xea801d30f7783925                           // .quad -1549206175667963611
-	QUAD $0x17b6d71d20b96c01                           // .quad 1708789628736728065
-	QUAD $0xbb99b0f3f92cfa84                           // .quad -4928713755276281212
-	QUAD $0x12f8ac174d612334                           // .quad 1367031702989382452
-	QUAD $0x5f5c4e532847f739                           // .quad 6871453250525591353
-	QUAD $0x1e5aacf215683854                           // .quad 2187250724783011924
-	QUAD $0x7f7d0b75b9d32c2e                           // .quad 9186511415162383406
-	QUAD $0x18488a5b44536043                           // .quad 1749800579826409539
-	QUAD $0x9930d5f7c7dc2358                           // .quad -7408186126837734568
-	QUAD $0x136d3b7c36a919cf                           // .quad 1399840463861127631
-	QUAD $0x8eb4898c72f9d226                           // .quad -8163748988198464986
-	QUAD $0x1f152bf9f10e8fb2                           // .quad 2239744742177804210
-	QUAD $0x722a07a38f2e41b8                           // .quad 8226396068408869304
-	QUAD $0x18ddbcc7f40ba628                           // .quad 1791795793742243368
-	QUAD $0xc1bb394fa5be9afa                           // .quad -4486929589498635526
-	QUAD $0x13e497065cd61e86                           // .quad 1433436634993794694
-	QUAD $0x9c5ec2190930f7f6                           // .quad -7179087343197816842
-	QUAD $0x1fd424d6faf030d7                           // .quad 2293498615990071511
-	QUAD $0x49e56814075a5ff8                           // .quad 5324776569667477496
-	QUAD $0x197683df2f268d79                           // .quad 1834798892792057209
-	QUAD $0x6e51201005e1e660                           // .quad 7949170070475892320
-	QUAD $0x145ecfe5bf520ac7                           // .quad 1467839114233645767
-	QUAD $0xf1da800cd181851a                           // .quad -1019361573103106790
-	QUAD $0x104bd984990e6f05                           // .quad 1174271291386916613
-	QUAD $0x4fc400148268d4f5                           // .quad 5747719112518849781
-	QUAD $0x1a12f5a0f4e3e4d6                           // .quad 1878834066219066582
-	QUAD $0xd96999aa01ed772b                           // .quad -2780522339468740821
-	QUAD $0x14dbf7b3f71cb711                           // .quad 1503067252975253265
-	QUAD $0xadee1488018ac5bc                           // .quad -5913766686316902980
-	QUAD $0x10aff95cc5b09274                           // .quad 1202453802380202612
-	QUAD $0x497ceda668de092c                           // .quad 5295368560860596524
-	QUAD $0x1ab328946f80ea54                           // .quad 1923926083808324180
-	QUAD $0x3aca57b853e4d424                           // .quad 4236294848688477220
-	QUAD $0x155c2076bf9a5510                           // .quad 1539140867046659344
-	QUAD $0x623b7960431d7683                           // .quad 7078384693692692099
-	QUAD $0x1116805effaeaa73                           // .quad 1231312693637327475
-	QUAD $0x9d2bf566d1c8bd9e                           // .quad -7121328563801244258
-	QUAD $0x1b5733cb32b110b8                           // .quad 1970100309819723960
-	QUAD $0x7dbcc452416d647f                           // .quad 9060332407926645887
-	QUAD $0x15df5ca28ef40d60                           // .quad 1576080247855779168
-	QUAD $0xcafd69db678ab6cc                           // .quad -3819780517884414260
-	QUAD $0x117f7d4ed8c33de6                           // .quad 1260864198284623334
-	QUAD $0xab2f0fc572778adf                           // .quad -6111648828615062817
-	QUAD $0x1bff2ee48e052fd7                           // .quad 2017382717255397335
-	QUAD $0x88f273045b92d580                           // .quad -8578667877633960576
-	QUAD $0x1665bf1d3e6a8cac                           // .quad 1613906173804317868
-	QUAD $0xd3f528d049424466                           // .quad -3173585487365258138
-	QUAD $0x11eaff4a98553d56                           // .quad 1291124939043454294
-	QUAD $0xb988414d4203a0a3                           // .quad -5077736779784413021
-	QUAD $0x1cab3210f3bb9557                           // .quad 2065799902469526871
-	QUAD $0x6139cdd76802e6e9                           // .quad 7005857020398200553
-	QUAD $0x16ef5b40c2fc7779                           // .quad 1652639921975621497
-	QUAD $0xe761717920025254                           // .quad -1774012013165260204
-	QUAD $0x125915cd68c9f92d                           // .quad 1322111937580497197
-	QUAD $0xa568b58e999d5086                           // .quad -6527768035806326650
-	QUAD $0x1d5b561574765b7c                           // .quad 2115379100128795516
-	QUAD $0x5120913ee14aa6d2                           // .quad 5845832015580669650
-	QUAD $0x177c44ddf6c515fd                           // .quad 1692303280103036413
-	QUAD $0xa74d40ff1aa21f0e                           // .quad -6391380831761195250
-	QUAD $0x12c9d0b1923744ca                           // .quad 1353842624082429130
-	QUAD $0x0baece64f769cb4a                           // .quad 841837113407818570
-	QUAD $0x1e0fb44f50586e11                           // .quad 2166148198531886609
-	QUAD $0x3c8bd850c5ee3c3b                           // .quad 4362818505468165179
-	QUAD $0x180c903f7379f1a7                           // .quad 1732918558825509287
-	QUAD $0xca0979da37f1c9c9                           // .quad -3888442825109288503
-	QUAD $0x133d4032c2c7f485                           // .quad 1386334847060407429
-	QUAD $0xa9a8c2f6bfe942db                           // .quad -6221508520174861605
-	QUAD $0x1ec866b79e0cba6f                           // .quad 2218135755296651887
-	QUAD $0x2153cf2bccba9be3                           // .quad 2401490813343931363
-	QUAD $0x18a0522c7e709526                           // .quad 1774508604237321510
-	QUAD $0x1aa9728970954982                           // .quad 1921192650675145090
-	QUAD $0x13b374f06526ddb8                           // .quad 1419606883389857208
-	QUAD $0xf775840f1a88759d                           // .quad -615440573661678179
-	QUAD $0x1f8587e7083e2f8c                           // .quad 2271371013423771532
-	QUAD $0x5f9136727ba05e17                           // .quad 6886345170554478103
-	QUAD $0x19379fec0698260a                           // .quad 1817096810739017226
-	QUAD $0x1940f85b9619e4df                           // .quad 1819727321701672159
-	QUAD $0x142c7ff0054684d5                           // .quad 1453677448591213781
-	QUAD $0xe100c6afab47ea4c                           // .quad -2233566957380572596
-	QUAD $0x1023998cd1053710                           // .quad 1162941958872971024
-	QUAD $0xce67a44c453fdd47                           // .quad -3573707131808916153
-	QUAD $0x19d28f47b4d524e7                           // .quad 1860707134196753639
-	QUAD $0xd852e9d69dccb106                           // .quad -2858965705447132922
-	QUAD $0x14a8729fc3ddb71f                           // .quad 1488565707357402911
-	QUAD $0x79dbee454b0a2738                           // .quad 8780873879868024632
-	QUAD $0x1086c219697e2c19                           // .quad 1190852565885922329
-	QUAD $0x295fe3a211a9d859                           // .quad 2981351763563108441
-	QUAD $0x1a71368f0f30468f                           // .quad 1905364105417475727
-	QUAD $0xbab31c81a7bb137a                           // .quad -4993616218633333894
-	QUAD $0x15275ed8d8f36ba5                           // .quad 1524291284333980581
-	QUAD $0x6228e39aec95a92f                           // .quad 7073153469319063855
-	QUAD $0x10ec4be0ad8f8951                           // .quad 1219433027467184465
-	QUAD $0x9d0e38f7e0ef7517                           // .quad -7129698522799049449
-	QUAD $0x1b13ac9aaf4c0ee8                           // .quad 1951092843947495144
-	QUAD $0xb0d82d931a592a79                           // .quad -5703758818239239559
-	QUAD $0x15a956e225d67253                           // .quad 1560874275157996115
-	QUAD $0x8d79be0f4847552e                           // .quad -8252355869333301970
-	QUAD $0x11544581b7dec1dc                           // .quad 1248699420126396892
-	QUAD $0x158f967eda0bbb7c                           // .quad 1553625868034358140
-	QUAD $0x1bba08cf8c979c94                           // .quad 1997919072202235028
-	QUAD $0x77a611ff14d62f97                           // .quad 8621598323911307159
-	QUAD $0x162e6d72d6dfb076                           // .quad 1598335257761788022
-	QUAD $0xf951a7ff43de8c79                           // .quad -481418970354774919
-	QUAD $0x11bebdf578b2f391                           // .quad 1278668206209430417
-	QUAD $0xc21c3ffed2fdad8e                           // .quad -4459619167309550194
-	QUAD $0x1c6463225ab7ec1c                           // .quad 2045869129935088668
-	QUAD $0x01b0333242648ad8                           // .quad 121653480894270168
-	QUAD $0x16b6b5b5155ff017                           // .quad 1636695303948070935
-	QUAD $0x0159c28e9b83a246                           // .quad 97322784715416134
-	QUAD $0x122bc490dde659ac                           // .quad 1309356243158456748
-	QUAD $0xcef604175f3903a3                           // .quad -3533632359197244509
-	QUAD $0x1d12d41afca3c2ac                           // .quad 2094969989053530796
-	QUAD $0x725e69ac4c2d9c83                           // .quad 8241140556867935363
-	QUAD $0x17424348ca1c9bbd                           // .quad 1675975991242824637
-	QUAD $0xf5185489d68ae39c                           // .quad -785785183989472356
-	QUAD $0x129b69070816e2fd                           // .quad 1340780792994259709
-	QUAD $0xee8d540fbdab05c6                           // .quad -1257256294383155770
-	QUAD $0x1dc574d80cf16b2f                           // .quad 2145249268790815535
-	QUAD $0xbed77672fe226b05                           // .quad -4695153850248434939
-	QUAD $0x17d12a4670c1228c                           // .quad 1716199415032652428
-	QUAD $0xff12c528cb4ebc04                           // .quad -66774265456837628
-	QUAD $0x130dbb6b8d674ed6                           // .quad 1372959532026121942
-	QUAD $0xcb513b74787df9a0                           // .quad -3796187639472850528
-	QUAD $0x1e7c5f127bd87e24                           // .quad 2196735251241795108
-	QUAD $0x090dc929f9fe614d                           // .quad 652398703163629901
-	QUAD $0x18637f41fcad31b7                           // .quad 1757388200993436087
-	QUAD $0xa0d7d42194cb810a                           // .quad -6856778666952916726
-	QUAD $0x1382cc34ca2427c5                           // .quad 1405910560794748869
-	QUAD $0x67bfb9cf5478ce77                           // .quad 7475898206584884855
-	QUAD $0x1f37ad21436d0c6f                           // .quad 2249456897271598191
-	QUAD $0x1fcc94a5dd2d71f9                           // .quad 2291369750525997561
-	QUAD $0x18f9574dcf8a7059                           // .quad 1799565517817278553
-	QUAD $0x7fd6dd517dbdf4c7                           // .quad 9211793429904618695
-	QUAD $0x13faac3e3fa1f37a                           // .quad 1439652414253822842
-	QUAD $0xffbe2ee8c92fee0b                           // .quad -18525771120251381
-	QUAD $0x1ff779fd329cb8c3                           // .quad 2303443862806116547
-	QUAD $0x6631bf20a0f324d6                           // .quad 7363877012587619542
-	QUAD $0x1992c7fdc216fa36                           // .quad 1842755090244893238
-	QUAD $0xb827cc1a1a5c1d78                           // .quad -5176944834155635336
-	QUAD $0x14756ccb01abfb5e                           // .quad 1474204072195914590
-	QUAD $0x935309ae7b7ce460                           // .quad -7830904682066418592
-	QUAD $0x105df0a267bcc918                           // .quad 1179363257756731672
-	QUAD $0x1eeb42b0c594a099                           // .quad 2227947767661371545
-	QUAD $0x1a2fe76a3f9474f4                           // .quad 1886981212410770676
-	QUAD $0xe58902270476e6e1                           // .quad -1906990600612813087
-	QUAD $0x14f31f8832dd2a5c                           // .quad 1509584969928616540
-	QUAD $0xb7a0ce859d2bebe7                           // .quad -5214941295232160793
-	QUAD $0x10c27fa028b0eeb0                           // .quad 1207667975942893232
-	QUAD $0x59014a6f61dfdfd8                           // .quad 6413489186596184024
-	QUAD $0x1ad0cc33744e4ab4                           // .quad 1932268761508629172
-	QUAD $0xe0cdd525e7e64cad                           // .quad -2247906280206873427
-	QUAD $0x1573d68f903ea229                           // .quad 1545815009206903337
-	QUAD $0x4d7177518651d6f1                           // .quad 5580372605318321905
-	QUAD $0x11297872d9cbb4ee                           // .quad 1236652007365522670
-	QUAD $0x7be8bee8d6e957e8                           // .quad 8928596168509315048
-	QUAD $0x1b758d848fac54b0                           // .quad 1978643211784836272
-	QUAD $0xfcba3253df211320                           // .quad -235820694676368608
-	QUAD $0x15f7a46a0c89dd59                           // .quad 1582914569427869017
-	QUAD $0x63c8284318e74280                           // .quad 7190041073742725760
-	QUAD $0x1192e9ee706e4aae                           // .quad 1266331655542295214
-	QUAD $0x060d0d3827d86a66                           // .quad 436019273762630246
-	QUAD $0x1c1e43171a4a1117                           // .quad 2026130648867672343
-	QUAD $0x6b3da42cecad21eb                           // .quad 7727513048493924843
-	QUAD $0x167e9c127b6e7412                           // .quad 1620904519094137874
-	QUAD $0x88fe1cf0bd574e56                           // .quad -8575384820172501418
-	QUAD $0x11fee341fc585cdb                           // .quad 1296723615275310299
-	QUAD $0x419694b462254a23                           // .quad 4726128361433549347
-	QUAD $0x1ccb0536608d615f                           // .quad 2074757784440496479
-	QUAD $0x67abaa29e81dd4e9                           // .quad 7470251503888749801
-	QUAD $0x1708d0f84d3de77f                           // .quad 1659806227552397183
-	QUAD $0xb95621bb2017dd87                           // .quad -5091845241114731129
-	QUAD $0x126d73f9d764b932                           // .quad 1327844982041917746
-	QUAD $0xc223692b668c95a5                           // .quad -4457603571041659483
-	QUAD $0x1d7becc2f23ac1ea                           // .quad 2124551971267068394
-	QUAD $0xce82ba891ed6de1d                           // .quad -3566082856833327587
-	QUAD $0x179657025b6234bb                           // .quad 1699641577013654715
-	QUAD $0xa53562074bdf1818                           // .quad -6542215100208572392
-	QUAD $0x12deac01e2b4f6fc                           // .quad 1359713261610923772
-	QUAD $0x3b889cd87964f359                           // .quad 4289851098633925465
-	QUAD $0x1e3113363787f194                           // .quad 2175541218577478036
-	QUAD $0xfc6d4a46c783f5e1                           // .quad -257467935834769951
-	QUAD $0x18274291c6065adc                           // .quad 1740432974861982428
-	QUAD $0x30576e9f06032b1a                           // .quad 3483374466074094362
-	QUAD $0x13529ba7d19eaf17                           // .quad 1392346379889585943
-	QUAD $0x1a257dcb3cd1de90                           // .quad 1884050330976640656
-	QUAD $0x1eea92a61c311825                           // .quad 2227754207823337509
-	QUAD $0x481dfe3c30a7e540                           // .quad 5196589079523222848
-	QUAD $0x18bba884e35a79b7                           // .quad 1782203366258670007
-	QUAD $0xd34b31c9c0865100                           // .quad -3221426365865242368
-	QUAD $0x13c9539d82aec7c5                           // .quad 1425762693006936005
-	QUAD $0x5211e942cda3b4cd                           // .quad 5913764258841343181
-	QUAD $0x1fa885c8d117a609                           // .quad 2281220308811097609
-	QUAD $0x74db21023e1c90a4                           // .quad 8420360221814984868
-	QUAD $0x19539e3a40dfb807                           // .quad 1824976247048878087
-	QUAD $0xf715b401cb4a0d50                           // .quad -642409452031832752
-	QUAD $0x1442e4fb67196005                           // .quad 1459980997639102469
-	QUAD $0xf8de299b09080aa7                           // .quad -513927561625466201
-	QUAD $0x103583fc527ab337                           // .quad 1167984798111281975
-	QUAD $0x8e304291a80cddd7                           // .quad -8200981728084566569
-	QUAD $0x19ef3993b72ab859                           // .quad 1868775676978051161
-	QUAD $0x3e8d020e200a4b13                           // .quad 4507261061758077715
-	QUAD $0x14bf6142f8eef9e1                           // .quad 1495020541582440929
-	QUAD $0x653d9b3e80083c0f                           // .quad 7295157664148372495
-	QUAD $0x10991a9bfa58c7e7                           // .quad 1196016433265952743
-	QUAD $0x6ec8f864000d2ce4                           // .quad 7982903447895485668
-	QUAD $0x1a8e90f9908e0ca5                           // .quad 1913626293225524389
-	QUAD $0x8bd3f9e999a423ea                           // .quad -8371072500651252758
-	QUAD $0x153eda614071a3b7                           // .quad 1530901034580419511
-	QUAD $0x3ca994bae1501cbb                           // .quad 4371188443704728763
-	QUAD $0x10ff151a99f482f9                           // .quad 1224720827664335609
-	QUAD $0xc775bac49bb3612b                           // .quad -4074144934298164949
-	QUAD $0x1b31bb5dc320d18e                           // .quad 1959553324262936974
-	QUAD $0xd2c4956a16291a89                           // .quad -3259315947438531959
-	QUAD $0x15c162b168e70e0b                           // .quad 1567642659410349579
-	QUAD $0xdbd0778811ba7ba1                           // .quad -2607452757950825567
-	QUAD $0x11678227871f3e6f                           // .quad 1254114127528279663
-	QUAD $0x2c80bf401c5d929b                           // .quad 3206773216762499739
-	QUAD $0x1bd8d03f3e9863e6                           // .quad 2006582604045247462
-	QUAD $0xbd33cc3349e47549                           // .quad -4813279056073820855
-	QUAD $0x16470cff6546b651                           // .quad 1605266083236197969
-	QUAD $0xca8fd68f6e505dd4                           // .quad -3850623244859056684
-	QUAD $0x11d270cc51055ea7                           // .quad 1284212866588958375
-	QUAD $0x4419574be3b3c953                           // .quad 4907049252451240275
-	QUAD $0x1c83e7ad4e6efdd9                           // .quad 2054740586542333401
-	QUAD $0x0347790982f63aa9                           // .quad 236290587219081897
-	QUAD $0x16cfec8aa52597e1                           // .quad 1643792469233866721
-	QUAD $0xcf6c60d468c4fbba                           // .quad -3500316344966644806
-	QUAD $0x123ff06eea847980                           // .quad 1315033975387093376
-	QUAD $0xe57a34870e07f92a                           // .quad -1911157337204721366
-	QUAD $0x1d331a4b10d3f59a                           // .quad 2104054360619349402
-	QUAD $0x512e906c0b399422                           // .quad 5849771759720043554
-	QUAD $0x175c1508da432ae2                           // .quad 1683243488495479522
-	QUAD $0xda8ba6bcd5c7a9b5                           // .quad -2698880221707785803
-	QUAD $0x12b010d3e1cf5581                           // .quad 1346594790796383617
-	QUAD $0x90df712e22d90f87                           // .quad -8007557169474367609
-	QUAD $0x1de6815302e5559c                           // .quad 2154551665274213788
-	QUAD $0xda4c5a8b4f140c6c                           // .quad -2716696920837583764
-	QUAD $0x17eb9aa8cf1dde16                           // .quad 1723641332219371030
-	QUAD $0xaea37ba2a5a9a38a                           // .quad -5862706351411977334
-	QUAD $0x1322e220a5b17e78                           // .quad 1378913065775496824
-	QUAD $0x7dd25f6aa2a905a9                           // .quad 9066413911450387881
-	QUAD $0x1e9e369aa2b59727                           // .quad 2206260905240794919
-	QUAD $0x97db7f888220d154                           // .quad -7504264129807330988
-	QUAD $0x187e92154ef7ac1f                           // .quad 1765008724192635935
-	QUAD $0x797c6606ce80a777                           // .quad 8753983955121776503
-	QUAD $0x139874ddd8c6234c                           // .quad 1412006979354108748
-	QUAD $0x8f2d700ae4010bf1                           // .quad -8129718560256619535
-	QUAD $0x1f5a549627a36bad                           // .quad 2259211166966573997
-	QUAD $0x0c2459a25000d65a                           // .quad 874922781278525018
-	QUAD $0x191510781fb5efbe                           // .quad 1807368933573259198
-	QUAD $0x701d1481d99a4515                           // .quad 8078635854506640661
-	QUAD $0x1410d9f9b2f7f2fe                           // .quad 1445895146858607358
-	QUAD $0xc017439b147b6a77                           // .quad -4605137760620418441
-	QUAD $0x100d7b2e28c65bfe                           // .quad 1156716117486885886
-	QUAD $0xccf205c4ed9243f2                           // .quad -3678871602250759182
-	QUAD $0x19af2b7d0e0a2cca                           // .quad 1850745787979017418
-	QUAD $0x0a5b37d0be0e9cc2                           // .quad 746251532941302978
-	QUAD $0x148c22ca71a1bd6f                           // .quad 1480596630383213935
-	QUAD $0x0848f973cb3ee3ce                           // .quad 597001226353042382
-	QUAD $0x10701bd527b4978c                           // .quad 1184477304306571148
-	QUAD $0xda0e5bec78649fb0                           // .quad -2734146852577042512
-	QUAD $0x1a4cf9550c5425ac                           // .quad 1895163686890513836
-	QUAD $0x7b3eaff060507fc0                           // .quad 8880728962164096960
-	QUAD $0x150a6110d6a9b7bd                           // .quad 1516130949512411069
-	QUAD $0x95cbbff380406633                           // .quad -7652812089236363725
-	QUAD $0x10d51a73deee2c97                           // .quad 1212904759609928855
-	QUAD $0xefac665266cd7052                           // .quad -1176452898552450990
-	QUAD $0x1aee90b964b04758                           // .quad 1940647615375886168
-	QUAD $0x2623850eb8a459db                           // .quad 2748186495899949531
-	QUAD $0x158ba6fab6f36c47                           // .quad 1552518092300708935
-	QUAD $0x1e82d0d893b6ae49                           // .quad 2198549196719959625
-	QUAD $0x113c85955f29236c                           // .quad 1242014473840567148
-	QUAD $0xfd9e1af41f8ab075                           // .quad -171670099989974923
-	QUAD $0x1b9408eefea838ac                           // .quad 1987223158144907436
-	QUAD $0x97b1af29b2d559f7                           // .quad -7516033709475800585
-	QUAD $0x16100725988693bd                           // .quad 1589778526515925949
-	QUAD $0xac8e25baf5777b2c                           // .quad -6012826967580640468
-	QUAD $0x11a66c1e139edc97                           // .quad 1271822821212740759
-	QUAD $0x7a7d092b2258c513                           // .quad 8826220925580526867
-	QUAD $0x1c3d79c9b8fe2dbf                           // .quad 2034916513940385215
-	QUAD $0x61fda0ef4ead6a76                           // .quad 7060976740464421494
-	QUAD $0x169794a160cb57cc                           // .quad 1627933211152308172
-	QUAD $0xe7fe1a590bbdeec5                           // .quad -1729916237112283451
-	QUAD $0x1212dd4de7091309                           // .quad 1302346568921846537
-	QUAD $0xa6635d5b45fcb13a                           // .quad -6457214794121563846
-	QUAD $0x1ceafbafd80e84dc                           // .quad 2083754510274954460
-	QUAD $0x851c4aaf6b308dc8                           // .quad -8855120650039161400
-	QUAD $0x172262f3133ed0b0                           // .quad 1667003608219963568
-	QUAD $0xd0e36ef2bc26d7d4                           // .quad -3394747705289418796
-	QUAD $0x1281e8c275cbda26                           // .quad 1333602886575970854
-	QUAD $0xb49f17eac6a48c86                           // .quad -5431596328463070074
-	QUAD $0x1d9ca79d894629d7                           // .quad 2133764618521553367
-	QUAD $0x2a18dfef0550706b                           // .quad 3033420566713364587
-	QUAD $0x17b08617a104ee46                           // .quad 1707011694817242694
-	QUAD $0x54e0b3259dd9f389                           // .quad 6116085268112601993
-	QUAD $0x12f39e794d9d8b6b                           // .quad 1365609355853794155
-	QUAD $0x87cdeb6f62f65274                           // .quad -8661007644729388428
-	QUAD $0x1e5297287c2f4578                           // .quad 2184974969366070648
-	QUAD $0xd30b22bf825ea85d                           // .quad -3239457301041600419
-	QUAD $0x18421286c9bf6ac6                           // .quad 1747979975492856518
-	QUAD $0x0f3c1bcc684bb9e4                           // .quad 1097782973908629988
-	QUAD $0x13680ed23aff889f                           // .quad 1398383980394285215
-	QUAD $0x18602c7a4079296d                           // .quad 1756452758253807981
-	QUAD $0x1f0ce4839198da98                           // .quad 2237414368630856344
-	QUAD $0x46b356c833942124                           // .quad 5094511021344956708
-	QUAD $0x18d71d360e13e213                           // .quad 1789931494904685075
-	QUAD $0x388f78a029434db6                           // .quad 4075608817075965366
-	QUAD $0x13df4a91a4dcb4dc                           // .quad 1431945195923748060
-	QUAD $0x5a7f2766a86baf8a                           // .quad 6520974107321544586
-	QUAD $0x1fcbaa82a1612160                           // .quad 2291112313477996896
-	QUAD $0x153285ebb9efbfa2                           // .quad 1527430471115325346
-	QUAD $0x196fbb9bb44db44d                           // .quad 1832889850782397517
-	QUAD $0xaa8ed189618c994e                           // .quad -6156753252591560370
-	QUAD $0x145962e2f6a4903d                           // .quad 1466311880625918013
-	QUAD $0xeed8a7a11ad6e10c                           // .quad -1236053787331337972
-	QUAD $0x1047824f2bb6d9ca                           // .quad 1173049504500734410
-	QUAD $0x7e27729b5e249b45                           // .quad 9090360384495590213
-	QUAD $0x1a0c03b1df8af611                           // .quad 1876879207201175057
-	QUAD $0xfe85f549181d4904                           // .quad -106409321887348476
-	QUAD $0x14d6695b193bf80d                           // .quad 1501503365760940045
-	QUAD $0xcb9e5dd4134aa0d0                           // .quad -3774476272251789104
-	QUAD $0x10ab877c142ff9a4                           // .quad 1201202692608752036
-	QUAD $0xdf63c9535211014d                           // .quad -2349813220860952243
-	QUAD $0x1aac0bf9b9e65c3a                           // .quad 1921924308174003258
-	QUAD $0x191ca10f74da6771                           // .quad 1809498238053148529
-	QUAD $0x15566ffafb1eb02f                           // .quad 1537539446539202607
-	QUAD $0xadb080d92a4852c1                           // .quad -5931099039041301823
-	QUAD $0x1111f32f2f4bc025                           // .quad 1230031557231362085
-	QUAD $0x15e7348eaa0d5134                           // .quad 1578287981759648052
-	QUAD $0x1b4feb7eb212cd09                           // .quad 1968050491570179337
-	QUAD $0xab1f5d3eee710dc4                           // .quad -6116067244076102204
-	QUAD $0x15d98932280f0a6d                           // .quad 1574440393256143469
-	QUAD $0xbc1917658b8da49d                           // .quad -4892853795260881763
-	QUAD $0x117ad428200c0857                           // .quad 1259552314604914775
-	QUAD $0x2cf4f23c127c3a94                           // .quad 3239480371808320148
-	QUAD $0x1bf7b9d9cce00d59                           // .quad 2015283703367863641
-	QUAD $0xf0c3f4fcdb969543                           // .quad -1097764517295254205
-	QUAD $0x165fc7e170b33de0                           // .quad 1612226962694290912
-	QUAD $0x5a365d9716121103                           // .quad 6500486015647617283
-	QUAD $0x11e6398126f5cb1a                           // .quad 1289781570155432730
-	QUAD $0x9056fc24f01ce804                           // .quad -8045966448673363964
-	QUAD $0x1ca38f350b22de90                           // .quad 2063650512248692368
-	QUAD $0xd9df301d8ce3ecd0                           // .quad -2747424344196780848
-	QUAD $0x16e93f5da2824ba6                           // .quad 1650920409798953894
-	QUAD $0xe17f59b13d8323da                           // .quad -2197939475357424678
-	QUAD $0x125432b14ecea2eb                           // .quad 1320736327839163115
-	QUAD $0x68cbc2b52f38395c                           // .quad 7551343283653851484
-	QUAD $0x1d53844ee47dd179                           // .quad 2113178124542660985
-	QUAD $0x53d6355dbf602de3                           // .quad 6041074626923081187
-	QUAD $0x177603725064a794                           // .quad 1690542499634128788
-	QUAD $0xa9782ab165e68b1c                           // .quad -6235186742687266020
-	QUAD $0x12c4cf8ea6b6ec76                           // .quad 1352433999707303030
-	QUAD $0x0f26aab56fd744fa                           // .quad 1091747655926105338
-	QUAD $0x1e07b27dd78b13f1                           // .quad 2163894399531684849
-	QUAD $0x3f52222abfdf6a62                           // .quad 4562746939482794594
-	QUAD $0x18062864ac6f4327                           // .quad 1731115519625347879
-	QUAD $0x65db4e88997f884e                           // .quad 7339546366328145998
-	QUAD $0x1338205089f29c1f                           // .quad 1384892415700278303
-	QUAD $0x6fc54a7428cc0d4a                           // .quad 8053925371383123274
-	QUAD $0x1ec033b40fea9365                           // .quad 2215827865120445285
-	QUAD $0x596aa1f68709a43b                           // .quad 6443140297106498619
-	QUAD $0x1899c2f673220f84                           // .quad 1772662292096356228
-	QUAD $0xadeee7f86c07b696                           // .quad -5913534206540532074
-	QUAD $0x13ae3591f5b4d936                           // .quad 1418129833677084982
-	QUAD $0x497e3ff3e00c5756                           // .quad 5295740528502789974
-	QUAD $0x1f7d228322baf524                           // .quad 2269007733883335972
-	QUAD $0xd464fff64cd6ac45                           // .quad -3142105206681588667
-	QUAD $0x1930e868e89590e9                           // .quad 1815206187106668777
-	QUAD $0x4383fff83d7889d1                           // .quad 4865013464138549713
-	QUAD $0x14272053ed4473ee                           // .quad 1452164949685335022
-	QUAD $0xcf9cccc69793a174                           // .quad -3486686858172980876
-	QUAD $0x101f4d0ff1038ff1                           // .quad 1161731959748268017
-	QUAD $0x7f6147a425b90252                           // .quad 9178696285890871890
-	QUAD $0x19cbae7fe805b31c                           // .quad 1858771135597228828
-	QUAD $0xcc4dd2e9b7c7350f                           // .quad -3725089415513033457
-	QUAD $0x14a2f1ffecd15c16                           // .quad 1487016908477783062
-	QUAD $0x3d0b0f215fd290d9                           // .quad 4398626097073393881
-	QUAD $0x10825b3323dab012                           // .quad 1189613526782226450
-	QUAD $0x61ab4b689950e7c1                           // .quad 7037801755317430209
-	QUAD $0x1a6a2b85062ab350                           // .quad 1903381642851562320
-	QUAD $0x4e22a2ba1440b967                           // .quad 5630241404253944167
-	QUAD $0x1521bc6a6b555c40                           // .quad 1522705314281249856
-	QUAD $0x0b4ee894dd009453                           // .quad 814844308661245011
-	QUAD $0x10e7c9eebc4449cd                           // .quad 1218164251424999885
-	QUAD $0x1217da87c800ed51                           // .quad 1303750893857992017
-	QUAD $0x1b0c764ac6d3a948                           // .quad 1949062802279999816
-	QUAD $0xdb46486ca000bdda                           // .quad -2646348099655516710
-	QUAD $0x15a391d56bdc876c                           // .quad 1559250241823999852
-	QUAD $0x490506bd4ccd64af                           // .quad 5261619149759407279
-	QUAD $0x114fa7ddefe39f8a                           // .quad 1247400193459199882
-	QUAD $0xa8080ac87ae23ab1                           // .quad -6338804619352589647
-	QUAD $0x1bb2a62fe638ff43                           // .quad 1995840309534719811
-	QUAD $0x5339a239fbe82ef4                           // .quad 5997002748743659252
-	QUAD $0x162884f31e93ff69                           // .quad 1596672247627775849
-	QUAD $0x75c7b4fb2fecf25d                           // .quad 8486951013736837725
-	QUAD $0x11ba03f5b20fff87                           // .quad 1277337798102220679
-	QUAD $0x22d92191e647ea2e                           // .quad 2511075177753209390
-	QUAD $0x1c5cd322b67fff3f                           // .quad 2043740476963553087
-	QUAD $0xb57a8141850654f2                           // .quad -5369837487281253134
-	QUAD $0x16b0a8e891ffff65                           // .quad 1634992381570842469
-	QUAD $0xc4620101373843f5                           // .quad -4295869989825002507
-	QUAD $0x1226ed86db3332b7                           // .quad 1307993905256673975
-	QUAD $0x3a366801f1f39fee                           // .quad 4194654460505726958
-	QUAD $0x1d0b15a491eb8459                           // .quad 2092790248410678361
-	QUAD $0xfb5eb99b27f6198b                           // .quad -333625246337328757
-	QUAD $0x173c115074bc69e0                           // .quad 1674232198728542688
-	QUAD $0x2f7efae2865e7ad6                           // .quad 3422448617672047318
-	QUAD $0x129674405d6387e7                           // .quad 1339385758982834151
-	QUAD $0xe597f7d0d6fd9156                           // .quad -1902779841208544938
-	QUAD $0x1dbd86cd6238d971                           // .quad 2143017214372534641
-	QUAD $0x8479930d78cadaab                           // .quad -8900921502450656597
-	QUAD $0x17cad23de82d7ac1                           // .quad 1714413771498027713
-	QUAD $0xd06142712d6f1556                           // .quad -3431388387218614954
-	QUAD $0x1308a831868ac89a                           // .quad 1371531017198422170
-	QUAD $0x4d686a4eaf182222                           // .quad 5577825024675947042
-	QUAD $0x1e74404f3daada91                           // .quad 2194449627517475473
-	QUAD $0xa453883ef279b4e8                           // .quad -6605786424484973336
-	QUAD $0x185d003f6488aeda                           // .quad 1755559702013980378
-	QUAD $0xe9dc6cff28615d87                           // .quad -1595280324846068345
-	QUAD $0x137d99cc506d58ae                           // .quad 1404447761611184302
-	QUAD $0xa960ae650d6895a4                           // .quad -6241797334495619676
-	QUAD $0x1f2f5c7a1a488de4                           // .quad 2247116418577894884
-	QUAD $0xbab3beb73ded4483                           // .quad -4993437867596495741
-	QUAD $0x18f2b061aea07183                           // .quad 1797693134862315907
-	QUAD $0x2ef6322c318a9d36                           // .quad 3383947335406624054
-	QUAD $0x13f559e7bee6c136                           // .quad 1438154507889852726
-	QUAD $0xe4bd1d13827761f0                           // .quad -1964381892833222160
-	QUAD $0x1feef63f97d79b89                           // .quad 2301047212623764361
-	QUAD $0x83ca7da9352c4e5a                           // .quad -8950203143750398374
-	QUAD $0x198bf832dfdfafa1                           // .quad 1840837770099011489
-	QUAD $0x9ca1fe20f756a515                           // .quad -7160162515000318699
-	QUAD $0x146ff9c24cb2f2e7                           // .quad 1472670216079209191
-	QUAD $0x4a1b31b3f9121daa                           // .quad 5339916432225476010
-	QUAD $0x1059949b708f28b9                           // .quad 1178136172863367353
-	QUAD $0x435eb5ecc1b695dd                           // .quad 4854517476818851293
-	QUAD $0x1a28edc580e50df5                           // .quad 1885017876581387765
-	QUAD $0x35e55e57015ede4a                           // .quad 3883613981455081034
-	QUAD $0x14ed8b04671da4c4                           // .quad 1508014301265110212
-	QUAD $0xc4b77eac0118b1d5                           // .quad -4271806444319755819
-	QUAD $0x10be08d0527e1d69                           // .quad 1206411441012088169
-	QUAD $0xa12597799b5ab622                           // .quad -6834890310911609310
-	QUAD $0x1ac9a7b3b7302f0f                           // .quad 1930258305619341071
-	QUAD $0x4db7ac6149155e81                           // .quad 5600134195496443521
-	QUAD $0x156e1fc2f8f358d9                           // .quad 1544206644495472857
-	QUAD $0xd7c6238107444b9b                           // .quad -2898590273086665829
-	QUAD $0x1124e63593f5e0ad                           // .quad 1235365315596378285
-	QUAD $0x593d059b3ed3ac2b                           // .quad 6430302007287065643
-	QUAD $0x1b6e3d2286563449                           // .quad 1976584504954205257
-	QUAD $0xe0fd9e15cbdc89bc                           // .quad -2234456023654168132
-	QUAD $0x15f1ca820511c36d                           // .quad 1581267603963364205
-	QUAD $0xb3fe18116fe3a163                           // .quad -5476913633665244829
-	QUAD $0x118e3b9b37416924                           // .quad 1265014083170691364
-	QUAD $0x866359b57fd29bd1                           // .quad -8763061813864391727
-	QUAD $0x1c16c5c525357507                           // .quad 2024022533073106183
-	QUAD $0xd1e91491330ee30e                           // .quad -3321100636349603058
-	QUAD $0x16789e3750f790d2                           // .quad 1619218026458484946
-	QUAD $0x74ba76da8f3f1c0b                           // .quad 8411165935146048523
-	QUAD $0x11fa182c40c60d75                           // .quad 1295374421166787957
-	QUAD $0xedf72490e531c678                           // .quad -1299529762733963656
-	QUAD $0x1cc359e067a348bb                           // .quad 2072599073866860731
-	QUAD $0x8b2c1d40b75b052d                           // .quad -8418321439670991571
-	QUAD $0x1702ae4d1fb5d3c9                           // .quad 1658079259093488585
-	QUAD $0x6f567dcd5f7c0424                           // .quad 8022738107230848036
-	QUAD $0x12688b70e62b0fd4                           // .quad 1326463407274790868
-	QUAD $0x7ef0c94898c66d06                           // .quad 9147032156827446534
-	QUAD $0x1d74124e3d11b2ed                           // .quad 2122341451639665389
-	QUAD $0x98c0a106e09ebd9f                           // .quad -7439769533505684065
-	QUAD $0x17900ea4fda7c257                           // .quad 1697873161311732311
-	QUAD $0x470080d24d4bcae6                           // .quad 5116230817421183718
-	QUAD $0x12d9a550caec9b79                           // .quad 1358298529049385849
-	QUAD $0xd800ce1d487944a2                           // .quad -2882077136351837022
-	QUAD $0x1e29088144adc58e                           // .quad 2173277646479017358
-	QUAD $0x1333d8176d2dd082                           // .quad 1383687105660440706
-	QUAD $0x1820d39a9d57d13f                           // .quad 1738622117183213887
-	QUAD $0xa8f646792424a6ce                           // .quad -6271747944955468082
-	QUAD $0x134d76154aaca765                           // .quad 1390897693746571109
-	QUAD $0x74bd3d8ea03aa47d                           // .quad 8411947361780802685
-	QUAD $0x1ee25688777aa56f                           // .quad 2225436309994513775
-	QUAD $0x5d64313ee6955064                           // .quad 6729557889424642148
-	QUAD $0x18b51206c5fbb78c                           // .quad 1780349047995611020
-	QUAD $0x4ab68dcbebaaa6b7                           // .quad 5383646311539713719
-	QUAD $0x13c40e6bd1962c70                           // .quad 1424279238396488816
-	QUAD $0x1124161312aaa457                           // .quad 1235136468979721303
-	QUAD $0x1fa01712e8f0471a                           // .quad 2278846781434382106
-	QUAD $0xda8344dc0eeee9df                           // .quad -2701239639558133281
-	QUAD $0x194cdf4253f36c14                           // .quad 1823077425147505684
-	QUAD $0xe2029d7cd8bf2180                           // .quad -2160991711646506624
-	QUAD $0x143d7f6843292343                           // .quad 1458461940118004547
-	QUAD $0x4e687dfd7a328133                           // .quad 5649904260166615347
-	QUAD $0x103132b9cf541c36                           // .quad 1166769552094403638
-	QUAD $0x4a40c9959050ceb8                           // .quad 5350498001524674232
-	QUAD $0x19e851294bb9c6bd                           // .quad 1866831283351045821
-	QUAD $0x0833d477a6a70bc6                           // .quad 591049586477829062
-	QUAD $0x14b9da876fc7d231                           // .quad 1493465026680836657
-	QUAD $0xa02976c61eec096b                           // .quad -6905857960301557397
-	QUAD $0x1094aed2bfd30e8d                           // .quad 1194772021344669325
-	QUAD $0x004257a364acdbdf                           // .quad 18673707743239135
-	QUAD $0x1a877e1dffb81749                           // .quad 1911635234151470921
-	QUAD $0xcd01dfb5ea23e319                           // .quad -3674409848547319015
-	QUAD $0x153931b1996012a0                           // .quad 1529308187321176736
-	QUAD $0x70ce4c91881cb5ae                           // .quad 8128518565387875758
-	QUAD $0x10fa8e27ade6754d                           // .quad 1223446549856941389
-	QUAD $0x1ae3adb5a69455e2                           // .quad 1937583260394870242
-	QUAD $0x1b2a7d0c4970bbaf                           // .quad 1957514479771106223
-	QUAD $0x7be957c4854377e8                           // .quad 8928764237799716840
-	QUAD $0x15bb973d078d62f2                           // .quad 1566011583816884978
-	QUAD $0xc987796a0435f987                           // .quad -3925035053985957497
-	QUAD $0x1162df64060ab58e                           // .quad 1252809267053507982
-	QUAD $0x75a58f1006bcc271                           // .quad 8477339172590109297
-	QUAD $0x1bd1656cd67788e4                           // .quad 2004494827285612772
-	QUAD $0xf7b7a5a66bca3527                           // .quad -596826291411733209
-	QUAD $0x16411df0ab92d3e9                           // .quad 1603595861828490217
-	QUAD $0x5fc61e1ebca1c41f                           // .quad 6901236596354434079
-	QUAD $0x11cdb18d560f0fee                           // .quad 1282876689462792174
-	QUAD $0xffa363646102d365                           // .quad -26067890058636443
-	QUAD $0x1c7c4f4889b1b316                           // .quad 2052602703140467478
-	QUAD $0x32e91c504d9bdc51                           // .quad 3668494502695001169
-	QUAD $0x16c9d906d48e28df                           // .quad 1642082162512373983
-	QUAD $0x8f20e37371497d0e                           // .quad -8133250842069730034
-	QUAD $0x123b140576d820b2                           // .quad 1313665730009899186
-	QUAD $0x7e9b0585820f2e7c                           // .quad 9122891541139893884
-	QUAD $0x1d2b533bf159cdea                           // .quad 2101865168015838698
-	QUAD $0xcbaf379e01a5beca                           // .quad -3769733211313815862
-	QUAD $0x1755dc2ff447d7ee                           // .quad 1681492134412670958
-	QUAD $0x0958f94b348498a1                           // .quad 673562245690857633
-	QUAD $0x12ab168cc36cacbf                           // .quad 1345193707530136767
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
+	QUAD $0x0000000000000001 // .quad 1
+	QUAD $0x2000000000000000 // .quad 2305843009213693952
+	QUAD $0x999999999999999a // .quad -7378697629483820646
+	QUAD $0x1999999999999999 // .quad 1844674407370955161
+	QUAD $0x47ae147ae147ae15 // .quad 5165088340638674453
+	QUAD $0x147ae147ae147ae1 // .quad 1475739525896764129
+	QUAD $0x6c8b4395810624de // .quad 7821419487252849886
+	QUAD $0x10624dd2f1a9fbe7 // .quad 1180591620717411303
+	QUAD $0x7a786c226809d496 // .quad 8824922364862649494
+	QUAD $0x1a36e2eb1c432ca5 // .quad 1888946593147858085
+	QUAD $0x61f9f01b866e43ab // .quad 7059937891890119595
+	QUAD $0x14f8b588e368f084 // .quad 1511157274518286468
+	QUAD $0xb4c7f34938583622 // .quad -5420096130713635294
+	QUAD $0x10c6f7a0b5ed8d36 // .quad 1208925819614629174
+	QUAD $0x87a6520ec08d236a // .quad -8672153809141816470
+	QUAD $0x1ad7f29abcaf4857 // .quad 1934281311383406679
+	QUAD $0x9fb841a566d74f88 // .quad -6937723047313453176
+	QUAD $0x15798ee2308c39df // .quad 1547425049106725343
+	QUAD $0xe62d01511f12a607 // .quad -1860829623108852217
+	QUAD $0x112e0be826d694b2 // .quad 1237940039285380274
+	QUAD $0xd6ae6881cb5109a4 // .quad -2977327396974163548
+	QUAD $0x1b7cdfd9d7bdbab7 // .quad 1980704062856608439
+	QUAD $0xdef1ed34a2a73aea // .quad -2381861917579330838
+	QUAD $0x15fd7fe17964955f // .quad 1584563250285286751
+	QUAD $0x7f27f0f6e885c8bb // .quad 9162556910162266299
+	QUAD $0x119799812dea1119 // .quad 1267650600228229401
+	QUAD $0x650cb4be40d60df8 // .quad 7281393426775805432
+	QUAD $0x1c25c268497681c2 // .quad 2028240960365167042
+	QUAD $0xea70909833de7193 // .quad -1553582888063176301
+	QUAD $0x16849b86a12b9b01 // .quad 1622592768292133633
+	QUAD $0x21f3a6e0297ec143 // .quad 2446482504291369283
+	QUAD $0x1203af9ee756159b // .quad 1298074214633706907
+	QUAD $0x6985d7cd0f313537 // .quad 7603720821608101175
+	QUAD $0x1cd2b297d889bc2b // .quad 2076918743413931051
+	QUAD $0x2137dfd73f5a90f9 // .quad 2393627842544570617
+	QUAD $0x170ef54646d49689 // .quad 1661534994731144841
+	QUAD $0xe75fe645cc4873fa // .quad -1774446540706253830
+	QUAD $0x12725dd1d243aba0 // .quad 1329227995784915872
+	QUAD $0xa5663d3c7a0d865d // .quad -6528463279871916451
+	QUAD $0x1d83c94fb6d2ac34 // .quad 2126764793255865396
+	QUAD $0x511e976394d79eb1 // .quad 5845275820328197809
+	QUAD $0x179ca10c9242235d // .quad 1701411834604692317
+	QUAD $0xda7edf82dd794bc1 // .quad -2702476973221262399
+	QUAD $0x12e3b40a0e9b4f7d // .quad 1361129467683753853
+	QUAD $0x2a6498d1625bac68 // .quad 3054734472329800808
+	QUAD $0x1e392010175ee596 // .quad 2177807148294006166
+	QUAD $0xeeb6e0a781e2f053 // .quad -1245561236878069677
+	QUAD $0x182db34012b25144 // .quad 1742245718635204932
+	QUAD $0x58924d52ce4f26a9 // .quad 6382248639981364905
+	QUAD $0x1357c299a88ea76a // .quad 1393796574908163946
+	QUAD $0x27507bb7b07ea441 // .quad 2832900194486363201
+	QUAD $0x1ef2d0f5da7dd8aa // .quad 2230074519853062314
+	QUAD $0x52a6c95fc0655034 // .quad 5955668970331000884
+	QUAD $0x18c240c4aecb13bb // .quad 1784059615882449851
+	QUAD $0x0eebd44c99eaa690 // .quad 1075186361522890384
+	QUAD $0x13ce9a36f23c0fc9 // .quad 1427247692705959881
+	QUAD $0xb17953adc3110a80 // .quad -5658399451047196032
+	QUAD $0x1fb0f6be50601941 // .quad 2283596308329535809
+	QUAD $0xc12ddc8b02740867 // .quad -4526719560837756825
+	QUAD $0x195a5efea6b34767 // .quad 1826877046663628647
+	QUAD $0x3424b06f3529a052 // .quad 3757321980813615186
+	QUAD $0x14484bfeebc29f86 // .quad 1461501637330902918
+	QUAD $0x901d59f290ee19db // .quad -8062188859574838821
+	QUAD $0x1039d66589687f9e // .quad 1169201309864722334
+	QUAD $0x4cfbc31db4b0295f // .quad 5547241898389809503
+	QUAD $0x19f623d5a8a73297 // .quad 1870722095783555735
+	QUAD $0x3d9635b15d59bab2 // .quad 4437793518711847602
+	QUAD $0x14c4e977ba1f5bac // .quad 1496577676626844588
+	QUAD $0x97ab5e277de16228 // .quad -7517811629256252888
+	QUAD $0x109d8792fb4c4956 // .quad 1197262141301475670
+	QUAD $0xf2abc9d8c9689d0d // .quad -960452162584273651
+	QUAD $0x1a95a5b7f87a0ef0 // .quad 1915619426082361072
+	QUAD $0x5bbca17a3aba173e // .quad 6610335899416401726
+	QUAD $0x154484932d2e725a // .quad 1532495540865888858
+	QUAD $0xafca1ac82efb45cb // .quad -5779777724692609589
+	QUAD $0x11039d428a8b8eae // .quad 1225996432692711086
+	QUAD $0xb2dcf7a6b1920945 // .quad -5558295544766265019
+	QUAD $0x1b38fb9daa78e44a // .quad 1961594292308337738
+	QUAD $0xf57d92ebc141a104 // .quad -757287621071101692
+	QUAD $0x15c72fb1552d836e // .quad 1569275433846670190
+	QUAD $0xc46475896767b403 // .quad -4295178911598791677
+	QUAD $0x116c262777579c58 // .quad 1255420347077336152
+	QUAD $0x6d6d88dbd8a5ecd2 // .quad 7885109000409574610
+	QUAD $0x1be03d0bf225c6f4 // .quad 2008672555323737844
+	QUAD $0x8abe071646eb23db // .quad -8449308058639981605
+	QUAD $0x164cfda3281e38c3 // .quad 1606938044258990275
+	QUAD $0x6efe6c11d255b649 // .quad 7997948812055656009
+	QUAD $0x11d7314f534b609c // .quad 1285550435407192220
+	QUAD $0xb197134fb6ef8a0e // .quad -5650025974420502002
+	QUAD $0x1c8b821885456760 // .quad 2056880696651507552
+	QUAD $0x27ac0f72f8bfa1a5 // .quad 2858676849947419045
+	QUAD $0x16d601ad376ab91a // .quad 1645504557321206042
+	QUAD $0xb95672c260994e1e // .quad -5091756149525885410
+	QUAD $0x1244ce242c5560e1 // .quad 1316403645856964833
+	QUAD $0xf5571e03cdc21695 // .quad -768112209757596011
+	QUAD $0x1d3ae36d13bbce35 // .quad 2106245833371143733
+	QUAD $0x2aac18030b01abab // .quad 3074859046935833515
+	QUAD $0x17624f8a762fd82b // .quad 1684996666696914987
+	QUAD $0xbbbce0026f348956 // .quad -4918810391935153834
+	QUAD $0x12b50c6ec4f31355 // .quad 1347997333357531989
+	QUAD $0x92c7ccd0b1eda889 // .quad -7870096627096246135
+	QUAD $0x1dee7a4ad4b81eef // .quad 2156795733372051183
+	QUAD $0xdbd30a408e57ba07 // .quad -2606728486935086585
+	QUAD $0x17f1fb6f10934bf2 // .quad 1725436586697640946
+	QUAD $0x7ca8d50071dfc806 // .quad 8982663654677661702
+	QUAD $0x1327fc58da0f6ff5 // .quad 1380349269358112757
+	QUAD $0xfaa7bb33e9660cd6 // .quad -385133411483382570
+	QUAD $0x1ea6608e29b24cbb // .quad 2208558830972980411
+	QUAD $0x9552fc298784d711 // .quad -7686804358670526703
+	QUAD $0x18851a0b548ea3c9 // .quad 1766847064778384329
+	QUAD $0xaaa8c9bad2d0ac0e // .quad -6149443486936421362
+	QUAD $0x139dae6f76d88307 // .quad 1413477651822707463
+	QUAD $0xdddadc5e1e1aace3 // .quad -2460411949614453533
+	QUAD $0x1f62b0b257c0d1a5 // .quad 2261564242916331941
+	QUAD $0x7e48b04b4b488a4f // .quad 9099716884534168143
+	QUAD $0x191bc08eac9a4151 // .quad 1809251394333065553
+	QUAD $0xcb6d59d5d5d3a1d9 // .quad -3788272936598396455
+	QUAD $0x141633a556e1cdda // .quad 1447401115466452442
+	QUAD $0x3c577b1177dc817b // .quad 4348079280205103483
+	QUAD $0x1011c2eaabe7d7e2 // .quad 1157920892373161954
+	QUAD $0xc6f25e825960cf2a // .quad -4111119595897565398
+	QUAD $0x19b604aaaca62636 // .quad 1852673427797059126
+	QUAD $0x6bf518684780a5bb // .quad 7779150767507678651
+	QUAD $0x14919d5556eb51c5 // .quad 1482138742237647301
+	QUAD $0x232a79ed06008496 // .quad 2533971799264232598
+	QUAD $0x10747ddddf22a7d1 // .quad 1185710993790117841
+	QUAD $0xd1dd8fe1a3340756 // .quad -3324342750661048490
+	QUAD $0x1a53fc9631d10c81 // .quad 1897137590064188545
+	QUAD $0xa7e4731ae8f66c45 // .quad -6348823015270749115
+	QUAD $0x150ffd44f4a73d34 // .quad 1517710072051350836
+	QUAD $0x531d28e253f8569e // .quad 5988988032009131678
+	QUAD $0x10d9976a5d52975d // .quad 1214168057641080669
+	QUAD $0xeb61db03b98d5762 // .quad -1485665593011120286
+	QUAD $0x1af5bf109550f22e // .quad 1942668892225729070
+	QUAD $0xbc4e48cfc7a445e8 // .quad -4877881289150806552
+	QUAD $0x159165a6ddda5b58 // .quad 1554135113780583256
+	QUAD $0x6371d3d96c836b20 // .quad 7165741412905085728
+	QUAD $0x11411e1f17e1e2ad // .quad 1243308091024466605
+	QUAD $0x9f1c8628ad9f11cd // .quad -6981557813061414451
+	QUAD $0x1b9b6364f3030448 // .quad 1989292945639146568
+	QUAD $0xe5b06b53be18db0b // .quad -1895897435707221237
+	QUAD $0x1615e91d8f359d06 // .quad 1591434356511317254
+	QUAD $0xeaf3890fcb4715a2 // .quad -1516717948565776990
+	QUAD $0x11ab20e472914a6b // .quad 1273147485209053803
+	QUAD $0x44b8db4c7871bc37 // .quad 4951948911778577463
+	QUAD $0x1c45016d841baa46 // .quad 2037035976334486086
+	QUAD $0x03c715d6c6c1635f // .quad 272210314680951647
+	QUAD $0x169d9abe03495505 // .quad 1629628781067588869
+	QUAD $0x3638de456bcde919 // .quad 3907117066486671641
+	QUAD $0x1217aefe69077737 // .quad 1303703024854071095
+	QUAD $0x56c163a2461641c1 // .quad 6251387306378674625
+	QUAD $0x1cf2b1970e725858 // .quad 2085924839766513752
+	QUAD $0xdf011c81d1ab67ce // .quad -2377587784380880946
+	QUAD $0x17288e1271f51379 // .quad 1668739871813211001
+	QUAD $0x7f3416ce4155eca5 // .quad 9165976216721026213
+	QUAD $0x1286d80ec190dc61 // .quad 1334991897450568801
+	QUAD $0x6520247d3556476e // .quad 7286864317269821294
+	QUAD $0x1da48ce468e7c702 // .quad 2135987035920910082
+	QUAD $0xea801d30f7783925 // .quad -1549206175667963611
+	QUAD $0x17b6d71d20b96c01 // .quad 1708789628736728065
+	QUAD $0xbb99b0f3f92cfa84 // .quad -4928713755276281212
+	QUAD $0x12f8ac174d612334 // .quad 1367031702989382452
+	QUAD $0x5f5c4e532847f739 // .quad 6871453250525591353
+	QUAD $0x1e5aacf215683854 // .quad 2187250724783011924
+	QUAD $0x7f7d0b75b9d32c2e // .quad 9186511415162383406
+	QUAD $0x18488a5b44536043 // .quad 1749800579826409539
+	QUAD $0x9930d5f7c7dc2358 // .quad -7408186126837734568
+	QUAD $0x136d3b7c36a919cf // .quad 1399840463861127631
+	QUAD $0x8eb4898c72f9d226 // .quad -8163748988198464986
+	QUAD $0x1f152bf9f10e8fb2 // .quad 2239744742177804210
+	QUAD $0x722a07a38f2e41b8 // .quad 8226396068408869304
+	QUAD $0x18ddbcc7f40ba628 // .quad 1791795793742243368
+	QUAD $0xc1bb394fa5be9afa // .quad -4486929589498635526
+	QUAD $0x13e497065cd61e86 // .quad 1433436634993794694
+	QUAD $0x9c5ec2190930f7f6 // .quad -7179087343197816842
+	QUAD $0x1fd424d6faf030d7 // .quad 2293498615990071511
+	QUAD $0x49e56814075a5ff8 // .quad 5324776569667477496
+	QUAD $0x197683df2f268d79 // .quad 1834798892792057209
+	QUAD $0x6e51201005e1e660 // .quad 7949170070475892320
+	QUAD $0x145ecfe5bf520ac7 // .quad 1467839114233645767
+	QUAD $0xf1da800cd181851a // .quad -1019361573103106790
+	QUAD $0x104bd984990e6f05 // .quad 1174271291386916613
+	QUAD $0x4fc400148268d4f5 // .quad 5747719112518849781
+	QUAD $0x1a12f5a0f4e3e4d6 // .quad 1878834066219066582
+	QUAD $0xd96999aa01ed772b // .quad -2780522339468740821
+	QUAD $0x14dbf7b3f71cb711 // .quad 1503067252975253265
+	QUAD $0xadee1488018ac5bc // .quad -5913766686316902980
+	QUAD $0x10aff95cc5b09274 // .quad 1202453802380202612
+	QUAD $0x497ceda668de092c // .quad 5295368560860596524
+	QUAD $0x1ab328946f80ea54 // .quad 1923926083808324180
+	QUAD $0x3aca57b853e4d424 // .quad 4236294848688477220
+	QUAD $0x155c2076bf9a5510 // .quad 1539140867046659344
+	QUAD $0x623b7960431d7683 // .quad 7078384693692692099
+	QUAD $0x1116805effaeaa73 // .quad 1231312693637327475
+	QUAD $0x9d2bf566d1c8bd9e // .quad -7121328563801244258
+	QUAD $0x1b5733cb32b110b8 // .quad 1970100309819723960
+	QUAD $0x7dbcc452416d647f // .quad 9060332407926645887
+	QUAD $0x15df5ca28ef40d60 // .quad 1576080247855779168
+	QUAD $0xcafd69db678ab6cc // .quad -3819780517884414260
+	QUAD $0x117f7d4ed8c33de6 // .quad 1260864198284623334
+	QUAD $0xab2f0fc572778adf // .quad -6111648828615062817
+	QUAD $0x1bff2ee48e052fd7 // .quad 2017382717255397335
+	QUAD $0x88f273045b92d580 // .quad -8578667877633960576
+	QUAD $0x1665bf1d3e6a8cac // .quad 1613906173804317868
+	QUAD $0xd3f528d049424466 // .quad -3173585487365258138
+	QUAD $0x11eaff4a98553d56 // .quad 1291124939043454294
+	QUAD $0xb988414d4203a0a3 // .quad -5077736779784413021
+	QUAD $0x1cab3210f3bb9557 // .quad 2065799902469526871
+	QUAD $0x6139cdd76802e6e9 // .quad 7005857020398200553
+	QUAD $0x16ef5b40c2fc7779 // .quad 1652639921975621497
+	QUAD $0xe761717920025254 // .quad -1774012013165260204
+	QUAD $0x125915cd68c9f92d // .quad 1322111937580497197
+	QUAD $0xa568b58e999d5086 // .quad -6527768035806326650
+	QUAD $0x1d5b561574765b7c // .quad 2115379100128795516
+	QUAD $0x5120913ee14aa6d2 // .quad 5845832015580669650
+	QUAD $0x177c44ddf6c515fd // .quad 1692303280103036413
+	QUAD $0xa74d40ff1aa21f0e // .quad -6391380831761195250
+	QUAD $0x12c9d0b1923744ca // .quad 1353842624082429130
+	QUAD $0x0baece64f769cb4a // .quad 841837113407818570
+	QUAD $0x1e0fb44f50586e11 // .quad 2166148198531886609
+	QUAD $0x3c8bd850c5ee3c3b // .quad 4362818505468165179
+	QUAD $0x180c903f7379f1a7 // .quad 1732918558825509287
+	QUAD $0xca0979da37f1c9c9 // .quad -3888442825109288503
+	QUAD $0x133d4032c2c7f485 // .quad 1386334847060407429
+	QUAD $0xa9a8c2f6bfe942db // .quad -6221508520174861605
+	QUAD $0x1ec866b79e0cba6f // .quad 2218135755296651887
+	QUAD $0x2153cf2bccba9be3 // .quad 2401490813343931363
+	QUAD $0x18a0522c7e709526 // .quad 1774508604237321510
+	QUAD $0x1aa9728970954982 // .quad 1921192650675145090
+	QUAD $0x13b374f06526ddb8 // .quad 1419606883389857208
+	QUAD $0xf775840f1a88759d // .quad -615440573661678179
+	QUAD $0x1f8587e7083e2f8c // .quad 2271371013423771532
+	QUAD $0x5f9136727ba05e17 // .quad 6886345170554478103
+	QUAD $0x19379fec0698260a // .quad 1817096810739017226
+	QUAD $0x1940f85b9619e4df // .quad 1819727321701672159
+	QUAD $0x142c7ff0054684d5 // .quad 1453677448591213781
+	QUAD $0xe100c6afab47ea4c // .quad -2233566957380572596
+	QUAD $0x1023998cd1053710 // .quad 1162941958872971024
+	QUAD $0xce67a44c453fdd47 // .quad -3573707131808916153
+	QUAD $0x19d28f47b4d524e7 // .quad 1860707134196753639
+	QUAD $0xd852e9d69dccb106 // .quad -2858965705447132922
+	QUAD $0x14a8729fc3ddb71f // .quad 1488565707357402911
+	QUAD $0x79dbee454b0a2738 // .quad 8780873879868024632
+	QUAD $0x1086c219697e2c19 // .quad 1190852565885922329
+	QUAD $0x295fe3a211a9d859 // .quad 2981351763563108441
+	QUAD $0x1a71368f0f30468f // .quad 1905364105417475727
+	QUAD $0xbab31c81a7bb137a // .quad -4993616218633333894
+	QUAD $0x15275ed8d8f36ba5 // .quad 1524291284333980581
+	QUAD $0x6228e39aec95a92f // .quad 7073153469319063855
+	QUAD $0x10ec4be0ad8f8951 // .quad 1219433027467184465
+	QUAD $0x9d0e38f7e0ef7517 // .quad -7129698522799049449
+	QUAD $0x1b13ac9aaf4c0ee8 // .quad 1951092843947495144
+	QUAD $0xb0d82d931a592a79 // .quad -5703758818239239559
+	QUAD $0x15a956e225d67253 // .quad 1560874275157996115
+	QUAD $0x8d79be0f4847552e // .quad -8252355869333301970
+	QUAD $0x11544581b7dec1dc // .quad 1248699420126396892
+	QUAD $0x158f967eda0bbb7c // .quad 1553625868034358140
+	QUAD $0x1bba08cf8c979c94 // .quad 1997919072202235028
+	QUAD $0x77a611ff14d62f97 // .quad 8621598323911307159
+	QUAD $0x162e6d72d6dfb076 // .quad 1598335257761788022
+	QUAD $0xf951a7ff43de8c79 // .quad -481418970354774919
+	QUAD $0x11bebdf578b2f391 // .quad 1278668206209430417
+	QUAD $0xc21c3ffed2fdad8e // .quad -4459619167309550194
+	QUAD $0x1c6463225ab7ec1c // .quad 2045869129935088668
+	QUAD $0x01b0333242648ad8 // .quad 121653480894270168
+	QUAD $0x16b6b5b5155ff017 // .quad 1636695303948070935
+	QUAD $0x0159c28e9b83a246 // .quad 97322784715416134
+	QUAD $0x122bc490dde659ac // .quad 1309356243158456748
+	QUAD $0xcef604175f3903a3 // .quad -3533632359197244509
+	QUAD $0x1d12d41afca3c2ac // .quad 2094969989053530796
+	QUAD $0x725e69ac4c2d9c83 // .quad 8241140556867935363
+	QUAD $0x17424348ca1c9bbd // .quad 1675975991242824637
+	QUAD $0xf5185489d68ae39c // .quad -785785183989472356
+	QUAD $0x129b69070816e2fd // .quad 1340780792994259709
+	QUAD $0xee8d540fbdab05c6 // .quad -1257256294383155770
+	QUAD $0x1dc574d80cf16b2f // .quad 2145249268790815535
+	QUAD $0xbed77672fe226b05 // .quad -4695153850248434939
+	QUAD $0x17d12a4670c1228c // .quad 1716199415032652428
+	QUAD $0xff12c528cb4ebc04 // .quad -66774265456837628
+	QUAD $0x130dbb6b8d674ed6 // .quad 1372959532026121942
+	QUAD $0xcb513b74787df9a0 // .quad -3796187639472850528
+	QUAD $0x1e7c5f127bd87e24 // .quad 2196735251241795108
+	QUAD $0x090dc929f9fe614d // .quad 652398703163629901
+	QUAD $0x18637f41fcad31b7 // .quad 1757388200993436087
+	QUAD $0xa0d7d42194cb810a // .quad -6856778666952916726
+	QUAD $0x1382cc34ca2427c5 // .quad 1405910560794748869
+	QUAD $0x67bfb9cf5478ce77 // .quad 7475898206584884855
+	QUAD $0x1f37ad21436d0c6f // .quad 2249456897271598191
+	QUAD $0x1fcc94a5dd2d71f9 // .quad 2291369750525997561
+	QUAD $0x18f9574dcf8a7059 // .quad 1799565517817278553
+	QUAD $0x7fd6dd517dbdf4c7 // .quad 9211793429904618695
+	QUAD $0x13faac3e3fa1f37a // .quad 1439652414253822842
+	QUAD $0xffbe2ee8c92fee0b // .quad -18525771120251381
+	QUAD $0x1ff779fd329cb8c3 // .quad 2303443862806116547
+	QUAD $0x6631bf20a0f324d6 // .quad 7363877012587619542
+	QUAD $0x1992c7fdc216fa36 // .quad 1842755090244893238
+	QUAD $0xb827cc1a1a5c1d78 // .quad -5176944834155635336
+	QUAD $0x14756ccb01abfb5e // .quad 1474204072195914590
+	QUAD $0x935309ae7b7ce460 // .quad -7830904682066418592
+	QUAD $0x105df0a267bcc918 // .quad 1179363257756731672
+	QUAD $0x1eeb42b0c594a099 // .quad 2227947767661371545
+	QUAD $0x1a2fe76a3f9474f4 // .quad 1886981212410770676
+	QUAD $0xe58902270476e6e1 // .quad -1906990600612813087
+	QUAD $0x14f31f8832dd2a5c // .quad 1509584969928616540
+	QUAD $0xb7a0ce859d2bebe7 // .quad -5214941295232160793
+	QUAD $0x10c27fa028b0eeb0 // .quad 1207667975942893232
+	QUAD $0x59014a6f61dfdfd8 // .quad 6413489186596184024
+	QUAD $0x1ad0cc33744e4ab4 // .quad 1932268761508629172
+	QUAD $0xe0cdd525e7e64cad // .quad -2247906280206873427
+	QUAD $0x1573d68f903ea229 // .quad 1545815009206903337
+	QUAD $0x4d7177518651d6f1 // .quad 5580372605318321905
+	QUAD $0x11297872d9cbb4ee // .quad 1236652007365522670
+	QUAD $0x7be8bee8d6e957e8 // .quad 8928596168509315048
+	QUAD $0x1b758d848fac54b0 // .quad 1978643211784836272
+	QUAD $0xfcba3253df211320 // .quad -235820694676368608
+	QUAD $0x15f7a46a0c89dd59 // .quad 1582914569427869017
+	QUAD $0x63c8284318e74280 // .quad 7190041073742725760
+	QUAD $0x1192e9ee706e4aae // .quad 1266331655542295214
+	QUAD $0x060d0d3827d86a66 // .quad 436019273762630246
+	QUAD $0x1c1e43171a4a1117 // .quad 2026130648867672343
+	QUAD $0x6b3da42cecad21eb // .quad 7727513048493924843
+	QUAD $0x167e9c127b6e7412 // .quad 1620904519094137874
+	QUAD $0x88fe1cf0bd574e56 // .quad -8575384820172501418
+	QUAD $0x11fee341fc585cdb // .quad 1296723615275310299
+	QUAD $0x419694b462254a23 // .quad 4726128361433549347
+	QUAD $0x1ccb0536608d615f // .quad 2074757784440496479
+	QUAD $0x67abaa29e81dd4e9 // .quad 7470251503888749801
+	QUAD $0x1708d0f84d3de77f // .quad 1659806227552397183
+	QUAD $0xb95621bb2017dd87 // .quad -5091845241114731129
+	QUAD $0x126d73f9d764b932 // .quad 1327844982041917746
+	QUAD $0xc223692b668c95a5 // .quad -4457603571041659483
+	QUAD $0x1d7becc2f23ac1ea // .quad 2124551971267068394
+	QUAD $0xce82ba891ed6de1d // .quad -3566082856833327587
+	QUAD $0x179657025b6234bb // .quad 1699641577013654715
+	QUAD $0xa53562074bdf1818 // .quad -6542215100208572392
+	QUAD $0x12deac01e2b4f6fc // .quad 1359713261610923772
+	QUAD $0x3b889cd87964f359 // .quad 4289851098633925465
+	QUAD $0x1e3113363787f194 // .quad 2175541218577478036
+	QUAD $0xfc6d4a46c783f5e1 // .quad -257467935834769951
+	QUAD $0x18274291c6065adc // .quad 1740432974861982428
+	QUAD $0x30576e9f06032b1a // .quad 3483374466074094362
+	QUAD $0x13529ba7d19eaf17 // .quad 1392346379889585943
+	QUAD $0x1a257dcb3cd1de90 // .quad 1884050330976640656
+	QUAD $0x1eea92a61c311825 // .quad 2227754207823337509
+	QUAD $0x481dfe3c30a7e540 // .quad 5196589079523222848
+	QUAD $0x18bba884e35a79b7 // .quad 1782203366258670007
+	QUAD $0xd34b31c9c0865100 // .quad -3221426365865242368
+	QUAD $0x13c9539d82aec7c5 // .quad 1425762693006936005
+	QUAD $0x5211e942cda3b4cd // .quad 5913764258841343181
+	QUAD $0x1fa885c8d117a609 // .quad 2281220308811097609
+	QUAD $0x74db21023e1c90a4 // .quad 8420360221814984868
+	QUAD $0x19539e3a40dfb807 // .quad 1824976247048878087
+	QUAD $0xf715b401cb4a0d50 // .quad -642409452031832752
+	QUAD $0x1442e4fb67196005 // .quad 1459980997639102469
+	QUAD $0xf8de299b09080aa7 // .quad -513927561625466201
+	QUAD $0x103583fc527ab337 // .quad 1167984798111281975
+	QUAD $0x8e304291a80cddd7 // .quad -8200981728084566569
+	QUAD $0x19ef3993b72ab859 // .quad 1868775676978051161
+	QUAD $0x3e8d020e200a4b13 // .quad 4507261061758077715
+	QUAD $0x14bf6142f8eef9e1 // .quad 1495020541582440929
+	QUAD $0x653d9b3e80083c0f // .quad 7295157664148372495
+	QUAD $0x10991a9bfa58c7e7 // .quad 1196016433265952743
+	QUAD $0x6ec8f864000d2ce4 // .quad 7982903447895485668
+	QUAD $0x1a8e90f9908e0ca5 // .quad 1913626293225524389
+	QUAD $0x8bd3f9e999a423ea // .quad -8371072500651252758
+	QUAD $0x153eda614071a3b7 // .quad 1530901034580419511
+	QUAD $0x3ca994bae1501cbb // .quad 4371188443704728763
+	QUAD $0x10ff151a99f482f9 // .quad 1224720827664335609
+	QUAD $0xc775bac49bb3612b // .quad -4074144934298164949
+	QUAD $0x1b31bb5dc320d18e // .quad 1959553324262936974
+	QUAD $0xd2c4956a16291a89 // .quad -3259315947438531959
+	QUAD $0x15c162b168e70e0b // .quad 1567642659410349579
+	QUAD $0xdbd0778811ba7ba1 // .quad -2607452757950825567
+	QUAD $0x11678227871f3e6f // .quad 1254114127528279663
+	QUAD $0x2c80bf401c5d929b // .quad 3206773216762499739
+	QUAD $0x1bd8d03f3e9863e6 // .quad 2006582604045247462
+	QUAD $0xbd33cc3349e47549 // .quad -4813279056073820855
+	QUAD $0x16470cff6546b651 // .quad 1605266083236197969
+	QUAD $0xca8fd68f6e505dd4 // .quad -3850623244859056684
+	QUAD $0x11d270cc51055ea7 // .quad 1284212866588958375
+	QUAD $0x4419574be3b3c953 // .quad 4907049252451240275
+	QUAD $0x1c83e7ad4e6efdd9 // .quad 2054740586542333401
+	QUAD $0x0347790982f63aa9 // .quad 236290587219081897
+	QUAD $0x16cfec8aa52597e1 // .quad 1643792469233866721
+	QUAD $0xcf6c60d468c4fbba // .quad -3500316344966644806
+	QUAD $0x123ff06eea847980 // .quad 1315033975387093376
+	QUAD $0xe57a34870e07f92a // .quad -1911157337204721366
+	QUAD $0x1d331a4b10d3f59a // .quad 2104054360619349402
+	QUAD $0x512e906c0b399422 // .quad 5849771759720043554
+	QUAD $0x175c1508da432ae2 // .quad 1683243488495479522
+	QUAD $0xda8ba6bcd5c7a9b5 // .quad -2698880221707785803
+	QUAD $0x12b010d3e1cf5581 // .quad 1346594790796383617
+	QUAD $0x90df712e22d90f87 // .quad -8007557169474367609
+	QUAD $0x1de6815302e5559c // .quad 2154551665274213788
+	QUAD $0xda4c5a8b4f140c6c // .quad -2716696920837583764
+	QUAD $0x17eb9aa8cf1dde16 // .quad 1723641332219371030
+	QUAD $0xaea37ba2a5a9a38a // .quad -5862706351411977334
+	QUAD $0x1322e220a5b17e78 // .quad 1378913065775496824
+	QUAD $0x7dd25f6aa2a905a9 // .quad 9066413911450387881
+	QUAD $0x1e9e369aa2b59727 // .quad 2206260905240794919
+	QUAD $0x97db7f888220d154 // .quad -7504264129807330988
+	QUAD $0x187e92154ef7ac1f // .quad 1765008724192635935
+	QUAD $0x797c6606ce80a777 // .quad 8753983955121776503
+	QUAD $0x139874ddd8c6234c // .quad 1412006979354108748
+	QUAD $0x8f2d700ae4010bf1 // .quad -8129718560256619535
+	QUAD $0x1f5a549627a36bad // .quad 2259211166966573997
+	QUAD $0x0c2459a25000d65a // .quad 874922781278525018
+	QUAD $0x191510781fb5efbe // .quad 1807368933573259198
+	QUAD $0x701d1481d99a4515 // .quad 8078635854506640661
+	QUAD $0x1410d9f9b2f7f2fe // .quad 1445895146858607358
+	QUAD $0xc017439b147b6a77 // .quad -4605137760620418441
+	QUAD $0x100d7b2e28c65bfe // .quad 1156716117486885886
+	QUAD $0xccf205c4ed9243f2 // .quad -3678871602250759182
+	QUAD $0x19af2b7d0e0a2cca // .quad 1850745787979017418
+	QUAD $0x0a5b37d0be0e9cc2 // .quad 746251532941302978
+	QUAD $0x148c22ca71a1bd6f // .quad 1480596630383213935
+	QUAD $0x0848f973cb3ee3ce // .quad 597001226353042382
+	QUAD $0x10701bd527b4978c // .quad 1184477304306571148
+	QUAD $0xda0e5bec78649fb0 // .quad -2734146852577042512
+	QUAD $0x1a4cf9550c5425ac // .quad 1895163686890513836
+	QUAD $0x7b3eaff060507fc0 // .quad 8880728962164096960
+	QUAD $0x150a6110d6a9b7bd // .quad 1516130949512411069
+	QUAD $0x95cbbff380406633 // .quad -7652812089236363725
+	QUAD $0x10d51a73deee2c97 // .quad 1212904759609928855
+	QUAD $0xefac665266cd7052 // .quad -1176452898552450990
+	QUAD $0x1aee90b964b04758 // .quad 1940647615375886168
+	QUAD $0x2623850eb8a459db // .quad 2748186495899949531
+	QUAD $0x158ba6fab6f36c47 // .quad 1552518092300708935
+	QUAD $0x1e82d0d893b6ae49 // .quad 2198549196719959625
+	QUAD $0x113c85955f29236c // .quad 1242014473840567148
+	QUAD $0xfd9e1af41f8ab075 // .quad -171670099989974923
+	QUAD $0x1b9408eefea838ac // .quad 1987223158144907436
+	QUAD $0x97b1af29b2d559f7 // .quad -7516033709475800585
+	QUAD $0x16100725988693bd // .quad 1589778526515925949
+	QUAD $0xac8e25baf5777b2c // .quad -6012826967580640468
+	QUAD $0x11a66c1e139edc97 // .quad 1271822821212740759
+	QUAD $0x7a7d092b2258c513 // .quad 8826220925580526867
+	QUAD $0x1c3d79c9b8fe2dbf // .quad 2034916513940385215
+	QUAD $0x61fda0ef4ead6a76 // .quad 7060976740464421494
+	QUAD $0x169794a160cb57cc // .quad 1627933211152308172
+	QUAD $0xe7fe1a590bbdeec5 // .quad -1729916237112283451
+	QUAD $0x1212dd4de7091309 // .quad 1302346568921846537
+	QUAD $0xa6635d5b45fcb13a // .quad -6457214794121563846
+	QUAD $0x1ceafbafd80e84dc // .quad 2083754510274954460
+	QUAD $0x851c4aaf6b308dc8 // .quad -8855120650039161400
+	QUAD $0x172262f3133ed0b0 // .quad 1667003608219963568
+	QUAD $0xd0e36ef2bc26d7d4 // .quad -3394747705289418796
+	QUAD $0x1281e8c275cbda26 // .quad 1333602886575970854
+	QUAD $0xb49f17eac6a48c86 // .quad -5431596328463070074
+	QUAD $0x1d9ca79d894629d7 // .quad 2133764618521553367
+	QUAD $0x2a18dfef0550706b // .quad 3033420566713364587
+	QUAD $0x17b08617a104ee46 // .quad 1707011694817242694
+	QUAD $0x54e0b3259dd9f389 // .quad 6116085268112601993
+	QUAD $0x12f39e794d9d8b6b // .quad 1365609355853794155
+	QUAD $0x87cdeb6f62f65274 // .quad -8661007644729388428
+	QUAD $0x1e5297287c2f4578 // .quad 2184974969366070648
+	QUAD $0xd30b22bf825ea85d // .quad -3239457301041600419
+	QUAD $0x18421286c9bf6ac6 // .quad 1747979975492856518
+	QUAD $0x0f3c1bcc684bb9e4 // .quad 1097782973908629988
+	QUAD $0x13680ed23aff889f // .quad 1398383980394285215
+	QUAD $0x18602c7a4079296d // .quad 1756452758253807981
+	QUAD $0x1f0ce4839198da98 // .quad 2237414368630856344
+	QUAD $0x46b356c833942124 // .quad 5094511021344956708
+	QUAD $0x18d71d360e13e213 // .quad 1789931494904685075
+	QUAD $0x388f78a029434db6 // .quad 4075608817075965366
+	QUAD $0x13df4a91a4dcb4dc // .quad 1431945195923748060
+	QUAD $0x5a7f2766a86baf8a // .quad 6520974107321544586
+	QUAD $0x1fcbaa82a1612160 // .quad 2291112313477996896
+	QUAD $0x153285ebb9efbfa2 // .quad 1527430471115325346
+	QUAD $0x196fbb9bb44db44d // .quad 1832889850782397517
+	QUAD $0xaa8ed189618c994e // .quad -6156753252591560370
+	QUAD $0x145962e2f6a4903d // .quad 1466311880625918013
+	QUAD $0xeed8a7a11ad6e10c // .quad -1236053787331337972
+	QUAD $0x1047824f2bb6d9ca // .quad 1173049504500734410
+	QUAD $0x7e27729b5e249b45 // .quad 9090360384495590213
+	QUAD $0x1a0c03b1df8af611 // .quad 1876879207201175057
+	QUAD $0xfe85f549181d4904 // .quad -106409321887348476
+	QUAD $0x14d6695b193bf80d // .quad 1501503365760940045
+	QUAD $0xcb9e5dd4134aa0d0 // .quad -3774476272251789104
+	QUAD $0x10ab877c142ff9a4 // .quad 1201202692608752036
+	QUAD $0xdf63c9535211014d // .quad -2349813220860952243
+	QUAD $0x1aac0bf9b9e65c3a // .quad 1921924308174003258
+	QUAD $0x191ca10f74da6771 // .quad 1809498238053148529
+	QUAD $0x15566ffafb1eb02f // .quad 1537539446539202607
+	QUAD $0xadb080d92a4852c1 // .quad -5931099039041301823
+	QUAD $0x1111f32f2f4bc025 // .quad 1230031557231362085
+	QUAD $0x15e7348eaa0d5134 // .quad 1578287981759648052
+	QUAD $0x1b4feb7eb212cd09 // .quad 1968050491570179337
+	QUAD $0xab1f5d3eee710dc4 // .quad -6116067244076102204
+	QUAD $0x15d98932280f0a6d // .quad 1574440393256143469
+	QUAD $0xbc1917658b8da49d // .quad -4892853795260881763
+	QUAD $0x117ad428200c0857 // .quad 1259552314604914775
+	QUAD $0x2cf4f23c127c3a94 // .quad 3239480371808320148
+	QUAD $0x1bf7b9d9cce00d59 // .quad 2015283703367863641
+	QUAD $0xf0c3f4fcdb969543 // .quad -1097764517295254205
+	QUAD $0x165fc7e170b33de0 // .quad 1612226962694290912
+	QUAD $0x5a365d9716121103 // .quad 6500486015647617283
+	QUAD $0x11e6398126f5cb1a // .quad 1289781570155432730
+	QUAD $0x9056fc24f01ce804 // .quad -8045966448673363964
+	QUAD $0x1ca38f350b22de90 // .quad 2063650512248692368
+	QUAD $0xd9df301d8ce3ecd0 // .quad -2747424344196780848
+	QUAD $0x16e93f5da2824ba6 // .quad 1650920409798953894
+	QUAD $0xe17f59b13d8323da // .quad -2197939475357424678
+	QUAD $0x125432b14ecea2eb // .quad 1320736327839163115
+	QUAD $0x68cbc2b52f38395c // .quad 7551343283653851484
+	QUAD $0x1d53844ee47dd179 // .quad 2113178124542660985
+	QUAD $0x53d6355dbf602de3 // .quad 6041074626923081187
+	QUAD $0x177603725064a794 // .quad 1690542499634128788
+	QUAD $0xa9782ab165e68b1c // .quad -6235186742687266020
+	QUAD $0x12c4cf8ea6b6ec76 // .quad 1352433999707303030
+	QUAD $0x0f26aab56fd744fa // .quad 1091747655926105338
+	QUAD $0x1e07b27dd78b13f1 // .quad 2163894399531684849
+	QUAD $0x3f52222abfdf6a62 // .quad 4562746939482794594
+	QUAD $0x18062864ac6f4327 // .quad 1731115519625347879
+	QUAD $0x65db4e88997f884e // .quad 7339546366328145998
+	QUAD $0x1338205089f29c1f // .quad 1384892415700278303
+	QUAD $0x6fc54a7428cc0d4a // .quad 8053925371383123274
+	QUAD $0x1ec033b40fea9365 // .quad 2215827865120445285
+	QUAD $0x596aa1f68709a43b // .quad 6443140297106498619
+	QUAD $0x1899c2f673220f84 // .quad 1772662292096356228
+	QUAD $0xadeee7f86c07b696 // .quad -5913534206540532074
+	QUAD $0x13ae3591f5b4d936 // .quad 1418129833677084982
+	QUAD $0x497e3ff3e00c5756 // .quad 5295740528502789974
+	QUAD $0x1f7d228322baf524 // .quad 2269007733883335972
+	QUAD $0xd464fff64cd6ac45 // .quad -3142105206681588667
+	QUAD $0x1930e868e89590e9 // .quad 1815206187106668777
+	QUAD $0x4383fff83d7889d1 // .quad 4865013464138549713
+	QUAD $0x14272053ed4473ee // .quad 1452164949685335022
+	QUAD $0xcf9cccc69793a174 // .quad -3486686858172980876
+	QUAD $0x101f4d0ff1038ff1 // .quad 1161731959748268017
+	QUAD $0x7f6147a425b90252 // .quad 9178696285890871890
+	QUAD $0x19cbae7fe805b31c // .quad 1858771135597228828
+	QUAD $0xcc4dd2e9b7c7350f // .quad -3725089415513033457
+	QUAD $0x14a2f1ffecd15c16 // .quad 1487016908477783062
+	QUAD $0x3d0b0f215fd290d9 // .quad 4398626097073393881
+	QUAD $0x10825b3323dab012 // .quad 1189613526782226450
+	QUAD $0x61ab4b689950e7c1 // .quad 7037801755317430209
+	QUAD $0x1a6a2b85062ab350 // .quad 1903381642851562320
+	QUAD $0x4e22a2ba1440b967 // .quad 5630241404253944167
+	QUAD $0x1521bc6a6b555c40 // .quad 1522705314281249856
+	QUAD $0x0b4ee894dd009453 // .quad 814844308661245011
+	QUAD $0x10e7c9eebc4449cd // .quad 1218164251424999885
+	QUAD $0x1217da87c800ed51 // .quad 1303750893857992017
+	QUAD $0x1b0c764ac6d3a948 // .quad 1949062802279999816
+	QUAD $0xdb46486ca000bdda // .quad -2646348099655516710
+	QUAD $0x15a391d56bdc876c // .quad 1559250241823999852
+	QUAD $0x490506bd4ccd64af // .quad 5261619149759407279
+	QUAD $0x114fa7ddefe39f8a // .quad 1247400193459199882
+	QUAD $0xa8080ac87ae23ab1 // .quad -6338804619352589647
+	QUAD $0x1bb2a62fe638ff43 // .quad 1995840309534719811
+	QUAD $0x5339a239fbe82ef4 // .quad 5997002748743659252
+	QUAD $0x162884f31e93ff69 // .quad 1596672247627775849
+	QUAD $0x75c7b4fb2fecf25d // .quad 8486951013736837725
+	QUAD $0x11ba03f5b20fff87 // .quad 1277337798102220679
+	QUAD $0x22d92191e647ea2e // .quad 2511075177753209390
+	QUAD $0x1c5cd322b67fff3f // .quad 2043740476963553087
+	QUAD $0xb57a8141850654f2 // .quad -5369837487281253134
+	QUAD $0x16b0a8e891ffff65 // .quad 1634992381570842469
+	QUAD $0xc4620101373843f5 // .quad -4295869989825002507
+	QUAD $0x1226ed86db3332b7 // .quad 1307993905256673975
+	QUAD $0x3a366801f1f39fee // .quad 4194654460505726958
+	QUAD $0x1d0b15a491eb8459 // .quad 2092790248410678361
+	QUAD $0xfb5eb99b27f6198b // .quad -333625246337328757
+	QUAD $0x173c115074bc69e0 // .quad 1674232198728542688
+	QUAD $0x2f7efae2865e7ad6 // .quad 3422448617672047318
+	QUAD $0x129674405d6387e7 // .quad 1339385758982834151
+	QUAD $0xe597f7d0d6fd9156 // .quad -1902779841208544938
+	QUAD $0x1dbd86cd6238d971 // .quad 2143017214372534641
+	QUAD $0x8479930d78cadaab // .quad -8900921502450656597
+	QUAD $0x17cad23de82d7ac1 // .quad 1714413771498027713
+	QUAD $0xd06142712d6f1556 // .quad -3431388387218614954
+	QUAD $0x1308a831868ac89a // .quad 1371531017198422170
+	QUAD $0x4d686a4eaf182222 // .quad 5577825024675947042
+	QUAD $0x1e74404f3daada91 // .quad 2194449627517475473
+	QUAD $0xa453883ef279b4e8 // .quad -6605786424484973336
+	QUAD $0x185d003f6488aeda // .quad 1755559702013980378
+	QUAD $0xe9dc6cff28615d87 // .quad -1595280324846068345
+	QUAD $0x137d99cc506d58ae // .quad 1404447761611184302
+	QUAD $0xa960ae650d6895a4 // .quad -6241797334495619676
+	QUAD $0x1f2f5c7a1a488de4 // .quad 2247116418577894884
+	QUAD $0xbab3beb73ded4483 // .quad -4993437867596495741
+	QUAD $0x18f2b061aea07183 // .quad 1797693134862315907
+	QUAD $0x2ef6322c318a9d36 // .quad 3383947335406624054
+	QUAD $0x13f559e7bee6c136 // .quad 1438154507889852726
+	QUAD $0xe4bd1d13827761f0 // .quad -1964381892833222160
+	QUAD $0x1feef63f97d79b89 // .quad 2301047212623764361
+	QUAD $0x83ca7da9352c4e5a // .quad -8950203143750398374
+	QUAD $0x198bf832dfdfafa1 // .quad 1840837770099011489
+	QUAD $0x9ca1fe20f756a515 // .quad -7160162515000318699
+	QUAD $0x146ff9c24cb2f2e7 // .quad 1472670216079209191
+	QUAD $0x4a1b31b3f9121daa // .quad 5339916432225476010
+	QUAD $0x1059949b708f28b9 // .quad 1178136172863367353
+	QUAD $0x435eb5ecc1b695dd // .quad 4854517476818851293
+	QUAD $0x1a28edc580e50df5 // .quad 1885017876581387765
+	QUAD $0x35e55e57015ede4a // .quad 3883613981455081034
+	QUAD $0x14ed8b04671da4c4 // .quad 1508014301265110212
+	QUAD $0xc4b77eac0118b1d5 // .quad -4271806444319755819
+	QUAD $0x10be08d0527e1d69 // .quad 1206411441012088169
+	QUAD $0xa12597799b5ab622 // .quad -6834890310911609310
+	QUAD $0x1ac9a7b3b7302f0f // .quad 1930258305619341071
+	QUAD $0x4db7ac6149155e81 // .quad 5600134195496443521
+	QUAD $0x156e1fc2f8f358d9 // .quad 1544206644495472857
+	QUAD $0xd7c6238107444b9b // .quad -2898590273086665829
+	QUAD $0x1124e63593f5e0ad // .quad 1235365315596378285
+	QUAD $0x593d059b3ed3ac2b // .quad 6430302007287065643
+	QUAD $0x1b6e3d2286563449 // .quad 1976584504954205257
+	QUAD $0xe0fd9e15cbdc89bc // .quad -2234456023654168132
+	QUAD $0x15f1ca820511c36d // .quad 1581267603963364205
+	QUAD $0xb3fe18116fe3a163 // .quad -5476913633665244829
+	QUAD $0x118e3b9b37416924 // .quad 1265014083170691364
+	QUAD $0x866359b57fd29bd1 // .quad -8763061813864391727
+	QUAD $0x1c16c5c525357507 // .quad 2024022533073106183
+	QUAD $0xd1e91491330ee30e // .quad -3321100636349603058
+	QUAD $0x16789e3750f790d2 // .quad 1619218026458484946
+	QUAD $0x74ba76da8f3f1c0b // .quad 8411165935146048523
+	QUAD $0x11fa182c40c60d75 // .quad 1295374421166787957
+	QUAD $0xedf72490e531c678 // .quad -1299529762733963656
+	QUAD $0x1cc359e067a348bb // .quad 2072599073866860731
+	QUAD $0x8b2c1d40b75b052d // .quad -8418321439670991571
+	QUAD $0x1702ae4d1fb5d3c9 // .quad 1658079259093488585
+	QUAD $0x6f567dcd5f7c0424 // .quad 8022738107230848036
+	QUAD $0x12688b70e62b0fd4 // .quad 1326463407274790868
+	QUAD $0x7ef0c94898c66d06 // .quad 9147032156827446534
+	QUAD $0x1d74124e3d11b2ed // .quad 2122341451639665389
+	QUAD $0x98c0a106e09ebd9f // .quad -7439769533505684065
+	QUAD $0x17900ea4fda7c257 // .quad 1697873161311732311
+	QUAD $0x470080d24d4bcae6 // .quad 5116230817421183718
+	QUAD $0x12d9a550caec9b79 // .quad 1358298529049385849
+	QUAD $0xd800ce1d487944a2 // .quad -2882077136351837022
+	QUAD $0x1e29088144adc58e // .quad 2173277646479017358
+	QUAD $0x1333d8176d2dd082 // .quad 1383687105660440706
+	QUAD $0x1820d39a9d57d13f // .quad 1738622117183213887
+	QUAD $0xa8f646792424a6ce // .quad -6271747944955468082
+	QUAD $0x134d76154aaca765 // .quad 1390897693746571109
+	QUAD $0x74bd3d8ea03aa47d // .quad 8411947361780802685
+	QUAD $0x1ee25688777aa56f // .quad 2225436309994513775
+	QUAD $0x5d64313ee6955064 // .quad 6729557889424642148
+	QUAD $0x18b51206c5fbb78c // .quad 1780349047995611020
+	QUAD $0x4ab68dcbebaaa6b7 // .quad 5383646311539713719
+	QUAD $0x13c40e6bd1962c70 // .quad 1424279238396488816
+	QUAD $0x1124161312aaa457 // .quad 1235136468979721303
+	QUAD $0x1fa01712e8f0471a // .quad 2278846781434382106
+	QUAD $0xda8344dc0eeee9df // .quad -2701239639558133281
+	QUAD $0x194cdf4253f36c14 // .quad 1823077425147505684
+	QUAD $0xe2029d7cd8bf2180 // .quad -2160991711646506624
+	QUAD $0x143d7f6843292343 // .quad 1458461940118004547
+	QUAD $0x4e687dfd7a328133 // .quad 5649904260166615347
+	QUAD $0x103132b9cf541c36 // .quad 1166769552094403638
+	QUAD $0x4a40c9959050ceb8 // .quad 5350498001524674232
+	QUAD $0x19e851294bb9c6bd // .quad 1866831283351045821
+	QUAD $0x0833d477a6a70bc6 // .quad 591049586477829062
+	QUAD $0x14b9da876fc7d231 // .quad 1493465026680836657
+	QUAD $0xa02976c61eec096b // .quad -6905857960301557397
+	QUAD $0x1094aed2bfd30e8d // .quad 1194772021344669325
+	QUAD $0x004257a364acdbdf // .quad 18673707743239135
+	QUAD $0x1a877e1dffb81749 // .quad 1911635234151470921
+	QUAD $0xcd01dfb5ea23e319 // .quad -3674409848547319015
+	QUAD $0x153931b1996012a0 // .quad 1529308187321176736
+	QUAD $0x70ce4c91881cb5ae // .quad 8128518565387875758
+	QUAD $0x10fa8e27ade6754d // .quad 1223446549856941389
+	QUAD $0x1ae3adb5a69455e2 // .quad 1937583260394870242
+	QUAD $0x1b2a7d0c4970bbaf // .quad 1957514479771106223
+	QUAD $0x7be957c4854377e8 // .quad 8928764237799716840
+	QUAD $0x15bb973d078d62f2 // .quad 1566011583816884978
+	QUAD $0xc987796a0435f987 // .quad -3925035053985957497
+	QUAD $0x1162df64060ab58e // .quad 1252809267053507982
+	QUAD $0x75a58f1006bcc271 // .quad 8477339172590109297
+	QUAD $0x1bd1656cd67788e4 // .quad 2004494827285612772
+	QUAD $0xf7b7a5a66bca3527 // .quad -596826291411733209
+	QUAD $0x16411df0ab92d3e9 // .quad 1603595861828490217
+	QUAD $0x5fc61e1ebca1c41f // .quad 6901236596354434079
+	QUAD $0x11cdb18d560f0fee // .quad 1282876689462792174
+	QUAD $0xffa363646102d365 // .quad -26067890058636443
+	QUAD $0x1c7c4f4889b1b316 // .quad 2052602703140467478
+	QUAD $0x32e91c504d9bdc51 // .quad 3668494502695001169
+	QUAD $0x16c9d906d48e28df // .quad 1642082162512373983
+	QUAD $0x8f20e37371497d0e // .quad -8133250842069730034
+	QUAD $0x123b140576d820b2 // .quad 1313665730009899186
+	QUAD $0x7e9b0585820f2e7c // .quad 9122891541139893884
+	QUAD $0x1d2b533bf159cdea // .quad 2101865168015838698
+	QUAD $0xcbaf379e01a5beca // .quad -3769733211313815862
+	QUAD $0x1755dc2ff447d7ee // .quad 1681492134412670958
+	QUAD $0x0958f94b348498a1 // .quad 673562245690857633
+	QUAD $0x12ab168cc36cacbf // .quad 1345193707530136767
 
+	// .p2align 4, 0x00
 _DOUBLE_POW5_SPLIT:
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1000000000000000                           // .quad 1152921504606846976
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1400000000000000                           // .quad 1441151880758558720
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1900000000000000                           // .quad 1801439850948198400
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1f40000000000000                           // .quad 2251799813685248000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1388000000000000                           // .quad 1407374883553280000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x186a000000000000                           // .quad 1759218604441600000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1e84800000000000                           // .quad 2199023255552000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1312d00000000000                           // .quad 1374389534720000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x17d7840000000000                           // .quad 1717986918400000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1dcd650000000000                           // .quad 2147483648000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x12a05f2000000000                           // .quad 1342177280000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x174876e800000000                           // .quad 1677721600000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1d1a94a200000000                           // .quad 2097152000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x12309ce540000000                           // .quad 1310720000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x16bcc41e90000000                           // .quad 1638400000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1c6bf52634000000                           // .quad 2048000000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x11c37937e0800000                           // .quad 1280000000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x16345785d8a00000                           // .quad 1600000000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1bc16d674ec80000                           // .quad 2000000000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1158e460913d0000                           // .quad 1250000000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x15af1d78b58c4000                           // .quad 1562500000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1b1ae4d6e2ef5000                           // .quad 1953125000000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x10f0cf064dd59200                           // .quad 1220703125000000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x152d02c7e14af680                           // .quad 1525878906250000000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x1a784379d99db420                           // .quad 1907348632812500000
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x108b2a2c28029094                           // .quad 1192092895507812500
-	QUAD $0x0000000000000000                           // .quad 0
-	QUAD $0x14adf4b7320334b9                           // .quad 1490116119384765625
-	QUAD $0x4000000000000000                           // .quad 4611686018427387904
-	QUAD $0x19d971e4fe8401e7                           // .quad 1862645149230957031
-	QUAD $0x8800000000000000                           // .quad -8646911284551352320
-	QUAD $0x1027e72f1f128130                           // .quad 1164153218269348144
-	QUAD $0xaa00000000000000                           // .quad -6196953087261802496
-	QUAD $0x1431e0fae6d7217c                           // .quad 1455191522836685180
-	QUAD $0xd480000000000000                           // .quad -3134505340649865216
-	QUAD $0x193e5939a08ce9db                           // .quad 1818989403545856475
-	QUAD $0xc9a0000000000000                           // .quad -3918131675812331520
-	QUAD $0x1f8def8808b02452                           // .quad 2273736754432320594
-	QUAD $0xbe04000000000000                           // .quad -4754675306596401152
-	QUAD $0x13b8b5b5056e16b3                           // .quad 1421085471520200371
-	QUAD $0xad85000000000000                           // .quad -5943344133245501440
-	QUAD $0x18a6e32246c99c60                           // .quad 1776356839400250464
-	QUAD $0xd8e6400000000000                           // .quad -2817494148129488896
-	QUAD $0x1ed09bead87c0378                           // .quad 2220446049250313080
-	QUAD $0x878fe80000000000                           // .quad -8678462870222012416
-	QUAD $0x13426172c74d822b                           // .quad 1387778780781445675
-	QUAD $0x6973e20000000000                           // .quad 7598665485932036096
-	QUAD $0x1812f9cf7920e2b6                           // .quad 1734723475976807094
-	QUAD $0x03d0da8000000000                           // .quad 274959820560269312
-	QUAD $0x1e17b84357691b64                           // .quad 2168404344971008868
-	QUAD $0x8262889000000000                           // .quad -9051522149004607488
-	QUAD $0x12ced32a16a1b11e                           // .quad 1355252715606880542
-	QUAD $0x22fb2ab400000000                           // .quad 2520655369026404352
-	QUAD $0x178287f49c4a1d66                           // .quad 1694065894508600678
-	QUAD $0xabb9f56100000000                           // .quad -6072552825571770368
-	QUAD $0x1d6329f1c35ca4bf                           // .quad 2117582368135750847
-	QUAD $0xcb54395ca0000000                           // .quad -3795345515982356480
-	QUAD $0x125dfa371a19e6f7                           // .quad 1323488980084844279
-	QUAD $0xbe2947b3c8000000                           // .quad -4744181894977945600
-	QUAD $0x16f578c4e0a060b5                           // .quad 1654361225106055349
-	QUAD $0x2db399a0ba000000                           // .quad 3293144668132343808
-	QUAD $0x1cb2d6f618c878e3                           // .quad 2067951531382569187
-	QUAD $0xfc90400474400000                           // .quad -247627591630979072
-	QUAD $0x11efc659cf7d4b8d                           // .quad 1292469707114105741
-	QUAD $0x7bb4500591500000                           // .quad 8913837547316051968
-	QUAD $0x166bb7f0435c9e71                           // .quad 1615587133892632177
-	QUAD $0xdaa16406f5a40000                           // .quad -2692761121137098752
-	QUAD $0x1c06a5ec5433c60d                           // .quad 2019483917365790221
-	QUAD $0xa8a4de8459868000                           // .quad -6294661719138074624
-	QUAD $0x118427b3b4a05bc8                           // .quad 1262177448353618888
-	QUAD $0xd2ce16256fe82000                           // .quad -3256641130495205376
-	QUAD $0x15e531a0a1c872ba                           // .quad 1577721810442023610
-	QUAD $0x87819baecbe22800                           // .quad -8682487431546394624
-	QUAD $0x1b5e7e08ca3a8f69                           // .quad 1972152263052529513
-	QUAD $0xf4b1014d3f6d5900                           // .quad -814868626289108736
-	QUAD $0x111b0ec57e6499a1                           // .quad 1232595164407830945
-	QUAD $0x71dd41a08f48af40                           // .quad 8204786253993389888
-	QUAD $0x1561d276ddfdc00a                           // .quad 1540743955509788682
-	QUAD $0x0e549208b31adb10                           // .quad 1032610780636961552
-	QUAD $0x1aba4714957d300d                           // .quad 1925929944387235853
-	QUAD $0x28f4db456ff0c8ea                           // .quad 2951224747111794922
-	QUAD $0x10b46c6cdd6e3e08                           // .quad 1203706215242022408
-	QUAD $0x33321216cbecfb24                           // .quad 3689030933889743652
-	QUAD $0x14e1878814c9cd8a                           // .quad 1504632769052528010
-	QUAD $0xbffe969c7ee839ed                           // .quad -4612083369492596243
-	QUAD $0x1a19e96a19fc40ec                           // .quad 1880790961315660012
-	QUAD $0xf7ff1e21cf512434                           // .quad -576709096719178700
-	QUAD $0x105031e2503da893                           // .quad 1175494350822287507
-	QUAD $0xf5fee5aa43256d41                           // .quad -720886370898973375
-	QUAD $0x14643e5ae44d12b8                           // .quad 1469367938527859384
-	QUAD $0x337e9f14d3eec892                           // .quad 3710578054803671186
-	QUAD $0x197d4df19d605767                           // .quad 1836709923159824231
-	QUAD $0x005e46da08ea7ab6                           // .quad 26536550077201078
-	QUAD $0x1fdca16e04b86d41                           // .quad 2295887403949780289
-	QUAD $0xa03aec4845928cb2                           // .quad -6900943683842831182
-	QUAD $0x13e9e4e4c2f34448                           // .quad 1434929627468612680
-	QUAD $0xc849a75a56f72fde                           // .quad -4014493586376151074
-	QUAD $0x18e45e1df3b0155a                           // .quad 1793662034335765850
-	QUAD $0x7a5c1130ecb4fbd6                           // .quad 8816941072311974870
-	QUAD $0x1f1d75a5709c1ab1                           // .quad 2242077542919707313
-	QUAD $0xec798abe93f11d65                           // .quad -1406940857446097563
-	QUAD $0x13726987666190ae                           // .quad 1401298464324817070
-	QUAD $0xa797ed6e38ed64bf                           // .quad -6370362090235009857
-	QUAD $0x184f03e93ff9f4da                           // .quad 1751623080406021338
-	QUAD $0x517de8c9c728bdef                           // .quad 5872105442488401391
-	QUAD $0x1e62c4e38ff87211                           // .quad 2189528850507526673
-	QUAD $0xd2eeb17e1c7976b5                           // .quad -3247463126085830987
-	QUAD $0x12fdbb0e39fb474a                           // .quad 1368455531567204170
-	QUAD $0x87aa5ddda397d462                           // .quad -8671014926034676638
-	QUAD $0x17bd29d1c87a191d                           // .quad 1710569414459005213
-	QUAD $0xe994f5550c7dc97b                           // .quad -1615396620688569989
-	QUAD $0x1dac74463a989f64                           // .quad 2138211768073756516
-	QUAD $0x11fd195527ce9ded                           // .quad 1296220121283337709
-	QUAD $0x128bc8abe49f639f                           // .quad 1336382355046097823
-	QUAD $0xd67c5faa71c24568                           // .quad -2991410866823215768
-	QUAD $0x172ebad6ddc73c86                           // .quad 1670477943807622278
-	QUAD $0x8c1b77950e32d6c2                           // .quad -8350949601956407614
-	QUAD $0x1cfa698c95390ba8                           // .quad 2088097429759527848
-	QUAD $0x57912abd28dfc639                           // .quad 6309871544845715001
-	QUAD $0x121c81f7dd43a749                           // .quad 1305060893599704905
-	QUAD $0xad75756c7317b7c8                           // .quad -5947718624225019960
-	QUAD $0x16a3a275d494911b                           // .quad 1631326116999631131
-	QUAD $0x98d2d2c78fdda5ba                           // .quad -7434648280281274950
-	QUAD $0x1c4c8b1349b9b562                           // .quad 2039157646249538914
-	QUAD $0x9f83c3bcb9ea8794                           // .quad -6952498184389490796
-	QUAD $0x11afd6ec0e14115d                           // .quad 1274473528905961821
-	QUAD $0x0764b4abe8652979                           // .quad 532749306367912313
-	QUAD $0x161bcca7119915b5                           // .quad 1593091911132452277
-	QUAD $0x493de1d6e27e73d7                           // .quad 5277622651387278295
-	QUAD $0x1ba2bfd0d5ff5b22                           // .quad 1991364888915565346
-	QUAD $0x6dc6ad264d8f0866                           // .quad 7910200175544436838
-	QUAD $0x1145b7e285bf98f5                           // .quad 1244603055572228341
-	QUAD $0xc938586fe0f2ca80                           // .quad -3947307835851617664
-	QUAD $0x159725db272f7f32                           // .quad 1555753819465285426
-	QUAD $0x7b866e8bd92f7d20                           // .quad 8900923260467641632
-	QUAD $0x1afcef51f0fb5eff                           // .quad 1944692274331606783
-	QUAD $0xad34051767bdae34                           // .quad -5966138008276193740
-	QUAD $0x10de1593369d1b5f                           // .quad 1215432671457254239
-	QUAD $0x9881065d41ad19c1                           // .quad -7457672510345242175
-	QUAD $0x15159af804446237                           // .quad 1519290839321567799
-	QUAD $0x7ea147f492186032                           // .quad 9124653435777998898
-	QUAD $0x1a5b01b605557ac5                           // .quad 1899113549151959749
-	QUAD $0x6f24ccf8db4f3c1f                           // .quad 8008751406574943263
-	QUAD $0x1078e111c3556cbb                           // .quad 1186945968219974843
-	QUAD $0x4aee003712230b27                           // .quad 5399253239791291175
-	QUAD $0x14971956342ac7ea                           // .quad 1483682460274968554
-	QUAD $0xdda98044d6abcdf0                           // .quad -2474305487115661840
-	QUAD $0x19bcdfabc13579e4                           // .quad 1854603075343710692
-	QUAD $0x0a89f02b062b60b6                           // .quad 759402079766405302
-	QUAD $0x10160bcb58c16c2f                           // .quad 1159126922089819183
-	QUAD $0xcd2c6c35c7b638e4                           // .quad -3662433418719381276
-	QUAD $0x141b8ebe2ef1c73a                           // .quad 1448908652612273978
-	QUAD $0x8077874339a3c71d                           // .quad -9189727791826614499
-	QUAD $0x1922726dbaae3909                           // .quad 1811135815765342473
-	QUAD $0xe0956914080cb8e4                           // .quad -2263787702928492316
-	QUAD $0x1f6b0f092959c74b                           // .quad 2263919769706678091
-	QUAD $0x6c5d61ac8507f38e                           // .quad 7808504722524468110
-	QUAD $0x13a2e965b9d81c8f                           // .quad 1414949856066673807
-	QUAD $0x4774ba17a649f072                           // .quad 5148944884728197234
-	QUAD $0x188ba3bf284e23b3                           // .quad 1768687320083342259
-	QUAD $0x1951e89d8fdc6c8f                           // .quad 1824495087482858639
-	QUAD $0x1eae8caef261aca0                           // .quad 2210859150104177824
-	QUAD $0x0fd3316279e9c3d9                           // .quad 1140309429676786649
-	QUAD $0x132d17ed577d0be4                           // .quad 1381786968815111140
-	QUAD $0x13c7fdbb186434cf                           // .quad 1425386787095983311
-	QUAD $0x17f85de8ad5c4edd                           // .quad 1727233711018888925
-	QUAD $0x58b9fd29de7d4203                           // .quad 6393419502297367043
-	QUAD $0x1df67562d8b36294                           // .quad 2159042138773611156
-	QUAD $0xb7743e3a2b0e4942                           // .quad -5227484847918921406
-	QUAD $0x12ba095dc7701d9c                           // .quad 1349401336733506972
-	QUAD $0xe5514dc8b5d1db92                           // .quad -1922670041471263854
-	QUAD $0x17688bb5394c2503                           // .quad 1686751670916883715
-	QUAD $0xdea5a13ae3465277                           // .quad -2403337551839079817
-	QUAD $0x1d42aea2879f2e44                           // .quad 2108439588646104644
-	QUAD $0x0b2784c4ce0bf38a                           // .quad 803757039314269066
-	QUAD $0x1249ad2594c37ceb                           // .quad 1317774742903815403
-	QUAD $0xcdf165f6018ef06d                           // .quad -3606989719284551571
-	QUAD $0x16dc186ef9f45c25                           // .quad 1647218428629769253
-	QUAD $0x416dbf7381f2ac88                           // .quad 4714634887749086344
-	QUAD $0x1c931e8ab871732f                           // .quad 2059023035787211567
-	QUAD $0x88e497a83137abd5                           // .quad -8582568241225290795
-	QUAD $0x11dbf316b346e7fd                           // .quad 1286889397367007229
-	QUAD $0xeb1dbd923d8596ca                           // .quad -1504838264676837686
-	QUAD $0x1652efdc6018a1fc                           // .quad 1608611746708759036
-	QUAD $0x25e52cf6cce6fc7d                           // .quad 2730638187581340797
-	QUAD $0x1be7abd3781eca7c                           // .quad 2010764683385948796
-	QUAD $0x97af3c1a40105dce                           // .quad -7516723169616437810
-	QUAD $0x1170cb642b133e8d                           // .quad 1256727927116217997
-	QUAD $0xfd9b0b20d0147542                           // .quad -172531925165771454
-	QUAD $0x15ccfe3d35d80e30                           // .quad 1570909908895272496
-	QUAD $0x3d01cde904199292                           // .quad 4396021111970173586
-	QUAD $0x1b403dcc834e11bd                           // .quad 1963637386119090621
-	QUAD $0x462120b1a28ffb9b                           // .quad 5053356204195052443
-	QUAD $0x1108269fd210cb16                           // .quad 1227273366324431638
-	QUAD $0xd7a968de0b33fa82                           // .quad -2906676781610960254
-	QUAD $0x154a3047c694fddb                           // .quad 1534091707905539547
-	QUAD $0xcd93c3158e00f923                           // .quad -3633345977013700317
-	QUAD $0x1a9cbc59b83a3d52                           // .quad 1917614634881924434
-	QUAD $0xc07c59ed78c09bb6                           // .quad -4576684244847256650
-	QUAD $0x10a1f5b813246653                           // .quad 1198509146801202771
-	QUAD $0xb09b7068d6f0c2a3                           // .quad -5720855306059070813
-	QUAD $0x14ca732617ed7fe8                           // .quad 1498136433501503464
-	QUAD $0xdcc24c830cacf34c                           // .quad -2539383114146450612
-	QUAD $0x19fd0fef9de8dfe2                           // .quad 1872670541876879330
-	QUAD $0xc9f96fd1e7ec180f                           // .quad -3892957455555225585
-	QUAD $0x103e29f5c2b18bed                           // .quad 1170419088673049581
-	QUAD $0x3c77cbc661e71e13                           // .quad 4357175217410743827
-	QUAD $0x144db473335deee9                           // .quad 1463023860841311977
-	QUAD $0x8b95beb7fa60e598                           // .quad -8388589033518733928
-	QUAD $0x1961219000356aa3                           // .quad 1828779826051639971
-	QUAD $0x6e7b2e65f8f91efe                           // .quad 7961007781811134206
-	QUAD $0x1fb969f40042c54c                           // .quad 2285974782564549964
-	QUAD $0xc50cfcffbb9bb35f                           // .quad -4247742173222816929
-	QUAD $0x13d3e2388029bb4f                           // .quad 1428734239102843727
-	QUAD $0xb6503c3faa82a037                           // .quad -5309677716528521161
-	QUAD $0x18c8dac6a0342a23                           // .quad 1785917798878554659
-	QUAD $0xa3e44b4f95234844                           // .quad -6637097145660651452
-	QUAD $0x1efb1178484134ac                           // .quad 2232397248598193324
-	QUAD $0xe66eaf11bd360d2b                           // .quad -1842342706824213205
-	QUAD $0x135ceaeb2d28c0eb                           // .quad 1395248280373870827
-	QUAD $0xe00a5ad62c839075                           // .quad -2302928383530266507
-	QUAD $0x183425a5f872f126                           // .quad 1744060350467338534
-	QUAD $0x980cf18bb7a47493                           // .quad -7490346497840221037
-	QUAD $0x1e412f0f768fad70                           // .quad 2180075438084173168
-	QUAD $0x5f0816f752c6c8dc                           // .quad 6847748484918331612
-	QUAD $0x12e8bd69aa19cc66                           // .quad 1362547148802608230
-	QUAD $0xf6ca1cb527787b13                           // .quad -663686430706861293
-	QUAD $0x17a2ecc414a03f7f                           // .quad 1703183936003260287
-	QUAD $0xf47ca3e2715699d7                           // .quad -829608038383576617
-	QUAD $0x1d8ba7f519c84f5f                           // .quad 2128979920004075359
-	QUAD $0xf8cde66d86d62026                           // .quad -518505023989735386
-	QUAD $0x127748f9301d319b                           // .quad 1330612450002547099
-	QUAD $0xf7016008e88ba830                           // .quad -648131279987169232
-	QUAD $0x17151b377c247e02                           // .quad 1663265562503183874
-	QUAD $0xb4c1b80b22ae923c                           // .quad -5421850118411349444
-	QUAD $0x1cda62055b2d9d83                           // .quad 2079081953128979843
-	QUAD $0x50f91306f5ad1b65                           // .quad 5834715712847682405
-	QUAD $0x12087d4358fc8272                           // .quad 1299426220705612402
-	QUAD $0xe53757c8b318623f                           // .quad -1929977395795172801
-	QUAD $0x168a9c942f3ba30e                           // .quad 1624282775882015502
-	QUAD $0x9e852dbadfde7acf                           // .quad -7024157763171353905
-	QUAD $0x1c2d43b93b0a8bd2                           // .quad 2030353469852519378
-	QUAD $0xa3133c94cbeb0cc1                           // .quad -6695941611195790143
-	QUAD $0x119c4a53c4e69763                           // .quad 1268970918657824611
-	QUAD $0x8bd80bb9fee5cff1                           // .quad -8369927013994737679
-	QUAD $0x16035ce8b6203d3c                           // .quad 1586213648322280764
-	QUAD $0xaece0ea87e9f43ee                           // .quad -5850722749066034194
-	QUAD $0x1b843422e3a84c8b                           // .quad 1982767060402850955
-	QUAD $0x4d40c9294f238a75                           // .quad 5566670318688504437
-	QUAD $0x1132a095ce492fd7                           // .quad 1239229412751781847
-	QUAD $0x2090fb73a2ec6d12                           // .quad 2346651879933242642
-	QUAD $0x157f48bb41db7bcd                           // .quad 1549036765939727309
-	QUAD $0x68b53a508ba78856                           // .quad 7545000868343941206
-	QUAD $0x1adf1aea12525ac0                           // .quad 1936295957424659136
-	QUAD $0x417144725748b536                           // .quad 4715625542714963254
-	QUAD $0x10cb70d24b7378b8                           // .quad 1210184973390411960
-	QUAD $0x51cd958eed1ae283                           // .quad 5894531928393704067
-	QUAD $0x14fe4d06de5056e6                           // .quad 1512731216738014950
-	QUAD $0xe640faf2a8619b24                           // .quad -1855207126362645724
-	QUAD $0x1a3de04895e46c9f                           // .quad 1890914020922518687
-	QUAD $0xefe89cd7a93d00f7                           // .quad -1159504453976653577
-	QUAD $0x1066ac2d5daec3e3                           // .quad 1181821263076574179
-	QUAD $0xebe2c40d938c4134                           // .quad -1449380567470816972
-	QUAD $0x14805738b51a74dc                           // .quad 1477276578845717724
-	QUAD $0x26db7510f86f5181                           // .quad 2799960309088866689
-	QUAD $0x19a06d06e2611214                           // .quad 1846595723557147156
-	QUAD $0x9849292a9b4592f1                           // .quad -7473396843674234127
-	QUAD $0x100444244d7cab4c                           // .quad 1154122327223216972
-	QUAD $0xbe5b73754216f7ad                           // .quad -4730060036165404755
-	QUAD $0x1405552d60dbd61f                           // .quad 1442652909029021215
-	QUAD $0xadf25052929cb598                           // .quad -5912575045206755944
-	QUAD $0x1906aa78b912cba7                           // .quad 1803316136286276519
-	QUAD $0x996ee4673743e2ff                           // .quad -7390718806508444929
-	QUAD $0x1f485516e7577e91                           // .quad 2254145170357845649
-	QUAD $0xffe54ec0828a6ddf                           // .quad -7513235640390177
-	QUAD $0x138d352e5096af1a                           // .quad 1408840731473653530
-	QUAD $0xbfdea270a32d0957                           // .quad -4621077562977875625
-	QUAD $0x18708279e4bc5ae1                           // .quad 1761050914342066913
-	QUAD $0x2fd64b0ccbf84bad                           // .quad 3447025083132431277
-	QUAD $0x1e8ca3185deb719a                           // .quad 2201313642927583642
-	QUAD $0x5de5eee7ff7b2f4c                           // .quad 6766076695385157452
-	QUAD $0x1317e5ef3ab32700                           // .quad 1375821026829739776
-	QUAD $0x755f6aa1ff59fb1f                           // .quad 8457595869231446815
-	QUAD $0x17dddf6b095ff0c0                           // .quad 1719776283537174720
-	QUAD $0x92b7454a7f3079e7                           // .quad -7874749237170243097
-	QUAD $0x1dd55745cbb7ecf0                           // .quad 2149720354421468400
-	QUAD $0x5bb28b4e8f7e4c30                           // .quad 6607496772837067824
-	QUAD $0x12a5568b9f52f416                           // .quad 1343575221513417750
-	QUAD $0xf29f2e22335ddf3c                           // .quad -964001070808441028
-	QUAD $0x174eac2e8727b11b                           // .quad 1679469026891772187
-	QUAD $0xef46f9aac035570b                           // .quad -1205001338510551285
-	QUAD $0x1d22573a28f19d62                           // .quad 2099336283614715234
-	QUAD $0xd58c5c0ab8215667                           // .quad -3058968845782788505
-	QUAD $0x123576845997025d                           // .quad 1312085177259197021
-	QUAD $0x4aef730d6629ac01                           // .quad 5399660979626290177
-	QUAD $0x16c2d4256ffcc2f5                           // .quad 1640106471573996277
-	QUAD $0x9dab4fd0bfb41701                           // .quad -7085481830749300991
-	QUAD $0x1c73892ecbfbf3b2                           // .quad 2050133089467495346
-	QUAD $0xa28b11e277d08e60                           // .quad -6734269153432007072
-	QUAD $0x11c835bd3f7d784f                           // .quad 1281333180917184591
-	QUAD $0x8b2dd65b15c4b1f9                           // .quad -8417836441790008839
-	QUAD $0x163a432c8f5cd663                           // .quad 1601666476146480739
-	QUAD $0x6df94bf1db35de77                           // .quad 7924448521472040567
-	QUAD $0x1bc8d3f7b3340bfc                           // .quad 2002083095183100924
-	QUAD $0xc4bbcf772901ab0a                           // .quad -4270591710934750454
-	QUAD $0x115d847ad000877d                           // .quad 1251301934489438077
-	QUAD $0x35eac354f34215cd                           // .quad 3885132398186337741
-	QUAD $0x15b4e5998400a95d                           // .quad 1564127418111797597
-	QUAD $0x8365742a30129b40                           // .quad -8978642557549241536
-	QUAD $0x1b221effe500d3b4                           // .quad 1955159272639746996
-	QUAD $0xd21f689a5e0ba108                           // .quad -3305808589254582008
-	QUAD $0x10f5535fef208450                           // .quad 1221974545399841872
-	QUAD $0x06a742c0f58e894a                           // .quad 479425281859160394
-	QUAD $0x1532a837eae8a565                           // .quad 1527468181749802341
-	QUAD $0x4851137132f22b9d                           // .quad 5210967620751338397
-	QUAD $0x1a7f5245e5a2cebe                           // .quad 1909335227187252926
-	QUAD $0xed32ac26bfd75b42                           // .quad -1354831255457801406
-	QUAD $0x108f936baf85c136                           // .quad 1193334516992033078
-	QUAD $0xa87f57306fcd3212                           // .quad -6305225087749639662
-	QUAD $0x14b378469b673184                           // .quad 1491668146240041348
-	QUAD $0xd29f2cfc8bc07e97                           // .quad -3269845341259661673
-	QUAD $0x19e056584240fde5                           // .quad 1864585182800051685
-	QUAD $0xa3a37c1dd7584f1e                           // .quad -6655339356714676450
-	QUAD $0x102c35f729689eaf                           // .quad 1165365739250032303
-	QUAD $0x8c8c5b254d2e62e6                           // .quad -8319174195893345562
-	QUAD $0x14374374f3c2c65b                           // .quad 1456707174062540379
-	QUAD $0x6faf71eea079fb9f                           // .quad 8047776328842869663
-	QUAD $0x1945145230b377f2                           // .quad 1820883967578175474
-	QUAD $0x0b9b4e6a48987a87                           // .quad 836348374198811271
-	QUAD $0x1f965966bce055ef                           // .quad 2276104959472719343
-	QUAD $0x674111026d5f4c94                           // .quad 7440246761515338900
-	QUAD $0x13bdf7e0360c35b5                           // .quad 1422565599670449589
-	QUAD $0xc111554308b71fba                           // .quad -4534749603387990086
-	QUAD $0x18ad75d8438f4322                           // .quad 1778206999588061986
-	QUAD $0x7155aa93cae4e7a8                           // .quad 8166621051047176104
-	QUAD $0x1ed8d34e547313eb                           // .quad 2222758749485077483
-	QUAD $0x26d58a9c5ecf10c9                           // .quad 2798295147690791113
-	QUAD $0x13478410f4c7ec73                           // .quad 1389224218428173427
-	QUAD $0xf08aed437682d4fb                           // .quad -1113817083813899013
-	QUAD $0x1819651531f9e78f                           // .quad 1736530273035216783
-	QUAD $0xecada89454238a3a                           // .quad -1392271354767373766
-	QUAD $0x1e1fbe5a7e786173                           // .quad 2170662841294020979
-	QUAD $0x73ec895cb4963664                           // .quad 8353202440125167204
-	QUAD $0x12d3d6f88f0b3ce8                           // .quad 1356664275808763112
-	QUAD $0x90e7abb3e1bbc3fd                           // .quad -8005241023553092611
-	QUAD $0x1788ccb6b2ce0c22                           // .quad 1695830344760953890
-	QUAD $0x352196a0da2ab4fd                           // .quad 3828506775840797949
-	QUAD $0x1d6affe45f818f2b                           // .quad 2119787930951192363
-	QUAD $0x0134fe24885ab11e                           // .quad 86973725686804766
-	QUAD $0x1262dfeebbb0f97b                           // .quad 1324867456844495227
-	QUAD $0xc1823dadaa715d65                           // .quad -4502968861318881947
-	QUAD $0x16fb97ea6a9d37d9                           // .quad 1656084321055619033
-	QUAD $0x31e2cd19150db4bf                           // .quad 3594660960206173375
-	QUAD $0x1cba7de5054485d0                           // .quad 2070105401319523792
-	QUAD $0x1f2dc02fad2890f7                           // .quad 2246663100128858359
-	QUAD $0x11f48eaf234ad3a2                           // .quad 1293815875824702370
-	QUAD $0xa6f9303b9872b535                           // .quad -6415043161693702859
-	QUAD $0x1671b25aec1d888a                           // .quad 1617269844780877962
-	QUAD $0x50b77c4a7e8f6282                           // .quad 5816254103165035138
-	QUAD $0x1c0e1ef1a724eaad                           // .quad 2021587305976097453
-	QUAD $0x5272adae8f199d91                           // .quad 5941001823691840913
-	QUAD $0x1188d357087712ac                           // .quad 1263492066235060908
-	QUAD $0x670f591a32e004f6                           // .quad 7426252279614801142
-	QUAD $0x15eb082cca94d757                           // .quad 1579365082793826135
-	QUAD $0x40d32f60bf980633                           // .quad 4671129331091113523
-	QUAD $0x1b65ca37fd3a0d2d                           // .quad 1974206353492282669
-	QUAD $0x4883fd9c77bf03e0                           // .quad 5225298841145639904
-	QUAD $0x111f9e62fe44483c                           // .quad 1233878970932676668
-	QUAD $0x5aa4fd0395aec4d8                           // .quad 6531623551432049880
-	QUAD $0x156785fbbdd55a4b                           // .quad 1542348713665845835
-	QUAD $0x314e3c447b1a760e                           // .quad 3552843420862674446
-	QUAD $0x1ac1677aad4ab0de                           // .quad 1927935892082307294
-	QUAD $0xded0e5aaccf089c9                           // .quad -2391158880388216375
-	QUAD $0x10b8e0acac4eae8a                           // .quad 1204959932551442058
-	QUAD $0x96851f15802cac3b                           // .quad -7600634618912658373
-	QUAD $0x14e718d7d7625a2d                           // .quad 1506199915689302573
-	QUAD $0xfc2666dae037d74a                           // .quad -277421236786047158
-	QUAD $0x1a20df0dcd3af0b8                           // .quad 1882749894611628216
-	QUAD $0x9d980048cc22e68e                           // .quad -7090917300632361330
-	QUAD $0x10548b68a044d673                           // .quad 1176718684132267635
-	QUAD $0x84fe005aff2ba032                           // .quad -8863646625790451662
-	QUAD $0x1469ae42c8560c10                           // .quad 1470898355165334544
-	QUAD $0xa63d8071bef6883e                           // .quad -6467872263810676674
-	QUAD $0x198419d37a6b8f14                           // .quad 1838622943956668180
-	QUAD $0xcfcce08e2eb42a4e                           // .quad -3473154311335957938
-	QUAD $0x1fe52048590672d9                           // .quad 2298278679945835225
-	QUAD $0x21e00c58dd309a70                           // .quad 2440964573842414192
-	QUAD $0x13ef342d37a407c8                           // .quad 1436424174966147016
-	QUAD $0x2a580f6f147cc10d                           // .quad 3051205717303017741
-	QUAD $0x18eb0138858d09ba                           // .quad 1795530218707683770
-	QUAD $0xb4ee134ad99bf150                           // .quad -5409364890226003632
-	QUAD $0x1f25c186a6f04c28                           // .quad 2244412773384604712
-	QUAD $0x7114cc0ec80176d2                           // .quad 8148361989677217490
-	QUAD $0x137798f428562f99                           // .quad 1402757983365377945
-	QUAD $0xcd59ff127a01d486                           // .quad -3649605568185641850
-	QUAD $0x18557f31326bbb7f                           // .quad 1753447479206722431
-	QUAD $0xc0b07ed7188249a8                           // .quad -4562006960232052312
-	QUAD $0x1e6adefd7f06aa5f                           // .quad 2191809349008403039
-	QUAD $0xd86e4f466f516e09                           // .quad -2851254350145032695
-	QUAD $0x1302cb5e6f642a7b                           // .quad 1369880843130251899
-	QUAD $0xce89e3180b25c98b                           // .quad -3564067937681290869
-	QUAD $0x17c37e360b3d351a                           // .quad 1712351053912814874
-	QUAD $0x822c5bde0def3bee                           // .quad -9066770940529001490
-	QUAD $0x1db45dc38e0c8261                           // .quad 2140438817391018593
-	QUAD $0xf15bb96ac8b58575                           // .quad -1055045819403238027
-	QUAD $0x1290ba9a38c7d17c                           // .quad 1337774260869386620
-	QUAD $0x2db2a7c57ae2e6d2                           // .quad 3292878744173340370
-	QUAD $0x1734e940c6f9c5dc                           // .quad 1672217826086733276
-	QUAD $0x391f51b6d99ba086                           // .quad 4116098430216675462
-	QUAD $0x1d022390f8b83753                           // .quad 2090272282608416595
-	QUAD $0x03b3931248014454                           // .quad 266718509671728212
-	QUAD $0x1221563a9b732294                           // .quad 1306420176630260372
-	QUAD $0x04a077d6da019569                           // .quad 333398137089660265
-	QUAD $0x16a9abc9424feb39                           // .quad 1633025220787825465
-	QUAD $0x45c895cc9081fac3                           // .quad 5028433689789463235
-	QUAD $0x1c5416bb92e3e607                           // .quad 2041281525984781831
-	QUAD $0x8b9d5d9fda513cba                           // .quad -8386443989950055238
-	QUAD $0x11b48e353bce6fc4                           // .quad 1275800953740488644
-	QUAD $0xae84b507d0e58be8                           // .quad -5871368969010181144
-	QUAD $0x1621b1c28ac20bb5                           // .quad 1594751192175610805
-	QUAD $0x1a25e249c51eeee3                           // .quad 1884160825592049379
-	QUAD $0x1baa1e332d728ea3                           // .quad 1993438990219513507
-	QUAD $0xf057ad6e1b33554d                           // .quad -1128242493218663091
-	QUAD $0x114a52dffc679925                           // .quad 1245899368887195941
-	QUAD $0x6c6d98c9a2002aa1                           // .quad 7813068920331446945
-	QUAD $0x159ce797fb817f6f                           // .quad 1557374211108994927
-	QUAD $0x4788fefc0a803549                           // .quad 5154650131986920777
-	QUAD $0x1b04217dfa61df4b                           // .quad 1946717763886243659
-	QUAD $0x0cb59f5d8690214e                           // .quad 915813323278131534
-	QUAD $0x10e294eebc7d2b8f                           // .quad 1216698602428902287
-	QUAD $0xcfe30734e83429a1                           // .quad -3466919364329723487
-	QUAD $0x151b3a2a6b9c7672                           // .quad 1520873253036127858
-	QUAD $0x83dbc9022241340a                           // .quad -8945335223839542262
-	QUAD $0x1a6208b50683940f                           // .quad 1901091566295159823
-	QUAD $0xb2695da15568c086                           // .quad -5590834514899713914
-	QUAD $0x107d457124123c89                           // .quad 1188182228934474889
-	QUAD $0x1f03b509aac2f0a7                           // .quad 2234828893230133415
-	QUAD $0x149c96cd6d16cbac                           // .quad 1485227786168093612
-	QUAD $0x26c4a24c1573acd1                           // .quad 2793536116537666769
-	QUAD $0x19c3bc80c85c7e97                           // .quad 1856534732710117015
-	QUAD $0x783ae56f8d684c03                           // .quad 8663489100477123587
-	QUAD $0x101a55d07d39cf1e                           // .quad 1160334207943823134
-	QUAD $0x16499ecb70c25f03                           // .quad 1605989338741628675
-	QUAD $0x1420eb449c8842e6                           // .quad 1450417759929778918
-	QUAD $0x9bdc067e4cf2f6c4                           // .quad -7215885363427739964
-	QUAD $0x19292615c3aa539f                           // .quad 1813022199912223647
-	QUAD $0x82d3081de02fb476                           // .quad -9019856704284674954
-	QUAD $0x1f736f9b3494e887                           // .quad 2266277749890279559
-	QUAD $0xb1c3e512ac1dd0c9                           // .quad -5637410440177921847
-	QUAD $0x13a825c100dd1154                           // .quad 1416423593681424724
-	QUAD $0xde34de57572544fc                           // .quad -2435077031795014404
-	QUAD $0x18922f31411455a9                           // .quad 1770529492101780905
-	QUAD $0x55c215ed2cee963b                           // .quad 6179525747111007803
-	QUAD $0x1eb6bafd91596b14                           // .quad 2213161865127226132
-	QUAD $0xb5994db43c151de5                           // .quad -5361168444910395931
-	QUAD $0x133234de7ad7e2ec                           // .quad 1383226165704516332
-	QUAD $0xe2ffa1214b1a655e                           // .quad -2089774537710607010
-	QUAD $0x17fec216198ddba7                           // .quad 1729032707130645415
-	QUAD $0xdbbf89699de0feb6                           // .quad -2612218172138258762
-	QUAD $0x1dfe729b9ff15291                           // .quad 2161290883913306769
-	QUAD $0x2957b5e202ac9f31                           // .quad 2979049660840976177
-	QUAD $0x12bf07a143f6d39b                           // .quad 1350806802445816731
-	QUAD $0xf3ada35a8357c6fe                           // .quad -887873942376167682
-	QUAD $0x176ec98994f48881                           // .quad 1688508503057270913
-	QUAD $0x70990c31242db8bd                           // .quad 8113529608884566205
-	QUAD $0x1d4a7bebfa31aaa2                           // .quad 2110635628821588642
-	QUAD $0x865fa79eb69c9376                           // .quad -8764102049729309834
-	QUAD $0x124e8d737c5f0aa5                           // .quad 1319147268013492901
-	QUAD $0xe7f791866443b854                           // .quad -1731755525306861484
-	QUAD $0x16e230d05b76cd4e                           // .quad 1648934085016866126
-	QUAD $0xa1f575e7fd54a669                           // .quad -6776380425060964759
-	QUAD $0x1c9abd04725480a2                           // .quad 2061167606271082658
-	QUAD $0xa53969b0fe54e801                           // .quad -6541080774876796927
-	QUAD $0x11e0b622c774d065                           // .quad 1288229753919426661
-	QUAD $0x0e87c41d3dea2202                           // .quad 1047021068258779650
-	QUAD $0x1658e3ab7952047f                           // .quad 1610287192399283327
-	QUAD $0xd229b5248d64aa82                           // .quad -3302909683103913342
-	QUAD $0x1bef1c9657a6859e                           // .quad 2012858990499104158
-	QUAD $0x435a1136d85eea91                           // .quad 4853210475701136017
-	QUAD $0x117571ddf6c81383                           // .quad 1258036869061940099
-	QUAD $0x143095848e76a536                           // .quad 1454827076199032118
-	QUAD $0x15d2ce55747a1864                           // .quad 1572546086327425124
-	QUAD $0x193cbae5b2144e83                           // .quad 1818533845248790147
-	QUAD $0x1b4781ead1989e7d                           // .quad 1965682607909281405
-	QUAD $0x2fc5f4cf8f4cb112                           // .quad 3442426662494187794
-	QUAD $0x110cb132c2ff630e                           // .quad 1228551629943300878
-	QUAD $0xbbb77203731fdd56                           // .quad -4920338708737041066
-	QUAD $0x154fdd7f73bf3bd1                           // .quad 1535689537429126097
-	QUAD $0x2aa54e844fe7d4ac                           // .quad 3072948650933474476
-	QUAD $0x1aa3d4df50af0ac6                           // .quad 1919611921786407622
-	QUAD $0xdaa75112b1f0e4eb                           // .quad -2691093111593966357
-	QUAD $0x10a6650b926d66bb                           // .quad 1199757451116504763
-	QUAD $0xd15125575e6d1e26                           // .quad -3363866389492457946
-	QUAD $0x14cffe4e7708c06a                           // .quad 1499696813895630954
-	QUAD $0x85a56ead360865b0                           // .quad -8816519005292960336
-	QUAD $0x1a03fde214caf085                           // .quad 1874621017369538693
-	QUAD $0x7387652c41c53f8e                           // .quad 8324733676974063502
-	QUAD $0x10427ead4cfed653                           // .quad 1171638135855961683
-	QUAD $0x50693e7752368f71                           // .quad 5794231077790191473
-	QUAD $0x14531e58a03e8be8                           // .quad 1464547669819952104
-	QUAD $0x64838e1526c4334e                           // .quad 7242788847237739342
-	QUAD $0x1967e5eec84e2ee2                           // .quad 1830684587274940130
-	QUAD $0xfda4719a70754022                           // .quad -169885977807601630
-	QUAD $0x1fc1df6a7a61ba9a                           // .quad 2288355734093675162
-	QUAD $0xde86c70086494815                           // .quad -2412021745343444971
-	QUAD $0x13d92ba28c7d14a0                           // .quad 1430222333808546976
-	QUAD $0x162878c0a7db9a1a                           // .quad 1596658836748081690
-	QUAD $0x18cf768b2f9c59c9                           // .quad 1787777917260683721
-	QUAD $0x5bb296f0d1d280a1                           // .quad 6607509564362490017
-	QUAD $0x1f03542dfb83703b                           // .quad 2234722396575854651
-	QUAD $0x194f9e5683239064                           // .quad 1823850468512862308
-	QUAD $0x1362149cbd322625                           // .quad 1396701497859909157
-	QUAD $0x5fa385ec23ec747e                           // .quad 6891499104068465790
-	QUAD $0x183a99c3ec7eafae                           // .quad 1745876872324886446
-	QUAD $0xf78c67672ce7919d                           // .quad -608998156769193571
-	QUAD $0x1e494034e79e5b99                           // .quad 2182346090406108057
-	QUAD $0x3ab7c0a07c10bb02                           // .quad 4231062170446641922
-	QUAD $0x12edc82110c2f940                           // .quad 1363966306503817536
-	QUAD $0x4965b0c89b14e9c3                           // .quad 5288827713058302403
-	QUAD $0x17a93a2954f3b790                           // .quad 1704957883129771920
-	QUAD $0x5bbf1cfac1da2433                           // .quad 6611034641322878003
-	QUAD $0x1d9388b3aa30a574                           // .quad 2131197353912214900
-	QUAD $0xb957721cb92856a0                           // .quad -5091475386027977056
-	QUAD $0x127c35704a5e6768                           // .quad 1331998346195134312
-	QUAD $0xe7ad4ea3e7726c48                           // .quad -1752658214107583416
-	QUAD $0x171b42cc5cf60142                           // .quad 1664997932743917890
-	QUAD $0xa198a24ce14f075a                           // .quad -6802508786061867174
-	QUAD $0x1ce2137f74338193                           // .quad 2081247415929897363
-	QUAD $0x44ff65700cd16498                           // .quad 4971804045566108824
-	QUAD $0x120d4c2fa8a030fc                           // .quad 1300779634956185852
-	QUAD $0x563f3ecc1005bdbe                           // .quad 6214755056957636030
-	QUAD $0x16909f3b92c83d3b                           // .quad 1625974543695232315
-	QUAD $0x2bcf0e7f14072d2e                           // .quad 3156757802769657134
-	QUAD $0x1c34c70a777a4c8a                           // .quad 2032468179619040394
-	QUAD $0x5b61690f6c847c3d                           // .quad 6584659645158423613
-	QUAD $0x11a0fc668aac6fd6                           // .quad 1270292612261900246
-	QUAD $0xf239c35347a59b4c                           // .quad -992547480406746292
-	QUAD $0x16093b802d578bcb                           // .quad 1587865765327375307
-	QUAD $0xeec83428198f021f                           // .quad -1240684350508432865
-	QUAD $0x1b8b8a6038ad6ebe                           // .quad 1984832206659219134
-	QUAD $0x553d20990ff96153                           // .quad 6142101308573311315
-	QUAD $0x1137367c236c6537                           // .quad 1240520129162011959
-	QUAD $0x2a8c68bf53f7b9a8                           // .quad 3065940617289251240
-	QUAD $0x1585041b2c477e85                           // .quad 1550650161452514949
-	QUAD $0x752f82ef28f5a812                           // .quad 8444111790038951954
-	QUAD $0x1ae64521f7595e26                           // .quad 1938312701815643686
-	QUAD $0x093db1d57999890b                           // .quad 665883850346957067
-	QUAD $0x10cfeb353a97dad8                           // .quad 1211445438634777304
-	QUAD $0x0b8d1e4ad7ffeb4e                           // .quad 832354812933696334
-	QUAD $0x1503e602893dd18e                           // .quad 1514306798293471630
-	QUAD $0x8e7065dd8dffe622                           // .quad -8182928520687655390
-	QUAD $0x1a44df832b8d45f1                           // .quad 1892883497866839537
-	QUAD $0xf9063faa78bfefd5                           // .quad -502644307002396715
-	QUAD $0x106b0bb1fb384bb6                           // .quad 1183052186166774710
-	QUAD $0xb747cf9516efebca                           // .quad -5239991402180383798
-	QUAD $0x1485ce9e7a065ea4                           // .quad 1478815232708468388
-	QUAD $0xe519c37a5cabe6bd                           // .quad -1938303234298091843
-	QUAD $0x19a742461887f64d                           // .quad 1848519040885585485
-	QUAD $0xaf301a2c79eb7036                           // .quad -5823125539863695306
-	QUAD $0x1008896bcf54f9f0                           // .quad 1155324400553490928
-	QUAD $0xdafc20b798664c43                           // .quad -2667220906402231229
-	QUAD $0x140aabc6c32a386c                           // .quad 1444155500691863660
-	QUAD $0x11bb28e57e7fdf54                           // .quad 1277659885424598868
-	QUAD $0x190d56b873f4c688                           // .quad 1805194375864829576
-	QUAD $0x1629f31ede1fd72a                           // .quad 1597074856780748586
-	QUAD $0x1f50ac6690f1f82a                           // .quad 2256492969831036970
-	QUAD $0x4dda37f34ad3e67a                           // .quad 5609857803915355770
-	QUAD $0x13926bc01a973b1a                           // .quad 1410308106144398106
-	QUAD $0xe150c5f01d88e019                           // .quad -2211049781960581095
-	QUAD $0x187706b0213d09e0                           // .quad 1762885132680497632
-	QUAD $0x19a4f76c24eb181f                           // .quad 1847873790976661535
-	QUAD $0x1e94c85c298c4c59                           // .quad 2203606415850622041
-	QUAD $0xb0071aa39712ef13                           // .quad -5762607908280668397
-	QUAD $0x131cfd3999f7afb7                           // .quad 1377254009906638775
-	QUAD $0x9c08e14c7cd7aad8                           // .quad -7203259885350835496
-	QUAD $0x17e43c8800759ba5                           // .quad 1721567512383298469
-	QUAD $0x030b199f9c0d958e                           // .quad 219297180166231438
-	QUAD $0x1ddd4baa0093028f                           // .quad 2151959390479123087
-	QUAD $0x61e6f003c1887d79                           // .quad 7054589765244976505
-	QUAD $0x12aa4f4a405be199                           // .quad 1344974619049451929
-	QUAD $0xba60ac04b1ea9cd7                           // .quad -5016820848725943081
-	QUAD $0x1754e31cd072d9ff                           // .quad 1681218273811814911
-	QUAD $0xa8f8d705de65440d                           // .quad -6271026060907428851
-	QUAD $0x1d2a1be4048f907f                           // .quad 2101522842264768639
-	QUAD $0xc99b8663aaff4a88                           // .quad -3919391288067143032
-	QUAD $0x123a516e82d9ba4f                           // .quad 1313451776415480399
-	QUAD $0xbc0267fc95bf1d2a                           // .quad -4899239110083928790
-	QUAD $0x16c8e5ca239028e3                           // .quad 1641814720519350499
-	QUAD $0xab0301fbbb2ee474                           // .quad -6124048887604910988
-	QUAD $0x1c7b1f3cac74331c                           // .quad 2052268400649188124
-	QUAD $0xeae1e13d54fd4ec9                           // .quad -1521687545539375415
-	QUAD $0x11ccf385ebc89ff1                           // .quad 1282667750405742577
-	QUAD $0x659a598caa3ca27b                           // .quad 7321262604930556539
-	QUAD $0x1640306766bac7ee                           // .quad 1603334688007178222
-	QUAD $0xff00efefd4cbcb1a                           // .quad -71793780691580134
-	QUAD $0x1bd03c81406979e9                           // .quad 2004168360008972777
-	QUAD $0x3f6095f5e4ff5ef0                           // .quad 4566814905495150320
-	QUAD $0x116225d0c841ec32                           // .quad 1252605225005607986
-	QUAD $0xcf38bb735e3f36ac                           // .quad -3514853404985837908
-	QUAD $0x15baaf44fa52673e                           // .quad 1565756531257009982
-	QUAD $0x8306ea5035cf0457                           // .quad -9005252774659685289
-	QUAD $0x1b295b1638e7010e                           // .quad 1957195664071262478
-	QUAD $0x11e4527221a162b6                           // .quad 1289246043478778550
-	QUAD $0x10f9d8ede39060a9                           // .quad 1223247290044539049
-	QUAD $0x565d670eaa09bb64                           // .quad 6223243572775861092
-	QUAD $0x15384f295c7478d3                           // .quad 1529059112555673811
-	QUAD $0x2bf4c0d2548c2a3d                           // .quad 3167368447542438461
-	QUAD $0x1a8662f3b3919708                           // .quad 1911323890694592264
-	QUAD $0x1b78f88374d79a66                           // .quad 1979605279714024038
-	QUAD $0x1093fdd8503afe65                           // .quad 1194577431684120165
-	QUAD $0x625736a4520d8100                           // .quad 7086192618069917952
-	QUAD $0x14b8fd4e6449bdfe                           // .quad 1493221789605150206
-	QUAD $0xfaed044d6690e140                           // .quad -365631264267378368
-	QUAD $0x19e73ca1fd5c2d7d                           // .quad 1866527237006437757
-	QUAD $0xbcd422b0601a8cc8                           // .quad -4840205558594499384
-	QUAD $0x103085e53e599c6e                           // .quad 1166579523129023598
-	QUAD $0x6c092b5c78212ffa                           // .quad 7784801107039039482
-	QUAD $0x143ca75e8df0038a                           // .quad 1458224403911279498
-	QUAD $0x070b763396297bf8                           // .quad 507629346944023544
-	QUAD $0x194bd136316c046d                           // .quad 1822780504889099373
-	QUAD $0x48ce53c07bb3daf6                           // .quad 5246222702107417334
-	QUAD $0x1f9ec583bdc70588                           // .quad 2278475631111374216
-	QUAD $0x2d80f4584d5068da                           // .quad 3278889188817135834
-	QUAD $0x13c33b72569c6375                           // .quad 1424047269444608885
-	QUAD $0x78e1316e60a48310                           // .quad 8710297504448807696
-	QUAD $0x18b40a4eec437c52                           // .quad 1780059086805761106
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1000000000000000 // .quad 1152921504606846976
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1400000000000000 // .quad 1441151880758558720
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1900000000000000 // .quad 1801439850948198400
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1f40000000000000 // .quad 2251799813685248000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1388000000000000 // .quad 1407374883553280000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x186a000000000000 // .quad 1759218604441600000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1e84800000000000 // .quad 2199023255552000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1312d00000000000 // .quad 1374389534720000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x17d7840000000000 // .quad 1717986918400000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1dcd650000000000 // .quad 2147483648000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x12a05f2000000000 // .quad 1342177280000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x174876e800000000 // .quad 1677721600000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1d1a94a200000000 // .quad 2097152000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x12309ce540000000 // .quad 1310720000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x16bcc41e90000000 // .quad 1638400000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1c6bf52634000000 // .quad 2048000000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x11c37937e0800000 // .quad 1280000000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x16345785d8a00000 // .quad 1600000000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1bc16d674ec80000 // .quad 2000000000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1158e460913d0000 // .quad 1250000000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x15af1d78b58c4000 // .quad 1562500000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1b1ae4d6e2ef5000 // .quad 1953125000000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x10f0cf064dd59200 // .quad 1220703125000000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x152d02c7e14af680 // .quad 1525878906250000000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x1a784379d99db420 // .quad 1907348632812500000
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x108b2a2c28029094 // .quad 1192092895507812500
+	QUAD $0x0000000000000000 // .quad 0
+	QUAD $0x14adf4b7320334b9 // .quad 1490116119384765625
+	QUAD $0x4000000000000000 // .quad 4611686018427387904
+	QUAD $0x19d971e4fe8401e7 // .quad 1862645149230957031
+	QUAD $0x8800000000000000 // .quad -8646911284551352320
+	QUAD $0x1027e72f1f128130 // .quad 1164153218269348144
+	QUAD $0xaa00000000000000 // .quad -6196953087261802496
+	QUAD $0x1431e0fae6d7217c // .quad 1455191522836685180
+	QUAD $0xd480000000000000 // .quad -3134505340649865216
+	QUAD $0x193e5939a08ce9db // .quad 1818989403545856475
+	QUAD $0xc9a0000000000000 // .quad -3918131675812331520
+	QUAD $0x1f8def8808b02452 // .quad 2273736754432320594
+	QUAD $0xbe04000000000000 // .quad -4754675306596401152
+	QUAD $0x13b8b5b5056e16b3 // .quad 1421085471520200371
+	QUAD $0xad85000000000000 // .quad -5943344133245501440
+	QUAD $0x18a6e32246c99c60 // .quad 1776356839400250464
+	QUAD $0xd8e6400000000000 // .quad -2817494148129488896
+	QUAD $0x1ed09bead87c0378 // .quad 2220446049250313080
+	QUAD $0x878fe80000000000 // .quad -8678462870222012416
+	QUAD $0x13426172c74d822b // .quad 1387778780781445675
+	QUAD $0x6973e20000000000 // .quad 7598665485932036096
+	QUAD $0x1812f9cf7920e2b6 // .quad 1734723475976807094
+	QUAD $0x03d0da8000000000 // .quad 274959820560269312
+	QUAD $0x1e17b84357691b64 // .quad 2168404344971008868
+	QUAD $0x8262889000000000 // .quad -9051522149004607488
+	QUAD $0x12ced32a16a1b11e // .quad 1355252715606880542
+	QUAD $0x22fb2ab400000000 // .quad 2520655369026404352
+	QUAD $0x178287f49c4a1d66 // .quad 1694065894508600678
+	QUAD $0xabb9f56100000000 // .quad -6072552825571770368
+	QUAD $0x1d6329f1c35ca4bf // .quad 2117582368135750847
+	QUAD $0xcb54395ca0000000 // .quad -3795345515982356480
+	QUAD $0x125dfa371a19e6f7 // .quad 1323488980084844279
+	QUAD $0xbe2947b3c8000000 // .quad -4744181894977945600
+	QUAD $0x16f578c4e0a060b5 // .quad 1654361225106055349
+	QUAD $0x2db399a0ba000000 // .quad 3293144668132343808
+	QUAD $0x1cb2d6f618c878e3 // .quad 2067951531382569187
+	QUAD $0xfc90400474400000 // .quad -247627591630979072
+	QUAD $0x11efc659cf7d4b8d // .quad 1292469707114105741
+	QUAD $0x7bb4500591500000 // .quad 8913837547316051968
+	QUAD $0x166bb7f0435c9e71 // .quad 1615587133892632177
+	QUAD $0xdaa16406f5a40000 // .quad -2692761121137098752
+	QUAD $0x1c06a5ec5433c60d // .quad 2019483917365790221
+	QUAD $0xa8a4de8459868000 // .quad -6294661719138074624
+	QUAD $0x118427b3b4a05bc8 // .quad 1262177448353618888
+	QUAD $0xd2ce16256fe82000 // .quad -3256641130495205376
+	QUAD $0x15e531a0a1c872ba // .quad 1577721810442023610
+	QUAD $0x87819baecbe22800 // .quad -8682487431546394624
+	QUAD $0x1b5e7e08ca3a8f69 // .quad 1972152263052529513
+	QUAD $0xf4b1014d3f6d5900 // .quad -814868626289108736
+	QUAD $0x111b0ec57e6499a1 // .quad 1232595164407830945
+	QUAD $0x71dd41a08f48af40 // .quad 8204786253993389888
+	QUAD $0x1561d276ddfdc00a // .quad 1540743955509788682
+	QUAD $0x0e549208b31adb10 // .quad 1032610780636961552
+	QUAD $0x1aba4714957d300d // .quad 1925929944387235853
+	QUAD $0x28f4db456ff0c8ea // .quad 2951224747111794922
+	QUAD $0x10b46c6cdd6e3e08 // .quad 1203706215242022408
+	QUAD $0x33321216cbecfb24 // .quad 3689030933889743652
+	QUAD $0x14e1878814c9cd8a // .quad 1504632769052528010
+	QUAD $0xbffe969c7ee839ed // .quad -4612083369492596243
+	QUAD $0x1a19e96a19fc40ec // .quad 1880790961315660012
+	QUAD $0xf7ff1e21cf512434 // .quad -576709096719178700
+	QUAD $0x105031e2503da893 // .quad 1175494350822287507
+	QUAD $0xf5fee5aa43256d41 // .quad -720886370898973375
+	QUAD $0x14643e5ae44d12b8 // .quad 1469367938527859384
+	QUAD $0x337e9f14d3eec892 // .quad 3710578054803671186
+	QUAD $0x197d4df19d605767 // .quad 1836709923159824231
+	QUAD $0x005e46da08ea7ab6 // .quad 26536550077201078
+	QUAD $0x1fdca16e04b86d41 // .quad 2295887403949780289
+	QUAD $0xa03aec4845928cb2 // .quad -6900943683842831182
+	QUAD $0x13e9e4e4c2f34448 // .quad 1434929627468612680
+	QUAD $0xc849a75a56f72fde // .quad -4014493586376151074
+	QUAD $0x18e45e1df3b0155a // .quad 1793662034335765850
+	QUAD $0x7a5c1130ecb4fbd6 // .quad 8816941072311974870
+	QUAD $0x1f1d75a5709c1ab1 // .quad 2242077542919707313
+	QUAD $0xec798abe93f11d65 // .quad -1406940857446097563
+	QUAD $0x13726987666190ae // .quad 1401298464324817070
+	QUAD $0xa797ed6e38ed64bf // .quad -6370362090235009857
+	QUAD $0x184f03e93ff9f4da // .quad 1751623080406021338
+	QUAD $0x517de8c9c728bdef // .quad 5872105442488401391
+	QUAD $0x1e62c4e38ff87211 // .quad 2189528850507526673
+	QUAD $0xd2eeb17e1c7976b5 // .quad -3247463126085830987
+	QUAD $0x12fdbb0e39fb474a // .quad 1368455531567204170
+	QUAD $0x87aa5ddda397d462 // .quad -8671014926034676638
+	QUAD $0x17bd29d1c87a191d // .quad 1710569414459005213
+	QUAD $0xe994f5550c7dc97b // .quad -1615396620688569989
+	QUAD $0x1dac74463a989f64 // .quad 2138211768073756516
+	QUAD $0x11fd195527ce9ded // .quad 1296220121283337709
+	QUAD $0x128bc8abe49f639f // .quad 1336382355046097823
+	QUAD $0xd67c5faa71c24568 // .quad -2991410866823215768
+	QUAD $0x172ebad6ddc73c86 // .quad 1670477943807622278
+	QUAD $0x8c1b77950e32d6c2 // .quad -8350949601956407614
+	QUAD $0x1cfa698c95390ba8 // .quad 2088097429759527848
+	QUAD $0x57912abd28dfc639 // .quad 6309871544845715001
+	QUAD $0x121c81f7dd43a749 // .quad 1305060893599704905
+	QUAD $0xad75756c7317b7c8 // .quad -5947718624225019960
+	QUAD $0x16a3a275d494911b // .quad 1631326116999631131
+	QUAD $0x98d2d2c78fdda5ba // .quad -7434648280281274950
+	QUAD $0x1c4c8b1349b9b562 // .quad 2039157646249538914
+	QUAD $0x9f83c3bcb9ea8794 // .quad -6952498184389490796
+	QUAD $0x11afd6ec0e14115d // .quad 1274473528905961821
+	QUAD $0x0764b4abe8652979 // .quad 532749306367912313
+	QUAD $0x161bcca7119915b5 // .quad 1593091911132452277
+	QUAD $0x493de1d6e27e73d7 // .quad 5277622651387278295
+	QUAD $0x1ba2bfd0d5ff5b22 // .quad 1991364888915565346
+	QUAD $0x6dc6ad264d8f0866 // .quad 7910200175544436838
+	QUAD $0x1145b7e285bf98f5 // .quad 1244603055572228341
+	QUAD $0xc938586fe0f2ca80 // .quad -3947307835851617664
+	QUAD $0x159725db272f7f32 // .quad 1555753819465285426
+	QUAD $0x7b866e8bd92f7d20 // .quad 8900923260467641632
+	QUAD $0x1afcef51f0fb5eff // .quad 1944692274331606783
+	QUAD $0xad34051767bdae34 // .quad -5966138008276193740
+	QUAD $0x10de1593369d1b5f // .quad 1215432671457254239
+	QUAD $0x9881065d41ad19c1 // .quad -7457672510345242175
+	QUAD $0x15159af804446237 // .quad 1519290839321567799
+	QUAD $0x7ea147f492186032 // .quad 9124653435777998898
+	QUAD $0x1a5b01b605557ac5 // .quad 1899113549151959749
+	QUAD $0x6f24ccf8db4f3c1f // .quad 8008751406574943263
+	QUAD $0x1078e111c3556cbb // .quad 1186945968219974843
+	QUAD $0x4aee003712230b27 // .quad 5399253239791291175
+	QUAD $0x14971956342ac7ea // .quad 1483682460274968554
+	QUAD $0xdda98044d6abcdf0 // .quad -2474305487115661840
+	QUAD $0x19bcdfabc13579e4 // .quad 1854603075343710692
+	QUAD $0x0a89f02b062b60b6 // .quad 759402079766405302
+	QUAD $0x10160bcb58c16c2f // .quad 1159126922089819183
+	QUAD $0xcd2c6c35c7b638e4 // .quad -3662433418719381276
+	QUAD $0x141b8ebe2ef1c73a // .quad 1448908652612273978
+	QUAD $0x8077874339a3c71d // .quad -9189727791826614499
+	QUAD $0x1922726dbaae3909 // .quad 1811135815765342473
+	QUAD $0xe0956914080cb8e4 // .quad -2263787702928492316
+	QUAD $0x1f6b0f092959c74b // .quad 2263919769706678091
+	QUAD $0x6c5d61ac8507f38e // .quad 7808504722524468110
+	QUAD $0x13a2e965b9d81c8f // .quad 1414949856066673807
+	QUAD $0x4774ba17a649f072 // .quad 5148944884728197234
+	QUAD $0x188ba3bf284e23b3 // .quad 1768687320083342259
+	QUAD $0x1951e89d8fdc6c8f // .quad 1824495087482858639
+	QUAD $0x1eae8caef261aca0 // .quad 2210859150104177824
+	QUAD $0x0fd3316279e9c3d9 // .quad 1140309429676786649
+	QUAD $0x132d17ed577d0be4 // .quad 1381786968815111140
+	QUAD $0x13c7fdbb186434cf // .quad 1425386787095983311
+	QUAD $0x17f85de8ad5c4edd // .quad 1727233711018888925
+	QUAD $0x58b9fd29de7d4203 // .quad 6393419502297367043
+	QUAD $0x1df67562d8b36294 // .quad 2159042138773611156
+	QUAD $0xb7743e3a2b0e4942 // .quad -5227484847918921406
+	QUAD $0x12ba095dc7701d9c // .quad 1349401336733506972
+	QUAD $0xe5514dc8b5d1db92 // .quad -1922670041471263854
+	QUAD $0x17688bb5394c2503 // .quad 1686751670916883715
+	QUAD $0xdea5a13ae3465277 // .quad -2403337551839079817
+	QUAD $0x1d42aea2879f2e44 // .quad 2108439588646104644
+	QUAD $0x0b2784c4ce0bf38a // .quad 803757039314269066
+	QUAD $0x1249ad2594c37ceb // .quad 1317774742903815403
+	QUAD $0xcdf165f6018ef06d // .quad -3606989719284551571
+	QUAD $0x16dc186ef9f45c25 // .quad 1647218428629769253
+	QUAD $0x416dbf7381f2ac88 // .quad 4714634887749086344
+	QUAD $0x1c931e8ab871732f // .quad 2059023035787211567
+	QUAD $0x88e497a83137abd5 // .quad -8582568241225290795
+	QUAD $0x11dbf316b346e7fd // .quad 1286889397367007229
+	QUAD $0xeb1dbd923d8596ca // .quad -1504838264676837686
+	QUAD $0x1652efdc6018a1fc // .quad 1608611746708759036
+	QUAD $0x25e52cf6cce6fc7d // .quad 2730638187581340797
+	QUAD $0x1be7abd3781eca7c // .quad 2010764683385948796
+	QUAD $0x97af3c1a40105dce // .quad -7516723169616437810
+	QUAD $0x1170cb642b133e8d // .quad 1256727927116217997
+	QUAD $0xfd9b0b20d0147542 // .quad -172531925165771454
+	QUAD $0x15ccfe3d35d80e30 // .quad 1570909908895272496
+	QUAD $0x3d01cde904199292 // .quad 4396021111970173586
+	QUAD $0x1b403dcc834e11bd // .quad 1963637386119090621
+	QUAD $0x462120b1a28ffb9b // .quad 5053356204195052443
+	QUAD $0x1108269fd210cb16 // .quad 1227273366324431638
+	QUAD $0xd7a968de0b33fa82 // .quad -2906676781610960254
+	QUAD $0x154a3047c694fddb // .quad 1534091707905539547
+	QUAD $0xcd93c3158e00f923 // .quad -3633345977013700317
+	QUAD $0x1a9cbc59b83a3d52 // .quad 1917614634881924434
+	QUAD $0xc07c59ed78c09bb6 // .quad -4576684244847256650
+	QUAD $0x10a1f5b813246653 // .quad 1198509146801202771
+	QUAD $0xb09b7068d6f0c2a3 // .quad -5720855306059070813
+	QUAD $0x14ca732617ed7fe8 // .quad 1498136433501503464
+	QUAD $0xdcc24c830cacf34c // .quad -2539383114146450612
+	QUAD $0x19fd0fef9de8dfe2 // .quad 1872670541876879330
+	QUAD $0xc9f96fd1e7ec180f // .quad -3892957455555225585
+	QUAD $0x103e29f5c2b18bed // .quad 1170419088673049581
+	QUAD $0x3c77cbc661e71e13 // .quad 4357175217410743827
+	QUAD $0x144db473335deee9 // .quad 1463023860841311977
+	QUAD $0x8b95beb7fa60e598 // .quad -8388589033518733928
+	QUAD $0x1961219000356aa3 // .quad 1828779826051639971
+	QUAD $0x6e7b2e65f8f91efe // .quad 7961007781811134206
+	QUAD $0x1fb969f40042c54c // .quad 2285974782564549964
+	QUAD $0xc50cfcffbb9bb35f // .quad -4247742173222816929
+	QUAD $0x13d3e2388029bb4f // .quad 1428734239102843727
+	QUAD $0xb6503c3faa82a037 // .quad -5309677716528521161
+	QUAD $0x18c8dac6a0342a23 // .quad 1785917798878554659
+	QUAD $0xa3e44b4f95234844 // .quad -6637097145660651452
+	QUAD $0x1efb1178484134ac // .quad 2232397248598193324
+	QUAD $0xe66eaf11bd360d2b // .quad -1842342706824213205
+	QUAD $0x135ceaeb2d28c0eb // .quad 1395248280373870827
+	QUAD $0xe00a5ad62c839075 // .quad -2302928383530266507
+	QUAD $0x183425a5f872f126 // .quad 1744060350467338534
+	QUAD $0x980cf18bb7a47493 // .quad -7490346497840221037
+	QUAD $0x1e412f0f768fad70 // .quad 2180075438084173168
+	QUAD $0x5f0816f752c6c8dc // .quad 6847748484918331612
+	QUAD $0x12e8bd69aa19cc66 // .quad 1362547148802608230
+	QUAD $0xf6ca1cb527787b13 // .quad -663686430706861293
+	QUAD $0x17a2ecc414a03f7f // .quad 1703183936003260287
+	QUAD $0xf47ca3e2715699d7 // .quad -829608038383576617
+	QUAD $0x1d8ba7f519c84f5f // .quad 2128979920004075359
+	QUAD $0xf8cde66d86d62026 // .quad -518505023989735386
+	QUAD $0x127748f9301d319b // .quad 1330612450002547099
+	QUAD $0xf7016008e88ba830 // .quad -648131279987169232
+	QUAD $0x17151b377c247e02 // .quad 1663265562503183874
+	QUAD $0xb4c1b80b22ae923c // .quad -5421850118411349444
+	QUAD $0x1cda62055b2d9d83 // .quad 2079081953128979843
+	QUAD $0x50f91306f5ad1b65 // .quad 5834715712847682405
+	QUAD $0x12087d4358fc8272 // .quad 1299426220705612402
+	QUAD $0xe53757c8b318623f // .quad -1929977395795172801
+	QUAD $0x168a9c942f3ba30e // .quad 1624282775882015502
+	QUAD $0x9e852dbadfde7acf // .quad -7024157763171353905
+	QUAD $0x1c2d43b93b0a8bd2 // .quad 2030353469852519378
+	QUAD $0xa3133c94cbeb0cc1 // .quad -6695941611195790143
+	QUAD $0x119c4a53c4e69763 // .quad 1268970918657824611
+	QUAD $0x8bd80bb9fee5cff1 // .quad -8369927013994737679
+	QUAD $0x16035ce8b6203d3c // .quad 1586213648322280764
+	QUAD $0xaece0ea87e9f43ee // .quad -5850722749066034194
+	QUAD $0x1b843422e3a84c8b // .quad 1982767060402850955
+	QUAD $0x4d40c9294f238a75 // .quad 5566670318688504437
+	QUAD $0x1132a095ce492fd7 // .quad 1239229412751781847
+	QUAD $0x2090fb73a2ec6d12 // .quad 2346651879933242642
+	QUAD $0x157f48bb41db7bcd // .quad 1549036765939727309
+	QUAD $0x68b53a508ba78856 // .quad 7545000868343941206
+	QUAD $0x1adf1aea12525ac0 // .quad 1936295957424659136
+	QUAD $0x417144725748b536 // .quad 4715625542714963254
+	QUAD $0x10cb70d24b7378b8 // .quad 1210184973390411960
+	QUAD $0x51cd958eed1ae283 // .quad 5894531928393704067
+	QUAD $0x14fe4d06de5056e6 // .quad 1512731216738014950
+	QUAD $0xe640faf2a8619b24 // .quad -1855207126362645724
+	QUAD $0x1a3de04895e46c9f // .quad 1890914020922518687
+	QUAD $0xefe89cd7a93d00f7 // .quad -1159504453976653577
+	QUAD $0x1066ac2d5daec3e3 // .quad 1181821263076574179
+	QUAD $0xebe2c40d938c4134 // .quad -1449380567470816972
+	QUAD $0x14805738b51a74dc // .quad 1477276578845717724
+	QUAD $0x26db7510f86f5181 // .quad 2799960309088866689
+	QUAD $0x19a06d06e2611214 // .quad 1846595723557147156
+	QUAD $0x9849292a9b4592f1 // .quad -7473396843674234127
+	QUAD $0x100444244d7cab4c // .quad 1154122327223216972
+	QUAD $0xbe5b73754216f7ad // .quad -4730060036165404755
+	QUAD $0x1405552d60dbd61f // .quad 1442652909029021215
+	QUAD $0xadf25052929cb598 // .quad -5912575045206755944
+	QUAD $0x1906aa78b912cba7 // .quad 1803316136286276519
+	QUAD $0x996ee4673743e2ff // .quad -7390718806508444929
+	QUAD $0x1f485516e7577e91 // .quad 2254145170357845649
+	QUAD $0xffe54ec0828a6ddf // .quad -7513235640390177
+	QUAD $0x138d352e5096af1a // .quad 1408840731473653530
+	QUAD $0xbfdea270a32d0957 // .quad -4621077562977875625
+	QUAD $0x18708279e4bc5ae1 // .quad 1761050914342066913
+	QUAD $0x2fd64b0ccbf84bad // .quad 3447025083132431277
+	QUAD $0x1e8ca3185deb719a // .quad 2201313642927583642
+	QUAD $0x5de5eee7ff7b2f4c // .quad 6766076695385157452
+	QUAD $0x1317e5ef3ab32700 // .quad 1375821026829739776
+	QUAD $0x755f6aa1ff59fb1f // .quad 8457595869231446815
+	QUAD $0x17dddf6b095ff0c0 // .quad 1719776283537174720
+	QUAD $0x92b7454a7f3079e7 // .quad -7874749237170243097
+	QUAD $0x1dd55745cbb7ecf0 // .quad 2149720354421468400
+	QUAD $0x5bb28b4e8f7e4c30 // .quad 6607496772837067824
+	QUAD $0x12a5568b9f52f416 // .quad 1343575221513417750
+	QUAD $0xf29f2e22335ddf3c // .quad -964001070808441028
+	QUAD $0x174eac2e8727b11b // .quad 1679469026891772187
+	QUAD $0xef46f9aac035570b // .quad -1205001338510551285
+	QUAD $0x1d22573a28f19d62 // .quad 2099336283614715234
+	QUAD $0xd58c5c0ab8215667 // .quad -3058968845782788505
+	QUAD $0x123576845997025d // .quad 1312085177259197021
+	QUAD $0x4aef730d6629ac01 // .quad 5399660979626290177
+	QUAD $0x16c2d4256ffcc2f5 // .quad 1640106471573996277
+	QUAD $0x9dab4fd0bfb41701 // .quad -7085481830749300991
+	QUAD $0x1c73892ecbfbf3b2 // .quad 2050133089467495346
+	QUAD $0xa28b11e277d08e60 // .quad -6734269153432007072
+	QUAD $0x11c835bd3f7d784f // .quad 1281333180917184591
+	QUAD $0x8b2dd65b15c4b1f9 // .quad -8417836441790008839
+	QUAD $0x163a432c8f5cd663 // .quad 1601666476146480739
+	QUAD $0x6df94bf1db35de77 // .quad 7924448521472040567
+	QUAD $0x1bc8d3f7b3340bfc // .quad 2002083095183100924
+	QUAD $0xc4bbcf772901ab0a // .quad -4270591710934750454
+	QUAD $0x115d847ad000877d // .quad 1251301934489438077
+	QUAD $0x35eac354f34215cd // .quad 3885132398186337741
+	QUAD $0x15b4e5998400a95d // .quad 1564127418111797597
+	QUAD $0x8365742a30129b40 // .quad -8978642557549241536
+	QUAD $0x1b221effe500d3b4 // .quad 1955159272639746996
+	QUAD $0xd21f689a5e0ba108 // .quad -3305808589254582008
+	QUAD $0x10f5535fef208450 // .quad 1221974545399841872
+	QUAD $0x06a742c0f58e894a // .quad 479425281859160394
+	QUAD $0x1532a837eae8a565 // .quad 1527468181749802341
+	QUAD $0x4851137132f22b9d // .quad 5210967620751338397
+	QUAD $0x1a7f5245e5a2cebe // .quad 1909335227187252926
+	QUAD $0xed32ac26bfd75b42 // .quad -1354831255457801406
+	QUAD $0x108f936baf85c136 // .quad 1193334516992033078
+	QUAD $0xa87f57306fcd3212 // .quad -6305225087749639662
+	QUAD $0x14b378469b673184 // .quad 1491668146240041348
+	QUAD $0xd29f2cfc8bc07e97 // .quad -3269845341259661673
+	QUAD $0x19e056584240fde5 // .quad 1864585182800051685
+	QUAD $0xa3a37c1dd7584f1e // .quad -6655339356714676450
+	QUAD $0x102c35f729689eaf // .quad 1165365739250032303
+	QUAD $0x8c8c5b254d2e62e6 // .quad -8319174195893345562
+	QUAD $0x14374374f3c2c65b // .quad 1456707174062540379
+	QUAD $0x6faf71eea079fb9f // .quad 8047776328842869663
+	QUAD $0x1945145230b377f2 // .quad 1820883967578175474
+	QUAD $0x0b9b4e6a48987a87 // .quad 836348374198811271
+	QUAD $0x1f965966bce055ef // .quad 2276104959472719343
+	QUAD $0x674111026d5f4c94 // .quad 7440246761515338900
+	QUAD $0x13bdf7e0360c35b5 // .quad 1422565599670449589
+	QUAD $0xc111554308b71fba // .quad -4534749603387990086
+	QUAD $0x18ad75d8438f4322 // .quad 1778206999588061986
+	QUAD $0x7155aa93cae4e7a8 // .quad 8166621051047176104
+	QUAD $0x1ed8d34e547313eb // .quad 2222758749485077483
+	QUAD $0x26d58a9c5ecf10c9 // .quad 2798295147690791113
+	QUAD $0x13478410f4c7ec73 // .quad 1389224218428173427
+	QUAD $0xf08aed437682d4fb // .quad -1113817083813899013
+	QUAD $0x1819651531f9e78f // .quad 1736530273035216783
+	QUAD $0xecada89454238a3a // .quad -1392271354767373766
+	QUAD $0x1e1fbe5a7e786173 // .quad 2170662841294020979
+	QUAD $0x73ec895cb4963664 // .quad 8353202440125167204
+	QUAD $0x12d3d6f88f0b3ce8 // .quad 1356664275808763112
+	QUAD $0x90e7abb3e1bbc3fd // .quad -8005241023553092611
+	QUAD $0x1788ccb6b2ce0c22 // .quad 1695830344760953890
+	QUAD $0x352196a0da2ab4fd // .quad 3828506775840797949
+	QUAD $0x1d6affe45f818f2b // .quad 2119787930951192363
+	QUAD $0x0134fe24885ab11e // .quad 86973725686804766
+	QUAD $0x1262dfeebbb0f97b // .quad 1324867456844495227
+	QUAD $0xc1823dadaa715d65 // .quad -4502968861318881947
+	QUAD $0x16fb97ea6a9d37d9 // .quad 1656084321055619033
+	QUAD $0x31e2cd19150db4bf // .quad 3594660960206173375
+	QUAD $0x1cba7de5054485d0 // .quad 2070105401319523792
+	QUAD $0x1f2dc02fad2890f7 // .quad 2246663100128858359
+	QUAD $0x11f48eaf234ad3a2 // .quad 1293815875824702370
+	QUAD $0xa6f9303b9872b535 // .quad -6415043161693702859
+	QUAD $0x1671b25aec1d888a // .quad 1617269844780877962
+	QUAD $0x50b77c4a7e8f6282 // .quad 5816254103165035138
+	QUAD $0x1c0e1ef1a724eaad // .quad 2021587305976097453
+	QUAD $0x5272adae8f199d91 // .quad 5941001823691840913
+	QUAD $0x1188d357087712ac // .quad 1263492066235060908
+	QUAD $0x670f591a32e004f6 // .quad 7426252279614801142
+	QUAD $0x15eb082cca94d757 // .quad 1579365082793826135
+	QUAD $0x40d32f60bf980633 // .quad 4671129331091113523
+	QUAD $0x1b65ca37fd3a0d2d // .quad 1974206353492282669
+	QUAD $0x4883fd9c77bf03e0 // .quad 5225298841145639904
+	QUAD $0x111f9e62fe44483c // .quad 1233878970932676668
+	QUAD $0x5aa4fd0395aec4d8 // .quad 6531623551432049880
+	QUAD $0x156785fbbdd55a4b // .quad 1542348713665845835
+	QUAD $0x314e3c447b1a760e // .quad 3552843420862674446
+	QUAD $0x1ac1677aad4ab0de // .quad 1927935892082307294
+	QUAD $0xded0e5aaccf089c9 // .quad -2391158880388216375
+	QUAD $0x10b8e0acac4eae8a // .quad 1204959932551442058
+	QUAD $0x96851f15802cac3b // .quad -7600634618912658373
+	QUAD $0x14e718d7d7625a2d // .quad 1506199915689302573
+	QUAD $0xfc2666dae037d74a // .quad -277421236786047158
+	QUAD $0x1a20df0dcd3af0b8 // .quad 1882749894611628216
+	QUAD $0x9d980048cc22e68e // .quad -7090917300632361330
+	QUAD $0x10548b68a044d673 // .quad 1176718684132267635
+	QUAD $0x84fe005aff2ba032 // .quad -8863646625790451662
+	QUAD $0x1469ae42c8560c10 // .quad 1470898355165334544
+	QUAD $0xa63d8071bef6883e // .quad -6467872263810676674
+	QUAD $0x198419d37a6b8f14 // .quad 1838622943956668180
+	QUAD $0xcfcce08e2eb42a4e // .quad -3473154311335957938
+	QUAD $0x1fe52048590672d9 // .quad 2298278679945835225
+	QUAD $0x21e00c58dd309a70 // .quad 2440964573842414192
+	QUAD $0x13ef342d37a407c8 // .quad 1436424174966147016
+	QUAD $0x2a580f6f147cc10d // .quad 3051205717303017741
+	QUAD $0x18eb0138858d09ba // .quad 1795530218707683770
+	QUAD $0xb4ee134ad99bf150 // .quad -5409364890226003632
+	QUAD $0x1f25c186a6f04c28 // .quad 2244412773384604712
+	QUAD $0x7114cc0ec80176d2 // .quad 8148361989677217490
+	QUAD $0x137798f428562f99 // .quad 1402757983365377945
+	QUAD $0xcd59ff127a01d486 // .quad -3649605568185641850
+	QUAD $0x18557f31326bbb7f // .quad 1753447479206722431
+	QUAD $0xc0b07ed7188249a8 // .quad -4562006960232052312
+	QUAD $0x1e6adefd7f06aa5f // .quad 2191809349008403039
+	QUAD $0xd86e4f466f516e09 // .quad -2851254350145032695
+	QUAD $0x1302cb5e6f642a7b // .quad 1369880843130251899
+	QUAD $0xce89e3180b25c98b // .quad -3564067937681290869
+	QUAD $0x17c37e360b3d351a // .quad 1712351053912814874
+	QUAD $0x822c5bde0def3bee // .quad -9066770940529001490
+	QUAD $0x1db45dc38e0c8261 // .quad 2140438817391018593
+	QUAD $0xf15bb96ac8b58575 // .quad -1055045819403238027
+	QUAD $0x1290ba9a38c7d17c // .quad 1337774260869386620
+	QUAD $0x2db2a7c57ae2e6d2 // .quad 3292878744173340370
+	QUAD $0x1734e940c6f9c5dc // .quad 1672217826086733276
+	QUAD $0x391f51b6d99ba086 // .quad 4116098430216675462
+	QUAD $0x1d022390f8b83753 // .quad 2090272282608416595
+	QUAD $0x03b3931248014454 // .quad 266718509671728212
+	QUAD $0x1221563a9b732294 // .quad 1306420176630260372
+	QUAD $0x04a077d6da019569 // .quad 333398137089660265
+	QUAD $0x16a9abc9424feb39 // .quad 1633025220787825465
+	QUAD $0x45c895cc9081fac3 // .quad 5028433689789463235
+	QUAD $0x1c5416bb92e3e607 // .quad 2041281525984781831
+	QUAD $0x8b9d5d9fda513cba // .quad -8386443989950055238
+	QUAD $0x11b48e353bce6fc4 // .quad 1275800953740488644
+	QUAD $0xae84b507d0e58be8 // .quad -5871368969010181144
+	QUAD $0x1621b1c28ac20bb5 // .quad 1594751192175610805
+	QUAD $0x1a25e249c51eeee3 // .quad 1884160825592049379
+	QUAD $0x1baa1e332d728ea3 // .quad 1993438990219513507
+	QUAD $0xf057ad6e1b33554d // .quad -1128242493218663091
+	QUAD $0x114a52dffc679925 // .quad 1245899368887195941
+	QUAD $0x6c6d98c9a2002aa1 // .quad 7813068920331446945
+	QUAD $0x159ce797fb817f6f // .quad 1557374211108994927
+	QUAD $0x4788fefc0a803549 // .quad 5154650131986920777
+	QUAD $0x1b04217dfa61df4b // .quad 1946717763886243659
+	QUAD $0x0cb59f5d8690214e // .quad 915813323278131534
+	QUAD $0x10e294eebc7d2b8f // .quad 1216698602428902287
+	QUAD $0xcfe30734e83429a1 // .quad -3466919364329723487
+	QUAD $0x151b3a2a6b9c7672 // .quad 1520873253036127858
+	QUAD $0x83dbc9022241340a // .quad -8945335223839542262
+	QUAD $0x1a6208b50683940f // .quad 1901091566295159823
+	QUAD $0xb2695da15568c086 // .quad -5590834514899713914
+	QUAD $0x107d457124123c89 // .quad 1188182228934474889
+	QUAD $0x1f03b509aac2f0a7 // .quad 2234828893230133415
+	QUAD $0x149c96cd6d16cbac // .quad 1485227786168093612
+	QUAD $0x26c4a24c1573acd1 // .quad 2793536116537666769
+	QUAD $0x19c3bc80c85c7e97 // .quad 1856534732710117015
+	QUAD $0x783ae56f8d684c03 // .quad 8663489100477123587
+	QUAD $0x101a55d07d39cf1e // .quad 1160334207943823134
+	QUAD $0x16499ecb70c25f03 // .quad 1605989338741628675
+	QUAD $0x1420eb449c8842e6 // .quad 1450417759929778918
+	QUAD $0x9bdc067e4cf2f6c4 // .quad -7215885363427739964
+	QUAD $0x19292615c3aa539f // .quad 1813022199912223647
+	QUAD $0x82d3081de02fb476 // .quad -9019856704284674954
+	QUAD $0x1f736f9b3494e887 // .quad 2266277749890279559
+	QUAD $0xb1c3e512ac1dd0c9 // .quad -5637410440177921847
+	QUAD $0x13a825c100dd1154 // .quad 1416423593681424724
+	QUAD $0xde34de57572544fc // .quad -2435077031795014404
+	QUAD $0x18922f31411455a9 // .quad 1770529492101780905
+	QUAD $0x55c215ed2cee963b // .quad 6179525747111007803
+	QUAD $0x1eb6bafd91596b14 // .quad 2213161865127226132
+	QUAD $0xb5994db43c151de5 // .quad -5361168444910395931
+	QUAD $0x133234de7ad7e2ec // .quad 1383226165704516332
+	QUAD $0xe2ffa1214b1a655e // .quad -2089774537710607010
+	QUAD $0x17fec216198ddba7 // .quad 1729032707130645415
+	QUAD $0xdbbf89699de0feb6 // .quad -2612218172138258762
+	QUAD $0x1dfe729b9ff15291 // .quad 2161290883913306769
+	QUAD $0x2957b5e202ac9f31 // .quad 2979049660840976177
+	QUAD $0x12bf07a143f6d39b // .quad 1350806802445816731
+	QUAD $0xf3ada35a8357c6fe // .quad -887873942376167682
+	QUAD $0x176ec98994f48881 // .quad 1688508503057270913
+	QUAD $0x70990c31242db8bd // .quad 8113529608884566205
+	QUAD $0x1d4a7bebfa31aaa2 // .quad 2110635628821588642
+	QUAD $0x865fa79eb69c9376 // .quad -8764102049729309834
+	QUAD $0x124e8d737c5f0aa5 // .quad 1319147268013492901
+	QUAD $0xe7f791866443b854 // .quad -1731755525306861484
+	QUAD $0x16e230d05b76cd4e // .quad 1648934085016866126
+	QUAD $0xa1f575e7fd54a669 // .quad -6776380425060964759
+	QUAD $0x1c9abd04725480a2 // .quad 2061167606271082658
+	QUAD $0xa53969b0fe54e801 // .quad -6541080774876796927
+	QUAD $0x11e0b622c774d065 // .quad 1288229753919426661
+	QUAD $0x0e87c41d3dea2202 // .quad 1047021068258779650
+	QUAD $0x1658e3ab7952047f // .quad 1610287192399283327
+	QUAD $0xd229b5248d64aa82 // .quad -3302909683103913342
+	QUAD $0x1bef1c9657a6859e // .quad 2012858990499104158
+	QUAD $0x435a1136d85eea91 // .quad 4853210475701136017
+	QUAD $0x117571ddf6c81383 // .quad 1258036869061940099
+	QUAD $0x143095848e76a536 // .quad 1454827076199032118
+	QUAD $0x15d2ce55747a1864 // .quad 1572546086327425124
+	QUAD $0x193cbae5b2144e83 // .quad 1818533845248790147
+	QUAD $0x1b4781ead1989e7d // .quad 1965682607909281405
+	QUAD $0x2fc5f4cf8f4cb112 // .quad 3442426662494187794
+	QUAD $0x110cb132c2ff630e // .quad 1228551629943300878
+	QUAD $0xbbb77203731fdd56 // .quad -4920338708737041066
+	QUAD $0x154fdd7f73bf3bd1 // .quad 1535689537429126097
+	QUAD $0x2aa54e844fe7d4ac // .quad 3072948650933474476
+	QUAD $0x1aa3d4df50af0ac6 // .quad 1919611921786407622
+	QUAD $0xdaa75112b1f0e4eb // .quad -2691093111593966357
+	QUAD $0x10a6650b926d66bb // .quad 1199757451116504763
+	QUAD $0xd15125575e6d1e26 // .quad -3363866389492457946
+	QUAD $0x14cffe4e7708c06a // .quad 1499696813895630954
+	QUAD $0x85a56ead360865b0 // .quad -8816519005292960336
+	QUAD $0x1a03fde214caf085 // .quad 1874621017369538693
+	QUAD $0x7387652c41c53f8e // .quad 8324733676974063502
+	QUAD $0x10427ead4cfed653 // .quad 1171638135855961683
+	QUAD $0x50693e7752368f71 // .quad 5794231077790191473
+	QUAD $0x14531e58a03e8be8 // .quad 1464547669819952104
+	QUAD $0x64838e1526c4334e // .quad 7242788847237739342
+	QUAD $0x1967e5eec84e2ee2 // .quad 1830684587274940130
+	QUAD $0xfda4719a70754022 // .quad -169885977807601630
+	QUAD $0x1fc1df6a7a61ba9a // .quad 2288355734093675162
+	QUAD $0xde86c70086494815 // .quad -2412021745343444971
+	QUAD $0x13d92ba28c7d14a0 // .quad 1430222333808546976
+	QUAD $0x162878c0a7db9a1a // .quad 1596658836748081690
+	QUAD $0x18cf768b2f9c59c9 // .quad 1787777917260683721
+	QUAD $0x5bb296f0d1d280a1 // .quad 6607509564362490017
+	QUAD $0x1f03542dfb83703b // .quad 2234722396575854651
+	QUAD $0x194f9e5683239064 // .quad 1823850468512862308
+	QUAD $0x1362149cbd322625 // .quad 1396701497859909157
+	QUAD $0x5fa385ec23ec747e // .quad 6891499104068465790
+	QUAD $0x183a99c3ec7eafae // .quad 1745876872324886446
+	QUAD $0xf78c67672ce7919d // .quad -608998156769193571
+	QUAD $0x1e494034e79e5b99 // .quad 2182346090406108057
+	QUAD $0x3ab7c0a07c10bb02 // .quad 4231062170446641922
+	QUAD $0x12edc82110c2f940 // .quad 1363966306503817536
+	QUAD $0x4965b0c89b14e9c3 // .quad 5288827713058302403
+	QUAD $0x17a93a2954f3b790 // .quad 1704957883129771920
+	QUAD $0x5bbf1cfac1da2433 // .quad 6611034641322878003
+	QUAD $0x1d9388b3aa30a574 // .quad 2131197353912214900
+	QUAD $0xb957721cb92856a0 // .quad -5091475386027977056
+	QUAD $0x127c35704a5e6768 // .quad 1331998346195134312
+	QUAD $0xe7ad4ea3e7726c48 // .quad -1752658214107583416
+	QUAD $0x171b42cc5cf60142 // .quad 1664997932743917890
+	QUAD $0xa198a24ce14f075a // .quad -6802508786061867174
+	QUAD $0x1ce2137f74338193 // .quad 2081247415929897363
+	QUAD $0x44ff65700cd16498 // .quad 4971804045566108824
+	QUAD $0x120d4c2fa8a030fc // .quad 1300779634956185852
+	QUAD $0x563f3ecc1005bdbe // .quad 6214755056957636030
+	QUAD $0x16909f3b92c83d3b // .quad 1625974543695232315
+	QUAD $0x2bcf0e7f14072d2e // .quad 3156757802769657134
+	QUAD $0x1c34c70a777a4c8a // .quad 2032468179619040394
+	QUAD $0x5b61690f6c847c3d // .quad 6584659645158423613
+	QUAD $0x11a0fc668aac6fd6 // .quad 1270292612261900246
+	QUAD $0xf239c35347a59b4c // .quad -992547480406746292
+	QUAD $0x16093b802d578bcb // .quad 1587865765327375307
+	QUAD $0xeec83428198f021f // .quad -1240684350508432865
+	QUAD $0x1b8b8a6038ad6ebe // .quad 1984832206659219134
+	QUAD $0x553d20990ff96153 // .quad 6142101308573311315
+	QUAD $0x1137367c236c6537 // .quad 1240520129162011959
+	QUAD $0x2a8c68bf53f7b9a8 // .quad 3065940617289251240
+	QUAD $0x1585041b2c477e85 // .quad 1550650161452514949
+	QUAD $0x752f82ef28f5a812 // .quad 8444111790038951954
+	QUAD $0x1ae64521f7595e26 // .quad 1938312701815643686
+	QUAD $0x093db1d57999890b // .quad 665883850346957067
+	QUAD $0x10cfeb353a97dad8 // .quad 1211445438634777304
+	QUAD $0x0b8d1e4ad7ffeb4e // .quad 832354812933696334
+	QUAD $0x1503e602893dd18e // .quad 1514306798293471630
+	QUAD $0x8e7065dd8dffe622 // .quad -8182928520687655390
+	QUAD $0x1a44df832b8d45f1 // .quad 1892883497866839537
+	QUAD $0xf9063faa78bfefd5 // .quad -502644307002396715
+	QUAD $0x106b0bb1fb384bb6 // .quad 1183052186166774710
+	QUAD $0xb747cf9516efebca // .quad -5239991402180383798
+	QUAD $0x1485ce9e7a065ea4 // .quad 1478815232708468388
+	QUAD $0xe519c37a5cabe6bd // .quad -1938303234298091843
+	QUAD $0x19a742461887f64d // .quad 1848519040885585485
+	QUAD $0xaf301a2c79eb7036 // .quad -5823125539863695306
+	QUAD $0x1008896bcf54f9f0 // .quad 1155324400553490928
+	QUAD $0xdafc20b798664c43 // .quad -2667220906402231229
+	QUAD $0x140aabc6c32a386c // .quad 1444155500691863660
+	QUAD $0x11bb28e57e7fdf54 // .quad 1277659885424598868
+	QUAD $0x190d56b873f4c688 // .quad 1805194375864829576
+	QUAD $0x1629f31ede1fd72a // .quad 1597074856780748586
+	QUAD $0x1f50ac6690f1f82a // .quad 2256492969831036970
+	QUAD $0x4dda37f34ad3e67a // .quad 5609857803915355770
+	QUAD $0x13926bc01a973b1a // .quad 1410308106144398106
+	QUAD $0xe150c5f01d88e019 // .quad -2211049781960581095
+	QUAD $0x187706b0213d09e0 // .quad 1762885132680497632
+	QUAD $0x19a4f76c24eb181f // .quad 1847873790976661535
+	QUAD $0x1e94c85c298c4c59 // .quad 2203606415850622041
+	QUAD $0xb0071aa39712ef13 // .quad -5762607908280668397
+	QUAD $0x131cfd3999f7afb7 // .quad 1377254009906638775
+	QUAD $0x9c08e14c7cd7aad8 // .quad -7203259885350835496
+	QUAD $0x17e43c8800759ba5 // .quad 1721567512383298469
+	QUAD $0x030b199f9c0d958e // .quad 219297180166231438
+	QUAD $0x1ddd4baa0093028f // .quad 2151959390479123087
+	QUAD $0x61e6f003c1887d79 // .quad 7054589765244976505
+	QUAD $0x12aa4f4a405be199 // .quad 1344974619049451929
+	QUAD $0xba60ac04b1ea9cd7 // .quad -5016820848725943081
+	QUAD $0x1754e31cd072d9ff // .quad 1681218273811814911
+	QUAD $0xa8f8d705de65440d // .quad -6271026060907428851
+	QUAD $0x1d2a1be4048f907f // .quad 2101522842264768639
+	QUAD $0xc99b8663aaff4a88 // .quad -3919391288067143032
+	QUAD $0x123a516e82d9ba4f // .quad 1313451776415480399
+	QUAD $0xbc0267fc95bf1d2a // .quad -4899239110083928790
+	QUAD $0x16c8e5ca239028e3 // .quad 1641814720519350499
+	QUAD $0xab0301fbbb2ee474 // .quad -6124048887604910988
+	QUAD $0x1c7b1f3cac74331c // .quad 2052268400649188124
+	QUAD $0xeae1e13d54fd4ec9 // .quad -1521687545539375415
+	QUAD $0x11ccf385ebc89ff1 // .quad 1282667750405742577
+	QUAD $0x659a598caa3ca27b // .quad 7321262604930556539
+	QUAD $0x1640306766bac7ee // .quad 1603334688007178222
+	QUAD $0xff00efefd4cbcb1a // .quad -71793780691580134
+	QUAD $0x1bd03c81406979e9 // .quad 2004168360008972777
+	QUAD $0x3f6095f5e4ff5ef0 // .quad 4566814905495150320
+	QUAD $0x116225d0c841ec32 // .quad 1252605225005607986
+	QUAD $0xcf38bb735e3f36ac // .quad -3514853404985837908
+	QUAD $0x15baaf44fa52673e // .quad 1565756531257009982
+	QUAD $0x8306ea5035cf0457 // .quad -9005252774659685289
+	QUAD $0x1b295b1638e7010e // .quad 1957195664071262478
+	QUAD $0x11e4527221a162b6 // .quad 1289246043478778550
+	QUAD $0x10f9d8ede39060a9 // .quad 1223247290044539049
+	QUAD $0x565d670eaa09bb64 // .quad 6223243572775861092
+	QUAD $0x15384f295c7478d3 // .quad 1529059112555673811
+	QUAD $0x2bf4c0d2548c2a3d // .quad 3167368447542438461
+	QUAD $0x1a8662f3b3919708 // .quad 1911323890694592264
+	QUAD $0x1b78f88374d79a66 // .quad 1979605279714024038
+	QUAD $0x1093fdd8503afe65 // .quad 1194577431684120165
+	QUAD $0x625736a4520d8100 // .quad 7086192618069917952
+	QUAD $0x14b8fd4e6449bdfe // .quad 1493221789605150206
+	QUAD $0xfaed044d6690e140 // .quad -365631264267378368
+	QUAD $0x19e73ca1fd5c2d7d // .quad 1866527237006437757
+	QUAD $0xbcd422b0601a8cc8 // .quad -4840205558594499384
+	QUAD $0x103085e53e599c6e // .quad 1166579523129023598
+	QUAD $0x6c092b5c78212ffa // .quad 7784801107039039482
+	QUAD $0x143ca75e8df0038a // .quad 1458224403911279498
+	QUAD $0x070b763396297bf8 // .quad 507629346944023544
+	QUAD $0x194bd136316c046d // .quad 1822780504889099373
+	QUAD $0x48ce53c07bb3daf6 // .quad 5246222702107417334
+	QUAD $0x1f9ec583bdc70588 // .quad 2278475631111374216
+	QUAD $0x2d80f4584d5068da // .quad 3278889188817135834
+	QUAD $0x13c33b72569c6375 // .quad 1424047269444608885
+	QUAD $0x78e1316e60a48310 // .quad 8710297504448807696
+	QUAD $0x18b40a4eec437c52 // .quad 1780059086805761106
 
+	// .p2align 4, 0x00
 _Digits:
 	QUAD $0x3330323031303030; QUAD $0x3730363035303430 // .ascii 16, '0001020304050607'
 	QUAD $0x3131303139303830; QUAD $0x3531343133313231 // .ascii 16, '0809101112131415'
@@ -10309,8 +10309,8 @@ _VecShiftShuffles:
 	QUAD $0x0d0c0b0a09080706; QUAD $0xffffffffffff0f0e // .ascii 16, '\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff'
 	QUAD $0x0e0d0c0b0a090807; QUAD $0xffffffffffffff0f // .ascii 16, '\x07\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff'
 	QUAD $0x0f0e0d0c0b0a0908; QUAD $0xffffffffffffffff // .ascii 16, '\x08\t\n\x0b\x0c\r\x0e\x0f\xff\xff\xff\xff\xff\xff\xff\xff'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
 
+	// .p2align 4, 0x00
 __SingleQuoteTab:
 	QUAD $0x0000000000000006                           // .quad 6
 	QUAD $0x000030303030755c                           // .asciz 8, '\\u0000\x00\x00'
@@ -10602,8 +10602,8 @@ __SingleQuoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
 
+	// .p2align 4, 0x00
 __DoubleQuoteTab:
 	QUAD $0x0000000000000007                           // .quad 7
 	QUAD $0x0030303030755c5c                           // .asciz 8, '\\\\u0000\x00'
@@ -10895,8 +10895,8 @@ __DoubleQuoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
 
+	// .p2align 4, 0x00
 __EscTab:
 	QUAD $0x0101010101010101; QUAD $0x0101010101010101     // .ascii 16, '\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
 	QUAD $0x0101010101010101; QUAD $0x0101010101010101     // .ascii 16, '\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
@@ -10915,8 +10915,8 @@ __EscTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	WORD $0x0000; BYTE $0x00                               // .space 3, '\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000     // .p2align 4, 0x00
 
+	// .p2align 4, 0x00
 __UnquoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .ascii 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -10935,8 +10935,8 @@ __UnquoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; WORD $0x0000             // .space 10, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
 
+	// .p2align 4, 0x00
 __HtmlQuoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11199,8 +11199,8 @@ __HtmlQuoteTab:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .p2align 4, 0x00
 
+	// .p2align 4, 0x00
 _LSHIFT_TAB:
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	QUAD $0x0000000000000000; QUAD $0x0000000000000000 // .space 16, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -11728,7 +11728,7 @@ _entry:
 _f64toa:
 	MOVQ  out+0(FP), DI
 	MOVSD val+8(FP), X0
-	CALL  ·__native_entry__+752(SB) // _f64toa
+	CALL  ·__native_entry__+704(SB) // _f64toa
 	MOVQ  AX, ret+16(FP)
 	RET
 
@@ -11750,7 +11750,7 @@ _html_escape:
 	MOVQ nb+8(FP), SI
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
-	CALL ·__native_entry__+10096(SB) // _html_escape
+	CALL ·__native_entry__+9920(SB) // _html_escape
 	MOVQ AX, ret+32(FP)
 	RET
 
@@ -11770,7 +11770,7 @@ _entry:
 _i64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__native_entry__+3680(SB) // _i64toa
+	CALL ·__native_entry__+3616(SB) // _i64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -11791,7 +11791,7 @@ _lspace:
 	MOVQ sp+0(FP), DI
 	MOVQ nb+8(FP), SI
 	MOVQ off+16(FP), DX
-	CALL ·__native_entry__+336(SB) // _lspace
+	CALL ·__native_entry__+320(SB) // _lspace
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -11834,7 +11834,7 @@ _quote:
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+5088(SB) // _quote
+	CALL ·__native_entry__+4992(SB) // _quote
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -11856,7 +11856,7 @@ _skip_array:
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
 	MOVQ flags+24(FP), CX
-	CALL ·__native_entry__+22576(SB) // _skip_array
+	CALL ·__native_entry__+22304(SB) // _skip_array
 	MOVQ AX, ret+32(FP)
 	RET
 
@@ -11876,7 +11876,7 @@ _entry:
 _skip_number:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
-	CALL ·__native_entry__+24064(SB) // _skip_number
+	CALL ·__native_entry__+23776(SB) // _skip_number
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -11898,7 +11898,7 @@ _skip_object:
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
 	MOVQ flags+24(FP), CX
-	CALL ·__native_entry__+22624(SB) // _skip_object
+	CALL ·__native_entry__+22352(SB) // _skip_object
 	MOVQ AX, ret+32(FP)
 	RET
 
@@ -11920,7 +11920,7 @@ _skip_one:
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
 	MOVQ flags+24(FP), CX
-	CALL ·__native_entry__+20704(SB) // _skip_one
+	CALL ·__native_entry__+20432(SB) // _skip_one
 	MOVQ AX, ret+32(FP)
 	RET
 
@@ -11940,7 +11940,7 @@ _entry:
 _u64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__native_entry__+3808(SB) // _u64toa
+	CALL ·__native_entry__+3728(SB) // _u64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -11963,7 +11963,7 @@ _unquote:
 	MOVQ dp+16(FP), DX
 	MOVQ ep+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+6864(SB) // _unquote
+	CALL ·__native_entry__+6736(SB) // _unquote
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -11984,7 +11984,7 @@ _validate_one:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__native_entry__+24208(SB) // _validate_one
+	CALL ·__native_entry__+23920(SB) // _validate_one
 	MOVQ AX, ret+24(FP)
 	RET
 
@@ -12007,7 +12007,7 @@ _value:
 	MOVQ p+16(FP), DX
 	MOVQ v+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__native_entry__+13376(SB) // _value
+	CALL ·__native_entry__+13168(SB) // _value
 	MOVQ AX, ret+40(FP)
 	RET
 
@@ -12028,7 +12028,7 @@ _vnumber:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+18448(SB), AX // _vnumber
+	LEAQ ·__native_entry__+18176(SB), AX // _vnumber
 	JMP  AX
 
 _stack_grow:
@@ -12048,7 +12048,7 @@ _vsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+20000(SB), AX // _vsigned
+	LEAQ ·__native_entry__+19728(SB), AX // _vsigned
 	JMP  AX
 
 _stack_grow:
@@ -12069,7 +12069,7 @@ _vstring:
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
 	MOVQ flags+24(FP), CX
-	LEAQ ·__native_entry__+15488(SB), AX // _vstring
+	LEAQ ·__native_entry__+15248(SB), AX // _vstring
 	JMP  AX
 
 _stack_grow:
@@ -12089,7 +12089,7 @@ _vunsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__native_entry__+20352(SB), AX // _vunsigned
+	LEAQ ·__native_entry__+20080(SB), AX // _vunsigned
 	JMP  AX
 
 _stack_grow:
