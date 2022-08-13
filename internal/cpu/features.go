@@ -38,4 +38,3 @@ func init() {
         default       : panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx', 'noavx2'", v))
     }
 }
- 
