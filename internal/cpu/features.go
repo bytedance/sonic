@@ -17,25 +17,25 @@
 package cpu
 
 import (
-	`fmt`
-	`os`
- 
-	`github.com/klauspost/cpuid/v2`
+    `fmt`
+    `os`
+
+    `github.com/klauspost/cpuid/v2`
 )
- 
+
 var (
-	HasAVX  = cpuid.CPU.Has(cpuid.AVX)
-	HasAVX2 = cpuid.CPU.Has(cpuid.AVX2)
-	HasSSE4 = cpuid.CPU.Has(cpuid.SSE4)
+    HasAVX  = cpuid.CPU.Has(cpuid.AVX)
+    HasAVX2 = cpuid.CPU.Has(cpuid.AVX2)
+    HasSSE4 = cpuid.CPU.Has(cpuid.SSE4)
 )
- 
+
 func init() {
-	switch v := os.Getenv("SONIC_MODE"); v {
-		case ""       : break
-		case "auto"   : break
-		case "noavx"  : HasAVX = false; fallthrough
-		case "noavx2" : HasAVX2 = false
-		default       : panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx', 'noavx2'", v))
-	 }
+    switch v := os.Getenv("SONIC_MODE"); v {
+        case ""       : break
+        case "auto"   : break
+        case "noavx"  : HasAVX = false; fallthrough
+        case "noavx2" : HasAVX2 = false
+        default       : panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx', 'noavx2'", v))
+    }
 }
  
