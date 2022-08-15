@@ -14,24 +14,28 @@
 # limitations under the License.
 #
 
-ARCH			:= avx avx2
+ARCH			:= avx avx2 sse4
 TMP_DIR			:= output
 OUT_DIR			:= internal/native
 SRC_FILE		:= native/native.c
 
 CPU_avx			:= amd64
 CPU_avx2		:= amd64
+CPU_sse4		:= amd64
 
 TMPL_avx		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 TMPL_avx2		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
+TMPL_sse4		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 
 CFLAGS_avx		:= -msse4 -mavx -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0
-CFLAGS_avx2		:= -msse4 -mavx -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1
+CFLAGS_avx2		:= -msse4 -mavx -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1 
+CFLAGS_sse4		:= -msse4 -mno-avx -mno-avx2
 
 CC_amd64		:= clang
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py
 
 CFLAGS			:= -mno-red-zone
+CFLAGS			+= -arch x86_64
 CFLAGS			+= -fno-asynchronous-unwind-tables
 CFLAGS			+= -fno-builtin
 CFLAGS			+= -fno-exceptions
@@ -95,8 +99,8 @@ endef
 all: ${ARCH}
 
 clean:
-	rm -vfr ${TMP_DIR}/{sse,avx,avx2}
-	rm -vfr ${OUT_DIR}/{sse,avx,avx2}
+	rm -vfr ${TMP_DIR}/{sse4,avx,avx2}
+	rm -vfr ${OUT_DIR}/{sse4,avx,avx2}
 
 $(foreach 								\
 	arch,								\

@@ -21,9 +21,9 @@ import (
     `reflect`
     `runtime`
 
-    `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
 )
 
@@ -203,7 +203,7 @@ func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
 }
 
 // Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
-// Otherwise returns negative error code using start and invalid character position using end
+// Otherwise, returns negative error code using start and invalid character position using end
 func Skip(data []byte) (start int, end int) {
     s := rt.Mem2Str(data)
     p := 0
