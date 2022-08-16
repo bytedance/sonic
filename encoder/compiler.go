@@ -88,9 +88,9 @@ const (
     _PTR_SIZE = 32 << (^uintptr(0) >> 63)
 )
 
-const (
-    _MAX_STACK = 5          // cutoff at 5 levels of nesting types
-    _MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
+var (
+    MAX_STACK = 5          // cutoff at 5 levels of nesting types
+    MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
 )
 
 var _OpNames = [256]string {
@@ -658,7 +658,7 @@ func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
-    if sp >= _MAX_STACK || p.pc() >= _MAX_ILBUF {
+    if sp >= MAX_STACK || p.pc() >= MAX_ILBUF {
         p.rtt(_OP_recurse, vt)
         if self.opts.RecursiveDepth > 0 {
             self.rec[vt] = true
