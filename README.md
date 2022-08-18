@@ -5,7 +5,7 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 ## Requirement
 - Go 1.15/1.16/1.17/1.18/1.19
 - Linux/MacOS/Windows
-- Amd64 CPU with AVX instruction set
+- Amd64/Arm64 CPU with SSE4/AVX/AVX2 instruction set
 
 ## Features
 - Runtime object binding without code generation
@@ -76,9 +76,9 @@ BenchmarkSetOne_Parallel_Sjson-16                      18194 ns/op         715.7
 BenchmarkSetOne_Parallel_Jsoniter-16                   33560 ns/op         388.05 MB/s       45892 B/op        964 allocs/op
 ```        
 - [Small](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 keys, 3 layers)
-![small benchmarks](bench-small.jpg)
+  ![small benchmarks](bench-small.jpg)
 - [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitter.json) (635KB, 10000+ key, 6 layers)
-![large benchmarks](bench-large.jpg)
+  ![large benchmarks](bench-large.jpg)
 
 See [bench.sh](https://github.com/bytedance/sonic/blob/main/bench.sh) for benchmark codes.
 
@@ -154,7 +154,7 @@ jm := root.InterfaceUseNumber().(json.Number) // jn == jm
 fn := root.Float64()
 fm := root.Interface().(float64) // jn == jm
  ```
- 
+
 ### Sort Keys
 On account of the performance loss from sorting (roughly 10%), sonic doesn't enable this feature by default. If your component depends on it to work (like [zstd](https://github.com/facebook/zstd)), Use it like this:
 ```go
@@ -261,7 +261,12 @@ println(string(buf) == string(exp)) // true
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
 ## Compatibility
-Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on Linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
+Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments, we have the following suggestions:
+
+- Developing on **Mac M1**: Make sure you have Rosetta 2 installed on your machine, and set `GOARCH=amd64` when building your application. Rosetta 2 can automatically translate x86 binaries to arm64 binaries and run x86 applications on Mac M1.
+- Developing on **Linux arm64**: You can install qemu and use the `qemu-x86_64 -cpu max` command to convert x86 binaries to amr64 binaries for applications built with sonic. The qemu can achieve similar transfer effect to Rosetta 2 on Mac M1.
+
+For developers who want to use sonic on Linux arm64 without qemu, or those who want to handle JSON strictly consistent with encoding/json, we provide some compatible APIs as sonic.API
 - `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with the corresponding config, and some options like `SortKeys=false` will be invalid.
 - `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It will fall back to `encoding/json`.
 - `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config, and some options will be invalid.
@@ -272,18 +277,18 @@ Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of 
 Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as a JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise to **use `Pretouch()` for huge-schema or compact-memory application** before `Marshal()/Unmarshal()`.
 ```go
 import (
-    "reflect"
-    "github.com/bytedance/sonic"
-    "github.com/bytedance/sonic/option"
+"reflect"
+"github.com/bytedance/sonic"
+"github.com/bytedance/sonic/option"
 )
- 
+
 func init() {
-    var v HugeStruct
-    // For most large types (nesting depth <= 5)
-    err := sonic.Pretouch(reflect.TypeOf(v))
-    // If the type is too deep nesting (nesting depth > 5),
-    // you can set compile recursive depth in Pretouch for better stability in JIT.
-    err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
+var v HugeStruct
+// For most large types (nesting depth <= 5)
+err := sonic.Pretouch(reflect.TypeOf(v))
+// If the type is too deep nesting (nesting depth > 5),
+// you can set compile recursive depth in Pretouch for better stability in JIT.
+err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
 }
 ```
 
@@ -317,12 +322,12 @@ err = user.Check()
 // err = user.LoadAll() // only call this when you want to use 'user' concurrently...
 go someFunc(user)
 ```
-Why? Because `ast.Node` stores its children using `array`: 
+Why? Because `ast.Node` stores its children using `array`:
 - `Array`'s performance is **much better** than `Map` when Inserting (Deserialize) and Scanning (Serialize) data;
 - **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**;
 - Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while `ast.Node` can parse them **on demand**.
 
-**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}` 
+**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}`
 
 ## Community
 Sonic is a subproject of [CloudWeGo](https://www.cloudwego.io/). We are committed to building a cloud native ecosystem.
