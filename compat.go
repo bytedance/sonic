@@ -1,4 +1,4 @@
-// +build !amd64
+// +build !amd64,!darwin
 
 /*
  * Copyright 2021 ByteDance Inc.
