@@ -89,7 +89,8 @@ const (
 )
 
 var (
-    MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
+    _MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
+    _MAX_FIELDS = 50        // cutoff at 50 fields struct
 )
 
 var _OpNames = [256]string {
@@ -659,7 +660,7 @@ func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
-    if sp >= self.opts.MaxInlineDepth || p.pc() >= MAX_ILBUF {
+    if sp >= self.opts.MaxInlineDepth || p.pc() >= _MAX_ILBUF || (sp > 0 && vt.NumField() >= _MAX_FIELDS) {
         p.rtt(_OP_recurse, vt)
         if self.opts.RecursiveDepth > 0 {
             self.rec[vt] = true
