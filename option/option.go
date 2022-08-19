@@ -16,30 +16,62 @@
 
 package option
 
+var (
+    // Default value(3) means the compiler only inline 3 layers of nested struct. 
+    // when the depth exceeds, the compiler will recurse 
+    // and compile subsequent structs when they are decoded 
+    DefaultMaxInlineDepth = 3
+
+    // Default value(1) means `Pretouch()` will recursively compile twice,
+    // if any nested struct is left (depth exceeds MaxInlineDepth)
+    DefaultRecursiveDepth = 1
+)
+
 // CompileOptions includes all options for encoder or decoder compiler.
 type CompileOptions struct {
-    // the depth for recursive compile
+    // the maximum depth for compilation inline
+    MaxInlineDepth    int
+
+    // the loop times for recursive pretouch
     RecursiveDepth int
 }
 
+// DefaultCompileOptions set default compile options.
 func DefaultCompileOptions() CompileOptions {
     return CompileOptions{
-        RecursiveDepth: 0,
+        RecursiveDepth: DefaultRecursiveDepth,
+        MaxInlineDepth: DefaultMaxInlineDepth,
     }
 }
 
+// CompileOption is a function used to change DefaultCompileOptions.
 type CompileOption func(o *CompileOptions)
 
-// WithCompileRecursiveDepth sets the depth of recursive compile 
-// in decoder or encoder.
+// WithCompileRecursiveDepth sets the loops of recursive pretouch 
+// in decoder and encoder.
 //
-// Default value(0) is suitable for basic types and small nested struct types.
-// 
-// For large or deep nested struct, try to set larger depth to reduce compile 
-// time in the first Marshal or Unmarshal.
-func WithCompileRecursiveDepth(depth int) CompileOption {
+// For deep nested struct (depth exceeds MaxInlineDepth), 
+// try to set larger depth to reduce compile time 
+// in the first Marshal or Unmarshal.
+func WithCompileRecursiveDepth(loop int) CompileOption {
     return func(o *CompileOptions) {
-            o.RecursiveDepth = depth
+            if loop < 0 {
+                panic("loop must be >= 0")
+            }
+            o.RecursiveDepth = loop
+        }
+}
+
+// WithCompileMaxInlineDepth sets the max depth of inline compile 
+// in decoder and encoder.
+//
+// The larger the depth is, the compilation time of one pretouch loop may be longer
+func WithCompileMaxInlineDepth(depth int) CompileOption {
+    return func(o *CompileOptions) {
+            if depth <= 0 {
+                panic("depth must be > 0")
+            }
+            o.MaxInlineDepth = depth
         }
 }
  

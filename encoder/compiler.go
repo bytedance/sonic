@@ -89,7 +89,6 @@ const (
 )
 
 var (
-    MAX_STACK = 5          // cutoff at 5 levels of nesting types
     MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
 )
 
@@ -384,7 +383,9 @@ type _Compiler struct {
 
 func newCompiler() *_Compiler {
     return &_Compiler {
+        opts: option.DefaultCompileOptions(),
         tab: map[reflect.Type]bool{},
+        rec: map[reflect.Type]bool{},
     }
 }
 
@@ -415,7 +416,9 @@ func (self *_Compiler) compile(vt reflect.Type) (ret _Program, err error) {
 func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type, pv bool) {
     if self.tab[vt] {
         p.rtt(_OP_recurse, vt)
+        println("encode recurse tab:", vt.Name())
     } else {
+        println("encode compile:", vt.Name())
         self.compileRec(p, sp, vt, pv)
     }
 }
@@ -658,7 +661,7 @@ func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
-    if sp >= MAX_STACK || p.pc() >= MAX_ILBUF {
+    if sp >= self.opts.MaxInlineDepth || p.pc() >= MAX_ILBUF {
         p.rtt(_OP_recurse, vt)
         if self.opts.RecursiveDepth > 0 {
             self.rec[vt] = true
