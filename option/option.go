@@ -16,6 +16,15 @@
 
 package option
 
+// CompileOptions includes all options for encoder or decoder compiler.
+type CompileOptions struct {
+    // the maximum depth for compilation inline
+    MaxInlineDepth int
+
+    // the loop times for recursively pretouch
+    RecursiveDepth int
+}
+
 var (
     // Default value(3) means the compiler only inline 3 layers of nested struct. 
     // when the depth exceeds, the compiler will recurse 
@@ -26,15 +35,6 @@ var (
     // if any nested struct is left (depth exceeds MaxInlineDepth)
     DefaultRecursiveDepth = 1
 )
-
-// CompileOptions includes all options for encoder or decoder compiler.
-type CompileOptions struct {
-    // the maximum depth for compilation inline
-    MaxInlineDepth    int
-
-    // the loop times for recursive pretouch
-    RecursiveDepth int
-}
 
 // DefaultCompileOptions set default compile options.
 func DefaultCompileOptions() CompileOptions {
@@ -47,12 +47,13 @@ func DefaultCompileOptions() CompileOptions {
 // CompileOption is a function used to change DefaultCompileOptions.
 type CompileOption func(o *CompileOptions)
 
-// WithCompileRecursiveDepth sets the loops of recursive pretouch 
-// in decoder and encoder.
+// WithCompileRecursiveDepth sets the loop times of recursive pretouch 
+// in both decoder and encoder,
+// for both concrete type and its pointer type.
 //
 // For deep nested struct (depth exceeds MaxInlineDepth), 
-// try to set larger depth to reduce compile time 
-// in the first Marshal or Unmarshal.
+// try to set more loops to completely compile, 
+// thus reduce JIT unstability in the first hit.
 func WithCompileRecursiveDepth(loop int) CompileOption {
     return func(o *CompileOptions) {
             if loop < 0 {
@@ -65,7 +66,7 @@ func WithCompileRecursiveDepth(loop int) CompileOption {
 // WithCompileMaxInlineDepth sets the max depth of inline compile 
 // in decoder and encoder.
 //
-// The larger the depth is, the compilation time of one pretouch loop may be longer
+// For large nested struct, try to set smaller depth to reduce compiling time.
 func WithCompileMaxInlineDepth(depth int) CompileOption {
     return func(o *CompileOptions) {
             if depth <= 0 {

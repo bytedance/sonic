@@ -318,9 +318,9 @@ func TestPretouchSynteaRoot(t *testing.T) {
     println("end encode 2:", e.UnixNano())
     d4 := e.Sub(s).Nanoseconds()
     println("elapsed:", d4, "ns")
-    if d3 > d4 * 10 {
-        t.Fatal("encoder pretouch not finish yet")
-    }
+    // if d3 > d4 * 10 {
+    //     t.Fatal("encoder pretouch not finish yet")
+    // }
 
     s = time.Now()
     println("start encode 3:", s.UnixNano())
