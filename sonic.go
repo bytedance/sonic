@@ -162,11 +162,23 @@ func (cfg *frozenConfig) Valid(data []byte) bool {
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 	if err := encoder.Pretouch(vt, opts...); err != nil {
 	    return err
-	} else if err := decoder.Pretouch(vt, opts...); err != nil {
+	} 
+	if err := decoder.Pretouch(vt, opts...); err != nil {
 		return err
-	} else {
-		return nil
 	}
+	// to pretouch the corresponding pointer type as well
+	if vt.Kind() == reflect.Ptr {
+		vt = vt.Elem()
+	} else {
+		vt = reflect.PtrTo(vt)
+	}
+	if err := encoder.Pretouch(vt, opts...); err != nil {
+	    return err
+	} 
+	if err := decoder.Pretouch(vt, opts...); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Get searches the given path json,

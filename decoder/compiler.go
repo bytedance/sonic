@@ -514,11 +514,9 @@ func (self *_Compiler) compile(vt reflect.Type) (ret _Program, err error) {
 }
 
 func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
-    println("decode compile:", vt.Name())
     /* check for recursive nesting */
     ok := self.tab[vt]
     if ok {
-        println("decode recurse:", vt.Name())
         p.rtt(_OP_recurse, vt)
         return
     }

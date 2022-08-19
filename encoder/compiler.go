@@ -416,9 +416,7 @@ func (self *_Compiler) compile(vt reflect.Type) (ret _Program, err error) {
 func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type, pv bool) {
     if self.tab[vt] {
         p.rtt(_OP_recurse, vt)
-        println("encode recurse tab:", vt.Name())
     } else {
-        println("encode compile:", vt.Name())
         self.compileRec(p, sp, vt, pv)
     }
 }

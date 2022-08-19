@@ -22,7 +22,7 @@ var (
     // and compile subsequent structs when they are decoded 
     DefaultMaxInlineDepth = 3
 
-    // Default value(1) means `Pretouch()` will recursively compile twice,
+    // Default value(1) means `Pretouch()` will be recursively executed once,
     // if any nested struct is left (depth exceeds MaxInlineDepth)
     DefaultRecursiveDepth = 1
 )

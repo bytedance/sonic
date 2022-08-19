@@ -284,13 +284,7 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
         opt(&cfg)
         break
     }
-    var m = map[reflect.Type]bool{vt:true}
-    if vt.Kind() == reflect.Ptr {
-        m[vt.Elem()] = true
-    } else {
-        m[reflect.PtrTo(vt)] = true
-    }
-    return pretouchRec(m, cfg)
+    return pretouchRec(map[reflect.Type]bool{vt:true}, cfg)
 }
 
 func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
@@ -320,12 +314,12 @@ func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
         return nil
     }
     next := make(map[reflect.Type]bool)
-    for vt, _ := range(vtm) {
+    for vt := range(vtm) {
         sub, err := pretouchType(vt, opts)
         if err != nil {
             return err
         }
-        for svt, _ := range(sub) {
+        for svt := range(sub) {
             next[svt] = true
         }
     }

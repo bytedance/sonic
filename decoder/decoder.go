@@ -17,15 +17,14 @@
 package decoder
 
 import (
-	"encoding/json"
-	"fmt"
-	"reflect"
-	"runtime"
+    `encoding/json`
+    `reflect`
+    `runtime`
 
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/bytedance/sonic/option"
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/option`
 )
 
 const (
@@ -159,16 +158,12 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
     for _, opt := range opts {
         opt(&cfg)
     }
-    if vt.Kind() == reflect.Ptr {
-        vt = vt.Elem()
-    }
     return pretouchRec(map[reflect.Type]bool{vt:true}, cfg)
 }
 
 func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
     /* compile function */
     compiler := newCompiler().apply(opts)
-    fmt.Printf("options %#v\n", compiler.opts)
     decoder := func(vt *rt.GoType) (interface{}, error) {
         if pp, err := compiler.compile(_vt); err != nil {
             return nil, err
