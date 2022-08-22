@@ -284,11 +284,18 @@ import (
 
 func init() {
     var v HugeStruct
-    // For most large types (nesting depth <= 5)
+
+    // For most large types (nesting depth <= option.DefaultMaxInlineDepth)
     err := sonic.Pretouch(reflect.TypeOf(v))
-    // If the type is too deep nesting (nesting depth > 5),
-    // you can set compile recursive depth in Pretouch for better stability in JIT.
-    err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
+
+    // with more CompileOption...
+    err := sonic.Pretouch(reflect.TypeOf(v), 
+        // If the type is too deep nesting (nesting depth > option.DefaultMaxInlineDepth),
+        // you can set compile recursive loops in Pretouch for better stability in JIT.
+        option.WithCompileRecursiveDepth(loop),
+        // For large nested struct, try to set smaller depth to reduce compiling time.
+        option.WithCompileMaxInlineDepth(depth),
+    )
 }
 ```
 
