@@ -102,8 +102,8 @@ const (
 )
 
 const (
-    _MAX_STACK = 5          // cutoff at 5 levels of nesting types
     _MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
+    _MAX_FIELDS = 50        // cutoff at 50 fields struct
 )
 
 var _OpNames = [256]string {
@@ -487,15 +487,14 @@ type _Compiler struct {
 
 func newCompiler() *_Compiler {
     return &_Compiler {
+        opts: option.DefaultCompileOptions(),
         tab: map[reflect.Type]bool{},
+        rec: map[reflect.Type]bool{},
     }
 }
 
 func (self *_Compiler) apply(opts option.CompileOptions) *_Compiler {
     self.opts = opts
-    if self.opts.RecursiveDepth > 0 {
-        self.rec = map[reflect.Type]bool{}
-    }
     return self
 }
 
@@ -516,14 +515,14 @@ func (self *_Compiler) compile(vt reflect.Type) (ret _Program, err error) {
 }
 
 func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
-    ok := self.tab[vt]
-    pt := reflect.PtrTo(vt)
-
     /* check for recursive nesting */
+    ok := self.tab[vt]
     if ok {
         p.rtt(_OP_recurse, vt)
         return
     }
+
+    pt := reflect.PtrTo(vt)
 
     /* check for `json.Unmarshaler` with pointer receiver */
     if pt.Implements(jsonUnmarshalerType) {
@@ -812,7 +811,7 @@ func (self *_Compiler) compileStringBody(p *_Program) {
 }
 
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
-    if sp >= _MAX_STACK || p.pc() >= _MAX_ILBUF {
+    if sp >= self.opts.MaxInlineDepth || p.pc() >= _MAX_ILBUF || (sp > 0 && vt.NumField() >= _MAX_FIELDS) {
         p.rtt(_OP_recurse, vt)
         if self.opts.RecursiveDepth > 0 {
             self.rec[vt] = true
