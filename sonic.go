@@ -61,6 +61,8 @@ type frozenConfig struct {
 // Froze convert the Config to API
 func (cfg Config) Froze() API {
     api := &frozenConfig{Config: cfg}
+
+    // configure encoder options:
     if cfg.EscapeHTML {
         api.encoderOpts |= encoder.EscapeHTML
     }
@@ -73,6 +75,11 @@ func (cfg Config) Froze() API {
     if cfg.NoQuoteTextMarshaler {
         api.encoderOpts |= encoder.NoQuoteTextMarshaler
     }
+    if cfg.NoNullSliceOrMap {
+        api.encoderOpts |= encoder.NoNullSliceOrMap
+    }
+
+    // configure decoder options:
     if cfg.UseInt64 {
         api.decoderOpts |= decoder.OptionUseInt64
     }
@@ -85,8 +92,8 @@ func (cfg Config) Froze() API {
     if cfg.CopyString {
         api.decoderOpts |= decoder.OptionCopyString
     }
-    if cfg.NoNullSliceOrMap {
-        api.encoderOpts |= encoder.NoNullSliceOrMap
+    if cfg.ValidateString {
+        api.decoderOpts |= decoder.OptionValidateString
     }
     return api
 }
@@ -111,7 +118,6 @@ func (cfg *frozenConfig) MarshalIndent(val interface{}, prefix, indent string) (
 func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
     dec := decoder.NewDecoder(buf)
     dec.SetOptions(cfg.decoderOpts)
-
     err := dec.Decode(val)
     pos := dec.Pos()
 
@@ -153,13 +159,25 @@ func (cfg *frozenConfig) Valid(data []byte) bool {
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
-    if err := encoder.Pretouch(vt, opts...); err != nil {
-        return err
-    } else if err = decoder.Pretouch(vt, opts...); err != nil {
-        return err
-    } else {
-        return nil
-    }
+	if err := encoder.Pretouch(vt, opts...); err != nil {
+	    return err
+	} 
+	if err := decoder.Pretouch(vt, opts...); err != nil {
+		return err
+	}
+	// to pretouch the corresponding pointer type as well
+	if vt.Kind() == reflect.Ptr {
+		vt = vt.Elem()
+	} else {
+		vt = reflect.PtrTo(vt)
+	}
+	if err := encoder.Pretouch(vt, opts...); err != nil {
+	    return err
+	} 
+	if err := decoder.Pretouch(vt, opts...); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Get searches the given path json,

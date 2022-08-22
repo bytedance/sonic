@@ -26,41 +26,41 @@ import (
     `github.com/stretchr/testify/require`
 )
 
- func TestEncodeStream(t *testing.T) {
-     var o = map[string]interface{}{
-         "a": "<>",
-         "b": json.RawMessage(" [ ] "),
-     }
-     var w1 = bytes.NewBuffer(nil)
-     var w2 = bytes.NewBuffer(nil)
-     var enc1 = json.NewEncoder(w1)
-     var enc2 = NewStreamEncoder(w2)
-     enc2.SetEscapeHTML(true)
-     enc2.SortKeys()
-     enc2.SetCompactMarshaler(true)
+func TestEncodeStream(t *testing.T) {
+    var o = map[string]interface{}{
+        "a": "<>",
+        "b": json.RawMessage(" [ ] "),
+    }
+    var w1 = bytes.NewBuffer(nil)
+    var w2 = bytes.NewBuffer(nil)
+    var enc1 = json.NewEncoder(w1)
+    var enc2 = NewStreamEncoder(w2)
+    enc2.SetEscapeHTML(true)
+    enc2.SortKeys()
+    enc2.SetCompactMarshaler(true)
 
-     require.Nil(t, enc1.Encode(o))
-     require.Nil(t, enc2.Encode(o))
-     require.Equal(t, w1.String(), w2.String())
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
 
-     enc1.SetEscapeHTML(true)
-     enc2.SetEscapeHTML(true)
-     enc1.SetIndent("你好", "\b")
-     enc2.SetIndent("你好", "\b")
-     require.Nil(t, enc1.Encode(o))
-     require.Nil(t, enc2.Encode(o))
-     require.Equal(t, w1.String(), w2.String())
-     
-     enc1.SetEscapeHTML(false)
-     enc2.SetEscapeHTML(false)
-     enc1.SetIndent("", "")
-     enc2.SetIndent("", "")
-     require.Nil(t, enc1.Encode(o))
-     require.Nil(t, enc2.Encode(o))
-     require.Equal(t, w1.String(), w2.String())
- }
+    enc1.SetEscapeHTML(true)
+    enc2.SetEscapeHTML(true)
+    enc1.SetIndent("你好", "\b")
+    enc2.SetIndent("你好", "\b")
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
 
- func BenchmarkEncodeStream_Sonic(b *testing.B) {
+    enc1.SetEscapeHTML(false)
+    enc2.SetEscapeHTML(false)
+    enc1.SetIndent("", "")
+    enc2.SetIndent("", "")
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+}
+
+func BenchmarkEncodeStream_Sonic(b *testing.B) {
     var o = map[string]interface{}{
         "a": `<`+strings.Repeat("1", 1024)+`>`,
         "b": json.RawMessage(` [ `+strings.Repeat(" ", 1024)+` ] `),
@@ -99,9 +99,9 @@ import (
             w.Reset()
         }
     })
- }
+}
 
- func BenchmarkEncodeStream_Std(b *testing.B) {
+func BenchmarkEncodeStream_Std(b *testing.B) {
     var o = map[string]interface{}{
         "a": `<`+strings.Repeat("1", 1024)+`>`,
         "b": json.RawMessage(` [ `+strings.Repeat(" ", 1024)+` ] `),
@@ -138,9 +138,9 @@ import (
             w.Reset()
         }
     })
- }
+}
 
- func BenchmarkEncodeStream_Jsoniter(b *testing.B) {
+func BenchmarkEncodeStream_Jsoniter(b *testing.B) {
     var o = map[string]interface{}{
         "a": `<`+strings.Repeat("1", 1024)+`>`,
         "b": json.RawMessage(` [ `+strings.Repeat(" ", 1024)+` ] `),
@@ -187,4 +187,4 @@ import (
             w.Reset()
         }
     })
- }
+}

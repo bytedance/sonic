@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package avx
+package sse4
 
 import (
     `unsafe`

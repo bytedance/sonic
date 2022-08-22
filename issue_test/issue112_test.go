@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
- package issue_test
+package issue_test
 
- import (
+import (
     `testing`
 
     . `github.com/bytedance/sonic`
     `github.com/stretchr/testify/require`
- )
+)
  
 func TestUnmarshalInvalidBase64EncodedString(t *testing.T) {
     var obj []byte

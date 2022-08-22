@@ -35,8 +35,10 @@ import (
     `testing`
     `time`
     `unsafe`
+    `unicode/utf8`
 
     `github.com/bytedance/sonic/decoder`
+    `github.com/davecgh/go-spew/spew`
 )
 
 type T struct {
@@ -410,6 +412,7 @@ type unmarshalTest struct {
     useNumber             bool
     golden                bool
     disallowUnknownFields bool
+    validateString           bool
 }
 
 type B struct {
@@ -696,11 +699,13 @@ var unmarshalTests = []unmarshalTest{
         in:  "\"hello\xffworld\"",
         ptr: new(string),
         out: "hello\xffworld",
+        validateString: false,
     },
     {
         in:  "\"hello\xc2\xc2world\"",
         ptr: new(string),
         out: "hello\xc2\xc2world",
+        validateString: false,
     },
     {
         in:  "\"hello\xc2\xffworld\"",
@@ -999,6 +1004,17 @@ var unmarshalTests = []unmarshalTest{
         ptr: new(map[string]json.Number),
         err: fmt.Errorf("json: invalid number literal, trying to unmarshal %q into Number", `"invalid"`),
     },
+    {in: `\u`, ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validateString: true},
+    {in: `\u`, ptr: new(string), err: fmt.Errorf("json: invald char"), validateString: true},
+
+    {in: "\"\x00\"", ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validateString: true},
+    {in: "\"\x00\"", ptr: new(string), err: fmt.Errorf("json: invald char"), validateString: true},
+    {in: "\"\xff\"", ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validateString: true},
+    {in: "\"\xff\"", ptr: new(string), err: fmt.Errorf("json: invald char"), validateString: true},
+    {in: "\"\x00\"", ptr: new(interface{}), out: interface{}("\x00"), validateString: false},
+    {in: "\"\x00\"", ptr: new(string), out: "\x00", validateString: false},
+    {in: "\"\xff\"", ptr: new(interface{}), out: interface{}("\xff"), validateString: false},
+    {in: "\"\xff\"", ptr: new(string), out: "\xff", validateString: false},
 }
 
 func trim(b []byte) []byte {
@@ -1128,14 +1144,20 @@ func TestUnmarshal(t *testing.T) {
         }
 
         dec := decoder.NewDecoder(tt.in)
+        validUtf8 := true
         if tt.useNumber {
             dec.UseNumber()
         }
         if tt.disallowUnknownFields {
             dec.DisallowUnknownFields()
         }
-        if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil) {
-            t.Errorf("#%d: %v, want %v", i, err, tt.err)
+        if tt.validateString {
+            dec.ValidateString()
+            validUtf8 = utf8.Valid([]byte(tt.in))
+        }
+        if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil && validUtf8) {
+            spew.Dump(tt.in)
+            t.Fatalf("#%d: %v, want %v", i, err, tt.err)
             continue
         } else if err != nil {
             continue
@@ -2203,7 +2225,6 @@ func TestInvalidStringOption(t *testing.T) {
     if err != nil {
         t.Fatalf("Marshal: %v", err)
     }
-
     err = Unmarshal(data, &item)
     if err != nil {
         t.Fatalf("Unmarshal: %v", err)
