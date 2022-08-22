@@ -88,7 +88,7 @@ const (
     _PTR_SIZE = 32 << (^uintptr(0) >> 63)
 )
 
-var (
+const (
     _MAX_ILBUF = 100000     // cutoff at 100k of IL instructions
     _MAX_FIELDS = 50        // cutoff at 50 fields struct
 )
