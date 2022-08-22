@@ -21,9 +21,9 @@ import (
     `reflect`
     `runtime`
 
-    `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
 )
 
@@ -33,6 +33,7 @@ const (
     _F_disable_urc
     _F_disable_unknown
     _F_copy_string
+    _F_validate_string
 
     _F_allow_control = 31
 )
@@ -45,6 +46,7 @@ const (
     OptionUseUnicodeErrors Options = 1 << _F_disable_urc
     OptionDisableUnknown   Options = 1 << _F_disable_unknown
     OptionCopyString       Options = 1 << _F_copy_string
+    OptionValidateString   Options = 1 << _F_validate_string
 )
 
 func (self *Decoder) SetOptions(opts Options) {
@@ -139,6 +141,13 @@ func (self *Decoder) CopyString() {
     self.f |= 1 << _F_copy_string
 }
 
+// ValidateString causes the Decoder to validate string values when decoding string value 
+// in JSON. Validation is that, returning error when unescaped control chars(0x00-0x1f) or
+// invalid UTF-8 chars in the string value of JSON.
+func (self *Decoder) ValidateString() {
+    self.f |= 1 << _F_validate_string
+}
+
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
 // order to reduce the first-hit latency.
 //
@@ -194,12 +203,12 @@ func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
 }
 
 // Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
-// Otherwise returns negative error code using start and invalid character position using end
+// Otherwise, returns negative error code using start and invalid character position using end
 func Skip(data []byte) (start int, end int) {
     s := rt.Mem2Str(data)
     p := 0
     m := types.NewStateMachine()
-    ret := native.SkipOne(&s, &p, m)
+    ret := native.SkipOne(&s, &p, m, uint64(0))
     types.FreeStateMachine(m) 
     return ret, p
 }

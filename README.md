@@ -3,9 +3,9 @@
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT (just-in-time compiling) and SIMD (single-instruction-multiple-data).
 
 ## Requirement
-- Go 1.15/1.16/1.17/1.18
+- Go 1.15/1.16/1.17/1.18/1.19
 - Linux/MacOS/Windows
-- Amd64 CPU with AVX instruction set
+- Amd64 ARCH
 
 ## Features
 - Runtime object binding without code generation
@@ -74,7 +74,7 @@ BenchmarkSetOne_Jsoniter-16                            79475 ns/op         163.8
 BenchmarkSetOne_Parallel_Sonic-16                       2383 ns/op        5465.02 MB/s        2186 B/op         17 allocs/op
 BenchmarkSetOne_Parallel_Sjson-16                      18194 ns/op         715.77 MB/s       52247 B/op          9 allocs/op
 BenchmarkSetOne_Parallel_Jsoniter-16                   33560 ns/op         388.05 MB/s       45892 B/op        964 allocs/op
-```        
+```
 - [Small](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 keys, 3 layers)
 ![small benchmarks](bench-small.jpg)
 - [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitter.json) (635KB, 10000+ key, 6 layers)
@@ -95,7 +95,7 @@ import "github.com/bytedance/sonic"
 
 var data YourSchema
 // Marshal
-output, err := sonic.Marshal(&data) 
+output, err := sonic.Marshal(&data)
 // Unmarshal
 err := sonic.Unmarshal(output, &data)
  ```
@@ -135,7 +135,7 @@ var input = `1`
 var data interface{}
 
 // default float64
-dc := decoder.NewDecoder(input) 
+dc := decoder.NewDecoder(input)
 dc.Decode(&data) // data == float64(1)
 // use json.Number
 dc = decoder.NewDecoder(input)
@@ -154,7 +154,7 @@ jm := root.InterfaceUseNumber().(json.Number) // jn == jm
 fn := root.Float64()
 fm := root.Interface().(float64) // jn == jm
  ```
- 
+
 ### Sort Keys
 On account of the performance loss from sorting (roughly 10%), sonic doesn't enable this feature by default. If your component depends on it to work (like [zstd](https://github.com/facebook/zstd)), Use it like this:
 ```go
@@ -215,7 +215,7 @@ input := []byte(`{"key1":[{},{"key2":{"key3":[1,2,3]}}]}`)
 root, err := sonic.Get(input)
 raw := root.Raw() // == string(input)
 
-// multiple pathes
+// multiple paths
 root, err := sonic.Get(input, "key1", 1, "key2")
 sub := root.Get("key3").Index(2).Int64() // == 3
 ```
@@ -228,7 +228,7 @@ import "github.com/bytedance/sonic"
 
 // Set
 exist, err := root.Set("key4", NewBool(true)) // exist == false
-alias1 := root.Get("key4") 
+alias1 := root.Get("key4")
 println(alias1.Valid()) // true
 alias2 := root.Index(1)
 println(alias1 == alias2) // true
@@ -261,10 +261,15 @@ println(string(buf) == string(exp)) // true
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
 ## Compatibility
-Sonic **DOSE NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments (ex: developing on M1 Mac but running on linux server), or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
-- `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options like `SortKeys=false` will be invalid.
-- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It whill fall back to `encoding/json`.
-- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config , and some options will be invalid.
+Sonic **DOES NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments, we have the following suggestions:
+
+- Developing on **Mac M1**: Make sure you have Rosetta 2 installed on your machine, and set `GOARCH=amd64` when building your application. Rosetta 2 can automatically translate x86 binaries to arm64 binaries and run x86 applications on Mac M1.
+- Developing on **Linux arm64**: You can install qemu and use the `qemu-x86_64 -cpu max` command to convert x86 binaries to amr64 binaries for applications built with sonic. The qemu can achieve similar transfer effect to Rosetta 2 on Mac M1.
+
+For developers who want to use sonic on Linux arm64 without qemu, or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
+- `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with the corresponding config, and some options like `SortKeys=false` will be invalid.
+- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It will fall back to `encoding/json`.
+- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config, and some options will be invalid.
 
 ## Tips
 
@@ -275,16 +280,16 @@ import (
     "reflect"
     "github.com/bytedance/sonic"
     "github.com/bytedance/sonic/option"
- )
- 
- func init() {
-     var v HugeStruct
+)
+
+func init() {
+    var v HugeStruct
     // For most large types (nesting depth <= 5)
-     err := sonic.Pretouch(reflect.TypeOf(v))
+    err := sonic.Pretouch(reflect.TypeOf(v))
     // If the type is too deep nesting (nesting depth > 5),
     // you can set compile recursive depth in Pretouch for better stability in JIT.
     err := sonic.Pretouch(reflect.TypeOf(v), option.WithCompileRecursiveDepth(depth))
- }
+}
 ```
 
 ### Copy string
@@ -317,12 +322,12 @@ err = user.Check()
 // err = user.LoadAll() // only call this when you want to use 'user' concurrently...
 go someFunc(user)
 ```
-Why? Because `ast.Node` stores its children using `array`: 
+Why? Because `ast.Node` stores its children using `array`:
 - `Array`'s performance is **much better** than `Map` when Inserting (Deserialize) and Scanning (Serialize) data;
 - **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**;
 - Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while `ast.Node` can parse them **on demand**.
 
-**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}` 
+**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}`
 
 ## Community
 Sonic is a subproject of [CloudWeGo](https://www.cloudwego.io/). We are committed to building a cloud native ecosystem.
