@@ -80,7 +80,7 @@ var issue13ExpectedNonemptyOpt = `{
  "uint32": 32,
  "uint64": 64,
  "float32": 1,
- "float64": -2.34e64,
+ "float64": -2.34e+64,
  "uintptr": 1,
  "string": "string",
  "array": [

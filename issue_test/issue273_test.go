@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2022 ByteDance Inc.
  *
@@ -14,28 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef XASSERT_H
-#define XASSERT_H
 
-#ifndef DEBUG
-    #define xassert(expr)     ((void)0)
-#else
-    #include "xprintf.h"
-    #define xassert(expr) \
-    ((expr)	\
-    ? ((void)0)						\
-    : _xassert(#expr, __FILE__, __LINE__, __PRETTY_FUNCTION__))
+package issue_test
 
-static void* raise = 0;
-static void xabort() {
-    *(int*)(raise) = 1;
+import (
+    `testing`
+
+    `encoding/json`
+    `github.com/bytedance/sonic`
+    `github.com/stretchr/testify/require`
+)
+
+func TestMarshal_Float32To64(t *testing.T) {
+	var f float32 = 0.1
+	oe,ee := json.Marshal(f)
+	os,es := sonic.Marshal(f)
+	require.Equal(t, ee == nil, es == nil)
+	require.Equal(t, string(oe), string(os))
+
+	var f2,f3 float64
+	require.Nil(t, json.Unmarshal(oe, &f2))
+	require.Nil(t, sonic.Unmarshal(os, &f3))
+	require.Equal(t, f2, f3)
 }
-static void _xassert(const char *assertion, const char *file, 
-    const unsigned line, const char *func) {
-    xprintf("%s:%u: %s Assertion `%s' failed.\n",
-		      file, line, func ? func : "?", assertion);
-    xabort();
-}
-#endif // DEBUG
-
-#endif // XASSERT_H

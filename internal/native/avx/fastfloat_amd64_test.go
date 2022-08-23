@@ -22,6 +22,8 @@ import (
     `math`
     `strconv`
     `testing`
+    `math/rand`
+    `encoding/json`
 
     `github.com/stretchr/testify/assert`
 )
@@ -33,62 +35,122 @@ func TestFastFloat_Encode(t *testing.T) {
     assert.Equal(t, "12340000000"               , string(buf[:__f64toa(&buf[0], 1234e7)]))
     assert.Equal(t, "12.34"                     , string(buf[:__f64toa(&buf[0], 1234e-2)]))
     assert.Equal(t, "0.001234"                  , string(buf[:__f64toa(&buf[0], 1234e-6)]))
-    assert.Equal(t, "1e30"                      , string(buf[:__f64toa(&buf[0], 1e30)]))
-    assert.Equal(t, "1.234e33"                  , string(buf[:__f64toa(&buf[0], 1234e30)]))
-    assert.Equal(t, "1.234e308"                 , string(buf[:__f64toa(&buf[0], 1234e305)]))
+    assert.Equal(t, "1e+30"                      , string(buf[:__f64toa(&buf[0], 1e30)]))
+    assert.Equal(t, "1.234e+33"                  , string(buf[:__f64toa(&buf[0], 1234e30)]))
+    assert.Equal(t, "1.234e+308"                 , string(buf[:__f64toa(&buf[0], 1234e305)]))
     assert.Equal(t, "1.234e-317"                , string(buf[:__f64toa(&buf[0], 1234e-320)]))
-    assert.Equal(t, "1.7976931348623157e308"    , string(buf[:__f64toa(&buf[0], 1.7976931348623157e308)]))
+    assert.Equal(t, "1.7976931348623157e+308"    , string(buf[:__f64toa(&buf[0], 1.7976931348623157e308)]))
     assert.Equal(t, "-12340000000"              , string(buf[:__f64toa(&buf[0], -1234e7)]))
     assert.Equal(t, "-12.34"                    , string(buf[:__f64toa(&buf[0], -1234e-2)]))
     assert.Equal(t, "-0.001234"                 , string(buf[:__f64toa(&buf[0], -1234e-6)]))
-    assert.Equal(t, "-1e30"                     , string(buf[:__f64toa(&buf[0], -1e30)]))
-    assert.Equal(t, "-1.234e33"                 , string(buf[:__f64toa(&buf[0], -1234e30)]))
-    assert.Equal(t, "-1.234e308"                , string(buf[:__f64toa(&buf[0], -1234e305)]))
+    assert.Equal(t, "-1e+30"                     , string(buf[:__f64toa(&buf[0], -1e30)]))
+    assert.Equal(t, "-1.234e+33"                 , string(buf[:__f64toa(&buf[0], -1234e30)]))
+    assert.Equal(t, "-1.234e+308"                , string(buf[:__f64toa(&buf[0], -1234e305)]))
     assert.Equal(t, "-1.234e-317"               , string(buf[:__f64toa(&buf[0], -1234e-320)]))
     assert.Equal(t, "-2.2250738585072014e-308"  , string(buf[:__f64toa(&buf[0], -2.2250738585072014e-308)]))
 }
 
+func TestFastFloat_Base(t *testing.T) {
+    var buf [32]byte
+    var f32 float32 = float32(0.115719385)
+    jout, jerr := json.Marshal(f32)
+    n := __f32toa(&buf[0], f32)
+    if jerr == nil {
+        assert.Equal(t, jout, buf[:n])
+    } else {
+        assert.True(t, n == 0)
+    }
+}
+
+func TestFastFloat_Random(t *testing.T) {
+    var buf [32]byte
+    var f32 float32 = float32(0.115719385)
+    jout, jerr := json.Marshal(f32)
+    n := __f32toa(&buf[0], f32)
+    if jerr == nil {
+        assert.Equal(t, jout, buf[:n])
+    } else {
+        assert.True(t, n == 0)
+    }
+    N := 10000
+    for i := 0; i < N; i++ {
+        b64 := uint64(rand.Uint32())<<32 | uint64(rand.Uint32())
+        f64 := math.Float64frombits(b64)
+
+        jout, jerr := json.Marshal(f64)
+        n := __f64toa(&buf[0], f64)
+        if jerr == nil {
+            assert.Equal(t, jout, buf[:n])
+        } else {
+            assert.True(t, n == 0)
+        }
+
+        f32 := math.Float32frombits(rand.Uint32())
+        jout, jerr = json.Marshal(f32)
+        n = __f32toa(&buf[0], f32)
+        if jerr == nil {
+            assert.Equal(t, jout, buf[:n])
+        } else {
+            assert.True(t, n == 0)
+        }
+    }
+}
+
 var ftoaBenches = []struct {
-	name    string
-	float   float64
-	fmt     byte
-	prec    int
-	bitSize int
+    name    string
+    float   float64
+    bitSize int
 }{
-    {"Zero", 0, 'g', -1, 64},
-	{"Decimal", 33909, 'g', -1, 64},
-	{"Float", 339.7784, 'g', -1, 64},
-	{"Exp", -5.09e75, 'g', -1, 64},
-	{"NegExp", -5.11e-95, 'g', -1, 64},
-	{"LongExp", 1.234567890123456e-78, 'g', -1, 64},
-
-	{"Big", 123456789123456789123456789, 'g', -1, 64},
-	{"BinaryExp", -1, 'b', -1, 64},
-
-	{"32Integer", 33909, 'g', -1, 32},
-	{"32ExactFraction", 3.375, 'g', -1, 32},
-	{"32Point", 339.7784, 'g', -1, 32},
-	{"32Exp", -5.09e25, 'g', -1, 32},
-	{"32NegExp", -5.11e-25, 'g', -1, 32},
-	{"32Shortest", 1.234567e-8, 'g', -1, 32},
+    {"Zero", 0, 64},
+    {"Decimal", 33909, 64},
+    {"Float", 339.7784, 64},
+    {"Exp", -5.09e75, 64},
+    {"NegExp", -5.11e-95, 64},
+    {"LongExp", 1.234567890123456e-78, 64},
+    {"Big", 123456789123456789123456789, 64},
+    {"32Integer", 33909, 32},
+    {"32ExactFraction", 3.375, 32},
+    {"32Point", 339.7784, 32},
+    {"32Exp", -5.09e25, 32},
+    {"32NegExp", -5.11e-25, 32},
+    {"32Shortest", 1.234567e-8, 32},
 }
 
 func BenchmarkAppendFloat(b *testing.B) {
-	for _, c := range ftoaBenches {
-        benchmarks := []struct {
+    for _, c := range ftoaBenches {
+        f64bench := []struct {
             name string
             test func(*testing.B)
         }{{
             name: "StdLib",
-            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:], c.float, c.fmt, c.prec, c.bitSize) }},
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:0], c.float, 'g', -1, c.bitSize) }},
         }, {
             name: "FastFloat",
             test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f64toa(&buf[0], c.float) }},
         }}
-        for _, bm := range benchmarks {
-            name := bm.name + c.name
-            b.Run(name, bm.test)
-        }
-	}
-}
 
+        f32bench := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib32",
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:0], c.float, 'g', -1, c.bitSize) }},
+        }, {
+            name: "FastFloat32",
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f32toa(&buf[0], float32(c.float)) }},
+        }}
+
+        if c.bitSize == 64 {
+            for _, bm := range f64bench {
+                name := bm.name + "_" + c.name
+                b.Run(name, bm.test)
+            }
+        }
+        if c.bitSize == 32 {
+            for _, bm := range f32bench {
+                name := bm.name + "_" + c.name
+                b.Run(name, bm.test)
+            }
+        }
+    }
+}

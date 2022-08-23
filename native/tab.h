@@ -1,6 +1,8 @@
 #ifndef TAB_H
 #define TAB_H
 
+#include "test/xassert.h"
+
 struct uint64x2 {
     uint64_t hi;
     uint64_t lo;
@@ -20,8 +22,24 @@ static const char Digits[200] = {
     '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', '9', '5', '9', '6', '9', '7', '9', '8', '9', '9',
 };
 
-static inline const uint64x2 pow10_ceil_sig(int32_t k)
-{
+static inline bool is_div_pow2(uint64_t val, int32_t e) {
+    xassert(e >= 0 && e <= 63);
+    uint64_t mask = (1ull << e) - 1;
+    return (val & mask) == 0;
+}
+
+static inline char* utoa2(char* p, uint32_t val) {
+    p[0] = Digits[val];
+    p[1] = Digits[val + 1];
+    return p + 2;
+}
+
+static inline void copy_two_digs(char* dst, const char* src) {
+    *(dst) = *(src);
+    *(dst + 1) = *(src + 1);
+}
+
+static inline const uint64x2 pow10_ceil_sig(int32_t k) {
     // There are unique beta and r such that 10^k = beta 2^r and
     // 2^127 <= beta < 2^128, namely r = floor(log_2 10^k) - 127 and
     // beta = 2^-r 10^k.
@@ -30,6 +48,8 @@ static inline const uint64x2 pow10_ceil_sig(int32_t k)
 
     // NB: Since for all the required exponents k, we have g < 2^128,
     //     all constants can be stored in 128-bit integers.
+    // Reference from:
+    //  https://github.com/abolz/Drachennest/blob/master/src/schubfach_64.cc#L151
 
 #define KMIN -292
 #define KMAX 324

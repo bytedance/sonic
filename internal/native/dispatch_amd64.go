@@ -30,6 +30,7 @@ const MaxFrameSize uintptr = 400
 
 var (
     S_f64toa uintptr
+    S_f32toa uintptr
     S_i64toa uintptr
     S_u64toa uintptr
     S_lspace uintptr
@@ -97,6 +98,7 @@ func U64toa(out *byte, val uint64) (ret int)
 
 func useAVX() {
     S_f64toa      = avx.S_f64toa
+    S_f32toa      = avx.S_f32toa
     S_i64toa      = avx.S_i64toa
     S_u64toa      = avx.S_u64toa
     S_lspace      = avx.S_lspace
@@ -115,6 +117,7 @@ func useAVX() {
 
 func useAVX2() {
     S_f64toa      = avx2.S_f64toa
+    S_f32toa      = avx2.S_f32toa
     S_i64toa      = avx2.S_i64toa
     S_u64toa      = avx2.S_u64toa
     S_lspace      = avx2.S_lspace
@@ -133,6 +136,7 @@ func useAVX2() {
 
 func useSSE4() {
     S_f64toa = sse4.S_f64toa
+    S_f32toa = sse4.S_f32toa
     S_i64toa = sse4.S_i64toa
     S_u64toa = sse4.S_u64toa
     S_lspace = sse4.S_lspace

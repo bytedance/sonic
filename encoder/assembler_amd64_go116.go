@@ -732,6 +732,7 @@ var (
 
 var (
     _F_f64toa    = jit.Imm(int64(native.S_f64toa))
+    _F_f32toa    = jit.Imm(int64(native.S_f32toa))
     _F_i64toa    = jit.Imm(int64(native.S_i64toa))
     _F_u64toa    = jit.Imm(int64(native.S_u64toa))
     _F_b64encode = jit.Imm(int64(_subr__b64encode))
@@ -851,8 +852,7 @@ func (self *_Assembler) _asm_OP_f32(_ *_Instr) {
     self.save_c()                                       // SAVE     $C_regs
     self.rbuf_di()                                      // MOVQ     RP, DI
     self.Emit("MOVSS"   , jit.Ptr(_SP_p, 0), _X0)       // MOVSS    (SP.p), X0
-    self.Emit("CVTSS2SD", _X0, _X0)                     // CVTSS2SD X0, X0
-    self.call_c(_F_f64toa)                              // CALL_C   f64toa
+    self.call_c(_F_f32toa)                              // CALL_C   f64toa
     self.Emit("ADDQ"    , _AX, _RL)                     // ADDQ     AX, RL
 }
 

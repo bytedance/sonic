@@ -75,7 +75,6 @@ static void printint(int64_t v)
 
 static void printuint(uint64_t v)
 {
-    char neg = 0;
     char buf[32] = {};
     char *p = &buf[31];
     if (v == 0)
