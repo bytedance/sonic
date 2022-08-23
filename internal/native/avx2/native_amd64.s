@@ -9779,7 +9779,7 @@ _MASK_USE_NUMBER:
 	LONG $0x00000002         // .long 2
 	QUAD $0x0000000000000000 // .p2align 4, 0x00
 
-_LB_f79d4168: // _pow10_ceil_sig.g
+_LB_b73a5bc3: // _pow10_ceil_sig.g
 	QUAD $0xff77b1fcbebcdc4f // .quad -38366372719436721
 	QUAD $0x25e8e89c13bb0f7b // .quad 2731688931043774331
 	QUAD $0x9faacf3df73609b1 // .quad -6941508010590729807

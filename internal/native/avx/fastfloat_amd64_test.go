@@ -48,37 +48,47 @@ func TestFastFloat_Encode(t *testing.T) {
     assert.Equal(t, "-2.2250738585072014e-308"  , string(buf[:__f64toa(&buf[0], -2.2250738585072014e-308)]))
 }
 
-func BenchmarkFastFloat_Encode(b *testing.B) {
-    val := -2.2250738585072014e-308
-    benchmarks := []struct {
-        name string
-        test func(*testing.B)
-    }{{
-        name: "StdLib",
-        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:], val, 'g', -1, 64) }},
-    }, {
-        name: "FastFloat",
-        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f64toa(&buf[0], val) }},
-    }}
-    for _, bm := range benchmarks {
-        b.Run(bm.name, bm.test)
-    }
+var ftoaBenches = []struct {
+	name    string
+	float   float64
+	fmt     byte
+	prec    int
+	bitSize int
+}{
+    {"Zero", 0, 'g', -1, 64},
+	{"Decimal", 33909, 'g', -1, 64},
+	{"Float", 339.7784, 'g', -1, 64},
+	{"Exp", -5.09e75, 'g', -1, 64},
+	{"NegExp", -5.11e-95, 'g', -1, 64},
+	{"LongExp", 1.234567890123456e-78, 'g', -1, 64},
+
+	{"Big", 123456789123456789123456789, 'g', -1, 64},
+	{"BinaryExp", -1, 'b', -1, 64},
+
+	{"32Integer", 33909, 'g', -1, 32},
+	{"32ExactFraction", 3.375, 'g', -1, 32},
+	{"32Point", 339.7784, 'g', -1, 32},
+	{"32Exp", -5.09e25, 'g', -1, 32},
+	{"32NegExp", -5.11e-25, 'g', -1, 32},
+	{"32Shortest", 1.234567e-8, 'g', -1, 32},
 }
 
-func BenchmarkFastFloat_EncodeZero(b *testing.B) {
-    val := float64(0)
-    benchmarks := []struct {
-        name string
-        test func(*testing.B)
-    }{{
-        name: "StdLib",
-        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:], val, 'g', -1, 64) }},
-    }, {
-        name: "FastFloat",
-        test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f64toa(&buf[0], val) }},
-    }}
-    for _, bm := range benchmarks {
-        b.Run(bm.name, bm.test)
-    }
+func BenchmarkAppendFloat(b *testing.B) {
+	for _, c := range ftoaBenches {
+        benchmarks := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib",
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:], c.float, c.fmt, c.prec, c.bitSize) }},
+        }, {
+            name: "FastFloat",
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f64toa(&buf[0], c.float) }},
+        }}
+        for _, bm := range benchmarks {
+            name := bm.name + c.name
+            b.Run(name, bm.test)
+        }
+	}
 }
 
