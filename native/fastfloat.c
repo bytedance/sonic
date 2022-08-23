@@ -17,51 +17,40 @@
  * KIND, either express or implied.
  */
 #include "native.h"
-#include "ryu_tab.h"
+#include "tab.h"
+#include "test/xassert.h"
 
-/* use 128-bit type for performance */
+#define xprintf(...)
+// #define xassert(...)
+
+#define F64_BITS         64
+#define F64_EXP_BITS     11
+#define F64_SIG_BITS     52
+#define F64_EXP_MASK     0x7FF0000000000000ull // middle 11 bits
+#define F64_SIG_MASK     0x000FFFFFFFFFFFFFull // lower 52 bits
+#define F64_EXP_BIAS     1023
+#define F64_INF_NAN_EXP  0x7FF
+#define F64_HIDDEN_BIT   0x0010000000000000ull
+
+struct f64_dec {
+    uint64_t sig;
+    int64_t exp;
+};
+typedef struct f64_dec f64_dec;
+
 typedef __uint128_t uint128_t;
 
-/* Returns e == 0 ? 1 : ceil(log_2(5^e)) */
-static inline int32_t pow5bits(const int32_t e) {
-    return (int32_t) (((((uint32_t) e) * 1217359) >> 19) + 1);
-}
-
-/* Returns floor(log_10(2^e)) */
-static inline uint32_t log10pow2(const int32_t e) {
-    return (((uint32_t) e) * 78913) >> 18;
-}
-
-/* Returns floor(log_10(5^e)) */
-static inline uint32_t log10pow5(const int32_t e) {
-    return (((uint32_t) e) * 732923) >> 20;
-}
-
-static inline uint32_t pow5factor(uint64_t v) {
-    uint64_t m_inv5 = 14757395258967641293u; // *5 = 1(mod 2^64)
-    uint64_t n_div5 = 3689348814741910323u;  // =2^64 / 5
-    uint32_t cnt = 0;
-    for (;;) {
-        v *= m_inv5;
-        if (v > n_div5)
-            break;
-        ++cnt;
-    }
-    return cnt;
-}
-
-/* Returns true if value is divisible by 5^p */
-static inline bool ispow5(const uint64_t v, const uint32_t p) {
-    return pow5factor(v) >= p;
-}
-
-/* Returns true if value is divisible by 2^p */
-static inline bool ispow2(const uint64_t v, const uint32_t p) {
-    return (v & ((1ull << p) - 1)) == 0;
-}
-
-/* Requires 0 <= v < v < 100000000000000000L */
 static inline uint32_t ctz10(const uint64_t v) {
+    xassert(0 <= v && v < 100000000000000000ull);
+    if (v >= 10000000000) {
+        if (v <      100000000000) return 11;
+        if (v <     1000000000000) return 12;
+        if (v <    10000000000000) return 13;
+        if (v <   100000000000000) return 14;
+        if (v <  1000000000000000) return 15;
+        if (v < 10000000000000000) return 16;
+                                   return 17;
+    }
     if (v <                10) return 1;
     if (v <               100) return 2;
     if (v <              1000) return 3;
@@ -71,415 +60,304 @@ static inline uint32_t ctz10(const uint64_t v) {
     if (v <          10000000) return 7;
     if (v <         100000000) return 8;
     if (v <        1000000000) return 9;
-    if (v <       10000000000) return 10;
-    if (v <      100000000000) return 11;
-    if (v <     1000000000000) return 12;
-    if (v <    10000000000000) return 13;
-    if (v <   100000000000000) return 14;
-    if (v <  1000000000000000) return 15;
-    if (v < 10000000000000000) return 16;
-                               return 17;
+                               return 10;
+
 }
 
-/* Best case: use 128-bit type */
-static inline uint64_t mulshift(const uint64_t m, const uint64_t *mul, const int32_t j) {
-    uint128_t lo = ((uint128_t) m) * mul[0];
-    uint128_t hi = ((uint128_t) m) * mul[1];
-    return (uint64_t) (((lo >> 64) + hi) >> (j - 64));
+bool is_div_pow2(uint64_t val, int32_t e) {
+    xassert(e >= 0 && e <= 63);
+    uint64_t mask = (1ull << e) - 1;
+    return (val & mask) == 0;
 }
 
-#define mul_shift_all(m, mul, j, shift)       \
-    vp = mulshift(4 * m + 2, mul, j);         \
-    vm = mulshift(4 * m - 1 - shift, mul, j); \
-    vr = mulshift(4 * m, mul, j);
-
-#define copy_two_digs(dst, src) \
-    *(dst) = *(src);            \
-    *(dst+1) = *(src+1);
-
-/* A floating decimal representing man * 10^exp */
-typedef struct f64_d {
-    uint64_t man;
-    int32_t exp;
-} f64_d;
-
-static inline f64_d f64tod(const uint64_t man,const uint32_t exp) {
-    int32_t e2;
-    uint64_t m2;
-    if (exp == 0) {
-        /* subtract 2 so that the bounds computation has 2 additional bits */
-        e2 = 1 - 1023 - 52 - 2;
-        m2 = man;
-    } else {
-        e2 = (int32_t) exp - 1023 - 52 - 2;
-        m2 = (1ull << 52) | man;
-    }
-    bool even = (m2 & 1) == 0;
-
-    /* Step 2: Determine the interval of valid decimal representations */
-    uint64_t mv = 4 * m2;
-    /* Implicit bool -> int conversion. True is 1, false is 0 */
-    uint32_t shift = man != 0 || exp <= 1;
-
-    /* Step 3: Convert to a decimal power base using 128-bit arithmetic */
-    uint64_t vr, vp, vm;
-    int32_t e10;
-    bool vmzeros = false;
-    bool vrzeros = false;
-    if (e2 >= 0) {
-
-        uint32_t q = log10pow2(e2) - (e2 > 3); // max(0, log10pow2(e2) - 1)
-        e10 = (int32_t) q;
-        int32_t k = DOUBLE_POW5_INV_BITCOUNT + pow5bits((int32_t) q) - 1;
-        int32_t i = -e2 + (int32_t) q + k;
-        uint64_t *mul = (uint64_t*)DOUBLE_POW5_INV_SPLIT[q];
-        /* {vm, vr, vp} * 10^e10 = {mm, mv, mp} * 2^e2
-         * mp = 4 * m2 + 2
-         * mm = mv - 1 - shift
-         */
-        mul_shift_all(m2, mul, i, shift)
-
-        if (q <= 21) {
-            if (mv % 5 == 0) {
-                vrzeros = ispow5(mv, q);
-            } else if (even) {
-                /* Same as min(e2 + (~mm & 1), pow5Factor(mm)) >= q
-                 * <=> e2 + (~mm & 1) >= q && pow5Factor(mm) >= q
-                 * <=> true && pow5Factor(mm) >= q, since e2 >= q.
-                 */
-                vmzeros = ispow5(mv - 1 - shift, q);
-            } else {
-                /* Same as min(e2 + 1, pow5Factor(mp)) >= q. */
-                vp -= ispow5(mv + 2, q);
-            }
-        }
-    } else {
-        uint32_t q = log10pow5(-e2) - (-e2 > 1); // max(0, log10pow5(-e2) - 1)
-        e10 = (int32_t) q + e2;
-        int32_t i = -e2 - (int32_t) q;
-        int32_t k = pow5bits(i) - DOUBLE_POW5_BITCOUNT;
-        int32_t j = (int32_t) q - k;
-        uint64_t *mul = (uint64_t*)DOUBLE_POW5_SPLIT[i];
-        /* {vm, vr, vp} * 10^e10 = {mm, mv, mp} * 2^e2 */
-        mul_shift_all(m2, mul, j, shift)
-
-        if (q <= 1) {
-            /* {vr,vp,vm} is trailing zeros if {mv,mp,mm} has at least q trailing
-             * 0 bits. mv = 4 * m2, so it always has at least two trailing 0 bits.
-             */
-            vrzeros = true;
-            if (even) {
-                /* mm = mv - 1 - shift, so it has 1 trailing 0 bit if shift = 1 */
-                vmzeros = shift == 1;
-            } else {
-                /* mp = mv + 2, so it always has at least one trailing 0 bit */
-                --vp;
-            }
-        } else if (q < 63) {
-            vrzeros = ispow2(mv, q);
-        }
-    }
-
-    /* Step 4: Find the shortest decimal representation in the interval */
-    int32_t removed = 0;
-    uint8_t lastrmdig = 0;
-    uint64_t dman;
-    /* On average, we remove ~2 DIGs */
-    if (vmzeros || vrzeros) {
-        /* General case, which happens rarely (~0.7%) */
-        for (;;) {
-            uint64_t vpdiv10 = vp / 10;
-            uint64_t vmdiv10 = vm / 10;
-            if (vpdiv10 <= vmdiv10) {
-                break;
-            }
-            uint32_t vmmod10 = ((uint32_t) vm) - 10 * ((uint32_t) vmdiv10);
-            uint64_t vrdiv10 = vr / 10;
-            uint32_t vrmod10 = ((uint32_t) vr) - 10 * ((uint32_t) vrdiv10);
-            vmzeros &= vmmod10 == 0;
-            vrzeros &= lastrmdig == 0;
-            lastrmdig = (uint8_t) vrmod10;
-            vr = vrdiv10;
-            vp = vpdiv10;
-            vm = vmdiv10;
-            ++removed;
-        }
-        if (vmzeros) {
-            for (;;) {
-                uint64_t vmdiv10 = vm / 10;
-                uint32_t vmmod10 = ((uint32_t) vm) - 10 * ((uint32_t) vmdiv10);
-                if (vmmod10 != 0) {
-                    break;
-                }
-                uint64_t vpdiv10 = vp / 10;
-                uint64_t vrdiv10 = vr / 10;
-                uint32_t vrmod10 = ((uint32_t) vr) - 10 * ((uint32_t) vrdiv10);
-                vrzeros &= lastrmdig == 0;
-                lastrmdig = (uint8_t) vrmod10;
-                vr = vrdiv10;
-                vp = vpdiv10;
-                vm = vmdiv10;
-                ++removed;
-            }
-        }
-        if (vrzeros && lastrmdig == 5 && vr % 2 == 0) {
-            /* Round even if the exact number is .....50..0 */
-            lastrmdig = 4;
-        }
-        /* We need to take vr + 1 if vr is outside bounds or we need to round up */
-        dman = vr + ((vr == vm && (!even || !vmzeros)) || lastrmdig >= 5);
-    } else {
-        /* Specialized for the common case (~99.3%). Percentages below are relative to this */
-        bool roundup= false;
-        uint64_t vpdiv100 = vp / 100;
-        uint64_t vmdiv100 = vm / 100;
-        if (vpdiv100 > vmdiv100) { // Optimization: remove two DIGs at a time (~86.2%).
-            uint64_t vrdiv100 = vr / 100;
-            uint32_t vrmod100 = ((uint32_t) vr) - 100 * ((uint32_t) vrdiv100);
-            roundup = vrmod100 >= 50;
-            vr = vrdiv100;
-            vp = vpdiv100;
-            vm = vmdiv100;
-            removed += 2;
-        }
-        /* Loop iterations below (approximately), without optimization above:
-         * 0: 0.03%, 1: 13.8%, 2: 70.6%, 3: 14.0%, 4: 1.40%, 5: 0.14%, 6+: 0.02%
-         * Loop iterations below (approximately), with optimization above:
-         * 0: 70.6%, 1: 27.8%, 2: 1.40%, 3: 0.14%, 4+: 0.02%
-         */
-        for (;;) {
-            uint64_t vpdiv10 = vp / 10;
-            uint64_t vmdiv10 = vm / 10;
-            if (vpdiv10 <= vmdiv10) {
-                break;
-            }
-            uint64_t vrdiv10 = vr / 10;
-            uint32_t vrmod10 = ((uint32_t) vr) - 10 * ((uint32_t) vrdiv10);
-            roundup = vrmod10 >= 5;
-            vr = vrdiv10;
-            vp = vpdiv10;
-            vm = vmdiv10;
-            ++removed;
-        }
-        /* We need to take vr + 1 if vr is outside bounds or we need to round up */
-        dman = vr + (vr == vm || roundup);
-    }
-    f64_d fd = {
-        .exp = e10 + removed,
-        .man = dman,
-    };
-    return fd;
+static inline char* utoa2(char* p, uint32_t val) {
+    p[0] = Digits[val];
+    p[1] = Digits[val + 1];
+    return p + 2;
 }
 
-/* Print the decimal DIGs from mantissa */
-static inline void print_mantissa(uint64_t man, char *out, int mlen) {
-    /* We have at most 17 DIGs, and uint32_t can store 9 DIGs.
-     * If man doesn't fit into uint32_t, we cut off 8 DIGs,
-     * so the rest will fit into uint32_t.
-     */
+static inline void copy_two_digs(char* dst, const char* src) {
+    *(dst) = *(src);
+    *(dst + 1) = *(src + 1);
+}
+
+static inline char* print_mantissa(uint64_t man, char *out, int mlen) {
     char *r = out + mlen;
+    int ctz = 0;
     if (man < 10) {}
     if ((man >> 32) != 0) {
         /* Expensive 64-bit division */
         uint64_t q = man / 100000000;
         uint32_t man2 = ((uint32_t) man) - 100000000 * ((uint32_t) q);
         man = q;
-
-        uint32_t c  = man2 % 10000;
-        man2 /= 10000;
-        uint32_t d  = man2 % 10000;
-        uint32_t c0 = (c % 100) << 1;
-        uint32_t c1 = (c / 100) << 1;
-        uint32_t d0 = (d % 100) << 1;
-        uint32_t d1 = (d / 100) << 1;
-        copy_two_digs(r - 2, DIG_TAB + c0)
-        copy_two_digs(r - 4, DIG_TAB + c1)
-        copy_two_digs(r - 6, DIG_TAB + d0)
-        copy_two_digs(r - 8, DIG_TAB + d1)
+        if (man2 != 0) {
+            uint32_t c  = man2 % 10000;
+            man2 /= 10000;
+            uint32_t d  = man2 % 10000;
+            uint32_t c0 = (c % 100) << 1;
+            uint32_t c1 = (c / 100) << 1;
+            uint32_t d0 = (d % 100) << 1;
+            uint32_t d1 = (d / 100) << 1;
+            copy_two_digs(r - 2, Digits + c0);
+            copy_two_digs(r - 4, Digits + c1);
+            copy_two_digs(r - 6, Digits + d0);
+            copy_two_digs(r - 8, Digits + d1);
+        } else {
+            ctz += 8;
+        }
         r -= 8;
     }
     uint32_t man2 = (uint32_t) man;
     while (man2 >= 10000) {
-#ifdef __clang__ // https://bugs.llvm.org/show_bug.cgi?id=38217
+        // c = man2 % 10000;
         uint32_t c = man2 - 10000 * (man2 / 10000);
-#else
-        uint32_t c = man2 % 10000;
-#endif
         man2 /= 10000;
         uint32_t c0 = (c % 100) << 1;
         uint32_t c1 = (c / 100) << 1;
-        copy_two_digs(r - 2, DIG_TAB + c0)
-        copy_two_digs(r - 4, DIG_TAB + c1)
+        copy_two_digs(r - 2, Digits + c0);
+        copy_two_digs(r - 4, Digits + c1);
         r -= 4;
     }
     if (man2 >= 100) {
         uint32_t c = (man2 % 100) << 1;
         man2 /= 100;
-        copy_two_digs(r - 2, DIG_TAB + c)
+        copy_two_digs(r - 2, Digits + c);
         r -= 2;
     }
     if (man2 >= 10) {
         uint32_t c = man2 << 1;
-        copy_two_digs(r - 2, DIG_TAB + c)
+        copy_two_digs(r - 2, Digits + c);
     } else {
         *out = (char) ('0' + man2);
     }
+    return out + mlen - ctz;
 }
 
-static inline int print_exponent(f64_d v, char *out, int mlen) {
-    int idx = 0;
-
-    print_mantissa(v.man, out + idx + 1, mlen);
+static inline char* print_exponent(f64_dec v, char *out, int mlen) {
+    char* p = out + 1;
+    char* end = print_mantissa(v.sig, p, mlen);
+    while (*(end - 1) == '0') end--;
 
     /* Print decimal point if needed */
-    out[idx] = out[idx + 1];
-    if (mlen > 1) {
-        out[idx + 1] = '.';
-        idx += mlen + 1;
+    *out = *p;
+    if (end - p > 1) {
+        *p = '.';
     } else {
-        ++idx;
+        end--;
     }
 
     /* Print the exponent */
-    out[idx++] = 'e';
+    *end++ = 'e';
     int32_t exp = v.exp + (int32_t) mlen - 1;
     if (exp < 0) {
-        out[idx++] = '-';
+        *end++ = '-';
         exp = -exp;
     }
 
     if (exp >= 100) {
         int32_t c = exp % 10;
-        copy_two_digs(out + idx, DIG_TAB + 2 * (exp / 10))
-        out[idx + 2] = (char) ('0' + c);
-        idx += 3;
+        copy_two_digs(end, Digits + 2 * (exp / 10));
+        end[2] = (char) ('0' + c);
+        end += 3;
     } else if (exp >= 10) {
-        copy_two_digs(out + idx, DIG_TAB + 2 * exp)
-        idx += 2;
+        copy_two_digs(end, Digits + 2 * exp);
+        end += 2;
     } else {
-        out[idx++] = (char) ('0' + exp);
+        *end++ = (char) ('0' + exp);
     }
-
-    return idx;
+    return end;
 }
 
-static inline int print_decimal(const f64_d v, char *out, int mlen) {
-    int idx    = 0;
-    int lzeros = 0;
-    int rzeros = 0;
-    int point  = 0;
+static inline char* print_decimal(f64_dec v, char* out, int mlen) {
+    char* p = out;
+    char* end;
     int exp10  = mlen - 1 + v.exp;
+    int point = mlen + v.exp;
 
-    /* parse the point idx and additional zeros */
-    if (exp10 < 0) {
-        lzeros = -exp10;
-        point  = 1;
-    } else if (exp10 < mlen - 1) {
-        point  = 1 + exp10;
-    } else {
-        rzeros = exp10 - mlen + 1;
-    }
-
-    int i = 0;
-    /* add left zeros */
-    if (lzeros) {
-        out[idx++] = '0';
-        out[idx++] = '.';
-        point = 0;
-    }
-    for (i = 1; i < lzeros; ++i) {
-        out[idx++] = '0';
-    }
-
-    /* add the mantissa DIGs */
-    print_mantissa(v.man, out + idx, mlen);
-    if (point) {
-        for (i = idx + mlen; i > idx + point; --i) {
-            out[i] = out[i-1];
+    /* print leading zeros if fp < 1 */
+    if (point <= 0) {
+        *p++ = '0', *p++ = '.';
+        for (int i = 0; i < -point; i++) {
+            *p++ = '0';
         }
-        out[idx + point] = '.';
-        idx += 1;
     }
 
-    /* add right zeros */
-    idx += mlen;
-    for (i = 0; i < rzeros; ++i) {
-        out[idx++] = '0';
+    /* add the remaining digits */
+    end = print_mantissa(v.sig, p, mlen);
+    while (*(end - 1) == '0') end--;
+    if (point <= 0) {
+        return end;
     }
 
-    return idx;
+    /* insert point or add trailing zeros */
+    int digs = end - p;
+    if (digs > point) {
+        for (int i = 0; i < digs - point; i++) {
+            *(end - i) = *(end - i - 1);
+        }
+        p[point] = '.';
+        end++;
+    } else {
+        for (int i = 0; i < point - digs; i++) {
+            *end++ = '0';
+        }
+    }
+    return end;
 }
 
-static inline bool f64tod_exct_int(const uint64_t man, const uint32_t exp,
-  f64_d* v) {
-    uint64_t m2 = (1ull << 52) | man; // implicit 1
-    int32_t e2 = (int32_t) exp - 1023 - 52;
+static inline char* write_dec(f64_dec dec, char* p) {
+    int32_t count = ctz10(dec.sig);
+    int32_t dot = count + dec.exp;
+    int32_t sci_exp = dot - 1;
+    bool exp_fmt = sci_exp < -6 || sci_exp > 20;
 
-    if (e2 > 0 || e2 < -52) {
-        return false;
+    if (exp_fmt) {
+        return print_exponent(dec, p, count);
     }
-
-    uint64_t mask = (1ull << -e2) - 1;
-    if ((m2 & mask) != 0) { // with fraction
-        return false;
-    }
-
-    v->man = m2 >> -e2;
-    v->exp = 0;
-    return true;
+    return print_decimal(dec, p, count);
 }
 
-static int inline ryu(uint64_t bits, char *out) {
-    /* Step 1: Decode the floating-point number */
-    uint64_t man = bits & ((1ull << 52) - 1);
-    uint32_t exp = (uint32_t) ((bits >> 52) & ((1u << 11) - 1));
+static inline uint64_t f64toraw(double fp) {
+    union {
+        uint64_t u64;
+        double   f64;
+    } uval;
+    uval.f64 = fp;
+    return uval.u64;
+}
 
-    /* Skip when Infinity */
-    if (exp == ((1u << 11) - 1u)) {
+static inline uint64_t round_odd(uint64x2 g, uint64_t cp) {
+    const uint128_t x = ((uint128_t)cp) * g.lo;
+    const uint128_t y = ((uint128_t)cp) * g.hi + ((uint64_t)(x >> 64));
+
+    const uint64_t y0 = ((uint64_t)y);
+    const uint64_t y1 = ((uint64_t)(y >> 64));
+    return y1 | (y0 > 1);
+}
+
+/**
+ Rendering float point number into decimal.
+ The function used Schubfach algorithm, reference:
+ The Schubfach way to render doubles, Raffaello Giulietti, 2022-03-20.
+ https://drive.google.com/file/d/1gp5xv4CAa78SVgCeWfGqqI4FfYYYuNFb
+ https://mail.openjdk.java.net/pipermail/core-libs-dev/2021-November/083536.html
+ https://github.com/openjdk/jdk/pull/3402 (Java implementation)
+ https://github.com/abolz/Drachennest (C++ implementation)
+ */
+static inline f64_dec f64todec(uint64_t rsig, int32_t rexp) {
+    uint64_t c, cbl, cb, cbr, vbl, vb, vbr, lower, upper, s, sp;
+    int32_t q, k, h;
+    bool even, irregular, w_inside, u_inside;
+    f64_dec dec;
+
+    if (likely(rexp != 0)) {
+        /* double is normal */
+        c = rsig | F64_HIDDEN_BIT;
+        q = rexp - F64_EXP_BIAS - F64_SIG_BITS;
+
+        /* fast path for integer */
+        if (q <= 0 && q >= -F64_SIG_BITS && is_div_pow2(c, -q)) {
+            dec.sig = c >> -q;
+            dec.exp = 0;
+            return dec;
+        }
+    } else {
+        c = rsig;
+        q = 1 - F64_EXP_BIAS - F64_SIG_BITS;
+    }
+
+    even = !(c & 1);
+    irregular = rsig == 0 && rexp > 1;
+
+    cbl = 4 * c - 2 + irregular;
+    cb = 4 * c;
+    cbr = 4 * c + 2;
+
+    // q: [-1500, 1500]
+    // k = irregular ? floor(log_10(3/4 2^q)) : floor(log10(pow(2^q)))
+    // floor(log10(3/4 2^q)) = (q * 1262611 - 524031) >> 22
+    // floor(log10(pow(2^q))) = (q * 1262611) >> 22
+    k = (q * 1262611 - (irregular ? 524031 : 0)) >> 22;
+
+    // k: [-1233, 1233]
+    // s = floor(V) = floor(c*2^q*10^-k), s is the significand of decimal
+    // vb = 4V = 4*c(2^q)*(10^-k)
+    // let (g-1)*2^r <= 10^-k < g*2^r, then:
+    // vb = cb*(2^q)*(g*2^r) = (cb*g)*2^(q + floor(log2(10^-k)) - 127)
+    // let h = 128 + q + floor(log2(10^-k)) - 127, h in [1, 4], then:
+    // vb = g*(cb<<h)*2^(-128), becomes the 128-bit multiplications.
+    h = q + ((-k) * 1741647 >> 19) + 1;
+    uint64x2 pow10 = pow10_ceil_sig(-k);
+    vbl = round_odd(pow10, cbl << h);
+    vb = round_odd(pow10, cb << h);
+    vbr = round_odd(pow10, cbr << h);
+
+    // R_v interval:
+    // if c is even: [vl, vr], then (vl, vr)
+    lower = vbl + !even;
+    upper = vbr - !even;
+
+    s = vb / 4;
+    if (s >= 10) {
+        // R_k+1 interval contains at most one: up or wp
+        uint64_t sp = s / 10;
+        bool up_inside = lower <= (40 * sp);
+        bool wp_inside = (40 * sp + 40) <= upper;
+        if (up_inside != wp_inside) {
+            dec.sig = sp + wp_inside;
+            dec.exp = k + 1;
+            return dec;
+        }
+    }
+
+    // R_k interval contains at least one: u or w
+    u_inside = lower <= (4 * s);
+    w_inside = (4 * s + 4) <= upper;
+    if (u_inside != w_inside) {
+        dec.sig = s + w_inside;
+        dec.exp = k;
+        return dec;
+    }
+
+    // R_k interval contains both u or w
+    // let t = s + 1, and then: 
+    // vb > mid => t is closer
+    // vb = 2(s + t) = 4*s + 2 && s is odd => should round to t
+    uint64_t mid = 4 * s + 2;
+    bool round_up = vb > mid || (vb == mid && (s & 1) != 0);
+    dec.sig = s + round_up;
+    dec.exp = k;
+    return dec;
+}
+
+int f64toa(char *out, double fp) {
+    char* p = out;
+    uint64_t raw = f64toraw(fp);
+    bool neg;
+    uint64_t rsig, bsig, dsig;
+    int32_t rexp, bexp, dexp;
+
+    neg = ((raw >> (F64_BITS - 1)) != 0);
+    rsig = raw & F64_SIG_MASK;
+    rexp = (int32_t)((raw & F64_EXP_MASK) >> F64_SIG_BITS);
+
+    /* check infinity and nan */
+    if (unlikely(rexp == F64_INF_NAN_EXP)) {
         return 0;
     }
 
-    f64_d v;
-    /* for integer from [1, 2^53], can be resepensated exactly by double */
-    bool is_exact_int = f64tod_exct_int(man, exp, &v);
-    if (!is_exact_int){  // find the shortest decimal representation
-        v = f64tod(man, exp);
-    }
-
-    /* Step 5: Print the decimal representation */
-    int idx = 0;
-    uint32_t mlen = ctz10(v.man);
-    int exp10 = mlen - 1 + v.exp;
-    /* The format as Go encoding/json package */
-    bool isexp = exp10 < -6 || exp10 >= 21;
-
-    if (isexp) // exponent format
-        idx += print_exponent(v, out + idx, mlen);
-    else      // decimal format
-        idx += print_decimal(v, out + idx, mlen);
-
-    return idx;
-}
-
-int f64toa(char *out, double val) {
-    int   i = 0;
-    char *p = out;
-    uint64_t uval = *(uint64_t *)&val;
-
-    /* negative numbers */
-    if (unlikely(uval >> 63) == 1) {
-        i    = 1;
-        uval &= ((1ull << 63) - 1);
-        *p++ = '-';
-    }
+    /* check negative numbers */
+    *p = '-';
+    p += neg;
 
     /* simple case of 0.0 */
-    if (uval ==  0) {
-        *p = '0';
-        return i + 1;
+    if ((raw << 1) ==  0) {
+        *p++ = '0';
+        return p - out;
     }
 
-    /* print the number with Ryu algorithm */
-    int n = ryu(uval, p);
-    return n + i;
+    /* use xxx algorithm */
+    f64_dec dec = f64todec(rsig, rexp);
+    p = write_dec(dec, p);
+    return p - out;
 }

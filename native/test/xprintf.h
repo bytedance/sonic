@@ -55,24 +55,38 @@ static void printint(int64_t v)
     char neg = 0;
     char buf[32] = {};
     char *p = &buf[31];
+    uint64_t u;
+    if (v < 0) {
+        u = ~v + 1;
+        neg = 1;
+    } else {
+        u = v;
+    }
+    while (u)
+    {
+        *--p = (u % 10) + '0';
+        u /= 10;
+    }
+    if (neg) {
+        *--p = '-';
+    }
+    printstr(p);
+}
+
+static void printuint(uint64_t v)
+{
+    char neg = 0;
+    char buf[32] = {};
+    char *p = &buf[31];
     if (v == 0)
     {
         printch('0');
         return;
     }
-    if (v < 0)
-    {
-        v = -v;
-        neg = 1;
-    }
     while (v)
     {
         *--p = (v % 10) + '0';
         v /= 10;
-    }
-    if (neg)
-    {
-        *--p = '-';
     }
     printstr(p);
 }
@@ -160,14 +174,24 @@ static void xprintf(const char *fmt, ...)
             printch('%');
             break;
         }
-        case 's':
+        case 'g':
         {
             printgostr(__builtin_va_arg(va, GoString *));
+            break;
+        }
+        case 's':
+        {
+            printstr(__builtin_va_arg(va, const char *));
             break;
         }
         case 'd':
         {
             printint(__builtin_va_arg(va, int64_t));
+            break;
+        }
+        case 'u':
+        {
+            printuint(__builtin_va_arg(va, uint64_t));
             break;
         }
         case 'f':
@@ -177,7 +201,7 @@ static void xprintf(const char *fmt, ...)
         }
         case 'c':
         {
-            printch(__builtin_va_arg(va, const char));
+            printch((char)(__builtin_va_arg(va, int)));
             break;
         }
         case 'x':
