@@ -45,7 +45,7 @@ typedef struct f64_dec f64_dec;
 
 typedef __uint128_t uint128_t;
 
-static inline uint32_t ctz10(const uint64_t v) {
+static inline unsigned ctz10(const uint64_t v) {
     xassert(0 <= v && v < 100000000000000000ull);
     if (v >= 10000000000ull) {
         if (v <      100000000000ull) return 11;
@@ -120,12 +120,57 @@ static inline char* format_significand(uint64_t sig, char *out, int cnt) {
     return out + cnt - ctz;
 }
 
-static inline char* format_exponent(f64_dec v, char *out, int cnt) {
+static inline char* format_integer(uint64_t sig, char *out, unsigned cnt) {
+    char *p = out + cnt;
+    if ((sig >> 32) != 0) {
+        uint64_t q = sig / 100000000;
+        uint32_t r = ((uint32_t)sig) - 100000000 * ((uint32_t) q);
+        sig = q;
+        uint32_t c  = r % 10000;
+        r /= 10000;
+        uint32_t d  = r % 10000;
+        uint32_t c0 = (c % 100) << 1;
+        uint32_t c1 = (c / 100) << 1;
+        uint32_t d0 = (d % 100) << 1;
+        uint32_t d1 = (d / 100) << 1;
+        copy_two_digs(p - 2, Digits + c0);
+        copy_two_digs(p - 4, Digits + c1);
+        copy_two_digs(p - 6, Digits + d0);
+        copy_two_digs(p - 8, Digits + d1);
+        p -= 8;
+    }
+
+    uint32_t sig2 = (uint32_t)sig;
+    while (sig2 >= 10000) {
+        uint32_t c = sig2 - 10000 * (sig2 / 10000);
+        sig2 /= 10000;
+        uint32_t c0 = (c % 100) << 1;
+        uint32_t c1 = (c / 100) << 1;
+        copy_two_digs(p - 2, Digits + c0);
+        copy_two_digs(p - 4, Digits + c1);
+        p -= 4;
+    }
+    if (sig2 >= 100) {
+        uint32_t c = (sig2 % 100) << 1;
+        sig2 /= 100;
+        copy_two_digs(p - 2, Digits + c);
+        p -= 2;
+    }
+    if (sig2 >= 10) {
+        uint32_t c = sig2 << 1;
+        copy_two_digs(p - 2, Digits + c);
+    } else {
+        *out = (char) ('0' + sig2);
+    }
+    return out + cnt;
+}
+
+static inline char* format_exponent(f64_dec v, char *out, unsigned cnt) {
     char* p = out + 1;
     char* end = format_significand(v.sig, p, cnt);
     while (*(end - 1) == '0') end--;
 
-    /* Print decimal point if needed */
+    /* print decimal point if needed */
     *out = *p;
     if (end - p > 1) {
         *p = '.';
@@ -133,7 +178,7 @@ static inline char* format_exponent(f64_dec v, char *out, int cnt) {
         end--;
     }
 
-    /* Print the exponent */
+    /* print the exponent */
     *end++ = 'e';
     int32_t exp = v.exp + (int32_t) cnt - 1;
     if (exp < 0) {
@@ -157,7 +202,7 @@ static inline char* format_exponent(f64_dec v, char *out, int cnt) {
     return end;
 }
 
-static inline char* format_decimal(f64_dec v, char* out, int cnt) {
+static inline char* format_decimal(f64_dec v, char* out, unsigned cnt) {
     char* p = out;
     char* end;
     int point = cnt + v.exp;
@@ -194,15 +239,23 @@ static inline char* format_decimal(f64_dec v, char* out, int cnt) {
 }
 
 static inline char* write_dec(f64_dec dec, char* p) {
-    int32_t count = ctz10(dec.sig);
-    int32_t dot = count + dec.exp;
-    int32_t sci_exp = dot - 1;
+    int cnt = ctz10(dec.sig);
+    int dot = cnt + dec.exp;
+    int sci_exp = dot - 1;
     bool exp_fmt = sci_exp < -6 || sci_exp > 20;
+    bool has_dot = dot < cnt;
 
     if (exp_fmt) {
-        return format_exponent(dec, p, count);
+        return format_exponent(dec, p, cnt);
     }
-    return format_decimal(dec, p, count);
+    if (has_dot) {
+        return format_decimal(dec, p, cnt);
+    }
+
+    char* end = p + dot;
+    p = format_integer(dec.sig, p, cnt);
+    while (p < end) *p++ = '0';
+    return end;
 }
 
 static inline uint64_t f64toraw(double fp) {
@@ -232,27 +285,11 @@ static inline uint64_t round_odd(uint64x2 g, uint64_t cp) {
  https://github.com/openjdk/jdk/pull/3402 (Java implementation)
  https://github.com/abolz/Drachennest (C++ implementation)
  */
-static inline f64_dec f64todec(uint64_t rsig, int32_t rexp) {
-    uint64_t c, cbl, cb, cbr, vbl, vb, vbr, lower, upper, s;
-    int32_t q, k, h;
+static inline f64_dec f64todec(uint64_t rsig, int32_t rexp, uint64_t c, int32_t q) {
+    uint64_t cbl, cb, cbr, vbl, vb, vbr, lower, upper, s;
+    int32_t k, h;
     bool even, irregular, w_inside, u_inside;
     f64_dec dec;
-
-    if (likely(rexp != 0)) {
-        /* double is normal */
-        c = rsig | F64_HIDDEN_BIT;
-        q = rexp - F64_EXP_BIAS - F64_SIG_BITS;
-
-        /* fast path for integer */
-        if (q <= 0 && q >= -F64_SIG_BITS && is_div_pow2(c, -q)) {
-            dec.sig = c >> -q;
-            dec.exp = 0;
-            return dec;
-        }
-    } else {
-        c = rsig;
-        q = 1 - F64_EXP_BIAS - F64_SIG_BITS;
-    }
 
     even = !(c & 1);
     irregular = rsig == 0 && rexp > 1;
@@ -313,8 +350,8 @@ int f64toa(char *out, double fp) {
     char* p = out;
     uint64_t raw = f64toraw(fp);
     bool neg;
-    uint64_t rsig;
-    int32_t rexp;
+    uint64_t rsig, c;
+    int32_t rexp, q;
 
     neg = ((raw >> (F64_BITS - 1)) != 0);
     rsig = raw & F64_SIG_MASK;
@@ -335,7 +372,25 @@ int f64toa(char *out, double fp) {
         return p - out;
     }
 
-    f64_dec dec = f64todec(rsig, rexp);
+    /* fp = c * 2^q */
+    if (likely(rexp != 0)) {
+        /* double is normal */
+        c = rsig | F64_HIDDEN_BIT;
+        q = rexp - F64_EXP_BIAS - F64_SIG_BITS;
+
+        /* fast path for integer */
+        if (q <= 0 && q >= -F64_SIG_BITS && is_div_pow2(c, -q)) {
+            uint64_t u = c >> -q;
+            p = format_integer(u, p, ctz10(u));
+            return p - out;
+        }
+
+    } else {
+        c = rsig;
+        q = 1 - F64_EXP_BIAS - F64_SIG_BITS;
+    }
+
+    f64_dec dec = f64todec(rsig, rexp, c, q);
     p = write_dec(dec, p);
     return p - out;
 }

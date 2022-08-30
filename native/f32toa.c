@@ -42,7 +42,7 @@ typedef struct {
     int32_t exp;
 } f32_dec;
 
-static inline uint32_t ctz10_f32(const uint32_t v) {
+static inline unsigned ctz10_u32(const uint32_t v) {
     xassert(0 <= v && v < 1000000000u);
     if (v >= 100000) {
         if (v <   1000000) return 6;
@@ -92,6 +92,37 @@ static inline char* format_significand_f32(uint32_t sig, char *out, int cnt) {
     }
 
     return out + cnt - ctz;
+}
+
+static inline char* format_integer_u32(uint32_t sig, char *out, unsigned cnt) {
+    char *r = out + cnt;
+
+    /* at most 9 digits here */
+    if  (sig >= 10000) {
+        uint32_t c = sig - 10000 * (sig / 10000);
+        sig /= 10000;
+        uint32_t c0 = (c % 100) << 1;
+        uint32_t c1 = (c / 100) << 1;
+        copy_two_digs(r - 2, Digits + c0);
+        copy_two_digs(r - 4, Digits + c1);
+        r -= 4;
+    }
+
+    while (sig >= 100) {
+        uint32_t c = (sig % 100) << 1;
+        sig /= 100;
+        copy_two_digs(r - 2, Digits + c);
+        r -= 2;
+    }
+
+    if (sig >= 10) {
+        uint32_t c = sig << 1;
+        copy_two_digs(out, Digits + c);
+    } else {
+        *out = (char) ('0' + sig);
+    }
+
+    return out + cnt;
 }
 
 static inline char* format_exponent_f32(f32_dec v, char *out, int cnt) {
@@ -168,15 +199,23 @@ static inline char* format_decimal_f32(f32_dec v, char* out, int cnt) {
 }
 
 static inline char* write_dec_f32(f32_dec dec, char* p) {
-    int32_t count = ctz10(dec.sig);
-    int32_t dot = count + dec.exp;
-    int32_t sci_exp = dot - 1;
+    int cnt = ctz10_u32(dec.sig);
+    int dot = cnt + dec.exp;
+    int sci_exp = dot - 1;
     bool exp_fmt = sci_exp < -6 || sci_exp > 20;
+    bool has_dot = dot < cnt;
 
     if (exp_fmt) {
-        return format_exponent_f32(dec, p, count);
+        return format_exponent_f32(dec, p, cnt);
     }
-    return format_decimal_f32(dec, p, count);
+    if (has_dot) {
+        return format_decimal_f32(dec, p, cnt);
+    }
+
+    char* end = p + dot;
+    p = format_integer_u32(dec.sig, p, cnt);
+    while (p < end) *p++ = '0';
+    return end;
 }
 
 static inline uint32_t f32toraw(float fp) {
@@ -305,27 +344,11 @@ static inline uint32_t round_odd_f32(uint64_t g, uint32_t cp) {
  https://github.com/openjdk/jdk/pull/3402 (Java implementation)
  https://github.com/abolz/Drachennest (C++ implementation)
  */
-static inline f32_dec f32todec(uint32_t rsig, int32_t rexp) {
-    uint32_t c, cbl, cb, cbr, vbl, vb, vbr, lower, upper, s;
-    int32_t q, k, h;
+static inline f32_dec f32todec(uint32_t rsig, int32_t rexp, uint32_t c, int32_t q) {
+    uint32_t cbl, cb, cbr, vbl, vb, vbr, lower, upper, s;
+    int32_t k, h;
     bool even, irregular, w_inside, u_inside;
     f32_dec dec;
-
-    if (likely(rexp != 0)) {
-        /* double is normal */
-        c = rsig | F32_HIDDEN_BIT;
-        q = rexp - F32_EXP_BIAS - F32_SIG_BITS;
-
-        /* fast path for integer */
-        if (q <= 0 && q >= -F32_SIG_BITS && is_div_pow2(c, -q)) {
-            dec.sig = c >> -q;
-            dec.exp = 0;
-            return dec;
-        }
-    } else {
-        c = rsig;
-        q = 1 - F32_EXP_BIAS - F32_SIG_BITS;
-    }
 
     even = !(c & 1);
     irregular = rsig == 0 && rexp > 1;
@@ -376,8 +399,8 @@ int f32toa(char *out, float fp) {
     char* p = out;
     uint32_t raw = f32toraw(fp);
     bool neg;
-    uint32_t rsig;
-    int32_t rexp;
+    uint32_t rsig, c;
+    int32_t rexp, q;
 
     neg = ((raw >> (F32_BITS - 1)) != 0);
     rsig = raw & F32_SIG_MASK;
@@ -398,7 +421,23 @@ int f32toa(char *out, float fp) {
         return p - out;
     }
 
-    f32_dec dec = f32todec(rsig, rexp);
+    if (likely(rexp != 0)) {
+        /* double is normal */
+        c = rsig | F32_HIDDEN_BIT;
+        q = rexp - F32_EXP_BIAS - F32_SIG_BITS;
+
+        /* fast path for integer */
+        if (q <= 0 && q >= -F32_SIG_BITS && is_div_pow2(c, -q)) {
+            uint32_t u = c >> -q;
+            p = format_integer_u32(u, p, ctz10_u32(u));
+            return p - out;
+        }
+    } else {
+        c = rsig;
+        q = 1 - F32_EXP_BIAS - F32_SIG_BITS;
+    }
+
+    f32_dec dec = f32todec(rsig, rexp, c, q);
     p = write_dec_f32(dec, p);
     return p - out;
 }

@@ -50,28 +50,8 @@ func TestFastFloat_Encode(t *testing.T) {
     assert.Equal(t, "-2.2250738585072014e-308"  , string(buf[:__f64toa(&buf[0], -2.2250738585072014e-308)]))
 }
 
-func TestFastFloat_Base(t *testing.T) {
-    var buf [32]byte
-    var f32 float32 = float32(0.115719385)
-    jout, jerr := json.Marshal(f32)
-    n := __f32toa(&buf[0], f32)
-    if jerr == nil {
-        assert.Equal(t, jout, buf[:n])
-    } else {
-        assert.True(t, n == 0)
-    }
-}
-
 func TestFastFloat_Random(t *testing.T) {
-    var buf [32]byte
-    var f32 float32 = float32(0.115719385)
-    jout, jerr := json.Marshal(f32)
-    n := __f32toa(&buf[0], f32)
-    if jerr == nil {
-        assert.Equal(t, jout, buf[:n])
-    } else {
-        assert.True(t, n == 0)
-    }
+    var buf [64]byte
     N := 10000
     for i := 0; i < N; i++ {
         b64 := uint64(rand.Uint32())<<32 | uint64(rand.Uint32())
@@ -116,7 +96,7 @@ var ftoaBenches = []struct {
     {"32Shortest", 1.234567e-8, 32},
 }
 
-func BenchmarkAppendFloat(b *testing.B) {
+func BenchmarkParseFloat(b *testing.B) {
     for _, c := range ftoaBenches {
         f64bench := []struct {
             name string
