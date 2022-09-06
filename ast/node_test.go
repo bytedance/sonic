@@ -280,13 +280,37 @@ func TestTypeCast(t *testing.T) {
         {"Bool", Node{}, false, ErrUnsupportType},
         {"Bool", NewAny(true), true, nil},
         {"Bool", NewAny(false), false, nil},
+        {"Bool", NewAny(int(0)), false, nil},
+        {"Bool", NewAny(int8(1)), true, nil},
+        {"Bool", NewAny(int16(1)), true, nil},
+        {"Bool", NewAny(int32(1)), true, nil},
+        {"Bool", NewAny(int64(1)), true, nil},
+        {"Bool", NewAny(uint(1)), true, nil},
+        {"Bool", NewAny(uint16(1)), true, nil},
+        {"Bool", NewAny(uint32(1)), true, nil},
+        {"Bool", NewAny(uint64(1)), true, nil},
+        {"Bool", NewAny(float64(0)), false, nil},
+        {"Bool", NewAny(float32(1)), true, nil},
+        {"Bool", NewAny(float64(1)), true, nil},
+        {"Bool", NewAny(json.Number("0")), false, nil},
+        {"Bool", NewAny(json.Number("1")), true, nil},
+        {"Bool", NewAny(json.Number("1.1")), true, nil},
+        {"Bool", NewAny(json.Number("+x1.1")), false, nonEmptyErr},
+        {"Bool", NewAny([]byte{0}), false, nonEmptyErr},
         {"Bool", NewRaw("true"), true, nil},
         {"Bool", NewRaw("false"), false, nil},
         {"Bool", NewRaw("null"), false, nil},
+        {"Bool", NewString(`true`), true, nil},
+        {"Bool", NewString(`false`), false, nil},
+        {"Bool", NewString(``), false, nonEmptyErr},
+        {"Bool", NewNumber("2"), true, nil},
+        {"Bool", NewNumber("-2.1"), true, nil},
+        {"Bool", NewNumber("-x-2.1"), false, nonEmptyErr},
         {"Int64", NewRaw("true"), int64(1), nil},
         {"Int64", NewRaw("false"), int64(0), nil},
         {"Int64", NewRaw("\"1\""), int64(1), nil},
-        {"Int64", NewRaw("\"1.0\""), int64(0), nonEmptyErr},
+        {"Int64", NewRaw("\"1.1\""), int64(1), nil},
+        {"Int64", NewRaw("\"1.0\""), int64(1), nil},
         {"Int64", NewAny(int(0)), int64(0), nil},
         {"Int64", NewAny(int8(0)), int64(0), nil},
         {"Int64", NewAny(int16(0)), int64(0), nil},
@@ -321,6 +345,7 @@ func TestTypeCast(t *testing.T) {
         {"Float64", NewAny(float32(0)), float64(0), nil},
         {"Float64", NewAny(float64(0)), float64(0), nil},
         {"Float64", NewRaw("0.0"), float64(0.0), nil},
+        {"Float64", NewRaw("1"), float64(1.0), nil},
         {"Float64", NewRaw("null"), float64(0.0), nil},
         {"StrictFloat64", NewRaw("true"), float64(0), ErrUnsupportType},
         {"StrictFloat64", NewRaw("false"), float64(0), ErrUnsupportType},
@@ -391,18 +416,18 @@ func TestTypeCast(t *testing.T) {
         m := rt.MethodByName(c.method)
         rets := m.Call([]reflect.Value{})
         if len(rets) != 2 {
-            t.Fatal(i, rets)
+            t.Error(i, rets)
         }
         if !reflect.DeepEqual(rets[0].Interface(), c.exp) {
-            t.Fatal(i, rets[0].Interface(), c.exp)
+            t.Error(i, rets[0].Interface(), c.exp)
         }
         v := rets[1].Interface();
         if c.err == nonEmptyErr {
             if reflect.ValueOf(v).IsNil() {
-                t.Fatal(i, v)
+                t.Error(i, v)
             }
         } else if  v != c.err {
-            t.Fatal(i, v)
+            t.Error(i, v)
         }
     }
 }

@@ -18,6 +18,7 @@ package ast
 
 import (
     `encoding/json`
+    `strconv`
     `fmt`
     `unsafe`
 
@@ -37,7 +38,7 @@ const (
 
 const (
     _V_NONE         types.ValueType = 0
-    _V_NODE_BASE    types.ValueType = 1<<5
+    _V_NODE_BASE    types.ValueType = 1 << 5
     _V_LAZY         types.ValueType = 1 << 7
     _V_RAW          types.ValueType = 1 << 8
     _V_NUMBER                       = _V_NODE_BASE + 1
@@ -178,11 +179,41 @@ func (self *Node) Bool() (bool, error) {
         case types.V_TRUE  : return true , nil
         case types.V_FALSE : return false, nil
         case types.V_NULL  : return false, nil
-        case _V_ANY        :        
-            if v, ok := self.packAny().(bool); ok {
-                return v, nil
+        case _V_NUMBER     : 
+            if i, err := numberToInt64(self); err == nil {
+                return i != 0, nil
+            } else if f, err := numberToFloat64(self); err == nil {
+                return f != 0, nil
             } else {
-                return false, ErrUnsupportType
+                return false, err
+            }
+        case types.V_STRING: return strconv.ParseBool(addr2str(self.p, self.v))
+        case _V_ANY        :   
+            any := self.packAny()     
+            switch v := any.(type) {
+                case bool   : return v, nil
+                case int    : return v != 0, nil
+                case int8   : return v != 0, nil
+                case int16  : return v != 0, nil
+                case int32  : return v != 0, nil
+                case int64  : return v != 0, nil
+                case uint   : return v != 0, nil
+                case uint8  : return v != 0, nil
+                case uint16 : return v != 0, nil
+                case uint32 : return v != 0, nil
+                case uint64 : return v != 0, nil
+                case float32: return v != 0, nil
+                case float64: return v != 0, nil
+                case string : return strconv.ParseBool(v)
+                case json.Number: 
+                    if i, err := v.Int64(); err == nil {
+                        return i != 0, nil
+                    } else if f, err := v.Float64(); err == nil {
+                        return f != 0, nil
+                    } else {
+                        return false, err
+                    }
+                default: return false, ErrUnsupportType
             }
         default            : return false, ErrUnsupportType
     }
@@ -195,23 +226,54 @@ func (self *Node) Int64() (int64, error) {
         return 0, err
     }
     switch self.t {
-        case _V_NUMBER, types.V_STRING : return numberToInt64(self)
+        case _V_NUMBER, types.V_STRING :
+            if i, err := numberToInt64(self); err == nil {
+                return i, nil
+            } else if f, err := numberToFloat64(self); err == nil {
+                return int64(f), nil
+            } else {
+                return 0, err
+            }
         case types.V_TRUE     : return 1, nil
         case types.V_FALSE    : return 0, nil
         case types.V_NULL     : return 0, nil
         case _V_ANY           :  
             any := self.packAny()
             switch v := any.(type) {
-                case int   : return int64(v), nil
-                case int8  : return int64(v), nil
-                case int16 : return int64(v), nil
-                case int32 : return int64(v), nil
-                case int64 : return int64(v), nil
-                case uint  : return int64(v), nil
-                case uint8 : return int64(v), nil
-                case uint16: return int64(v), nil
-                case uint32: return int64(v), nil
-                case uint64: return int64(v), nil
+                case bool   : 
+                    if v {
+                        return 1, nil
+                    } else {
+                        return 0, nil
+                    }
+                case int    : return int64(v), nil
+                case int8   : return int64(v), nil
+                case int16  : return int64(v), nil
+                case int32  : return int64(v), nil
+                case int64  : return int64(v), nil
+                case uint   : return int64(v), nil
+                case uint8  : return int64(v), nil
+                case uint16 : return int64(v), nil
+                case uint32 : return int64(v), nil
+                case uint64 : return int64(v), nil
+                case float32: return int64(v), nil
+                case float64: return int64(v), nil
+                case string : 
+                    if i, err := strconv.ParseInt(v, 10, 64); err == nil {
+                        return i, nil
+                    } else if f, err := strconv.ParseFloat(v, 64); err == nil {
+                        return int64(f), nil
+                    } else {
+                        return 0, err
+                    }
+                case json.Number: 
+                    if i, err := v.Int64(); err == nil {
+                        return i, nil
+                    } else if f, err := v.Float64(); err == nil {
+                        return int64(f), nil
+                    } else {
+                        return 0, err
+                    }
                 default: return 0, ErrUnsupportType
             }
         default               : return 0, ErrUnsupportType
@@ -238,9 +300,23 @@ func (self *Node) StrictInt64() (int64, error) {
                 case uint16: return int64(v), nil
                 case uint32: return int64(v), nil
                 case uint64: return int64(v), nil
+                case json.Number: 
+                    if i, err := v.Int64(); err == nil {
+                        return i, nil
+                    } else {
+                        return 0, err
+                    }
                 default: return 0, ErrUnsupportType
             }
         default               : return 0, ErrUnsupportType
+    }
+}
+
+func castNumber(v bool) json.Number {
+    if v {
+        return json.Number("1")
+    } else {
+        return json.Number("0")
     }
 }
 
@@ -264,10 +340,24 @@ func (self *Node) Number() (json.Number, error) {
         case types.V_FALSE    : return json.Number("0"), nil
         case types.V_NULL     : return json.Number("0"), nil
         case _V_ANY           :        
-            if v, ok := self.packAny().(json.Number); ok {
-                return v, nil
-            } else {
-                return json.Number(""), ErrUnsupportType
+            any := self.packAny()
+            switch v := any.(type) {
+                case bool   : return castNumber(v), nil
+                case int    : return castNumber(v != 0), nil
+                case int8   : return castNumber(v != 0), nil
+                case int16  : return castNumber(v != 0), nil
+                case int32  : return castNumber(v != 0), nil
+                case int64  : return castNumber(v != 0), nil
+                case uint   : return castNumber(v != 0), nil
+                case uint8  : return castNumber(v != 0), nil
+                case uint16 : return castNumber(v != 0), nil
+                case uint32 : return castNumber(v != 0), nil
+                case uint64 : return castNumber(v != 0), nil
+                case float32: return castNumber(v != 0), nil
+                case float64: return castNumber(v != 0), nil
+                case string : return json.Number(v), nil 
+                case json.Number: return v, nil
+                default: return json.Number(""), ErrUnsupportType
             }
         default               : return json.Number(""), ErrUnsupportType
     }
@@ -302,17 +392,30 @@ func (self *Node) String() (string, error) {
         return "", err
     }
     switch self.t {
-        case _V_NUMBER       : return toNumber(self).String(), nil
         case types.V_NULL    : return "" , nil
         case types.V_TRUE    : return "true" , nil
         case types.V_FALSE   : return "false", nil
-        case types.V_STRING  : return addr2str(self.p, self.v), nil
-        case _V_ANY        :        
-            if v, ok := self.packAny().(string); ok {
-                return v, nil
-            } else {
-                return "", ErrUnsupportType
-            }
+        case types.V_STRING, _V_NUMBER  : return addr2str(self.p, self.v), nil
+        case _V_ANY          :        
+        any := self.packAny()
+        switch v := any.(type) {
+            case bool   : return strconv.FormatBool(v), nil
+            case int    : return strconv.Itoa(v), nil
+            case int8   : return strconv.Itoa(int(v)), nil
+            case int16  : return strconv.Itoa(int(v)), nil
+            case int32  : return strconv.Itoa(int(v)), nil
+            case int64  : return strconv.Itoa(int(v)), nil
+            case uint   : return strconv.Itoa(int(v)), nil
+            case uint8  : return strconv.Itoa(int(v)), nil
+            case uint16 : return strconv.Itoa(int(v)), nil
+            case uint32 : return strconv.Itoa(int(v)), nil
+            case uint64 : return strconv.Itoa(int(v)), nil
+            case float32: return strconv.FormatFloat(float64(v), 'e', -1, 64), nil
+            case float64: return strconv.FormatFloat(float64(v), 'e', -1, 64), nil
+            case string : return v, nil 
+            case json.Number: return v.String(), nil
+            default: return "", ErrUnsupportType
+        }
         default              : return ""     , ErrUnsupportType
     }
 }
@@ -348,11 +451,39 @@ func (self *Node) Float64() (float64, error) {
         case _V_ANY          :        
             any := self.packAny()
             switch v := any.(type) {
-                case float32 : return float64(v), nil
-                case float64 : return float64(v), nil
-                default      : return 0, ErrUnsupportType
+                case bool    : 
+                    if v {
+                        return 1.0, nil
+                    } else {
+                        return 0.0, nil
+                    }
+                case int    : return float64(v), nil
+                case int8   : return float64(v), nil
+                case int16  : return float64(v), nil
+                case int32  : return float64(v), nil
+                case int64  : return float64(v), nil
+                case uint   : return float64(v), nil
+                case uint8  : return float64(v), nil
+                case uint16 : return float64(v), nil
+                case uint32 : return float64(v), nil
+                case uint64 : return float64(v), nil
+                case float32: return float64(v), nil
+                case float64: return float64(v), nil
+                case string : 
+                    if f, err := strconv.ParseFloat(v, 64); err == nil {
+                        return float64(f), nil
+                    } else {
+                        return 0, err
+                    }
+                case json.Number: 
+                    if f, err := v.Float64(); err == nil {
+                        return float64(f), nil
+                    } else {
+                        return 0, err
+                    }
+                default     : return 0, ErrUnsupportType
             }
-        default              : return 0.0, ErrUnsupportType
+        default             : return 0.0, ErrUnsupportType
     }
 }
 
