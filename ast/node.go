@@ -17,15 +17,15 @@
 package ast
 
 import (
-	"encoding/json"
-	"fmt"
-	"strconv"
-	"unsafe"
+    `encoding/json`
+    `fmt`
+    `strconv`
+    `unsafe`
     
-	"github.com/bytedance/sonic/decoder"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/chenzhuoyu/base64x"
+    `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/chenzhuoyu/base64x`
 )
 
 const (
