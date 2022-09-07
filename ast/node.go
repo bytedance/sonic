@@ -17,15 +17,15 @@
 package ast
 
 import (
-    `encoding/json`
-    `strconv`
-    `fmt`
-    `unsafe`
-
-    `github.com/bytedance/sonic/decoder`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/chenzhuoyu/base64x`
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"unsafe"
+    
+	"github.com/bytedance/sonic/decoder"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/chenzhuoyu/base64x"
 )
 
 const (
@@ -240,12 +240,7 @@ func (self *Node) Int64() (int64, error) {
         case _V_ANY           :  
             any := self.packAny()
             switch v := any.(type) {
-                case bool   : 
-                    if v {
-                        return 1, nil
-                    } else {
-                        return 0, nil
-                    }
+                case bool   : if v { return 1, nil } else { return 0, nil }
                 case int    : return int64(v), nil
                 case int8   : return int64(v), nil
                 case int16  : return int64(v), nil
@@ -355,7 +350,12 @@ func (self *Node) Number() (json.Number, error) {
                 case uint64 : return castNumber(v != 0), nil
                 case float32: return castNumber(v != 0), nil
                 case float64: return castNumber(v != 0), nil
-                case string : return json.Number(v), nil 
+                case string : 
+                    if _, err := strconv.ParseFloat(v, 64); err == nil {
+                        return json.Number(v), nil
+                    } else {
+                        return json.Number(""), err
+                    }
                 case json.Number: return v, nil
                 default: return json.Number(""), ErrUnsupportType
             }
@@ -410,8 +410,8 @@ func (self *Node) String() (string, error) {
             case uint16 : return strconv.Itoa(int(v)), nil
             case uint32 : return strconv.Itoa(int(v)), nil
             case uint64 : return strconv.Itoa(int(v)), nil
-            case float32: return strconv.FormatFloat(float64(v), 'e', -1, 64), nil
-            case float64: return strconv.FormatFloat(float64(v), 'e', -1, 64), nil
+            case float32: return strconv.FormatFloat(float64(v), 'g', -1, 64), nil
+            case float64: return strconv.FormatFloat(float64(v), 'g', -1, 64), nil
             case string : return v, nil 
             case json.Number: return v.String(), nil
             default: return "", ErrUnsupportType
