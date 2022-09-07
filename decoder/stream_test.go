@@ -30,40 +30,40 @@ import (
 )
 
 var (
-    _Single_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"} { `
-    _Double_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}    {"11111":"` + strings.Repeat("2",1024) + `"}`     
-    _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}{ } {"11111":"` + 
-    strings.Repeat("2",1024)+`"} b {}`
+    _Single_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"} { `
+    _Double_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"}    {"11111":"` + strings.Repeat("2", int(defaultBufferSize)) + `"}`     
+    _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"}{ } {"11111":"` + 
+    strings.Repeat("2", int(defaultBufferSize))+`"} b {}`
 )
 
 func TestStreamError(t *testing.T) {
     var qs = []string{
-        `{`+strings.Repeat(" ", 1024)+`"`,
-        `{`+strings.Repeat(" ", 1024)+`"}`,
-        `{`+strings.Repeat(" ", 1024)+`""}`,
-        `{`+strings.Repeat(" ", 1024)+`"":}`,
-        `{`+strings.Repeat(" ", 1024)+`"":]`,
-        `{`+strings.Repeat(" ", 1024)+`"":1x`,
-        `{`+strings.Repeat(" ", 1024)+`"":1x}`,
-        `{`+strings.Repeat(" ", 1024)+`"":1x]`,
-        `{`+strings.Repeat(" ", 1024)+`"":t`,
-        `{`+strings.Repeat(" ", 1024)+`"":t}`,
-        `{`+strings.Repeat(" ", 1024)+`"":true]`,
-        `{`+strings.Repeat(" ", 1024)+`"":f`,
-        `{`+strings.Repeat(" ", 1024)+`"":f}`,
-        `{`+strings.Repeat(" ", 1024)+`"":false]`,
-        `{`+strings.Repeat(" ", 1024)+`"":n`,
-        `{`+strings.Repeat(" ", 1024)+`"":n}`,
-        `{`+strings.Repeat(" ", 1024)+`"":null]`,
-        `{`+strings.Repeat(" ", 1024)+`"":"`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a}`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a"`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a"]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`""}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":t`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":t}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":true]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":f`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":f}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":false]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":n`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":n}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":null]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a"`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a"]`,
     }
 
     for i, q := range qs {
-        var qq = []byte(q[:1024]+strings.Repeat(" ", i*100)+q[1024:])
+        var qq = []byte(q[:int(defaultBufferSize)]+strings.Repeat(" ", i*100)+q[int(defaultBufferSize):])
         var obj interface{}
         require.NotNil(t, NewStreamDecoder(bytes.NewReader(qq)).Decode(&obj))
     }
