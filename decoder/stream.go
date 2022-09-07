@@ -25,7 +25,7 @@ import (
 )
 
 var (
-    defaultBufferSize    uint = 1024
+    defaultBufferSize    uint = 4096
     growSliceFactorShift uint = 1
     minLeftBufferShift   uint = 2
 )
@@ -99,7 +99,7 @@ read_more:
         self.Decoder.Reset(string(buf))
         err = self.Decoder.Decode(val)
         if err != nil {
-            if repeat && repeatable(err) {
+            if repeat && self.repeatable(err) {
                 goto read_more
             }
             self.err = err
@@ -125,8 +125,9 @@ read_more:
     return err
 }
 
-func repeatable(err error) bool {
-    if ee, ok := err.(SyntaxError); ok && ee.Code == types.ERR_EOF {
+func (self StreamDecoder) repeatable(err error) bool {
+    if ee, ok := err.(SyntaxError); ok && 
+    (ee.Code == types.ERR_EOF || (ee.Code == types.ERR_INVALID_CHAR && self.i == len(self.s)-1)) {
         return true
     }
     return false
