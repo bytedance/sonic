@@ -127,7 +127,7 @@ read_more:
 
 func (self StreamDecoder) repeatable(err error) bool {
     if ee, ok := err.(SyntaxError); ok && 
-    (ee.Code == types.ERR_EOF || (ee.Code == types.ERR_INVALID_CHAR && self.i == len(self.s)-1)) {
+    (ee.Code == types.ERR_EOF || (ee.Code == types.ERR_INVALID_CHAR && self.i >= len(self.s)-1)) {
         return true
     }
     return false
