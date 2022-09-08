@@ -166,11 +166,9 @@ func (self *Node) checkRaw() error {
     return nil
 }
 
-// Bool returns bool value represented by this node
-//
-// If node type is not types.V_TRUE or types.V_FALSE, 
-// V_RAW (must be a bool json value), or V_ANY (must be a bool type)
-// it will return error
+// Bool returns bool value represented by this node, 
+// including types.V_TRUE|V_FALSE|V_NUMBER|V_STRING|V_ANY|V_NULL, 
+// V_NONE will return error
 func (self *Node) Bool() (bool, error) {
     if err := self.checkRaw(); err != nil {
         return false, err
@@ -219,8 +217,9 @@ func (self *Node) Bool() (bool, error) {
     }
 }
 
-// Int64 casts the node to int64 value, including V_NUMBER, V_TRUE, V_FALSE, V_ANY,
-// V_STRING of invalid digits
+// Int64 casts the node to int64 value, 
+// including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING
+// V_NONE it will return error
 func (self *Node) Int64() (int64, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
@@ -315,8 +314,9 @@ func castNumber(v bool) json.Number {
     }
 }
 
-// Number casts node to float64, including V_NUMBER, V_TRUE, V_FALSE, V_ANY of json.Number,
-// V_STRING of invalid digits
+// Number casts node to float64, 
+// including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL,
+// V_NONE it will return error
 func (self *Node) Number() (json.Number, error) {
     if err := self.checkRaw(); err != nil {
         return json.Number(""), err
@@ -380,13 +380,9 @@ func (self *Node) StrictNumber() (json.Number, error) {
     }
 }
 
-// String returns raw string value if node type is V_STRING.
-// Or return the string representation of other types:
-//  V_NULL => "",
-//  V_TRUE => "true",
-//  V_FALSE => "false",
-//  V_NUMBER => "[0-9\.]*"
-//  V_ANY => interface{}.(string)
+// String cast node to string, 
+// including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL,
+// V_NONE it will return error
 func (self *Node) String() (string, error) {
     if err := self.checkRaw(); err != nil {
         return "", err
@@ -438,7 +434,9 @@ func (self *Node) StrictString() (string, error) {
     }
 }
 
-// Float64 casts node to float64, includeing V_NUMBER, V_TRUE, V_FALSE, V_ANY
+// Float64 cast node to float64, 
+// including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL,
+// V_NONE it will return error
 func (self *Node) Float64() (float64, error) {
     if err := self.checkRaw(); err != nil {
         return 0.0, err
