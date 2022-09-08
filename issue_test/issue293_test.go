@@ -36,3 +36,19 @@ func TestIssue293(t *testing.T) {
         t.Fatal(err)
     }
 }
+
+func TestIssue293Sign(t *testing.T) {
+    left := `{"a":`
+    var data = left+strings.Repeat(" ", 4096 - len(left)-1) + "-33.0}"
+    sd := decoder.NewStreamDecoder(strings.NewReader(data))
+    var v = struct{
+        A json.RawMessage
+    }{}
+    err := sd.Decode(&v)
+    if err != nil {
+	if e, ok := err.(decoder.SyntaxError); ok {
+	    t.Fatal(e.Description())
+	}
+        t.Fatal(err)
+    }
+}
