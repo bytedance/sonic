@@ -601,3 +601,66 @@ func BenchmarkCompact_Std(b *testing.B) {
         _ = json.Compact(dst, data)
     }
 }
+
+func BenchmarkEncoder_Float64(b *testing.B) {
+    var bench = []struct {
+        name    string
+        float   float64
+    }{
+        {"Zero", 0},
+        {"Decimal", 33909},
+        {"Float", 339.7784},
+        {"Exp", -5.09e75},
+        {"NegExp", -5.11e-95},
+        {"LongExp", 1.234567890123456e-78},
+        {"Big", 123456789123456789123456789},
+    
+    }
+    for _, c := range bench {
+        libs := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib",
+            test: func(b *testing.B) {  _, _ = json.Marshal(c.float); for i := 0; i < b.N; i++ { _, _ = json.Marshal(c.float) }},
+        }, {
+            name: "Sonic",
+            test: func(b *testing.B) { _, _ = Encode(c.float, 0); for i := 0; i < b.N; i++ { _, _ = Encode(c.float, 0) }},
+        }}
+        for _, lib := range libs {
+            name := lib.name + "_" + c.name
+            b.Run(name, lib.test)
+        }  
+    }
+}
+
+func BenchmarkEncoder_Float32(b *testing.B) {
+    var bench = []struct {
+        name    string
+        float   float32
+    }{
+        {"Zero", 0},
+        {"Integer", 33909},
+        {"ExactFraction", 3.375},
+        {"Point", 339.7784},
+        {"Exp", -5.09e25},
+        {"NegExp", -5.11e-25},
+        {"Shortest", 1.234567e-8},
+    }
+    for _, c := range bench {
+        libs := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib",
+            test: func(b *testing.B) {  _, _ = json.Marshal(c.float); for i := 0; i < b.N; i++ { _, _ = json.Marshal(c.float) }},
+        }, {
+            name: "Sonic",
+            test: func(b *testing.B) { _, _ = Encode(c.float, 0); for i := 0; i < b.N; i++ { _, _ = Encode(c.float, 0) }},
+        }}
+        for _, lib := range libs {
+            name := lib.name + "_" + c.name
+            b.Run(name, lib.test)
+        }  
+    }
+}

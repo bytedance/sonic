@@ -74,61 +74,65 @@ func TestFastFloat_Random(t *testing.T) {
     }
 }
 
-var ftoaBenches = []struct {
-    name    string
-    float   float64
-    bitSize int
-}{
-    {"Zero", 0, 64},
-    {"Decimal", 33909, 64},
-    {"Float", 339.7784, 64},
-    {"Exp", -5.09e75, 64},
-    {"NegExp", -5.11e-95, 64},
-    {"LongExp", 1.234567890123456e-78, 64},
-    {"Big", 123456789123456789123456789, 64},
-    {"32Integer", 33909, 32},
-    {"32ExactFraction", 3.375, 32},
-    {"32Point", 339.7784, 32},
-    {"32Exp", -5.09e25, 32},
-    {"32NegExp", -5.11e-25, 32},
-    {"32Shortest", 1.234567e-8, 32},
-}
-
-func BenchmarkParseFloat(b *testing.B) {
-    for _, c := range ftoaBenches {
+func BenchmarkParseFloat64(b *testing.B) {
+    var f64toaBenches = []struct {
+        name    string
+        float   float64
+    }{
+        {"Zero", 0},
+        {"Decimal", 33909},
+        {"Float", 339.7784},
+        {"Exp", -5.09e75},
+        {"NegExp", -5.11e-95},
+        {"LongExp", 1.234567890123456e-78},
+        {"Big", 123456789123456789123456789},
+    
+    }
+    for _, c := range f64toaBenches {
         f64bench := []struct {
             name string
             test func(*testing.B)
         }{{
             name: "StdLib",
-            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:0], c.float, 'g', -1, c.bitSize) }},
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:0], c.float, 'g', -1, 64) }},
         }, {
             name: "FastFloat",
             test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f64toa(&buf[0], c.float) }},
         }}
+        for _, bm := range f64bench {
+            name := bm.name + "_" + c.name
+            b.Run(name, bm.test)
+        }
+    }
+}
 
-        f32bench := []struct {
+func BenchmarkParseFloat32(b *testing.B) {
+    var f32toaBenches = []struct {
+        name    string
+        float   float32
+    }{
+        {"Zero", 0},
+        {"Integer", 33909},
+        {"ExactFraction", 3.375},
+        {"Point", 339.7784},
+        {"Exp", -5.09e25},
+        {"NegExp", -5.11e-25},
+        {"Shortest", 1.234567e-8},
+    }
+    for _, c := range f32toaBenches {
+        bench := []struct {
             name string
             test func(*testing.B)
         }{{
             name: "StdLib32",
-            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:0], c.float, 'g', -1, c.bitSize) }},
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { strconv.AppendFloat(buf[:0], float64(c.float), 'g', -1, 32) }},
         }, {
             name: "FastFloat32",
-            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f32toa(&buf[0], float32(c.float)) }},
+            test: func(b *testing.B) { var buf [64]byte; for i := 0; i < b.N; i++ { __f32toa(&buf[0], c.float) }},
         }}
-
-        if c.bitSize == 64 {
-            for _, bm := range f64bench {
-                name := bm.name + "_" + c.name
-                b.Run(name, bm.test)
-            }
-        }
-        if c.bitSize == 32 {
-            for _, bm := range f32bench {
-                name := bm.name + "_" + c.name
-                b.Run(name, bm.test)
-            }
+        for _, bm := range bench {
+            name := bm.name + "_" + c.name
+            b.Run(name, bm.test)
         }
     }
 }
