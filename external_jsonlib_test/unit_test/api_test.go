@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package sonic
+package unit_test
 
 import (
     `bytes`
     `encoding/json`
     `testing`
 
+    `github.com/bytedance/sonic`
     jsoniter `github.com/json-iterator/go`
     `github.com/stretchr/testify/require`
 )
@@ -29,11 +30,11 @@ var jt = jsoniter.Config{
     ValidateJsonRawMessage: true,
 }.Froze()
 
-func TestCompatMarshalDefault(t *testing.T){
+func TestCompatMarshalDefault(t *testing.T) {
     var obj = map[string]interface{}{
         "c": json.RawMessage("[\"<&>\"]"),
     }
-    sout, serr := ConfigDefault.Marshal(obj)
+    sout, serr := sonic.ConfigDefault.Marshal(obj)
     jout, jerr := jt.Marshal(obj)
     require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
@@ -45,14 +46,14 @@ func TestCompatMarshalDefault(t *testing.T){
     // jout, jerr = json.Marshal(obj)
     // require.NotNil(t, jerr)
     // require.NotNil(t, serr)
-	// require.Equal(t, string(jout), string(sout))
-	
-	obj = map[string]interface{}{
+    // require.Equal(t, string(jout), string(sout))
+
+    obj = map[string]interface{}{
         "a": json.RawMessage("1"),
     }
-    sout, serr = ConfigDefault.MarshalIndent(obj, "", "  ")
+    sout, serr = sonic.ConfigDefault.MarshalIndent(obj, "", "  ")
     jout, jerr = jt.MarshalIndent(obj, "", "  ")
-	require.Equal(t, jerr, serr)
+    require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
 }
 
@@ -62,7 +63,7 @@ func TestCompatMarshalStd(t *testing.T) {
         "c": json.RawMessage(" [ \"<&>\" ] "),
         "b": json.RawMessage(" [ ] "),
     }
-    sout, serr := ConfigStd.Marshal(obj)
+    sout, serr := sonic.ConfigStd.Marshal(obj)
     jout, jerr := json.Marshal(obj)
     require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
@@ -70,7 +71,7 @@ func TestCompatMarshalStd(t *testing.T) {
     obj = map[string]interface{}{
         "a": json.RawMessage(" [} "),
     }
-    sout, serr = ConfigStd.Marshal(obj)
+    sout, serr = sonic.ConfigStd.Marshal(obj)
     jout, jerr = json.Marshal(obj)
     require.NotNil(t, jerr)
     require.NotNil(t, serr)
@@ -79,7 +80,7 @@ func TestCompatMarshalStd(t *testing.T) {
     obj = map[string]interface{}{
         "a": json.RawMessage("1"),
     }
-    sout, serr = ConfigStd.MarshalIndent(obj, "xxxx", "  ")
+    sout, serr = sonic.ConfigStd.MarshalIndent(obj, "xxxx", "  ")
     jout, jerr = json.MarshalIndent(obj, "xxxx", "  ")
     require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
@@ -90,15 +91,15 @@ func TestCompatUnmarshalDefault(t *testing.T) {
     var jobj = map[string]interface{}{}
     var data = []byte(`{"a":-0}`)
     var str = string(data)
-    serr := ConfigDefault.UnmarshalFromString(str, &sobj)
+    serr := sonic.ConfigDefault.UnmarshalFromString(str, &sobj)
     jerr := jt.UnmarshalFromString(str, &jobj)
     require.Equal(t, jerr, serr)
-	require.Equal(t, jobj, sobj)
+    require.Equal(t, jobj, sobj)
 
-    x := struct{A json.Number}{}
-    y := struct{A json.Number}{}
+    x := struct{ A json.Number }{}
+    y := struct{ A json.Number }{}
     data = []byte(`{"A":"1", "B":-1}`)
-    serr = ConfigDefault.Unmarshal(data, &x)
+    serr = sonic.ConfigDefault.Unmarshal(data, &x)
     jerr = jt.Unmarshal(data, &y)
     require.Equal(t, jerr, serr)
     require.Equal(t, y, x)
@@ -109,7 +110,7 @@ func TestCompatUnmarshalStd(t *testing.T) {
     var jobj = map[string]interface{}{}
     var data = []byte(`{"a":1.00000001E-10}`)
     var str = string(data)
-    serr := ConfigStd.UnmarshalFromString(str, &sobj)
+    serr := sonic.ConfigStd.UnmarshalFromString(str, &sobj)
     jerr := json.Unmarshal(data, &jobj)
     require.Equal(t, jerr, serr)
     require.Equal(t, jobj, sobj)
@@ -119,7 +120,7 @@ func TestCompatUnmarshalStd(t *testing.T) {
     sobj = map[string]interface{}{}
     jobj = map[string]interface{}{}
     data = []byte(`{"a":1}`)
-    cfg := Config{
+    cfg := sonic.Config{
         UseNumber: true,
     }.Froze()
     serr = cfg.Unmarshal(data, &sobj)
@@ -129,10 +130,10 @@ func TestCompatUnmarshalStd(t *testing.T) {
     require.Equal(t, jerr, serr)
     require.Equal(t, jobj, sobj)
 
-    x := struct{A json.Number}{}
-    y := struct{A json.Number}{}
+    x := struct{ A json.Number }{}
+    y := struct{ A json.Number }{}
     data = []byte(`{"A":"1", "B":-1}`)
-    cfg = Config{
+    cfg = sonic.Config{
         DisallowUnknownFields: true,
     }.Froze()
     serr = cfg.Unmarshal(data, &x)
@@ -152,7 +153,7 @@ func TestCompatEncoderDefault(t *testing.T) {
     var w1 = bytes.NewBuffer(nil)
     var w2 = bytes.NewBuffer(nil)
     var enc1 = jt.NewEncoder(w1)
-    var enc2 = ConfigDefault.NewEncoder(w2)
+    var enc2 = sonic.ConfigDefault.NewEncoder(w2)
 
     require.Nil(t, enc1.Encode(o))
     require.Nil(t, enc2.Encode(o))
@@ -165,7 +166,7 @@ func TestCompatEncoderDefault(t *testing.T) {
     require.Nil(t, enc1.Encode(o))
     require.Nil(t, enc2.Encode(o))
     require.Equal(t, w1.String(), w2.String())
-    
+
     enc1.SetEscapeHTML(false)
     enc2.SetEscapeHTML(false)
     enc1.SetIndent("", "")
@@ -183,7 +184,7 @@ func TestCompatEncoderStd(t *testing.T) {
     var w1 = bytes.NewBuffer(nil)
     var w2 = bytes.NewBuffer(nil)
     var enc1 = json.NewEncoder(w1)
-    var enc2 = ConfigStd.NewEncoder(w2)
+    var enc2 = sonic.ConfigStd.NewEncoder(w2)
 
     require.Nil(t, enc1.Encode(o))
     require.Nil(t, enc2.Encode(o))
@@ -196,7 +197,7 @@ func TestCompatEncoderStd(t *testing.T) {
     require.Nil(t, enc1.Encode(o))
     require.Nil(t, enc2.Encode(o))
     require.Equal(t, w1.String(), w2.String())
-    
+
     enc1.SetEscapeHTML(false)
     enc2.SetEscapeHTML(false)
     enc1.SetIndent("", "")
@@ -213,7 +214,7 @@ func TestCompatDecoderStd(t *testing.T) {
     var w1 = bytes.NewBuffer([]byte(s))
     var w2 = bytes.NewBuffer([]byte(s))
     var enc1 = json.NewDecoder(w1)
-    var enc2 = ConfigStd.NewDecoder(w2)
+    var enc2 = sonic.ConfigStd.NewDecoder(w2)
 
     require.Equal(t, enc1.More(), enc2.More())
     require.Nil(t, enc1.Decode(&o1))
@@ -224,7 +225,7 @@ func TestCompatDecoderStd(t *testing.T) {
     require.Nil(t, enc1.Decode(&o1))
     require.Nil(t, enc2.Decode(&o2))
     require.Equal(t, w1.String(), w2.String())
-    
+
     require.Equal(t, enc1.More(), enc2.More())
     require.NotNil(t, enc1.Decode(&o1))
     require.NotNil(t, enc2.Decode(&o2))
@@ -238,7 +239,7 @@ func TestCompatDecoderDefault(t *testing.T) {
     var w1 = bytes.NewBuffer([]byte(s))
     var w2 = bytes.NewBuffer([]byte(s))
     var enc1 = jt.NewDecoder(w1)
-    var enc2 = ConfigDefault.NewDecoder(w2)
+    var enc2 = sonic.ConfigDefault.NewDecoder(w2)
 
     require.Equal(t, enc1.More(), enc2.More())
     require.Nil(t, enc1.Decode(&o1))
@@ -249,7 +250,7 @@ func TestCompatDecoderDefault(t *testing.T) {
     require.Nil(t, enc1.Decode(&o1))
     require.Nil(t, enc2.Decode(&o2))
     require.Equal(t, w1.String(), w2.String())
-    
+
     require.Equal(t, enc1.More(), enc2.More())
     require.NotNil(t, enc1.Decode(&o1))
     require.NotNil(t, enc2.Decode(&o2))

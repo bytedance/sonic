@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package ast
+package unit_test
 
 import (
     `testing`
 
+    `github.com/bytedance/sonic/ast`
     jsoniter `github.com/json-iterator/go`
     `github.com/stretchr/testify/require`
     `github.com/tidwall/gjson`
@@ -35,8 +36,8 @@ func TestNotFoud(t *testing.T) {
     require.True(t, ga.Type == gjson.Null)
     require.Equal(t, false, ga.Bool())
 
-    sa, err := NewSearcher(data).GetByPath("b")
-    require.True(t, sa.Type() == V_NONE)
+    sa, err := ast.NewSearcher(data).GetByPath("b")
+    require.True(t, sa.Type() == ast.V_NONE)
     require.Error(t, err)
     sv, err := sa.Bool()
     require.Error(t, err)
@@ -54,8 +55,8 @@ func TestNull(t *testing.T) {
     require.True(t, ga.Type == gjson.Null)
     require.Equal(t, false, ga.Bool())
 
-    sa, err := NewSearcher(data).GetByPath("b")
-    require.True(t, sa.Type() == V_NULL)
+    sa, err := ast.NewSearcher(data).GetByPath("b")
+    require.True(t, sa.Type() == ast.V_NULL)
     require.NoError(t, err)
     sv, err := sa.Bool()
     require.NoError(t, err)

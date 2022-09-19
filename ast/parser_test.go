@@ -17,33 +17,31 @@
 package ast
 
 import (
-    `os`
     `encoding/json`
-    `testing`
-    `time`
+    `os`
     `runtime`
     `runtime/debug`
     `sync`
+    `testing`
+    `time`
 
-    jsoniter `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
-    `github.com/tidwall/gjson`
 )
 
 var (
-    debugSyncGC  = os.Getenv("SONIC_SYNC_GC")  != ""
+    debugSyncGC = os.Getenv("SONIC_SYNC_GC") != ""
     debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 )
 
 func TestMain(m *testing.M) {
-    go func ()  {
+    go func() {
         if !debugAsyncGC {
             return
         }
         println("Begin GC looping...")
         for {
             runtime.GC()
-            debug.FreeOSMemory() 
+            debug.FreeOSMemory()
         }
         println("stop GC looping!")
     }()
@@ -61,9 +59,9 @@ func TestGC_Parse(t *testing.T) {
     }
     wg := &sync.WaitGroup{}
     N := 1000
-    for i:=0; i<N; i++ {
+    for i := 0; i < N; i++ {
         wg.Add(1)
-        go func (wg *sync.WaitGroup)  {
+        go func(wg *sync.WaitGroup) {
             defer wg.Done()
             _, _, err := Loads(_TwitterJson)
             if err != nil {
@@ -77,14 +75,18 @@ func TestGC_Parse(t *testing.T) {
 
 func runDecoderTest(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()
-    if err != 0 { panic(err) }
+    if err != 0 {
+        panic(err)
+    }
     x, _ := vv.Interface()
     assert.Equal(t, expect, x)
 }
 
 func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()
-    if err != 0 { panic(err) }
+    if err != 0 {
+        panic(err)
+    }
     vvv, _ := vv.InterfaceUseNumber()
     switch vvv.(type) {
     case json.Number:
@@ -92,14 +94,14 @@ func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
     case []interface{}:
         x := vvv.([]interface{})
         for i, e := range x {
-            if ev,ok := e.(json.Number);ok {
+            if ev, ok := e.(json.Number); ok {
                 x[i] = n2f64(ev)
             }
         }
         assert.Equal(t, expect, x)
     case map[string]interface{}:
         x := vvv.(map[string]interface{})
-        for k,v := range x {
+        for k, v := range x {
             if ev, ok := v.(json.Number); ok {
                 x[k] = n2f64(ev)
             }
@@ -108,7 +110,7 @@ func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
     }
 }
 
-func n2f64(i json.Number) float64{ 
+func n2f64(i json.Number) float64 {
     x, err := i.Float64()
     if err != nil {
         panic(err)
@@ -160,7 +162,7 @@ func TestParser_Basic(t *testing.T) {
     runDecoderTest(t, `{}`, map[string]interface{}{})
     runDecoderTest(t, `["asd", "123", true, false, null, 2.4, 1.2e15]`, []interface{}{"asd", "123", true, false, nil, 2.4, 1.2e15})
     runDecoderTest(t, `{"asdf": "qwer", "zxcv": true}`, map[string]interface{}{"asdf": "qwer", "zxcv": true})
-    runDecoderTest(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a":"123", "b":true, "c":false, "d":nil, "e": 2.4, "f": 1.2e15, "g":float64(1)})
+    runDecoderTest(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": 2.4, "f": 1.2e15, "g": float64(1)})
 
     runDecoderTestUseNumber(t, `null`, nil)
     runDecoderTestUseNumber(t, `true`, true)
@@ -202,16 +204,16 @@ func TestParser_Basic(t *testing.T) {
     runDecoderTestUseNumber(t, `-1.2e-12`, -1.2e-12)
     runDecoderTestUseNumber(t, `-1.2E-12`, -1.2e-12)
     runDecoderTestUseNumber(t, `["asd", "123", true, false, null, 2.4, 1.2e15, 1]`, []interface{}{"asd", "123", true, false, nil, 2.4, 1.2e15, float64(1)})
-    runDecoderTestUseNumber(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a":"123", "b":true, "c":false, "d":nil, "e": 2.4, "f": 1.2e15, "g":float64(1)})
+    runDecoderTestUseNumber(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": 2.4, "f": 1.2e15, "g": float64(1)})
 }
 
 func TestLoads(t *testing.T) {
-    _,i,e := Loads(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
+    _, i, e := Loads(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
     if e != nil {
         t.Fatal(e)
     }
     assert.Equal(t, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": 2.4, "f": 1.2e15, "g": float64(1)}, i)
-    _,i,e = LoadsUseNumber(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
+    _, i, e = LoadsUseNumber(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
     if e != nil {
         t.Fatal(e)
     }
@@ -219,7 +221,7 @@ func TestLoads(t *testing.T) {
 }
 
 func TestParsehNotExist(t *testing.T) {
-    s,err := NewParser(` { "xx" : [ 0, "" ] ,"yy" :{ "2": "" } } `).Parse()
+    s, err := NewParser(` { "xx" : [ 0, "" ] ,"yy" :{ "2": "" } } `).Parse()
     if err != 0 {
         t.Fatal(err)
     }
@@ -257,39 +259,6 @@ func BenchmarkParser_Sonic(b *testing.B) {
     }
 }
 
-func BenchmarkParser_Gjson(b *testing.B) {
-    gjson.Parse(_TwitterJson).ForEach(func(key, value gjson.Result) bool {
-        if !value.Exists() {
-            b.Fatal(value.Index)
-        }
-        _ = value.Value()
-        return true
-    })
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        gjson.Parse(_TwitterJson).ForEach(func(key, value gjson.Result) bool {
-            if !value.Exists() {
-                b.Fatal(value.Index)
-            }
-            _ = value.Value()
-            return true
-        })
-    }
-}
-
-func BenchmarkParser_Jsoniter(b *testing.B) {
-    v := jsoniter.Get([]byte(_TwitterJson)).GetInterface()
-    if v == nil {
-        b.Fatal(v)
-    }
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-       _ = jsoniter.Get([]byte(_TwitterJson)).GetInterface()
-    }
-}
-
 func BenchmarkParser_Parallel_Sonic(b *testing.B) {
     r, _ := NewParser(_TwitterJson).Parse()
     if err := r.LoadAll(); err != nil {
@@ -305,40 +274,6 @@ func BenchmarkParser_Parallel_Sonic(b *testing.B) {
     })
 }
 
-func BenchmarkParser_Parallel_Gjson(b *testing.B) {
-    gjson.Parse(_TwitterJson).ForEach(func(key, value gjson.Result) bool {
-        if !value.Exists() {
-            b.Fatal(value.Index)
-        }
-        return true
-    })
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            gjson.Parse(_TwitterJson).ForEach(func(key, value gjson.Result) bool {
-                if !value.Exists() {
-                    b.Fatal(value.Index)
-                }
-                _ = value.Value()
-                return true
-            })
-        }
-    })
-}
-
-func BenchmarkParser_Parallel_Jsoniter(b *testing.B) {
-    var bv = []byte(_TwitterJson)
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            var out interface{}
-            _ = jsoniter.Unmarshal(bv, &out)
-        }
-    })
-}
-
 func BenchmarkParseOne_Sonic(b *testing.B) {
     ast, _ := NewParser(_TwitterJson).Parse()
     node, _ := ast.Get("statuses").Index(2).Get("id").Int64()
@@ -350,37 +285,6 @@ func BenchmarkParseOne_Sonic(b *testing.B) {
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
         _, _ = ast.Get("statuses").Index(2).Get("id").Int64()
-    }
-}
-
-func BenchmarkParseOne_Gjson(b *testing.B) {
-    ast := gjson.Parse(_TwitterJson)
-    node := ast.Get("statuses.2.id")
-    v := node.Int()
-    if v != 249289491129438208 {
-        b.Fatal(node)
-    }
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        ast := gjson.Parse(_TwitterJson)
-        node := ast.Get("statuses.2.id")
-        _ = node.Int()
-    }
-}
-
-func BenchmarkParseOne_Jsoniter(b *testing.B) {
-    data := []byte(_TwitterJson)
-    ast := jsoniter.Get(data, "statuses", 2, "id")
-    node := ast.ToInt()
-    if node != 249289491129438208 {
-        b.Fail()
-    }
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        ast := jsoniter.Get(data, "statuses", 2, "id")
-        _ = ast.ToInt()
     }
 }
 
@@ -400,92 +304,19 @@ func BenchmarkParseOne_Parallel_Sonic(b *testing.B) {
     })
 }
 
-func BenchmarkParseOne_Parallel_Gjson(b *testing.B) {
-    ast := gjson.Parse(_TwitterJson)
-    node := ast.Get("statuses.2.id")
-    v := node.Int()
-    if v != 249289491129438208 {
-        b.Fatal(node)
-    }
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            ast := gjson.Parse(_TwitterJson)
-            node := ast.Get("statuses.2.id")
-            _ = node.Int()
-        }
-    })
-}
-
-func BenchmarkParseOne_Parallel_Jsoniter(b *testing.B) {
-    data := []byte(_TwitterJson)
-    ast := jsoniter.Get(data, "statuses", 2, "id")
-    node := ast.ToInt()
-    if node != 249289491129438208 {
-        b.Fail()
-    }
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            data := []byte(_TwitterJson)
-            ast := jsoniter.Get(data, "statuses", 2, "id")
-            _ = ast.ToInt()
-        }
-    })
-}
-
 func BenchmarkParseSeven_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
         node := ast.GetByPath("statuses", 3, "id")
-        node = ast.GetByPath("statuses",  3, "user", "entities","description")
-        node = ast.GetByPath("statuses",  3, "user", "entities","url","urls")
-        node = ast.GetByPath("statuses",  3, "user", "entities","url")
-        node = ast.GetByPath("statuses",  3, "user", "created_at")
-        node = ast.GetByPath("statuses",  3, "user", "name")
-        node = ast.GetByPath("statuses",  3, "text")
+        node = ast.GetByPath("statuses", 3, "user", "entities", "description")
+        node = ast.GetByPath("statuses", 3, "user", "entities", "url", "urls")
+        node = ast.GetByPath("statuses", 3, "user", "entities", "url")
+        node = ast.GetByPath("statuses", 3, "user", "created_at")
+        node = ast.GetByPath("statuses", 3, "user", "name")
+        node = ast.GetByPath("statuses", 3, "text")
         if node.Check() != nil {
-            b.Fail()
-        }
-    }
-}
-
-func BenchmarkParseSeven_Gjson(b *testing.B) {
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        ast := gjson.Parse(_TwitterJson)
-        node := ast.Get("statuses.3.id")
-        node = ast.Get( "statuses.3.user.entities.description")
-        node = ast.Get( "statuses.3.user.entities.url.urls")
-        node = ast.Get( "statuses.3.user.entities.url")
-        node = ast.Get( "statuses.3.user.created_at")
-        node = ast.Get( "statuses.3.user.name")
-        node = ast.Get( "statuses.3.text")
-        if node.Value() == nil {
-            b.Fail()
-        }
-    }
-}
-
-func BenchmarkParseSeven_Jsoniter(b *testing.B) {
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    data := []byte(_TwitterJson)
-    for i := 0; i < b.N; i++ {
-        ast := jsoniter.Get(data)
-        node := ast.Get("statuses", 3, "id")
-        node = ast.Get("statuses",  3, "user", "entities","description")
-        node = ast.Get("statuses",  3, "user", "entities","url","urls")
-        node = ast.Get("statuses",  3, "user", "entities","url")
-        node = ast.Get("statuses",  3, "user", "created_at")
-        node = ast.Get("statuses",  3, "user", "name")
-        node = ast.Get("statuses",  3, "text")
-        if node.LastError() != nil {
             b.Fail()
         }
     }
@@ -498,54 +329,13 @@ func BenchmarkParseSeven_Parallel_Sonic(b *testing.B) {
         for pb.Next() {
             ast, _ := NewParser(_TwitterJson).Parse()
             node := ast.GetByPath("statuses", 3, "id")
-            node = ast.GetByPath("statuses",  3, "user", "entities","description")
-            node = ast.GetByPath("statuses",  3, "user", "entities","url","urls")
-            node = ast.GetByPath("statuses",  3, "user", "entities","url")
-            node = ast.GetByPath("statuses",  3, "user", "created_at")
-            node = ast.GetByPath("statuses",  3, "user", "name")
-            node = ast.GetByPath("statuses",  3, "text")
+            node = ast.GetByPath("statuses", 3, "user", "entities", "description")
+            node = ast.GetByPath("statuses", 3, "user", "entities", "url", "urls")
+            node = ast.GetByPath("statuses", 3, "user", "entities", "url")
+            node = ast.GetByPath("statuses", 3, "user", "created_at")
+            node = ast.GetByPath("statuses", 3, "user", "name")
+            node = ast.GetByPath("statuses", 3, "text")
             if node.Check() != nil {
-                b.Fail()
-            }
-        }
-    })
-}
-
-func BenchmarkParseSeven_Parallel_Gjson(b *testing.B) {
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            ast := gjson.Parse(_TwitterJson)
-            node := ast.Get("statuses.3.id")
-            node = ast.Get( "statuses.3.user.entities.description")
-            node = ast.Get( "statuses.3.user.entities.url.urls")
-            node = ast.Get( "statuses.3.user.entities.url")
-            node = ast.Get( "statuses.3.user.created_at")
-            node = ast.Get( "statuses.3.user.name")
-            node = ast.Get( "statuses.3.text")
-            if node.Value() == nil {
-                b.Fail()
-            }
-        }
-    })
-}
-
-func BenchmarkParseSeven_Parallel_Jsoniter(b *testing.B) {
-    b.SetBytes(int64(len(_TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            data := []byte(_TwitterJson)
-            ast := jsoniter.Get(data)
-            node := ast.Get("statuses", 3, "id")
-            node = ast.Get("statuses",  3, "user", "entities","description")
-            node = ast.Get("statuses",  3, "user", "entities","url","urls")
-            node = ast.Get("statuses",  3, "user", "entities","url")
-            node = ast.Get("statuses",  3, "user", "created_at")
-            node = ast.Get("statuses",  3, "user", "name")
-            node = ast.Get("statuses",  3, "text")
-            if node.LastError() != nil {
                 b.Fail()
             }
         }
