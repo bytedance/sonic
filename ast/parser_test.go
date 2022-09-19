@@ -29,12 +29,12 @@ import (
 )
 
 var (
-    debugSyncGC = os.Getenv("SONIC_SYNC_GC") != ""
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC")  != ""
     debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 )
 
 func TestMain(m *testing.M) {
-    go func() {
+    go func ()  {
         if !debugAsyncGC {
             return
         }
@@ -59,9 +59,9 @@ func TestGC_Parse(t *testing.T) {
     }
     wg := &sync.WaitGroup{}
     N := 1000
-    for i := 0; i < N; i++ {
+    for i:=0; i<N; i++ {
         wg.Add(1)
-        go func(wg *sync.WaitGroup) {
+        go func (wg *sync.WaitGroup)  {
             defer wg.Done()
             _, _, err := Loads(_TwitterJson)
             if err != nil {
@@ -75,18 +75,14 @@ func TestGC_Parse(t *testing.T) {
 
 func runDecoderTest(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()
-    if err != 0 {
-        panic(err)
-    }
+    if err != 0 { panic(err) }
     x, _ := vv.Interface()
     assert.Equal(t, expect, x)
 }
 
 func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
     vv, err := NewParser(src).Parse()
-    if err != 0 {
-        panic(err)
-    }
+    if err != 0 { panic(err) }
     vvv, _ := vv.InterfaceUseNumber()
     switch vvv.(type) {
     case json.Number:
@@ -94,14 +90,14 @@ func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
     case []interface{}:
         x := vvv.([]interface{})
         for i, e := range x {
-            if ev, ok := e.(json.Number); ok {
+            if ev,ok := e.(json.Number);ok {
                 x[i] = n2f64(ev)
             }
         }
         assert.Equal(t, expect, x)
     case map[string]interface{}:
         x := vvv.(map[string]interface{})
-        for k, v := range x {
+        for k,v := range x {
             if ev, ok := v.(json.Number); ok {
                 x[k] = n2f64(ev)
             }
@@ -110,7 +106,7 @@ func runDecoderTestUseNumber(t *testing.T, src string, expect interface{}) {
     }
 }
 
-func n2f64(i json.Number) float64 {
+func n2f64(i json.Number) float64{
     x, err := i.Float64()
     if err != nil {
         panic(err)
@@ -162,7 +158,7 @@ func TestParser_Basic(t *testing.T) {
     runDecoderTest(t, `{}`, map[string]interface{}{})
     runDecoderTest(t, `["asd", "123", true, false, null, 2.4, 1.2e15]`, []interface{}{"asd", "123", true, false, nil, 2.4, 1.2e15})
     runDecoderTest(t, `{"asdf": "qwer", "zxcv": true}`, map[string]interface{}{"asdf": "qwer", "zxcv": true})
-    runDecoderTest(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": 2.4, "f": 1.2e15, "g": float64(1)})
+    runDecoderTest(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a":"123", "b":true, "c":false, "d":nil, "e": 2.4, "f": 1.2e15, "g":float64(1)})
 
     runDecoderTestUseNumber(t, `null`, nil)
     runDecoderTestUseNumber(t, `true`, true)
@@ -204,16 +200,16 @@ func TestParser_Basic(t *testing.T) {
     runDecoderTestUseNumber(t, `-1.2e-12`, -1.2e-12)
     runDecoderTestUseNumber(t, `-1.2E-12`, -1.2e-12)
     runDecoderTestUseNumber(t, `["asd", "123", true, false, null, 2.4, 1.2e15, 1]`, []interface{}{"asd", "123", true, false, nil, 2.4, 1.2e15, float64(1)})
-    runDecoderTestUseNumber(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": 2.4, "f": 1.2e15, "g": float64(1)})
+    runDecoderTestUseNumber(t, `{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`, map[string]interface{}{"a":"123", "b":true, "c":false, "d":nil, "e": 2.4, "f": 1.2e15, "g":float64(1)})
 }
 
 func TestLoads(t *testing.T) {
-    _, i, e := Loads(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
+    _,i,e := Loads(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
     if e != nil {
         t.Fatal(e)
     }
     assert.Equal(t, map[string]interface{}{"a": "123", "b": true, "c": false, "d": nil, "e": 2.4, "f": 1.2e15, "g": float64(1)}, i)
-    _, i, e = LoadsUseNumber(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
+    _,i,e = LoadsUseNumber(`{"a": "123", "b": true, "c": false, "d": null, "e": 2.4, "f": 1.2e15, "g": 1}`)
     if e != nil {
         t.Fatal(e)
     }
@@ -221,7 +217,7 @@ func TestLoads(t *testing.T) {
 }
 
 func TestParsehNotExist(t *testing.T) {
-    s, err := NewParser(` { "xx" : [ 0, "" ] ,"yy" :{ "2": "" } } `).Parse()
+    s,err := NewParser(` { "xx" : [ 0, "" ] ,"yy" :{ "2": "" } } `).Parse()
     if err != 0 {
         t.Fatal(err)
     }
@@ -310,12 +306,12 @@ func BenchmarkParseSeven_Sonic(b *testing.B) {
     for i := 0; i < b.N; i++ {
         ast, _ := NewParser(_TwitterJson).Parse()
         node := ast.GetByPath("statuses", 3, "id")
-        node = ast.GetByPath("statuses", 3, "user", "entities", "description")
-        node = ast.GetByPath("statuses", 3, "user", "entities", "url", "urls")
-        node = ast.GetByPath("statuses", 3, "user", "entities", "url")
-        node = ast.GetByPath("statuses", 3, "user", "created_at")
-        node = ast.GetByPath("statuses", 3, "user", "name")
-        node = ast.GetByPath("statuses", 3, "text")
+        node = ast.GetByPath("statuses",  3, "user", "entities","description")
+        node = ast.GetByPath("statuses",  3, "user", "entities","url","urls")
+        node = ast.GetByPath("statuses",  3, "user", "entities","url")
+        node = ast.GetByPath("statuses",  3, "user", "created_at")
+        node = ast.GetByPath("statuses",  3, "user", "name")
+        node = ast.GetByPath("statuses",  3, "text")
         if node.Check() != nil {
             b.Fail()
         }
@@ -329,12 +325,12 @@ func BenchmarkParseSeven_Parallel_Sonic(b *testing.B) {
         for pb.Next() {
             ast, _ := NewParser(_TwitterJson).Parse()
             node := ast.GetByPath("statuses", 3, "id")
-            node = ast.GetByPath("statuses", 3, "user", "entities", "description")
-            node = ast.GetByPath("statuses", 3, "user", "entities", "url", "urls")
-            node = ast.GetByPath("statuses", 3, "user", "entities", "url")
-            node = ast.GetByPath("statuses", 3, "user", "created_at")
-            node = ast.GetByPath("statuses", 3, "user", "name")
-            node = ast.GetByPath("statuses", 3, "text")
+            node = ast.GetByPath("statuses",  3, "user", "entities","description")
+            node = ast.GetByPath("statuses",  3, "user", "entities","url","urls")
+            node = ast.GetByPath("statuses",  3, "user", "entities","url")
+            node = ast.GetByPath("statuses",  3, "user", "created_at")
+            node = ast.GetByPath("statuses",  3, "user", "name")
+            node = ast.GetByPath("statuses",  3, "text")
             if node.Check() != nil {
                 b.Fail()
             }

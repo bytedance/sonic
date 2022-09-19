@@ -480,6 +480,7 @@ func BenchmarkHTMLEscape_StdLib(b *testing.B) {
     _ = buf
 }
 
+
 func BenchmarkValidate_Sonic(b *testing.B) {
     var data = rt.Str2Mem(TwitterJson)
     ok, s := Valid(data)

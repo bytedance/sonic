@@ -30,7 +30,7 @@ var jt = jsoniter.Config{
     ValidateJsonRawMessage: true,
 }.Froze()
 
-func TestCompatMarshalDefault(t *testing.T) {
+func TestCompatMarshalDefault(t *testing.T){
     var obj = map[string]interface{}{
         "c": json.RawMessage("[\"<&>\"]"),
     }
@@ -42,7 +42,7 @@ func TestCompatMarshalDefault(t *testing.T) {
     // obj = map[string]interface{}{
     //     "a": json.RawMessage(" [} "),
     // }
-    // sout, serr = ConfigDefault.Marshal(obj)
+    // sout, serr = sonic.ConfigDefault.Marshal(obj)
     // jout, jerr = json.Marshal(obj)
     // require.NotNil(t, jerr)
     // require.NotNil(t, serr)
@@ -96,8 +96,8 @@ func TestCompatUnmarshalDefault(t *testing.T) {
     require.Equal(t, jerr, serr)
     require.Equal(t, jobj, sobj)
 
-    x := struct{ A json.Number }{}
-    y := struct{ A json.Number }{}
+    x := struct{A json.Number}{}
+    y := struct{A json.Number}{}
     data = []byte(`{"A":"1", "B":-1}`)
     serr = sonic.ConfigDefault.Unmarshal(data, &x)
     jerr = jt.Unmarshal(data, &y)
@@ -130,8 +130,8 @@ func TestCompatUnmarshalStd(t *testing.T) {
     require.Equal(t, jerr, serr)
     require.Equal(t, jobj, sobj)
 
-    x := struct{ A json.Number }{}
-    y := struct{ A json.Number }{}
+    x := struct{A json.Number}{}
+    y := struct{A json.Number}{}
     data = []byte(`{"A":"1", "B":-1}`)
     cfg = sonic.Config{
         DisallowUnknownFields: true,
