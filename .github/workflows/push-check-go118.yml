@@ -21,10 +21,9 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Unit Test
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./...
+        run: |
+          GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./...
+          GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./external_jsonlib_test/...
       
       - name: Generic Test
         run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race ./generic_test
-
-      - name: Benchmark
-        run: go test -benchmem -run=^$ -bench . -v ./generic_test
