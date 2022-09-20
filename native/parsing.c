@@ -268,10 +268,8 @@ static inline uint8_t escape_mask4(const char *sp) {
 
 static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
     uint32_t     mm;
-    const char * ss = sp;
     const char * ds = dp;
     size_t cn = 0;
-    uint8_t ch;
 
 simd_copy:
 

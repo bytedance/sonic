@@ -16,7 +16,6 @@
 
 #include "native.h"
 #include "utf8.h"
-#include "test/xprintf.h"
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;

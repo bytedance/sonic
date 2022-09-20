@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2021 ByteDance Inc.
+ * Copyright 2022 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "native.h"
-#include "fastbytes.c"
-#include "fastfloat.c"
-#include "fastint.c"
-#include "parsing.c"
-#include "atof_eisel_lemire.c"
-#include "atof_native.c"
-#include "scanning.c"
-#include "f32toa.c"
+
+
+package issue_test
+
+import (
+    `testing`
+
+    `encoding/json`
+    `github.com/bytedance/sonic`
+    `github.com/stretchr/testify/require`
+)
+
+func TestMarshal_Float32To64(t *testing.T) {
+	var f float32 = 0.1
+	oe,ee := json.Marshal(f)
+	os,es := sonic.Marshal(f)
+	require.Equal(t, ee == nil, es == nil)
+	require.Equal(t, string(oe), string(os))
+
+	var f2,f3 float64
+	require.Nil(t, json.Unmarshal(oe, &f2))
+	require.Nil(t, sonic.Unmarshal(os, &f3))
+	require.Equal(t, f2, f3)
+}
