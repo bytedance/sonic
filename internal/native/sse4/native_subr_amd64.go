@@ -9,28 +9,30 @@ package sse4
 func __native_entry__() uintptr
 
 var (
+    _subr__f32toa       = __native_entry__() + 24896
     _subr__f64toa       = __native_entry__() + 640
-    _subr__html_escape  = __native_entry__() + 9808
-    _subr__i64toa       = __native_entry__() + 3440
+    _subr__html_escape  = __native_entry__() + 10672
+    _subr__i64toa       = __native_entry__() + 4304
     _subr__lspace       = __native_entry__() + 256
     _subr__lzero        = __native_entry__() + 16
-    _subr__quote        = __native_entry__() + 4848
-    _subr__skip_array   = __native_entry__() + 22320
-    _subr__skip_number  = __native_entry__() + 23824
-    _subr__skip_object  = __native_entry__() + 22368
-    _subr__skip_one     = __native_entry__() + 20448
-    _subr__u64toa       = __native_entry__() + 3568
-    _subr__unquote      = __native_entry__() + 6624
-    _subr__validate_one = __native_entry__() + 23968
-    _subr__value        = __native_entry__() + 13072
-    _subr__vnumber      = __native_entry__() + 18192
-    _subr__vsigned      = __native_entry__() + 19744
-    _subr__vstring      = __native_entry__() + 15152
-    _subr__vunsigned    = __native_entry__() + 20096
+    _subr__quote        = __native_entry__() + 5712
+    _subr__skip_array   = __native_entry__() + 23184
+    _subr__skip_number  = __native_entry__() + 24688
+    _subr__skip_object  = __native_entry__() + 23232
+    _subr__skip_one     = __native_entry__() + 21312
+    _subr__u64toa       = __native_entry__() + 4432
+    _subr__unquote      = __native_entry__() + 7488
+    _subr__validate_one = __native_entry__() + 24832
+    _subr__value        = __native_entry__() + 13936
+    _subr__vnumber      = __native_entry__() + 19056
+    _subr__vsigned      = __native_entry__() + 20608
+    _subr__vstring      = __native_entry__() + 16016
+    _subr__vunsigned    = __native_entry__() + 20960
 )
 
 const (
-    _stack__f64toa = 128
+    _stack__f32toa = 632
+    _stack__f64toa = 616
     _stack__html_escape = 64
     _stack__i64toa = 16
     _stack__lspace = 8
@@ -51,6 +53,7 @@ const (
 )
 
 var (
+    _ = _subr__f32toa
     _ = _subr__f64toa
     _ = _subr__html_escape
     _ = _subr__i64toa
@@ -72,6 +75,7 @@ var (
 )
 
 const (
+    _ = _stack__f32toa
     _ = _stack__f64toa
     _ = _stack__html_escape
     _ = _stack__i64toa

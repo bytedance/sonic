@@ -601,3 +601,83 @@ func BenchmarkCompact_Std(b *testing.B) {
         _ = json.Compact(dst, data)
     }
 }
+
+type f64Bench struct {
+    name    string
+    float   float64
+}
+func BenchmarkEncoder_Float64(b *testing.B) {
+    var bench = []f64Bench{
+        {"Zero", 0},
+        {"ShortDecimal", 1000},
+        {"Decimal", 33909},
+        {"Float", 339.7784},
+        {"Exp", -5.09e75},
+        {"NegExp", -5.11e-95},
+        {"LongExp", 1.234567890123456e-78},
+        {"Big", 123456789123456789123456789},
+    
+    }
+    maxUint := "18446744073709551615"
+    for i := 1; i <= len(maxUint); i++ {
+        name := strconv.FormatInt(int64(i), 10) + "-Digs"
+        num, _ := strconv.ParseUint(string(maxUint[:i]), 10, 64)
+        bench = append(bench, f64Bench{name, float64(num)})
+    }
+    for _, c := range bench {
+        libs := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib",
+            test: func(b *testing.B) {  _, _ = json.Marshal(c.float); for i := 0; i < b.N; i++ { _, _ = json.Marshal(c.float) }},
+        }, {
+            name: "Sonic",
+            test: func(b *testing.B) { _, _ = Encode(c.float, 0); for i := 0; i < b.N; i++ { _, _ = Encode(c.float, 0) }},
+        }}
+        for _, lib := range libs {
+            name := lib.name + "_" + c.name
+            b.Run(name, lib.test)
+        }  
+    }
+}
+
+type f32Bench struct {
+    name    string
+    float   float32
+}
+func BenchmarkEncoder_Float32(b *testing.B) {
+    var bench = []f32Bench{
+        {"Zero", 0},
+        {"ShortDecimal", 1000},
+        {"Decimal", 33909},
+        {"ExactFraction", 3.375},
+        {"Point", 339.7784},
+        {"Exp", -5.09e25},
+        {"NegExp", -5.11e-25},
+        {"Shortest", 1.234567e-8},
+    }
+
+    maxUint := "18446744073709551615"
+    for i := 1; i <= len(maxUint); i++ {
+        name := strconv.FormatInt(int64(i), 10) + "-Digs"
+        num, _ := strconv.ParseUint(string(maxUint[:i]), 10, 64)
+        bench = append(bench, f32Bench{name, float32(num)})
+    }
+    for _, c := range bench {
+        libs := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib",
+            test: func(b *testing.B) {  _, _ = json.Marshal(c.float); for i := 0; i < b.N; i++ { _, _ = json.Marshal(c.float) }},
+        }, {
+            name: "Sonic",
+            test: func(b *testing.B) { _, _ = Encode(c.float, 0); for i := 0; i < b.N; i++ { _, _ = Encode(c.float, 0) }},
+        }}
+        for _, lib := range libs {
+            name := lib.name + "_" + c.name
+            b.Run(name, lib.test)
+        }  
+    }
+}

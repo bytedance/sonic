@@ -82,11 +82,18 @@ func fuzzMain(t *testing.T, data []byte) {
         jout, jerr := json.Marshal(jv)
         require.NoError(t, serr, "error in sonic marshal %v", reflect.TypeOf(jv))
         require.NoError(t, jerr, "error in json marshal %v", reflect.TypeOf(jv))
-        // not comparing here because sonic marshal is different from encoding/json, as:
-        // case 1:  1.23e2 -> `1.23e2` in sonic, but 1.23e2 -> `1.23e+2` in encoding/json
-        // case 2: "\b" -> `\\b` in sonic, but `\u0008` in encoding/json
-        // require.Equal(t, sout, jout, "different in sonic marshal %v", reflect.TypeOf(jv))
-        var _, _ = sout, jout
+
+        {
+            sv, jv := typ(), typ()
+            serr := sonic.Unmarshal(sout, sv)
+            jerr := json.Unmarshal(jout, jv)
+            require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal again %v", reflect.TypeOf(jv))
+            if jerr != nil {
+                return
+            }
+            require.Equal(t, sv, jv, "different result in sonic unmarshal again %v", reflect.TypeOf(jv))
+        }
+
         if m, ok := sv.(*map[string]interface{}); ok {
             fuzzDynamicStruct(t, jout, *m)
             fuzzASTGetFromObject(t, jout, *m)
