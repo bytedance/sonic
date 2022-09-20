@@ -23,8 +23,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Benchmark
+      - name: Benchmark sonic
         run: sh bench.sh
+
+      # - name: Benchmark third-party
+      #   run: go test -benchmem -run=^$ -bench . -v ./generic_test
 
       # - name: Diff
       #   run: ./bench.py -b '"^Benchmark.*Sonic"' -c
