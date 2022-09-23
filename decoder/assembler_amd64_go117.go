@@ -626,15 +626,23 @@ func (self *_Assembler) parse_unsigned() {
 // Pointer: DI, Size: SI, Return: R9  
 func (self *_Assembler) copy_string() {
     self.Link("_copy_string")
-    self.Emit("MOVQ", _DI, _VAR_bs_p)
-    self.Emit("MOVQ", _SI, _VAR_bs_n)
-    self.Emit("MOVQ", _R9, _VAR_bs_LR)
-    self.malloc_AX(_SI, _VAR_sv_p)                              
-    self.Emit("MOVQ", _VAR_bs_p, _BX)
-    self.Emit("MOVQ", _VAR_bs_n, _CX)
-    self.call_go(_F_memmove)
-    self.Emit("MOVQ", _VAR_sv_p, _DI)
-    self.Emit("MOVQ", _VAR_bs_n, _SI)
+    self.Emit("MOVQ", _R9, _VAR_bs_LR)          // MOVQ R9, bs.LR
+    self.Emit("XORL", _AX, _AX)                 // XORL AX, AX
+    self.Emit("MOVQ", _DI, _BX)                 // MOVQ DI, BX
+    self.Emit("MOVQ", _SI, _CX)                 // MOVQ SI, CX
+    self.call_go(_F_b2s)                        // CALL_GO b2s
+    self.Emit("MOVQ", _AX, _DI)                 // MOVQ AX, DI
+    self.Emit("MOVQ", _BX, _SI)                 // MOVQ BX, SI
+    
+    // self.Emit("MOVQ", _DI, _VAR_bs_p)
+    // self.Emit("MOVQ", _SI, _VAR_bs_n)
+    // self.malloc_AX(_SI, _VAR_sv_p)                              
+    // self.Emit("MOVQ", _VAR_bs_p, _BX)
+    // self.Emit("MOVQ", _VAR_bs_n, _CX)
+    // self.call_go(_F_memmove)
+    // self.Emit("MOVQ", _VAR_sv_p, _DI)
+    // self.Emit("MOVQ", _VAR_bs_n, _SI)
+
     self.Emit("MOVQ", _VAR_bs_LR, _R9)
     self.Rjmp("JMP", _R9)
 }
@@ -1019,6 +1027,7 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
 var (
     _F_memequal         = jit.Func(memequal)
     _F_memmove          = jit.Func(memmove)
+    _F_b2s              = jit.Func(slicebytetostring)
     _F_growslice        = jit.Func(growslice)
     _F_makeslice        = jit.Func(makeslice)
     _F_makemap_small    = jit.Func(makemap_small)

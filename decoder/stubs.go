@@ -108,3 +108,8 @@ func memclrHasPointers(ptr unsafe.Pointer, n uintptr)
 //go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
 //goland:noinspection GoUnusedParameter
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
+
+//go:noescape
+//go:linkname slicebytetostring runtime.slicebytetostring
+//goland:noinspection GoUnusedParameter
+func slicebytetostring(buf unsafe.Pointer, ptr *byte, n int) string

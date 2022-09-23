@@ -645,19 +645,25 @@ func (self *_ValueDecoder) compile() {
 
     /* copy string */
     self.Link("copy_string")  // pointer: R8, length: AX, return addr: DI
-    self.Emit("MOVQ", _R8, _VAR_cs_p)
-    self.Emit("MOVQ", _AX, _VAR_cs_n)
     self.Emit("MOVQ", _DI, _VAR_cs_LR)
-    self.Emit("MOVQ", _AX, _BX)
-    self.Emit("MOVQ", _AX, _CX)
-    self.Emit("MOVQ", _T_byte, _AX)
-    self.call_go(_F_makeslice)                              
-    self.Emit("MOVQ", _AX, _VAR_cs_d)                    
-    self.Emit("MOVQ", _VAR_cs_p, _BX)
-    self.Emit("MOVQ", _VAR_cs_n, _CX)
-    self.call_go(_F_memmove)
-    self.Emit("MOVQ", _VAR_cs_d, _R8)
-    self.Emit("MOVQ", _VAR_cs_n, _AX)
+    self.Emit("MOVQ", _R8, _BX)                 // MOVQ R8, BX
+    self.Emit("MOVQ", _AX, _CX)                 // MOVQ AX, CX
+    self.Emit("XORL", _AX, _AX)                 // XORL AX, AX
+    self.call_go(_F_b2s)                        // CALL_GO runtime.b2s
+    self.Emit("MOVQ", _AX, _R8)                 // MOVQ AX, R8
+    self.Emit("MOVQ", _BX, _AX)                 // MOVQ BX, AX
+    // self.Emit("MOVQ", _R8, _VAR_cs_p)
+    // self.Emit("MOVQ", _AX, _VAR_cs_n)
+    // self.Emit("MOVQ", _AX, _BX)
+    // self.Emit("MOVQ", _AX, _CX)
+    // self.Emit("MOVQ", _T_byte, _AX)
+    // self.call_go(_F_makeslice)                              
+    // self.Emit("MOVQ", _AX, _VAR_cs_d)                    
+    // self.Emit("MOVQ", _VAR_cs_p, _BX)
+    // self.Emit("MOVQ", _VAR_cs_n, _CX)
+    // self.call_go(_F_memmove)
+    // self.Emit("MOVQ", _VAR_cs_d, _R8)
+    // self.Emit("MOVQ", _VAR_cs_n, _AX)
     self.Emit("MOVQ", _VAR_cs_LR, _DI)
     self.Rjmp("JMP", _DI)
 
