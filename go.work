@@ -4,4 +4,5 @@ use (
 	.
 	./generic_test
 	./fuzz
+	./external_jsonlib_test
 )

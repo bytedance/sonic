@@ -20,6 +20,7 @@ package sse4
 
 var (
     S_f64toa = _subr__f64toa
+    S_f32toa = _subr__f32toa
     S_i64toa = _subr__i64toa
     S_u64toa = _subr__u64toa
     S_lspace = _subr__lspace

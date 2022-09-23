@@ -67,8 +67,6 @@ static inline ssize_t valid_utf8_4byte(uint32_t ubin) {
      bit pattern   [11110... 10...... 10...... 10......] (F0 80 80 80)
      ---------------------------------------------------
      */
-    const uint32_t b1_mask = 0x00000080UL;
-    const uint32_t b1_patt = 0x00000000UL;
     const uint32_t b2_mask = 0x0000C0E0UL;
     const uint32_t b2_patt = 0x000080C0UL;
     const uint32_t b2_requ = 0x0000001EUL;
@@ -81,10 +79,6 @@ static inline ssize_t valid_utf8_4byte(uint32_t ubin) {
     const uint32_t b4_requ = 0x00003007UL;
     const uint32_t b4_err0 = 0x00000004UL;
     const uint32_t b4_err1 = 0x00003003UL;
-
-#define is_valid_seq_1(uni) ( \
-    ((uni & b1_mask) == b1_patt) \
-)
 
 #define is_valid_seq_2(uni) ( \
     ((uni & b2_mask) == b2_patt) && \

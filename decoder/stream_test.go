@@ -24,46 +24,45 @@ import (
     `strings`
     `testing`
 
-    jsoniter `github.com/json-iterator/go`
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
 )
 
 var (
-    _Single_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"} { `
-    _Double_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}    {"11111":"` + strings.Repeat("2",1024) + `"}`     
-    _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b",1024) + `"}{ } {"11111":"` + 
-    strings.Repeat("2",1024)+`"} b {}`
+    _Single_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"} { `
+    _Double_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"}    {"11111":"` + strings.Repeat("2", int(defaultBufferSize)) + `"}`     
+    _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"}{ } {"11111":"` + 
+    strings.Repeat("2", int(defaultBufferSize))+`"} b {}`
 )
 
 func TestStreamError(t *testing.T) {
     var qs = []string{
-        `{`+strings.Repeat(" ", 1024)+`"`,
-        `{`+strings.Repeat(" ", 1024)+`"}`,
-        `{`+strings.Repeat(" ", 1024)+`""}`,
-        `{`+strings.Repeat(" ", 1024)+`"":}`,
-        `{`+strings.Repeat(" ", 1024)+`"":]`,
-        `{`+strings.Repeat(" ", 1024)+`"":1x`,
-        `{`+strings.Repeat(" ", 1024)+`"":1x}`,
-        `{`+strings.Repeat(" ", 1024)+`"":1x]`,
-        `{`+strings.Repeat(" ", 1024)+`"":t`,
-        `{`+strings.Repeat(" ", 1024)+`"":t}`,
-        `{`+strings.Repeat(" ", 1024)+`"":true]`,
-        `{`+strings.Repeat(" ", 1024)+`"":f`,
-        `{`+strings.Repeat(" ", 1024)+`"":f}`,
-        `{`+strings.Repeat(" ", 1024)+`"":false]`,
-        `{`+strings.Repeat(" ", 1024)+`"":n`,
-        `{`+strings.Repeat(" ", 1024)+`"":n}`,
-        `{`+strings.Repeat(" ", 1024)+`"":null]`,
-        `{`+strings.Repeat(" ", 1024)+`"":"`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a}`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a"`,
-        `{`+strings.Repeat(" ", 1024)+`"":"a"]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`""}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":t`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":t}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":true]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":f`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":f}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":false]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":n`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":n}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":null]`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a}`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a"`,
+        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a"]`,
     }
 
     for i, q := range qs {
-        var qq = []byte(q[:1024]+strings.Repeat(" ", i*100)+q[1024:])
+        var qq = []byte(q[:int(defaultBufferSize)]+strings.Repeat(" ", i*100)+q[int(defaultBufferSize):])
         var obj interface{}
         require.NotNil(t, NewStreamDecoder(bytes.NewReader(qq)).Decode(&obj))
     }
@@ -81,76 +80,6 @@ func TestDecodeEmpty(t *testing.T) {
     ee1 := d2.Decode(&v2)
     assert.Equal(t, es1, ee1)
     assert.Equal(t, v1, v2)
-}
-
-func TestDecodeSingle(t *testing.T) {
-    var str = _Single_JSON
-
-    var r1 = strings.NewReader(str)
-    var v1 map[string]interface{}
-    var d1 = jsoniter.NewDecoder(r1)
-    var r2 = strings.NewReader(str)
-    var v2 map[string]interface{}
-    var d2 = NewStreamDecoder(r2)
-
-    require.Equal(t, d1.More(), d2.More())
-    es1 := d1.Decode(&v1)
-    ee1 := d2.Decode(&v2)
-    assert.Equal(t, es1, ee1)
-    assert.Equal(t, v1, v2)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-
-    require.Equal(t, d1.More(), d2.More())
-    es3 := d1.Decode(&v1)
-    assert.NotNil(t, es3)
-    ee3 := d2.Decode(&v2)
-    assert.NotNil(t, ee3)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-}
-
-func TestDecodeMulti(t *testing.T) {
-    var str = _Triple_JSON
-
-    var r1 = strings.NewReader(str)
-    var v1 map[string]interface{}
-    var d1 = jsoniter.NewDecoder(r1)
-    var r2 = strings.NewReader(str)
-    var v2 map[string]interface{}
-    var d2 = NewStreamDecoder(r2)
-
-    require.Equal(t, d1.More(), d2.More())
-    es1 := d1.Decode(&v1)
-    ee1 := d2.Decode(&v2)
-    assert.Equal(t, es1, ee1)
-    assert.Equal(t, v1, v2)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-
-    require.Equal(t, d1.More(), d2.More())
-    es4 := d1.Decode(&v1)
-    ee4 := d2.Decode(&v2)
-    assert.Equal(t, es4, ee4)
-    assert.Equal(t, v1, v2)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-
-    require.Equal(t, d1.More(), d2.More())
-    es2 := d1.Decode(&v1)
-    ee2 := d2.Decode(&v2)
-    assert.Equal(t, es2, ee2)
-    assert.Equal(t, v1, v2)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-    // fmt.Printf("v:%#v\n", v1)
-
-    require.Equal(t, d1.More(), d2.More())
-    es3 := d1.Decode(&v1)
-    assert.NotNil(t, es3)
-    ee3 := d2.Decode(&v2)
-    assert.NotNil(t, ee3)
-
-    require.Equal(t, d1.More(), d2.More())
-    es5 := d1.Decode(&v1)
-    assert.NotNil(t, es5)
-    ee5 := d2.Decode(&v2)
-    assert.NotNil(t, ee5)
 }
 
 type HaltReader struct {
@@ -199,49 +128,6 @@ var testHalts = func () map[int]bool {
         20: true}
 }
 
-func TestDecodeHalt(t *testing.T) {
-    var str = _Triple_JSON
-    var r1 = NewHaltReader(str, testHalts())
-    var r2 = NewHaltReader(str, testHalts())
-    var v1 map[string]interface{}
-    var v2 map[string]interface{}
-    var d1 = jsoniter.NewDecoder(r1)
-    var d2 = NewStreamDecoder(r2)
-
-    require.Equal(t, d1.More(), d2.More())
-    err1 := d1.Decode(&v1)
-    err2 := d2.Decode(&v2)
-    assert.Equal(t, err1, err2)
-    assert.Equal(t, v1, v2)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-
-    require.Equal(t, d1.More(), d2.More())
-    es4 := d1.Decode(&v1)
-    ee4 := d2.Decode(&v2)
-    assert.Equal(t, es4, ee4)
-    assert.Equal(t, v1, v2)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-
-    require.Equal(t, d1.More(), d2.More())
-    es2 := d1.Decode(&v1)
-    ee2 := d2.Decode(&v2)
-    assert.Equal(t, es2, ee2)
-    assert.Equal(t, v1, v2)
-    // assert.Equal(t, d1.InputOffset(), d2.InputOffset())
-
-    require.Equal(t, d1.More(), d2.More())
-    es3 := d1.Decode(&v1)
-    assert.NotNil(t, es3)
-    ee3 := d2.Decode(&v2)
-    assert.NotNil(t, ee3)
-
-    require.Equal(t, d1.More(), d2.More())
-    es5 := d1.Decode(&v1)
-    assert.NotNil(t, es5)
-    ee5 := d2.Decode(&v2)
-    assert.NotNil(t, ee5)
-}
-
 func TestBuffered(t *testing.T) {
     var str = _Triple_JSON
     var r1 = NewHaltReader(str, testHalts())
@@ -274,43 +160,6 @@ func TestBuffered(t *testing.T) {
     assert.Equal(t, d1.InputOffset(), d2.InputOffset())
 }
 
-func TestMore(t *testing.T) {
-    var str = _Triple_JSON
-    var r2 = NewHaltReader(str, testHalts())
-    var v2 map[string]interface{}
-    var d2 = NewStreamDecoder(r2)
-    var r1 = NewHaltReader(str, testHalts())
-    var v1 map[string]interface{}
-    var d1 = jsoniter.NewDecoder(r1)
-    require.Nil(t, d1.Decode(&v1))
-    require.Nil(t, d2.Decode(&v2))
-    require.Equal(t, d1.More(), d2.More())
-
-    es4 := d1.Decode(&v1)
-    ee4 := d2.Decode(&v2)
-    assert.Equal(t, es4, ee4)
-    assert.Equal(t, v1, v2)
-    require.Equal(t, d1.More(), d2.More())
-
-    es2 := d1.Decode(&v1)
-    ee2 := d2.Decode(&v2)
-    assert.Equal(t, es2, ee2)
-    assert.Equal(t, v1, v2)
-    require.Equal(t, d1.More(), d2.More())
-
-    es3 := d1.Decode(&v1)
-    assert.NotNil(t, es3)
-    ee3 := d2.Decode(&v2)
-    assert.NotNil(t, ee3)
-    require.Equal(t, d1.More(), d2.More())
-
-    es5 := d1.Decode(&v1)
-    assert.NotNil(t, es5)
-    ee5 := d2.Decode(&v2)
-    assert.NotNil(t, ee5)
-    require.Equal(t, d1.More(), d2.More())
-}
-
 func BenchmarkDecodeStream_Std(b *testing.B) {
     b.Run("single", func (b *testing.B) {
         var str = _Single_JSON
@@ -340,40 +189,6 @@ func BenchmarkDecodeStream_Std(b *testing.B) {
             var r1 = NewHaltReader(str, testHalts())
             var v1 map[string]interface{}
             dc := json.NewDecoder(r1)
-            _ = dc.Decode(&v1)
-        }
-    })
-}
-
-func BenchmarkDecodeStream_Jsoniter(b *testing.B) {
-    b.Run("single", func (b *testing.B) {
-        var str = _Single_JSON
-        for i:=0; i<b.N; i++ {
-            var r1 = strings.NewReader(str)
-            var v1 map[string]interface{}
-            dc := jsoniter.NewDecoder(r1)
-            _ = dc.Decode(&v1)
-            _ = dc.Decode(&v1)
-        }
-    })
-
-    b.Run("double", func (b *testing.B) {
-        var str = _Double_JSON
-        for i:=0; i<b.N; i++ {
-            var r1 = strings.NewReader(str)
-            var v1 map[string]interface{}
-            dc := jsoniter.NewDecoder(r1)
-            _ = dc.Decode(&v1)
-            _ = dc.Decode(&v1)
-        }
-    })
-
-    b.Run("halt", func (b *testing.B) {
-        var str = _Double_JSON
-        for i:=0; i<b.N; i++ {
-            var r1 = NewHaltReader(str, testHalts())
-            var v1 map[string]interface{}
-            dc := jsoniter.NewDecoder(r1)
             _ = dc.Decode(&v1)
         }
     })

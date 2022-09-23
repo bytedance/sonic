@@ -27,20 +27,18 @@ import (
     `time`
 
     `github.com/bytedance/sonic/internal/rt`
-    gojson `github.com/goccy/go-json`
-    `github.com/json-iterator/go`
     `github.com/stretchr/testify/require`
 )
 
 func TestMain(m *testing.M) {
     go func ()  {
         if !debugAsyncGC {
-            return 
+            return
         }
         println("Begin GC looping...")
         for {
             runtime.GC()
-            debug.FreeOSMemory() 
+            debug.FreeOSMemory()
         }
         println("stop GC looping!")
     }()
@@ -50,7 +48,7 @@ func TestMain(m *testing.M) {
 
 func TestGC(t *testing.T) {
     if debugSyncGC {
-        return 
+        return
     }
     out, err := Encode(_GenericValue, 0)
     if err != nil {
@@ -92,7 +90,7 @@ func TestOptionSliceOrMapNoNull(t *testing.T) {
         t.Fatal(err)
     }
     require.Equal(t, `{"M":{},"S":[],"A":[],"MP":null,"SP":null,"AP":null}`, string(out))
-   
+
     obj2 := sample{}
     out, err = Encode(obj2, 0)
     if err != nil {
@@ -113,7 +111,7 @@ func BenchmarkOptionSliceOrMapNoNull(b *testing.B) {
             _, _ = Encode(obj, NoNullSliceOrMap)
         }
     })
-   
+
     b.Run("false", func (b *testing.B) {
         obj2 := sample{}
         _, err := Encode(obj2, 0)
@@ -356,24 +354,6 @@ func BenchmarkEncoder_Generic_Sonic_Fast(b *testing.B) {
     }
 }
 
-func BenchmarkEncoder_Generic_JsonIter(b *testing.B) {
-    _, _ = jsoniter.Marshal(_GenericValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        _, _ = jsoniter.Marshal(_GenericValue)
-    }
-}
-
-func BenchmarkEncoder_Generic_GoJson(b *testing.B) {
-    _, _ = gojson.Marshal(_GenericValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        _, _ = gojson.Marshal(_GenericValue)
-    }
-}
-
 func BenchmarkEncoder_Generic_StdLib(b *testing.B) {
     _, _ = json.Marshal(_GenericValue)
     b.SetBytes(int64(len(TwitterJson)))
@@ -398,24 +378,6 @@ func BenchmarkEncoder_Binding_Sonic_Fast(b *testing.B) {
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
-    }
-}
-
-func BenchmarkEncoder_Binding_JsonIter(b *testing.B) {
-    _, _ = jsoniter.Marshal(&_BindingValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        _, _ = jsoniter.Marshal(&_BindingValue)
-    }
-}
-
-func BenchmarkEncoder_Binding_GoJson(b *testing.B) {
-    _, _ = gojson.Marshal(&_BindingValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        _, _ = gojson.Marshal(&_BindingValue)
     }
 }
 
@@ -450,28 +412,6 @@ func BenchmarkEncoder_Parallel_Generic_Sonic_Fast(b *testing.B) {
     })
 }
 
-func BenchmarkEncoder_Parallel_Generic_JsonIter(b *testing.B) {
-    _, _ = jsoniter.Marshal(_GenericValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            _, _ = jsoniter.Marshal(_GenericValue)
-        }
-    })
-}
-
-func BenchmarkEncoder_Parallel_Generic_GoJson(b *testing.B) {
-    _, _ = gojson.Marshal(_GenericValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            _, _ = gojson.Marshal(_GenericValue)
-        }
-    })
-}
-
 func BenchmarkEncoder_Parallel_Generic_StdLib(b *testing.B) {
     _, _ = json.Marshal(_GenericValue)
     b.SetBytes(int64(len(TwitterJson)))
@@ -501,28 +441,6 @@ func BenchmarkEncoder_Parallel_Binding_Sonic_Fast(b *testing.B) {
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
             _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
-        }
-    })
-}
-
-func BenchmarkEncoder_Parallel_Binding_JsonIter(b *testing.B) {
-    _, _ = jsoniter.Marshal(&_BindingValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            _, _ = jsoniter.Marshal(&_BindingValue)
-        }
-    })
-}
-
-func BenchmarkEncoder_Parallel_Binding_GoJson(b *testing.B) {
-    _, _ = gojson.Marshal(&_BindingValue)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            _, _ = gojson.Marshal(&_BindingValue)
         }
     })
 }
@@ -599,5 +517,85 @@ func BenchmarkCompact_Std(b *testing.B) {
     for i:=0; i<b.N; i++ {
         dst.Reset()
         _ = json.Compact(dst, data)
+    }
+}
+
+type f64Bench struct {
+    name    string
+    float   float64
+}
+func BenchmarkEncoder_Float64(b *testing.B) {
+    var bench = []f64Bench{
+        {"Zero", 0},
+        {"ShortDecimal", 1000},
+        {"Decimal", 33909},
+        {"Float", 339.7784},
+        {"Exp", -5.09e75},
+        {"NegExp", -5.11e-95},
+        {"LongExp", 1.234567890123456e-78},
+        {"Big", 123456789123456789123456789},
+    
+    }
+    maxUint := "18446744073709551615"
+    for i := 1; i <= len(maxUint); i++ {
+        name := strconv.FormatInt(int64(i), 10) + "-Digs"
+        num, _ := strconv.ParseUint(string(maxUint[:i]), 10, 64)
+        bench = append(bench, f64Bench{name, float64(num)})
+    }
+    for _, c := range bench {
+        libs := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib",
+            test: func(b *testing.B) {  _, _ = json.Marshal(c.float); for i := 0; i < b.N; i++ { _, _ = json.Marshal(c.float) }},
+        }, {
+            name: "Sonic",
+            test: func(b *testing.B) { _, _ = Encode(c.float, 0); for i := 0; i < b.N; i++ { _, _ = Encode(c.float, 0) }},
+        }}
+        for _, lib := range libs {
+            name := lib.name + "_" + c.name
+            b.Run(name, lib.test)
+        }  
+    }
+}
+
+type f32Bench struct {
+    name    string
+    float   float32
+}
+func BenchmarkEncoder_Float32(b *testing.B) {
+    var bench = []f32Bench{
+        {"Zero", 0},
+        {"ShortDecimal", 1000},
+        {"Decimal", 33909},
+        {"ExactFraction", 3.375},
+        {"Point", 339.7784},
+        {"Exp", -5.09e25},
+        {"NegExp", -5.11e-25},
+        {"Shortest", 1.234567e-8},
+    }
+
+    maxUint := "18446744073709551615"
+    for i := 1; i <= len(maxUint); i++ {
+        name := strconv.FormatInt(int64(i), 10) + "-Digs"
+        num, _ := strconv.ParseUint(string(maxUint[:i]), 10, 64)
+        bench = append(bench, f32Bench{name, float32(num)})
+    }
+    for _, c := range bench {
+        libs := []struct {
+            name string
+            test func(*testing.B)
+        }{{
+            name: "StdLib",
+            test: func(b *testing.B) {  _, _ = json.Marshal(c.float); for i := 0; i < b.N; i++ { _, _ = json.Marshal(c.float) }},
+        }, {
+            name: "Sonic",
+            test: func(b *testing.B) { _, _ = Encode(c.float, 0); for i := 0; i < b.N; i++ { _, _ = Encode(c.float, 0) }},
+        }}
+        for _, lib := range libs {
+            name := lib.name + "_" + c.name
+            b.Run(name, lib.test)
+        }  
     }
 }
