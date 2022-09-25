@@ -154,7 +154,11 @@ func useSSE() {
 }
 
 func init() {
-    if cpu.HasSSE {
+    if cpu.HasAVX2 {
+        useAVX2()
+    } else if cpu.HasAVX {
+        useAVX()
+    } else if cpu.HasSSE {
         useSSE()
     } else {
         panic("Unsupported CPU, maybe it's too old to run Sonic.")
