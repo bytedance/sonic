@@ -22,7 +22,7 @@ import (
     `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/native/avx`
     `github.com/bytedance/sonic/internal/native/avx2`
-    `github.com/bytedance/sonic/internal/native/sse4`
+    `github.com/bytedance/sonic/internal/native/sse`
     `github.com/bytedance/sonic/internal/native/types`
 )
 
@@ -134,23 +134,23 @@ func useAVX2() {
     S_skip_number = avx2.S_skip_number
 }
 
-func useSSE4() {
-    S_f64toa = sse4.S_f64toa
-    S_f32toa = sse4.S_f32toa
-    S_i64toa = sse4.S_i64toa
-    S_u64toa = sse4.S_u64toa
-    S_lspace = sse4.S_lspace
-    S_quote = sse4.S_quote
-    S_unquote = sse4.S_unquote
-    S_value = sse4.S_value
-    S_vstring = sse4.S_vstring
-    S_vnumber = sse4.S_vnumber
-    S_vsigned = sse4.S_vsigned
-    S_vunsigned = sse4.S_vunsigned
-    S_skip_one = sse4.S_skip_one
-    S_skip_array = sse4.S_skip_array
-    S_skip_object = sse4.S_skip_object
-    S_skip_number = sse4.S_skip_number
+func useSSE() {
+    S_f64toa = sse.S_f64toa
+    S_f32toa = sse.S_f32toa
+    S_i64toa = sse.S_i64toa
+    S_u64toa = sse.S_u64toa
+    S_lspace = sse.S_lspace
+    S_quote = sse.S_quote
+    S_unquote = sse.S_unquote
+    S_value = sse.S_value
+    S_vstring = sse.S_vstring
+    S_vnumber = sse.S_vnumber
+    S_vsigned = sse.S_vsigned
+    S_vunsigned = sse.S_vunsigned
+    S_skip_one = sse.S_skip_one
+    S_skip_array = sse.S_skip_array
+    S_skip_object = sse.S_skip_object
+    S_skip_number = sse.S_skip_number
 }
 
 func init() {
@@ -158,8 +158,8 @@ func init() {
         useAVX2()
     } else if cpu.HasAVX {
         useAVX()
-    } else if cpu.HasSSE4 {
-        useSSE4()
+    } else if cpu.HasSSE {
+        useSSE()
     } else {
         panic("Unsupported CPU, maybe it's too old to run Sonic.")
     }
