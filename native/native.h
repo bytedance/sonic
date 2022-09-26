@@ -101,7 +101,6 @@ int f64toa(char *out, double val);
 int i64toa(char *out, int64_t val);
 int u64toa(char *out, uint64_t val);
 
-size_t lzero(const char *sp, size_t nb);
 size_t lspace(const char *sp, size_t nb, size_t p);
 
 ssize_t quote(const char *sp, ssize_t nb, char *dp, ssize_t *dn, uint64_t flags);
