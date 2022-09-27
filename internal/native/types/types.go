@@ -58,7 +58,7 @@ const (
 )
 
 const (
-    MAX_RECURSE = 65536
+    MAX_RECURSE = 4096
 )
 
 const (

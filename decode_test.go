@@ -38,6 +38,7 @@ import (
     `unicode/utf8`
 
     `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/internal/native/types`
     `github.com/davecgh/go-spew/spew`
 )
 
@@ -2361,6 +2362,11 @@ func TestUnmarshalRescanLiteralMangledUnquote(t *testing.T) {
 }
 
 func TestUnmarshalMaxDepth(t *testing.T) {
+    const (
+        _MaxDepth = types.MAX_RECURSE
+        _OverMaxDepth = types.MAX_RECURSE + 1
+        _UnderMaxDepth = types.MAX_RECURSE - 2
+    )
     testcases := []struct {
         name        string
         data        string
@@ -2368,12 +2374,12 @@ func TestUnmarshalMaxDepth(t *testing.T) {
     }{
         {
             name:        "ArrayUnderMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`[`, 65534) + `0` + strings.Repeat(`]`, 65534) + `}`,
+            data:        `{"a":` + strings.Repeat(`[`, _UnderMaxDepth) + `0` + strings.Repeat(`]`, _UnderMaxDepth) + `}`,
             errMaxDepth: false,
         },
         {
             name:        "ArrayOverMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`[`, 65537) + `0` + strings.Repeat(`]`, 65537) + `}`,
+            data:        `{"a":` + strings.Repeat(`[`, _OverMaxDepth) + `0` + strings.Repeat(`]`, _OverMaxDepth) + `}`,
             errMaxDepth: true,
         },
         {
@@ -2383,12 +2389,12 @@ func TestUnmarshalMaxDepth(t *testing.T) {
         },
         {
             name:        "ObjectUnderMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`{"a":`, 65534) + `0` + strings.Repeat(`}`, 65534) + `}`,
+            data:        `{"a":` + strings.Repeat(`{"a":`, _UnderMaxDepth) + `0` + strings.Repeat(`}`, _UnderMaxDepth) + `}`,
             errMaxDepth: false,
         },
         {
             name:        "ObjectOverMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`{"a":`, 65537) + `0` + strings.Repeat(`}`, 65537) + `}`,
+            data:        `{"a":` + strings.Repeat(`{"a":`, _OverMaxDepth) + `0` + strings.Repeat(`}`, _OverMaxDepth) + `}`,
             errMaxDepth: true,
         },
         {
