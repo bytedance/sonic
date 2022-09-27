@@ -1,4 +1,5 @@
 //go:build !amd64
+// +build !amd64
 
 /*
  * Copyright 2022 ByteDance Inc.
@@ -19,22 +20,23 @@
 package sonic
 
 import (
-	"reflect"
-	"testing"
+    `reflect`
+    `testing`
 
-	"github.com/bytedance/sonic/option"
+    `github.com/bytedance/sonic/option`
 )
 
 func TestPretouch(t *testing.T) {
-	var v map[string]interface{}
-	if err := Pretouch(reflect.TypeOf(v)); err != nil {
-		t.Errorf("err:%v", err)
-	}
+    var v map[string]interface{}
+    if err := Pretouch(reflect.TypeOf(v)); err != nil {
+        t.Errorf("err:%v", err)
+    }
 
-	if err := Pretouch(reflect.TypeOf(v),
-		option.WithCompileRecursiveDepth(1),
-		option.WithCompileMaxInlineDepth(2),
-	); err != nil {
-		t.Errorf("err:%v", err)
-	}
+    if err := Pretouch(reflect.TypeOf(v),
+       option.WithCompileRecursiveDepth(1),
+       option.WithCompileMaxInlineDepth(2),
+    ); err != nil {
+        t.Errorf("err:%v", err)
+    }
 }
+
