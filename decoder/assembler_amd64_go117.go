@@ -275,7 +275,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_slice_append     : (*_Assembler)._asm_OP_slice_append,
     _OP_object_skip      : (*_Assembler)._asm_OP_object_skip,
     _OP_object_next      : (*_Assembler)._asm_OP_object_next,
-    _OP_struct_field     : (*_Assembler)._asm_OP_struct_field,
+    _OP_struct_field     : (*_Assembler)._asm_OP_struct_field2,
     _OP_unmarshal        : (*_Assembler)._asm_OP_unmarshal,
     _OP_unmarshal_p      : (*_Assembler)._asm_OP_unmarshal_p,
     _OP_unmarshal_text   : (*_Assembler)._asm_OP_unmarshal_text,
@@ -1035,18 +1035,8 @@ var (
     _F_decodeValue = jit.Imm(int64(_subr_decode_value))
 )
 
-var (
-    _F_FieldMap_GetCaseInsensitive obj.Addr
-)
-
 const (
     _MODE_AVX2 = 1 << 2
-)
-
-const (
-    _Fe_ID   = int64(unsafe.Offsetof(caching.FieldEntry{}.ID))
-    _Fe_Name = int64(unsafe.Offsetof(caching.FieldEntry{}.Name))
-    _Fe_Hash = int64(unsafe.Offsetof(caching.FieldEntry{}.Hash))
 )
 
 const (
@@ -1054,8 +1044,14 @@ const (
     _Gt_KindFlags = int64(unsafe.Offsetof(rt.GoType{}.KindFlags))
 )
 
+var (
+    _F_FieldMap_GetCaseInsensitive obj.Addr
+    _F_FieldMap_Get obj.Addr
+)
+
 func init() {
     _F_FieldMap_GetCaseInsensitive = jit.Func((*caching.FieldMap).GetCaseInsensitive)
+    _F_FieldMap_Get = jit.Func((*caching.FieldMap).Get)
 }
 
 func (self *_Assembler) _asm_OP_any(_ *_Instr) {
@@ -1487,56 +1483,85 @@ func (self *_Assembler) _asm_OP_object_next(_ *_Instr) {
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
 }
 
-func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
-    assert_eq(caching.FieldEntrySize, 32, "invalid field entry size")
+// func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
+//     assert_eq(caching.FieldEntrySize, 32, "invalid field entry size")
+//     self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
+//     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
+//     self.parse_string()                                         // PARSE   STRING
+//     self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, false)                     // UNQUOTE once, sv.p, sv.n
+//     self.Emit("LEAQ" , _VAR_sv, _AX)                            // LEAQ    sv, AX
+//     self.Emit("XORL" , _BX, _BX)                                // XORL    BX, BX
+//     self.call_go(_F_strhash)                                    // CALL_GO strhash
+//     self.Emit("MOVQ" , _AX, _R9)                                // MOVQ    AX, R9
+//     self.Emit("MOVQ" , jit.Imm(freezeFields(p.vf())), _CX)      // MOVQ    ${p.vf()}, CX
+//     self.Emit("MOVQ" , jit.Ptr(_CX, caching.FieldMap_b), _SI)   // MOVQ    FieldMap.b(CX), SI
+//     self.Emit("MOVQ" , jit.Ptr(_CX, caching.FieldMap_N), _CX)   // MOVQ    FieldMap.N(CX), CX
+//     self.Emit("TESTQ", _CX, _CX)                                // TESTQ   CX, CX
+//     self.Sjmp("JZ"   , "_try_lowercase_{n}")                    // JZ      _try_lowercase_{n}
+//     self.Link("_loop_{n}")                                      // _loop_{n}:
+//     self.Emit("XORL" , _DX, _DX)                                // XORL    DX, DX
+//     self.From("DIVQ" , _CX)                                     // DIVQ    CX
+//     self.Emit("LEAQ" , jit.Ptr(_DX, 1), _AX)                    // LEAQ    1(DX), AX
+//     self.Emit("SHLQ" , jit.Imm(5), _DX)                         // SHLQ    $5, DX
+//     self.Emit("LEAQ" , jit.Sib(_SI, _DX, 1, 0), _DI)            // LEAQ    (SI)(DX), DI
+//     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Hash), _R8)             // MOVQ    FieldEntry.Hash(DI), R8
+//     self.Emit("TESTQ", _R8, _R8)                                // TESTQ   R8, R8
+//     self.Sjmp("JZ"   , "_try_lowercase_{n}")                    // JZ      _try_lowercase_{n}
+//     self.Emit("CMPQ" , _R8, _R9)                                // CMPQ    R8, R9
+//     self.Sjmp("JNE"  , "_loop_{n}")                             // JNE     _loop_{n}
+//     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Name + 8), _DX)         // MOVQ    FieldEntry.Name+8(DI), DX
+//     self.Emit("CMPQ" , _DX, _VAR_sv_n)                          // CMPQ    DX, sv.n
+//     self.Sjmp("JNE"  , "_loop_{n}")                             // JNE     _loop_{n}
+//     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_ID), _R8)               // MOVQ    FieldEntry.ID(DI), R8
+//     self.Emit("MOVQ" , _AX, _VAR_ss_AX)                         // MOVQ    AX, ss.AX
+//     self.Emit("MOVQ" , _CX, _VAR_ss_CX)                         // MOVQ    CX, ss.CX
+//     self.Emit("MOVQ" , _SI, _VAR_ss_SI)                         // MOVQ    SI, ss.SI
+//     self.Emit("MOVQ" , _R8, _VAR_ss_R8)                         // MOVQ    R8, ss.R8
+//     self.Emit("MOVQ" , _R9, _VAR_ss_R9)                         // MOVQ    R9, ss.R9
+//     self.Emit("MOVQ" , _VAR_sv_p, _AX)                          // MOVQ    _VAR_sv_p, AX
+//     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Name), _CX)             // MOVQ    FieldEntry.Name(DI), CX
+//     self.Emit("MOVQ" , _CX, _BX)                                // MOVQ    CX, 8(SP)
+//     self.Emit("MOVQ" , _DX, _CX)                                // MOVQ    DX, 16(SP)
+//     self.call_go(_F_memequal)                                   // CALL_GO memequal
+//     self.Emit("MOVB" , _AX, _DX)                                // MOVB    24(SP), DX
+//     self.Emit("MOVQ" , _VAR_ss_AX, _AX)                         // MOVQ    ss.AX, AX
+//     self.Emit("MOVQ" , _VAR_ss_CX, _CX)                         // MOVQ    ss.CX, CX
+//     self.Emit("MOVQ" , _VAR_ss_SI, _SI)                         // MOVQ    ss.SI, SI
+//     self.Emit("MOVQ" , _VAR_ss_R9, _R9)                         // MOVQ    ss.R9, R9
+//     self.Emit("TESTB", _DX, _DX)                                // TESTB   DX, DX
+//     self.Sjmp("JZ"   , "_loop_{n}")                             // JZ      _loop_{n}
+//     self.Emit("MOVQ" , _VAR_ss_R8, _R8)                         // MOVQ    ss.R8, R8
+//     self.Emit("MOVQ" , _R8, _VAR_sr)                            // MOVQ    R8, sr
+//     self.Sjmp("JMP"  , "_end_{n}")                              // JMP     _end_{n}
+//     self.Link("_try_lowercase_{n}")                             // _try_lowercase_{n}:
+//     self.Emit("MOVQ" , jit.Imm(referenceFields(p.vf())), _AX)   // MOVQ    ${p.vf()}, AX
+//     self.Emit("MOVQ", _VAR_sv_p, _BX)                            // MOVQ   sv, BX
+//     self.Emit("MOVQ", _VAR_sv_n, _CX)                            // MOVQ   sv, CX
+//     self.call_go(_F_FieldMap_GetCaseInsensitive)                // CALL_GO FieldMap::GetCaseInsensitive
+//     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, _VAR_sr
+//     self.Emit("TESTQ", _AX, _AX)                                // TESTQ   AX, AX
+//     self.Sjmp("JNS"  , "_end_{n}")                              // JNS     _end_{n}
+//     self.Emit("BTQ"  , jit.Imm(_F_disable_unknown), _ARG_fv)    // BTQ     ${_F_disable_unknown}, fv
+//     self.Sjmp("JC"   , _LB_field_error)                         // JC      _field_error
+//     self.Link("_end_{n}")                                       // _end_{n}:
+// }
+
+func (self *_Assembler) _asm_OP_struct_field2(p *_Instr) {
     self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
     self.parse_string()                                         // PARSE   STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, false)                     // UNQUOTE once, sv.p, sv.n
-    self.Emit("LEAQ" , _VAR_sv, _AX)                            // LEAQ    sv, AX
-    self.Emit("XORL" , _BX, _BX)                                // XORL    BX, BX
-    self.call_go(_F_strhash)                                    // CALL_GO strhash
-    self.Emit("MOVQ" , _AX, _R9)                                // MOVQ    AX, R9
+    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, false)        // UNQUOTE once, sv.p, sv.n 
     self.Emit("MOVQ" , jit.Imm(freezeFields(p.vf())), _CX)      // MOVQ    ${p.vf()}, CX
-    self.Emit("MOVQ" , jit.Ptr(_CX, caching.FieldMap_b), _SI)   // MOVQ    FieldMap.b(CX), SI
-    self.Emit("MOVQ" , jit.Ptr(_CX, caching.FieldMap_N), _CX)   // MOVQ    FieldMap.N(CX), CX
+    self.Emit("MOVQ" , jit.Ptr(_CX, caching.FieldMap_C), _CX)   // MOVQ    FieldMap.N(CX), CX
     self.Emit("TESTQ", _CX, _CX)                                // TESTQ   CX, CX
     self.Sjmp("JZ"   , "_try_lowercase_{n}")                    // JZ      _try_lowercase_{n}
-    self.Link("_loop_{n}")                                      // _loop_{n}:
-    self.Emit("XORL" , _DX, _DX)                                // XORL    DX, DX
-    self.From("DIVQ" , _CX)                                     // DIVQ    CX
-    self.Emit("LEAQ" , jit.Ptr(_DX, 1), _AX)                    // LEAQ    1(DX), AX
-    self.Emit("SHLQ" , jit.Imm(5), _DX)                         // SHLQ    $5, DX
-    self.Emit("LEAQ" , jit.Sib(_SI, _DX, 1, 0), _DI)            // LEAQ    (SI)(DX), DI
-    self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Hash), _R8)             // MOVQ    FieldEntry.Hash(DI), R8
-    self.Emit("TESTQ", _R8, _R8)                                // TESTQ   R8, R8
-    self.Sjmp("JZ"   , "_try_lowercase_{n}")                    // JZ      _try_lowercase_{n}
-    self.Emit("CMPQ" , _R8, _R9)                                // CMPQ    R8, R9
-    self.Sjmp("JNE"  , "_loop_{n}")                             // JNE     _loop_{n}
-    self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Name + 8), _DX)         // MOVQ    FieldEntry.Name+8(DI), DX
-    self.Emit("CMPQ" , _DX, _VAR_sv_n)                          // CMPQ    DX, sv.n
-    self.Sjmp("JNE"  , "_loop_{n}")                             // JNE     _loop_{n}
-    self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_ID), _R8)               // MOVQ    FieldEntry.ID(DI), R8
-    self.Emit("MOVQ" , _AX, _VAR_ss_AX)                         // MOVQ    AX, ss.AX
-    self.Emit("MOVQ" , _CX, _VAR_ss_CX)                         // MOVQ    CX, ss.CX
-    self.Emit("MOVQ" , _SI, _VAR_ss_SI)                         // MOVQ    SI, ss.SI
-    self.Emit("MOVQ" , _R8, _VAR_ss_R8)                         // MOVQ    R8, ss.R8
-    self.Emit("MOVQ" , _R9, _VAR_ss_R9)                         // MOVQ    R9, ss.R9
-    self.Emit("MOVQ" , _VAR_sv_p, _AX)                          // MOVQ    _VAR_sv_p, AX
-    self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Name), _CX)             // MOVQ    FieldEntry.Name(DI), CX
-    self.Emit("MOVQ" , _CX, _BX)                                // MOVQ    CX, 8(SP)
-    self.Emit("MOVQ" , _DX, _CX)                                // MOVQ    DX, 16(SP)
-    self.call_go(_F_memequal)                                   // CALL_GO memequal
-    self.Emit("MOVB" , _AX, _DX)                                // MOVB    24(SP), DX
-    self.Emit("MOVQ" , _VAR_ss_AX, _AX)                         // MOVQ    ss.AX, AX
-    self.Emit("MOVQ" , _VAR_ss_CX, _CX)                         // MOVQ    ss.CX, CX
-    self.Emit("MOVQ" , _VAR_ss_SI, _SI)                         // MOVQ    ss.SI, SI
-    self.Emit("MOVQ" , _VAR_ss_R9, _R9)                         // MOVQ    ss.R9, R9
-    self.Emit("TESTB", _DX, _DX)                                // TESTB   DX, DX
-    self.Sjmp("JZ"   , "_loop_{n}")                             // JZ      _loop_{n}
-    self.Emit("MOVQ" , _VAR_ss_R8, _R8)                         // MOVQ    ss.R8, R8
-    self.Emit("MOVQ" , _R8, _VAR_sr)                            // MOVQ    R8, sr
-    self.Sjmp("JMP"  , "_end_{n}")                              // JMP     _end_{n}
+    self.Emit("MOVQ" , jit.Imm(referenceFields(p.vf())), _AX)   // MOVQ    ${p.vf()}, AX
+    self.Emit("MOVQ", _VAR_sv_p, _BX)                            // MOVQ   sv, BX
+    self.Emit("MOVQ", _VAR_sv_n, _CX)                            // MOVQ   sv, CX
+    self.call_go(_F_FieldMap_Get)                               // CALL_GO FieldMap::Get
+    self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, _VAR_sr
+    self.Emit("TESTQ", _AX, _AX)                                // TESTQ   AX, AX
+    self.Sjmp("JNS"  , "_end_{n}")                              // JNS     _end_{n}
     self.Link("_try_lowercase_{n}")                             // _try_lowercase_{n}:
     self.Emit("MOVQ" , jit.Imm(referenceFields(p.vf())), _AX)   // MOVQ    ${p.vf()}, AX
     self.Emit("MOVQ", _VAR_sv_p, _BX)                            // MOVQ   sv, BX

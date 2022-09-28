@@ -68,3 +68,10 @@ func FuncAddr(f interface{}) unsafe.Pointer {
 
 //go:nosplit
 func MoreStack(size uintptr)
+
+func IndexPtr(ptr unsafe.Pointer, size uintptr, index int) unsafe.Pointer {
+	// if slice.Ptr == nil || slice.Cap == 0 {
+	// 	return nil
+	// }
+	return unsafe.Pointer(uintptr(ptr) + uintptr(index)*size)
+}

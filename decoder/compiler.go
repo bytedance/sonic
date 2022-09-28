@@ -368,15 +368,12 @@ func (self _Instr) formatSwitchLabels() string {
 }
 
 func (self _Instr) formatStructFields() string {
-    var i uint64
     var r []string
     var m []struct{i int; n string}
 
     /* extract all the fields */
-    for i = 0; i < self.vf().N; i++ {
-        if v := self.vf().At(i); v.Hash != 0 {
-            m = append(m, struct{i int; n string}{i: v.ID, n: v.Name})
-        }
+    for _, v := range self.vf().M {
+        m = append(m, struct{i int; n string}{i: v.ID, n: v.Name})
     }
 
     /* sort by field name */
