@@ -28,6 +28,8 @@ const (
 type FieldMap struct {
     TrieTree
     M map[string]FieldEntry
+    All []FieldEntry
+    MaxKeyLength int
 }
 
 type FieldEntry struct {
@@ -54,17 +56,23 @@ func (self *FieldMap) Get(name string) int {
 }
 
 func (self *FieldMap) Set(name string, i int) {
+    if len(name) > self.MaxKeyLength {
+        self.MaxKeyLength = len(name)
+    }
+
     fi := FieldEntry{
         Name: name,
         ID:   i,
     }
-     self.TrieTree.Set(name, unsafe.Pointer(&fi))
+    self.TrieTree.Set(name, unsafe.Pointer(&fi))
 
-     /* add the case-insensitive version, prefer the one with smaller field ID */
-     key := strings.ToLower(name)
-     if v, ok := self.M[key]; !ok || i < v.ID {
-         self.M[key] = fi
-     }
+    /* add the case-insensitive version, prefer the one with smaller field ID */
+    key := strings.ToLower(name)
+    if v, ok := self.M[key]; !ok || i < v.ID {
+        self.M[key] = fi
+    }
+
+    self.All = append(self.All, fi)
 }
 
 func (self *FieldMap) GetCaseInsensitive(name string) int {
@@ -73,4 +81,62 @@ func (self *FieldMap) GetCaseInsensitive(name string) int {
     } else {
         return -1
     }
+}
+
+// Build calcaulates the best index for radix searching and reconstruct the trie tree
+func (self *FieldMap) Build() {
+	var empty unsafe.Pointer
+
+    // map every fields under the same char for either index j (backward)
+	var charCount = make([]map[byte][]int, self.MaxKeyLength)
+	for i, v := range self.All {
+		for j := self.MaxKeyLength - 1; j >= 0; j-- {
+			if v.Name == "" {
+				empty = unsafe.Pointer(&v)
+			}
+			var c = byte(0)
+			if j < len(v.Name) {
+				c = v.Name[j]
+			}
+			if charCount[j] == nil {
+				charCount[j] = make(map[byte][]int, 16)
+			}
+			charCount[j][c] = append(charCount[j][c], i)
+		}
+	}
+
+    if empty != nil {
+        self.Empty = empty
+    }
+
+	var idealPos = 0
+	var minF = float64(len(self.All))
+
+    // find the best position to split the trie tree (fieldCount/charCount closest to 1)
+	for i := self.MaxKeyLength - 1; i >= 0; i-- {
+		cd := charCount[i]
+		charCount := len(cd)
+		fieldCount := 0
+		for _, v := range cd {
+			fieldCount += len(v)
+		}
+		f := float64(fieldCount) / float64(charCount)
+		if f < minF {
+			minF = f
+			idealPos = i
+		}
+		if minF == 1 {
+			break
+		}
+	}
+
+    // record the index position for the tree.Get()
+    self.Positions = append(self.Positions, idealPos)
+
+    // build the trie tree again
+    for _, v := range self.All {
+        self.Set(v.Name, v.ID)
+    }
+
+	return
 }

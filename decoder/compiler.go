@@ -372,7 +372,7 @@ func (self _Instr) formatStructFields() string {
     var m []struct{i int; n string}
 
     /* extract all the fields */
-    for _, v := range self.vf().M {
+    for _, v := range self.vf().All {
         m = append(m, struct{i int; n string}{i: v.ID, n: v.Name})
     }
 
@@ -882,6 +882,7 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
         p.add(_OP_load)
         p.int(_OP_goto, y0)
     }
+    fm.Build()
 
 end_of_object:
     p.pin(x)
