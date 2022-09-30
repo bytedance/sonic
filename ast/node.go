@@ -695,14 +695,14 @@ func (self *Node) GetByPath(path ...interface{}) *Node {
     }
     var s = self
     for _, p := range path {
-        switch p.(type) {
+      switch pt := p.(type) {
         case int:
-            s = s.Index(p.(int))
+            s = s.Index(pt)
             if !s.Valid() {
                 return s
             }
         case string:
-            s = s.Get(p.(string))
+            s = s.Get(pt)
             if !s.Valid() {
                 return s
             }

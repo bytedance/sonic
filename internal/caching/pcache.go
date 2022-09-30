@@ -56,9 +56,7 @@ func (self *_ProgramMap) copy() *_ProgramMap {
         m: self.m,
         b: make([]_ProgramEntry, len(self.b)),
     }
-    for i, f := range self.b {
-        fork.b[i] = f
-    }
+    copy(fork.b,self.b)
     return fork
 }
 

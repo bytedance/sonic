@@ -40,13 +40,13 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
 
     var err types.ParsingError
     for _, p := range path {
-        switch p.(type) {
+      switch pt := p.(type) {
         case int:
-            if err = self.parser.searchIndex(p.(int)); err != 0 {
+            if err = self.parser.searchIndex(pt); err != 0 {
                 return Node{}, self.parser.ExportError(err)
             }
         case string:
-            if err = self.parser.searchKey(p.(string)); err != 0 {
+            if err = self.parser.searchKey(pt); err != 0 {
                 return Node{}, self.parser.ExportError(err)
             }
         default:
