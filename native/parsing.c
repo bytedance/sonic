@@ -286,10 +286,8 @@ static inline uint8_t html_escape_mask4(const char *sp) {
 
 static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
     uint32_t     mm;
-    const char * ss = sp;
     const char * ds = dp;
     size_t cn = 0;
-    uint8_t ch;
 
 simd_copy:
 
@@ -1074,11 +1072,11 @@ static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, c
         *dp++ = *sp++, nb--;
     }
     /* all quote done */
-    return dp - ds;
+    return sp - ss;
 }
 
 static inline ssize_t quote_htmlEsc_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * quote_tab, const quoted_t * html_tab) {
-    const char * ss = sp;
+    const char * ds = dp;
 
     /* find the special characters, copy on the fly */
     while (nb != 0) {
@@ -1096,7 +1094,6 @@ static inline ssize_t quote_htmlEsc_unsafe(const char *sp, ssize_t nb, char *dp,
             if (inHtmlQuoteTab(sp) == 0 && _EscTab[*(uint8_t *)sp] == 0) {
                 break;
             }
-
             const quoted_t * tab;
             if (inHtmlQuoteTab(sp)) {
                 if (unlikely(*sp == '\xe2')) {
@@ -1122,7 +1119,7 @@ static inline ssize_t quote_htmlEsc_unsafe(const char *sp, ssize_t nb, char *dp,
     }
 
     /* all done */
-    return sp - ss;
+    return dp - ds;
 }
 
 static inline ssize_t memcchr_quote_htmlEsc(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
