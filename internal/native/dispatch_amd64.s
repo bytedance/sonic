@@ -45,6 +45,14 @@ TEXT ·HTMLEscape(SB), NOSPLIT, $0 - 40
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__html_escape(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__html_escape(SB)
 
+TEXT ·QuoteWithHTMLEsc(SB), NOSPLIT, $0 - 48
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__quote_with_htmlEsc(SB)
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__quote_with_htmlEsc(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__quote_with_htmlEsc(SB)
 
 TEXT ·Value(SB), NOSPLIT, $0 - 48
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0

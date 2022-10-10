@@ -98,7 +98,7 @@ static const quoted_t _DoubleQuoteTab[256] = {
     ['\\'  ] = { .n = 4, .s = "\\\\\\\\"  },
 };
 
-static const quoted_t _HtmlQuoteTab[256] = {
+static const quoted_t _SingleHtmlQuoteTab[256] = {
     ['<'] = { .n = 6, .s = "\\u003c" },
     ['>'] = { .n = 6, .s = "\\u003e" },
     ['&'] = { .n = 6, .s = "\\u0026" },
@@ -107,6 +107,20 @@ static const quoted_t _HtmlQuoteTab[256] = {
     [0xa8] = { .n = 6, .s = "\\u2028" },
     [0xa9] = { .n = 6, .s = "\\u2029" },
 };
+
+static const quoted_t _DoubleHtmlQuoteTab[256] = {
+    ['<'] = { .n = 7, .s = "\\\\u003c" },
+    ['>'] = { .n = 7, .s = "\\\\u003e" },
+    ['&'] = { .n = 7, .s = "\\\\u0026" },
+    // \u2028 and \u2029 is [E2 80 A8] and [E2 80 A9]
+    [0xe2] = { .n = 0, .s = {0} },
+    [0xa8] = { .n = 7, .s = "\\\\u2028" },
+    [0xa9] = { .n = 7, .s = "\\\\u2029" },
+};
+
+static inline bool inHtmlQuoteTab (const char *sp) {
+    return *sp == '<' || *sp == '>' || *sp == '&' || *sp == '\xe2';
+}
 
 static inline void memcpy_p8(char *dp, const char *sp, ssize_t nb) {
     if (nb >= 4) { *(uint32_t *)dp = *(const uint32_t *)sp; sp += 4, dp += 4, nb -= 4; }
@@ -264,6 +278,10 @@ static const bool _EscTab[256] = {
 
 static inline uint8_t escape_mask4(const char *sp) {
     return _EscTab[*(uint8_t *)(sp)] | (_EscTab[*(uint8_t *)(sp + 1)] << 1) | (_EscTab[*(uint8_t *)(sp + 2)] << 2) | (_EscTab[*(uint8_t *)(sp + 3)]  << 3);
+}
+
+static inline uint8_t html_escape_mask4(const char *sp) {
+    return inHtmlQuoteTab(sp) | inHtmlQuoteTab(sp + 1) << 1 | inHtmlQuoteTab(sp + 2) << 2 | inHtmlQuoteTab(sp + 3) << 3;
 }
 
 static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
@@ -909,7 +927,7 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
     ssize_t          nd  = *dn;
     const char     * ds  = dp;
     const char     * ss  = sp;
-    const quoted_t * tab = _HtmlQuoteTab;
+    const quoted_t * tab = _SingleHtmlQuoteTab;
 
     /* find the special characters, copy on the fly */
     while (nb > 0) {
@@ -973,6 +991,333 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
         nb--;
         dp += nc;
         nd -= nc;
+    }
+
+    /* all done */
+    *dn = dp - ds;
+    return sp - ss;
+}
+
+static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * quote_tab, const quoted_t * html_tab) {
+    uint32_t     mm;
+    const char * ds = dp;
+    size_t cn = 0;
+    uint8_t ch = 0;
+
+    simd_copy:
+
+    if (nb < 16) goto scalar_copy;
+
+#if USE_AVX2
+    /* 32-byte loop, full store */
+    while (nb >= 32) {
+        __m256i vv  = _mm256_loadu_si256 ((const void *)sp);
+        __m256i rv1 = _mm256_find_quote  (vv);
+        __m256i rv2 = _mm256_find_html   (vv);
+        __m256i rv3 = _mm256_or_si256    (rv1, rv2);
+        _mm256_storeu_si256 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm256_movemask_epi8(rv3)) != 0) {
+            cn = __builtin_ctz(mm);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
+            goto escape;
+        }
+
+        /* move to next block */
+        sp += 32;
+        dp += 32;
+        nb -= 32;
+    }
+
+    /* clear upper half to avoid AVX-SSE transition penalty */
+    _mm256_zeroupper();
+#endif
+
+    /* 16-byte loop, full store */
+    while (nb >= 16) {
+        __m128i vv  = _mm_loadu_si128 ((const void *)sp);
+        __m128i rv1 = _mm_find_quote  (vv);
+        __m128i rv2 = _mm_find_html   (vv);
+        __m128i rv3 = _mm_or_si128    (rv1, rv2);
+        _mm_storeu_si128 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm_movemask_epi8(rv3)) != 0) {
+            cn =  __builtin_ctz(mm);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
+            goto escape;
+        }
+
+        /* move to next block */
+        sp += 16;
+        dp += 16;
+        nb -= 16;
+    }
+
+    scalar_copy:
+    if (nb >= 8) {
+        uint8_t mask1 = escape_mask4(sp) | html_escape_mask4(sp);
+        *(uint64_t *)dp = *(const uint64_t *)sp;
+        if (unlikely(mask1)) {
+            cn =  __builtin_ctz(mask1);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
+            goto escape;
+        }
+        uint8_t mask2 = escape_mask4(sp + 4) | html_escape_mask4(sp + 4);
+        if (unlikely(mask2)) {
+            cn =  __builtin_ctz(mask2);
+            sp += cn + 4;
+            nb -= cn + 4;
+            dp += cn + 4;
+            goto escape;
+        }
+        dp += 8, sp += 8, nb -= 8;
+    }
+
+    if (nb >= 4) {
+        uint8_t mask2 = escape_mask4(sp) | html_escape_mask4(sp);
+        *(uint32_t *)dp = *(const uint32_t *)sp;
+        if (unlikely(mask2)) {
+            cn =  __builtin_ctz(mask2);
+            sp += cn;
+            nb -= cn;
+            dp += cn;
+            goto escape;
+        }
+        dp += 4, sp += 4, nb -= 4;
+    }
+
+    while (nb > 0) {
+        if (unlikely(_EscTab[*(uint8_t *)(sp)] || inHtmlQuoteTab(sp))) goto escape;
+        *dp++ = *sp++, nb--;
+    }
+    /* all quote done */
+    return dp - ds;
+    escape:
+    /* get the escape entry, handle consecutive quotes */
+    do {
+        const quoted_t * tab;
+        if (inHtmlQuoteTab(sp)) {
+            if (unlikely(*sp == '\xe2')) {
+                if (nb >= 3 && *(sp+1) == '\x80' && (*(sp+2) == '\xa8' || *(sp+2) == '\xa9')) {
+                    sp += 2, nb -= 2;
+                } else {
+                    *dp++ = *sp++;
+                    nb--;
+                    goto simd_copy;
+                }
+            }
+            tab = html_tab;
+        } else {
+            tab = quote_tab;
+        }
+        ch = *(uint8_t *)sp;
+        int nc = tab[ch].n;
+        *(uint64_t *)dp = *(const uint64_t *)tab[ch].s;
+        sp++;
+        nb--;
+        dp += nc;
+        if (nb <= 0) break;
+        /* copy and find escape chars */
+        if (_EscTab[*(uint8_t *)(sp)] == 0 && inHtmlQuoteTab(sp) == 0) {
+            goto simd_copy;
+        }
+    } while (true);
+    return dp - ds;
+}
+
+static inline ssize_t memcchr_quote_htmlEsc(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
+    uint32_t     mm;
+    const char * ss = sp;
+
+#if USE_AVX2
+    /* 32-byte loop, full store */
+    while (nb >= 32 && dn >= 32) {
+        __m256i vv  = _mm256_loadu_si256 ((const void *)sp);
+        __m256i rv1 = _mm256_find_quote  (vv);
+        __m256i rv2 = _mm256_find_html   (vv);
+        __m256i rv3 = _mm256_or_si256    (rv1, rv2);
+        _mm256_storeu_si256 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm256_movemask_epi8(rv3)) != 0) {
+            return sp - ss + __builtin_ctz(mm);
+        }
+
+        /* move to next block */
+        sp += 32;
+        dp += 32;
+        nb -= 32;
+        dn -= 32;
+    }
+
+    /* 32-byte test, partial store */
+    if (nb >= 32) {
+        __m256i vv  = _mm256_loadu_si256 ((const void *)sp);
+        __m256i rv1 = _mm256_find_quote  (vv);
+        __m256i rv2 = _mm256_find_html   (vv);
+        __m256i rv3 = _mm256_or_si256    (rv1, rv2);
+        uint32_t mv = _mm256_movemask_epi8 (rv3);
+        uint32_t fv = __builtin_ctzll      ((uint64_t)mv | 0x0100000000);
+
+        /* copy at most `dn` characters */
+        if (fv <= dn) {
+            memcpy_p32(dp, sp, fv);
+            return sp - ss + fv;
+        } else {
+            memcpy_p32(dp, sp, dn);
+            return -(sp - ss + dn) - 1;
+        }
+    }
+
+    /* clear upper half to avoid AVX-SSE transition penalty */
+    _mm256_zeroupper();
+#endif
+
+    /* 16-byte loop, full store */
+    while (nb >= 16 && dn >= 16) {
+        __m128i vv  = _mm_loadu_si128 ((const void *)sp);
+        __m128i rv1 = _mm_find_quote  (vv);
+        __m128i rv2 = _mm_find_html   (vv);
+        __m128i rv3 = _mm_or_si128    (rv1, rv2);
+        _mm_storeu_si128 ((void *)dp, vv);
+
+        /* check for matches */
+        if ((mm = _mm_movemask_epi8(rv3)) != 0) {
+            return sp - ss + __builtin_ctz(mm);
+        }
+
+        /* move to next block */
+        sp += 16;
+        dp += 16;
+        nb -= 16;
+        dn -= 16;
+    }
+
+    /* 16-byte test, partial store */
+    if (nb >= 16) {
+        __m128i vv  = _mm_loadu_si128 ((const void *)sp);
+        __m128i rv1 = _mm_find_quote  (vv);
+        __m128i rv2 = _mm_find_html   (vv);
+        __m128i rv3 = _mm_or_si128    (rv1, rv2);
+        uint32_t mv = _mm_movemask_epi8 (rv3);
+        uint32_t fv = __builtin_ctz     (mv | 0x010000);
+
+        /* copy at most `dn` characters */
+        if (fv <= dn) {
+            memcpy_p16(dp, sp, fv);
+            return sp - ss + fv;
+        } else {
+            memcpy_p16(dp, sp, dn);
+            return -(sp - ss + dn) - 1;
+        }
+    }
+
+    /* handle the remaining bytes with scalar code */
+    while (nb > 0 && dn > 0) {
+        if (_EscTab[*(uint8_t *)sp] || inHtmlQuoteTab(sp)) {
+            return sp - ss;
+        } else {
+            dn--, nb--;
+            *dp++ = *sp++;
+        }
+    }
+
+    /* check for dest buffer */
+    if (nb == 0) {
+        return sp - ss;
+    } else {
+        return -(sp - ss) - 1;
+    }
+}
+
+ssize_t quote_with_htmlEsc(const char *sp, ssize_t nb, char *dp, ssize_t *dn, uint64_t flags) {
+    ssize_t          nd = *dn;
+    const char *     ds = dp;
+    const char *     ss = sp;
+    const quoted_t * quote_tab;
+    const quoted_t * html_tab;
+
+    /* select quoting table */
+    if (!(flags & F_DBLUNQ)) {
+        quote_tab = _SingleQuoteTab;
+        html_tab = _SingleHtmlQuoteTab;
+    } else {
+        quote_tab = _DoubleQuoteTab;
+        html_tab = _DoubleHtmlQuoteTab;
+    }
+
+    if (*dn >= nb * MAX_ESCAPED_BYTES) {
+        *dn = memcchr_quote_htmlEsc_unsafe(sp, nb, dp, quote_tab, html_tab);
+        return nb;
+    }
+
+    /* find the special characters, copy on the fly */
+    while (nb != 0) {
+        int     nc;
+        uint8_t ch;
+        ssize_t rb = memcchr_quote_htmlEsc(sp, nb, dp, nd);
+
+        /* not enough buffer space */
+        if (rb < 0) {
+            *dn = dp - ds - rb - 1;
+            return -(sp - ss - rb - 1) - 1;
+        }
+
+        /* skip already copied bytes */
+        sp += rb;
+        dp += rb;
+        nb -= rb;
+        nd -= rb;
+
+        /* get the escape entry, handle consecutive quotes */
+        while (nb != 0) {
+            if (inHtmlQuoteTab(sp) == 0 && _EscTab[*(uint8_t *)sp] == 0) {
+                break;
+            }
+            /* mark cur postion */
+            const char * cur = sp;
+            const quoted_t * tab;
+
+            if (inHtmlQuoteTab(sp)) {
+                if (unlikely(*sp == '\xe2')) {
+                    if (nb >= 3 && *(sp+1) == '\x80' && (*(sp+2) == '\xa8' || *(sp+2) == '\xa9')) {
+                        sp += 2, nb -= 2;
+                    } else if (nd > 0) {
+                        *dp++ = *sp++;
+                        nb--, nd--;
+                        continue;
+                    } else {
+                        return -(sp - ss) - 1;
+                    }
+                }
+                tab = html_tab;
+            } else {
+                tab = quote_tab;
+            }
+            ch = *(uint8_t *)sp;
+            nc = tab[ch].n;
+
+            /* check for buffer space */
+            if (nc > nd) {
+                *dn = dp - ds;
+                return -(cur - ss) - 1;
+            }
+
+            /* copy the quoted value */
+            memcpy_p8(dp, tab[ch].s, nc);
+            sp++;
+            nb--;
+            dp += nc;
+            nd -= nc;
+        }
     }
 
     /* all done */

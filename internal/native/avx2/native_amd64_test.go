@@ -233,6 +233,45 @@ func TestNative_HTMLEscapeNoMem(t *testing.T) {
     assert.Equal(t, `hello`, string(d))
 }
 
+func TestNative_QuoteWithHTMLEsc(t *testing.T) {
+    s := "hello\u2029\u2028<&>\b\f\n\r\t\\\"\u666fworld"
+    d := make([]byte, 256)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __quote_with_htmlEsc(sp.Ptr, sp.Len, dp.Ptr, &dp.Len, 0)
+    if rv < 0 {
+        require.NoError(t, types.ParsingError(-rv))
+    }
+    assert.Equal(t, len(s), rv)
+    assert.Equal(t, 65, len(d))
+    assert.Equal(t, `hello\u2029\u2028\u003c\u0026\u003e\u0008\u000c\n\r\t\\\"景world`, string(d))
+}
+
+func TestNative_QuoteWithHTMLEscNoMem(t *testing.T) {
+    s := "hello\u2029\u2028<&>\b\f\n\r\t\\\"\u666fworld"
+    d := make([]byte, 10)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __quote_with_htmlEsc(sp.Ptr, sp.Len, dp.Ptr, &dp.Len, 0)
+    assert.Equal(t, -6, rv)
+    assert.Equal(t, 5, len(d))
+    assert.Equal(t, `hello`, string(d))
+}
+
+func TestNative_DoubleQuoteWithHTMLEsc(t *testing.T) {
+    s := "hello\u2029\u2028<&>\b\f\n\r\t\\\"\u666fworld"
+    d := make([]byte, 256)
+    dp := (*rt.GoSlice)(unsafe.Pointer(&d))
+    sp := (*rt.GoString)(unsafe.Pointer(&s))
+    rv := __quote_with_htmlEsc(sp.Ptr, sp.Len, dp.Ptr, &dp.Len, types.F_DOUBLE_UNQUOTE)
+    if rv < 0 {
+        require.NoError(t, types.ParsingError(-rv))
+    }
+    assert.Equal(t, len(s), rv)
+    assert.Equal(t, 79, len(d))
+    assert.Equal(t, `hello\\u2029\\u2028\\u003c\\u0026\\u003e\\u0008\\u000c\\n\\r\\t\\\\\\\"景world`, string(d))
+}
+
 func TestNative_Vstring(t *testing.T) {
     var v types.JsonState
     i := 0

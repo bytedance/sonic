@@ -74,6 +74,11 @@ func HTMLEscape(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
+func QuoteWithHTMLEsc(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
 func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) int
 
 //go:nosplit
@@ -97,39 +102,39 @@ func I64toa(out *byte, val int64) (ret int)
 func U64toa(out *byte, val uint64) (ret int)
 
 func useAVX() {
-    S_f64toa      = avx.S_f64toa
-    S_f32toa      = avx.S_f32toa
-    S_i64toa      = avx.S_i64toa
-    S_u64toa      = avx.S_u64toa
-    S_lspace      = avx.S_lspace
-    S_quote       = avx.S_quote
-    S_unquote     = avx.S_unquote
-    S_value       = avx.S_value
-    S_vstring     = avx.S_vstring
-    S_vnumber     = avx.S_vnumber
-    S_vsigned     = avx.S_vsigned
-    S_vunsigned   = avx.S_vunsigned
-    S_skip_one    = avx.S_skip_one
-    S_skip_array  = avx.S_skip_array
+    S_f64toa = avx.S_f64toa
+    S_f32toa = avx.S_f32toa
+    S_i64toa = avx.S_i64toa
+    S_u64toa = avx.S_u64toa
+    S_lspace = avx.S_lspace
+    S_quote = avx.S_quote
+    S_unquote = avx.S_unquote
+    S_value = avx.S_value
+    S_vstring = avx.S_vstring
+    S_vnumber = avx.S_vnumber
+    S_vsigned = avx.S_vsigned
+    S_vunsigned = avx.S_vunsigned
+    S_skip_one = avx.S_skip_one
+    S_skip_array = avx.S_skip_array
     S_skip_object = avx.S_skip_object
     S_skip_number = avx.S_skip_number
 }
 
 func useAVX2() {
-    S_f64toa      = avx2.S_f64toa
-    S_f32toa      = avx2.S_f32toa
-    S_i64toa      = avx2.S_i64toa
-    S_u64toa      = avx2.S_u64toa
-    S_lspace      = avx2.S_lspace
-    S_quote       = avx2.S_quote
-    S_unquote     = avx2.S_unquote
-    S_value       = avx2.S_value
-    S_vstring     = avx2.S_vstring
-    S_vnumber     = avx2.S_vnumber
-    S_vsigned     = avx2.S_vsigned
-    S_vunsigned   = avx2.S_vunsigned
-    S_skip_one    = avx2.S_skip_one
-    S_skip_array  = avx2.S_skip_array
+    S_f64toa = avx2.S_f64toa
+    S_f32toa = avx2.S_f32toa
+    S_i64toa = avx2.S_i64toa
+    S_u64toa = avx2.S_u64toa
+    S_lspace = avx2.S_lspace
+    S_quote = avx2.S_quote
+    S_unquote = avx2.S_unquote
+    S_value = avx2.S_value
+    S_vstring = avx2.S_vstring
+    S_vnumber = avx2.S_vnumber
+    S_vsigned = avx2.S_vsigned
+    S_vunsigned = avx2.S_vunsigned
+    S_skip_one = avx2.S_skip_one
+    S_skip_array = avx2.S_skip_array
     S_skip_object = avx2.S_skip_object
     S_skip_number = avx2.S_skip_number
 }
