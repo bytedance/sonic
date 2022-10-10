@@ -286,8 +286,10 @@ static inline uint8_t html_escape_mask4(const char *sp) {
 
 static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
     uint32_t     mm;
+    const char * ss = sp;
     const char * ds = dp;
     size_t cn = 0;
+    uint8_t ch;
 
 simd_copy:
 
@@ -998,15 +1000,9 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
     return sp - ss;
 }
 
-static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * quote_tab, const quoted_t * html_tab) {
+static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, char *dp) {
     uint32_t     mm;
-    const char * ds = dp;
-    size_t cn = 0;
-    uint8_t ch = 0;
-
-    simd_copy:
-
-    if (nb < 16) goto scalar_copy;
+    const char * ss = sp;
 
 #if USE_AVX2
     /* 32-byte loop, full store */
@@ -1019,11 +1015,7 @@ static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, c
 
         /* check for matches */
         if ((mm = _mm256_movemask_epi8(rv3)) != 0) {
-            cn = __builtin_ctz(mm);
-            sp += cn;
-            nb -= cn;
-            dp += cn;
-            goto escape;
+            return sp - ss + __builtin_ctz(mm);
         }
 
         /* move to next block */
@@ -1046,11 +1038,7 @@ static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, c
 
         /* check for matches */
         if ((mm = _mm_movemask_epi8(rv3)) != 0) {
-            cn =  __builtin_ctz(mm);
-            sp += cn;
-            nb -= cn;
-            dp += cn;
-            goto escape;
+            return sp - ss + __builtin_ctz(mm);
         }
 
         /* move to next block */
@@ -1059,24 +1047,15 @@ static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, c
         nb -= 16;
     }
 
-    scalar_copy:
     if (nb >= 8) {
         uint8_t mask1 = escape_mask4(sp) | html_escape_mask4(sp);
         *(uint64_t *)dp = *(const uint64_t *)sp;
         if (unlikely(mask1)) {
-            cn =  __builtin_ctz(mask1);
-            sp += cn;
-            nb -= cn;
-            dp += cn;
-            goto escape;
+            return sp - ss + __builtin_ctz(mask1);
         }
         uint8_t mask2 = escape_mask4(sp + 4) | html_escape_mask4(sp + 4);
         if (unlikely(mask2)) {
-            cn =  __builtin_ctz(mask2);
-            sp += cn + 4;
-            nb -= cn + 4;
-            dp += cn + 4;
-            goto escape;
+            return sp - ss + __builtin_ctz(mask2) + 4;
         }
         dp += 8, sp += 8, nb -= 8;
     }
@@ -1085,52 +1064,65 @@ static inline ssize_t memcchr_quote_htmlEsc_unsafe(const char *sp, ssize_t nb, c
         uint8_t mask2 = escape_mask4(sp) | html_escape_mask4(sp);
         *(uint32_t *)dp = *(const uint32_t *)sp;
         if (unlikely(mask2)) {
-            cn =  __builtin_ctz(mask2);
-            sp += cn;
-            nb -= cn;
-            dp += cn;
-            goto escape;
+            return sp - ss + __builtin_ctz(mask2);
         }
         dp += 4, sp += 4, nb -= 4;
     }
 
     while (nb > 0) {
-        if (unlikely(_EscTab[*(uint8_t *)(sp)] || inHtmlQuoteTab(sp))) goto escape;
+        if (unlikely(_EscTab[*(uint8_t *)(sp)] || inHtmlQuoteTab(sp))) return sp - ss;
         *dp++ = *sp++, nb--;
     }
     /* all quote done */
     return dp - ds;
-    escape:
-    /* get the escape entry, handle consecutive quotes */
-    do {
-        const quoted_t * tab;
-        if (inHtmlQuoteTab(sp)) {
-            if (unlikely(*sp == '\xe2')) {
-                if (nb >= 3 && *(sp+1) == '\x80' && (*(sp+2) == '\xa8' || *(sp+2) == '\xa9')) {
-                    sp += 2, nb -= 2;
-                } else {
-                    *dp++ = *sp++;
-                    nb--;
-                    goto simd_copy;
-                }
+}
+
+static inline ssize_t quote_htmlEsc_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * quote_tab, const quoted_t * html_tab) {
+    const char * ss = sp;
+
+    /* find the special characters, copy on the fly */
+    while (nb != 0) {
+        int     nc;
+        uint8_t ch;
+        ssize_t rb = memcchr_quote_htmlEsc_unsafe(sp, nb, dp);
+
+        /* skip already copied bytes */
+        sp += rb;
+        dp += rb;
+        nb -= rb;
+
+        /* get the escape entry, handle consecutive quotes */
+        while (nb != 0) {
+            if (inHtmlQuoteTab(sp) == 0 && _EscTab[*(uint8_t *)sp] == 0) {
+                break;
             }
-            tab = html_tab;
-        } else {
-            tab = quote_tab;
+
+            const quoted_t * tab;
+            if (inHtmlQuoteTab(sp)) {
+                if (unlikely(*sp == '\xe2')) {
+                    if (nb >= 3 && *(sp+1) == '\x80' && (*(sp+2) == '\xa8' || *(sp+2) == '\xa9')) {
+                        sp += 2, nb -= 2;
+                    } else {
+                        *dp++ = *sp++;
+                        nb--;
+                        continue;
+                    }
+                }
+                tab = html_tab;
+            } else {
+                tab = quote_tab;
+            }
+            ch = *(uint8_t *)sp;
+            nc = tab[ch].n;
+            *(uint64_t *)dp = *(const uint64_t *)tab[ch].s;
+            sp++;
+            nb--;
+            dp += nc;
         }
-        ch = *(uint8_t *)sp;
-        int nc = tab[ch].n;
-        *(uint64_t *)dp = *(const uint64_t *)tab[ch].s;
-        sp++;
-        nb--;
-        dp += nc;
-        if (nb <= 0) break;
-        /* copy and find escape chars */
-        if (_EscTab[*(uint8_t *)(sp)] == 0 && inHtmlQuoteTab(sp) == 0) {
-            goto simd_copy;
-        }
-    } while (true);
-    return dp - ds;
+    }
+
+    /* all done */
+    return sp - ss;
 }
 
 static inline ssize_t memcchr_quote_htmlEsc(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
@@ -1255,7 +1247,7 @@ ssize_t quote_with_htmlEsc(const char *sp, ssize_t nb, char *dp, ssize_t *dn, ui
     }
 
     if (*dn >= nb * MAX_ESCAPED_BYTES) {
-        *dn = memcchr_quote_htmlEsc_unsafe(sp, nb, dp, quote_tab, html_tab);
+        *dn = quote_htmlEsc_unsafe(sp, nb, dp, quote_tab, html_tab);
         return nb;
     }
 
