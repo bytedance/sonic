@@ -22,6 +22,7 @@ import (
 	`testing`
 	`unsafe`
 	`runtime`
+    `runtime/debug`
 
 	`github.com/bytedance/sonic/internal/rt`
 )
@@ -49,6 +50,7 @@ func TestStringReferring(t *testing.T) {
         t.Fatal(err)
     }
     runtime.GC()
+    debug.FreeOSMemory()
     println("second GC")
     if referred {
         t.Fatal("*byte is being referred")

@@ -103,9 +103,8 @@ func newStack() *_Stack {
 }
 
 func resetStack(p *_Stack) {
-    p.sp = 0
-    size := uintptr((p.sp+1) * uint64(_StateSize))
-    memclrNoHeapPointers(unsafe.Pointer(p), size+8)
+    size := uintptr(p.sp + 8)
+    memclrNoHeapPointers(unsafe.Pointer(p), size)
 }
 
 func newBuffer() *bytes.Buffer {
