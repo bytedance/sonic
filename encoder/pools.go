@@ -103,7 +103,9 @@ func newStack() *_Stack {
 }
 
 func resetStack(p *_Stack) {
-    memclrNoHeapPointers(unsafe.Pointer(p), _StackSize)
+    p.sp = 0
+    size := uintptr((p.sp+1) * uint64(_StateSize))
+    memclrNoHeapPointers(unsafe.Pointer(p), size+8)
 }
 
 func newBuffer() *bytes.Buffer {
@@ -120,7 +122,7 @@ func freeBytes(p []byte) {
 }
 
 func freeStack(p *_Stack) {
-    p.sp = 0
+    resetStack(p)
     stackPool.Put(p)
 }
 
