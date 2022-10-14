@@ -355,9 +355,9 @@ func (self _Instr) disassemble() string {
 
 func (self _Instr) formatSwitchLabels() string {
     var (
-      i int
-      v int
-      m []string = make([]string , 0 , len(self.vs()))
+        i int
+        v int
+        m []string = make([]string, 0, len(self.vs()))
     )
 
     /* format each label */
@@ -385,7 +385,7 @@ func (self _Instr) formatStructFields() string {
         return m[i].n < m[j].n
     })
 
-    var r []string = make([]string , 0 , len(m) )
+    var r []string = make([]string,0, len(m))
     /* format each field */
     for _, v := range m {
         r = append(r, fmt.Sprintf("%s=%d", v.n, v.i))

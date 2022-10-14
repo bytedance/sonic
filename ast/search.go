@@ -70,3 +70,4 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
 
     return newRawNode(self.parser.s[start:self.parser.p], t), nil
 }
+
