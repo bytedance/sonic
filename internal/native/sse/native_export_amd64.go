@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package sse4
+package sse
 
 var (
     S_f64toa = _subr__f64toa

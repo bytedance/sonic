@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package sse4
+package sse
 
 import (
     `math`

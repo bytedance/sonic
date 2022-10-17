@@ -1,5 +1,8 @@
+//go:build !amd64
+// +build !amd64
+
 /*
- * Copyright 2021 ByteDance Inc.
+ * Copyright 2022 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +17,26 @@
  * limitations under the License.
  */
 
-package cpu
+package sonic
 
 import (
-    `fmt`
-    `os`
+    `reflect`
+    `testing`
 
-    `github.com/klauspost/cpuid/v2`
+    `github.com/bytedance/sonic/option`
 )
 
-var (
-    HasAVX  = cpuid.CPU.Has(cpuid.AVX)
-    HasAVX2 = cpuid.CPU.Has(cpuid.AVX2)
-    HasSSE = cpuid.CPU.Has(cpuid.SSE)
-)
+func TestPretouch(t *testing.T) {
+    var v map[string]interface{}
+    if err := Pretouch(reflect.TypeOf(v)); err != nil {
+        t.Errorf("err:%v", err)
+    }
 
-func init() {
-    switch v := os.Getenv("SONIC_MODE"); v {
-        case ""       : break
-        case "auto"   : break
-        case "noavx"  : HasAVX = false; fallthrough
-        case "noavx2" : HasAVX2 = false
-        default       : panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx', 'noavx2'", v))
+    if err := Pretouch(reflect.TypeOf(v),
+       option.WithCompileRecursiveDepth(1),
+       option.WithCompileMaxInlineDepth(2),
+    ); err != nil {
+        t.Errorf("err:%v", err)
     }
 }
+

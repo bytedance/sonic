@@ -1,4 +1,5 @@
-// +build !amd64 go1.20
+//go:build !amd64
+// +build !amd64
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -22,6 +23,9 @@ import (
     `bytes`
     `encoding/json`
     `io`
+    `reflect`
+
+    `github.com/bytedance/sonic/option`
 )
 
 type frozenConfig struct {
@@ -115,3 +119,15 @@ func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
 func (cfg *frozenConfig) Valid(data []byte) bool {
     return json.Valid(data)
 }
+
+
+// Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
+// order to reduce the first-hit latency at **amd64** Arch.
+// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+// a compile option to set the depth of recursive compile for the nested struct type.
+// * This is the none implement for !amd64.
+// It will be useful for someone who develop with !amd64 arch,like Mac M1.
+func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
+    return nil
+}
+
