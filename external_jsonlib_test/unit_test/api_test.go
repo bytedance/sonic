@@ -63,8 +63,20 @@ func TestCompatMarshalStd(t *testing.T) {
         "c": json.RawMessage(" [ \"<&>\" ] "),
         "b": json.RawMessage(" [ ] "),
     }
+
     sout, serr := sonic.ConfigStd.Marshal(obj)
     jout, jerr := json.Marshal(obj)
+    require.Equal(t, jerr, serr)
+    require.NotEqual(t, string(jout), string(sout))
+    require.Equal(t, "{\"b\":[],\"c\":[\"<&>\"]}", string(sout))
+
+    obj = map[string]interface{}{
+        "c": json.RawMessage("[\"<&>\"]"),
+    }
+    sout, serr = sonic.Config{
+        EscapeHTML: true,
+    }.Froze().Marshal(obj)
+    jout, jerr = json.Marshal(obj)
     require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
 

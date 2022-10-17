@@ -95,6 +95,10 @@ func encodeJsonMarshaler(buf *[]byte, val json.Marshaler, opt Options) error {
         if ok, s := Valid(ret); !ok {
             return error_marshaler(ret, s)
         }
+        if (opt & EscapeHTML) != 0 {
+            *buf = HTMLEscape(*buf, ret)
+            return nil
+        }
         *buf = append(*buf, ret...)
         return nil
     }

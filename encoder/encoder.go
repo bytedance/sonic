@@ -143,13 +143,13 @@ func Quote(s string) string {
 }
 
 // QuoteWithHTMLEscape returns the JSON-quoted version of s, meanwhile escaping HTML characters.
-func QuoteWithHTMLEscape(s string) string {
+func QuoteWithHTMLEscape(s []byte) []byte {
     var n int
     var p []byte
 
     /* check for empty string */
-    if s == "" {
-        return `""`
+    if len(s) == 0 {
+        return []byte(`""`)
     }
 
     /* allocate space for result */
@@ -157,8 +157,8 @@ func QuoteWithHTMLEscape(s string) string {
     p = make([]byte, 0, n)
 
     /* call the encoder */
-    _ = encodeString(&p, s, true)
-    return rt.Mem2Str(p)
+    _ = encodeString(&p, rt.Mem2Str(s), true)
+    return p
 }
 
 // Encode returns the JSON encoding of val, encoded with opts.
@@ -229,7 +229,7 @@ func HTMLEscape(dest []byte, src []byte) []byte {
     }
     ds := (*rt.GoSlice)(unsafe.Pointer(&dest))
     sp := (*rt.GoSlice)(unsafe.Pointer(&src)).Ptr
-    ds.Len = 0
+    // ds.Len = 0
     if (ds.Cap < cap) {
         *ds = growslice(typeByte, *ds, cap)
     }
