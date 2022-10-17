@@ -28,15 +28,12 @@ import (
 func TestEncodeStream(t *testing.T) {
     var o = map[string]interface{}{
         "a": "<>",
-        "b": json.RawMessage(" [ ] "),
     }
     var w1 = bytes.NewBuffer(nil)
     var w2 = bytes.NewBuffer(nil)
     var enc1 = json.NewEncoder(w1)
     var enc2 = NewStreamEncoder(w2)
     enc2.SetEscapeHTML(true)
-    enc2.SortKeys()
-    enc2.SetCompactMarshaler(true)
 
     require.Nil(t, enc1.Encode(o))
     require.Nil(t, enc2.Encode(o))
@@ -54,6 +51,32 @@ func TestEncodeStream(t *testing.T) {
     enc2.SetEscapeHTML(false)
     enc1.SetIndent("", "")
     enc2.SetIndent("", "")
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+
+    o = map[string]interface{}{
+        "b": json.RawMessage(" [ ] "),
+    }
+    w1 = bytes.NewBuffer(nil)
+    w2 = bytes.NewBuffer(nil)
+    enc1 = json.NewEncoder(w1)
+    enc2 = NewStreamEncoder(w2)
+    enc2.SetCompactMarshaler(true)
+    require.Nil(t, enc1.Encode(o))
+    require.Nil(t, enc2.Encode(o))
+    require.Equal(t, w1.String(), w2.String())
+
+    o = map[string]interface{}{
+        "c": 1,
+        "b": 2,
+        "a": 3,
+    }
+    w1 = bytes.NewBuffer(nil)
+    w2 = bytes.NewBuffer(nil)
+    enc1 = json.NewEncoder(w1)
+    enc2 = NewStreamEncoder(w2)
+    enc2.SortKeys()
     require.Nil(t, enc1.Encode(o))
     require.Nil(t, enc2.Encode(o))
     require.Equal(t, w1.String(), w2.String())

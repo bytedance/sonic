@@ -60,23 +60,12 @@ func TestCompatMarshalDefault(t *testing.T){
 func TestCompatMarshalStd(t *testing.T) {
     t.Parallel()
     var obj = map[string]interface{}{
-        "c": json.RawMessage(" [ \"<&>\" ] "),
-        "b": json.RawMessage(" [ ] "),
+        "c": json.RawMessage("[\"<&>\"]"),
+        "b": 2,
+        "a": 3,
     }
-
     sout, serr := sonic.ConfigStd.Marshal(obj)
     jout, jerr := json.Marshal(obj)
-    require.Equal(t, jerr, serr)
-    require.NotEqual(t, string(jout), string(sout))
-    require.Equal(t, "{\"b\":[],\"c\":[\"<&>\"]}", string(sout))
-
-    obj = map[string]interface{}{
-        "c": json.RawMessage("[\"<&>\"]"),
-    }
-    sout, serr = sonic.Config{
-        EscapeHTML: true,
-    }.Froze().Marshal(obj)
-    jout, jerr = json.Marshal(obj)
     require.Equal(t, jerr, serr)
     require.Equal(t, string(jout), string(sout))
 
@@ -190,8 +179,9 @@ func TestCompatEncoderDefault(t *testing.T) {
 
 func TestCompatEncoderStd(t *testing.T) {
     var o = map[string]interface{}{
+        "c": json.RawMessage("[\"<&>\"]"),
         "a": "<>",
-        "b": json.RawMessage(" [ ] "),
+        "b": 1,
     }
     var w1 = bytes.NewBuffer(nil)
     var w2 = bytes.NewBuffer(nil)

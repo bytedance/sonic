@@ -89,15 +89,25 @@ func encodeJsonMarshaler(buf *[]byte, val json.Marshaler, opt Options) error {
     if ret, err := val.MarshalJSON(); err != nil {
         return err
     } else {
-        if opt & CompactMarshaler != 0 {
-            return compact(buf, ret)
-        }
-        if ok, s := Valid(ret); !ok {
-            return error_marshaler(ret, s)
-        }
-        if (opt & EscapeHTML) != 0 {
+        //WARN: Since compact is an unneccessary operation and wastes CPU cycles, 
+        // we only escape html here even if both options are set.
+        if opt & EscapeHTML != 0 {
+            //TODO: Is this validation neccessary?
+            if ok, s := Valid(ret); !ok {
+                return error_marshaler(ret, s)
+            }
             *buf = HTMLEscape(*buf, ret)
             return nil
+        }
+
+        //WARN: json.Compact() will not escaping HTML characters
+        if opt & CompactMarshaler != 0  {
+            return compact(buf, ret)
+        }
+        
+        //TODO: Is this validation neccessary?
+        if ok, s := Valid(ret); !ok {
+            return error_marshaler(ret, s)
         }
         *buf = append(*buf, ret...)
         return nil
