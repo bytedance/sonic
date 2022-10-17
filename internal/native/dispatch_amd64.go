@@ -38,6 +38,7 @@ var (
 
 var (
     S_quote   uintptr
+    S_qhtml   uintptr
     S_unquote uintptr
 )
 
@@ -108,6 +109,7 @@ func useAVX() {
     S_u64toa      = avx.S_u64toa
     S_lspace      = avx.S_lspace
     S_quote       = avx.S_quote
+    S_qhtml       = avx.S_qhtml
     S_unquote     = avx.S_unquote
     S_value       = avx.S_value
     S_vstring     = avx.S_vstring
@@ -127,6 +129,7 @@ func useAVX2() {
     S_u64toa      = avx2.S_u64toa
     S_lspace      = avx2.S_lspace
     S_quote       = avx2.S_quote
+    S_qhtml       = avx.S_qhtml
     S_unquote     = avx2.S_unquote
     S_value       = avx2.S_value
     S_vstring     = avx2.S_vstring
@@ -146,6 +149,7 @@ func useSSE() {
     S_u64toa = sse.S_u64toa
     S_lspace = sse.S_lspace
     S_quote = sse.S_quote
+    S_qhtml       = avx.S_qhtml
     S_unquote = sse.S_unquote
     S_value = sse.S_value
     S_vstring = sse.S_vstring

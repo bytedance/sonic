@@ -28,6 +28,7 @@ var (
 
 var (
     S_quote   = _subr__quote
+    S_qhtml   = _subr__quote_with_htmlEsc
     S_unquote = _subr__unquote
 )
 

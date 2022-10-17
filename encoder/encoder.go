@@ -138,7 +138,26 @@ func Quote(s string) string {
     p = make([]byte, 0, n)
 
     /* call the encoder */
-    _ = encodeString(&p, s)
+    _ = encodeString(&p, s, false)
+    return rt.Mem2Str(p)
+}
+
+// QuoteWithHTMLEscape returns the JSON-quoted version of s, meanwhile escaping HTML characters.
+func QuoteWithHTMLEscape(s string) string {
+    var n int
+    var p []byte
+
+    /* check for empty string */
+    if s == "" {
+        return `""`
+    }
+
+    /* allocate space for result */
+    n = len(s) + 2
+    p = make([]byte, 0, n)
+
+    /* call the encoder */
+    _ = encodeString(&p, s, true)
     return rt.Mem2Str(p)
 }
 
@@ -153,9 +172,9 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
         return nil, err
     }
 
-    if opts & EscapeHTML != 0 {
-        return buf, nil
-    }
+    // if opts & EscapeHTML != 0 {
+    //     return buf, nil
+    // }
 
     /* make a copy of the result */
     ret := make([]byte, len(buf))
@@ -179,12 +198,12 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     }
     freeStack(stk)
 
-    /* EscapeHTML needs to allocate a new buffer*/
-    if opts & EscapeHTML != 0 {
-        dest := HTMLEscape(nil, *buf)
-        freeBytes(*buf) // free origin used buffer
-        *buf = dest
-    }
+    // /* EscapeHTML needs to allocate a new buffer*/
+    // if opts & EscapeHTML != 0 {
+    //     dest := HTMLEscape(nil, *buf)
+    //     freeBytes(*buf) // free origin used buffer
+    //     *buf = dest
+    // }
 
     /* avoid GC ahead */
     runtime.KeepAlive(buf)

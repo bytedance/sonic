@@ -131,7 +131,7 @@ func runEncoderTest(t *testing.T, fn func(string)string, exp string, arg string)
 func TestEncoder_String(t *testing.T) {
     runEncoderTest(t, Quote, `""`                                                 , "")
     runEncoderTest(t, Quote, `"hello, world"`                                     , "hello, world")
-    runEncoderTest(t, Quote, `"hello啊啊啊aa"`                                    , "hello啊啊啊aa")
+    runEncoderTest(t, Quote, `"hello啊啊啊aa"`                                     , "hello啊啊啊aa")
     runEncoderTest(t, Quote, `"hello\\\"world"`                                   , "hello\\\"world")
     runEncoderTest(t, Quote, `"hello\n\tworld"`                                   , "hello\n\tworld")
     runEncoderTest(t, Quote, `"hello\u0000\u0001world"`                           , "hello\x00\x01world")

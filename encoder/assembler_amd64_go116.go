@@ -631,6 +631,7 @@ func (self *_Assembler) error_nan_or_infinite()  {
 
 var (
     _F_quote = jit.Imm(int64(native.S_quote))
+    _F_qhtml = jit.Imm(int64(native.S_qhtml))
     _F_panic = jit.Func(goPanic)
 )
 
@@ -686,7 +687,13 @@ func (self *_Assembler) encode_string(doubleQuote bool) {
     }
 
     /* call the native quoter */
+    self.Emit("BTQ", jit.Imm(bitEscapeHTML), _ARG_fv)
+    self.Sjmp("JC", "_str_qhtml_{n}")       // JC _str_qhtml_{n}
     self.call_c(_F_quote)                   // CALL  quote
+    self.Sjmp("JMP", "_str_quote_end_{n}")  // JMP _str_qend_{n}
+    self.Link("_str_qhtml_{n}")
+    self.call_c(_F_qhtml)                   // CALL  qhtml
+    self.Link("_str_quote_end_{n}")
     self.Emit("ADDQ" , _VAR_dn, _RL)        // ADDQ  dn, RL
     self.Emit("TESTQ", _AX, _AX)            // TESTQ AX, AX
     self.Sjmp("JS"   , "_str_space_{n}")    // JS    _str_space_{n}

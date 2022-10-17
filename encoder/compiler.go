@@ -711,6 +711,7 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
 
         /* compile the key and value */
         ft := fv.Type
+        //NOTICE: never HTML escape struct field names, since they can be escaped while defining
         p.str(_OP_text, Quote(fv.Name) + ":")
 
         /* check for "stringnize" option */

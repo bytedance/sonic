@@ -32,7 +32,7 @@ func encodeNil(rb *[]byte) error {
     return nil
 }
 
-func encodeString(buf *[]byte, val string) error {
+func encodeString(buf *[]byte, val string, htmlEsc bool) error {
     var sidx int
     var pbuf *rt.GoSlice
     var pstr *rt.GoString
@@ -48,7 +48,13 @@ func encodeString(buf *[]byte, val string) error {
         dn := pbuf.Cap - pbuf.Len
         sp := padd(pstr.Ptr, sidx)
         dp := padd(pbuf.Ptr, pbuf.Len)
-        nb := native.Quote(sp, sn, dp, &dn, 0)
+
+        var nb int
+        if htmlEsc {
+            nb = native.QuoteWithHTMLEsc(sp, sn, dp, &dn, 0)
+        } else {
+            nb = native.Quote(sp, sn, dp, &dn, 0)
+        }
 
         /* check for errors */
         if pbuf.Len += dn; nb >= 0 {
@@ -102,6 +108,6 @@ func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler, opt Options) e
             *buf = append(*buf, ret...)
             return nil
         }
-        return encodeString(buf, rt.Mem2Str(ret) )
+        return encodeString(buf, rt.Mem2Str(ret), (opt & EscapeHTML) != 0)
     }
 }
