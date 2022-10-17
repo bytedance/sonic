@@ -63,7 +63,11 @@ func (self *Iterator) HasNext() bool {
     } else if self.p.t == _V_ARRAY_LAZY {
         return self.p.skipNextNode().Valid()
     } else if self.p.t == _V_OBJECT_LAZY {
-        return self.p.skipNextPair().Value.Valid()
+        pair := self.p.skipNextPair()
+        if pair == nil {
+            return false
+        }
+        return pair.Value.Valid()
     }
     return false
 }
