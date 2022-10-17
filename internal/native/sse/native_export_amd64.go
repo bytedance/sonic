@@ -41,6 +41,7 @@ var (
 
 var (
     S_skip_one    = _subr__skip_one
+    S_skip_one_fast = _subr__skip_one_fast
     S_skip_array  = _subr__skip_array
     S_skip_object = _subr__skip_object
     S_skip_number = _subr__skip_number

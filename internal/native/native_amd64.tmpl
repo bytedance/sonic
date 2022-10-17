@@ -95,6 +95,11 @@ func __skip_one(s *string, p *int, m *types.StateMachine, flags uint64) (ret int
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
+func __skip_one_fast(s *string, p *int) (ret int)
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
 func __skip_array(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)
 
 //go:nosplit

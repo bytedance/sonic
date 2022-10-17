@@ -195,6 +195,16 @@ func TestIterator(t *testing.T) {
     if i != int64(loop) {
         t.Fatal(i)
     }
+
+    str, _ = getTestIteratorSample(0)
+    root, err = NewParser(str).Parse()
+    if err != 0 {
+        t.Fatal(err)
+    }
+    mi, _ = root.Get("object").Properties()
+    if mi.HasNext() {
+        t.Fatalf("should not have next")
+    }
 }
 
 func BenchmarkArrays(b *testing.B) {

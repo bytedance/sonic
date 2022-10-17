@@ -138,7 +138,7 @@ func TestRandomData(t *testing.T) {
 func TestRandomValidStrings(t *testing.T) {
     rand.Seed(time.Now().UnixNano())
     b := make([]byte, 200)
-    for i := 0; i < 1000; i++ {
+    for i := 0; i < 10000; i++ {
         n, err := rand.Read(b[:rand.Int()%len(b)])
         if err != nil {
             t.Fatal("get random data failed:", err)
@@ -156,11 +156,16 @@ func TestRandomValidStrings(t *testing.T) {
             t.Fatal("search data failed:",err)
         }
         x, _ := token.Interface()
-        if x.(string) != su {
+        st, ok := x.(string)
+        if !ok {
+            t.Fatalf("type mismatch, exp: %v, got: %v", su, x)
+        }
+        if st != su {
             t.Fatalf("string mismatch, exp: %v, got: %v", su, x)
         }
     }
 }
+
 
 func TestEmoji(t *testing.T) {
     var input = []byte(`{"utf8":"Example emoji, KO: \ud83d\udd13, \ud83c\udfc3 ` +

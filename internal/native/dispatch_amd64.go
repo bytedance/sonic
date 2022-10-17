@@ -51,6 +51,7 @@ var (
 
 var (
     S_skip_one    uintptr
+    S_skip_one_fast    uintptr
     S_skip_array  uintptr
     S_skip_object uintptr
     S_skip_number uintptr
@@ -84,6 +85,11 @@ func SkipOne(s *string, p *int, m *types.StateMachine, flags uint64) int
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
+func SkipOneFast(s *string, p *int) int
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
 func ValidateOne(s *string, p *int, m *types.StateMachine) int
 
 //go:nosplit
@@ -110,6 +116,7 @@ func useAVX() {
     S_vsigned     = avx.S_vsigned
     S_vunsigned   = avx.S_vunsigned
     S_skip_one    = avx.S_skip_one
+    S_skip_one_fast = avx.S_skip_one_fast
     S_skip_array  = avx.S_skip_array
     S_skip_object = avx.S_skip_object
     S_skip_number = avx.S_skip_number
@@ -129,6 +136,7 @@ func useAVX2() {
     S_vsigned     = avx2.S_vsigned
     S_vunsigned   = avx2.S_vunsigned
     S_skip_one    = avx2.S_skip_one
+    S_skip_one_fast = avx2.S_skip_one_fast
     S_skip_array  = avx2.S_skip_array
     S_skip_object = avx2.S_skip_object
     S_skip_number = avx2.S_skip_number
@@ -148,6 +156,7 @@ func useSSE() {
     S_vsigned = sse.S_vsigned
     S_vunsigned = sse.S_vunsigned
     S_skip_one = sse.S_skip_one
+    S_skip_one_fast = sse.S_skip_one_fast
     S_skip_array = sse.S_skip_array
     S_skip_object = sse.S_skip_object
     S_skip_number = sse.S_skip_number

@@ -1423,11 +1423,6 @@ check_index:
 #undef check_sidx
 #undef check_vidx
 
-long skip_one(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
-    fsm_init(m, FSM_VAL);
-    return fsm_exec(m, src, p, flags);
-}
-
 long skip_array(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
     fsm_init(m, FSM_ARR_0);
     return fsm_exec(m, src, p, flags);
@@ -1512,7 +1507,268 @@ long skip_number(const GoString *src, long *p) {
     return i;
 }
 
+long skip_one(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
+    fsm_init(m, FSM_VAL);
+    return fsm_exec(m, src, p, flags);
+}
+
 long validate_one(const GoString *src, long *p, StateMachine *m) {
     fsm_init(m, FSM_VAL);
     return fsm_exec(m, src, p, MASK_VALIDATE_STRING);
+}
+
+/* Faster skip api for sonic.ast */
+
+static always_inline uint64_t get_maskx64(const char *s, char c) {
+#if USE_AVX2
+    __m256i v0 = _mm256_loadu_si256((__m256i const *)s);
+    __m256i v1 = _mm256_loadu_si256((__m256i const *)(s + 32));
+    uint32_t m0 = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, _mm256_set1_epi8(c)));
+    uint32_t m1 = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, _mm256_set1_epi8(c))); 
+    return ((uint64_t)(m1) << 32) | (uint64_t)(m0);
+#else
+    __m128i v0 = _mm_loadu_si128((__m128i const*)s);
+    __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
+    __m128i v2 = _mm_loadu_si128((__m128i const*)(s + 32));
+    __m128i v3 = _mm_loadu_si128((__m128i const*)(s + 48));
+    uint32_t m0 = _mm_movemask_epi8(_mm_cmpeq_epi8(v0, _mm_set1_epi8(c)));
+    uint32_t m1 = _mm_movemask_epi8(_mm_cmpeq_epi8(v1, _mm_set1_epi8(c)));
+    uint32_t m2 = _mm_movemask_epi8(_mm_cmpeq_epi8(v2, _mm_set1_epi8(c)));
+    uint32_t m3 = _mm_movemask_epi8(_mm_cmpeq_epi8(v3, _mm_set1_epi8(c)));
+    return ((uint64_t)(m3) << 48) | ((uint64_t)(m2)  << 32) | ((uint64_t)(m1) << 16) | (uint64_t)(m0);
+#endif
+}
+
+static always_inline uint64_t get_maskx32(const char *s, char c) {
+#if USE_AVX2
+    __m256i v0 = _mm256_loadu_si256((__m256i const *)s);
+    uint64_t m0 = (unsigned)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, _mm256_set1_epi8(c)));
+    return m0;
+#else
+    __m128i v0 = _mm_loadu_si128((__m128i const*)s);
+    __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
+    uint64_t m0 = (unsigned)_mm_movemask_epi8(_mm_cmpeq_epi8(v0, _mm_set1_epi8(c)));
+    uint64_t m1 = (unsigned)_mm_movemask_epi8(_mm_cmpeq_epi8(v1, _mm_set1_epi8(c)));
+    return m0 | (m1 << 16);
+#endif
+}
+
+// get the string (besides in quote) mask
+static always_inline uint64_t get_string_maskx64(const char *s, uint64_t *prev_inquote, uint64_t *prev_bs) {
+    uint64_t escaped = *prev_bs;
+    uint64_t quote_mask = 0, bs_mask = 0;
+
+    /* read and get the quote or backslash bitmask */
+    quote_mask = get_maskx64(s, '"');
+    bs_mask = get_maskx64(s, '\\');
+
+    /* get the escaped bitmask */
+    if (bs_mask || *prev_bs) {
+        bs_mask &= ~(*prev_bs);
+        uint64_t follow_bs = (bs_mask << 1) | *prev_bs;
+        uint64_t bs_start = bs_mask & ~follow_bs;
+        uint64_t odd_start = bs_start & ODD_MASK;
+        uint64_t even_or_oc = add64(odd_start, bs_mask, prev_bs);
+        uint64_t even_or_escaped = (even_or_oc << 1) ^ EVEN_MASK;
+        escaped = follow_bs & even_or_escaped;
+    } else {
+        *prev_bs = 0;
+    }
+    quote_mask &= ~escaped;
+
+    /* get the inquote bitmask */
+    uint64_t inquote = _mm_cvtsi128_si64(_mm_clmulepi64_si128(_mm_set_epi64x(0, quote_mask), _mm_set1_epi8('\xFF'), 0));
+    inquote ^= *prev_inquote;
+    *prev_inquote = (uint64_t)(((int64_t)(inquote)) >> 63);
+    return inquote;
+}
+
+// get the next json structural, '}', ']' or ','。
+#if USE_AVX2
+static always_inline int get_structural_maskx32(const char *s) {
+    __m256i v = _mm256_loadu_si256((const void *)s);
+    __m256i e1 = _mm256_cmpeq_epi8(v, _mm256_set1_epi8('}'));
+    __m256i e2 = _mm256_cmpeq_epi8(v, _mm256_set1_epi8(']'));
+    __m256i e3 = _mm256_cmpeq_epi8(v, _mm256_set1_epi8(','));
+    __m256i sv = _mm256_or_si256(_mm256_or_si256(e1, e2), e3);
+    return _mm256_movemask_epi8(sv);
+}
+#endif
+
+static always_inline int get_structural_maskx16(const char *s) {
+    __m128i v = _mm_loadu_si128((const void *)s);
+    __m128i e1 = _mm_cmpeq_epi8(v, _mm_set1_epi8('}'));
+    __m128i e2 = _mm_cmpeq_epi8(v, _mm_set1_epi8(']'));
+    __m128i e3 = _mm_cmpeq_epi8(v, _mm_set1_epi8(','));
+    __m128i sv = _mm_or_si128(_mm_or_si128(e1, e2), e3);
+    return _mm_movemask_epi8(sv);
+}
+
+// skip the number at the next '}', ']' or ',' or EOF.
+static always_inline long skip_number_fast(const GoString *src, long *p) {
+    size_t nb = src->len - *p;
+    const char *s = src->buf + *p;
+    long vi = *p - 1;
+    int m = 0;
+
+#if USE_AVX2
+    while (likely(nb >= 32)) {
+        if ((m = get_structural_maskx32(s))) {
+            *p = s - src->buf + __builtin_ctzll(m);
+            return vi;
+        }
+        s += 32, nb -= 32;
+    }
+#endif
+
+    while (likely(nb >= 16)) {
+        if ((m = get_structural_maskx16(s))) {
+            *p = s - src->buf + __builtin_ctzll(m);
+            return vi;
+        }
+        s += 16, nb -= 16;
+    }
+
+    while (likely(nb > 0)) {
+        if (*s == '}' || *s == ']' || *s == ',') {
+            *p = s - src->buf;
+            return vi;
+        }
+        s++, nb--;
+    }
+    return -ERR_EOF;
+}
+
+static always_inline long skip_container_fast(const GoString *src, long *p, char lc, char rc) {
+    size_t nb = src->len - *p;
+    const char *s = src->buf + *p;
+    long vi = *p - 1;
+
+    uint64_t prev_inquote = 0, prev_bs = 0;
+    uint64_t lbrace = 0, rbrace = 0;
+    size_t lnum = 0, rnum = 0, last_lnum = 0;
+
+    while (likely(nb >= 64)) {
+        uint64_t inquote = get_string_maskx64(s, &prev_inquote, &prev_bs);
+        lbrace = get_maskx64(s, lc) & ~inquote;
+        rbrace = get_maskx64(s, rc) & ~inquote;
+
+        /* traverse each right brace */
+        last_lnum = lnum;
+        while (rbrace > 0) {
+            uint64_t lbrace_first = (rbrace - 1) & lbrace;
+            lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
+            bool is_closed = lnum <= rnum;
+            if (is_closed) {
+                *p = s + __builtin_ctzll(rbrace) + 1 - src->buf;
+                return vi;
+            }
+            rbrace &= (rbrace - 1); // clear the lowest right brace
+            rnum ++;
+        }
+        lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
+        s += 64, nb -= 64;
+    }
+
+in_str:
+    while (prev_inquote && nb > 0) {
+        s++, nb--;
+        if (*(s - 1) == '\\') {
+            s++, nb--;
+            continue;
+        }
+        if (*(s - 1) == '"') {
+            prev_inquote = 0;
+            goto out_str;
+        }
+    }
+
+out_str:
+    while (nb > 0) {
+        s++, nb--;
+        if (*(s - 1) == rc) {
+            if (lnum == rnum) {
+                *p = s - src->buf;
+                return vi;
+            }
+            rnum ++;
+        }
+        else if (*(s - 1) == '"') {
+            prev_inquote = 1;
+            goto in_str;
+        }
+        else if (*(s - 1) == lc) lnum ++;
+    }
+    return -ERR_EOF;
+}
+
+static always_inline long skip_object_fast(const GoString *src, long *p) {
+    return skip_container_fast(src, p, '{', '}');
+}
+
+static always_inline long skip_array_fast(const GoString *src, long *p) {
+    return skip_container_fast(src, p, '[', ']');
+}
+
+static always_inline long skip_string_fast(const GoString *src, long *p) {
+    const char* s = src->buf + *p;
+    size_t nb = src->len - *p;
+    long vi = *p - 1;
+    uint64_t prev_bs = 0, escaped;
+
+    while (likely(nb >= 32)) {
+        uint32_t quote = get_maskx32(s, '"');
+        uint32_t bs_mask = get_maskx32(s, '\\');
+        if (bs_mask || prev_bs) {
+            bs_mask &= ~prev_bs;
+            uint64_t follow_bs = (bs_mask << 1) | prev_bs;
+            uint64_t bs_start = bs_mask & ~follow_bs;
+            uint64_t odd_start = bs_start & ODD_MASK;
+            uint64_t even_or_oc = add32(odd_start, bs_mask, &prev_bs);
+            uint64_t even_or_escaped = (even_or_oc << 1) ^ EVEN_MASK;
+            escaped = follow_bs & even_or_escaped;
+            quote &= ~escaped;
+        }
+        if (quote) {
+            *p = s + __builtin_ctzll(quote) + 1 - src->buf;
+            return vi;
+        }
+        s += 32;
+        nb -= 32;
+    }
+
+    if (unlikely(prev_bs != 0)) {
+        if (nb == 0) return -ERR_EOF;
+        s++, nb--;
+    }
+
+    while (likely(nb > 0)) {
+        if (*s == '\\') {
+            s += 2, nb -= 2;
+            continue;
+        }
+        if (*s == '"') {
+            *p = s - src->buf + 1;
+            return vi;
+        }
+        s++, nb--;
+    }
+    return -ERR_EOF;
+}
+
+long skip_one_fast(const GoString *src, long *p) {
+    char c = advance_ns(src, p);
+    // set the start address
+    long vi = *p - 1;
+    switch (c) {
+        case '[': return skip_array_fast(src, p);
+        case '{': return skip_object_fast(src, p);
+        case '"': return skip_string_fast(src, p);
+        case '-': case '0' ... '9': return skip_number_fast(src, p);
+        case 't': case 'n': { if (*p + 3 < src->len) { *p += 3; } else { return -ERR_EOF; } }; break;
+        case 'f': { if (*p + 4 < src->len) { *p += 4; } else { return -ERR_EOF; } }; break;
+        case  0 : return -ERR_EOF;
+        default : return -ERR_INVAL;
+    }
+    return vi;
 }
