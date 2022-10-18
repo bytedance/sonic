@@ -28,7 +28,7 @@ import (
 
 const (
     _MinSlice = 16
-    _MaxStack = 4096 // 64k slots
+    _MaxStack = 4096 // 4k slots
     _MaxStackBytes = _MaxStack * _PtrBytes
     _MaxDigitNums = 800  // used in atof fallback algorithm
 )
