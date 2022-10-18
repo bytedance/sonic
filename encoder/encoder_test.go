@@ -524,7 +524,7 @@ type f64Bench struct {
     name    string
     float   float64
 }
-func BenchmarkEncoder_Float64(b *testing.B) {
+func BenchmarkEncode_Float64(b *testing.B) {
     var bench = []f64Bench{
         {"Zero", 0},
         {"ShortDecimal", 1000},
@@ -564,7 +564,7 @@ type f32Bench struct {
     name    string
     float   float32
 }
-func BenchmarkEncoder_Float32(b *testing.B) {
+func BenchmarkEncode_Float32(b *testing.B) {
     var bench = []f32Bench{
         {"Zero", 0},
         {"ShortDecimal", 1000},
