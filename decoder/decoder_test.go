@@ -87,7 +87,7 @@ func init() {
 }
 
 
-func TestSkipError(t *testing.T) {
+func TestSkipMismatchTypeError(t *testing.T) {
     println("TestSkipError")
     type skiptype struct {
         A int `json:"a"`
@@ -130,6 +130,62 @@ func TestSkipError(t *testing.T) {
     } else {
         t.Fatal("invalid error")
     }
+}
+
+type testStruct struct {
+    A int `json:"a"`
+    B string `json:"b"`
+}
+
+func TestClearMemWhenError(t *testing.T) {
+    var data = `{"a":1,"b":"1"]`
+    var v, v2 testStruct
+    _, err := decode(data, &v, false)
+    err2 := json.Unmarshal([]byte(data), &v2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, v2, v)
+
+    var z, z2 = new(testStruct), new(testStruct)
+    _, err = decode(data, z, false)
+    err2 = json.Unmarshal([]byte(data), z2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, z2, z)
+
+    var y, y2 *testStruct
+    _, err = decode(data, &y, false)
+    err2 = json.Unmarshal([]byte(data), &y2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, y2, y)
+
+    var x, x2 = new(testStruct), new(testStruct)
+    _, err = decode(data, &x, false)
+    err2 = json.Unmarshal([]byte(data), &x2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, x2, x)
+
+    var a, a2 interface{}
+    _, err = decode(data, &a, false)
+    err2 = json.Unmarshal([]byte(data), &a2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, a2, a)
+    
+    var b, b2 = new(interface{}), new(interface{})
+    _, err = decode(data, b, false)
+    err2 = json.Unmarshal([]byte(data), b2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, b2, b)
+
+    var c, c2 *interface{}
+    _, err = decode(data, &c, false)
+    err2 = json.Unmarshal([]byte(data), &c2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, c2, c)
+
+    var d, d2 = new(interface{}), new(interface{})
+    _, err = decode(data, &d, false)
+    err2 = json.Unmarshal([]byte(data), &d2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, d2, d)
 }
 
 func TestDecodeCorrupt(t *testing.T) {

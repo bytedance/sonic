@@ -1,3 +1,4 @@
+//go:build amd64
 // +build amd64
 
 /*
@@ -34,12 +35,13 @@ import (
     `strings`
     `testing`
     `time`
-    `unsafe`
     `unicode/utf8`
+    `unsafe`
 
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/assert`
 )
 
 type T struct {
@@ -1732,11 +1734,14 @@ func TestEmptyString(t *testing.T) {
         Number2 int `json:",string"`
     }
     data := `{"Number1":"1", "Number2":""}`
-    var t2 T2
+    var t2, t3 T2
     err := Unmarshal([]byte(data), &t2)
     if err == nil {
         t.Fatal("Decode: did not return error")
     }
+    err2 := json.Unmarshal([]byte(data), &t3)
+    assert.Equal(t, err == nil, err2 == nil)
+    assert.Equal(t, t2, t3)
     if t2.Number1 != 1 {
         t.Fatal("Decode: did not set Number1")
     }
