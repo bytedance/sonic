@@ -1115,6 +1115,7 @@ func TestMarshalEmbeds(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
     for i, tt := range unmarshalTests {
+        println(tt.in)
         if !json.Valid([]byte(tt.in)) {
             continue
         }

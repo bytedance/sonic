@@ -301,7 +301,9 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
 
 func (self *_Assembler) _asm_OP_save_fallback(ins *_Instr) {
     self.Emit("MOVQ", _IC, _VAR_up)
-    self.XMove("LEAQ", ins.vi(), _VAR_back_pc)
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Xref(ins.vi(), 4)
+    self.Emit("MOVQ", _R9, _VAR_back_pc)
 }
 
 func (self *_Assembler) _asm_OP_clear_fallback(ins *_Instr) {
@@ -544,7 +546,7 @@ func (self *_Assembler) parsing_error() {
     self.Link(_LB_char_1_error)                                         // _char_1_error:
     self.Emit("ADDQ" , jit.Imm(1), _IC)                                 // ADDQ    $1, IC
     self.Link(_LB_char_0_error)                                         // _char_0_error:
-    // self.try_unwind()
+    self.try_unwind()
     self.Emit("MOVL" , jit.Imm(int64(types.ERR_INVALID_CHAR)), _EP)     // MOVL    ${types.ERR_INVALID_CHAR}, EP
     self.Link(_LB_parsing_error)                                        // _parsing_error:
     self.Emit("MOVQ" , _EP, _DI)                                        // MOVQ    EP, DI
@@ -962,14 +964,17 @@ var (
 func (self *_Assembler) try_unwind() {
     // self.print_reg(1, _EP, _IC)
     self.Emit("XCHGQ", _VAR_up, _IC) 
-    // self.Byte(0xcc)
     // self.print_reg(2, _EP, _IC)
     self.Emit("TESTQ", _IC, _IC)
     self.Sjmp("JZ", "_try_unwind_field_end")
     // self.print_reg(3, _VAR_up, _IC)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_up)
     self.call_sf(_F_skip_one)                                   // CALL_SF   skip_one
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ     AX, AX
-    self.Sjmp("JNS"   , _LB_parsing_error_v)                     // JS        _parse_error_v
+    self.Sjmp("JS"   , _LB_parsing_error_v)                     // JS        _parse_error_v
+    self.Emit("MOVQ", _VAR_back_pc, _R9)
+    // self.Byte(0xcc)
+    self.Rjmp("JMP", _R9)
     self.Link("_try_unwind_field_end")
     // self.print_reg(4, _EP, _IC)
     self.Emit("XCHGQ", _IC, _VAR_up)
