@@ -254,13 +254,15 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "fals",
         err: SyntaxError{Src: `fals`, Pos: 4, Code: types.ERR_EOF},
         val: new(bool),
-    }, {
+    },
+     {
         key: "_OP_bool/error_invalid_char_1",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "falxe",
         err: SyntaxError{Src: `falxe`, Pos: 3, Code: types.ERR_INVALID_CHAR},
         val: new(bool),
-    }, {
+    }, 
+    {
         key: "_OP_bool/error_invalid_char_2",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "falsx",

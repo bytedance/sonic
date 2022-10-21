@@ -156,6 +156,26 @@ func (self *BaseAssembler) Sjmp(op string, to string) {
     self.pb.Append(p)
 }
 
+// XMove emits a instruct using pc offset as from
+func (self *BaseAssembler) XMove(op string, from int, to obj.Addr) {
+    sf := _LB_jump_pc + strconv.Itoa(from)
+    p := self.pb.New()
+    p.As = As(op)
+    p.To = to
+
+    /* placeholder substitution */
+    if strings.Contains(sf, "{n}") {
+        sf = strings.ReplaceAll(sf, "{n}", strconv.Itoa(self.i))
+    }
+
+    /* check for backward jumps */
+    if v, ok := self.labels[sf]; ok {
+        p.From.Val = v
+    } else {
+        self.pendings[sf] = append(self.pendings[sf], p)
+    }
+}
+
 func (self *BaseAssembler) Rjmp(op string, to obj.Addr) {
     p := self.pb.New()
     p.To = to

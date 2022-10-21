@@ -69,8 +69,8 @@ import (
 const (
     _FP_args   = 72     // 72 bytes to pass and spill register arguements
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
-    _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
-    _FP_locals = 120     // 112 bytes for local variables
+    _FP_saves  = 128     // 48 bytes for saving the registers before CALL instructions
+    _FP_locals = 136     // 136  bytes for local variables
 )
 
 const (
@@ -143,7 +143,6 @@ var (
 )
 
 
-
 var (
     _ARG_s  = _ARG_sp
     _ARG_sp = jit.Ptr(_SP, _FP_base + 0)
@@ -190,6 +189,12 @@ var (
 )
 
 var _VAR_fl = jit.Ptr(_SP, _FP_fargs + _FP_saves + 112)
+
+// unwind position for json value skip
+var (
+    _VAR_up = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 120)
+    _VAR_back_pc = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 128)
+)
 
 type _Assembler struct {
     jit.BaseAssembler
@@ -290,6 +295,18 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_recurse          : (*_Assembler)._asm_OP_recurse,
     _OP_goto             : (*_Assembler)._asm_OP_goto,
     _OP_switch           : (*_Assembler)._asm_OP_switch,
+    _OP_save_fallback    : (*_Assembler)._asm_OP_save_fallback,
+    _OP_clear_fallback    : (*_Assembler)._asm_OP_clear_fallback,
+}
+
+func (self *_Assembler) _asm_OP_save_fallback(ins *_Instr) {
+    self.Emit("MOVQ", _IC, _VAR_up)
+    self.XMove("LEAQ", ins.vi(), _VAR_back_pc)
+}
+
+func (self *_Assembler) _asm_OP_clear_fallback(ins *_Instr) {
+    self.Emit("MOVQ", jit.Imm(0), _VAR_up)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_back_pc)
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -343,6 +360,7 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_up)          
     // initialize digital buffer first
     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
     self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)        // LEAQ _DbufOffset(ST), AX
@@ -526,6 +544,7 @@ func (self *_Assembler) parsing_error() {
     self.Link(_LB_char_1_error)                                         // _char_1_error:
     self.Emit("ADDQ" , jit.Imm(1), _IC)                                 // ADDQ    $1, IC
     self.Link(_LB_char_0_error)                                         // _char_0_error:
+    // self.try_unwind()
     self.Emit("MOVL" , jit.Imm(int64(types.ERR_INVALID_CHAR)), _EP)     // MOVL    ${types.ERR_INVALID_CHAR}, EP
     self.Link(_LB_parsing_error)                                        // _parsing_error:
     self.Emit("MOVQ" , _EP, _DI)                                        // MOVQ    EP, DI
@@ -934,11 +953,27 @@ func (self *_Assembler) mapassign_utext(t reflect.Type, addressable bool) {
 /** External Unmarshaler Routines **/
 
 var (
-    _F_skip_one = jit.Imm(int64(native.S_skip_one))
+    _F_skip_one    = jit.Imm(int64(native.S_skip_one))
     _F_skip_array  = jit.Imm(int64(native.S_skip_array))
     _F_skip_object = jit.Imm(int64(native.S_skip_object))
     _F_skip_number = jit.Imm(int64(native.S_skip_number))
 )
+
+func (self *_Assembler) try_unwind() {
+    // self.print_reg(1, _EP, _IC)
+    self.Emit("XCHGQ", _VAR_up, _IC) 
+    // self.Byte(0xcc)
+    // self.print_reg(2, _EP, _IC)
+    self.Emit("TESTQ", _IC, _IC)
+    self.Sjmp("JZ", "_try_unwind_field_end")
+    // self.print_reg(3, _VAR_up, _IC)
+    self.call_sf(_F_skip_one)                                   // CALL_SF   skip_one
+    self.Emit("TESTQ", _AX, _AX)                                // TESTQ     AX, AX
+    self.Sjmp("JNS"   , _LB_parsing_error_v)                     // JS        _parse_error_v
+    self.Link("_try_unwind_field_end")
+    // self.print_reg(4, _EP, _IC)
+    self.Emit("XCHGQ", _IC, _VAR_up)
+}
 
 func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool) {
     self.call_sf(_F_skip_one)                                   // CALL_SF   skip_one
@@ -1678,13 +1713,6 @@ func (self *_Assembler) _asm_OP_switch(p *_Instr) {
     /* default case */
     self.Link("_default_{n}")
     self.NOP()
-}
-
-func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
-    self.Emit("MOVQ", jit.Imm(int64(p2.op())),  _CX)// MOVQ $(p2.op()), 16(SP)
-    self.Emit("MOVQ", jit.Imm(int64(p1.op())),  _BX) // MOVQ $(p1.op()), 8(SP)
-    self.Emit("MOVQ", jit.Imm(int64(i)),  _AX)       // MOVQ $(i), (SP)
-    self.call_go(_F_println)
 }
 
 //go:linkname _runtime_writeBarrier runtime.writeBarrier

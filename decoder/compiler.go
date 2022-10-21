@@ -94,6 +94,8 @@ const (
     _OP_recurse
     _OP_goto
     _OP_switch
+    _OP_save_fallback
+    _OP_clear_fallback
 )
 
 const (
@@ -840,6 +842,7 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
     p.chr(_OP_match_char, ':')
     p.tab(_OP_switch, sw)
     p.add(_OP_object_next)
+    // the end of every loop
     y0 := p.pc()
     p.add(_OP_lspace)
     y1 := p.pc()
@@ -867,6 +870,9 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
         sw[i] = p.pc()
         fm.Set(f.Name, i)
 
+        // store current json position to VAR_up
+        p.int(_OP_save_fallback, y0)
+
         /* index to the field */
         for _, o := range f.Path {
             if p.int(_OP_index, int(o.Size)); o.Kind == resolver.F_deref {
@@ -880,6 +886,9 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
         } else {
             self.compileStructFieldStr(p, sp + 1, f.Type)
         }
+
+        // clear current json position to VAR_up
+        p.add(_OP_clear_fallback)
 
         /* load the state, and try next field */
         p.add(_OP_load)
