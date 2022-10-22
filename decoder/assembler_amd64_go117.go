@@ -70,7 +70,7 @@ const (
     _FP_args   = 72     // 72 bytes to pass and spill register arguements
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 128     // 48 bytes for saving the registers before CALL instructions
-    _FP_locals = 136     // 136  bytes for local variables
+    _FP_locals = 152     // 152  bytes for local variables
 )
 
 const (
@@ -190,10 +190,11 @@ var (
 
 var _VAR_fl = jit.Ptr(_SP, _FP_fargs + _FP_saves + 112)
 
-// unwind position for json value skip
 var (
-    _VAR_up = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 120)
-    _VAR_back_pc = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 128)
+    _VAR_fb_pos  = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 120)
+    _VAR_fb_pc   = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 128)
+    _VAR_ET      = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 136)
+    _VAR_EP      = jit.Ptr(_SP,  _FP_fargs + _FP_saves + 144)
 )
 
 type _Assembler struct {
@@ -296,19 +297,24 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_goto             : (*_Assembler)._asm_OP_goto,
     _OP_switch           : (*_Assembler)._asm_OP_switch,
     _OP_save_fallback    : (*_Assembler)._asm_OP_save_fallback,
-    _OP_clear_fallback    : (*_Assembler)._asm_OP_clear_fallback,
+    _OP_save_type        : (*_Assembler)._asm_OP_save_type,
+    _OP_clear_fallback   : (*_Assembler)._asm_OP_clear_fallback,
 }
 
 func (self *_Assembler) _asm_OP_save_fallback(ins *_Instr) {
-    self.Emit("MOVQ", _IC, _VAR_up)
+    self.Emit("MOVQ", _IC, _VAR_fb_pos)
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
     self.Xref(ins.vi(), 4)
-    self.Emit("MOVQ", _R9, _VAR_back_pc)
+    self.Emit("MOVQ", _R9, _VAR_fb_pc)
+}
+
+func (self *_Assembler) _asm_OP_save_type(ins *_Instr) {
+    self.Emit("MOVQ", jit.Type(ins.vt()), _VAR_ET)
 }
 
 func (self *_Assembler) _asm_OP_clear_fallback(ins *_Instr) {
-    self.Emit("MOVQ", jit.Imm(0), _VAR_up)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_back_pc)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_fb_pos)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_fb_pc)
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -330,7 +336,11 @@ func (self *_Assembler) instrs() {
 func (self *_Assembler) epilogue() {
     self.Mark(len(self.p))
     self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
-    self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
+    self.Emit("MOVQ", _VAR_EP, _EP)                 // MOVQ EP, VAR_EP
+    self.Emit("TESTQ", _EP, _EP)                    // TESTQ EP, EP
+    self.Sjmp("JZ", _LB_error)
+    self.Emit("MOVQ", _VAR_ET, _ET)                 // MOVQ ET, VAR_ET
+    self.call_go(_F_error_type)                 // CALL_GO error_type
     self.Link(_LB_error)                            // _error:
     self.Emit("MOVQ", _EP, _CX)                     // MOVQ BX, CX
     self.Emit("MOVQ", _ET, _BX)                     // MOVQ AX, BX
@@ -362,7 +372,10 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_up)          
+    self.Emit("MOVQ", jit.Imm(0), _VAR_fb_pos)          
+    self.Emit("MOVQ", jit.Imm(0), _VAR_fb_pc)          
+    self.Emit("MOVQ", jit.Imm(0), _VAR_ET)          
+    self.Emit("MOVQ", jit.Imm(0), _VAR_EP)          
     // initialize digital buffer first
     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
     self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)        // LEAQ _DbufOffset(ST), AX
@@ -546,7 +559,7 @@ func (self *_Assembler) parsing_error() {
     self.Link(_LB_char_1_error)                                         // _char_1_error:
     self.Emit("ADDQ" , jit.Imm(1), _IC)                                 // ADDQ    $1, IC
     self.Link(_LB_char_0_error)                                         // _char_0_error:
-    self.try_unwind()
+    self.try_fallback()
     self.Emit("MOVL" , jit.Imm(int64(types.ERR_INVALID_CHAR)), _EP)     // MOVL    ${types.ERR_INVALID_CHAR}, EP
     self.Link(_LB_parsing_error)                                        // _parsing_error:
     self.Emit("MOVQ" , _EP, _DI)                                        // MOVQ    EP, DI
@@ -961,23 +974,22 @@ var (
     _F_skip_number = jit.Imm(int64(native.S_skip_number))
 )
 
-func (self *_Assembler) try_unwind() {
+func (self *_Assembler) try_fallback() {
     // self.print_reg(1, _EP, _IC)
-    self.Emit("XCHGQ", _VAR_up, _IC) 
-    // self.print_reg(2, _EP, _IC)
+    self.Emit("XCHGQ", _VAR_fb_pos, _IC) 
     self.Emit("TESTQ", _IC, _IC)
     self.Sjmp("JZ", "_try_unwind_field_end")
-    // self.print_reg(3, _VAR_up, _IC)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_up)
     self.call_sf(_F_skip_one)                                   // CALL_SF   skip_one
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ     AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)                     // JS        _parse_error_v
-    self.Emit("MOVQ", _VAR_back_pc, _R9)
+    self.Emit("ORQ"  , _AX, _AX)                                 // ORQ      AX, AX
+    self.Emit("XCHGQ", _AX, _VAR_fb_pos)
+    self.Emit("MOVQ", _AX, _VAR_EP)
+    self.Emit("MOVQ", _VAR_fb_pc, _R9)
     // self.Byte(0xcc)
     self.Rjmp("JMP", _R9)
     self.Link("_try_unwind_field_end")
-    // self.print_reg(4, _EP, _IC)
-    self.Emit("XCHGQ", _IC, _VAR_up)
+    self.Emit("XCHGQ", _IC, _VAR_fb_pos)
 }
 
 func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool) {
@@ -1124,6 +1136,7 @@ func (self *_Assembler) _asm_OP_any(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_dyn(p *_Instr) {
     self.Emit("MOVQ"   , jit.Type(p.vt()), _ET)             // MOVQ    ${p.vt()}, ET
+    self.Emit("MOVQ"   , _IC, _EP)                          // MOVQ    (VP), AX
     self.Emit("CMPQ"   , jit.Ptr(_VP, 8), jit.Imm(0))       // CMPQ    8(VP), $0
     self.Sjmp("JE"     , _LB_type_error)                    // JE      _type_error
     self.Emit("MOVQ"   , jit.Ptr(_VP, 0), _CX)              // MOVQ    (VP), CX

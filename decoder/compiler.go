@@ -95,6 +95,7 @@ const (
     _OP_goto
     _OP_switch
     _OP_save_fallback
+    _OP_save_type
     _OP_clear_fallback
 )
 
@@ -870,8 +871,9 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
         sw[i] = p.pc()
         fm.Set(f.Name, i)
 
-        // store current json position to VAR_up
+        // store current position+type+y0 to stack for fallback
         p.int(_OP_save_fallback, y0)
+        p.rtt(_OP_save_type, f.Type)
 
         /* index to the field */
         for _, o := range f.Path {
@@ -887,7 +889,7 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
             self.compileStructFieldStr(p, sp + 1, f.Type)
         }
 
-        // clear current json position to VAR_up
+        // clear fallback variables
         p.add(_OP_clear_fallback)
 
         /* load the state, and try next field */
