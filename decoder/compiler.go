@@ -842,8 +842,8 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
     p.tab(_OP_switch, sw)
-    p.add(_OP_object_next)
     // the end of every loop
+    p.add(_OP_object_next)
     y0 := p.pc()
     p.add(_OP_lspace)
     y1 := p.pc()

@@ -20,6 +20,7 @@ import (
     `encoding/base64`
     `encoding/json`
     `reflect`
+    `runtime`
     `testing`
     `unsafe`
 
@@ -30,6 +31,38 @@ import (
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
 )
+
+func TestSkipError(t *testing.T) {
+    type skiptype struct {
+        A int `json:"a"`
+        B string `json:"b"`
+
+		Pass int `json:"pass"`
+
+        C struct{
+            D struct{
+                E float32 `json:"e"`
+            } `json:"d"`
+			Pass int `json:"pass"`
+		} `json:"c"`
+		
+        E bool `json:"e"`
+        F []int `json:"f"`
+        G map[string]int `json:"g"`
+
+    }
+    var obj, obj2 = &skiptype{}, &skiptype{}
+    var data = `{"a":"","b":1,"c":{"d":true,"pass":1},"e":{},"f":"","g":[],"pass":1}`
+    d := NewDecoder(data)
+    err := d.Decode(obj)
+	// println("decoder out: ", err.Error())
+    err2 := json.Unmarshal([]byte(data), obj2)
+    assert.Equal(t, err2 == nil, err == nil)
+    // assert.Equal(t, len(data), d.i)
+    assert.Equal(t, obj2, obj)
+	runtime.KeepAlive(obj)
+	runtime.KeepAlive(data)
+}
 
 func TestAssembler_PrologueAndEpilogue(t *testing.T) {
     a := newAssembler(nil)

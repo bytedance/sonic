@@ -100,7 +100,9 @@ const (
     _LB_base64_error    = "_base64_error"
     _LB_unquote_error   = "_unquote_error"
     _LB_parsing_error   = "_parsing_error"
+    _LB_parsing_error_0   = "_parsing_error_0"
     _LB_parsing_error_v = "_parsing_error_v"
+    _LB_parsing_error_v_0 = "_parsing_error_v_0"
 )
 
 const (
@@ -306,15 +308,16 @@ func (self *_Assembler) _asm_OP_save_fallback(ins *_Instr) {
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
     self.Xref(ins.vi(), 4)
     self.Emit("MOVQ", _R9, _VAR_fb_pc)
+    self.print_reg(1, _IC, _R9)
 }
 
 func (self *_Assembler) _asm_OP_save_type(ins *_Instr) {
     self.Emit("MOVQ", jit.Type(ins.vt()), _VAR_ET)
+    self.print_reg(2, _IC, jit.Type(ins.vt()))
 }
 
 func (self *_Assembler) _asm_OP_clear_fallback(ins *_Instr) {
     self.Emit("MOVQ", jit.Imm(0), _VAR_fb_pos)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_fb_pc)
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -336,11 +339,13 @@ func (self *_Assembler) instrs() {
 func (self *_Assembler) epilogue() {
     self.Mark(len(self.p))
     self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
+    self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
     self.Emit("MOVQ", _VAR_EP, _EP)                 // MOVQ EP, VAR_EP
     self.Emit("TESTQ", _EP, _EP)                    // TESTQ EP, EP
     self.Sjmp("JZ", _LB_error)
     self.Emit("MOVQ", _VAR_ET, _ET)                 // MOVQ ET, VAR_ET
     self.call_go(_F_error_type)                 // CALL_GO error_type
+    // self.Byte(0xcc)
     self.Link(_LB_error)                            // _error:
     self.Emit("MOVQ", _EP, _CX)                     // MOVQ BX, CX
     self.Emit("MOVQ", _ET, _BX)                     // MOVQ AX, BX
@@ -531,6 +536,10 @@ func (self *_Assembler) parsing_error() {
     self.Link(_LB_unquote_error)                                        // _unquote_error:
     self.Emit("SUBQ" , _VAR_sr, _SI)                                    // SUBQ    sr, SI
     self.Emit("SUBQ" , _SI, _IC)                                        // SUBQ    IL, IC
+    self.Link(_LB_parsing_error_v_0)                                      // _parsing_error_v:
+    self.Emit("MOVQ" , _AX, _EP)                                        // MOVQ    AX, EP
+    self.Emit("NEGQ" , _EP)                                             // NEGQ    EP
+    self.Sjmp("JMP"  , _LB_parsing_error_0)                               // JMP     _parsing_error
     self.Link(_LB_parsing_error_v)                                      // _parsing_error_v:
     self.Emit("MOVQ" , _AX, _EP)                                        // MOVQ    AX, EP
     self.Emit("NEGQ" , _EP)                                             // NEGQ    EP
@@ -559,8 +568,9 @@ func (self *_Assembler) parsing_error() {
     self.Link(_LB_char_1_error)                                         // _char_1_error:
     self.Emit("ADDQ" , jit.Imm(1), _IC)                                 // ADDQ    $1, IC
     self.Link(_LB_char_0_error)                                         // _char_0_error:
-    self.try_fallback()
     self.Emit("MOVL" , jit.Imm(int64(types.ERR_INVALID_CHAR)), _EP)     // MOVL    ${types.ERR_INVALID_CHAR}, EP
+    self.Link(_LB_parsing_error_0)
+    self.try_fallback()
     self.Link(_LB_parsing_error)                                        // _parsing_error:
     self.Emit("MOVQ" , _EP, _DI)                                        // MOVQ    EP, DI
     self.Emit("MOVQ",  _ARG_sp, _AX)                                     // MOVQ  sp, AX
@@ -622,7 +632,7 @@ var (
 func (self *_Assembler) check_err() {
     self.Emit("MOVQ" , _VAR_st_Vt, _AX)         // MOVQ st.Vt, AX
     self.Emit("TESTQ", _AX, _AX)                // CMPQ AX, ${native.V_STRING}
-    self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
+    self.Sjmp("JS"   , _LB_parsing_error_v_0)     // JNE  _parsing_error_v
 }
 
 func (self *_Assembler) check_eof(d int64) {
@@ -640,6 +650,8 @@ func (self *_Assembler) parse_string() {
     self.Emit("MOVQ", _ARG_fv, _CX)
     self.call_vf(_F_vstring)
     self.check_err()
+    self.Emit("MOVQ", _VAR_st_Iv, _CX)
+    self.print_reg(5, _IC, _CX)
 }
 
 func (self *_Assembler) parse_number() {
@@ -975,21 +987,23 @@ var (
 )
 
 func (self *_Assembler) try_fallback() {
-    // self.print_reg(1, _EP, _IC)
     self.Emit("XCHGQ", _VAR_fb_pos, _IC) 
+    self.print_reg(3, _IC, _EP)
+    self.Emit("XCHGQ", _EP, _VAR_EP)
     self.Emit("TESTQ", _IC, _IC)
     self.Sjmp("JZ", "_try_unwind_field_end")
     self.call_sf(_F_skip_one)                                   // CALL_SF   skip_one
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ     AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)                     // JS        _parse_error_v
-    self.Emit("ORQ"  , _AX, _AX)                                 // ORQ      AX, AX
+    self.Emit("XORL"  , _AX, _AX)                                 // ORQ      AX, AX
     self.Emit("XCHGQ", _AX, _VAR_fb_pos)
     self.Emit("MOVQ", _AX, _VAR_EP)
     self.Emit("MOVQ", _VAR_fb_pc, _R9)
-    // self.Byte(0xcc)
+    self.print_reg(4, _AX, _R9)
     self.Rjmp("JMP", _R9)
     self.Link("_try_unwind_field_end")
     self.Emit("XCHGQ", _IC, _VAR_fb_pos)
+    self.Emit("XCHGQ", _EP, _VAR_EP)
 }
 
 func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool) {
@@ -1153,6 +1167,7 @@ func (self *_Assembler) _asm_OP_dyn(p *_Instr) {
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {
     self.parse_string()                                     // PARSE   STRING
     self.unquote_once(jit.Ptr(_VP, 0), jit.Ptr(_VP, 8), false, true)     // UNQUOTE once, (VP), 8(VP)
+    // self.Byte(0xcc)
 }
 
 func (self *_Assembler) _asm_OP_bin(_ *_Instr) {

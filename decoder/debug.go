@@ -110,10 +110,10 @@ func (self *_Assembler) print_op(i int, p1 *_Instr, p2 *_Instr) {
 }
 
 func (self *_Assembler) print_reg(i int, b, c obj.Addr) {
-    self.save(_REG_debug...)   
-    self.Emit("MOVQ", c,  _CX)
-    self.Emit("MOVQ", b,  _BX) 
-    self.Emit("MOVQ", jit.Imm(int64(i)),  _AX)       
-    self.call(_F_print)
-    self.load(_REG_debug...)   
+    // self.save(_REG_debug...)   
+    // self.Emit("MOVQ", c,  _CX)
+    // self.Emit("MOVQ", b,  _BX) 
+    // self.Emit("MOVQ", jit.Imm(int64(i)),  _AX)       
+    // self.call(_F_print)
+    // self.load(_REG_debug...)   
 }
