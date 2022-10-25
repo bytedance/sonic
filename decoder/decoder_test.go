@@ -186,6 +186,30 @@ func TestClearMemWhenError(t *testing.T) {
     err2 = json.Unmarshal([]byte(data), &d2)
     assert.Equal(t, err2 == nil, err == nil)
     assert.Equal(t, d2, d)
+
+    var e, e2 map[string]interface{}
+    _, err = decode(data, &e, false)
+    err2 = json.Unmarshal([]byte(data), &e2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, e2, e)
+
+    var f, f2 = new(map[string]interface{}), new(map[string]interface{})
+    _, err = decode(data, &f, false)
+    err2 = json.Unmarshal([]byte(data), &f2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, f2, f)
+
+    var g, g2 = new(map[string]interface{}), new(map[string]interface{})
+    _, err = decode(data, g, false)
+    err2 = json.Unmarshal([]byte(data), g2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, g2, g)
+
+    var h, h2 *map[string]interface{}
+    _, err = decode(data, &h, false)
+    err2 = json.Unmarshal([]byte(data), &h2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, h2, h)
 }
 
 func TestDecodeCorrupt(t *testing.T) {
