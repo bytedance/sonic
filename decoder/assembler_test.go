@@ -12,24 +12,65 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package decoder
 
 import (
-    `encoding/base64`
-    `encoding/json`
-    `reflect`
-    `testing`
-    `unsafe`
+	"encoding/base64"
+	"encoding/json"
+	"reflect"
+	"strings"
+	"testing"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestSkipError(t *testing.T) {
+    println("TestSkipError")
+    type skiptype struct {
+        A int `json:"a"`
+        B string `json:"b"`
+
+		Pass int `json:"pass"`
+
+        C struct{
+            D struct{
+                E float32 `json:"e"`
+            } `json:"d"`
+
+			Pass int `json:"pass"`
+
+		} `json:"c"`
+        E bool `json:"e"`
+        F []int `json:"f"`
+        G map[string]int `json:"g"`
+
+        Pass2 int `json:"pass2"`
+    }
+    var obj, obj2 = &skiptype{}, &skiptype{}
+    var data = `{"a":"","b":1,"c":{"d":true,"pass":1},"e":{},"f":"","g":[],"pass":1,"pass2":1}`
+    d := NewDecoder(data)
+    err := d.Decode(obj)
+	// println("decoder out: ", err.Error())
+    err2 := json.Unmarshal([]byte(data), obj2)
+    assert.Equal(t, err2 == nil, err == nil)
+    // assert.Equal(t, len(data), d.i)
+    assert.Equal(t, obj2, obj)
+    if te, ok := err.(*MismatchTypeError); ok {
+        assert.Equal(t, reflect.TypeOf(obj.G), te.Type)
+        assert.Equal(t, strings.Index(data, `"g":[`)+4, te.Pos)
+        println(err.Error())
+    } else {
+        t.Fatal("invalid error")
+    }
+}
 
 func TestAssembler_PrologueAndEpilogue(t *testing.T) {
     a := newAssembler(nil)

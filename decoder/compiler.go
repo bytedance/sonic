@@ -94,6 +94,11 @@ const (
     _OP_recurse
     _OP_goto
     _OP_switch
+    _OP_check_bool
+    _OP_check_bytes
+    _OP_check_num
+    _OP_check_char_0
+    _OP_dismatch_err
 )
 
 const (
@@ -165,6 +170,11 @@ var _OpNames = [256]string {
     _OP_recurse          : "recurse",
     _OP_goto             : "goto",
     _OP_switch           : "switch",
+    _OP_check_bool       : "check_bool",
+    _OP_check_bytes     : "check_bytes",
+    _OP_check_num       : "check_num",
+    _OP_check_char_0   : "check_char_0",
+    _OP_dismatch_err  : "dismatch_err",
 }
 
 func (self _Op) String() string {
@@ -559,6 +569,8 @@ func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
+    // check first char mathes the type
+    skip := self.checkType(p, vt)
     switch vt.Kind() {
         case reflect.Bool      : self.compilePrimitive (p, _OP_bool)
         case reflect.Int       : self.compilePrimitive (p, _OP_int())
@@ -582,6 +594,9 @@ func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
         case reflect.Slice     : self.compileSlice     (p, sp, vt.Elem())
         case reflect.Struct    : self.compileStruct    (p, sp, vt)
         default                : panic                 (&json.UnmarshalTypeError{Type: vt})
+    }
+    if skip >= 0 {
+        p.pin(skip)
     }
 }
 
@@ -891,6 +906,45 @@ end_of_object:
     p.pin(y1)
     p.add(_OP_drop)
     p.pin(n)
+}
+
+func (self *_Compiler) checkType(p *_Program, vt reflect.Type) int {
+    if k := vt.Kind(); k == reflect.Ptr {
+        return self.checkType(p, vt.Elem())
+    } else if k == reflect.Interface {
+        return -1
+    } else {
+        x := p.pc()
+        switch vt.Kind() {
+            case reflect.Bool      : p.add(_OP_check_bool)
+            case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Float32, reflect.Float64: 
+                p.chr(_OP_check_num, 1)
+            case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr: 
+                p.chr(_OP_check_num, 0)
+            case reflect.String    : 
+                if vt == jsonNumberType {
+                    p.chr(_OP_check_num, 2)
+                }else {
+                    p.chr(_OP_check_char_0, '"')
+                }
+            case reflect.Array     : p.chr(_OP_check_char_0, '[')
+            case reflect.Map       : p.chr(_OP_check_char_0, '{')
+            case reflect.Slice     : 
+                if vt == bytesType {
+                    p.chr(_OP_check_bytes, '"')
+                } else {
+                    p.chr(_OP_check_char_0, '[')
+                }
+            case reflect.Struct    : p.chr(_OP_check_char_0, '{')
+            default                : panic(&json.UnmarshalTypeError{Type: vt})
+        }
+        p.rtt(_OP_dismatch_err, vt)
+        p.add(_OP_object_next)
+        y := p.pc()
+        p.add(_OP_goto)
+        p.pin(x)
+        return y
+    }
 }
 
 func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Type) {
