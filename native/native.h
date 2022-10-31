@@ -67,10 +67,60 @@
 #define is_infinity(v)  ((as_uint64v(&v) << 1) == 0xFFE0000000000000)
 
 typedef struct {
-    char * buf;
+    void * buf;
     size_t len;
     size_t cap;
 } GoSlice;
+
+static const uint8_t GO_KIND_MASK = (1 << 5) - 1;
+typedef enum {
+	Invalid = 0,
+	Bool,
+	Int,
+	Int8,
+	Int16,
+	Int32,
+	Int64,
+	Uint,
+	Uint8,
+	Uint16,
+	Uint32,
+	Uint64,
+	Uintptr,
+	Float32,
+	Float64,
+	Complex64,
+	Complex128,
+	Array,
+	Chan,
+	Func,
+	Interface,
+	Map,
+	Pointer,
+	Slice,
+	String,
+	Struct,
+	UnsafePointer,
+} GoKind;
+
+typedef struct {
+    uint64_t size;
+    uint64_t ptr_data;
+    uint32_t hash;
+    uint8_t  flags;
+    uint8_t  align;
+    uint8_t  filed_align;
+    uint8_t  kind_flags;
+    uint64_t traits;
+    void*    gc_data;
+    int32_t  str;
+    int32_t  ptr_to_self;
+} GoType;
+
+typedef struct {
+    GoType * type;
+    void   * value;
+} GoIface;
 
 typedef struct {
     const char * buf;
@@ -129,4 +179,6 @@ ssize_t utf8_validate(const char *sp, ssize_t nb);
 long validate_string(const GoString *src, long *p);
 long validate_one(const GoString *src, long *p, StateMachine *m);
 
+long skip_one_fast(const GoString *src, long *p);
+long get_by_path(const GoString *src, long *p, const GoSlice *path);
 #endif

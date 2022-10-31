@@ -1604,7 +1604,7 @@ static always_inline int get_structural_maskx16(const char *s) {
     return _mm_movemask_epi8(sv);
 }
 
-// skip the number at the next '}', ']' or ',' or EOF.
+// skip the number at the next '}', ']' or ',' or the ending of json.
 static always_inline long skip_number_fast(const GoString *src, long *p) {
     size_t nb = src->len - *p;
     const char *s = src->buf + *p;
@@ -1636,7 +1636,8 @@ static always_inline long skip_number_fast(const GoString *src, long *p) {
         }
         s++, nb--;
     }
-    return -ERR_EOF;
+    *p = s - src->buf;
+    return vi;
 }
 
 static always_inline long skip_container_fast(const GoString *src, long *p, char lc, char rc) {
@@ -1768,7 +1769,191 @@ long skip_one_fast(const GoString *src, long *p) {
         case 't': case 'n': { if (*p + 3 < src->len) { *p += 3; } else { return -ERR_EOF; } }; break;
         case 'f': { if (*p + 4 < src->len) { *p += 4; } else { return -ERR_EOF; } }; break;
         case  0 : return -ERR_EOF;
-        default : return -ERR_INVAL;
+        default : *p -= 1; return -ERR_INVAL; // backward error position
     }
     return vi;
+}
+
+
+static always_inline GoKind kind(const GoIface* iface) {
+    return (iface->type->kind_flags) &  GO_KIND_MASK;
+}
+
+static always_inline bool is_int(const GoIface* iface) {
+    return kind(iface) == Int;
+}
+
+static always_inline bool is_str(const GoIface* iface) {
+    return kind(iface) == String;
+}
+
+static always_inline GoString get_str(const GoIface* iface) {
+    return *(GoString*)(iface->value);
+}
+
+static always_inline int64_t get_int(const GoIface* iface) {
+    return *(int64_t*)(iface->value);
+}
+
+static always_inline bool vec_cross_page(const void * p, size_t n) {
+#define PAGE_SIZE 4096
+    return (((size_t)(p)) & (PAGE_SIZE - 1)) > (PAGE_SIZE - n);
+#undef PAGE_SIZE
+}
+
+// xmemcmpeq return true if s1 and s2 is equal for the n bytes, otherwise, return false.
+static always_inline bool xmemcmpeq(const char * restrict s1, const char * restrict s2, size_t n) {
+    bool c1, c2;
+#if USE_AVX2
+    while (n > 32) {
+        __m256i  v1   = _mm256_loadu_si256((const void *)s1);
+        __m256i  v2   = _mm256_loadu_si256((const void *)s2);
+        uint64_t ne_mask = (unsigned)~(_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
+        if (ne_mask) return false;
+        s1 += 32;
+        s2 += 32;
+        n  -= 32;
+    };
+    c1 = vec_cross_page(s1, 32);
+    c2 = vec_cross_page(s2, 32);
+    // not cross page
+    if (!c1 && !c2) {
+        __m256i  v1   = _mm256_loadu_si256((const void *)s1);
+        __m256i  v2   = _mm256_loadu_si256((const void *)s2);
+        uint64_t ne_mask = (unsigned)~(_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
+        bool eq = (!ne_mask) || (__builtin_ctzll(ne_mask) >= n);
+        return eq;
+    }
+#endif
+    while (n > 16) {
+        __m128i  v1   = _mm_loadu_si128((const void *)s1);
+        __m128i  v2   = _mm_loadu_si128((const void *)s2);
+        uint64_t ne_mask = (unsigned)~(_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
+        if (ne_mask) return false;
+        s1 += 16;
+        s2 += 16;
+        n  -= 16;
+    };
+    c1 = vec_cross_page(s1, 16);
+    c2 = vec_cross_page(s2, 16);
+    // not cross page
+    if (!c1 && !c2) {
+        __m128i  v1   = _mm_loadu_si128((const void *)s1);
+        __m128i  v2   = _mm_loadu_si128((const void *)s2);
+        uint64_t ne_mask = (unsigned)~(_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
+        bool eq = (!ne_mask) || (__builtin_ctzll(ne_mask) >= n);
+        return eq;
+    }
+    // cross page
+    while (n > 0 && *s1++ == *s2++) n--;
+    return n == 0;
+}
+
+// match_key return negative if errors, zero if not matched, one if matched.
+static always_inline long match_key(const GoString *src, long *p, const GoString key) {
+    static const long not_match = 0;
+    int64_t v = -1;
+    long si = *p;
+    long se = advance_string_default(src, *p, &v);
+    if (unlikely(se < 0)) {
+        *p = src->len;
+        return -ERR_EOF;
+    }
+
+    if (likely(v == -1 || v > se)) {
+        *p = se;
+        return (se - si - 1 == key.len) && xmemcmpeq(src->buf + si, key.buf, key.len);
+    }
+
+    /* deal with escaped strings */
+    char buf[8] = {0}; // escaped buffer
+    long en;
+    const char* sp = src->buf + si;
+    const char* end = src->buf + se - 1;
+    const char* kp = key.buf;
+    const char* ke = key.buf + key.len;
+    const char* ep = buf, *ee;
+    *p = se;
+    while (sp < end && kp < ke) {
+        if (*sp == '\\') {
+            en = unescape(&sp, end, buf);
+            if (en < 0) {
+                *p = sp - src->buf;
+                return en;
+            }
+            ee = ep + en;
+            while (kp < ke && ep < ee && *kp++ == *ep++);
+            if (ep != ee) {
+                return not_match;
+            }
+        } else if (*sp == *kp) {
+            sp++, kp++; 
+        } else {
+            return not_match;
+        }
+    };
+    return sp == end && kp == ke;
+}
+
+// case 1: path is empty, return the skiped whole json. ? 确认一下
+// case 2: path type is not int or string, return error. 
+// case 3: skip start char is not in table, return type error.
+// case 4: detail error code design.
+long get_by_path(const GoString *src, long *p, const GoSlice *path) {
+    GoIface *ps = (GoIface*)(path->buf), *pe = (GoIface*)(path->buf) + path->len;
+    char c = 0;
+    int64_t index;
+    long found;
+
+query:
+    /* empty path, skip the whole json */
+    if (ps == pe) {
+        return skip_one_fast(src, p);
+    }
+    /* match type: should query key in object, query index in array */
+    c = advance_ns(src, p);
+    if (is_str(ps)) {
+        if (c != '{') goto err_inval;
+        goto skip_in_obj;
+    } else if (is_int(ps)) {
+        if (c != '[') goto err_inval;
+        goto skip_in_arr;
+    } else {
+        goto err_inval;
+    }
+
+skip_in_obj:
+    c = advance_ns(src, p);
+    if (c != '"') goto err_inval;
+    found = match_key(src, p, get_str(ps));
+    if (found < 0) return found; // parse string errors
+
+    /* value should after : */
+    c = advance_ns(src, p);
+    if (c != ':') goto err_inval;
+    if (found) {
+        ps++;
+        goto query;
+    } else {
+        skip_one_fast(src, p);
+        c = advance_ns(src, p);
+        if (c != ',') goto err_inval; // not found key
+        goto skip_in_obj;
+    }
+
+skip_in_arr:
+    index = get_int(ps);
+    /* skip array elem one by one */
+    // TODO: optimize use SIMD
+    while (index-- > 0) {
+        skip_one_fast(src, p);
+        c = advance_ns(src, p);
+        if (c != ',') goto err_inval; // out of range
+    }
+    ps++;
+    goto query;
+
+err_inval:
+    *p -= 1; // backward error position
+    return -ERR_INVAL;
 }

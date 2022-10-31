@@ -62,11 +62,16 @@ static void printint(int64_t v)
     } else {
         u = v;
     }
+    if (u == 0) {
+        *--p = '0';
+        goto sig;
+    }
     while (u)
     {
         *--p = (u % 10) + '0';
         u /= 10;
     }
+sig:
     if (neg) {
         *--p = '-';
     }
@@ -122,8 +127,9 @@ static void printbytes(GoSlice *s)
     }
     for (; i < s->len; i++)
     {
-        printch(tab[((s->buf[i]) & 0xf0) >> 4]);
-        printch(tab[(s->buf[i]) & 0x0f]);
+        char* bytes = (char*)(s->buf);
+        printch(tab[(bytes[i] & 0xf0) >> 4]);
+        printch(tab[bytes[i] & 0x0f]);
         if (i != s->len - 1)
             printch(',');
     }

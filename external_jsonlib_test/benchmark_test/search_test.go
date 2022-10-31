@@ -21,6 +21,8 @@ import (
     `math`
     `testing`
 
+    `github.com/bytedance/sonic/ast`
+    `github.com/buger/jsonparser`
     jsoniter `github.com/json-iterator/go`
     `github.com/tidwall/gjson`
     `github.com/tidwall/sjson`
@@ -138,4 +140,37 @@ func BenchmarkSetOne_Parallel_Jsoniter(b *testing.B) {
             node["id"] = math.MaxInt32
         }
     })
+}
+
+
+func BenchmarkGetByKeys_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(TwitterJson)))
+    ast := ast.NewSearcher(TwitterJson)
+    const _count = 4
+    for i := 0; i < b.N; i++ {
+        node, err := ast.GetByPath("search_metadata", "count")
+        if err != nil {
+            b.Fatal(err)
+        }
+        x, _ := node.Int64()
+        if x != _count {
+            b.Fatal(node.Interface())
+        }
+    }
+}
+
+
+func BenchmarkGetByKeys_JsonParser(b *testing.B) {
+    b.SetBytes(int64(len(TwitterJson)))
+    data := []byte(TwitterJson)
+    const _count = 4
+    for i := 0; i < b.N; i++ {
+        value, err := jsonparser.GetInt(data, "search_metadata", "count")
+        if err != nil {
+            b.Fatal(err)
+        }
+        if value != _count {
+            b.Fatal(value)
+        }
+    }
 }

@@ -9,30 +9,32 @@ package sse
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa        = __native_entry__() + 28064
+    _subr__f32toa        = __native_entry__() + 28896
     _subr__f64toa        = __native_entry__() + 464
+    _subr__get_by_path   = __native_entry__() + 27200
     _subr__html_escape   = __native_entry__() + 10416
     _subr__i64toa        = __native_entry__() + 4048
     _subr__lspace        = __native_entry__() + 80
     _subr__quote         = __native_entry__() + 5456
-    _subr__skip_array    = __native_entry__() + 21056
-    _subr__skip_number   = __native_entry__() + 24400
-    _subr__skip_object   = __native_entry__() + 22944
-    _subr__skip_one      = __native_entry__() + 24544
-    _subr__skip_one_fast = __native_entry__() + 24752
+    _subr__skip_array    = __native_entry__() + 20144
+    _subr__skip_number   = __native_entry__() + 23488
+    _subr__skip_object   = __native_entry__() + 22032
+    _subr__skip_one      = __native_entry__() + 23632
+    _subr__skip_one_fast = __native_entry__() + 23840
     _subr__u64toa        = __native_entry__() + 4176
     _subr__unquote       = __native_entry__() + 7232
-    _subr__validate_one  = __native_entry__() + 24576
+    _subr__validate_one  = __native_entry__() + 23664
     _subr__value         = __native_entry__() + 13680
-    _subr__vnumber       = __native_entry__() + 18800
-    _subr__vsigned       = __native_entry__() + 20352
+    _subr__vnumber       = __native_entry__() + 17888
+    _subr__vsigned       = __native_entry__() + 19440
     _subr__vstring       = __native_entry__() + 15760
-    _subr__vunsigned     = __native_entry__() + 20704
+    _subr__vunsigned     = __native_entry__() + 19792
 )
 
 const (
     _stack__f32toa = 64
     _stack__f64toa = 80
+    _stack__get_by_path = 200
     _stack__html_escape = 64
     _stack__i64toa = 16
     _stack__lspace = 8
@@ -55,6 +57,7 @@ const (
 var (
     _ = _subr__f32toa
     _ = _subr__f64toa
+    _ = _subr__get_by_path
     _ = _subr__html_escape
     _ = _subr__i64toa
     _ = _subr__lspace
@@ -77,6 +80,7 @@ var (
 const (
     _ = _stack__f32toa
     _ = _stack__f64toa
+    _ = _stack__get_by_path
     _ = _stack__html_escape
     _ = _stack__i64toa
     _ = _stack__lspace

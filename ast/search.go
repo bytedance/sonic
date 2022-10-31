@@ -17,8 +17,8 @@
 package ast
 
 import (
-    `fmt`
-
+    `runtime`
+    `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
 )
 
@@ -36,37 +36,17 @@ func NewSearcher(str string) *Searcher {
 }
 
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
-    self.parser.p = 0
-
     var err types.ParsingError
-    for _, p := range path {
-        switch p.(type) {
-        case int:
-            if err = self.parser.searchIndex(p.(int)); err != 0 {
-                return Node{}, self.parser.ExportError(err)
-            }
-        case string:
-            if err = self.parser.searchKey(p.(string)); err != 0 {
-                return Node{}, self.parser.ExportError(err)
-            }
-        default:
-            panic("path must be either int or string")
-        }
+    self.parser.p = 0
+    start := native.GetByPath(&self.parser.s, &self.parser.p, &path)
+    // prohibit path collceted when executing native code.
+    runtime.KeepAlive(path)
+    if start < 0 {
+        return Node{}, self.parser.syntaxError(types.ParsingError(-start))
     }
-
-    var start = self.parser.p
-    if start, err = self.parser.skip(); err != 0 {
-        return Node{}, self.parser.ExportError(err)
-    }
-    ns := len(self.parser.s)
-    if self.parser.p > ns || start >= ns || start>=self.parser.p {
-        return Node{}, fmt.Errorf("skip %d char out of json boundary", start)
-    }
-
     t := switchRawType(self.parser.s[start])
     if t == _V_NONE {
         return Node{}, self.parser.ExportError(err)
     }
-
     return newRawNode(self.parser.s[start:self.parser.p], t), nil
 }
