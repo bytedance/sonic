@@ -17,19 +17,19 @@
 package decoder
 
 import (
-	"encoding/base64"
-	"encoding/json"
-	"reflect"
-	"strings"
-	"testing"
-	"unsafe"
+    `encoding/base64`
+    `encoding/json`
+    `reflect`
+    `strings`
+    `testing`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/caching"
-	"github.com/bytedance/sonic/internal/jit"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/internal/caching`
+    `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func TestSkipError(t *testing.T) {
@@ -38,16 +38,16 @@ func TestSkipError(t *testing.T) {
         A int `json:"a"`
         B string `json:"b"`
 
-		Pass int `json:"pass"`
+        Pass int `json:"pass"`
 
         C struct{
             D struct{
                 E float32 `json:"e"`
             } `json:"d"`
 
-			Pass int `json:"pass"`
+            Pass int `json:"pass"`
 
-		} `json:"c"`
+        } `json:"c"`
         E bool `json:"e"`
         F []int `json:"f"`
         G map[string]int `json:"g"`
@@ -58,7 +58,7 @@ func TestSkipError(t *testing.T) {
     var data = `{"a":"","b":1,"c":{"d":true,"pass":1},"e":{},"f":"","g":[],"pass":null,"pass2":1}`
     d := NewDecoder(data)
     err := d.Decode(obj)
-	// println("decoder out: ", err.Error())
+    // println("decoder out: ", err.Error())
     err2 := json.Unmarshal([]byte(data), obj2)
     assert.Equal(t, err2 == nil, err == nil)
     // assert.Equal(t, len(data), d.i)

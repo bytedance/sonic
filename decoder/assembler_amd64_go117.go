@@ -298,10 +298,11 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_goto             : (*_Assembler)._asm_OP_goto,
     _OP_switch           : (*_Assembler)._asm_OP_switch,
     _OP_check_bool       : (*_Assembler)._asm_OP_check_bool,
-    _OP_check_bytes      : (*_Assembler)._asm_OP_check_bytes,
+    // _OP_check_bytes      : (*_Assembler)._asm_OP_check_bytes,
     _OP_check_num        : (*_Assembler)._asm_OP_check_num,
     _OP_check_char_0     : (*_Assembler)._asm_OP_check_char_0,
     _OP_dismatch_err     : (*_Assembler)._asm_OP_dismatch_err,
+    _OP_add              : (*_Assembler)._asm_OP_add,
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -327,7 +328,6 @@ func (self *_Assembler) epilogue() {
     self.Emit("TESTQ", _ET, _ET)                    // TESTQ ET, ET
     self.Sjmp("JNZ", _LB_mismatch_error)            // JNZ _LB_mismatch_error
     self.Link(_LB_error)                            // _error:
-    // self.Byte(0xcc)
     self.Emit("MOVQ", _EP, _CX)                     // MOVQ BX, CX
     self.Emit("MOVQ", _ET, _BX)                     // MOVQ AX, BX
     self.Emit("MOVQ", _IC, _AX)                     // MOVQ IC, AX
@@ -1659,14 +1659,14 @@ func (self *_Assembler) _asm_OP_check_bool(p *_Instr) {
     self.Xjmp("JE"  , p.vi())                               
 }
 
-func (self *_Assembler) _asm_OP_check_bytes(p *_Instr) {
-    self.check_eof(1)
-    self.Emit("MOVBLZX", jit.Sib(_IP, _IC, 1, 0), _AX)       
-    self.Emit("CMPB", _AX, jit.Imm(int64('"')))  
-    self.Xjmp("JE"  , p.vi())               
-    self.Emit("CMPB", _AX, jit.Imm(int64('[')))
-    self.Xjmp("JE"  , p.vi())                               
-}
+// func (self *_Assembler) _asm_OP_check_bytes(p *_Instr) {
+//     self.check_eof(1)
+//     self.Emit("MOVBLZX", jit.Sib(_IP, _IC, 1, 0), _AX)       
+//     self.Emit("CMPB", _AX, jit.Imm(int64('"')))  
+//     self.Xjmp("JE"  , p.vi())               
+//     self.Emit("CMPB", _AX, jit.Imm(int64('[')))
+//     self.Xjmp("JE"  , p.vi())                               
+// }
 
 func (self *_Assembler) _asm_OP_check_num(p *_Instr) {
     self.check_eof(1)
@@ -1683,6 +1683,10 @@ func (self *_Assembler) _asm_OP_check_num(p *_Instr) {
     self.Emit("LEAL", jit.Ptr(_AX, -int64('0')), _CX)
     self.Emit("CMPB", _CX, jit.Imm(int64('9'-'0')))  
     self.Xjmp("JLS" , p.vi())   
+}
+
+func (self *_Assembler) _asm_OP_add(p *_Instr) {
+    self.Emit("ADDQ", jit.Imm(int64(p.vi())), _IC)  // ADDQ ${p.vi()}, IC
 }
 
 func (self *_Assembler) _asm_OP_dismatch_err(p *_Instr) {
