@@ -55,7 +55,7 @@ func TestSkipError(t *testing.T) {
         Pass2 int `json:"pass2"`
     }
     var obj, obj2 = &skiptype{}, &skiptype{}
-    var data = `{"a":"","b":1,"c":{"d":true,"pass":1},"e":{},"f":"","g":[],"pass":1,"pass2":1}`
+    var data = `{"a":"","b":1,"c":{"d":true,"pass":1},"e":{},"f":"","g":[],"pass":null,"pass2":1}`
     d := NewDecoder(data)
     err := d.Decode(obj)
 	// println("decoder out: ", err.Error())

@@ -914,6 +914,8 @@ func (self *_Compiler) checkType(p *_Program, vt reflect.Type) int {
     } else if k == reflect.Interface {
         return -1
     } else {
+        n := p.pc()
+        p.add(_OP_is_null)
         x := p.pc()
         switch vt.Kind() {
             case reflect.Bool      : p.add(_OP_check_bool)
@@ -930,7 +932,7 @@ func (self *_Compiler) checkType(p *_Program, vt reflect.Type) int {
             case reflect.Array     : p.chr(_OP_check_char_0, '[')
             case reflect.Map       : p.chr(_OP_check_char_0, '{')
             case reflect.Slice     : 
-                if vt == bytesType {
+                if vt.Elem().Kind() == byteType.Kind() {
                     p.chr(_OP_check_bytes, '"')
                 } else {
                     p.chr(_OP_check_char_0, '[')
@@ -940,6 +942,7 @@ func (self *_Compiler) checkType(p *_Program, vt reflect.Type) int {
         }
         p.rtt(_OP_dismatch_err, vt)
         p.add(_OP_object_next)
+        p.pin(n)
         y := p.pc()
         p.add(_OP_goto)
         p.pin(x)
