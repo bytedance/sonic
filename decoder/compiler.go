@@ -98,6 +98,7 @@ const (
     _OP_check_num
     _OP_check_char_0
     _OP_dismatch_err
+    _OP_go_skip
     _OP_add
 )
 
@@ -1124,26 +1125,19 @@ func (self *_Compiler) checkPrimitive(p *_Program, vt reflect.Type) int {
         default                : panic(&json.UnmarshalTypeError{Type: vt})
     }
     p.rtt(_OP_dismatch_err, vt)
-    p.add(_OP_object_next)
-    y := p.pc()
-    p.add(_OP_goto)
+    s := p.pc()
+    p.int(_OP_go_skip, s)
     p.pin(x)
-    return y
+    return s
 }
 
-func (self *_Compiler) checkIfSkip(p *_Program, vt reflect.Type, c ...byte) int {
-    var js = make([]int, len(c))
-    for _, ch := range c {
-        js = append(js, p.pc())
-        p.chr(_OP_check_char_0, ch)
-    }
+func (self *_Compiler) checkIfSkip(p *_Program, vt reflect.Type, c byte) int {
+    j := p.pc()
+    p.chr(_OP_check_char_0, c)
     p.rtt(_OP_dismatch_err, vt)
-    p.add(_OP_object_next)
-    j2 := p.pc()
-    p.add(_OP_goto)
-    for _, j := range js {
-        p.pin(j)
-    }
+    s := p.pc()
+    p.int(_OP_go_skip, s)
+    p.pin(j)
     p.int(_OP_add, 1)
-    return j2
+    return s
 }
