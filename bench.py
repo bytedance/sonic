@@ -19,7 +19,7 @@ import os
 import subprocess
 import argparse
 
-repeat_time = 10
+repeat_time = 100
 gbench_prefix = "SONIC_NO_ASYNC_GC=1 go test -benchmem -run=none -count=%d "%(repeat_time)
 
 def run(cmd):
