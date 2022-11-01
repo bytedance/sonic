@@ -212,7 +212,7 @@ func TestRandomData(t *testing.T) {
 
 func TestRandomValidStrings(t *testing.T) {
     rand.Seed(time.Now().UnixNano())
-    b := make([]byte, 100)
+    b := make([]byte, 200)
     for i := 0; i < 1000; i++ {
         n, err := rand.Read(b[:rand.Int()%len(b)])
         if err != nil {
@@ -226,14 +226,9 @@ func TestRandomValidStrings(t *testing.T) {
         if err := json.Unmarshal(sm, &su); err != nil {
             t.Fatal("unmarshal data failed:",err)
         }
-        // var s2 string = `"v\ufffd\u001a\ufffd\ufffd\ufffd\ufffd\r\u0019\ufffd\u0016\u000e8I\ufffd\u0017\ufffd\ufffdS\ufffd\ufffd\ufffd\ufffd\ufffd7\ufffd\ufffd\ufffd\ufffd\ufffd\n\ufffd\ufffd\ufffd\ufffd@\ufffd;\ufffd1\u0001f\ufffd.\ufffd\ufffd8\t"`
-        var s2 string =  "\"\\ufffd\\ufffdy\\ufffdf6\\ufffd\\ufffd\\u000b\\ufffd\\ufffdFL\\ufffd\\ufffd\""
-
-        token, err := GetFromString(`{"str":`+ s2 +`}`, "str")
+        token, err := GetFromString(`{"str":`+string(sm)+`}`, "str")
         if err != nil {
-            fmt.Println(string(s2))
-            // spew.Dump(string(sm))
-            spew.Dump(string(s2))
+            spew.Dump(string(sm))
             t.Fatal("search data failed:",err)
         }
         x, _ := token.Interface()
@@ -242,7 +237,7 @@ func TestRandomValidStrings(t *testing.T) {
             t.Fatalf("type mismatch, exp: %v, got: %v", su, x)
         }
         if st != su {
-            // t.Fatalf("string mismatch, exp: %v, got: %v", su, x)
+            t.Fatalf("string mismatch, exp: %v, got: %v", su, x)
         }
     }
 }
@@ -269,7 +264,6 @@ func TestEmoji(t *testing.T) {
 func testEscapePath(t *testing.T, json, expect string, path ...interface{}) {
     n, e := Get([]byte(json), path...)
     if e != nil {
-        // fmt.Println(path, expect)
         t.Fatal(e)
     }
     x, _ := n.String()

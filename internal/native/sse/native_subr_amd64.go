@@ -9,7 +9,7 @@ package sse
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa        = __native_entry__() + 28896
+    _subr__f32toa        = __native_entry__() + 28880
     _subr__f64toa        = __native_entry__() + 464
     _subr__get_by_path   = __native_entry__() + 27200
     _subr__html_escape   = __native_entry__() + 10416

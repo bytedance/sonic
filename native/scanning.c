@@ -1759,7 +1759,7 @@ static always_inline long skip_string_fast(const GoString *src, long *p) {
 
 long skip_one_fast(const GoString *src, long *p) {
     char c = advance_ns(src, p);
-    // set the start address
+    /* set the start address */
     long vi = *p - 1;
     switch (c) {
         case '[': return skip_array_fast(src, p);
@@ -1860,23 +1860,25 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
         return -ERR_EOF;
     }
 
+    /* update position */
+    *p = se;
+
+    /* compare non-escaped strings */
     if (likely(v == -1 || v > se)) {
-        *p = se;
-        return (se - si - 1 == key.len) && xmemcmpeq(src->buf + si, key.buf, key.len);
+        long sn = se - si - 1;
+        return sn == key.len && xmemcmpeq(src->buf + si, key.buf, key.len);
     }
 
     /* deal with escaped strings */
     char buf[8] = {0}; // escaped buffer
-    long en;
     const char* sp = src->buf + si;
     const char* end = src->buf + se - 1;
     const char* kp = key.buf;
     const char* ke = key.buf + key.len;
     const char* ep = buf, *ee;
-    *p = se;
     while (sp < end && kp < ke) {
         if (*sp == '\\') {
-            en = unescape(&sp, end, buf);
+            long en = unescape(&sp, end, buf);
             if (en < 0) {
                 *p = sp - src->buf;
                 return en;
@@ -1895,12 +1897,9 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
     return sp == end && kp == ke;
 }
 
-// case 1: path is empty, return the skiped whole json. ? 确认一下
-// case 2: path type is not int or string, return error. 
-// case 3: skip start char is not in table, return type error.
-// case 4: detail error code design.
 long get_by_path(const GoString *src, long *p, const GoSlice *path) {
-    GoIface *ps = (GoIface*)(path->buf), *pe = (GoIface*)(path->buf) + path->len;
+    GoIface *ps = (GoIface*)(path->buf);
+    GoIface *pe = (GoIface*)(path->buf) + path->len;
     char c = 0;
     int64_t index;
     long found;
@@ -1944,7 +1943,6 @@ skip_in_obj:
 skip_in_arr:
     index = get_int(ps);
     /* skip array elem one by one */
-    // TODO: optimize use SIMD
     while (index-- > 0) {
         skip_one_fast(src, p);
         c = advance_ns(src, p);
