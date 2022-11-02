@@ -19,8 +19,7 @@ import os
 import subprocess
 import argparse
 
-repeat_time = 100
-gbench_prefix = "SONIC_NO_ASYNC_GC=1 go test -benchmem -run=none -count=%d "%(repeat_time)
+gbench_prefix = "SONIC_NO_ASYNC_GC=1 go test -benchmem -run=none "
 
 def run(cmd):
     print(cmd)
@@ -105,6 +104,8 @@ def main():
         help='Compare with the main benchmarking')
     argparser.add_argument('-t', '--times', dest='times', required=False,
         help='benchmark the times')
+    argparser.add_argument('-r', '--repeat_times', dest='count', required=False,
+        help='benchmark the count')
     args = argparser.parse_args()
     
     if args.filter:
@@ -114,6 +115,11 @@ def main():
         
     if args.times:
         gbench_args += " -benchtime=%s"%(args.times)
+        
+    if args.count:
+        gbench_args += " -count=%s"%(args.count)
+    else:
+        gbench_args += " -count=10"
 
     if args.compare:
         target = compare(gbench_args)
