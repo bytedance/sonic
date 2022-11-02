@@ -24,6 +24,7 @@ import (
     `sync`
     `testing`
     `time`
+    `reflect`
 
     `github.com/bytedance/sonic/internal/rt`
     `github.com/davecgh/go-spew/spew`
@@ -83,6 +84,52 @@ var _BindingValue TwitterStruct
 
 func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
+}
+
+
+func TestSkipError(t *testing.T) {
+    println("TestSkipError")
+    type skiptype struct {
+        A int `json:"a"`
+        B string `json:"b"`
+
+        Pass *int `json:"pass"`
+
+        C struct{
+
+            Pass4 interface{} `json:"pass4"`
+
+            D struct{
+                E float32 `json:"e"`
+            } `json:"d"`
+
+            Pass2 int `json:"pass2"`
+
+        } `json:"c"`
+
+        E bool `json:"e"`
+        F []int `json:"f"`
+        G map[string]int `json:"g"`
+        I json.Number `json:"i"`
+
+        Pass3 int `json:"pass2"`
+    }
+    var obj, obj2 = &skiptype{Pass:new(int)}, &skiptype{Pass:new(int)}
+    var data = `{"a":"","b":1,"c":{"d":true,"pass2":1,"pass4":true},"e":{},"f":"","g":[],"pass":null,"i":true,"pass3":1}`
+    d := NewDecoder(data)
+    err := d.Decode(obj)
+    // println("decoder out: ", err.Error())
+    err2 := json.Unmarshal([]byte(data), obj2)
+    assert.Equal(t, err2 == nil, err == nil)
+    // assert.Equal(t, len(data), d.i)
+    assert.Equal(t, obj2, obj)
+    if te, ok := err.(*MismatchTypeError); ok {
+        assert.Equal(t, reflect.TypeOf(obj.I), te.Type)
+        assert.Equal(t, strings.Index(data, `"i":t`)+4, te.Pos)
+        println(err.Error())
+    } else {
+        t.Fatal("invalid error")
+    }
 }
 
 func TestDecodeCorrupt(t *testing.T) {

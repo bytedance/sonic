@@ -94,8 +94,6 @@ const (
     _OP_recurse
     _OP_goto
     _OP_switch
-    _OP_check_bool
-    _OP_check_num
     _OP_check_char_0
     _OP_dismatch_err
     _OP_go_skip
@@ -171,8 +169,6 @@ var _OpNames = [256]string {
     _OP_recurse          : "recurse",
     _OP_goto             : "goto",
     _OP_switch           : "switch",
-    _OP_check_bool       : "check_bool",
-    _OP_check_num        : "check_num",
     _OP_check_char_0     : "check_char_0",
     _OP_dismatch_err     : "dismatch_err",
     _OP_add              : "add",
@@ -1105,30 +1101,6 @@ func (self *_Compiler) compileUnmarshalTextPtr(p *_Program, vt reflect.Type) {
     p.chr(_OP_match_char, '"')
     p.rtt(_OP_unmarshal_text_p, vt)
     p.pin(i)
-}
-
-
-func (self *_Compiler) checkPrimitive(p *_Program, vt reflect.Type) int {
-    x := p.pc()
-    switch vt.Kind() {
-        case reflect.Bool      : p.add(_OP_check_bool)
-        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Float32, reflect.Float64: 
-            p.chr(_OP_check_num, 1)
-        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr: 
-            p.chr(_OP_check_num, 0)
-        case reflect.String    : 
-            if vt == jsonNumberType {
-                p.chr(_OP_check_num, 2)
-            }else {
-                p.chr(_OP_check_char_0, '"')
-            }
-        default                : panic(&json.UnmarshalTypeError{Type: vt})
-    }
-    p.rtt(_OP_dismatch_err, vt)
-    s := p.pc()
-    p.int(_OP_go_skip, s)
-    p.pin(x)
-    return s
 }
 
 func (self *_Compiler) checkIfSkip(p *_Program, vt reflect.Type, c byte) int {
