@@ -86,8 +86,8 @@ def compare(args):
     run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix, args, main))
 
     # diff the result
-    benchstat = "go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat"
-    run( "%s && benchstat -sort=delta %s %s"%(benchstat, main, target))
+    # benchstat = "go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat"
+    run( "benchstat -sort=delta %s %s"%(main, target))
     run("git checkout -- .")
 
     # restore branch
