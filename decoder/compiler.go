@@ -1044,10 +1044,10 @@ func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
 func (self *_Compiler) compilePrimitive(vt reflect.Type, p *_Program, op _Op) {
     i := p.pc()
     p.add(_OP_is_null)
-    skip := self.checkPrimitive(p, vt)
+    // skip := self.checkPrimitive(p, vt)
     p.add(op)
     p.pin(i)
-    p.pin(skip)
+    // p.pin(skip)
 }
 
 func (self *_Compiler) compileUnmarshalEnd(p *_Program, vt reflect.Type, i int) {
