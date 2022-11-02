@@ -38,24 +38,29 @@ func TestSkipError(t *testing.T) {
         A int `json:"a"`
         B string `json:"b"`
 
-        Pass int `json:"pass"`
+        Pass *int `json:"pass"`
 
         C struct{
+            
+            Pass4 interface{} `json:"pass4"`
+
             D struct{
                 E float32 `json:"e"`
             } `json:"d"`
 
-            Pass int `json:"pass"`
+            Pass2 int `json:"pass2"`
 
         } `json:"c"`
+
         E bool `json:"e"`
         F []int `json:"f"`
         G map[string]int `json:"g"`
+        // I json.Number `json:"i"`
 
-        Pass2 int `json:"pass2"`
+        Pass3 int `json:"pass2"`
     }
-    var obj, obj2 = &skiptype{}, &skiptype{}
-    var data = `{"a":"","b":1,"c":{"d":true,"pass":1},"e":{},"f":"","g":[],"pass":null,"pass2":1}`
+    var obj, obj2 = &skiptype{Pass:new(int)}, &skiptype{Pass:new(int)}
+    var data = `{"a":"","b":1,"c":{"d":true,"pass2":1,"pass4":true},"e":{},"f":"","g":[],"pass":null,"i":true,"pass3":1}`
     d := NewDecoder(data)
     err := d.Decode(obj)
     // println("decoder out: ", err.Error())

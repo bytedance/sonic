@@ -1210,7 +1210,6 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
     self.Emit("MOVL", jit.Imm(_IM_true), _CX)                   // MOVL $"true", CX
     self.Emit("CMPL", _CX, jit.Sib(_IP, _IC, 1, 0))             // CMPL CX, (IP)(IC)
     self.Sjmp("JE" , "_bool_true_{n}")          
-
     // try to skip the value
     self.Emit("MOVQ", _IC, _VAR_ic)           
     self.Emit("MOVQ", jit.Type(reflect.TypeOf(true)), _AX)  

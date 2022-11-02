@@ -117,7 +117,7 @@ func error_wrap(src string, pos int, code types.ParsingError) error {
 }
 
 //go:nosplit
-func error_type(vt *rt.GoType, c byte) error {
+func error_type(vt *rt.GoType) error {
     return &json.UnmarshalTypeError{Type: vt.Pack()}
 }
 
