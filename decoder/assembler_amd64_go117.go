@@ -582,6 +582,7 @@ func (self *_Assembler) _asm_OP_go_skip(p *_Instr) {
 
 func (self *_Assembler) skip_one() {
     self.Link(_LB_skip_one)                     // _skip:
+    self.Emit("MOVQ", _VAR_ic, _IC)             // MOVQ    _VAR_ic, IC
     self.call_sf(_F_skip_one)                   // CALL_SF skip_one
     self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
@@ -638,10 +639,23 @@ var (
     _F_vunsigned = jit.Imm(int64(native.S_vunsigned))
 )
 
-func (self *_Assembler) check_err() {
+func (self *_Assembler) check_err(vt reflect.Type) {
     self.Emit("MOVQ" , _VAR_st_Vt, _AX)         // MOVQ st.Vt, AX
     self.Emit("TESTQ", _AX, _AX)                // CMPQ AX, ${native.V_STRING}
-    self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
+    // try to skip the value
+    if vt != nil {
+        self.Sjmp("JNS" , "_check_err_{n}")        // JNE  _parsing_error_v
+        self.Emit("MOVQ", _BX, _VAR_ic)
+        self.Emit("MOVQ", jit.Type(vt), _AX)  
+        self.Emit("MOVQ", _AX, _VAR_et)
+        self.Byte(0x4c  , 0x8d, 0x0d)         // LEAQ (PC), R9
+        self.Sref("_check_err_{n}", 4)
+        self.Emit("MOVQ", _R9, _VAR_pc)
+        self.Sjmp("JMP" , _LB_skip_one)
+        self.Link("_check_err_{n}")
+    } else {
+        self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
+    }
 }
 
 func (self *_Assembler) check_eof(d int64) {
@@ -655,25 +669,29 @@ func (self *_Assembler) check_eof(d int64) {
     }
 }
 
+
 func (self *_Assembler) parse_string() {
     self.Emit("MOVQ", _ARG_fv, _CX)
     self.call_vf(_F_vstring)
-    self.check_err()
+    self.check_err(nil)
 }
 
 func (self *_Assembler) parse_number() {
+    self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vnumber)
-    self.check_err()
+    self.check_err(floatType)
 }
 
 func (self *_Assembler) parse_signed() {
+    self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vsigned)
-    self.check_err()
+    self.check_err(intType)
 }
 
 func (self *_Assembler) parse_unsigned() {
+    self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vunsigned)
-    self.check_err()
+    self.check_err(uintType)
 }
 
 // Pointer: DI, Size: SI, Return: R9  
@@ -1191,7 +1209,18 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
     self.Sjmp("JE"  , "_false_{n}")                             // JE   _false_{n}
     self.Emit("MOVL", jit.Imm(_IM_true), _CX)                   // MOVL $"true", CX
     self.Emit("CMPL", _CX, jit.Sib(_IP, _IC, 1, 0))             // CMPL CX, (IP)(IC)
-    self.Sjmp("JNE" , _LB_im_error)                             // JNE  _im_error
+    self.Sjmp("JE" , "_bool_true_{n}")          
+
+    // try to skip the value
+    self.Emit("MOVQ", _IC, _VAR_ic)           
+    self.Emit("MOVQ", jit.Type(reflect.TypeOf(true)), _AX)  
+    self.Emit("MOVQ", _AX, _VAR_et)
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Sref("_end_{n}", 4)
+    self.Emit("MOVQ", _R9, _VAR_pc)
+    self.Sjmp("JMP"  , _LB_skip_one) 
+
+    self.Link("_bool_true_{n}")
     self.Emit("MOVQ", _AX, _IC)                                 // MOVQ AX, IC
     self.Emit("MOVB", jit.Imm(1), jit.Ptr(_VP, 0))              // MOVB $1, (VP)
     self.Sjmp("JMP" , "_end_{n}")                               // JMP  _end_{n}
