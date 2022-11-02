@@ -9,32 +9,32 @@ package avx
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa        = __native_entry__() + 28464
+    _subr__f32toa        = __native_entry__() + 28592
     _subr__f64toa        = __native_entry__() + 496
-    _subr__get_by_path   = __native_entry__() + 26736
-    _subr__html_escape   = __native_entry__() + 10480
-    _subr__i64toa        = __native_entry__() + 4176
+    _subr__get_by_path   = __native_entry__() + 26800
+    _subr__html_escape   = __native_entry__() + 10544
+    _subr__i64toa        = __native_entry__() + 4240
     _subr__lspace        = __native_entry__() + 80
-    _subr__quote         = __native_entry__() + 5552
-    _subr__skip_array    = __native_entry__() + 20160
-    _subr__skip_number   = __native_entry__() + 23472
-    _subr__skip_object   = __native_entry__() + 22048
-    _subr__skip_one      = __native_entry__() + 23616
-    _subr__skip_one_fast = __native_entry__() + 23824
-    _subr__u64toa        = __native_entry__() + 4288
-    _subr__unquote       = __native_entry__() + 7296
-    _subr__validate_one  = __native_entry__() + 23648
-    _subr__value         = __native_entry__() + 13728
-    _subr__vnumber       = __native_entry__() + 17904
-    _subr__vsigned       = __native_entry__() + 19456
-    _subr__vstring       = __native_entry__() + 15808
-    _subr__vunsigned     = __native_entry__() + 19808
+    _subr__quote         = __native_entry__() + 5616
+    _subr__skip_array    = __native_entry__() + 20224
+    _subr__skip_number   = __native_entry__() + 23536
+    _subr__skip_object   = __native_entry__() + 22112
+    _subr__skip_one      = __native_entry__() + 23680
+    _subr__skip_one_fast = __native_entry__() + 23888
+    _subr__u64toa        = __native_entry__() + 4352
+    _subr__unquote       = __native_entry__() + 7360
+    _subr__validate_one  = __native_entry__() + 23712
+    _subr__value         = __native_entry__() + 13792
+    _subr__vnumber       = __native_entry__() + 17968
+    _subr__vsigned       = __native_entry__() + 19520
+    _subr__vstring       = __native_entry__() + 15872
+    _subr__vunsigned     = __native_entry__() + 19872
 )
 
 const (
-    _stack__f32toa = 64
-    _stack__f64toa = 80
-    _stack__get_by_path = 184
+    _stack__f32toa = 760
+    _stack__f64toa = 744
+    _stack__get_by_path = 168
     _stack__html_escape = 64
     _stack__i64toa = 16
     _stack__lspace = 8

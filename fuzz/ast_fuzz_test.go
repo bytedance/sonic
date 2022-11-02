@@ -20,57 +20,35 @@ package sonic_fuzz
 
 import (
 	`testing`
+	`fmt`
 	`github.com/bytedance/sonic`
-	`github.com/bytedance/sonic/ast`
 	`github.com/stretchr/testify/require`
+	`github.com/davecgh/go-spew/spew`
 )
 
 func fuzzASTGetFromObject(t *testing.T, data []byte, m map[string]interface{}) {
 	for k, expv := range(m) {
+		msg := fmt.Sprintf("Data:\n%s\nKey:\n%s\n", spew.Sdump(&data), spew.Sdump(&k))
 		node, err := sonic.Get(data, k)
-		require.NoErrorf(t, err, "error in ast get key -> %s", k)
-		assertAstNode(t, node, expv)
+		require.NoErrorf(t, err, "error in ast get key\n%s", msg)
+		v, err := node.Interface()
+		require.NoErrorf(t, err, "error in node convert\n%s", msg)
+		require.Equalf(t, v, expv, "error in node equal\n%sGot:\n%s\nExp:\n%s\n", 
+			msg, spew.Sdump(v), spew.Sdump(expv))
 	}
 }
 
 func fuzzASTGetFromArray(t *testing.T, data []byte, a []interface{}) {
-	var i = 0
+	i := 0
 	for ; i < len(a); i++ {
+		msg := fmt.Sprintf("Data:\n%s\nIndex:\n%d\n", spew.Sdump(data), i)
 		node, err := sonic.Get(data, i)
-		require.NoErrorf(t, err, "error in ast get index -> %s", i)
-		assertAstNode(t, node, a[i])
+		require.NoErrorf(t, err, "error in ast get index\n%s", msg)
+		v, err := node.Interface()
+		require.NoErrorf(t, err, "error in node convert\n%s", msg)
+		require.Equalf(t, v, a[i], "error in node equal\n%sGot:\n%s\nExp:\n%s\n", 
+			msg, spew.Sdump(v), spew.Sdump(a[i]))
 	}
 	_, err := sonic.Get(data, i)
-	require.Errorf(t, err, "error in ast get index -> %s", i)
-}
-
-func assertAstNode(t *testing.T, node ast.Node, expv interface{}) {
-	switch node.Type() {
-		case ast.V_NULL: require.Nilf(t, expv, "wrong in ast null")
-		case ast.V_TRUE: fallthrough
-		case ast.V_FALSE: 
-			gotv, err := node.Bool()
-			require.NoErrorf(t, err, "error in ast get bool")
-			require.Equalf(t, gotv, expv, "wrong in get bool")
-		case ast.V_STRING:
-			gotv, err := node.String()
-			require.NoErrorf(t, err, "error in ast get string")
-			require.Equalf(t, gotv, expv, "wrong in get string")
-		case ast.V_ARRAY:
-			gotv, err := node.Array()
-			require.NoErrorf(t, err, "error in ast get array")
-			require.Equalf(t, gotv, expv, "wrong in get array")
-		case ast.V_OBJECT:
-			gotv, err := node.Map()
-			require.NoErrorf(t, err, "error in ast get object")
-			require.Equalf(t, gotv, expv, "wrong in get object")
-		case ast.V_NUMBER:
-			gotv, err := node.Float64()
-			require.NoErrorf(t, err, "error in ast get number")
-			require.Equalf(t, gotv, expv, "wrong in get number")
-		case ast.V_ANY:
-			gotv, err := node.Interface()
-			require.NoErrorf(t, err, "error in ast get any")
-			require.Equalf(t, gotv, expv, "wrong in get any")
-	}
+	require.Errorf(t, err, "no error in ast get out of range\nData:\n%s\n", spew.Sdump(data))
 }

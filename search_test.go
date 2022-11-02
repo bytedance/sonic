@@ -30,6 +30,7 @@ import (
     `time`
 
     `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/assert`
     `github.com/bytedance/sonic/ast`
 )
 
@@ -82,44 +83,57 @@ func TestExampleSearch(t *testing.T) {
 }
 
 func TestExampleSearchEscapedKey(t *testing.T) {
-    data := []byte(` { "xx" : [] ,"yy" :{ }, 
-    "test\"" : [ true , 0.1 , "abc", ["h"], {"a\u0008":"bc", "b\\\\": "cd"} ], 
-    } `)
+    data := []byte(`
+{
+    "xx" : [] ,
+    "yy" :{ }, 
+    "test\"" : [
+        true ,
+        0.1 ,
+        "abc",
+        [
+            "h"
+        ], 
+        {
+            "a\u0008": {},
+            "b\\\\": null,
+            "\u2028\u2028": "\u2028\u2029",
+            "\u0026":2,
+            "0":1
+        } 
+    ],
+    ",,,,,,,,,,(,,15": ",",
+    ",,,,,,,,,,(,,,16": "a,]}",
+    ",,,,,,,,,,(,,,,17": 1,
+    ",,,,,,,,,,(,,,,,,,,,,,,,,,,(,,,,34": "c"
+} `)
 
-    node, e := Get(data, "test\"", 0)
-    x, _ := node.Bool()
-    if e != nil || x != true {
-        t.Fatalf("node: %v, err: %v", node, e)
+    type getTest struct{
+        path []interface{}
+        expect interface{}
     }
 
-    node, e = Get(data, "test\"", 1)
-    a, _ := node.Float64()
-    if e != nil || a != 0.1 {
-        t.Fatalf("node: %v, err: %v", node, e)
+    tests := []getTest {
+        {[]interface{}{"test\"", 0}, true},
+        {[]interface{}{"test\"", 1}, 0.1},
+        {[]interface{}{"test\"", 2}, "abc"},
+        {[]interface{}{"test\"", 3}, []interface{}{"h"}},
+        {[]interface{}{"test\"", 4, "a\u0008"}, map[string]interface{}{}},
+        {[]interface{}{"test\"", 4, "b\\\\"}, nil},
+        {[]interface{}{"test\"", 4, "\u2028\u2028"}, "\u2028\u2029"},
+        {[]interface{}{"test\"", 4, "0"}, float64(1)},
+        {[]interface{}{",,,,,,,,,,(,,15"}, ","},
+        {[]interface{}{",,,,,,,,,,(,,,16"}, "a,]}"},
+        {[]interface{}{",,,,,,,,,,(,,,,17"}, float64(1)},
+        {[]interface{}{",,,,,,,,,,(,,,,,,,,,,,,,,,,(,,,,34"}, "c"},
     }
 
-    node, e = Get(data, "test\"", 2)
-    b, _ := node.String()
-    if e != nil || b != "abc" {
-        t.Fatalf("node: %v, err: %v", node, e)
-    }
-
-    node, e = Get(data, "test\"", 3)
-    arr, _ := node.Array()
-    if e != nil || arr[0] != "h" {
-        t.Fatalf("node: %v, err: %v", node, e)
-    }
-
-    node, e = Get(data, "test\"", 4, "a\u0008")
-    c, _ := node.String()
-    if e != nil || c != "bc" {
-        t.Fatalf("node: %v, err: %v", node, e)
-    }
-
-    node, e = Get(data, "test\"", 4, "b\\\\")
-    c, _ = node.String()
-    if e != nil || c != "cd" {
-        t.Fatalf("node: %v, err: %v", node, e)
+    for _, test := range(tests) {
+        node, err := Get(data, test.path...)
+        assert.NoErrorf(t, err, "get return errors")
+        got, err := node.Interface()
+        assert.NoErrorf(t, err, "get convert errors")
+        assert.Equalf(t, test.expect, got, "get result is wrong from path %#v", test.path)
     }
 }
 

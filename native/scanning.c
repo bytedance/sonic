@@ -1802,14 +1802,14 @@ static always_inline bool vec_cross_page(const void * p, size_t n) {
 }
 
 // xmemcmpeq return true if s1 and s2 is equal for the n bytes, otherwise, return false.
-static always_inline bool xmemcmpeq(const char * restrict s1, const char * restrict s2, size_t n) {
+static always_inline bool xmemcmpeq(const char * s1, const char * s2, size_t n) {
     bool c1, c2;
 #if USE_AVX2
-    while (n > 32) {
+    while (n >= 32) {
         __m256i  v1   = _mm256_loadu_si256((const void *)s1);
         __m256i  v2   = _mm256_loadu_si256((const void *)s2);
-        uint64_t ne_mask = (unsigned)~(_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
-        if (ne_mask) return false;
+        uint32_t mask = ~((uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
+        if (mask) return false;
         s1 += 32;
         s2 += 32;
         n  -= 32;
@@ -1820,16 +1820,16 @@ static always_inline bool xmemcmpeq(const char * restrict s1, const char * restr
     if (!c1 && !c2) {
         __m256i  v1   = _mm256_loadu_si256((const void *)s1);
         __m256i  v2   = _mm256_loadu_si256((const void *)s2);
-        uint64_t ne_mask = (unsigned)~(_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
-        bool eq = (!ne_mask) || (__builtin_ctzll(ne_mask) >= n);
+        uint32_t mask = ~((uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
+        bool eq = (mask == 0) || (__builtin_ctzll(mask) >= n);
         return eq;
     }
 #endif
-    while (n > 16) {
+    while (n >= 16) {
         __m128i  v1   = _mm_loadu_si128((const void *)s1);
         __m128i  v2   = _mm_loadu_si128((const void *)s2);
-        uint64_t ne_mask = (unsigned)~(_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
-        if (ne_mask) return false;
+        uint16_t mask = ~((uint16_t)_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
+        if (mask != 0) return false;
         s1 += 16;
         s2 += 16;
         n  -= 16;
@@ -1840,8 +1840,8 @@ static always_inline bool xmemcmpeq(const char * restrict s1, const char * restr
     if (!c1 && !c2) {
         __m128i  v1   = _mm_loadu_si128((const void *)s1);
         __m128i  v2   = _mm_loadu_si128((const void *)s2);
-        uint64_t ne_mask = (unsigned)~(_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
-        bool eq = (!ne_mask) || (__builtin_ctzll(ne_mask) >= n);
+        uint16_t mask = ~((uint16_t)_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
+        bool eq = (mask == 0) || (__builtin_ctzll(mask) >= n);
         return eq;
     }
     // cross page
@@ -1875,7 +1875,6 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
     const char* end = src->buf + se - 1;
     const char* kp = key.buf;
     const char* ke = key.buf + key.len;
-    const char* ep = buf, *ee;
     while (sp < end && kp < ke) {
         if (*sp == '\\') {
             long en = unescape(&sp, end, buf);
@@ -1883,8 +1882,9 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
                 *p = sp - src->buf;
                 return en;
             }
-            ee = ep + en;
-            while (kp < ke && ep < ee && *kp++ == *ep++);
+            const char* ee = buf + en;
+            const char* ep = buf;
+            while (kp < ke && ep < ee && *kp == *ep) kp++, ep++;
             if (ep != ee) {
                 return not_match;
             }
@@ -1905,7 +1905,7 @@ long get_by_path(const GoString *src, long *p, const GoSlice *path) {
     long found;
 
 query:
-    /* empty path, skip the whole json */
+    /* if empty path, skip the whole json */
     if (ps == pe) {
         return skip_one_fast(src, p);
     }
