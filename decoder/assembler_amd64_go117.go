@@ -196,8 +196,8 @@ var _VAR_fl = jit.Ptr(_SP, _FP_fargs + _FP_saves + 112)
 
 var (
     _VAR_et = jit.Ptr(_SP, _FP_fargs + _FP_saves + 120) // save dismatched type
-    _VAR_ic = jit.Ptr(_SP, _FP_fargs + _FP_saves + 128) // save dismatched position
-    _VAR_pc = jit.Ptr(_SP, _FP_fargs + _FP_saves + 136) // save skip return pc
+    _VAR_pc = jit.Ptr(_SP, _FP_fargs + _FP_saves + 128) // save skip return pc
+    _VAR_ic = jit.Ptr(_SP, _FP_fargs + _FP_saves + 136) // save dismatched position
 )
 
 type _Assembler struct {
@@ -305,6 +305,11 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_dismatch_err     : (*_Assembler)._asm_OP_dismatch_err,
     _OP_go_skip          : (*_Assembler)._asm_OP_go_skip,
     _OP_add              : (*_Assembler)._asm_OP_add,
+    _OP_debug            : (*_Assembler)._asm_OP_debug,
+}
+
+func (self *_Assembler) _asm_OP_debug(_ *_Instr) {
+    self.Byte(0xcc)
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -566,13 +571,15 @@ func (self *_Assembler) parsing_error() {
 }
 
 func (self *_Assembler) _asm_OP_dismatch_err(p *_Instr) {
-    self.Emit("MOVQ", _IC, _VAR_ic)           
-    self.Emit("MOVQ", jit.Type(p.vt()), _VAR_et)
+    self.Emit("MOVQ", _IC, _VAR_ic)      
+    self.Emit("MOVQ", jit.Type(p.vt()), _ET)     
+    self.Emit("MOVQ", _ET, _VAR_et)
 }
 
 func (self *_Assembler) _asm_OP_go_skip(p *_Instr) {
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
     self.Xref(p.vi(), 4)
+    // self.Byte(0xcc)
     self.Emit("MOVQ", _R9, _VAR_pc)
     self.Sjmp("JMP"  , _LB_skip_one)            // JMP     _skip_one
 }
@@ -584,6 +591,7 @@ func (self *_Assembler) skip_one() {
     self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
     self.Emit("MOVQ" , _VAR_pc, _R9)            // MOVQ    pc, R9
+    // self.Byte(0xcc)
     self.Rjmp("JMP"  , _R9)                     // JMP     (R9)
 }
 
@@ -643,7 +651,8 @@ func (self *_Assembler) check_err(vt reflect.Type) {
     if vt != nil {
         self.Sjmp("JNS" , "_check_err_{n}")        // JNE  _parsing_error_v
         self.Emit("MOVQ", _BX, _VAR_ic)
-        self.Emit("MOVQ", jit.Type(vt), _VAR_et)
+        self.Emit("MOVQ", jit.Type(vt), _ET)     
+        self.Emit("MOVQ", _ET, _VAR_et)
         self.Byte(0x4c  , 0x8d, 0x0d)         // LEAQ (PC), R9
         self.Sref("_check_err_{n}", 4)
         self.Emit("MOVQ", _R9, _VAR_pc)
@@ -1208,7 +1217,8 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
     self.Sjmp("JE" , "_bool_true_{n}")          
     // try to skip the value
     self.Emit("MOVQ", _IC, _VAR_ic)           
-    self.Emit("MOVQ", _T_bool, _VAR_et)
+    self.Emit("MOVQ", _T_bool, _ET)     
+    self.Emit("MOVQ", _ET, _VAR_et)
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
     self.Sref("_end_{n}", 4)
     self.Emit("MOVQ", _R9, _VAR_pc)
@@ -1252,7 +1262,8 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
 
     /* call skip one */
     self.Emit("MOVQ", _BX, _VAR_ic)           
-    self.Emit("MOVQ", _T_number, _VAR_et)
+    self.Emit("MOVQ", _T_number, _ET)     
+    self.Emit("MOVQ", _ET, _VAR_et)
     self.Byte(0x4c, 0x8d, 0x0d)       
     self.Sref("_num_end_{n}", 4)
     self.Emit("MOVQ", _R9, _VAR_pc)

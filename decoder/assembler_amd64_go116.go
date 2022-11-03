@@ -356,7 +356,8 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
     self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)           // LEAQ _DbufOffset(ST), AX
     self.Emit("MOVQ", _AX, _VAR_st_Db)                          // MOVQ AX, ss.Dbuf
-    self.Emit("MOVQ", jit.Imm(0), _VAR_et)                          // MOVQ AX, ss.Dp
+    self.Emit("XORL", _AX, _AX)                                 // XORL AX, AX
+    self.Emit("MOVQ", _AX, _VAR_et)                          // MOVQ AX, ss.Dp
 }
 
 /** Function Calling Helpers **/
@@ -477,8 +478,9 @@ func (self *_Assembler) mismatch_error() {
 }
 
 func (self *_Assembler) _asm_OP_dismatch_err(p *_Instr) {
-    self.Emit("MOVQ", _IC, _VAR_ic)           
-    self.Emit("MOVQ", jit.Type(p.vt()), _VAR_et)
+    self.Emit("MOVQ", _IC, _VAR_ic)  
+    self.Emit("MOVQ", jit.Type(p.vt()), _ET)       
+    self.Emit("MOVQ", _ET, _VAR_et)
 }
 
 func (self *_Assembler) _asm_OP_go_skip(p *_Instr) {
@@ -640,7 +642,8 @@ func (self *_Assembler) check_err(vt reflect.Type) {
     if vt != nil {
         self.Sjmp("JNS" , "_check_err_{n}")        // JNE  _parsing_error_v
         self.Emit("MOVQ", _BP, _VAR_ic)
-        self.Emit("MOVQ", jit.Type(vt), _VAR_et)
+        self.Emit("MOVQ", jit.Type(vt), _ET)         
+        self.Emit("MOVQ", _ET, _VAR_et)
         self.Byte(0x4c  , 0x8d, 0x0d)         // LEAQ (PC), R9
         self.Sref("_check_err_{n}", 4)
         self.Emit("MOVQ", _R9, _VAR_pc)
@@ -1221,7 +1224,8 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 
     // try to skip the value
     self.Emit("MOVQ", _IC, _VAR_ic)           
-    self.Emit("MOVQ", _T_bool, _VAR_et)
+    self.Emit("MOVQ", _T_bool, _ET)         
+    self.Emit("MOVQ", _ET, _VAR_et)
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
     self.Sref("_end_{n}", 4)
     self.Emit("MOVQ", _R9, _VAR_pc)
@@ -1261,7 +1265,8 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
 
     /* call skip one */
     self.Emit("MOVQ", _BP, _VAR_ic)           
-    self.Emit("MOVQ", _T_number, _VAR_et)
+    self.Emit("MOVQ", _T_number, _ET)       
+    self.Emit("MOVQ", _ET, _VAR_et)
     self.Byte(0x4c, 0x8d, 0x0d)       
     self.Sref("_num_end_{n}", 4)
     self.Emit("MOVQ", _R9, _VAR_pc)

@@ -98,6 +98,7 @@ const (
     _OP_dismatch_err
     _OP_go_skip
     _OP_add
+    _OP_debug
 )
 
 const (
@@ -951,7 +952,7 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
     n0 := p.pc()
     p.add(_OP_is_null)
     
-    skip := self.checkIfSkip(p, vt, '"')
+    skip := self.checkIfSkip(p, stringType, '"')
 
     /* also check for inner "null" */
     n1 = p.pc()
@@ -1108,7 +1109,7 @@ func (self *_Compiler) checkIfSkip(p *_Program, vt reflect.Type, c byte) int {
     p.chr(_OP_check_char_0, c)
     p.rtt(_OP_dismatch_err, vt)
     s := p.pc()
-    p.int(_OP_go_skip, s)
+    p.add(_OP_go_skip)
     p.pin(j)
     p.int(_OP_add, 1)
     return s
