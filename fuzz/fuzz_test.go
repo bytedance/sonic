@@ -33,21 +33,9 @@ import (
 )
 
 func FuzzMain(f *testing.F) {
-    f.Add([]byte(`{
-        "object": {
-            "slice": [
-                1,
-                2.0,
-                "3",
-                [4],
-                {5: {}}
-            ]
-        },
-        "slice": [[]],
-        "string": ":)",
-        "int": 1e5,
-        "float": 3e-9"
-        }`))
+    for _, corp := range(corpus()) {
+        f.Add(corp)
+    }
     f.Fuzz(fuzzMain)
 }
 
