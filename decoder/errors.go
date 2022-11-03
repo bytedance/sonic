@@ -127,9 +127,9 @@ type MismatchTypeError struct {
     Type reflect.Type
 }
 
-func (self *MismatchTypeError) Error() string {
+func swithchJSONType (src string, pos int) string {
     var val string
-    switch self.Src[self.Pos] {
+    switch src[pos] {
         case 'f': fallthrough
         case 't': val = "bool"
         case '"': val = "string"
@@ -137,13 +137,25 @@ func (self *MismatchTypeError) Error() string {
         case '[': val = "array"
         case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9': val = "number"        
     }
+    return val
+}
 
+func (self MismatchTypeError) Error() string {
     se := SyntaxError {
         Pos  : self.Pos,
         Src  : self.Src,
         Code : types.ERR_MISMATCH,
     }
-    return fmt.Sprintf("Mismatch type %s with value %s %s", self.Type.String(), val, se.description())
+    return fmt.Sprintf("Mismatch type %s with value %s %q", self.Type.String(), swithchJSONType(self.Src, self.Pos), se.description())
+}
+
+func (self MismatchTypeError) Description() string {
+    se := SyntaxError {
+        Pos  : self.Pos,
+        Src  : self.Src,
+        Code : types.ERR_MISMATCH,
+    }
+    return fmt.Sprintf("Mismatch type %s with value %s %s", self.Type.String(), swithchJSONType(self.Src, self.Pos), se.description())
 }
 
 //go:nosplit

@@ -181,16 +181,17 @@ ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"
 ### Compact Format
 Sonic encodes primitive objects (struct/map...) as compact-format JSON by default, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting them for performance concerns. We provide the option `encoder.CompactMarshaler` to add compacting process.
 
-### Print Syntax Error
+### Print Error
+If there invalid syntax in input JSON, sonic will return `decoder.SyntaxError`, which supports pretty-printing of error position
 ```go
 import "github.com/bytedance/sonic"
 import "github.com/bytedance/sonic/decoder"
 
 var data interface{}
-err := sonic.Unmarshal("[[[}]]", &data)
+err := sonic.UnmarshalString("[[[}]]", &data)
 if err != nil {
     /*one line by default*/
-    println(e.Error())) // "Syntax error at index 3: invalid char\n\n\t[[[}]]\n\t...^..\n"
+    println(e.Error()) // "Syntax error at index 3: invalid char\n\n\t[[[}]]\n\t...^..\n"
     /*pretty print*/
     if e, ok := err.(decoder.SyntaxError); ok {
         /*Syntax error at index 3: invalid char
@@ -199,10 +200,24 @@ if err != nil {
             ...^..
         */
         print(e.Description())
+    }else if me, ok := err.(decoder.MismatchTypeError); ok {
+        print(e.Description()
     }
 }
 ```
+If there a **mismatch-typed** value for a given key, sonic will report `decoder.MismatchTypeError` (if there are many, report the last one), but still skip wrong the value and keep decoding next JSON.
+```go
+import "github.com/bytedance/sonic"
+import "github.com/bytedance/sonic/decoder"
 
+var data = struct{
+    A int
+    B int
+}{}
+err := UnmarshalString(`{"A":"1","B":1}`, &data)
+println(err.Error())    // Mismatch type int with value string "at index 5: mismatched type with value\n\n\t{\"A\":\"1\",\"B\":1}\n\t.....^.........\n"
+fmt.Printf("%+v", data) // {A:0 B:1}
+```
 ### Ast.Node
 Sonic/ast.Node is a completely self-contained AST for JSON. It implements serialization and deserialization both and provides robust APIs for obtaining and modification of generic data.
 #### Get/Index
