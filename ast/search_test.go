@@ -203,6 +203,21 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
     }
 }
 
+func BenchmarkGetWithManyCompare_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(_LotsCompare)))
+    ast := NewSearcher(_LotsCompare)
+    for i := 0; i < b.N; i++ {
+        node, err := ast.GetByPath("is")
+        if err != nil {
+            b.Fatal(err)
+        }
+        x, _ := node.Int64()
+        if x != 1 {
+            b.Fatal(node.Interface())
+        }
+    }
+}
+
 func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     b.RunParallel(func(pb *testing.PB) {
