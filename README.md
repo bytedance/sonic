@@ -101,19 +101,20 @@ err := sonic.Unmarshal(output, &data)
  ```
 
 ### Streaming IO
-Sonic supports to decode json from `io.Reader` or encode objects into `io.Writer`, aiming at handling multiple values as well as reducing memory consuming.
+Sonic supports decoding json from `io.Reader` or encoding objects into `io.`Writer`, aims at handling multiple values as well as reducing memory consumption.
 - encoder
 ```go
 import "github.com/bytedance/sonic/encoder"
 
-var o1 =  map[string]interface{}{
-         "a": "b"
+var o1 = map[string]interface{}{
+    "a": "b",
 }
 var o2 = 1
 var w = bytes.NewBuffer(nil)
 var enc = encoder.NewStreamEncoder(w)
-enc.Encode(o)
-println(w1.String()) // "{\"a\":\"b\"}\n1"
+enc.Encode(o1)
+enc.Encode(o2)
+println(w.String()) // "{"a":"b"}\n1"
 ```
 - decoder
 ```go
@@ -203,9 +204,9 @@ if err != nil {
 ```
 
 ### Ast.Node
-Sonic/ast.Node is a completely self-contained AST for JSON. It implements serialization and deserialization both, and provides robust APIs for obtaining and modification of generic data.
+Sonic/ast.Node is a completely self-contained AST for JSON. It implements serialization and deserialization both and provides robust APIs for obtaining and modification of generic data.
 #### Get/Index
-Search partial JSON by given paths, which must be non-negative integer or string or nil
+Search partial JSON by given paths, which must be non-negative integer or string, or nil
 ```go
 import "github.com/bytedance/sonic"
 
@@ -219,7 +220,7 @@ raw := root.Raw() // == string(input)
 root, err := sonic.Get(input, "key1", 1, "key2")
 sub := root.Get("key3").Index(2).Int64() // == 3
 ```
-**Tip**: since `Index()` uses offset to locate data, which is much faster than scanning like `Get()`, we suggest you use it as much as possible. And sonic also provides another API `IndexOrGet()` to underlying use offset as well as ensuring the key is matched.
+**Tip**: since `Index()` uses offset to locate data, which is much faster than scanning like `Get()`, we suggest you use it as much as possible. And sonic also provides another API `IndexOrGet()` to underlying use offset as well as ensure the key is matched.
 
 #### Set/Unset
 Modify the json content by Set()/Unset()
@@ -264,17 +265,17 @@ println(string(buf) == string(exp)) // true
 Sonic **DOES NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments, we have the following suggestions:
 
 - Developing on **Mac M1**: Make sure you have Rosetta 2 installed on your machine, and set `GOARCH=amd64` when building your application. Rosetta 2 can automatically translate x86 binaries to arm64 binaries and run x86 applications on Mac M1.
-- Developing on **Linux arm64**: You can install qemu and use the `qemu-x86_64 -cpu max` command to convert x86 binaries to amr64 binaries for applications built with sonic. The qemu can achieve similar transfer effect to Rosetta 2 on Mac M1.
+- Developing on **Linux arm64**: You can install qemu and use the `qemu-x86_64 -cpu max` command to convert x86 binaries to amr64 binaries for applications built with sonic. The qemu can achieve a similar transfer effect to Rosetta 2 on Mac M1.
 
 For developers who want to use sonic on Linux arm64 without qemu, or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
 - `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with the corresponding config, and some options like `SortKeys=false` will be invalid.
 - `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It will fall back to `encoding/json`.
-- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with corresponding config, and some options will be invalid.
+- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with the corresponding config, and some options will be invalid.
 
 ## Tips
 
 ### Pretouch
-Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as a JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise to **use `Pretouch()` for huge-schema or compact-memory application** before `Marshal()/Unmarshal()`.
+Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as a JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise **using `Pretouch()` for huge-schema or compact-memory applications** before `Marshal()/Unmarshal()`.
 ```go
 import (
     "reflect"
@@ -293,7 +294,7 @@ func init() {
         // If the type is too deep nesting (nesting depth > option.DefaultMaxInlineDepth),
         // you can set compile recursive loops in Pretouch for better stability in JIT.
         option.WithCompileRecursiveDepth(loop),
-        // For large nested struct, try to set smaller depth to reduce compiling time.
+        // For a large nested struct, try to set a smaller depth to reduce compiling time.
         option.WithCompileMaxInlineDepth(depth),
     )
 }
@@ -303,14 +304,14 @@ func init() {
 When decoding **string values without any escaped characters**, sonic references them from the origin JSON buffer instead of mallocing a new buffer to copy. This helps a lot for CPU performance but may leave the whole JSON buffer in memory as long as the decoded objects are being used. In practice, we found the extra memory introduced by referring JSON buffer is usually 20% ~ 80% of decoded objects. Once an application holds these objects for a long time (for example, cache the decoded objects for reusing), its in-use memory on the server may go up. We provide the option `decoder.CopyString()` for users to choose not to reference the JSON buffer, which may cause a decline in CPU performance to some degree.
 
 ### Pass string or []byte?
-For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when origin JSON is huge. Therefore, you can use `UnmarshalString()` and `GetFromString()` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte. We also provide API `MarshalString()` for convenient **nocopy-cast** of encoded JSON []byte, which is safe since sonic's output bytes is always duplicated and unique.
+For alignment to `encoding/json`, we provide API to pass `[]byte` as an argument, but the string-to-bytes copy is conducted at the same time considering safety, which may lose performance when the origin JSON is huge. Therefore, you can use `UnmarshalString()` and `GetFromString()` to pass a string, as long as your origin data is a string or **nocopy-cast** is safe for your []byte. We also provide API `MarshalString()` for convenient **nocopy-cast** of encoded JSON []byte, which is safe since sonic's output bytes is always duplicated and unique.
 
 ### Accelerate `encoding.TextMarshaler`
-To ensure data security, sonic.Encoder quotes and escapes string values from `encoding.TextMarshaler` interfaces by default, which may degrade performance much if most of your data is in form of them. We provide `encoder.NoQuoteTextMarshaler` to skip these operations, which means you **MUST** ensure their output string escaped and quoted in accordance with [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
+To ensure data security, sonic.Encoder quotes and escapes string values from `encoding.TextMarshaler` interfaces by default, which may degrade performance much if most of your data is in form of them. We provide `encoder.NoQuoteTextMarshaler` to skip these operations, which means you **MUST** ensure their output string escaped and quoted following [RFC8259](https://datatracker.ietf.org/doc/html/rfc8259).
 
 
 ### Better performance for generic data
-In **fully-parsed** scenario, `Unmarshal()` performs better than `Get()`+`Node.Interface()`. But if you only have a part of schema for specific json, you can combine `Get()` and `Unmarshal()` together:
+In **fully-parsed** scenario, `Unmarshal()` performs better than `Get()`+`Node.Interface()`. But if you only have a part of the schema for specific json, you can combine `Get()` and `Unmarshal()` together:
 ```go
 import "github.com/bytedance/sonic"
 
@@ -334,7 +335,7 @@ Why? Because `ast.Node` stores its children using `array`:
 - **Hashing** (`map[x]`) is not as efficient as **Indexing** (`array[x]`), which `ast.Node` can conduct on **both array and object**;
 - Using `Interface()`/`Map()` means Sonic must parse all the underlying values, while `ast.Node` can parse them **on demand**.
 
-**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, your can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}`
+**CAUTION:** `ast.Node` **DOESN'T** ensure concurrent security directly, due to its **lazy-load** design. However, you can call `Node.Load()`/`Node.LoadAll()` to achieve that, which may bring performance reduction while it still works faster than converting to `map` or `interface{}`
 
 ## Community
 Sonic is a subproject of [CloudWeGo](https://www.cloudwego.io/). We are committed to building a cloud native ecosystem.
