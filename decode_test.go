@@ -1116,6 +1116,7 @@ func TestMarshalEmbeds(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
     for i, tt := range unmarshalTests {
+        t.Log(i, tt.in)
         if !json.Valid([]byte(tt.in)) {
             continue
         }
@@ -2005,7 +2006,6 @@ var decodeTypeErrorTests = []struct {
     dest interface{}
     src  string
 }{
-    {new(string), `{"user": "name"}`}, // issue 4628.
     {new(error), `{}`},                // issue 4222
     {new(error), `[]`},
     {new(error), `""`},
@@ -2019,6 +2019,28 @@ func TestUnmarshalTypeError(t *testing.T) {
         if _, ok := err.(*json.UnmarshalTypeError); !ok {
             if _, ok = err.(decoder.SyntaxError); !ok {
                 t.Errorf("expected type error for Unmarshal(%q, type %T): got %T",
+                    item.src, item.dest, err)
+            }
+        }
+    }
+}
+
+var decodeMismatchErrorTests = []struct {
+    dest interface{}
+    src  string
+}{
+    {new(int), `{}`},               
+    {new(string), `{}`},               
+    {new(bool), `{}`},               
+    {new([]byte), `{}`},               
+}
+
+func TestMismatchTypeError(t *testing.T) {
+    for _, item := range decodeMismatchErrorTests {
+        err := Unmarshal([]byte(item.src), item.dest)
+        if _, ok := err.(*decoder.MismatchTypeError); !ok {
+            if _, ok = err.(decoder.SyntaxError); !ok {
+                t.Errorf("expected mismatch error for Unmarshal(%q, type %T): got %T",
                     item.src, item.dest, err)
             }
         }

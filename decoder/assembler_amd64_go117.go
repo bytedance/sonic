@@ -70,7 +70,7 @@ const (
     _FP_args   = 72     // 72 bytes to pass and spill register arguements
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
-    _FP_locals = 120     // 112 bytes for local variables
+    _FP_locals = 144    // 144 bytes for local variables
 )
 
 const (
@@ -101,6 +101,7 @@ const (
     _LB_unquote_error   = "_unquote_error"
     _LB_parsing_error   = "_parsing_error"
     _LB_parsing_error_v = "_parsing_error_v"
+    _LB_mismatch_error   = "_mismatch_error"
 )
 
 const (
@@ -112,6 +113,8 @@ const (
     _LB_char_m2_error = "_char_m2_error"
     _LB_char_m3_error = "_char_m3_error"
 )
+
+const _LB_skip_one = "_skip_one"
 
 var (
     _AX = jit.Reg("AX")
@@ -191,6 +194,12 @@ var (
 
 var _VAR_fl = jit.Ptr(_SP, _FP_fargs + _FP_saves + 112)
 
+var (
+    _VAR_et = jit.Ptr(_SP, _FP_fargs + _FP_saves + 120) // save dismatched type
+    _VAR_pc = jit.Ptr(_SP, _FP_fargs + _FP_saves + 128) // save skip return pc
+    _VAR_ic = jit.Ptr(_SP, _FP_fargs + _FP_saves + 136) // save dismatched position
+)
+
 type _Assembler struct {
     jit.BaseAssembler
     p _Program
@@ -219,7 +228,9 @@ func (self *_Assembler) compile() {
     self.copy_string()
     self.escape_string()
     self.escape_string_twice()
+    self.skip_one()
     self.type_error()
+    self.mismatch_error()
     self.field_error()
     self.range_error()
     self.stack_error()
@@ -290,6 +301,15 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_recurse          : (*_Assembler)._asm_OP_recurse,
     _OP_goto             : (*_Assembler)._asm_OP_goto,
     _OP_switch           : (*_Assembler)._asm_OP_switch,
+    _OP_check_char_0     : (*_Assembler)._asm_OP_check_char_0,
+    _OP_dismatch_err     : (*_Assembler)._asm_OP_dismatch_err,
+    _OP_go_skip          : (*_Assembler)._asm_OP_go_skip,
+    _OP_add              : (*_Assembler)._asm_OP_add,
+    _OP_debug            : (*_Assembler)._asm_OP_debug,
+}
+
+func (self *_Assembler) _asm_OP_debug(_ *_Instr) {
+    self.Byte(0xcc)
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -310,8 +330,10 @@ func (self *_Assembler) instrs() {
 
 func (self *_Assembler) epilogue() {
     self.Mark(len(self.p))
-    self.Emit("XORL", _ET, _ET)                     // XORL ET, ET
     self.Emit("XORL", _EP, _EP)                     // XORL EP, EP
+    self.Emit("MOVQ", _VAR_et, _ET)                 // MOVQ VAR_et, ET
+    self.Emit("TESTQ", _ET, _ET)                    // TESTQ ET, ET
+    self.Sjmp("JNZ", _LB_mismatch_error)            // JNZ _LB_mismatch_error
     self.Link(_LB_error)                            // _error:
     self.Emit("MOVQ", _EP, _CX)                     // MOVQ BX, CX
     self.Emit("MOVQ", _ET, _BX)                     // MOVQ AX, BX
@@ -343,6 +365,7 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
+    self.Emit("MOVQ", jit.Imm(0), _VAR_et)          // MOVQ $0, et<>+120(FP)
     // initialize digital buffer first
     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
     self.Emit("LEAQ", jit.Ptr(_ST, _DbufOffset), _AX)        // LEAQ _DbufOffset(ST), AX
@@ -421,11 +444,12 @@ func (self *_Assembler) call_vf(fn obj.Addr) {
 /** Assembler Error Handlers **/
 
 var (
-    _F_convT64     = jit.Func(convT64)
-    _F_error_wrap  = jit.Func(error_wrap)
-    _F_error_type  = jit.Func(error_type)
-    _F_error_field = jit.Func(error_field)
-    _F_error_value = jit.Func(error_value)
+    _F_convT64        = jit.Func(convT64)
+    _F_error_wrap     = jit.Func(error_wrap)
+    _F_error_type     = jit.Func(error_type)
+    _F_error_field    = jit.Func(error_field)
+    _F_error_value    = jit.Func(error_value)
+    _F_error_mismatch = jit.Func(error_mismatch)
 )
 
 var (
@@ -451,6 +475,16 @@ var (
 func (self *_Assembler) type_error() {
     self.Link(_LB_type_error)                   // _type_error:
     self.call_go(_F_error_type)                 // CALL_GO error_type
+    self.Sjmp("JMP" , _LB_error)                // JMP     _error
+}
+
+func (self *_Assembler) mismatch_error() {
+    self.Link(_LB_mismatch_error)               // _type_error:
+    self.Emit("MOVQ", _ARG_sp, _AX)
+    self.Emit("MOVQ", _ARG_sl, _BX)
+    self.Emit("MOVQ", _VAR_ic, _CX)
+    self.Emit("MOVQ", _VAR_et, _DI)
+    self.call_go(_F_error_mismatch)             // CALL_GO error_type
     self.Sjmp("JMP" , _LB_error)                // JMP     _error
 }
 
@@ -536,6 +570,31 @@ func (self *_Assembler) parsing_error() {
     self.Sjmp("JMP"  , _LB_error)                                       // JMP     _error
 }
 
+func (self *_Assembler) _asm_OP_dismatch_err(p *_Instr) {
+    self.Emit("MOVQ", _IC, _VAR_ic)      
+    self.Emit("MOVQ", jit.Type(p.vt()), _ET)     
+    self.Emit("MOVQ", _ET, _VAR_et)
+}
+
+func (self *_Assembler) _asm_OP_go_skip(p *_Instr) {
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Xref(p.vi(), 4)
+    // self.Byte(0xcc)
+    self.Emit("MOVQ", _R9, _VAR_pc)
+    self.Sjmp("JMP"  , _LB_skip_one)            // JMP     _skip_one
+}
+
+func (self *_Assembler) skip_one() {
+    self.Link(_LB_skip_one)                     // _skip:
+    self.Emit("MOVQ", _VAR_ic, _IC)             // MOVQ    _VAR_ic, IC
+    self.call_sf(_F_skip_one)                   // CALL_SF skip_one
+    self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
+    self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
+    self.Emit("MOVQ" , _VAR_pc, _R9)            // MOVQ    pc, R9
+    // self.Byte(0xcc)
+    self.Rjmp("JMP"  , _R9)                     // JMP     (R9)
+}
+
 /** Memory Management Routines **/
 
 var (
@@ -585,10 +644,23 @@ var (
     _F_vunsigned = jit.Imm(int64(native.S_vunsigned))
 )
 
-func (self *_Assembler) check_err() {
+func (self *_Assembler) check_err(vt reflect.Type) {
     self.Emit("MOVQ" , _VAR_st_Vt, _AX)         // MOVQ st.Vt, AX
     self.Emit("TESTQ", _AX, _AX)                // CMPQ AX, ${native.V_STRING}
-    self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
+    // try to skip the value
+    if vt != nil {
+        self.Sjmp("JNS" , "_check_err_{n}")        // JNE  _parsing_error_v
+        self.Emit("MOVQ", _BX, _VAR_ic)
+        self.Emit("MOVQ", jit.Type(vt), _ET)     
+        self.Emit("MOVQ", _ET, _VAR_et)
+        self.Byte(0x4c  , 0x8d, 0x0d)         // LEAQ (PC), R9
+        self.Sref("_check_err_{n}", 4)
+        self.Emit("MOVQ", _R9, _VAR_pc)
+        self.Sjmp("JMP" , _LB_skip_one)
+        self.Link("_check_err_{n}")
+    } else {
+        self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
+    }
 }
 
 func (self *_Assembler) check_eof(d int64) {
@@ -602,25 +674,29 @@ func (self *_Assembler) check_eof(d int64) {
     }
 }
 
+
 func (self *_Assembler) parse_string() {
     self.Emit("MOVQ", _ARG_fv, _CX)
     self.call_vf(_F_vstring)
-    self.check_err()
+    self.check_err(nil)
 }
 
 func (self *_Assembler) parse_number() {
+    self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vnumber)
-    self.check_err()
+    self.check_err(floatType)
 }
 
 func (self *_Assembler) parse_signed() {
+    self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vsigned)
-    self.check_err()
+    self.check_err(intType)
 }
 
 func (self *_Assembler) parse_unsigned() {
+    self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vunsigned)
-    self.check_err()
+    self.check_err(uintType)
 }
 
 // Pointer: DI, Size: SI, Return: R9  
@@ -1138,7 +1214,17 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
     self.Sjmp("JE"  , "_false_{n}")                             // JE   _false_{n}
     self.Emit("MOVL", jit.Imm(_IM_true), _CX)                   // MOVL $"true", CX
     self.Emit("CMPL", _CX, jit.Sib(_IP, _IC, 1, 0))             // CMPL CX, (IP)(IC)
-    self.Sjmp("JNE" , _LB_im_error)                             // JNE  _im_error
+    self.Sjmp("JE" , "_bool_true_{n}")          
+    // try to skip the value
+    self.Emit("MOVQ", _IC, _VAR_ic)           
+    self.Emit("MOVQ", _T_bool, _ET)     
+    self.Emit("MOVQ", _ET, _VAR_et)
+    self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
+    self.Sref("_end_{n}", 4)
+    self.Emit("MOVQ", _R9, _VAR_pc)
+    self.Sjmp("JMP"  , _LB_skip_one) 
+
+    self.Link("_bool_true_{n}")
     self.Emit("MOVQ", _AX, _IC)                                 // MOVQ AX, IC
     self.Emit("MOVB", jit.Imm(1), jit.Ptr(_VP, 0))              // MOVB $1, (VP)
     self.Sjmp("JMP" , "_end_{n}")                               // JMP  _end_{n}
@@ -1159,6 +1245,7 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.Emit("MOVQ", jit.Imm(0), _VAR_fl)
     self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm('"'))
+    self.Emit("MOVQ", _IC, _BX)
     self.Sjmp("JNE", "_skip_number_{n}")
     self.Emit("MOVQ", jit.Imm(1), _VAR_fl)
     self.Emit("ADDQ", jit.Imm(1), _IC)
@@ -1171,8 +1258,19 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.callc(_F_skip_number)                          // CALL  _F_skip_number
     self.Emit("MOVQ", _ARG_ic, _IC)                     // MOVQ  ic<>+16(FP), IC
     self.Emit("TESTQ", _AX, _AX)                        // TESTQ AX, AX
-    self.Sjmp("JS"   , _LB_parsing_error_v)             // JS    _parse_error_v
+    self.Sjmp("JNS"   , "_num_next_{n}")
 
+    /* call skip one */
+    self.Emit("MOVQ", _BX, _VAR_ic)           
+    self.Emit("MOVQ", _T_number, _ET)     
+    self.Emit("MOVQ", _ET, _VAR_et)
+    self.Byte(0x4c, 0x8d, 0x0d)       
+    self.Sref("_num_end_{n}", 4)
+    self.Emit("MOVQ", _R9, _VAR_pc)
+    self.Sjmp("JMP"  , _LB_skip_one)
+
+    /* assgin string */
+    self.Link("_num_next_{n}")
     self.slice_from_r(_AX, 0)
     self.Emit("BTQ", jit.Imm(_F_copy_string), _ARG_fv)
     self.Sjmp("JNC", "_num_write_{n}")
@@ -1614,6 +1712,16 @@ func (self *_Assembler) _asm_OP_check_char(p *_Instr) {
     self.Emit("CMPB"   , jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(p.vb())))   // CMPB    (IP)(IC), ${p.vb()}
     self.Emit("CMOVQEQ", _AX, _IC)                                          // CMOVQEQ AX, IC
     self.Xjmp("JE"     , p.vi())                                            // JE      {p.vi()}
+}
+
+func (self *_Assembler) _asm_OP_check_char_0(p *_Instr) {
+    self.check_eof(1)
+    self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(p.vb())))   // CMPB    (IP)(IC), ${p.vb()}
+    self.Xjmp("JE"  , p.vi())                                            // JE      {p.vi()}
+}
+
+func (self *_Assembler) _asm_OP_add(p *_Instr) {
+    self.Emit("ADDQ", jit.Imm(int64(p.vi())), _IC)  // ADDQ ${p.vi()}, IC
 }
 
 func (self *_Assembler) _asm_OP_load(_ *_Instr) {

@@ -28,6 +28,11 @@ import (
 
 var (
     byteType                = reflect.TypeOf(byte(0))
+    intType                 = reflect.TypeOf(int(0))
+    uintType                = reflect.TypeOf(uint(0))
+    floatType               = reflect.TypeOf(float64(0))
+    stringType              = reflect.TypeOf("")
+    bytesType               = reflect.TypeOf([]byte(nil))
     jsonNumberType          = reflect.TypeOf(json.Number(""))
     base64CorruptInputError = reflect.TypeOf(base64.CorruptInputError(0))
 )
