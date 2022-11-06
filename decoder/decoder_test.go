@@ -145,16 +145,27 @@ func TestSkipMismatchTypeError(t *testing.T) {
         // assert.Equal(t, len(data), d.i)
         assert.Equal(t, obj2, obj)
     })
-    t.Run("map text key", func(t *testing.T) {
+    t.Run("map", func(t *testing.T) {
         var obj, obj2 = &map[int]int{}, &map[int]int{}
-        var data = `{"a":"","1":1,"c":true}`
+        var data = `{"true" : { },"1":1,"2" : true,"3":3}`
         d := NewDecoder(data)
         err := d.Decode(obj)
         err2 := json.Unmarshal([]byte(data), obj2)
-        println(err2.Error())
         assert.Equal(t, err2 == nil, err == nil)
         // assert.Equal(t, len(data), d.i)
         assert.Equal(t, obj2, obj)
+    })
+    t.Run("map error", func(t *testing.T) {
+        var obj, obj2 = &map[int]int{}, &map[int]int{}
+        var data = `{"true" : { ],"1":1,"2" : true,"3":3}`
+        d := NewDecoder(data)
+        err := d.Decode(obj)
+        err2 := json.Unmarshal([]byte(data), obj2)
+        println(err.Error())
+        println(err2.Error())
+        assert.Equal(t, err2 == nil, err == nil)
+        // assert.Equal(t, len(data), d.i)
+        // assert.Equal(t, obj2, obj)
     })
 }
 

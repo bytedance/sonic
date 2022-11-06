@@ -635,6 +635,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     j := p.pc()
     p.chr(_OP_check_char, '}')
     p.chr(_OP_match_char, '"')
+    skip2 := p.pc()
     p.rtt(op, vt)
 
     /* match the closing quote if needed */
@@ -646,6 +647,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
     self.compileOne(p, sp + 2, vt.Elem())
+    p.pin(skip2)
     p.add(_OP_load)
     k0 := p.pc()
     p.add(_OP_lspace)
@@ -654,6 +656,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.chr(_OP_match_char, ',')
     p.add(_OP_lspace)
     p.chr(_OP_match_char, '"')
+    skip3 := p.pc()
     p.rtt(op, vt)
 
     /* match the closing quote if needed */
@@ -665,6 +668,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
     self.compileOne(p, sp + 2, vt.Elem())
+    p.pin(skip3)
     p.add(_OP_load)
     p.int(_OP_goto, k0)
     p.pin(j)

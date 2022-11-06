@@ -114,7 +114,10 @@ const (
     _LB_char_m3_error = "_char_m3_error"
 )
 
-const _LB_skip_one = "_skip_one"
+const (
+    _LB_skip_one = "_skip_one"
+    _LB_skip_key_value = "_skip_key_value"
+)
 
 var (
     _AX = jit.Reg("AX")
@@ -229,6 +232,7 @@ func (self *_Assembler) compile() {
     self.escape_string()
     self.escape_string_twice()
     self.skip_one()
+    self.skip_key_value()
     self.type_error()
     self.mismatch_error()
     self.field_error()
@@ -595,6 +599,29 @@ func (self *_Assembler) skip_one() {
     self.Rjmp("JMP"  , _R9)                     // JMP     (R9)
 }
 
+func (self *_Assembler) skip_key_value() {
+    self.Link(_LB_skip_key_value)               // _skip:
+    // skip the key
+    self.Emit("MOVQ", _VAR_ic, _IC)             // MOVQ    _VAR_ic, IC
+    self.call_sf(_F_skip_one)                   // CALL_SF skip_one
+    self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
+    self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
+    // match char ':'
+    self.lspace("_global_1")
+    self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(':'))
+    self.Sjmp("JNE"  , _LB_parsing_error_v)     // JNE     _parse_error_v
+    self.Emit("ADDQ", jit.Imm(1), _IC)          // ADDQ    $1, IC
+    self.lspace("_global_2")
+    // skip the value
+    self.call_sf(_F_skip_one)                   // CALL_SF skip_one
+    self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
+    self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
+    // jump back to specified address
+    self.Emit("MOVQ" , _VAR_pc, _R9)            // MOVQ    pc, R9
+    self.Rjmp("JMP"  , _R9)                     // JMP     (R9)
+}
+
+
 /** Memory Management Routines **/
 
 var (
@@ -644,19 +671,28 @@ var (
     _F_vunsigned = jit.Imm(int64(native.S_vunsigned))
 )
 
-func (self *_Assembler) check_err(vt reflect.Type) {
+func (self *_Assembler) check_err(vt reflect.Type, pin string, pin2 int) {
     self.Emit("MOVQ" , _VAR_st_Vt, _AX)         // MOVQ st.Vt, AX
     self.Emit("TESTQ", _AX, _AX)                // CMPQ AX, ${native.V_STRING}
     // try to skip the value
     if vt != nil {
         self.Sjmp("JNS" , "_check_err_{n}")        // JNE  _parsing_error_v
-        self.Emit("MOVQ", _BX, _VAR_ic)
-        self.Emit("MOVQ", jit.Type(vt), _ET)     
+        self.Emit("MOVQ", jit.Type(vt), _ET)         
         self.Emit("MOVQ", _ET, _VAR_et)
-        self.Byte(0x4c  , 0x8d, 0x0d)         // LEAQ (PC), R9
-        self.Sref("_check_err_{n}", 4)
-        self.Emit("MOVQ", _R9, _VAR_pc)
-        self.Sjmp("JMP" , _LB_skip_one)
+        if pin2 != -1 {
+            self.Emit("SUBQ", jit.Imm(1), _BX)
+            self.Emit("MOVQ", _BX, _VAR_ic)
+            self.Byte(0x4c  , 0x8d, 0x0d)         // LEAQ (PC), R9
+            self.Xref(pin2, 4)
+            self.Emit("MOVQ", _R9, _VAR_pc)
+            self.Sjmp("JMP" , _LB_skip_key_value)
+        } else {
+            self.Emit("MOVQ", _BX, _VAR_ic)
+            self.Byte(0x4c  , 0x8d, 0x0d)         // LEAQ (PC), R9
+            self.Sref(pin, 4)
+            self.Emit("MOVQ", _R9, _VAR_pc)
+            self.Sjmp("JMP" , _LB_skip_one)
+        }
         self.Link("_check_err_{n}")
     } else {
         self.Sjmp("JS"   , _LB_parsing_error_v)     // JNE  _parsing_error_v
@@ -678,25 +714,25 @@ func (self *_Assembler) check_eof(d int64) {
 func (self *_Assembler) parse_string() {
     self.Emit("MOVQ", _ARG_fv, _CX)
     self.call_vf(_F_vstring)
-    self.check_err(nil)
+    self.check_err(nil, "", -1)
 }
 
-func (self *_Assembler) parse_number() {
+func (self *_Assembler) parse_number(vt reflect.Type, pin string, pin2 int) {
     self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vnumber)
-    self.check_err(floatType)
+    self.check_err(vt, pin, pin2)
 }
 
-func (self *_Assembler) parse_signed() {
+func (self *_Assembler) parse_signed(vt reflect.Type, pin string, pin2 int) {
     self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vsigned)
-    self.check_err(intType)
+    self.check_err(vt, pin, pin2)
 }
 
-func (self *_Assembler) parse_unsigned() {
+func (self *_Assembler) parse_unsigned(vt reflect.Type, pin string, pin2 int) {
     self.Emit("MOVQ", _IC, _BX)       // save ic when call native func    
     self.call_vf(_F_vunsigned)
-    self.check_err(uintType)
+    self.check_err(vt, pin, pin2)
 }
 
 // Pointer: DI, Size: SI, Return: R9  
@@ -1289,63 +1325,83 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
-    self.parse_signed()                                                 // PARSE int8
+    var pin = "_i8_end_{n}"
+    self.parse_signed(int8Type, pin, -1)                                                 // PARSE int8
     self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8)     // RANGE int8
     self.Emit("MOVB", _CX, jit.Ptr(_VP, 0))                             // MOVB  CX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_i16(_ *_Instr) {
-    self.parse_signed()                                                     // PARSE int16
+    var pin = "_i16_end_{n}"
+    self.parse_signed(int16Type, pin, -1)                                                     // PARSE int16
     self.range_signed_CX(_I_int16, _T_int16, math.MinInt16, math.MaxInt16)     // RANGE int16
     self.Emit("MOVW", _CX, jit.Ptr(_VP, 0))                                 // MOVW  CX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_i32(_ *_Instr) {
-    self.parse_signed()                                                     // PARSE int32
+    var pin = "_i32_end_{n}"
+    self.parse_signed(int32Type, pin, -1)                                                     // PARSE int32
     self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32)     // RANGE int32
     self.Emit("MOVL", _CX, jit.Ptr(_VP, 0))                                 // MOVL  CX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_i64(_ *_Instr) {
-    self.parse_signed()                         // PARSE int64
+    var pin = "_i64_end_{n}"
+    self.parse_signed(int64Type, pin, -1)                         // PARSE int64
     self.Emit("MOVQ", _VAR_st_Iv, _AX)          // MOVQ  st.Iv, AX
     self.Emit("MOVQ", _AX, jit.Ptr(_VP, 0))     // MOVQ  AX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u8(_ *_Instr) {
-    self.parse_unsigned()                                   // PARSE uint8
+    var pin = "_u8_end_{n}"
+    self.parse_unsigned(uint8Type, pin, -1)                                   // PARSE uint8
     self.range_unsigned_CX(_I_uint8, _T_uint8, math.MaxUint8)  // RANGE uint8
     self.Emit("MOVB", _CX, jit.Ptr(_VP, 0))                 // MOVB  CX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u16(_ *_Instr) {
-    self.parse_unsigned()                                       // PARSE uint16
+    var pin = "_u16_end_{n}"
+    self.parse_unsigned(uint16Type, pin, -1)                                       // PARSE uint16
     self.range_unsigned_CX(_I_uint16, _T_uint16, math.MaxUint16)   // RANGE uint16
     self.Emit("MOVW", _CX, jit.Ptr(_VP, 0))                     // MOVW  CX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u32(_ *_Instr) {
-    self.parse_unsigned()                                       // PARSE uint32
+    var pin = "_u32_end_{n}"
+    self.parse_unsigned(uint32Type, pin, -1)                                       // PARSE uint32
     self.range_unsigned_CX(_I_uint32, _T_uint32, math.MaxUint32)   // RANGE uint32
     self.Emit("MOVL", _CX, jit.Ptr(_VP, 0))                     // MOVL  CX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u64(_ *_Instr) {
-    self.parse_unsigned()                       // PARSE uint64
+    var pin = "_u64_end_{n}"
+    self.parse_unsigned(uint64Type, pin, -1)                       // PARSE uint64
     self.Emit("MOVQ", _VAR_st_Iv, _AX)          // MOVQ  st.Iv, AX
     self.Emit("MOVQ", _AX, jit.Ptr(_VP, 0))     // MOVQ  AX, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_f32(_ *_Instr) {
-    self.parse_number()                         // PARSE NUMBER
+    var pin = "_f32_end_{n}"
+    self.parse_number(float32Type, pin, -1)                         // PARSE NUMBER
     self.range_single_X0()                         // RANGE float32
     self.Emit("MOVSS", _X0, jit.Ptr(_VP, 0))    // MOVSS X0, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_f64(_ *_Instr) {
-    self.parse_number()                         // PARSE NUMBER
+    var pin = "_f64_end_{n}"
+    self.parse_number(float64Type, pin, -1)                         // PARSE NUMBER
     self.Emit("MOVSD", _VAR_st_Dv, _X0)         // MOVSD st.Dv, X0
     self.Emit("MOVSD", _X0, jit.Ptr(_VP, 0))    // MOVSD X0, (VP)
+    self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_unquote(_ *_Instr) {
@@ -1418,19 +1474,19 @@ func (self *_Assembler) _asm_OP_map_init(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_i8(p *_Instr) {
-    self.parse_signed()                                                 // PARSE     int8
+    self.parse_signed(int8Type, "", p.vi())                                                 // PARSE     int8
     self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8)     // RANGE     int8
     self.mapassign_std(p.vt(), _VAR_st_Iv)                              // MAPASSIGN int8, mapassign, st.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_i16(p *_Instr) {
-    self.parse_signed()                                                     // PARSE     int16
+    self.parse_signed(int16Type, "", p.vi())                                                     // PARSE     int16
     self.range_signed_CX(_I_int16, _T_int16, math.MinInt16, math.MaxInt16)     // RANGE     int16
     self.mapassign_std(p.vt(), _VAR_st_Iv)                                  // MAPASSIGN int16, mapassign, st.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_i32(p *_Instr) {
-    self.parse_signed()                                                     // PARSE     int32
+    self.parse_signed(int32Type, "", p.vi())                                                     // PARSE     int32
     self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32)     // RANGE     int32
     if vt := p.vt(); !mapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)                                  // MAPASSIGN int32, mapassign, st.Iv
@@ -1441,7 +1497,7 @@ func (self *_Assembler) _asm_OP_map_key_i32(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_i64(p *_Instr) {
-    self.parse_signed()                                 // PARSE     int64
+    self.parse_signed(int64Type, "", p.vi())                                 // PARSE     int64
     if vt := p.vt(); !mapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)              // MAPASSIGN int64, mapassign, st.Iv
     } else {
@@ -1451,19 +1507,19 @@ func (self *_Assembler) _asm_OP_map_key_i64(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_u8(p *_Instr) {
-    self.parse_unsigned()                                   // PARSE     uint8
+    self.parse_unsigned(uint8Type, "", p.vi())                                   // PARSE     uint8
     self.range_unsigned_CX(_I_uint8, _T_uint8, math.MaxUint8)  // RANGE     uint8
     self.mapassign_std(p.vt(), _VAR_st_Iv)                  // MAPASSIGN uint8, vt.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_u16(p *_Instr) {
-    self.parse_unsigned()                                       // PARSE     uint16
+    self.parse_unsigned(uint16Type, "", p.vi())                                       // PARSE     uint16
     self.range_unsigned_CX(_I_uint16, _T_uint16, math.MaxUint16)   // RANGE     uint16
     self.mapassign_std(p.vt(), _VAR_st_Iv)                      // MAPASSIGN uint16, vt.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_u32(p *_Instr) {
-    self.parse_unsigned()                                       // PARSE     uint32
+    self.parse_unsigned(uint32Type, "", p.vi())                                       // PARSE     uint32
     self.range_unsigned_CX(_I_uint32, _T_uint32, math.MaxUint32)   // RANGE     uint32
     if vt := p.vt(); !mapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)                      // MAPASSIGN uint32, vt.Iv
@@ -1474,7 +1530,7 @@ func (self *_Assembler) _asm_OP_map_key_u32(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_u64(p *_Instr) {
-    self.parse_unsigned()                                       // PARSE     uint64
+    self.parse_unsigned(uint64Type, "", p.vi())                                       // PARSE     uint64
     if vt := p.vt(); !mapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)                      // MAPASSIGN uint64, vt.Iv
     } else {
@@ -1484,14 +1540,14 @@ func (self *_Assembler) _asm_OP_map_key_u64(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_f32(p *_Instr) {
-    self.parse_number()                     // PARSE     NUMBER
+    self.parse_number(float32Type, "", p.vi())                     // PARSE     NUMBER
     self.range_single_X0()                     // RANGE     float32
     self.Emit("MOVSS", _X0, _VAR_st_Dv)     // MOVSS     X0, st.Dv
     self.mapassign_std(p.vt(), _VAR_st_Dv)  // MAPASSIGN ${p.vt()}, mapassign, st.Dv
 }
 
 func (self *_Assembler) _asm_OP_map_key_f64(p *_Instr) {
-    self.parse_number()                     // PARSE     NUMBER
+    self.parse_number(float64Type, "", p.vi())                     // PARSE     NUMBER
     self.mapassign_std(p.vt(), _VAR_st_Dv)  // MAPASSIGN ${p.vt()}, mapassign, st.Dv
 }
 
@@ -1665,14 +1721,19 @@ func (self *_Assembler) _asm_OP_unmarshal_text_p(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_lspace(_ *_Instr) {
+    self.lspace("_{n}")
+}
+
+func (self *_Assembler) lspace(subfix string) {
+    var label = "_lspace" + subfix
     self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
     self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
     self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
     self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
     self.Emit("CMPQ"   , _AX, jit.Imm(' '))             // CMPQ    AX, $' '
-    self.Sjmp("JA"     , "_nospace_{n}")                // JA      _nospace_{n}
+    self.Sjmp("JA"     , label)                // JA      _nospace_{n}
     self.Emit("BTQ"    , _AX, _DX)                      // BTQ     AX, DX
-    self.Sjmp("JNC"    , "_nospace_{n}")                // JNC     _nospace_{n}
+    self.Sjmp("JNC"    , label)                // JNC     _nospace_{n}
 
     /* test up to 4 characters */
     for i := 0; i < 3; i++ {
@@ -1681,9 +1742,9 @@ func (self *_Assembler) _asm_OP_lspace(_ *_Instr) {
         self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
         self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
         self.Emit("CMPQ"   , _AX, jit.Imm(' '))             // CMPQ    AX, $' '
-        self.Sjmp("JA"     , "_nospace_{n}")                // JA      _nospace_{n}
+        self.Sjmp("JA"     , label)                // JA      _nospace_{n}
         self.Emit("BTQ"    , _AX, _DX)                      // BTQ     AX, DX
-        self.Sjmp("JNC"    , "_nospace_{n}")                // JNC     _nospace_{n}
+        self.Sjmp("JNC"    , label)                // JNC     _nospace_{n}
     }
 
     /* handle over to the native function */
@@ -1696,7 +1757,7 @@ func (self *_Assembler) _asm_OP_lspace(_ *_Instr) {
     self.Emit("CMPQ"   , _AX, _IL)                      // CMPQ    AX, IL
     self.Sjmp("JAE"    , _LB_eof_error)                 // JAE     _eof_error
     self.Emit("MOVQ"   , _AX, _IC)                      // MOVQ    AX, IC
-    self.Link("_nospace_{n}")                           // _nospace_{n}:
+    self.Link(label)                           // _nospace_{n}:
 }
 
 func (self *_Assembler) _asm_OP_match_char(p *_Instr) {
