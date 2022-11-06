@@ -1731,20 +1731,21 @@ func TestRefUnmarshal(t *testing.T) {
 func TestEmptyString(t *testing.T) {
     type T2 struct {
         Number1 int `json:",string"`
-        Number2 int `json:",string"`
+        Number2 string `json:",string"`
+        Pass bool `json:",string"`
     }
-    data := `{"Number1":"1", "Number2":""}`
+    data := `{"Number1":"1", "Number2":"","Pass":"true"}`
     var t2, t3 T2
+    t2.Number2 = "a"
+    t3.Number2 = "a"
     err := Unmarshal([]byte(data), &t2)
     if err == nil {
         t.Fatal("Decode: did not return error")
     }
+    println(err.Error())
     err2 := json.Unmarshal([]byte(data), &t3)
     assert.Equal(t, err == nil, err2 == nil)
-    // assert.Equal(t, t2, t3)
-    // if t2.Number1 != 1 {
-    //     t.Fatal("Decode: did not set Number1")
-    // }
+    assert.Equal(t, t3, t2)
 }
 
 // Test that a null for ,string is not replaced with the previous quoted string (issue 7046).

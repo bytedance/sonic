@@ -964,6 +964,9 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
         p.rtt(_OP_deref, vt)
     }
 
+    n2 := p.pc()
+    p.chr(_OP_check_char_0, '"')
+
     /* string opcode selector */
     _OP_string := func() _Op {
         if ft == jsonNumberType {
@@ -1005,6 +1008,12 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
 
     /* "null" but not a pointer, act as if the field is not present */
     if vk != reflect.Ptr {
+        pc2 := p.pc()
+        p.add(_OP_goto)
+        p.pin(n2)
+        p.rtt(_OP_dismatch_err, vt)
+        p.int(_OP_add, 1)
+        p.pin(pc2)
         p.pin(n0)
         return
     }
@@ -1015,7 +1024,13 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
     p.pin(n0) // `is_null` jump location
     p.pin(n1) // `is_null_quote` jump location
     p.add(_OP_nil_1)
+    pc2 := p.pc()
+    p.add(_OP_goto)
+    p.pin(n2)
+    p.rtt(_OP_dismatch_err, vt)
+    p.int(_OP_add, 1)
     p.pin(pc)
+    p.pin(pc2)
     p.pin(skip)
 }
 
