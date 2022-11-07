@@ -317,7 +317,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_i8/error_wrong_type",
         ins: []_Instr{newInsOp(_OP_i8)},
         src: "12.34",
-        err: &MismatchTypeError{Src: `12.34`, Pos: 0, Type: intType},
+        err: &MismatchTypeError{Src: `12.34`, Pos: 0, Type: int8Type},
         val: new(int8),
     }, {
         key: "_OP_u8",
@@ -335,13 +335,13 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_u8/error_underflow",
         ins: []_Instr{newInsOp(_OP_u8)},
         src: "-123",
-        err: &MismatchTypeError{Src: `-123`, Pos: 0, Type: uintType},
+        err: &MismatchTypeError{Src: `-123`, Pos: 0, Type: uint8Type},
         val: new(uint8),
     }, {
         key: "_OP_u8/error_wrong_type",
         ins: []_Instr{newInsOp(_OP_u8)},
         src: "12.34",
-        err: &MismatchTypeError{Src: `12.34`, Pos: 0, Type: uintType},
+        err: &MismatchTypeError{Src: `12.34`, Pos: 0, Type: uint8Type},
         val: new(uint8),
     }, {
         key: "_OP_f32",
