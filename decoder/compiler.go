@@ -94,6 +94,11 @@ const (
     _OP_recurse
     _OP_goto
     _OP_switch
+    _OP_check_char_0
+    _OP_dismatch_err
+    _OP_go_skip
+    _OP_add
+    _OP_debug
 )
 
 const (
@@ -165,6 +170,9 @@ var _OpNames = [256]string {
     _OP_recurse          : "recurse",
     _OP_goto             : "goto",
     _OP_switch           : "switch",
+    _OP_check_char_0     : "check_char_0",
+    _OP_dismatch_err     : "dismatch_err",
+    _OP_add              : "add",
 }
 
 func (self _Op) String() string {
@@ -560,26 +568,26 @@ func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
 
 func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
     switch vt.Kind() {
-        case reflect.Bool      : self.compilePrimitive (p, _OP_bool)
-        case reflect.Int       : self.compilePrimitive (p, _OP_int())
-        case reflect.Int8      : self.compilePrimitive (p, _OP_i8)
-        case reflect.Int16     : self.compilePrimitive (p, _OP_i16)
-        case reflect.Int32     : self.compilePrimitive (p, _OP_i32)
-        case reflect.Int64     : self.compilePrimitive (p, _OP_i64)
-        case reflect.Uint      : self.compilePrimitive (p, _OP_uint())
-        case reflect.Uint8     : self.compilePrimitive (p, _OP_u8)
-        case reflect.Uint16    : self.compilePrimitive (p, _OP_u16)
-        case reflect.Uint32    : self.compilePrimitive (p, _OP_u32)
-        case reflect.Uint64    : self.compilePrimitive (p, _OP_u64)
-        case reflect.Uintptr   : self.compilePrimitive (p, _OP_uintptr())
-        case reflect.Float32   : self.compilePrimitive (p, _OP_f32)
-        case reflect.Float64   : self.compilePrimitive (p, _OP_f64)
+        case reflect.Bool      : self.compilePrimitive (vt, p, _OP_bool)
+        case reflect.Int       : self.compilePrimitive (vt, p, _OP_int())
+        case reflect.Int8      : self.compilePrimitive (vt, p, _OP_i8)
+        case reflect.Int16     : self.compilePrimitive (vt, p, _OP_i16)
+        case reflect.Int32     : self.compilePrimitive (vt, p, _OP_i32)
+        case reflect.Int64     : self.compilePrimitive (vt, p, _OP_i64)
+        case reflect.Uint      : self.compilePrimitive (vt, p, _OP_uint())
+        case reflect.Uint8     : self.compilePrimitive (vt, p, _OP_u8)
+        case reflect.Uint16    : self.compilePrimitive (vt, p, _OP_u16)
+        case reflect.Uint32    : self.compilePrimitive (vt, p, _OP_u32)
+        case reflect.Uint64    : self.compilePrimitive (vt, p, _OP_u64)
+        case reflect.Uintptr   : self.compilePrimitive (vt, p, _OP_uintptr())
+        case reflect.Float32   : self.compilePrimitive (vt, p, _OP_f32)
+        case reflect.Float64   : self.compilePrimitive (vt, p, _OP_f64)
         case reflect.String    : self.compileString    (p, vt)
         case reflect.Array     : self.compileArray     (p, sp, vt)
         case reflect.Interface : self.compileInterface (p, vt)
         case reflect.Map       : self.compileMap       (p, sp, vt)
         case reflect.Ptr       : self.compilePtr       (p, sp, vt)
-        case reflect.Slice     : self.compileSlice     (p, sp, vt.Elem())
+        case reflect.Slice     : self.compileSlice     (p, sp, vt)
         case reflect.Struct    : self.compileStruct    (p, sp, vt)
         default                : panic                 (&json.UnmarshalTypeError{Type: vt})
     }
@@ -619,14 +627,15 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     i := p.pc()
     p.add(_OP_is_null)
     p.tag(sp + 1)
+    skip := self.checkIfSkip(p, vt, '{')
     p.add(_OP_save)
-    p.chr(_OP_match_char, '{')
     p.add(_OP_map_init)
     p.add(_OP_save)
     p.add(_OP_lspace)
     j := p.pc()
     p.chr(_OP_check_char, '}')
     p.chr(_OP_match_char, '"')
+    skip2 := p.pc()
     p.rtt(op, vt)
 
     /* match the closing quote if needed */
@@ -638,6 +647,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
     self.compileOne(p, sp + 2, vt.Elem())
+    p.pin(skip2)
     p.add(_OP_load)
     k0 := p.pc()
     p.add(_OP_lspace)
@@ -646,6 +656,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.chr(_OP_match_char, ',')
     p.add(_OP_lspace)
     p.chr(_OP_match_char, '"')
+    skip3 := p.pc()
     p.rtt(op, vt)
 
     /* match the closing quote if needed */
@@ -657,6 +668,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
     self.compileOne(p, sp + 2, vt.Elem())
+    p.pin(skip3)
     p.add(_OP_load)
     p.int(_OP_goto, k0)
     p.pin(j)
@@ -666,6 +678,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.add(_OP_goto)
     p.pin(i)
     p.add(_OP_nil_1)
+    p.pin(skip)
     p.pin(x)
 }
 
@@ -692,7 +705,8 @@ func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
     x := p.pc()
     p.add(_OP_is_null)
     p.tag(sp)
-    p.chr(_OP_match_char, '[')
+    skip := self.checkIfSkip(p, vt, '[')
+    
     p.add(_OP_save)
     p.add(_OP_lspace)
     v := []int{p.pc()}
@@ -725,50 +739,54 @@ func (self *_Compiler) compileArray(p *_Program, sp int, vt reflect.Type) {
     /* restore the stack */
     p.pin(w)
     p.add(_OP_drop)
+
+    p.pin(skip)
     p.pin(x)
 }
 
-func (self *_Compiler) compileSlice(p *_Program, sp int, et reflect.Type) {
-    if et.Kind() == byteType.Kind() {
-        self.compileSliceBin(p, sp, et)
+func (self *_Compiler) compileSlice(p *_Program, sp int, vt reflect.Type) {
+    if vt.Elem().Kind() == byteType.Kind() {
+        self.compileSliceBin(p, sp, vt)
     } else {
-        self.compileSliceList(p, sp, et)
+        self.compileSliceList(p, sp, vt)
     }
 }
 
-func (self *_Compiler) compileSliceBin(p *_Program, sp int, et reflect.Type) {
+func (self *_Compiler) compileSliceBin(p *_Program, sp int, vt reflect.Type) {
     i := p.pc()
     p.add(_OP_is_null)
     j := p.pc()
     p.chr(_OP_check_char, '[')
-    p.chr(_OP_match_char, '"')
+    skip := self.checkIfSkip(p, vt, '"')
     k := p.pc()
     p.chr(_OP_check_char, '"')
     p.add(_OP_bin)
     x := p.pc()
     p.add(_OP_goto)
     p.pin(j)
-    self.compileSliceBody(p, sp, et)
+    self.compileSliceBody(p, sp, vt.Elem())
     y := p.pc()
     p.add(_OP_goto)
     p.pin(i)
     p.pin(k)
     p.add(_OP_nil_3)
     p.pin(x)
+    p.pin(skip)
     p.pin(y)
 }
 
-func (self *_Compiler) compileSliceList(p *_Program, sp int, et reflect.Type) {
+func (self *_Compiler) compileSliceList(p *_Program, sp int, vt reflect.Type) {
     i := p.pc()
     p.add(_OP_is_null)
     p.tag(sp)
-    p.chr(_OP_match_char, '[')
-    self.compileSliceBody(p, sp, et)
+    skip := self.checkIfSkip(p, vt, '[')
+    self.compileSliceBody(p, sp, vt.Elem())
     x := p.pc()
     p.add(_OP_goto)
     p.pin(i)
     p.add(_OP_nil_3)
     p.pin(x)
+    p.pin(skip)
 }
 
 func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
@@ -796,18 +814,19 @@ func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
 
 func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
     if vt == jsonNumberType {
-        self.compilePrimitive(p, _OP_num)
+        self.compilePrimitive(vt, p, _OP_num)
     } else {
-        self.compileStringBody(p)
+        self.compileStringBody(vt, p)
     }
 }
 
-func (self *_Compiler) compileStringBody(p *_Program) {
+func (self *_Compiler) compileStringBody(vt reflect.Type, p *_Program) {
     i := p.pc()
     p.add(_OP_is_null)
-    p.chr(_OP_match_char, '"')
+    skip := self.checkIfSkip(p, vt, '"')
     p.add(_OP_str)
     p.pin(i)
+    p.pin(skip)
 }
 
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
@@ -829,7 +848,9 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
     p.tag(sp)
     n := p.pc()
     p.add(_OP_is_null)
-    p.chr(_OP_match_char, '{')
+
+    skip := self.checkIfSkip(p, vt, '{')
+    
     p.add(_OP_save)
     p.add(_OP_lspace)
     x := p.pc()
@@ -891,6 +912,7 @@ end_of_object:
     p.pin(y1)
     p.add(_OP_drop)
     p.pin(n)
+    p.pin(skip)
 }
 
 func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Type) {
@@ -933,7 +955,8 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
     p.add(_OP_lspace)
     n0 := p.pc()
     p.add(_OP_is_null)
-    p.chr(_OP_match_char, '"')
+    
+    skip := self.checkIfSkip(p, stringType, '"')
 
     /* also check for inner "null" */
     n1 = p.pc()
@@ -944,6 +967,9 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
         vt = vt.Elem()
         p.rtt(_OP_deref, vt)
     }
+
+    n2 := p.pc()
+    p.chr(_OP_check_char_0, '"')
 
     /* string opcode selector */
     _OP_string := func() _Op {
@@ -986,6 +1012,12 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
 
     /* "null" but not a pointer, act as if the field is not present */
     if vk != reflect.Ptr {
+        pc2 := p.pc()
+        p.add(_OP_goto)
+        p.pin(n2)
+        p.rtt(_OP_dismatch_err, vt)
+        p.int(_OP_add, 1)
+        p.pin(pc2)
         p.pin(n0)
         return
     }
@@ -996,7 +1028,14 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
     p.pin(n0) // `is_null` jump location
     p.pin(n1) // `is_null_quote` jump location
     p.add(_OP_nil_1)
+    pc2 := p.pc()
+    p.add(_OP_goto)
+    p.pin(n2)
+    p.rtt(_OP_dismatch_err, vt)
+    p.int(_OP_add, 1)
     p.pin(pc)
+    p.pin(pc2)
+    p.pin(skip)
 }
 
 func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
@@ -1018,11 +1057,13 @@ func (self *_Compiler) compileInterface(p *_Program, vt reflect.Type) {
     p.pin(j)
 }
 
-func (self *_Compiler) compilePrimitive(p *_Program, op _Op) {
+func (self *_Compiler) compilePrimitive(vt reflect.Type, p *_Program, op _Op) {
     i := p.pc()
     p.add(_OP_is_null)
+    // skip := self.checkPrimitive(p, vt)
     p.add(op)
     p.pin(i)
+    // p.pin(skip)
 }
 
 func (self *_Compiler) compileUnmarshalEnd(p *_Program, vt reflect.Type, i int) {
@@ -1080,4 +1121,15 @@ func (self *_Compiler) compileUnmarshalTextPtr(p *_Program, vt reflect.Type) {
     p.chr(_OP_match_char, '"')
     p.rtt(_OP_unmarshal_text_p, vt)
     p.pin(i)
+}
+
+func (self *_Compiler) checkIfSkip(p *_Program, vt reflect.Type, c byte) int {
+    j := p.pc()
+    p.chr(_OP_check_char_0, c)
+    p.rtt(_OP_dismatch_err, vt)
+    s := p.pc()
+    p.add(_OP_go_skip)
+    p.pin(j)
+    p.int(_OP_add, 1)
+    return s
 }
