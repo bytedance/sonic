@@ -51,6 +51,39 @@ func BenchmarkGetOne_Jsoniter(b *testing.B) {
     }
 }
 
+func BenchmarkGetOne_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(TwitterJson)))
+    ast := ast.NewSearcher(TwitterJson)
+    for i := 0; i < b.N; i++ {
+        node, err := ast.GetByPath("statuses", 3, "id")
+        if err != nil {
+            b.Fatal(err)
+        }
+        x, _ := node.Int64()
+        if x != 249279667666817024 {
+            b.Fatal(node.Interface())
+        }
+    }
+}
+
+
+func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(TwitterJson)))
+    b.RunParallel(func(pb *testing.PB) {
+        ast := ast.NewSearcher(TwitterJson)
+        for pb.Next() {
+            node, err := ast.GetByPath("statuses", 3, "id")
+            if err != nil {
+                b.Fatal(err)
+            }
+            x, _ := node.Int64()
+            if x != 249279667666817024 {
+                b.Fatal(node.Interface())
+            }
+        }
+    })
+}
+
 func BenchmarkGetOne_Parallel_Gjson(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     b.RunParallel(func(pb *testing.PB) {
