@@ -24,6 +24,7 @@ import (
     `sync`
     `testing`
     `time`
+    `reflect`
 
     `github.com/bytedance/sonic/internal/rt`
     `github.com/davecgh/go-spew/spew`
@@ -83,6 +84,169 @@ var _BindingValue TwitterStruct
 
 func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
+}
+
+
+func TestSkipMismatchTypeError(t *testing.T) {
+    t.Run("struct", func(t *testing.T) {
+        println("TestSkipError")
+        type skiptype struct {
+            A int `json:"a"`
+            B string `json:"b"`
+
+            Pass *int `json:"pass"`
+
+            C struct{
+
+                Pass4 interface{} `json:"pass4"`
+
+                D struct{
+                    E float32 `json:"e"`
+                } `json:"d"`
+
+                Pass2 int `json:"pass2"`
+
+            } `json:"c"`
+
+            E bool `json:"e"`
+            F []int `json:"f"`
+            G map[string]int `json:"g"`
+            H bool `json:"h,string"`
+
+            Pass3 int `json:"pass2"`
+
+            I json.Number `json:"i"`
+        }
+        var obj, obj2 = &skiptype{Pass:new(int)}, &skiptype{Pass:new(int)}
+        var data = `{"a":"","b":1,"c":{"d":true,"pass2":1,"pass4":true},"e":{},"f":"","g":[],"pass":null,"h":"1.0","i":true,"pass3":1}`
+        d := NewDecoder(data)
+        err := d.Decode(obj)
+        err2 := json.Unmarshal([]byte(data), obj2)
+        println(err2.Error())
+        assert.Equal(t, err2 == nil, err == nil)
+        // assert.Equal(t, len(data), d.i)
+        assert.Equal(t, obj2, obj)
+        if te, ok := err.(*MismatchTypeError); ok {
+            assert.Equal(t, reflect.TypeOf(obj.I), te.Type)
+            assert.Equal(t, strings.Index(data, `"i":t`)+4, te.Pos)
+            println(err.Error())
+        } else {
+            t.Fatal("invalid error")
+        }
+    })
+    t.Run("array", func(t *testing.T) {
+        var obj, obj2 = &[]int{}, &[]int{}
+        var data = `["",1,true]`
+        d := NewDecoder(data)
+        err := d.Decode(obj)
+        err2 := json.Unmarshal([]byte(data), obj2)
+        // println(err2.Error())
+        assert.Equal(t, err2 == nil, err == nil)
+        // assert.Equal(t, len(data), d.i)
+        assert.Equal(t, obj2, obj)
+    })
+    t.Run("map", func(t *testing.T) {
+        var obj, obj2 = &map[int]int{}, &map[int]int{}
+        var data = `{"true" : { },"1":1,"2" : true,"3":3}`
+        d := NewDecoder(data)
+        err := d.Decode(obj)
+        err2 := json.Unmarshal([]byte(data), obj2)
+        assert.Equal(t, err2 == nil, err == nil)
+        // assert.Equal(t, len(data), d.i)
+        assert.Equal(t, obj2, obj)
+    })
+    t.Run("map error", func(t *testing.T) {
+        var obj, obj2 = &map[int]int{}, &map[int]int{}
+        var data = `{"true" : { ],"1":1,"2" : true,"3":3}`
+        d := NewDecoder(data)
+        err := d.Decode(obj)
+        err2 := json.Unmarshal([]byte(data), obj2)
+        println(err.Error())
+        println(err2.Error())
+        assert.Equal(t, err2 == nil, err == nil)
+        // assert.Equal(t, len(data), d.i)
+        // assert.Equal(t, obj2, obj)
+    })
+}
+
+type testStruct struct {
+    A int `json:"a"`
+    B string `json:"b"`
+}
+
+func TestClearMemWhenError(t *testing.T) {
+    var data = `{"a":1,"b":"1"]`
+    var v, v2 testStruct
+    _, err := decode(data, &v, false)
+    err2 := json.Unmarshal([]byte(data), &v2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, v2, v)
+
+    var z, z2 = new(testStruct), new(testStruct)
+    _, err = decode(data, z, false)
+    err2 = json.Unmarshal([]byte(data), z2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, z2, z)
+
+    var y, y2 *testStruct
+    _, err = decode(data, &y, false)
+    err2 = json.Unmarshal([]byte(data), &y2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, y2, y)
+
+    var x, x2 = new(testStruct), new(testStruct)
+    _, err = decode(data, &x, false)
+    err2 = json.Unmarshal([]byte(data), &x2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, x2, x)
+
+    var a, a2 interface{}
+    _, err = decode(data, &a, false)
+    err2 = json.Unmarshal([]byte(data), &a2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, a2, a)
+    
+    var b, b2 = new(interface{}), new(interface{})
+    _, err = decode(data, b, false)
+    err2 = json.Unmarshal([]byte(data), b2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, b2, b)
+
+    var c, c2 *interface{}
+    _, err = decode(data, &c, false)
+    err2 = json.Unmarshal([]byte(data), &c2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, c2, c)
+
+    var d, d2 = new(interface{}), new(interface{})
+    _, err = decode(data, &d, false)
+    err2 = json.Unmarshal([]byte(data), &d2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, d2, d)
+
+    var e, e2 map[string]interface{}
+    _, err = decode(data, &e, false)
+    err2 = json.Unmarshal([]byte(data), &e2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, e2, e)
+
+    var f, f2 = new(map[string]interface{}), new(map[string]interface{})
+    _, err = decode(data, &f, false)
+    err2 = json.Unmarshal([]byte(data), &f2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, f2, f)
+
+    var g, g2 = new(map[string]interface{}), new(map[string]interface{})
+    _, err = decode(data, g, false)
+    err2 = json.Unmarshal([]byte(data), g2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, g2, g)
+
+    var h, h2 *map[string]interface{}
+    _, err = decode(data, &h, false)
+    err2 = json.Unmarshal([]byte(data), &h2)
+    assert.Equal(t, err2 == nil, err == nil)
+    assert.Equal(t, h2, h)
 }
 
 func TestDecodeCorrupt(t *testing.T) {

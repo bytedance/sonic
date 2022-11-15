@@ -12,7 +12,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package decoder
 
@@ -230,7 +230,16 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "true",
         exp: true,
         val: new(bool),
-    }, {
+    }, 
+    {
+        key: "_OP_bool/skip",
+        ins: []_Instr{newInsOp(_OP_bool)},
+        src: `"true"`,
+        exp: nil,
+        val: new(bool),
+        err: &MismatchTypeError{Src: `"true"`, Pos: 0, Type: reflect.TypeOf(true)},
+    }, 
+    {
         key: "_OP_bool/false",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "false",
@@ -266,7 +275,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "falsx",
         err: SyntaxError{Src: `falsx`, Pos: 4, Code: types.ERR_INVALID_CHAR},
         val: new(bool),
-    }, {
+    },
+    {
         key: "_OP_num/positive",
         ins: []_Instr{newInsOp(_OP_num)},
         src: "1.234e5",
@@ -282,13 +292,13 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_num/error_eof",
         ins: []_Instr{newInsOp(_OP_num)},
         src: "-",
-        err: SyntaxError{Src: `-`, Pos: 1, Code: types.ERR_EOF},
+        err: SyntaxError{Src: `-`, Pos: 1, Code: types.ERR_INVALID_CHAR},
         val: new(json.Number),
     }, {
         key: "_OP_num/error_invalid_char",
         ins: []_Instr{newInsOp(_OP_num)},
         src: "xxx",
-        err: SyntaxError{Src: `xxx`, Pos: 0, Code: types.ERR_INVALID_CHAR},
+        err: SyntaxError{Src: `xxx`, Pos: 1, Code: types.ERR_INVALID_CHAR},
         val: new(json.Number),
     }, {
         key: "_OP_i8",
@@ -302,11 +312,12 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "1234",
         err: error_value("1234", reflect.TypeOf(int8(0))),
         val: new(int8),
-    }, {
+    }, 
+    {
         key: "_OP_i8/error_wrong_type",
         ins: []_Instr{newInsOp(_OP_i8)},
         src: "12.34",
-        err: SyntaxError{Src: `12.34`, Pos: 2, Code: types.ERR_INVALID_NUMBER_FMT},
+        err: &MismatchTypeError{Src: `12.34`, Pos: 0, Type: int8Type},
         val: new(int8),
     }, {
         key: "_OP_u8",
@@ -324,13 +335,13 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_u8/error_underflow",
         ins: []_Instr{newInsOp(_OP_u8)},
         src: "-123",
-        err: SyntaxError{Src: `-123`, Pos: 0, Code: types.ERR_INVALID_NUMBER_FMT},
+        err: &MismatchTypeError{Src: `-123`, Pos: 0, Type: uint8Type},
         val: new(uint8),
     }, {
         key: "_OP_u8/error_wrong_type",
         ins: []_Instr{newInsOp(_OP_u8)},
         src: "12.34",
-        err: SyntaxError{Src: `12.34`, Pos: 2, Code: types.ERR_INVALID_NUMBER_FMT},
+        err: &MismatchTypeError{Src: `12.34`, Pos: 0, Type: uint8Type},
         val: new(uint8),
     }, {
         key: "_OP_f32",

@@ -1,3 +1,4 @@
+//go:build amd64
 // +build amd64
 
 /*
@@ -34,12 +35,13 @@ import (
     `strings`
     `testing`
     `time`
-    `unsafe`
     `unicode/utf8`
+    `unsafe`
 
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/assert`
 )
 
 type T struct {
@@ -1116,6 +1118,7 @@ func TestMarshalEmbeds(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
     for i, tt := range unmarshalTests {
+        t.Log(i, tt.in)
         if !json.Valid([]byte(tt.in)) {
             continue
         }
@@ -1728,17 +1731,21 @@ func TestRefUnmarshal(t *testing.T) {
 func TestEmptyString(t *testing.T) {
     type T2 struct {
         Number1 int `json:",string"`
-        Number2 int `json:",string"`
+        Number2 string `json:",string"`
+        Pass bool `json:",string"`
     }
-    data := `{"Number1":"1", "Number2":""}`
-    var t2 T2
+    data := `{"Number1":"1", "Number2":"","Pass":"true"}`
+    var t2, t3 T2
+    t2.Number2 = "a"
+    t3.Number2 = "a"
     err := Unmarshal([]byte(data), &t2)
     if err == nil {
         t.Fatal("Decode: did not return error")
     }
-    if t2.Number1 != 1 {
-        t.Fatal("Decode: did not set Number1")
-    }
+    println(err.Error())
+    err2 := json.Unmarshal([]byte(data), &t3)
+    assert.Equal(t, err == nil, err2 == nil)
+    assert.Equal(t, t3, t2)
 }
 
 // Test that a null for ,string is not replaced with the previous quoted string (issue 7046).
@@ -2005,7 +2012,6 @@ var decodeTypeErrorTests = []struct {
     dest interface{}
     src  string
 }{
-    {new(string), `{"user": "name"}`}, // issue 4628.
     {new(error), `{}`},                // issue 4222
     {new(error), `[]`},
     {new(error), `""`},
@@ -2019,6 +2025,28 @@ func TestUnmarshalTypeError(t *testing.T) {
         if _, ok := err.(*json.UnmarshalTypeError); !ok {
             if _, ok = err.(decoder.SyntaxError); !ok {
                 t.Errorf("expected type error for Unmarshal(%q, type %T): got %T",
+                    item.src, item.dest, err)
+            }
+        }
+    }
+}
+
+var decodeMismatchErrorTests = []struct {
+    dest interface{}
+    src  string
+}{
+    {new(int), `{}`},               
+    {new(string), `{}`},               
+    {new(bool), `{}`},               
+    {new([]byte), `{}`},               
+}
+
+func TestMismatchTypeError(t *testing.T) {
+    for _, item := range decodeMismatchErrorTests {
+        err := Unmarshal([]byte(item.src), item.dest)
+        if _, ok := err.(*decoder.MismatchTypeError); !ok {
+            if _, ok = err.(decoder.SyntaxError); !ok {
+                t.Errorf("expected mismatch error for Unmarshal(%q, type %T): got %T",
                     item.src, item.dest, err)
             }
         }
