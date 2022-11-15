@@ -90,6 +90,10 @@ const (
 )
 
 const (
+    _MODE_JSON = 1 << 3 // base64 mode
+)
+
+const (
     _LB_error           = "_error"
     _LB_im_error        = "_im_error"
     _LB_eof_error       = "_eof_error"
@@ -1231,7 +1235,7 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
     self.malloc(_SI, _SI)                               // MALLOC SI, SI
 
     // TODO: due to base64x's bug, only use AVX mode now
-    self.Emit("XORL", _CX, _CX)                     // XORL CX, CX
+    self.Emit("MOVL", jit.Imm(_MODE_JSON), _CX)          //  MOVL $_MODE_JSON, CX
 
     /* call the decoder */
     self.Emit("XORL" , _DX, _DX)                // XORL  DX, DX
