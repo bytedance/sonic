@@ -49,3 +49,4 @@ ast/bench.sh
 
 !testdata/*.json.gz
 fuzz/testdata
+*__debug_bin
