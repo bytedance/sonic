@@ -19,6 +19,7 @@ package ast
 import (
     `fmt`
     `unsafe`
+    `runtime`
 
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/internal/native`
@@ -141,7 +142,7 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
         if self.skipValue {
             /* skip the value */
             var start int
-            if start, err = self.skip(); err != 0 {
+            if start, err = self.skipFast(); err != 0 {
                 return Node{}, err
             }
             if self.p > ns {
@@ -227,7 +228,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
         if self.skipValue {
             /* skip the value */
             var start int
-            if start, err = self.skip(); err != 0 {
+            if start, err = self.skipFast(); err != 0 {
                 return Node{}, err
             }
             if self.p > ns {
@@ -238,7 +239,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
                 return Node{}, types.ERR_INVALID_CHAR
             }
             val = newRawNode(self.s[start:self.p], t)
-        }else{
+        } else {
             /* decode the value */
             if val, err = self.Parse(); err != 0 {
                 return Node{}, err
@@ -322,6 +323,23 @@ func (self *Parser) skip() (int, types.ParsingError) {
     start := native.SkipOne(&self.s, &self.p, fsm, uint64(0))
     types.FreeStateMachine(fsm)
     
+    if start < 0 {
+        return self.p, types.ParsingError(-start)
+    }
+    return start, 0
+}
+
+func (self *Parser) skipFast() (int, types.ParsingError) {
+    start := native.SkipOneFast(&self.s, &self.p)
+    if start < 0 {
+        return self.p, types.ParsingError(-start)
+    }
+    return start, 0
+}
+
+func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+    start := native.GetByPath(&self.s, &self.p, &path)
+    runtime.KeepAlive(path)
     if start < 0 {
         return self.p, types.ParsingError(-start)
     }
@@ -470,7 +488,7 @@ func (self *Node) skipNextNode() *Node {
 
     var val Node
     /* skip the value */
-    if start, err := parser.skip(); err != 0 {
+    if start, err := parser.skipFast(); err != 0 {
         return newSyntaxError(parser.syntaxError(err))
     } else {
         t := switchRawType(parser.s[start])
@@ -553,7 +571,7 @@ func (self *Node) skipNextPair() (*Pair) {
     }
 
     /* skip the value */
-    if start, err := parser.skip(); err != 0 {
+    if start, err := parser.skipFast(); err != 0 {
         return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
     } else {
         t := switchRawType(parser.s[start])
