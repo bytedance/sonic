@@ -20,6 +20,7 @@ import (
     `encoding/json`
     `reflect`
     `runtime`
+    `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
@@ -95,10 +96,24 @@ func (self *Decoder) Decode(val interface{}) error {
     if vp == nil || vv.Type.Kind() != reflect.Ptr {
         return &json.InvalidUnmarshalError{Type: vv.Type.Pack()}
     }
+    initalized := (vv.Type.Pack().Elem().Kind() == reflect.Ptr) && (*(*unsafe.Pointer)(vp) != nil)
 
     /* create a new stack, and call the decoder */
     sb, etp := newStack(), rt.PtrElem(vv.Type)
     nb, err := decodeTypedPointer(self.s, self.i, etp, vp, sb, self.f)
+
+    if err != nil {
+        // clear val memory when decode failed,
+        // not including MismatcheTypeError
+        if _, ok := err.(*MismatchTypeError); !ok {
+            ev := reflect.ValueOf(val).Elem()
+            if initalized {
+                ev.Elem().Set(reflect.Zero(ev.Elem().Type()))
+            } else {
+                ev.Set(reflect.Zero(ev.Type()))
+            }
+        }
+    }
 
     /* return the stack back */
     self.i = nb
