@@ -147,7 +147,7 @@ func (self *Node) isAny() bool {
 
 /** Simple Value Methods **/
 
-// Raw returns json representation of the node,
+// Raw returns json representation of the node
 func (self *Node) Raw() (string, error) {
     if !self.IsRaw() {
         buf, err := self.MarshalJSON()
@@ -1188,7 +1188,7 @@ func (self *Node) skipAllIndex() error {
     parser, stack := self.getParserAndArrayStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v)
+    *self, err = parser.decodeArray(stack.v, nil)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1203,7 +1203,7 @@ func (self *Node) skipAllKey() error {
     parser, stack := self.getParserAndObjectStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v)
+    *self, err = parser.decodeObject(stack.v, nil)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1305,7 +1305,7 @@ func (self *Node) loadAllIndex() error {
     var err types.ParsingError
     parser, stack := self.getParserAndArrayStack()
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v)
+    *self, err = parser.decodeArray(stack.v, nil)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1319,7 +1319,7 @@ func (self *Node) loadAllKey() error {
     var err types.ParsingError
     parser, stack := self.getParserAndObjectStack()
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v)
+    *self, err = parser.decodeObject(stack.v, nil)
     if err != 0 {
         return parser.ExportError(err)
     }

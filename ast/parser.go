@@ -119,7 +119,7 @@ func (self *Parser) decodeValue() (val types.JsonState) {
     return
 }
 
-func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
+func (self *Parser) decodeArray(ret []Node, raw *[]RawNode) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
@@ -137,11 +137,11 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
     /* allocate array space and parse every element */
     for {
         var val Node
+        var start int
         var err types.ParsingError
 
         if self.skipValue {
             /* skip the value */
-            var start int
             if start, err = self.skipFast(); err != 0 {
                 return Node{}, err
             }
@@ -161,7 +161,11 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
         }
 
         /* add the value to result */
-        ret = append(ret, val)
+        if raw != nil {
+            *raw = append(*raw, RawNode{js: self.s[start:self.p]})
+        } else {
+            ret = append(ret, val)
+        }
         self.p = self.lspace(self.p)
 
         /* check for EOF */
@@ -182,7 +186,7 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
     }
 }
 
-func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
+func (self *Parser) decodeObject(ret []Pair, raw *[]RawPair) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
@@ -224,10 +228,9 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
             return Node{}, err
         }
 
-        
+        var start int
         if self.skipValue {
             /* skip the value */
-            var start int
             if start, err = self.skipFast(); err != 0 {
                 return Node{}, err
             }
@@ -247,7 +250,11 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
         }
 
         /* add the value to result */
+        if raw == nil {
         ret = append(ret, Pair{Key: key, Value: val})
+        } else {
+            *raw = append(*raw, RawPair{Key: key, Value: RawNode{js: self.s[start:self.p]}})
+        }
         self.p = self.lspace(self.p)
 
         /* check for EOF */
@@ -304,12 +311,12 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
         case types.V_STRING  : return self.decodeString(val.Iv, val.Ep)
         case types.V_ARRAY:
             if self.noLazy {
-                return self.decodeArray(make([]Node, 0, _DEFAULT_NODE_CAP))
+                return self.decodeArray(make([]Node, 0, _DEFAULT_NODE_CAP), nil)
             }
             return newLazyArray(self, make([]Node, 0, _DEFAULT_NODE_CAP)), 0
         case types.V_OBJECT:
             if self.noLazy {
-                return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP))
+                return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP), nil)
             }
             return newLazyObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
         case types.V_DOUBLE  : return NewNumber(self.s[val.Ep:self.p]), 0
