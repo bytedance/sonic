@@ -12,10 +12,9 @@ var concurrency = 1000
 func TestRawNode(t *testing.T) {
 	_, err := NewSearcher(` { ] `).GetRawByPath()
 	require.Error(t, err)
-	d1 := ` {"a":1,"b":[1,1,1],"c":{"d":1,"e":1,"f":1}} `
+	d1 := ` {"a":1,"b":[1,1,1],"c":{"d":1,"e":1,"f":1},"d":"{\"你好\":\"hello\"}"} `
 	root, err := NewSearcher(d1).GetRawByPath()
 	require.NoError(t, err)
-	require.Equal(t, len(d1)-2, len(root.js))
 	v1, err := root.GetByPath("a").Int64()
 	require.NoError(t, err)
 	require.Equal(t, int64(1), v1)
@@ -27,13 +26,16 @@ func TestRawNode(t *testing.T) {
 	require.Equal(t, int64(1), v3)
 	v4, err := root.GetByPath("a").Interface()
 	require.NoError(t, err)
-	require.Equal(t, int64(1), v4)
+	require.Equal(t, float64(1), v4)
 	v5, err := root.GetByPath("b").Interface()
 	require.NoError(t, err)
 	require.Equal(t, []interface{}{float64(1), float64(1), float64(1)}, v5)
 	v6, err := root.GetByPath("c").Interface()
 	require.NoError(t, err)
 	require.Equal(t, map[string]interface{}{"d": float64(1), "e": float64(1), "f": float64(1)}, v6)
+	v7, err := root.GetByPath("d").String()
+	require.NoError(t, err)
+	require.Equal(t, `{"你好":"hello"}`, v7)
 }
 
 func TestConcurrentGetByPath(t *testing.T) {

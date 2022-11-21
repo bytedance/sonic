@@ -91,7 +91,7 @@ func (self RawNode) Index(idx int) RawNode {
     return RawNode{js: self.js[s:p.p]}
 }
 
-func (self RawNode) string() string {
+func (self RawNode) str() string {
 	return self.js[1:len(self.js)-1]
 }
 
@@ -114,7 +114,7 @@ func (self RawNode) Bool() (bool, error) {
         case types.V_NULL    : return false, nil
         case types.V_TRUE    : return true, nil
         case types.V_FALSE   : return false, nil
-        case types.V_STRING  : return strconv.ParseBool(self.string())
+        case types.V_STRING  : return strconv.ParseBool(self.str())
         case types.V_DOUBLE  : return val.Dv == 0, nil
         case types.V_INTEGER : return val.Iv == 0, nil
         default              : return false, types.ParsingError(-val.Vt)
@@ -132,7 +132,7 @@ func (self RawNode) Int64() (int64, error) {
         case types.V_NULL    : return 0, nil
         case types.V_TRUE    : return 1, nil
         case types.V_FALSE   : return 0, nil
-        case types.V_STRING  : return json.Number(self.string()).Int64()
+        case types.V_STRING  : return json.Number(self.str()).Int64()
         case types.V_DOUBLE  : return int64(val.Dv), nil
         case types.V_INTEGER : return int64(val.Iv), nil
         default              : return 0, types.ParsingError(-val.Vt)
@@ -141,7 +141,7 @@ func (self RawNode) Int64() (int64, error) {
 
 // Float64 cast node to float64, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL
-func (self RawNode) Float64() (int64, error) {
+func (self RawNode) Float64() (float64, error) {
 	if self.err != nil {
 		return 0, self.err
 	}
@@ -150,9 +150,9 @@ func (self RawNode) Float64() (int64, error) {
         case types.V_NULL    : return 0, nil
         case types.V_TRUE    : return 1, nil
         case types.V_FALSE   : return 0, nil
-        case types.V_STRING  : return json.Number(self.string()).Int64()
-        case types.V_DOUBLE  : return int64(val.Dv), nil
-        case types.V_INTEGER : return int64(val.Iv), nil
+        case types.V_STRING  : return json.Number(self.str()).Float64()
+        case types.V_DOUBLE  : return float64(val.Dv), nil
+        case types.V_INTEGER : return float64(val.Iv), nil
         default              : return 0, types.ParsingError(-val.Vt)
     } 
 }
@@ -168,7 +168,7 @@ func (self RawNode) Number() (json.Number, error) {
         case types.V_NULL    : return json.Number("0"), nil
         case types.V_TRUE    : return json.Number("1"), nil
         case types.V_FALSE   : return json.Number("0"), nil
-        case types.V_STRING  : return json.Number(self.string()), nil
+        case types.V_STRING  : return json.Number(self.str()), nil
         case types.V_DOUBLE  : return json.Number(self.js), nil
         case types.V_INTEGER : return json.Number(self.js), nil
         default              : return "", types.ParsingError(-val.Vt)
@@ -186,7 +186,12 @@ func (self RawNode) String() (string, error) {
 		case types.V_NULL    : return "", nil
 		case types.V_TRUE    : return "true", nil
 		case types.V_FALSE   : return "false", nil
-		case types.V_STRING  : return self.string(), nil
+		case types.V_STRING  : 
+			n, e := p.decodeString(val.Iv, val.Ep)
+			if e != 0 {
+				return "", p.ExportError(e)
+			}
+			return addr2str(n.p, n.v), nil
 		case types.V_DOUBLE  : return strconv.FormatFloat(val.Dv, 'g', -1, 64), nil
 		case types.V_INTEGER : return strconv.FormatInt(val.Iv, 10), nil
 		default              : return "", types.ParsingError(-val.Vt)
@@ -234,7 +239,7 @@ func (self RawNode) Interface() (interface{}, error) {
 	case types.V_ARRAY:
 		return self.Array()
 	case types.V_STRING:
-		return self.string(), nil
+		return self.str(), nil
 	case _V_NUMBER:
 		return self.Float64()
 	case types.V_TRUE:
