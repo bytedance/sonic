@@ -1640,17 +1640,37 @@ static always_inline long skip_number_fast(const GoString *src, long *p) {
     return vi;
 }
 
+static always_inline void memcpy_p64(char * restrict dp, const char * restrict sp, size_t n) {
+    long nb = n;
+#if USE_AVX2
+    if (nb >= 32) { _mm256_storeu_si256((void *)dp, _mm256_loadu_si256((const void *)sp)); sp += 32, dp += 32, nb -= 32; }
+#endif
+    while (nb >= 16) { _mm_storeu_si128((void *)dp, _mm_loadu_si128((const void *)sp)); sp += 16, dp += 16, nb -= 16; }
+    if (nb >=  8) { *(uint64_t *)dp = *(const uint64_t *)sp;                         sp +=  8, dp +=  8, nb -=  8; }
+    if (nb >=  4) { *(uint32_t *)dp = *(const uint32_t *)sp;                         sp +=  4, dp +=  4, nb -=  4; }
+    if (nb >=  2) { *(uint16_t *)dp = *(const uint16_t *)sp;                         sp +=  2, dp +=  2, nb -=  2; }
+    if (nb >=  1) { *dp = *sp; }
+}
+
+static always_inline bool vec_cross_page(const void * p, size_t n) {
+#define PAGE_SIZE 4096
+    return (((size_t)(p)) & (PAGE_SIZE - 1)) > (PAGE_SIZE - n);
+#undef PAGE_SIZE
+}
+
 static always_inline long skip_container_fast(const GoString *src, long *p, char lc, char rc) {
-    size_t nb = src->len - *p;
+    long nb = src->len - *p;
     const char *s = src->buf + *p;
     long vi = *p - 1;
 
     uint64_t prev_inquote = 0, prev_bs = 0;
     uint64_t lbrace = 0, rbrace = 0;
     size_t lnum = 0, rnum = 0, last_lnum = 0;
+    uint64_t inquote = 0;
 
     while (likely(nb >= 64)) {
-        uint64_t inquote = get_string_maskx64(s, &prev_inquote, &prev_bs);
+skip:
+        inquote = get_string_maskx64(s, &prev_inquote, &prev_bs);
         lbrace = get_maskx64(s, lc) & ~inquote;
         rbrace = get_maskx64(s, rc) & ~inquote;
 
@@ -1661,7 +1681,12 @@ static always_inline long skip_container_fast(const GoString *src, long *p, char
             lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
             bool is_closed = lnum <= rnum;
             if (is_closed) {
-                *p = s + __builtin_ctzll(rbrace) + 1 - src->buf;
+                *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
+                // *p is out-of-bound access here
+                if (*p > src->len) {
+                    *p = src->len;
+                    return -ERR_EOF;
+                }
                 return vi;
             }
             rbrace &= (rbrace - 1); // clear the lowest right brace
@@ -1671,36 +1696,18 @@ static always_inline long skip_container_fast(const GoString *src, long *p, char
         s += 64, nb -= 64;
     }
 
-in_str:
-    while (prev_inquote && nb > 0) {
-        s++, nb--;
-        if (*(s - 1) == '\\') {
-            s++, nb--;
-            continue;
-        }
-        if (*(s - 1) == '"') {
-            prev_inquote = 0;
-            goto out_str;
-        }
+    if (nb <= 0) {
+        *p = src->len;
+        return -ERR_EOF;
     }
 
-out_str:
-    while (nb > 0) {
-        s++, nb--;
-        if (*(s - 1) == rc) {
-            if (lnum == rnum) {
-                *p = s - src->buf;
-                return vi;
-            }
-            rnum ++;
-        }
-        else if (*(s - 1) == '"') {
-            prev_inquote = 1;
-            goto in_str;
-        }
-        else if (*(s - 1) == lc) lnum ++;
+    char tbuf[64] = {0};
+    bool cross_page = vec_cross_page(s, 64);
+    if (cross_page) {
+        memcpy_p64(tbuf, s, nb);
+        s = tbuf;
     }
-    return -ERR_EOF;
+    goto skip;
 }
 
 static always_inline long skip_object_fast(const GoString *src, long *p) {
@@ -1793,12 +1800,6 @@ static always_inline GoString get_str(const GoIface* iface) {
 
 static always_inline int64_t get_int(const GoIface* iface) {
     return *(int64_t*)(iface->value);
-}
-
-static always_inline bool vec_cross_page(const void * p, size_t n) {
-#define PAGE_SIZE 4096
-    return (((size_t)(p)) & (PAGE_SIZE - 1)) > (PAGE_SIZE - n);
-#undef PAGE_SIZE
 }
 
 // xmemcmpeq return true if s1 and s2 is equal for the n bytes, otherwise, return false.
