@@ -50,6 +50,7 @@ func corpus() [][]byte {
 			"int": 1e5,
 			"float": 3e-9"
 		}`,
+		`{"a":{"a":1,"b":[1,1,1],"c":{"d":1,"e":1,"f":1},"d":"{\"你好\":\"hi\"}"}}`,
 	}
 	var corpus [][]byte
 	for _, t := range(data) {
