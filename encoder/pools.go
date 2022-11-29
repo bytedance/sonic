@@ -129,8 +129,8 @@ func freeBuffer(p *bytes.Buffer) {
     bufferPool.Put(p)
 }
 
-func makeEncoder(vt *rt.GoType) (interface{}, error) {
-    if pp, err := newCompiler().compile(vt.Pack()); err != nil {
+func makeEncoder(vt *rt.GoType, ex ...interface{}) (interface{}, error) {
+    if pp, err := newCompiler().compile(vt.Pack(), ex[0].(bool)); err != nil {
         return nil, err
     } else {
         return newAssembler(pp).Load(), nil

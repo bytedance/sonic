@@ -24,7 +24,7 @@ import (
 )
 
 func TestCompiler_Compile(t *testing.T) {
-    p, err := newCompiler().compile(reflect.TypeOf(_BindingValue))
+    p, err := newCompiler().compile(reflect.TypeOf(_BindingValue), false)
     assert.Nil(t, err)
     p.disassemble()
 }

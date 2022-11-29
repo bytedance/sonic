@@ -290,8 +290,8 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
     /* compile function */
     compiler := newCompiler().apply(opts)
-    encoder := func(vt *rt.GoType) (interface{}, error) {
-        if pp, err := compiler.compile(_vt); err != nil {
+    encoder := func(vt *rt.GoType, ex ...interface{}) (interface{}, error) {
+        if pp, err := compiler.compile(_vt, ex[0].(bool)); err != nil {
             return nil, err
         } else {
             return newAssembler(pp).Load(), nil

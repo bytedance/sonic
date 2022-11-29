@@ -408,9 +408,9 @@ func (self *_Compiler) rescue(ep *error) {
     }
 }
 
-func (self *_Compiler) compile(vt reflect.Type) (ret _Program, err error) {
+func (self *_Compiler) compile(vt reflect.Type, pv bool) (ret _Program, err error) {
     defer self.rescue(&err)
-    self.compileOne(&ret, 0, vt, false)
+    self.compileOne(&ret, 0, vt, pv)
     return
 }
 
