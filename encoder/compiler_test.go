@@ -17,14 +17,34 @@
 package encoder
 
 import (
-    `reflect`
-    `testing`
+	"reflect"
+	"testing"
+	"unsafe"
 
-    `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCompiler_Compile(t *testing.T) {
     p, err := newCompiler().compile(reflect.TypeOf(_BindingValue), false)
     assert.Nil(t, err)
     p.disassemble()
+}
+
+func TestReflectDirect(t *testing.T) {
+    type A struct {
+        A int
+        B int
+    }
+    var a A
+    var b = &a
+    println("b:", unsafe.Pointer(b))
+    v := rt.UnpackEface(a)
+    vv := reflect.ValueOf(a)
+    _ = vv
+    println("v:", v.Type.KindFlags, v.Value)
+    pv := rt.UnpackEface(&a)
+    pvv := reflect.ValueOf(&a)
+    _ = pvv
+    println("pv:", pv.Type.KindFlags, pv.Value)
 }
