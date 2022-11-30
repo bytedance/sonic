@@ -27,15 +27,18 @@ TMPL_avx		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_ex
 TMPL_avx2		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 TMPL_sse 		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 
+CFLAGS_amd64	:= -target x86_64-apple-macos11
+CFLAGS_arm64	:= -target aarch64-apple-macos11
+
 CFLAGS_avx		:= -msse -mno-sse4 -mavx -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0
 CFLAGS_avx2		:= -msse -mno-sse4 -mavx -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1 
 CFLAGS_sse		:= -msse -mno-sse4 -mno-avx -mno-avx2
+CFLAGS_neon		:= -DIS_ARM64 -I./tools/simde
 
 CC_amd64		:= clang
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py
 
 CFLAGS			:= -mno-red-zone
-CFLAGS			+= -arch x86_64
 CFLAGS			+= -fno-asynchronous-unwind-tables
 CFLAGS			+= -fno-builtin
 CFLAGS			+= -fno-exceptions
@@ -74,7 +77,7 @@ $(1): ${@asmout} ${@deps}
 
 ${@asmout}: ${@stubout} ${NATIVE_SRC}
 	mkdir -p ${TMP_DIR}/$(1)
-	$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
+	$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_${@cpu}} $${CFLAGS_$(1)} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
 	python3 $${ASM2ASM_${@cpu}} ${@asmout} ${TMP_DIR}/$(1)/native.s
 	asmfmt -w ${@asmout}
 
@@ -108,3 +111,9 @@ $(foreach 								\
 	${ARCH},							\
 	$(eval $(call build_arch,${arch}))	\
 )
+
+# FIX ME if asm2asm OK.
+neon:
+	$(eval @arch := neon)
+	mkdir -p ${TMP_DIR}/${@arch}
+	clang -target aarch64-apple-macos11 -DIS_ARM64 -I./tools/simde -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o ${TMP_DIR}/${@arch}/native.s native/native.c

@@ -19,9 +19,9 @@
 
 #include <stdint.h>
 #include <sys/types.h>
-#include <immintrin.h>
 #include <stdbool.h>
 
+#include "portable.h"
 #include "types.h"
 
 #define likely(v)       (__builtin_expect((v), 1))

@@ -1,3 +1,6 @@
 [submodule "tools/asm2asm"]
 	path = tools/asm2asm
 	url = https://github.com/chenzhuoyu/asm2asm
+[submodule "tools/simde"]
+	path = tools/simde
+	url = https://github.com/simd-everywhere/simde.git
