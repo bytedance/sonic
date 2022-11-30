@@ -127,7 +127,7 @@ type RecursiveValue struct {
 }
 
 func mustCompile(t interface{}) _Program {
-    p, err := newCompiler().compile(reflect.TypeOf(t), rt.UnpackEface(t).Type.KindFlags & rt.F_direct != 0)
+    p, err := newCompiler().compile(reflect.TypeOf(t), !rt.UnpackEface(t).Type.Indirect())
     if err != nil {
         panic(err)
     }

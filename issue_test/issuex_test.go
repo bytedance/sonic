@@ -3,6 +3,7 @@ package issue_test
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -12,11 +13,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMarshal(t *testing.T) {
-	info := &ShowInfo{
+func TestPointerValueRecurseMarshal(t *testing.T) {
+	info := &TestStruct1{
 		StartTime: JSONTime(time.Now()),
 	}
-	infos := &[]*ShowInfo{info}
+	infos := &[]*TestStruct1{info}
+
 	bytes, err1 := json.Marshal(infos)
 	fmt.Printf("%+v\n", string(bytes))
 	spew.Dump(bytes, err1)
@@ -27,7 +29,28 @@ func TestMarshal(t *testing.T) {
 	require.Equal(t, bytes, jbytes)
 }
 
-type ShowInfo struct {
+func TestPointerValueRecursePretouch(t *testing.T) {
+	info := &TestStruct2{
+		StartTime: JSONTime(time.Now()),
+	}
+	infos := &[]*TestStruct2{info}
+
+	bytes, err1 := json.Marshal(infos)
+	fmt.Printf("%+v\n", string(bytes))
+	spew.Dump(bytes, err1)
+
+	sonic.Pretouch(reflect.TypeOf(infos))
+	jbytes, err2 := sonic.Marshal(infos)
+	fmt.Printf("%+v\n", string(jbytes))
+	spew.Dump(jbytes, err2)
+	require.Equal(t, bytes, jbytes)
+}
+
+type TestStruct1 struct {
+	StartTime JSONTime
+}
+
+type TestStruct2 struct {
 	StartTime JSONTime
 }
 

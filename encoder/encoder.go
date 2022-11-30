@@ -38,6 +38,9 @@ const (
     bitCompactMarshaler
     bitNoQuoteTextMarshaler
     bitNoNullSliceOrMap
+
+    // used for recursive compile
+    bitPointerValue = 63
 )
 
 const (
@@ -284,47 +287,7 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
         opt(&cfg)
         break
     }
-    return pretouchRec(map[reflect.Type]bool{vt:true}, cfg)
-}
-
-func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
-    /* compile function */
-    compiler := newCompiler().apply(opts)
-    encoder := func(vt *rt.GoType, ex ...interface{}) (interface{}, error) {
-        if pp, err := compiler.compile(_vt, ex[0].(bool)); err != nil {
-            return nil, err
-        } else {
-            return newAssembler(pp).Load(), nil
-        }
-    }
-
-    /* find or compile */
-    vt := rt.UnpackType(_vt)
-    if val := programCache.Get(vt); val != nil {
-        return nil, nil
-    } else if _, err := programCache.Compute(vt, encoder); err == nil {
-        return compiler.rec, nil
-    } else {
-        return nil, err
-    }
-}
-
-func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
-    if opts.RecursiveDepth < 0 || len(vtm) == 0 {
-        return nil
-    }
-    next := make(map[reflect.Type]bool)
-    for vt := range(vtm) {
-        sub, err := pretouchType(vt, opts)
-        if err != nil {
-            return err
-        }
-        for svt := range(sub) {
-            next[svt] = true
-        }
-    }
-    opts.RecursiveDepth -= 1
-    return pretouchRec(next, opts)
+    return pretouchRec(map[reflect.Type]uint8{vt: 0}, cfg)
 }
 
 // Valid validates json and returns first non-blank character position,

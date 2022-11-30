@@ -217,6 +217,17 @@ func newInsVt(op _Op, vt reflect.Type) _Instr {
     }
 }
 
+func newInsVp(op _Op, vt reflect.Type, pv bool) _Instr {
+    i := 0
+    if pv {
+        i = 1
+    }
+    return _Instr {
+        u: packOp(op) | rt.PackInt(i),
+        p: unsafe.Pointer(rt.UnpackType(vt)),
+    }
+}
+
 func (self _Instr) op() _Op {
     return _Op(self.u >> 56)
 }
@@ -241,6 +252,10 @@ func (self _Instr) vk() reflect.Kind {
 
 func (self _Instr) vt() reflect.Type {
     return (*rt.GoType)(self.p).Pack()
+}
+
+func (self _Instr) vp() (vt reflect.Type, pv bool) {
+    return (*rt.GoType)(self.p).Pack(), rt.UnpackInt(self.u) == 1
 }
 
 func (self _Instr) i64() int64 {
@@ -345,6 +360,10 @@ func (self *_Program) rtt(op _Op, vt reflect.Type) {
     *self = append(*self, newInsVt(op, vt))
 }
 
+func (self *_Program) vp(op _Op, vt reflect.Type, pv bool) {
+    *self = append(*self, newInsVp(op, vt, pv))
+}
+
 func (self _Program) disassemble() string {
     nb  := len(self)
     tab := make([]bool, nb + 1)
@@ -379,21 +398,21 @@ type _Compiler struct {
     opts option.CompileOptions
     pv   bool
     tab  map[reflect.Type]bool
-    rec  map[reflect.Type]bool
+    rec  map[reflect.Type]uint8
 }
 
 func newCompiler() *_Compiler {
     return &_Compiler {
         opts: option.DefaultCompileOptions(),
         tab: map[reflect.Type]bool{},
-        rec: map[reflect.Type]bool{},
+        rec: map[reflect.Type]uint8{},
     }
 }
 
 func (self *_Compiler) apply(opts option.CompileOptions) *_Compiler {
     self.opts = opts
     if self.opts.RecursiveDepth > 0 {
-        self.rec = map[reflect.Type]bool{}
+        self.rec = map[reflect.Type]uint8{}
     }
     return self
 }
@@ -416,7 +435,7 @@ func (self *_Compiler) compile(vt reflect.Type, pv bool) (ret _Program, err erro
 
 func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type, pv bool) {
     if self.tab[vt] {
-        p.rtt(_OP_recurse, vt)
+        p.vp(_OP_recurse, vt, pv)
     } else {
         self.compileRec(p, sp, vt, pv)
     }
@@ -661,9 +680,13 @@ func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {
 
 func (self *_Compiler) compileStruct(p *_Program, sp int, vt reflect.Type) {
     if sp >= self.opts.MaxInlineDepth || p.pc() >= _MAX_ILBUF || (sp > 0 && vt.NumField() >= _MAX_FIELDS) {
-        p.rtt(_OP_recurse, vt)
+        p.vp(_OP_recurse, vt, self.pv)
         if self.opts.RecursiveDepth > 0 {
-            self.rec[vt] = true
+            if self.pv {
+                self.rec[vt] = 1
+            } else {
+                self.rec[vt] = 0
+            }
         }
     } else {
         self.compileStructBody(p, sp, vt)
