@@ -107,7 +107,7 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
         return ret;
     } else {
         *p -= dec;
-        for (int i = 0; src->buf[*p] == (val & 0xff); i++, ++*p) { val >>= 8; }
+        for (int i = 0; i < 4 && src->buf[*p] == (val & 0xff); i++, ++*p) { val >>= 8; }
         return -ERR_INVAL;
     }
 }

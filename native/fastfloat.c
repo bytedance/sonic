@@ -54,7 +54,7 @@ static inline unsigned ctz10(const uint64_t v) {
         if (v <   100000000000000ull) return 14;
         if (v <  1000000000000000ull) return 15;
         if (v < 10000000000000000ull) return 16;
-                                      return 17;
+        return 17;
     }
         if (v <                10ull) return 1;
         if (v <               100ull) return 2;
@@ -65,7 +65,7 @@ static inline unsigned ctz10(const uint64_t v) {
         if (v <          10000000ull) return 7;
         if (v <         100000000ull) return 8;
         if (v <        1000000000ull) return 9;
-                                      return 10;
+        return 10;
 
 }
 

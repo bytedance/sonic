@@ -9,24 +9,24 @@ package sse
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa       = __native_entry__() + 24640
+    _subr__f32toa       = __native_entry__() + 24896
     _subr__f64toa       = __native_entry__() + 464
     _subr__html_escape  = __native_entry__() + 10416
     _subr__i64toa       = __native_entry__() + 4048
     _subr__lspace       = __native_entry__() + 80
     _subr__quote        = __native_entry__() + 5456
-    _subr__skip_array   = __native_entry__() + 22928
-    _subr__skip_number  = __native_entry__() + 24432
-    _subr__skip_object  = __native_entry__() + 22976
-    _subr__skip_one     = __native_entry__() + 21056
+    _subr__skip_array   = __native_entry__() + 23184
+    _subr__skip_number  = __native_entry__() + 24688
+    _subr__skip_object  = __native_entry__() + 23232
+    _subr__skip_one     = __native_entry__() + 21200
     _subr__u64toa       = __native_entry__() + 4176
     _subr__unquote      = __native_entry__() + 7232
-    _subr__validate_one = __native_entry__() + 24576
+    _subr__validate_one = __native_entry__() + 24832
     _subr__value        = __native_entry__() + 13680
-    _subr__vnumber      = __native_entry__() + 18800
-    _subr__vsigned      = __native_entry__() + 20352
-    _subr__vstring      = __native_entry__() + 15760
-    _subr__vunsigned    = __native_entry__() + 20704
+    _subr__vnumber      = __native_entry__() + 18944
+    _subr__vsigned      = __native_entry__() + 20496
+    _subr__vstring      = __native_entry__() + 15904
+    _subr__vunsigned    = __native_entry__() + 20848
 )
 
 const (

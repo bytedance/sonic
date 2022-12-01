@@ -48,13 +48,13 @@ static inline unsigned ctz10_u32(const uint32_t v) {
         if (v <   1000000) return 6;
         if (v <  10000000) return 7;
         if (v < 100000000) return 8;
-                           return 9;
+        return 9;
     } else {
         if (v <        10) return 1;
         if (v <       100) return 2;
         if (v <      1000) return 3;
         if (v <     10000) return 4;
-                           return 5;
+        return 5;
     }
 }
 
