@@ -114,6 +114,7 @@ $(foreach 								\
 
 # FIX ME if asm2asm OK.
 neon:
+	git submodule update --init --recursive 
 	$(eval @arch := neon)
 	mkdir -p ${TMP_DIR}/${@arch}
 	clang -target aarch64-apple-macos11 -DIS_ARM64 -I./tools/simde -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o ${TMP_DIR}/${@arch}/native.s native/native.c
