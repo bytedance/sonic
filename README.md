@@ -190,9 +190,9 @@ import "github.com/bytedance/sonic/decoder"
 var data interface{}
 err := sonic.UnmarshalString("[[[}]]", &data)
 if err != nil {
-    /*one line by default*/
+    /* One line by default */
     println(e.Error()) // "Syntax error at index 3: invalid char\n\n\t[[[}]]\n\t...^..\n"
-    /*pretty print*/
+    /* Pretty print */
     if e, ok := err.(decoder.SyntaxError); ok {
         /*Syntax error at index 3: invalid char
 
@@ -200,11 +200,14 @@ if err != nil {
             ...^..
         */
         print(e.Description())
-    }else if me, ok := err.(decoder.MismatchTypeError); ok {
-        print(e.Description()
+    } else if me, ok := err.(*decoder.MismatchTypeError); ok {
+        // decoder.MismatchTypeError is new to Sonic v1.6.0
+        print(me.Description())
     }
 }
 ```
+
+#### Mismatched Types [Sonic v1.6.0]
 If there a **mismatch-typed** value for a given key, sonic will report `decoder.MismatchTypeError` (if there are many, report the last one), but still skip wrong the value and keep decoding next JSON.
 ```go
 import "github.com/bytedance/sonic"
