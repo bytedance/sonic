@@ -52,7 +52,7 @@ func TestEncoderMemoryCorruption(t *testing.T) {
 }
 
 func TestAssembler_CompileAndLoad(t *testing.T) {
-    p, err := newCompiler().compile(reflect.TypeOf((*bool)(nil)))
+    p, err := newCompiler().compile(reflect.TypeOf((*bool)(nil)), true)
     assert.Nil(t, err)
     a := newAssembler(p)
     f := a.Load()
@@ -127,7 +127,7 @@ type RecursiveValue struct {
 }
 
 func mustCompile(t interface{}) _Program {
-    p, err := newCompiler().compile(reflect.TypeOf(t))
+    p, err := newCompiler().compile(reflect.TypeOf(t), !rt.UnpackEface(t).Type.Indirect())
     if err != nil {
         panic(err)
     }
