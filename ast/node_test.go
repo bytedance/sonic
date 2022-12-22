@@ -26,7 +26,6 @@ import (
    `strconv`
    `testing`
 
-   `github.com/bytedance/sonic/encoder`
    `github.com/bytedance/sonic/internal/native/types`
    `github.com/bytedance/sonic/internal/rt`
    `github.com/stretchr/testify/assert`
@@ -34,7 +33,8 @@ import (
 
 
 func TestNodeSortKeys(t *testing.T) {
-    root, err := NewSearcher(_TwitterJson).GetByPath()
+    var src = `{"b":1,"a":2,"c":3}`
+    root, err := NewSearcher(src).GetByPath()
     if err != nil {
         t.Fatal(err)
     }
@@ -42,7 +42,7 @@ func TestNodeSortKeys(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    exp, err := encoder.Encode(obj, encoder.SortMapKeys)
+    exp, err := json.Marshal(obj)
     if err != nil {
         t.Fatal(err)
     }

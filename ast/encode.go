@@ -17,26 +17,86 @@
 package ast
 
 import (
-    `reflect`
-    `sync`
-    `unsafe`
-
-    `github.com/bytedance/sonic/encoder`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/rt`
+    _ "unsafe"
+	"sync"
+	"unicode/utf8"
 )
 
 const (
     _MaxBuffer = 1024    // 1KB buffer size
 )
 
-const (
-    bytesNull   = "null"
-    bytesTrue   = "true"
-    bytesFalse  = "false"
-    bytesObject = "{}"
-    bytesArray  = "[]"
+var (
+	//go:linkname safeSet encoding/json.safeSet
+	safeSet [utf8.RuneSelf]bool
+
+	//go:linkname hex encoding/json.hex
+	hex string
 )
+
+func quoteString(e *[]byte, s string) {
+	*e = append(*e, '"')
+	start := 0
+	for i := 0; i < len(s); {
+		if b := s[i]; b < utf8.RuneSelf {
+			if safeSet[b] {
+				i++
+				continue
+			}
+			if start < i {
+				*e = append(*e, s[start:i]...)
+			}
+			*e = append(*e, '\\')
+			switch b {
+			case '\\', '"':
+				*e = append(*e, b)
+			case '\n':
+				*e = append(*e, 'n')
+			case '\r':
+				*e = append(*e, 'r')
+			case '\t':
+				*e = append(*e, 't')
+			default:
+				// This encodes bytes < 0x20 except for \t, \n and \r.
+				// If escapeHTML is set, it also escapes <, >, and &
+				// because they can lead to security holes when
+				// user-controlled strings are rendered into JSON
+				// and served to some browsers.
+				*e = append(*e, `u00`...)
+				*e = append(*e, hex[b>>4])
+				*e = append(*e, hex[b&0xF])
+			}
+			i++
+			start = i
+			continue
+		}
+		c, size := utf8.DecodeRuneInString(s[i:])
+		// if c == utf8.RuneError && size == 1 {
+		// 	if start < i {
+		// 		e.Write(s[start:i])
+		// 	}
+		// 	e.WriteString(`\ufffd`)
+		// 	i += size
+		// 	start = i
+		// 	continue
+		// }
+		if c == '\u2028' || c == '\u2029' {
+			if start < i {
+				*e = append(*e, s[start:i]...)
+			}
+			*e = append(*e, `\u202`...)
+			*e = append(*e, hex[c&0xF])
+			i += size
+			start = i
+			continue
+		}
+		i += size
+	}
+	if start < len(s) {
+		*e = append(*e, s[start:]...)
+	}
+	*e = append(*e, '"')
+}
 
 var bytesPool   = sync.Pool{}
 
@@ -117,46 +177,13 @@ func (self *Node) encodeNumber(buf *[]byte) error {
     return nil
 }
 
-var typeByte = rt.UnpackType(reflect.TypeOf(byte(0)))
-
-func quote(buf *[]byte, sp unsafe.Pointer, nb int) {
-    b := (*rt.GoSlice)(unsafe.Pointer(buf))
-    // input buffer
-    for nb > 0 {
-        // output buffer
-        dp := unsafe.Pointer(uintptr(b.Ptr) + uintptr(b.Len))
-        dn := b.Cap - b.Len
-        // call native.Quote, dn is byte count it outputs
-        ret := native.Quote(sp, nb, dp, &dn, 0)
-        // update *buf length
-        b.Len += dn
-
-        // no need more output
-        if ret >= 0 {
-            break
-        }
-
-        // double buf size
-        *b = growslice(typeByte, *b, b.Cap * 2)
-        // ret is the complement of consumed input
-        ret = ^ret
-        // update input buffer
-        nb -= ret
-        sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
-    }
-}
-
 func (self *Node) encodeString(buf *[]byte) error {
-    *buf = append(*buf, '"')
-    nb := int(self.v)
-    if nb == 0 {
-        *buf = append(*buf, '"')
+    if self.v == 0 {
+        *buf = append(*buf, '"', '"')
         return nil
     }
 
-    quote(buf, self.p, nb)
-
-    *buf = append(*buf, '"')
+    quote(buf, addr2str(self.p, self.v))
     return nil
 }
 
@@ -194,16 +221,14 @@ func (self *Node) encodeArray(buf *[]byte) error {
 }
 
 func (self *Pair) encode(buf *[]byte) error {
-    *buf = append(*buf, '"')
-    sptr := (*rt.GoString)(unsafe.Pointer(&self.Key))
-    if sptr.Len == 0 {
-        *buf = append(*buf, '"', ':')
+    if len(*buf) == 0 {
+        *buf = append(*buf, '"', '"', ':')
         return self.Value.encode(buf)
     }
 
-    quote(buf, sptr.Ptr, sptr.Len)
+    quote(buf, self.Key)
+    *buf = append(*buf, ':')
 
-    *buf = append(*buf, '"', ':')
     return self.Value.encode(buf)
 }
 
@@ -238,8 +263,4 @@ func (self *Node) encodeObject(buf *[]byte) error {
 
     *buf = append(*buf, '}')
     return nil
-}
-
-func (self *Node) encodeInterface(buf *[]byte) error {
-    return encoder.EncodeInto(buf, self.packAny(), 0)
 }
