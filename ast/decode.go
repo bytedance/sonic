@@ -24,7 +24,7 @@ func isSpace(c byte) bool {
 	return (int(1<<c) & _blankCharsMask) != 0
 }
 
-func SkipBlank(src string, pos int) int {
+func skipBlank(src string, pos int) int {
 	se := uintptr(rt.IndexChar(src, len(src)))
 	sp := uintptr(rt.IndexChar(src, pos))
 
@@ -144,6 +144,7 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
 
 	v, err = strconv.ParseInt(vv, 10, 64)
 	if err != nil {
+		//NOTICE: allow overflow here
 		if err.(*strconv.NumError).Err == strconv.ErrRange {
 			return ret, 0, err
 		}
@@ -154,14 +155,39 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
 	return ret, v, nil
 }
 
+func isNumberChars(c byte) bool {
+	return (c >= '0' && c <= '9') || c == '+' || c == '-' || c == 'e' || c == 'E' || c == '.'
+}
+
 func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
-	ret = skipNumber(src, pos)
-	if ret < 0 {
-		return ret, 0, nil
+	sp := uintptr(rt.IndexChar(src, pos))
+	ss := uintptr(sp)
+	se := uintptr(rt.IndexChar(src, len(src)))
+	if uintptr(sp) >= se {
+		return -int(types.ERR_EOF), 0, nil
 	}
 
-	v, err = strconv.ParseFloat(src[pos:ret], 64)
+	if c := *(*byte)(unsafe.Pointer(sp)); c == '-' || c == '+' {
+		sp += 1
+	}
+	if sp == se {
+		return -int(types.ERR_EOF), 0, nil
+	}
+
+	for ; sp < se; sp += uintptr(1) {
+		if !isNumberChars(*(*byte)(unsafe.Pointer(sp))) {
+			break
+		}
+	}
+
+	var vv string
+	ret = int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
+	(*rt.GoString)(unsafe.Pointer(&vv)).Ptr = unsafe.Pointer(ss)
+	(*rt.GoString)(unsafe.Pointer(&vv)).Len = ret - pos
+
+	v, err = strconv.ParseFloat(vv, 64)
 	if err != nil {
+		//NOTICE: allow overflow here
 		if err.(*strconv.NumError).Err == strconv.ErrRange {
 			return ret, 0, err
 		}
@@ -173,7 +199,7 @@ func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
 }
 
 func decodeValue(src string, pos int) (ret int, v types.JsonState) {
-	pos = SkipBlank(src, pos)
+	pos = skipBlank(src, pos)
 	if pos < 0 {
 		return pos, types.JsonState{Vt: types.ValueType(pos)}
 	}
@@ -371,7 +397,7 @@ func skipPair(src string, pos int, lchar byte, rchar byte) (ret int) {
 }
 
 func skipValue(src string, pos int) (ret int, start int) {
-	pos = SkipBlank(src, pos)
+	pos = skipBlank(src, pos)
 	if pos < 0 {
 		return pos, -1
 	}

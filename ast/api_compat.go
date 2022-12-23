@@ -55,11 +55,6 @@ func (self *Parser) skip() (int, types.ParsingError) {
 }
 
 func (self *Node) encodeInterface(buf *[]byte) error {
-	// bs := bytes.NewBuffer(*buf)
-    // if err := json.NewEncoder(bs).Encode(self.packAny()); err != nil {
-	// 	return err
-	// }
-	// *buf = bs.Bytes()
 	out, err := json.Marshal(self.packAny())
 	if err != nil {
 		return err
