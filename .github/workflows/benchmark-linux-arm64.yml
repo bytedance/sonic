@@ -1,10 +1,10 @@
-name: Pull Request Benchmark
+name: Benchmark Linux-X64
 
 on: pull_request
 
 jobs:
   build:
-    runs-on: [self-hosted, X64]
+    runs-on: [arm]
     steps:
       - uses: actions/checkout@v2
 
@@ -24,10 +24,4 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Benchmark sonic
-        run: sh bench.sh
-
-      # - name: Benchmark third-party
-      #   run: go test -benchmem -run=^$ -bench . -v ./generic_test
-
-      # - name: Diff
-      #   run: ./bench.py -b '"^Benchmark.*Sonic"' -c
+        run: sh bench-arm.sh
