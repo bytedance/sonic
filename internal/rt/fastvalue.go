@@ -58,6 +58,10 @@ func (self *GoType) String() string {
     return self.Pack().String()
 }
 
+func (self *GoType) Indirect() bool {
+    return self.KindFlags & F_direct == 0
+}
+
 type GoMap struct {
     Count      int
     Flags      uint8

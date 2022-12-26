@@ -147,7 +147,7 @@ func referenceFields(v *caching.FieldMap) int64 {
     return int64(uintptr(unsafe.Pointer(v)))
 }
 
-func makeDecoder(vt *rt.GoType) (interface{}, error) {
+func makeDecoder(vt *rt.GoType, _ ...interface{}) (interface{}, error) {
     if pp, err := newCompiler().compile(vt.Pack()); err != nil {
         return nil, err
     } else {

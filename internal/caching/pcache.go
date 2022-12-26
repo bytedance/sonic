@@ -149,7 +149,7 @@ func (self *ProgramCache) Get(vt *rt.GoType) interface{} {
     return (*_ProgramMap)(atomic.LoadPointer(&self.p)).get(vt)
 }
 
-func (self *ProgramCache) Compute(vt *rt.GoType, compute func(*rt.GoType) (interface{}, error)) (interface{}, error) {
+func (self *ProgramCache) Compute(vt *rt.GoType, compute func(*rt.GoType, ... interface{}) (interface{}, error), ex ...interface{}) (interface{}, error) {
     var err error
     var val interface{}
 
@@ -163,7 +163,7 @@ func (self *ProgramCache) Compute(vt *rt.GoType, compute func(*rt.GoType) (inter
     }
 
     /* compute the value */
-    if val, err = compute(vt); err != nil {
+    if val, err = compute(vt, ex...); err != nil {
         return nil, err
     }
 
