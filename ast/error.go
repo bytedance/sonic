@@ -1,11 +1,11 @@
 package ast
 
 import (
-	"fmt"
-	"strings"
-	"unsafe"
+    `fmt`
+    `strings`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native/types"
+    `github.com/bytedance/sonic/internal/native/types`
 )
 
 func (self *Parser) syntaxError(err types.ParsingError) SyntaxError {

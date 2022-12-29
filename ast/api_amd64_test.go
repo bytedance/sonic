@@ -4,10 +4,10 @@
 package ast
 
 import (
-	"testing"
+    `testing`
 
-	"github.com/bytedance/sonic/encoder"
-	"github.com/stretchr/testify/assert"
+    `github.com/bytedance/sonic/encoder`
+    `github.com/stretchr/testify/assert`
 )
 
 func TestSortNodeTwitter(t *testing.T) {root, err := NewSearcher(_TwitterJson).GetByPath()

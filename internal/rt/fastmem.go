@@ -79,8 +79,8 @@ func GuardSlice(buf *[]byte, n int) {
 	l := len(*buf)
 	if c-l < n {
 		c = c>>1 + n + l
-		if c < 1024 {
-			c = 1024
+		if c < 32 {
+			c = 32
 		}
 		tmp := make([]byte, l, c)
 		copy(tmp, *buf)
