@@ -4,6 +4,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -119,24 +120,56 @@ func TestConcurrentGetByPath(t *testing.T) {
 	wg.Wait()
 }
 
-func BenchmarkNodeGetContByPath(b *testing.B) {
-    root, derr := NewParser(_TwitterJson).Parse()
-    if derr != 0 {
-        b.Fatalf("decode failed: %v", derr.Error())
-    }
-    _, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
-	cont := RawNode{js: _TwitterJson}
-
+func BenchmarkNodesGetByPath_ReuseNode(b *testing.B) {
 	b.Run("Node", func(b *testing.B) {
+		root, derr := NewParser(_TwitterJson).Parse()
+		if derr != 0 {
+			b.Fatalf("decode failed: %v", derr.Error())
+		}
+		_, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
 			_, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		}
     })
-    b.Run("ContNode", func(b *testing.B) {
+    b.Run("RawNode", func(b *testing.B) {
+		cont := RawNode{js: _TwitterJson}
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
+		}
+    })
+}
+
+func BenchmarkNodesGetByPath_NewNode(b *testing.B) {
+	b.Run("Node", func(b *testing.B) {
+		b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+			root := newRawNode(_TwitterJson, types.V_OBJECT)
+			_, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
+		}
+    })
+    b.Run("RawNode", func(b *testing.B) {
+		b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+			cont := RawNode{js: _TwitterJson}
+			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
+		}
+    })
+}
+
+func BenchmarkGetOneNode(b *testing.B) {
+	s := NewSearcher(_TwitterJson)
+	b.Run("Node", func(b *testing.B) {
+		b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+			_, _ = s.GetByPath("statuses", 3, "entities", "hashtags", 0, "text")
+		}
+    })
+    b.Run("RawNode", func(b *testing.B) {
+		b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+			_, _ = s.GetRawByPath("statuses", 3, "entities", "hashtags", 0, "text")
 		}
     })
 }
