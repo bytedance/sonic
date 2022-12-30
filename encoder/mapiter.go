@@ -17,12 +17,13 @@
 package encoder
 
 import (
-    `reflect`
-    `sync`
-    `unsafe`
+	"encoding"
+	"reflect"
+	"sync"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type _MapPair struct {
@@ -113,20 +114,16 @@ func (self *_MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kin
 }
 
 func (self *_MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
-    vt := t.Pack()
-    // if !vt.Implements(encodingTextMarshalerType) {
-    //     panic("unexpected map key type")
-    // }
     // compiler has already checked that the type implements the encoding.MarshalText interface
-    method, ok := vt.MethodByName("MarshalText")
-    if !ok {
-        panic("unexpected map key type")
+    if !t.Indirect() {
+        k = *(*unsafe.Pointer)(k)
     }
-    rets := method.Func.Call([]reflect.Value{reflect.NewAt(vt, k).Elem()})
-    if err, ok := rets[1].Interface().(error); !ok && err != nil {
+    eface := rt.GoEface{Value: k, Type: t}.Pack()
+    out, err := eface.(encoding.TextMarshaler).MarshalText()
+    if err != nil {
         return err
     }
-    p.k = rt.Mem2Str((rets[0].Bytes()))
+    p.k = rt.Mem2Str(out)
     return
 }
 
