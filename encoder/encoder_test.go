@@ -18,6 +18,7 @@ package encoder
 
 import (
     `bytes`
+    `encoding`
     `encoding/json`
     `runtime`
     `runtime/debug`
@@ -236,6 +237,14 @@ func (self *TextMarshalerImpl) MarshalText() ([]byte, error) {
     return []byte(self.X), nil
 }
 
+type TextMarshalerImplV struct {
+    X string
+}
+
+func (self TextMarshalerImplV) MarshalText() ([]byte, error) {
+    return []byte(self.X), nil
+}
+
 type TextMarshalerStruct struct {
     V TextMarshalerImpl
 }
@@ -255,6 +264,35 @@ func TestEncoder_TextMarshaler(t *testing.T) {
     ret3, err3 := Encode(v, NoQuoteTextMarshaler)
     require.NoError(t, err3)
     require.Equal(t, `{"V":{"X":"{\"a\"}"}}`, string(ret3))
+}
+
+func TestTextMarshalTextKey_SortKeys(t *testing.T) {
+    v := map[*TextMarshalerImpl]string{
+        {"b"}: "b",
+        {"c"}: "c",
+        {"a"}: "a",
+    }
+    ret, err := Encode(v, SortMapKeys)
+    require.NoError(t, err)
+    require.Equal(t, `{"a":"a","b":"b","c":"c"}`, string(ret))
+
+    v2 := map[TextMarshalerImplV]string{
+        {"b"}: "b",
+        {"c"}: "c",
+        {"a"}: "a",
+    }
+    ret, err = Encode(v2, SortMapKeys)
+    require.NoError(t, err)
+    require.Equal(t, `{"a":"a","b":"b","c":"c"}`, string(ret))
+
+    v3 := map[encoding.TextMarshaler]string{
+        TextMarshalerImplV{"b"}: "b",
+        &TextMarshalerImpl{"c"}: "c",
+        TextMarshalerImplV{"a"}: "a",
+    }
+    ret, err = Encode(v3, SortMapKeys)
+    require.NoError(t, err)
+    require.Equal(t, `{"a":"a","b":"b","c":"c"}`, string(ret))
 }
 
 func TestEncoder_Marshal_EscapeHTML(t *testing.T) {

@@ -17,12 +17,13 @@
 package encoder
 
 import (
-    `reflect`
-    `sync`
-    `unsafe`
+	"encoding"
+	"reflect"
+	"sync"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type _MapPair struct {
@@ -107,8 +108,23 @@ func (self *_MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kin
         case reflect.Uint64    : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], *(*uint64)(k))])          ; return nil
         case reflect.Uintptr   : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uintptr)(k)))]) ; return nil
         case reflect.Interface : return self.appendInterface(p, t, k)
+        case reflect.Struct, reflect.Ptr : return self.appendConcrete(p, t, k)
         default                : panic("unexpected map key type")
     }
+}
+
+func (self *_MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
+    // compiler has already checked that the type implements the encoding.MarshalText interface
+    if !t.Indirect() {
+        k = *(*unsafe.Pointer)(k)
+    }
+    eface := rt.GoEface{Value: k, Type: t}.Pack()
+    out, err := eface.(encoding.TextMarshaler).MarshalText()
+    if err != nil {
+        return err
+    }
+    p.k = rt.Mem2Str(out)
+    return
 }
 
 func (self *_MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
