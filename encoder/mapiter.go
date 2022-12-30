@@ -107,8 +107,27 @@ func (self *_MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kin
         case reflect.Uint64    : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], *(*uint64)(k))])          ; return nil
         case reflect.Uintptr   : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uintptr)(k)))]) ; return nil
         case reflect.Interface : return self.appendInterface(p, t, k)
+        case reflect.Struct, reflect.Pointer : return self.appendConcrete(p, t, k)
         default                : panic("unexpected map key type")
     }
+}
+
+func (self *_MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
+    vt := t.Pack()
+    // if !vt.Implements(encodingTextMarshalerType) {
+    //     panic("unexpected map key type")
+    // }
+    // compiler has already checked that the type implements the encoding.MarshalText interface
+    method, ok := vt.MethodByName("MarshalText")
+    if !ok {
+        panic("unexpected map key type")
+    }
+    rets := method.Func.Call([]reflect.Value{reflect.NewAt(vt, k).Elem()})
+    if err, ok := rets[1].Interface().(error); !ok && err != nil {
+        return err
+    }
+    p.k = rt.Mem2Str((rets[0].Bytes()))
+    return
 }
 
 func (self *_MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
