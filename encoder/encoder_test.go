@@ -17,18 +17,18 @@
 package encoder
 
 import (
-	"bytes"
-	"encoding"
-	"encoding/json"
-	"runtime"
-	"runtime/debug"
-	"strconv"
-	"sync"
-	"testing"
-	"time"
+    `bytes`
+    `encoding`
+    `encoding/json`
+    `runtime`
+    `runtime/debug`
+    `strconv`
+    `sync`
+    `testing`
+    `time`
 
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/stretchr/testify/require`
 )
 
 func TestMain(m *testing.M) {

@@ -107,7 +107,7 @@ func (self *_MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kin
         case reflect.Uint64    : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], *(*uint64)(k))])          ; return nil
         case reflect.Uintptr   : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uintptr)(k)))]) ; return nil
         case reflect.Interface : return self.appendInterface(p, t, k)
-        case reflect.Struct, reflect.Pointer : return self.appendConcrete(p, t, k)
+        case reflect.Struct, reflect.Ptr : return self.appendConcrete(p, t, k)
         default                : panic("unexpected map key type")
     }
 }
