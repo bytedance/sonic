@@ -1,4 +1,4 @@
-name: Push Check Go1.18
+name: Push Check Go1.18-Linux-X64
 
 on: push
 

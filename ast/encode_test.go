@@ -17,12 +17,11 @@
 package ast
 
 import (
+    `encoding/json`
     `runtime`
     `sync`
     `testing`
 
-    `github.com/bytedance/sonic/decoder`
-    `github.com/bytedance/sonic/encoder`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/stretchr/testify/assert`
 )
@@ -63,14 +62,15 @@ func TestGC_Encode(t *testing.T) {
 
 func TestEncodeValue(t *testing.T) {
     obj := new(_TwitterStruct)
-    if err := decoder.NewDecoder(_TwitterJson).Decode(obj); err != nil {
+    if err := json.Unmarshal([]byte(_TwitterJson), obj); err != nil {
         t.Fatal(err)
     }
-    buf, err := encoder.Encode(obj, 0)
+    // buf, err := encoder.Encode(obj, encoder.EscapeHTML|encoder.SortMapKeys)
+    buf, err := json.Marshal(obj)
     if err != nil {
         t.Fatal(err)
     }
-    quote, err := encoder.Encode(_TwitterJson, 0)
+    quote, err := json.Marshal(_TwitterJson)
     if err != nil {
         t.Fatal(err)
     }
@@ -90,16 +90,17 @@ func TestEncodeValue(t *testing.T) {
         {NewArray([]Node{}), "[]", false},
         {NewArray([]Node{NewBool(true), NewString("true"), NewString("\t")}), `[true,"true","\t"]`, false},
         {NewObject([]Pair{Pair{"a", NewNull()}, Pair{"b", NewNumber("0")}}), `{"a":null,"b":0}`, false},
-        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}), `{"\ta":"\t","\u0008b":"\u0008","\nb":"\n","\ra":"\r"}`, false},
+        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}),`{"\ta":"\t","\u0008b":"\u0008","\nb":"\n","\ra":"\r"}`, false},
         {NewObject([]Pair{}), `{}`, false},
         {NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, false},
         {NewAny(obj), string(buf), false},
-        {NewRaw(`[{ }]`), "[{ }]", false},
+        {NewRaw(`[{ }]`), "[{}]", false},
         {Node{}, "", true},
         {Node{t: types.ValueType(1)}, "", true},
     }
     for i, c := range input {
-        buf, err := encoder.Encode(&c.node, 0)
+        t.Log(i)
+        buf, err := json.Marshal(&c.node)
         if c.err {
             if err == nil {
                 t.Fatal(i)

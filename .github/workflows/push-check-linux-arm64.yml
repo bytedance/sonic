@@ -1,4 +1,4 @@
-name: Push Check Windows-X64
+name: Push Check Linux-ARM
 
 on: push
 
@@ -7,7 +7,8 @@ jobs:
     strategy:
       matrix:
         go-version: [1.15.x, 1.19.x]
-    runs-on: windows-latest
+        os: [arm]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
@@ -23,5 +24,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Compatibility Test
-        run: go test -v -gcflags=-d=checkptr=0 .
+      - name: Compatibility Test - main
+        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race github.com/bytedance/sonic
+
+      - name: Compatibility Test - ast
+        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race github.com/bytedance/sonic/ast

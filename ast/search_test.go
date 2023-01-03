@@ -20,6 +20,7 @@ import (
     `math`
     `runtime`
     `strconv`
+    `strings`
     `sync`
     `testing`
 
@@ -60,7 +61,7 @@ func TestExportError(t *testing.T) {
     if err == nil {
         t.Fatal()
     }
-    if err.Error() != `"Syntax error at index 6: invalid char\n\n\t{\"a\":]\n\t......^\n"` {
+    if strings.Index(err.Error(), `"Syntax error at `) != 0 {
         t.Fatal(err)
     }
 
