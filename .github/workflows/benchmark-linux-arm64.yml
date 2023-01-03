@@ -1,4 +1,4 @@
-name: Benchmark Linux-X64
+name: Benchmark Linux-ARM
 
 on: pull_request
 

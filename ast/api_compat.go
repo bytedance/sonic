@@ -6,7 +6,6 @@ package ast
 import (
     `encoding/base64`
     `encoding/json`
-    _ `unsafe`
 
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
@@ -25,8 +24,7 @@ func unquote(src string) (string, types.ParsingError) {
     return rt.Mem2Str(out), 0
 }
 
-//go:linkname unquoteBytes encoding/json.unquoteBytes
-func unquoteBytes(s []byte) (t []byte, ok bool)
+
 
 func decodeBase64(src string) ([]byte, error) {
     return base64.StdEncoding.DecodeString(src)

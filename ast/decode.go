@@ -85,13 +85,13 @@ func decodeString(src string, pos int) (ret int, v string) {
         return ret, v
     }
 
-    vv, err := strconv.Unquote(src[pos:ret])
-    if err != nil {
+    vv, ok := unquoteBytes(rt.Str2Mem(src[pos:ret]))
+    if !ok {
         return -int(types.ERR_INVALID_CHAR), ""
     }
 
     runtime.KeepAlive(src)
-    return ret, vv
+    return ret, rt.Mem2Str(vv)
 }
 
 func decodeBinary(src string, pos int) (ret int, v []byte) {
@@ -120,7 +120,7 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
         return -int(types.ERR_EOF), 0, nil
     }
 
-    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' || c == '+' {
+    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' {
         sp += 1
     }
     if sp == se {
@@ -133,8 +133,10 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
         }
     }
 
-    if c := *(*byte)(unsafe.Pointer(sp)); c == '.' || c == 'e' || c == 'E' {
-        return -int(types.ERR_INVALID_NUMBER_FMT), 0, nil
+    if sp < se {
+        if c := *(*byte)(unsafe.Pointer(sp)); c == '.' || c == 'e' || c == 'E' {
+            return -int(types.ERR_INVALID_NUMBER_FMT), 0, nil
+        }
     }
 
     var vv string
@@ -167,7 +169,7 @@ func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
         return -int(types.ERR_EOF), 0, nil
     }
 
-    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' || c == '+' {
+    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' {
         sp += 1
     }
     if sp == se {
@@ -260,7 +262,7 @@ func skipNumber(src string, pos int) (ret int) {
         return -int(types.ERR_EOF)
     }
 
-    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' || c == '+' {
+    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' {
         sp += 1
     }
     ss := sp
@@ -345,6 +347,11 @@ func skipString(src string, pos int) (ret int, ep int) {
             break
         }
     }
+
+    if sp > se {
+        return -int(types.ERR_EOF), -1
+    }
+
     runtime.KeepAlive(src)
     return int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr)), ep
 }

@@ -17,21 +17,12 @@
 package ast
 
 import (
-    _ `unsafe`
     `sync`
     `unicode/utf8`
 )
 
 const (
     _MaxBuffer = 1024    // 1KB buffer size
-)
-
-var (
-    //go:linkname safeSet encoding/json.safeSet
-    safeSet [utf8.RuneSelf]bool
-
-    //go:linkname hex encoding/json.hex
-    hex string
 )
 
 func quoteString(e *[]byte, s string) {

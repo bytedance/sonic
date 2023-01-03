@@ -1,4 +1,4 @@
-name: Push Check Qemu-ARM
+name: Push Check Linux-Qemu
 
 on: push
 
