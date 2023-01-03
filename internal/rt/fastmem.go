@@ -65,6 +65,3 @@ func FuncAddr(f interface{}) unsafe.Pointer {
         return *(*unsafe.Pointer)(vv.Value)
     }
 }
-
-//go:nosplit
-func MoreStack(size uintptr)
