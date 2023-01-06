@@ -10,6 +10,27 @@ import (
 
 var concurrency = 1000
 
+func TestForEachRaw(t *testing.T) {
+    val := _TwitterJson
+    node, err := NewSearcher(val).GetRawByPath()
+    require.Nil(t, err)
+    nodes := []RawNode{}
+
+	var dfs func(index int, key string, node RawNode) bool
+	dfs = func(index int, key string, node RawNode) bool {
+        if node.Type() == V_OBJECT || node.Type() == V_ARRAY {
+        	if err := node.ForEach(dfs); err != nil {
+				panic(err)
+			}
+		}
+		nodes = append(nodes, node)
+		return true
+    }
+	
+    node.ForEach(dfs)
+    require.NotEmpty(t, nodes)
+}
+
 func TestRawNode(t *testing.T) {
 	_, err := NewSearcher(` { ] `).GetRawByPath()
 	require.Error(t, err)

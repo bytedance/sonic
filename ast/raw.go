@@ -296,7 +296,7 @@ func (self RawNode) ForEach(sc func(index int, key string, node RawNode) bool) e
 
 
 func (self RawNode) skipAllIndex(ret *[]RawNode) error {
-    parser := Parser{s: self.js}
+    parser := Parser{p: 1, s: self.js}
     parser.skipValue = true
     parser.noLazy = true
     _, err := parser.decodeArray(nil, ret)
@@ -313,7 +313,7 @@ type RawPair struct {
 }
 
 func (self RawNode) skipAllKey(ret *[]RawPair) error {
-    parser := Parser{s: self.js}
+    parser := Parser{p: 1, s: self.js}
     parser.skipValue = true
     parser.noLazy = true
     _, err := parser.decodeObject(nil, ret)
