@@ -22,10 +22,8 @@ import (
     `strconv`
     `unsafe`
     
-    `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
-    `github.com/chenzhuoyu/base64x`
 )
 
 const (
@@ -1566,7 +1564,7 @@ func NewBytes(src []byte) Node {
     if len(src) == 0 {
         panic("empty src bytes")
     }
-    out := base64x.StdEncoding.EncodeToString(src)
+    out := encodeBase64(src)
     return NewString(out)
 }
 
@@ -1752,15 +1750,6 @@ func newError(err types.ParsingError, msg string) *Node {
     return &Node{
         t: V_ERROR,
         v: int64(err),
-        p: unsafe.Pointer(&msg),
-    }
-}
-
-func newSyntaxError(err *decoder.SyntaxError) *Node {
-    msg := err.Description()
-    return &Node{
-        t: V_ERROR,
-        v: int64(err.Code),
         p: unsafe.Pointer(&msg),
     }
 }

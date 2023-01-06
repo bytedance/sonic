@@ -108,3 +108,12 @@ TEXT ·U64toa(SB), NOSPLIT, $0 - 32
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__u64toa(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__u64toa(SB)
 
+TEXT ·F64toa(SB), NOSPLIT, $0 - 32
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__f64toa(SB)
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__f64toa(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__f64toa(SB)
+

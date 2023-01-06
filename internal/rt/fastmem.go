@@ -66,5 +66,25 @@ func FuncAddr(f interface{}) unsafe.Pointer {
     }
 }
 
-//go:nosplit
-func MoreStack(size uintptr)
+func IndexChar(src string, index int) unsafe.Pointer {
+	return unsafe.Pointer(uintptr((*GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(index))
+}
+
+func IndexByte(ptr []byte, index int) unsafe.Pointer {
+	return unsafe.Pointer(uintptr((*GoSlice)(unsafe.Pointer(&ptr)).Ptr) + uintptr(index))
+}
+
+func GuardSlice(buf *[]byte, n int) {
+	c := cap(*buf)
+	l := len(*buf)
+	if c-l < n {
+		c = c>>1 + n + l
+		if c < 32 {
+			c = 32
+		}
+		tmp := make([]byte, l, c)
+		copy(tmp, *buf)
+		*buf = tmp
+	}
+	return
+}

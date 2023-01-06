@@ -36,7 +36,7 @@ func TestPcacheRace(t *testing.T) {
         var k = map[string]interface{}{}
         <- start
         for i:=0; i<100; i++ {
-            _, _ = pc.Compute(rt.UnpackEface(k).Type, func(_ *rt.GoType) (interface{}, error) {
+            _, _ = pc.Compute(rt.UnpackEface(k).Type, func(*rt.GoType, ... interface{}) (interface{}, error) {
                 return map[string]interface{}{}, nil
             })
         }

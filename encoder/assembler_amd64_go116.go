@@ -1011,11 +1011,12 @@ func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     self.prep_buffer()                          // MOVE {buf}, (SP)
-    self.Emit("MOVQ", jit.Type(p.vt()), _AX)    // MOVQ $(type(p.vt())), AX
+    vt, pv := p.vp()
+    self.Emit("MOVQ", jit.Type(vt), _AX)    // MOVQ $(type(p.vt())), AX
     self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))     // MOVQ AX, 8(SP)
 
     /* check for indirection */
-    if (p.vf() & rt.F_direct) != 0 {
+    if !rt.UnpackType(vt).Indirect() {
         self.Emit("MOVQ", _SP_p, _AX)               // MOVQ SP.p, AX
     } else {
         self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, 48(SP)
@@ -1026,6 +1027,9 @@ func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 16))   // MOVQ  AX, 16(SP)
     self.Emit("MOVQ" , _ST, jit.Ptr(_SP, 24))   // MOVQ  ST, 24(SP)
     self.Emit("MOVQ" , _ARG_fv, _AX)            // MOVQ  fv, AX
+    if pv {
+        self.Emit("BTCQ", jit.Imm(bitPointerValue), _AX)  // BTCQ $1, AX
+    }
     self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 32))   // MOVQ  AX, 32(SP)
     self.call_encoder(_F_encodeTypedPointer)    // CALL  encodeTypedPointer
     self.Emit("MOVQ" , jit.Ptr(_SP, 40), _ET)   // MOVQ  40(SP), ET

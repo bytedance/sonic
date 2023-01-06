@@ -1015,10 +1015,11 @@ func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     self.prep_buffer_AX()                       // MOVE {buf}, (SP)
-    self.Emit("MOVQ", jit.Type(p.vt()), _BX)    // MOVQ $(type(p.vt())), BX
+    vt, pv := p.vp()
+    self.Emit("MOVQ", jit.Type(vt), _BX)    // MOVQ $(type(p.vt())), BX
 
     /* check for indirection */
-    if (p.vf() & rt.F_direct) != 0 {
+    if !rt.UnpackType(vt).Indirect() {
         self.Emit("MOVQ", _SP_p, _CX)           // MOVQ SP.p, CX
     } else {
         self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, VAR.vp
@@ -1028,6 +1029,9 @@ func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
     /* call the encoder */
     self.Emit("MOVQ" , _ST, _DI)                // MOVQ  ST, DI
     self.Emit("MOVQ" , _ARG_fv, _SI)            // MOVQ  $fv, SI
+    if pv {
+        self.Emit("BTCQ", jit.Imm(bitPointerValue), _SI)  // BTCQ $1, SI
+    }
     self.call_encoder(_F_encodeTypedPointer)    // CALL  encodeTypedPointer
     self.Emit("TESTQ", _ET, _ET)                // TESTQ ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ   _error

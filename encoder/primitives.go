@@ -68,14 +68,20 @@ func encodeString(buf *[]byte, val string) error {
 func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv uint64) error {
     if vt == nil {
         return encodeNil(buf)
-    } else if fn, err := findOrCompile(vt); err != nil {
+    } else if fn, err := findOrCompile(vt, (fv&(1<<bitPointerValue)) != 0); err != nil {
         return err
-    } else if (vt.KindFlags & rt.F_direct) == 0 {
+    } else if vt.Indirect() {
         rt.MoreStack(_FP_size + native.MaxFrameSize)
-        return fn(buf, *vp, sb, fv)
+        rt.StopProf()
+        err := fn(buf, *vp, sb, fv)
+        rt.StartProf()
+        return err
     } else {
         rt.MoreStack(_FP_size + native.MaxFrameSize)
-        return fn(buf, unsafe.Pointer(vp), sb, fv)
+        rt.StopProf()
+        err := fn(buf, unsafe.Pointer(vp), sb, fv)
+        rt.StartProf()
+        return err
     }
 }
 
