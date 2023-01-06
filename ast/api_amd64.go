@@ -89,3 +89,20 @@ func (self *Node) encodeInterface(buf *[]byte) error {
     //WARN: NOT compatible with json.Encoder
     return encoder.EncodeInto(buf, self.packAny(), 0)
 }
+
+func (self *Parser) skipFast() (int, types.ParsingError) {
+    start := native.SkipOneFast(&self.s, &self.p)
+    if start < 0 {
+        return self.p, types.ParsingError(-start)
+    }
+    return start, 0
+}
+
+func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+    start := native.GetByPath(&self.s, &self.p, &path)
+    runtime.KeepAlive(path)
+    if start < 0 {
+        return self.p, types.ParsingError(-start)
+    }
+    return start, 0
+}
