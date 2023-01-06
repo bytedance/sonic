@@ -29,6 +29,10 @@ func (self RawNode) Type() int {
 	return int(t)
 }
 
+func (self RawNode) Exists() bool {
+	return self.err == nil
+}
+
 func (self RawNode) itype() types.ValueType {
 	return switchRawType(self.js[0])
 }
