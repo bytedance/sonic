@@ -2,6 +2,7 @@ package ast
 
 import (
 	"encoding/json"
+	"errors"
 	"strconv"
 	"sync"
 
@@ -25,6 +26,9 @@ type RawNode struct {
 //    V_STRING = 7 (json value string)
 //    V_NUMBER = 33 (json value number )
 func (self RawNode) Type() int {
+	if self.Check() != nil {
+		return V_ERROR
+	}
 	t := switchRawType(self.js[0])
 	return int(t)
 }
@@ -39,7 +43,7 @@ func (self RawNode) itype() types.ValueType {
 
 // Error returns error message if the node is invalid
 func (self RawNode) Error() string {
-	if self.err != nil {
+	if self.Check() != nil {
 		return self.err.Error()
 	}
 	return ""
@@ -54,7 +58,7 @@ func (self RawNode) Check() error {
 // GetByPath load given path on demands,
 // which only ensure nodes before this path got parsed
 func (self RawNode) GetByPath(path ...interface{}) RawNode {
-	if self.err != nil {
+	if self.Check() != nil {
 		return self
 	}
 	p := Parser{s: self.js}
@@ -69,7 +73,7 @@ func (self RawNode) GetByPath(path ...interface{}) RawNode {
 
 // Get loads given key of an object node on demands
 func (self RawNode) Get(key string) RawNode {
-	if self.err != nil {
+	if self.Check() != nil {
 		return self
 	}
     p := Parser{s: self.js}
@@ -83,7 +87,7 @@ func (self RawNode) Get(key string) RawNode {
 
 // Index indexies node at given idx
 func (self RawNode) Index(idx int) RawNode {
-	if self.err != nil {
+	if self.Check() != nil {
 		return self
 	}
 	p := Parser{s: self.js}
@@ -101,7 +105,7 @@ func (self RawNode) str() string {
 
 // Raw returns json representation of the node
 func (self RawNode) Raw() (string, error) {
-    if self.err != nil {
+    if self.Check() != nil {
         return "", self.err
     }
     return self.js, nil
@@ -110,7 +114,7 @@ func (self RawNode) Raw() (string, error) {
 // Bool returns bool value represented by this node, 
 // including types.V_TRUE|V_FALSE|V_NUMBER|V_STRING|V_ANY|V_NULL
 func (self RawNode) Bool() (bool, error) {
-	if self.err != nil {
+	if self.Check() != nil {
 		return false, self.err
 	}
 	p := Parser{s: self.js}
@@ -128,7 +132,7 @@ func (self RawNode) Bool() (bool, error) {
 // Int64 casts the node to int64 value, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_STRING
 func (self RawNode) Int64() (int64, error) {
-	if self.err != nil {
+	if self.Check() != nil {
 		return 0, self.err
 	}
 	p := Parser{s: self.js}
@@ -146,7 +150,7 @@ func (self RawNode) Int64() (int64, error) {
 // Float64 cast node to float64, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL
 func (self RawNode) Float64() (float64, error) {
-	if self.err != nil {
+	if self.Check() != nil {
 		return 0, self.err
 	}
 	p := Parser{s: self.js}
@@ -164,7 +168,7 @@ func (self RawNode) Float64() (float64, error) {
 // Number casts node to float64, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL,
 func (self RawNode) Number() (json.Number, error) {
-	if self.err != nil {
+	if self.Check() != nil {
 		return "", self.err
 	}
 	p := Parser{s: self.js}
@@ -182,7 +186,7 @@ func (self RawNode) Number() (json.Number, error) {
 // String cast node to string, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL
 func (self RawNode) String() (string, error) {
-	if self.err != nil {
+	if self.Check() != nil {
 		return "", self.err
 	}
 	p := Parser{s: self.js}
@@ -234,7 +238,7 @@ func (self RawNode) Map() (ret map[string]interface{}, err error) {
 // and converts itself as generic type.
 // WARN: all numberic nodes are casted to float64
 func (self RawNode) Interface() (interface{}, error) {
-	if self.err != nil {
+	if self.Check() != nil {
 		return 0, self.err
 	}
 	switch self.itype() {
@@ -259,7 +263,7 @@ func (self RawNode) Interface() (interface{}, error) {
 
 // ForEach scans one V_OBJECT node's children from JSON head to tail
 func (self RawNode) ForEach(sc func(index int, key string, node RawNode) bool) error {
-	if self.err != nil {
+	if self.Check() != nil {
 		return self.err
 	}
     switch self.itype() {
@@ -338,18 +342,25 @@ var rawPairsPool = sync.Pool{
 }
 
 func (self Searcher) GetRawByPath(path ...interface{}) (RawNode, error) {
+	if self.parser.s == "" {
+		err := errors.New("empty input")
+		return RawNode{err: err}, err
+	}
+
     var err types.ParsingError
     var start int
 
     self.parser.p = 0
     start, err = self.parser.getByPath(path...)
     if err != 0 {
-        return RawNode{}, self.parser.syntaxError(err)
+		e := self.parser.ExportError(err)
+        return RawNode{err: e}, e
     }
 
     t := switchRawType(self.parser.s[start])
     if t == _V_NONE {
-        return RawNode{}, self.parser.ExportError(err)
+		e := self.parser.ExportError(err)
+        return RawNode{err: e}, e 
     }
     return RawNode{js: self.parser.s[start:self.parser.p]}, nil
 }
