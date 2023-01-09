@@ -6,6 +6,9 @@ jobs:
   build:
     runs-on: [self-hosted, X64]
     steps:
+      - name: Clear repository
+        run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+
       - uses: actions/checkout@v2
 
       - name: Check Branch

@@ -10,6 +10,9 @@ jobs:
         os: [arm]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Clear repository
+        run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+
       - uses: actions/checkout@v2
 
       - name: Set up Go
