@@ -4,11 +4,12 @@
 package ast
 
 import (
-    `encoding/base64`
-    `encoding/json`
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 func quote(buf *[]byte, val string) {
@@ -52,6 +53,10 @@ func (self *Parser) skip() (int, types.ParsingError) {
     return s, 0
 }
 
+func (self *Parser) skipFast() (int, types.ParsingError) {
+    return self.skip()
+}
+
 func (self *Node) encodeInterface(buf *[]byte) error {
     out, err := json.Marshal(self.packAny())
     if err != nil {
@@ -59,4 +64,40 @@ func (self *Node) encodeInterface(buf *[]byte) error {
     }
     *buf = append(*buf, out...)
     return nil
+}
+
+func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
+    self.parser.p = 0
+
+    var err types.ParsingError
+    for _, p := range path {
+        switch p := p.(type) {
+        case int:
+            if err = self.parser.searchIndex(p); err != 0 {
+                return Node{}, self.parser.ExportError(err)
+            }
+        case string:
+            if err = self.parser.searchKey(p); err != 0 {
+                return Node{}, self.parser.ExportError(err)
+            }
+        default:
+            panic("path must be either int or string")
+        }
+    }
+
+    var start = self.parser.p
+    if start, err = self.parser.skip(); err != 0 {
+        return Node{}, self.parser.ExportError(err)
+    }
+    ns := len(self.parser.s)
+    if self.parser.p > ns || start >= ns || start>=self.parser.p {
+        return Node{}, fmt.Errorf("skip %d char out of json boundary", start)
+    }
+
+    t := switchRawType(self.parser.s[start])
+    if t == _V_NONE {
+        return Node{}, self.parser.ExportError(err)
+    }
+
+    return newRawNode(self.parser.s[start:self.parser.p], t), nil
 }

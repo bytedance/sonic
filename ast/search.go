@@ -16,10 +16,6 @@
 
 package ast
 
-import (
-    `github.com/bytedance/sonic/internal/native/types`
-)
-
 type Searcher struct {
     parser Parser
 }
@@ -31,21 +27,4 @@ func NewSearcher(str string) *Searcher {
             noLazy: false,
         },
     }
-}
-
-func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
-    var err types.ParsingError
-    var start int
-
-    self.parser.p = 0
-    start, err = self.parser.getByPath(path...)
-    if err != 0 {
-        return Node{}, self.parser.syntaxError(err)
-    }
-
-    t := switchRawType(self.parser.s[start])
-    if t == _V_NONE {
-        return Node{}, self.parser.ExportError(err)
-    }
-    return newRawNode(self.parser.s[start:self.parser.p], t), nil
 }
