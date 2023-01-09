@@ -4,12 +4,12 @@
 package ast
 
 import (
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
+    `encoding/base64`
+    `encoding/json`
+    `fmt`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 func quote(buf *[]byte, val string) {
