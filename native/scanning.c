@@ -1423,11 +1423,6 @@ check_index:
 #undef check_sidx
 #undef check_vidx
 
-long skip_one(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
-    fsm_init(m, FSM_VAL);
-    return fsm_exec(m, src, p, flags);
-}
-
 long skip_array(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
     fsm_init(m, FSM_ARR_0);
     return fsm_exec(m, src, p, flags);
@@ -1512,7 +1507,452 @@ long skip_number(const GoString *src, long *p) {
     return i;
 }
 
+long skip_one(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
+    fsm_init(m, FSM_VAL);
+    return fsm_exec(m, src, p, flags);
+}
+
 long validate_one(const GoString *src, long *p, StateMachine *m) {
     fsm_init(m, FSM_VAL);
     return fsm_exec(m, src, p, MASK_VALIDATE_STRING);
+}
+
+/* Faster skip api for sonic.ast */
+
+static always_inline uint64_t get_maskx64(const char *s, char c) {
+#if USE_AVX2
+    __m256i v0 = _mm256_loadu_si256((__m256i const *)s);
+    __m256i v1 = _mm256_loadu_si256((__m256i const *)(s + 32));
+    uint32_t m0 = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, _mm256_set1_epi8(c)));
+    uint32_t m1 = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, _mm256_set1_epi8(c))); 
+    return ((uint64_t)(m1) << 32) | (uint64_t)(m0);
+#else
+    __m128i v0 = _mm_loadu_si128((__m128i const*)s);
+    __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
+    __m128i v2 = _mm_loadu_si128((__m128i const*)(s + 32));
+    __m128i v3 = _mm_loadu_si128((__m128i const*)(s + 48));
+    uint32_t m0 = _mm_movemask_epi8(_mm_cmpeq_epi8(v0, _mm_set1_epi8(c)));
+    uint32_t m1 = _mm_movemask_epi8(_mm_cmpeq_epi8(v1, _mm_set1_epi8(c)));
+    uint32_t m2 = _mm_movemask_epi8(_mm_cmpeq_epi8(v2, _mm_set1_epi8(c)));
+    uint32_t m3 = _mm_movemask_epi8(_mm_cmpeq_epi8(v3, _mm_set1_epi8(c)));
+    return ((uint64_t)(m3) << 48) | ((uint64_t)(m2)  << 32) | ((uint64_t)(m1) << 16) | (uint64_t)(m0);
+#endif
+}
+
+static always_inline uint64_t get_maskx32(const char *s, char c) {
+#if USE_AVX2
+    __m256i v0 = _mm256_loadu_si256((__m256i const *)s);
+    uint64_t m0 = (unsigned)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, _mm256_set1_epi8(c)));
+    return m0;
+#else
+    __m128i v0 = _mm_loadu_si128((__m128i const*)s);
+    __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
+    uint64_t m0 = (unsigned)_mm_movemask_epi8(_mm_cmpeq_epi8(v0, _mm_set1_epi8(c)));
+    uint64_t m1 = (unsigned)_mm_movemask_epi8(_mm_cmpeq_epi8(v1, _mm_set1_epi8(c)));
+    return m0 | (m1 << 16);
+#endif
+}
+
+// get the string (besides in quote) mask
+static always_inline uint64_t get_string_maskx64(const char *s, uint64_t *prev_inquote, uint64_t *prev_bs) {
+    uint64_t escaped = *prev_bs;
+    uint64_t quote_mask = 0, bs_mask = 0;
+
+    /* read and get the quote or backslash bitmask */
+    quote_mask = get_maskx64(s, '"');
+    bs_mask = get_maskx64(s, '\\');
+
+    /* get the escaped bitmask */
+    if (bs_mask || *prev_bs) {
+        bs_mask &= ~(*prev_bs);
+        uint64_t follow_bs = (bs_mask << 1) | *prev_bs;
+        uint64_t bs_start = bs_mask & ~follow_bs;
+        uint64_t odd_start = bs_start & ODD_MASK;
+        uint64_t even_or_oc = add64(odd_start, bs_mask, prev_bs);
+        uint64_t even_or_escaped = (even_or_oc << 1) ^ EVEN_MASK;
+        escaped = follow_bs & even_or_escaped;
+    } else {
+        *prev_bs = 0;
+    }
+    quote_mask &= ~escaped;
+
+    /* get the inquote bitmask */
+    uint64_t inquote = _mm_cvtsi128_si64(_mm_clmulepi64_si128(_mm_set_epi64x(0, quote_mask), _mm_set1_epi8('\xFF'), 0));
+    inquote ^= *prev_inquote;
+    *prev_inquote = (uint64_t)(((int64_t)(inquote)) >> 63);
+    return inquote;
+}
+
+// get the next json structural, '}', ']' or ','。
+#if USE_AVX2
+static always_inline int get_structural_maskx32(const char *s) {
+    __m256i v = _mm256_loadu_si256((const void *)s);
+    __m256i e1 = _mm256_cmpeq_epi8(v, _mm256_set1_epi8('}'));
+    __m256i e2 = _mm256_cmpeq_epi8(v, _mm256_set1_epi8(']'));
+    __m256i e3 = _mm256_cmpeq_epi8(v, _mm256_set1_epi8(','));
+    __m256i sv = _mm256_or_si256(_mm256_or_si256(e1, e2), e3);
+    return _mm256_movemask_epi8(sv);
+}
+#endif
+
+static always_inline int get_structural_maskx16(const char *s) {
+    __m128i v = _mm_loadu_si128((const void *)s);
+    __m128i e1 = _mm_cmpeq_epi8(v, _mm_set1_epi8('}'));
+    __m128i e2 = _mm_cmpeq_epi8(v, _mm_set1_epi8(']'));
+    __m128i e3 = _mm_cmpeq_epi8(v, _mm_set1_epi8(','));
+    __m128i sv = _mm_or_si128(_mm_or_si128(e1, e2), e3);
+    return _mm_movemask_epi8(sv);
+}
+
+// skip the number at the next '}', ']' or ',' or the ending of json.
+static always_inline long skip_number_fast(const GoString *src, long *p) {
+    size_t nb = src->len - *p;
+    const char *s = src->buf + *p;
+    long vi = *p - 1;
+    int m = 0;
+
+#if USE_AVX2
+    while (likely(nb >= 32)) {
+        if ((m = get_structural_maskx32(s))) {
+            *p = s - src->buf + __builtin_ctzll(m);
+            return vi;
+        }
+        s += 32, nb -= 32;
+    }
+#endif
+
+    while (likely(nb >= 16)) {
+        if ((m = get_structural_maskx16(s))) {
+            *p = s - src->buf + __builtin_ctzll(m);
+            return vi;
+        }
+        s += 16, nb -= 16;
+    }
+
+    while (likely(nb > 0)) {
+        if (*s == '}' || *s == ']' || *s == ',') {
+            *p = s - src->buf;
+            return vi;
+        }
+        s++, nb--;
+    }
+    *p = s - src->buf;
+    return vi;
+}
+
+static always_inline void memcpy_p64(char * restrict dp, const char * restrict sp, size_t n) {
+    long nb = n;
+#if USE_AVX2
+    if (nb >= 32) { _mm256_storeu_si256((void *)dp, _mm256_loadu_si256((const void *)sp)); sp += 32, dp += 32, nb -= 32; }
+#endif
+    while (nb >= 16) { _mm_storeu_si128((void *)dp, _mm_loadu_si128((const void *)sp)); sp += 16, dp += 16, nb -= 16; }
+    if (nb >=  8) { *(uint64_t *)dp = *(const uint64_t *)sp;                         sp +=  8, dp +=  8, nb -=  8; }
+    if (nb >=  4) { *(uint32_t *)dp = *(const uint32_t *)sp;                         sp +=  4, dp +=  4, nb -=  4; }
+    if (nb >=  2) { *(uint16_t *)dp = *(const uint16_t *)sp;                         sp +=  2, dp +=  2, nb -=  2; }
+    if (nb >=  1) { *dp = *sp; }
+}
+
+static always_inline bool vec_cross_page(const void * p, size_t n) {
+#define PAGE_SIZE 4096
+    return (((size_t)(p)) & (PAGE_SIZE - 1)) > (PAGE_SIZE - n);
+#undef PAGE_SIZE
+}
+
+static always_inline long skip_container_fast(const GoString *src, long *p, char lc, char rc) {
+    long nb = src->len - *p;
+    const char *s = src->buf + *p;
+    long vi = *p - 1;
+
+    uint64_t prev_inquote = 0, prev_bs = 0;
+    uint64_t lbrace = 0, rbrace = 0;
+    size_t lnum = 0, rnum = 0, last_lnum = 0;
+    uint64_t inquote = 0;
+
+    while (likely(nb >= 64)) {
+skip:
+        inquote = get_string_maskx64(s, &prev_inquote, &prev_bs);
+        lbrace = get_maskx64(s, lc) & ~inquote;
+        rbrace = get_maskx64(s, rc) & ~inquote;
+
+        /* traverse each right brace */
+        last_lnum = lnum;
+        while (rbrace > 0) {
+            uint64_t lbrace_first = (rbrace - 1) & lbrace;
+            lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
+            bool is_closed = lnum <= rnum;
+            if (is_closed) {
+                *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
+                // *p is out-of-bound access here
+                if (*p > src->len) {
+                    *p = src->len;
+                    return -ERR_EOF;
+                }
+                return vi;
+            }
+            rbrace &= (rbrace - 1); // clear the lowest right brace
+            rnum ++;
+        }
+        lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
+        s += 64, nb -= 64;
+    }
+
+    if (nb <= 0) {
+        *p = src->len;
+        return -ERR_EOF;
+    }
+
+    char tbuf[64] = {0};
+    bool cross_page = vec_cross_page(s, 64);
+    if (cross_page) {
+        memcpy_p64(tbuf, s, nb);
+        s = tbuf;
+    }
+    goto skip;
+}
+
+static always_inline long skip_object_fast(const GoString *src, long *p) {
+    return skip_container_fast(src, p, '{', '}');
+}
+
+static always_inline long skip_array_fast(const GoString *src, long *p) {
+    return skip_container_fast(src, p, '[', ']');
+}
+
+static always_inline long skip_string_fast(const GoString *src, long *p) {
+    const char* s = src->buf + *p;
+    size_t nb = src->len - *p;
+    long vi = *p - 1;
+    uint64_t prev_bs = 0, escaped;
+
+    while (likely(nb >= 32)) {
+        uint32_t quote = get_maskx32(s, '"');
+        uint32_t bs_mask = get_maskx32(s, '\\');
+        if (bs_mask || prev_bs) {
+            bs_mask &= ~prev_bs;
+            uint64_t follow_bs = (bs_mask << 1) | prev_bs;
+            uint64_t bs_start = bs_mask & ~follow_bs;
+            uint64_t odd_start = bs_start & ODD_MASK;
+            uint64_t even_or_oc = add32(odd_start, bs_mask, &prev_bs);
+            uint64_t even_or_escaped = (even_or_oc << 1) ^ EVEN_MASK;
+            escaped = follow_bs & even_or_escaped;
+            quote &= ~escaped;
+        }
+        if (quote) {
+            *p = s + __builtin_ctzll(quote) + 1 - src->buf;
+            return vi;
+        }
+        s += 32;
+        nb -= 32;
+    }
+
+    if (unlikely(prev_bs != 0)) {
+        if (nb == 0) return -ERR_EOF;
+        s++, nb--;
+    }
+
+    while (likely(nb > 0)) {
+        if (*s == '\\') {
+            s += 2, nb -= 2;
+            continue;
+        }
+        if (*s == '"') {
+            *p = s - src->buf + 1;
+            return vi;
+        }
+        s++, nb--;
+    }
+    return -ERR_EOF;
+}
+
+long skip_one_fast(const GoString *src, long *p) {
+    char c = advance_ns(src, p);
+    /* set the start address */
+    long vi = *p - 1;
+    switch (c) {
+        case '[': return skip_array_fast(src, p);
+        case '{': return skip_object_fast(src, p);
+        case '"': return skip_string_fast(src, p);
+        case '-': case '0' ... '9': return skip_number_fast(src, p);
+        case 't': case 'n': { if (*p + 3 < src->len) { *p += 3; } else { return -ERR_EOF; } }; break;
+        case 'f': { if (*p + 4 < src->len) { *p += 4; } else { return -ERR_EOF; } }; break;
+        case  0 : return -ERR_EOF;
+        default : *p -= 1; return -ERR_INVAL; // backward error position
+    }
+    return vi;
+}
+
+
+static always_inline GoKind kind(const GoIface* iface) {
+    return (iface->type->kind_flags) &  GO_KIND_MASK;
+}
+
+static always_inline bool is_int(const GoIface* iface) {
+    return kind(iface) == Int;
+}
+
+static always_inline bool is_str(const GoIface* iface) {
+    return kind(iface) == String;
+}
+
+static always_inline GoString get_str(const GoIface* iface) {
+    return *(GoString*)(iface->value);
+}
+
+static always_inline int64_t get_int(const GoIface* iface) {
+    return *(int64_t*)(iface->value);
+}
+
+// xmemcmpeq return true if s1 and s2 is equal for the n bytes, otherwise, return false.
+static always_inline bool xmemcmpeq(const char * s1, const char * s2, size_t n) {
+    bool c1, c2;
+#if USE_AVX2
+    while (n >= 32) {
+        __m256i  v1   = _mm256_loadu_si256((const void *)s1);
+        __m256i  v2   = _mm256_loadu_si256((const void *)s2);
+        uint32_t mask = ~((uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
+        if (mask) return false;
+        s1 += 32;
+        s2 += 32;
+        n  -= 32;
+    };
+    c1 = vec_cross_page(s1, 32);
+    c2 = vec_cross_page(s2, 32);
+    // not cross page
+    if (!c1 && !c2) {
+        __m256i  v1   = _mm256_loadu_si256((const void *)s1);
+        __m256i  v2   = _mm256_loadu_si256((const void *)s2);
+        uint32_t mask = ~((uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
+        bool eq = (mask == 0) || (__builtin_ctzll(mask) >= n);
+        return eq;
+    }
+#endif
+    while (n >= 16) {
+        __m128i  v1   = _mm_loadu_si128((const void *)s1);
+        __m128i  v2   = _mm_loadu_si128((const void *)s2);
+        uint16_t mask = ~((uint16_t)_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
+        if (mask != 0) return false;
+        s1 += 16;
+        s2 += 16;
+        n  -= 16;
+    };
+    c1 = vec_cross_page(s1, 16);
+    c2 = vec_cross_page(s2, 16);
+    // not cross page
+    if (!c1 && !c2) {
+        __m128i  v1   = _mm_loadu_si128((const void *)s1);
+        __m128i  v2   = _mm_loadu_si128((const void *)s2);
+        uint16_t mask = ~((uint16_t)_mm_movemask_epi8(_mm_cmpeq_epi8(v1, v2)));
+        bool eq = (mask == 0) || (__builtin_ctzll(mask) >= n);
+        return eq;
+    }
+    // cross page
+    while (n > 0 && *s1++ == *s2++) n--;
+    return n == 0;
+}
+
+// match_key return negative if errors, zero if not matched, one if matched.
+static always_inline long match_key(const GoString *src, long *p, const GoString key) {
+    static const long not_match = 0;
+    int64_t v = -1;
+    long si = *p;
+    long se = advance_string_default(src, *p, &v);
+    if (unlikely(se < 0)) {
+        *p = src->len;
+        return -ERR_EOF;
+    }
+
+    /* update position */
+    *p = se;
+
+    /* compare non-escaped strings */
+    if (likely(v == -1 || v > se)) {
+        long sn = se - si - 1;
+        return sn == key.len && xmemcmpeq(src->buf + si, key.buf, key.len);
+    }
+
+    /* deal with escaped strings */
+    char buf[8] = {0}; // escaped buffer
+    const char* sp = src->buf + si;
+    const char* end = src->buf + se - 1;
+    const char* kp = key.buf;
+    const char* ke = key.buf + key.len;
+    while (sp < end && kp < ke) {
+        if (*sp == '\\') {
+            long en = unescape(&sp, end, buf);
+            if (en < 0) {
+                *p = sp - src->buf;
+                return en;
+            }
+            const char* ee = buf + en;
+            const char* ep = buf;
+            while (kp < ke && ep < ee && *kp == *ep) kp++, ep++;
+            if (ep != ee) {
+                return not_match;
+            }
+        } else if (*sp == *kp) {
+            sp++, kp++; 
+        } else {
+            return not_match;
+        }
+    };
+    return sp == end && kp == ke;
+}
+
+long get_by_path(const GoString *src, long *p, const GoSlice *path) {
+    GoIface *ps = (GoIface*)(path->buf);
+    GoIface *pe = (GoIface*)(path->buf) + path->len;
+    char c = 0;
+    int64_t index;
+    long found;
+
+query:
+    /* if empty path, skip the whole json */
+    if (ps == pe) {
+        return skip_one_fast(src, p);
+    }
+    /* match type: should query key in object, query index in array */
+    c = advance_ns(src, p);
+    if (is_str(ps)) {
+        if (c != '{') goto err_inval;
+        goto skip_in_obj;
+    } else if (is_int(ps)) {
+        if (c != '[') goto err_inval;
+        goto skip_in_arr;
+    } else {
+        goto err_inval;
+    }
+
+skip_in_obj:
+    c = advance_ns(src, p);
+    if (c != '"') goto err_inval;
+    found = match_key(src, p, get_str(ps));
+    if (found < 0) return found; // parse string errors
+
+    /* value should after : */
+    c = advance_ns(src, p);
+    if (c != ':') goto err_inval;
+    if (found) {
+        ps++;
+        goto query;
+    } else {
+        skip_one_fast(src, p);
+        c = advance_ns(src, p);
+        if (c != ',') goto err_inval; // not found key
+        goto skip_in_obj;
+    }
+
+skip_in_arr:
+    index = get_int(ps);
+    /* skip array elem one by one */
+    while (index-- > 0) {
+        skip_one_fast(src, p);
+        c = advance_ns(src, p);
+        if (c != ',') goto err_inval; // out of range
+    }
+    ps++;
+    goto query;
+
+err_inval:
+    *p -= 1; // backward error position
+    return -ERR_INVAL;
 }

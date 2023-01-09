@@ -432,6 +432,8 @@ const _TwitterJson = `{
   }
 }`
 
+const _LotsCompare = `{"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"hi":0,"is":1}`
+
 type _TwitterStruct struct {
     Statuses []struct {
         Coordinates interface{} `json:"coordinates"`

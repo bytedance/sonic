@@ -981,3 +981,93 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
 }
 
 #undef MAX_ESCAPED_BYTES
+
+static inline long unescape(const char** src, const char* end, char* dp) {
+    const char* sp = *src;
+    long nb = end - sp;
+    char cc = 0;
+    uint32_t r0, r1;
+
+    if (nb <= 0) return -ERR_EOF;
+
+    if ((cc = _UnquoteTab[(uint8_t)sp[1]]) == 0) {
+        *src += 1;
+        return -ERR_ESCAPE;
+    }
+
+    if (cc != -1) {
+        *dp = cc;
+        *src += 2;
+        return 1;
+    }
+
+    if (nb < 4) {
+        *src += 1;
+        return -ERR_EOF;
+    }
+
+    /* check for hexadecimal characters */
+    if (!unhex16_is(sp + 2)) {
+        *src += 2;
+        return -ERR_INVAL;
+    }
+
+    /* decode the code-point */
+    r0 = unhex16_fast(sp + 2);
+    sp += 6;
+    *src = sp;
+
+    /* ASCII characters, unlikely */
+    if (unlikely(r0 <= 0x7f)) {
+        *dp++ = (char)r0;
+        return 1;
+    }
+
+    /* latin-1 characters, unlikely */
+    if (unlikely(r0 <= 0x07ff)) {
+        *dp++ = (char)(0xc0 | (r0 >> 6));
+        *dp++ = (char)(0x80 | (r0 & 0x3f));
+        return 2;
+    }
+
+    /* 3-byte characters, likely */
+    if (likely(r0 < 0xd800 || r0 > 0xdfff)) {
+        *dp++ = (char)(0xe0 | ((r0 >> 12)       ));
+        *dp++ = (char)(0x80 | ((r0 >>  6) & 0x3f));
+        *dp++ = (char)(0x80 | ((r0      ) & 0x3f));
+        return 3;
+    }
+
+    /* surrogate half, must follows by the other half */
+    if (nb < 6 || r0 > 0xdbff || sp[0] != '\\' || sp[1] != 'u') {
+        return -ERR_UNICODE;
+    }
+
+    /* check the hexadecimal escape */
+    if (!unhex16_is(sp + 2)) {
+        *src += 2;
+        return -ERR_INVAL;
+    }
+
+    /* decode the second code-point */
+    r1 = unhex16_fast(sp + 2);
+
+    /* it must be the other half */
+    if (r1 < 0xdc00 || r1 > 0xdfff) {
+        *src += 2;
+        return -ERR_UNICODE;
+    }
+
+    /* merge two surrogates */
+    r0 = (r0 - 0xd800) << 10;
+    r1 = (r1 - 0xdc00) + 0x010000;
+    r0 += r1;
+
+    /* encode the character */
+    *dp++ = (char)(0xf0 | ((r0 >> 18)       ));
+    *dp++ = (char)(0x80 | ((r0 >> 12) & 0x3f));
+    *dp++ = (char)(0x80 | ((r0 >>  6) & 0x3f));
+    *dp++ = (char)(0x80 | ((r0      ) & 0x3f));
+    *src = sp + 6;
+    return 4;
+}

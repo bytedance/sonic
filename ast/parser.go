@@ -18,7 +18,6 @@ package ast
 
 import (
     `fmt`
-
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
@@ -131,7 +130,7 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
         if self.skipValue {
             /* skip the value */
             var start int
-            if start, err = self.skip(); err != 0 {
+            if start, err = self.skipFast(); err != 0 {
                 return Node{}, err
             }
             if self.p > ns {
@@ -217,7 +216,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
         if self.skipValue {
             /* skip the value */
             var start int
-            if start, err = self.skip(); err != 0 {
+            if start, err = self.skipFast(); err != 0 {
                 return Node{}, err
             }
             if self.p > ns {
@@ -228,7 +227,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
                 return Node{}, types.ERR_INVALID_CHAR
             }
             val = newRawNode(self.s[start:self.p], t)
-        }else{
+        } else {
             /* decode the value */
             if val, err = self.Parse(); err != 0 {
                 return Node{}, err
@@ -448,7 +447,7 @@ func (self *Node) skipNextNode() *Node {
 
     var val Node
     /* skip the value */
-    if start, err := parser.skip(); err != 0 {
+    if start, err := parser.skipFast(); err != 0 {
         return newSyntaxError(parser.syntaxError(err))
     } else {
         t := switchRawType(parser.s[start])
@@ -531,7 +530,7 @@ func (self *Node) skipNextPair() (*Pair) {
     }
 
     /* skip the value */
-    if start, err := parser.skip(); err != 0 {
+    if start, err := parser.skipFast(); err != 0 {
         return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
     } else {
         t := switchRawType(parser.s[start])

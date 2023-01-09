@@ -33,21 +33,9 @@ import (
 )
 
 func FuzzMain(f *testing.F) {
-    f.Add([]byte(`{
-        "object": {
-            "slice": [
-                1,
-                2.0,
-                "3",
-                [4],
-                {5: {}}
-            ]
-        },
-        "slice": [[]],
-        "string": ":)",
-        "int": 1e5,
-        "float": 3e-9"
-        }`))
+    for _, corp := range(corpus()) {
+        f.Add(corp)
+    }
     f.Fuzz(fuzzMain)
 }
 
@@ -67,7 +55,6 @@ func fuzzMain(t *testing.T, data []byte) {
         func() interface{} { return new(uint64) },
         func() interface{} { return new(float64) },
         func() interface{} { return new(json.Number) },
-        func() interface{} { return new(json.RawMessage) },
         func() interface{} { return new(S) },
     } {
         sv, jv := typ(), typ()
@@ -75,7 +62,7 @@ func fuzzMain(t *testing.T, data []byte) {
         jerr := json.Unmarshal([]byte(data), jv)
         require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", reflect.TypeOf(jv))
         if jerr != nil {
-            return
+            continue
         }
         require.Equal(t, sv, jv, "different result in sonic unmarshal %v", reflect.TypeOf(jv))
         sout, serr := sonic.Marshal(sv)
@@ -89,7 +76,7 @@ func fuzzMain(t *testing.T, data []byte) {
             jerr := json.Unmarshal(jout, jv)
             require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal again %v", reflect.TypeOf(jv))
             if jerr != nil {
-                return
+                continue
             }
             require.Equal(t, sv, jv, "different result in sonic unmarshal again %v", reflect.TypeOf(jv))
         }
@@ -127,7 +114,7 @@ type S struct {
 	U [2]int
 	V uintptr
     W json.Number
-    X json.RawMessage
+    // X json.RawMessage
     Y Marshaller 
 	Z TextMarshaller
 }

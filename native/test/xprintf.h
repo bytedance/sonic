@@ -19,7 +19,7 @@
 
 #include <sys/types.h>
 
-static void __attribute__((naked)) write_syscall(const char *s, size_t n)
+static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
 {
     asm volatile(
         "movq %rsi, %rdx"
@@ -36,12 +36,12 @@ static void __attribute__((naked)) write_syscall(const char *s, size_t n)
         "\n");
 }
 
-static void printch(const char ch)
+static inline void printch(const char ch)
 {
     write_syscall(&ch, 1);
 }
 
-static void printstr(const char *s)
+static inline void printstr(const char *s)
 {
     size_t n = 0;
     const char *p = s;
@@ -50,7 +50,7 @@ static void printstr(const char *s)
     write_syscall(s, n);
 }
 
-static void printint(int64_t v)
+static inline void printint(int64_t v)
 {
     char neg = 0;
     char buf[32] = {};
@@ -62,18 +62,23 @@ static void printint(int64_t v)
     } else {
         u = v;
     }
+    if (u == 0) {
+        *--p = '0';
+        goto sig;
+    }
     while (u)
     {
         *--p = (u % 10) + '0';
         u /= 10;
     }
+sig:
     if (neg) {
         *--p = '-';
     }
     printstr(p);
 }
 
-static void printuint(uint64_t v)
+static inline void printuint(uint64_t v)
 {
     char buf[32] = {};
     char *p = &buf[31];
@@ -92,7 +97,7 @@ static void printuint(uint64_t v)
 
 static const char tab[] = "0123456789abcdef";
 
-static void printhex(uintptr_t v)
+static inline void printhex(uintptr_t v)
 {
     if (v == 0)
     {
@@ -112,7 +117,7 @@ static void printhex(uintptr_t v)
 
 #define MAX_BUF_LEN 100
 
-static void printbytes(GoSlice *s)
+static inline void printbytes(GoSlice *s)
 {
     printch('[');
     int i = 0;
@@ -122,15 +127,16 @@ static void printbytes(GoSlice *s)
     }
     for (; i < s->len; i++)
     {
-        printch(tab[((s->buf[i]) & 0xf0) >> 4]);
-        printch(tab[(s->buf[i]) & 0x0f]);
+        char* bytes = (char*)(s->buf);
+        printch(tab[(bytes[i] & 0xf0) >> 4]);
+        printch(tab[bytes[i] & 0x0f]);
         if (i != s->len - 1)
             printch(',');
     }
     printch(']');
 }
 
-static void printgostr(GoString *s)
+static inline void printgostr(GoString *s)
 {
     printch('"');
     if (s->len < MAX_BUF_LEN)
@@ -139,12 +145,12 @@ static void printgostr(GoString *s)
     }
     else
     {
-        write_syscall(&s->buf[s->len - MAX_BUF_LEN], MAX_BUF_LEN);
+        write_syscall(s->buf, MAX_BUF_LEN);
     }
     printch('"');
 }
 
-static void xprintf(const char *fmt, ...)
+static inline void xprintf(const char *fmt, ...)
 {
 #ifdef DEBUG
     __builtin_va_list va;
