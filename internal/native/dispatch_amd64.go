@@ -51,6 +51,8 @@ var (
 
 var (
     S_skip_one    uintptr
+    S_skip_one_fast    uintptr
+    S_get_by_path    uintptr
     S_skip_array  uintptr
     S_skip_object uintptr
     S_skip_number uintptr
@@ -80,6 +82,16 @@ func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) int
 //go:noescape
 //goland:noinspection GoUnusedParameter
 func SkipOne(s *string, p *int, m *types.StateMachine, flags uint64) int
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func SkipOneFast(s *string, p *int) int
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func GetByPath(s *string, p *int, path *[]interface{}) int
 
 //go:nosplit
 //go:noescape
@@ -115,9 +127,11 @@ func useAVX() {
     S_vsigned     = avx.S_vsigned
     S_vunsigned   = avx.S_vunsigned
     S_skip_one    = avx.S_skip_one
+    S_skip_one_fast = avx.S_skip_one_fast
     S_skip_array  = avx.S_skip_array
     S_skip_object = avx.S_skip_object
     S_skip_number = avx.S_skip_number
+    S_get_by_path = avx.S_get_by_path
 }
 
 func useAVX2() {
@@ -134,9 +148,11 @@ func useAVX2() {
     S_vsigned     = avx2.S_vsigned
     S_vunsigned   = avx2.S_vunsigned
     S_skip_one    = avx2.S_skip_one
+    S_skip_one_fast = avx2.S_skip_one_fast
     S_skip_array  = avx2.S_skip_array
     S_skip_object = avx2.S_skip_object
     S_skip_number = avx2.S_skip_number
+    S_get_by_path = avx2.S_get_by_path
 }
 
 func useSSE() {
@@ -153,9 +169,11 @@ func useSSE() {
     S_vsigned = sse.S_vsigned
     S_vunsigned = sse.S_vunsigned
     S_skip_one = sse.S_skip_one
+    S_skip_one_fast = sse.S_skip_one_fast
     S_skip_array = sse.S_skip_array
     S_skip_object = sse.S_skip_object
     S_skip_number = sse.S_skip_number
+    S_get_by_path = sse.S_get_by_path
 }
 
 func init() {

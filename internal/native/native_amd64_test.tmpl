@@ -589,3 +589,59 @@ func TestNative_SkipNumber(t *testing.T) {
     assert.Equal(t, 9, p)
     assert.Equal(t, 0, q)
 }
+
+func TestNative_SkipOneFast(t *testing.T) {
+    p := 0
+    s := ` {"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
+    q := __skip_one_fast(&s, &p)
+    assert.Equal(t, 42, p)
+    assert.Equal(t, 1, q)
+    p = 0
+    s = `1, 2.5, -3, "asdf\nqwer", true, false, null, {}, [],`
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 1, p)
+    assert.Equal(t, 0, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 6, p)
+    assert.Equal(t, 3, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 10, p)
+    assert.Equal(t, 8, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 24, p)
+    assert.Equal(t, 12, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 30, p)
+    assert.Equal(t, 26, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 37, p)
+    assert.Equal(t, 32, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 43, p)
+    assert.Equal(t, 39, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 47, p)
+    assert.Equal(t, 45, q)
+    p += 1
+    q = __skip_one_fast(&s, &p)
+    assert.Equal(t, 51, p)
+    assert.Equal(t, 49, q)
+}
+
+func TestNative_SkipOneFast_Error(t *testing.T) {
+    for _, s := range([]string{
+        "{{", "[{",  "{{}",
+        `"asdf`, `"\\\"`,
+    }) {
+        p := 0
+        q := __skip_one_fast(&s, &p)
+        assert.True(t, q < 0)
+    }
+}

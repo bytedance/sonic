@@ -29,6 +29,8 @@ import (
     `testing`
     `time`
 
+    `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/assert`
     `github.com/bytedance/sonic/ast`
 )
 
@@ -80,6 +82,61 @@ func TestExampleSearch(t *testing.T) {
     }
 }
 
+func TestExampleSearchEscapedKey(t *testing.T) {
+    data := []byte(`
+{
+    "xx" : [] ,
+    "yy" :{ }, 
+    "test\"" : [
+        true ,
+        0.1 ,
+        "abc",
+        [
+            "h"
+        ], 
+        {
+            "a\u0008": {},
+            "b\\\\": null,
+            "\u2028\u2028": "\u2028\u2029",
+            "\u0026":2,
+            "0":1
+        } 
+    ],
+    ",,,,,,,,,,(,,15": ",",
+    ",,,,,,,,,,(,,,16": "a,]}",
+    ",,,,,,,,,,(,,,,17": 1,
+    ",,,,,,,,,,(,,,,,,,,,,,,,,,,(,,,,34": "c"
+} `)
+
+    type getTest struct{
+        path []interface{}
+        expect interface{}
+    }
+
+    tests := []getTest {
+        {[]interface{}{"test\"", 0}, true},
+        {[]interface{}{"test\"", 1}, 0.1},
+        {[]interface{}{"test\"", 2}, "abc"},
+        {[]interface{}{"test\"", 3}, []interface{}{"h"}},
+        {[]interface{}{"test\"", 4, "a\u0008"}, map[string]interface{}{}},
+        {[]interface{}{"test\"", 4, "b\\\\"}, nil},
+        {[]interface{}{"test\"", 4, "\u2028\u2028"}, "\u2028\u2029"},
+        {[]interface{}{"test\"", 4, "0"}, float64(1)},
+        {[]interface{}{",,,,,,,,,,(,,15"}, ","},
+        {[]interface{}{",,,,,,,,,,(,,,16"}, "a,]}"},
+        {[]interface{}{",,,,,,,,,,(,,,,17"}, float64(1)},
+        {[]interface{}{",,,,,,,,,,(,,,,,,,,,,,,,,,,(,,,,34"}, "c"},
+    }
+
+    for _, test := range(tests) {
+        node, err := Get(data, test.path...)
+        assert.NoErrorf(t, err, "get return errors")
+        got, err := node.Interface()
+        assert.NoErrorf(t, err, "get convert errors")
+        assert.Equalf(t, test.expect, got, "get result is wrong from path %#v", test.path)
+    }
+}
+
 func TestExampleSearchErr(t *testing.T) {
     data := []byte(` { "xx" : [] ,"yy" :{ }, "test" : [ true , 0.1 , "abc", ["h"], {"a":"bc"} ] } `)
     node, e := Get(data, "zz")
@@ -101,6 +158,38 @@ func TestExampleSearchErr(t *testing.T) {
     fmt.Println(e)
 
     node, e = Get(data, "test", 4, "x")
+    if e == nil {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+    fmt.Println(e)
+}
+
+func TestExampleSearchEscapedKeyError(t *testing.T) {
+    data := []byte(` { "xx" : [] ,"yy" :{ }, "x\u0008" : [] ,"y\\\"y" :{ }, "test" : [ true , 0.1 , "abc", ["h"], {"a":"bc"} ] } `)
+    node, e := Get(data, "zz")
+    if e == nil {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+    fmt.Println(e)
+
+    node, e = Get(data, "x\u0008", 4)
+    if e == nil {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+    fmt.Println(e)
+
+    node, e = Get(data, "yy", "a")
+    if e == nil {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+    fmt.Println(e)
+
+    node, e = Get(data, "test", 4, "x")
+    if e == nil {
+        t.Fatalf("node: %v, err: %v", node, e)
+    }
+
+    node, e = Get(data, "y\\\"y", 4, "x")
     if e == nil {
         t.Fatalf("node: %v, err: %v", node, e)
     }
@@ -153,14 +242,20 @@ func TestRandomValidStrings(t *testing.T) {
         }
         token, err := GetFromString(`{"str":`+string(sm)+`}`, "str")
         if err != nil {
+            spew.Dump(string(sm))
             t.Fatal("search data failed:",err)
         }
         x, _ := token.Interface()
-        if x.(string) != su {
+        st, ok := x.(string)
+        if !ok {
+            t.Fatalf("type mismatch, exp: %v, got: %v", su, x)
+        }
+        if st != su {
             t.Fatalf("string mismatch, exp: %v, got: %v", su, x)
         }
     }
 }
+
 
 func TestEmoji(t *testing.T) {
     var input = []byte(`{"utf8":"Example emoji, KO: \ud83d\udd13, \ud83c\udfc3 ` +
