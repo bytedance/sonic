@@ -62,23 +62,23 @@ BenchmarkDecoder_Parallel_Binding_StdLib-16            27582 ns/op         472.5
 BenchmarkDecoder_Parallel_Binding_JsonIter-16          13571 ns/op         960.51 MB/s       14685 B/op        385 allocs/op
 BenchmarkDecoder_Parallel_Binding_GoJson-16            10031 ns/op        1299.51 MB/s       22111 B/op         49 allocs/op
 
-BenchmarkGetOne_Sonic-16                               11650 ns/op        1117.81 MB/s          29 B/op          1 allocs/op
+BenchmarkGetOne_Sonic-16                                3276 ns/op        3975.78 MB/s          24 B/op          1 allocs/op
 BenchmarkGetOne_Gjson-16                                9431 ns/op        1380.81 MB/s           0 B/op          0 allocs/op
 BenchmarkGetOne_Jsoniter-16                            51178 ns/op         254.46 MB/s       27936 B/op        647 allocs/op
-BenchmarkGetOne_Parallel_Sonic-16                       1955 ns/op        6659.94 MB/s         125 B/op          1 allocs/op
+BenchmarkGetOne_Parallel_Sonic-16                      216.7 ns/op       60098.95 MB/s          24 B/op          1 allocs/op
 BenchmarkGetOne_Parallel_Gjson-16                       1076 ns/op        12098.62 MB/s          0 B/op          0 allocs/op
 BenchmarkGetOne_Parallel_Jsoniter-16                   17741 ns/op         734.06 MB/s       27945 B/op        647 allocs/op
-BenchmarkSetOne_Sonic-16                               16124 ns/op         807.70 MB/s        1787 B/op         17 allocs/op
+BenchmarkSetOne_Sonic-16                               9571 ns/op         1360.61 MB/s        1584 B/op         17 allocs/op
 BenchmarkSetOne_Sjson-16                               36456 ns/op         357.22 MB/s       52180 B/op          9 allocs/op
 BenchmarkSetOne_Jsoniter-16                            79475 ns/op         163.86 MB/s       45862 B/op        964 allocs/op
-BenchmarkSetOne_Parallel_Sonic-16                       2383 ns/op        5465.02 MB/s        2186 B/op         17 allocs/op
+BenchmarkSetOne_Parallel_Sonic-16                      850.9 ns/op       15305.31 MB/s        1584 B/op         17 allocs/op
 BenchmarkSetOne_Parallel_Sjson-16                      18194 ns/op         715.77 MB/s       52247 B/op          9 allocs/op
 BenchmarkSetOne_Parallel_Jsoniter-16                   33560 ns/op         388.05 MB/s       45892 B/op        964 allocs/op
 ```
 - [Small](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 keys, 3 layers)
-![small benchmarks](bench-small.jpg)
+![small benchmarks](bench-small.png)
 - [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitter.json) (635KB, 10000+ key, 6 layers)
-![large benchmarks](bench-large.jpg)
+![large benchmarks](bench-large.png)
 
 See [bench.sh](https://github.com/bytedance/sonic/blob/main/bench.sh) for benchmark codes.
 
