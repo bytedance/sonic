@@ -23,7 +23,6 @@ import (
     `io`
     `reflect`
 
-    `github.com/bytedance/sonic/ast`
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/encoder`
     `github.com/bytedance/sonic/option`
@@ -99,23 +98,23 @@ func (cfg Config) Froze() API {
 }
 
 // Marshal is implemented by sonic
-func (cfg *frozenConfig) Marshal(val interface{}) ([]byte, error) {
+func (cfg frozenConfig) Marshal(val interface{}) ([]byte, error) {
     return encoder.Encode(val, cfg.encoderOpts)
 }
 
 // MarshalToString is implemented by sonic
-func (cfg *frozenConfig) MarshalToString(val interface{}) (string, error) {
+func (cfg frozenConfig) MarshalToString(val interface{}) (string, error) {
     buf, err := encoder.Encode(val, cfg.encoderOpts)
     return rt.Mem2Str(buf), err
 }
 
 // MarshalIndent is implemented by sonic
-func (cfg *frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([]byte, error) {
+func (cfg frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([]byte, error) {
     return encoder.EncodeIndented(val, prefix, indent, cfg.encoderOpts)
 }
 
 // UnmarshalFromString is implemented by sonic
-func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
+func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
     dec := decoder.NewDecoder(buf)
     dec.SetOptions(cfg.decoderOpts)
     err := dec.Decode(val)
@@ -129,26 +128,26 @@ func (cfg *frozenConfig) UnmarshalFromString(buf string, val interface{}) error 
 }
 
 // Unmarshal is implemented by sonic
-func (cfg *frozenConfig) Unmarshal(buf []byte, val interface{}) error {
+func (cfg frozenConfig) Unmarshal(buf []byte, val interface{}) error {
     return cfg.UnmarshalFromString(string(buf), val)
 }
 
 // NewEncoder is implemented by sonic
-func (cfg *frozenConfig) NewEncoder(writer io.Writer) Encoder {
+func (cfg frozenConfig) NewEncoder(writer io.Writer) Encoder {
     enc := encoder.NewStreamEncoder(writer)
     enc.Opts = cfg.encoderOpts
     return enc
 }
 
 // NewDecoder is implemented by sonic
-func (cfg *frozenConfig) NewDecoder(reader io.Reader) Decoder {
+func (cfg frozenConfig) NewDecoder(reader io.Reader) Decoder {
     dec := decoder.NewStreamDecoder(reader)
     dec.SetOptions(cfg.decoderOpts)
     return dec
 }
 
 // Valid is implemented by sonic
-func (cfg *frozenConfig) Valid(data []byte) bool {
+func (cfg frozenConfig) Valid(data []byte) bool {
     ok, _ := encoder.Valid(data)
     return ok
 }
@@ -178,20 +177,4 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 		return err
 	}
 	return nil
-}
-
-// Get searches the given path json,
-// and returns its representing ast.Node.
-//
-// Each path arg must be integer or string:
-//     - Integer means searching current node as array
-//     - String means searching current node as object
-func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(string(src), path...)
-}
-
-// GetFromString is same with Get except src is string,
-// which can reduce unnecessary memory copy.
-func GetFromString(src string, path ...interface{}) (ast.Node, error) {
-    return ast.NewSearcher(src).GetByPath(path...)
 }
