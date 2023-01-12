@@ -43,7 +43,9 @@ func intoBytesUnsafe(s string, m *[]byte) types.ParsingError {
     pos := -1
     slv := (*rt.GoSlice)(unsafe.Pointer(m))
     str := (*rt.GoString)(unsafe.Pointer(&s))
+    rt.StopProf()
     ret := native.Unquote(str.Ptr, str.Len, slv.Ptr, &pos, 0)
+    rt.StartProf()
 
     /* check for errors */
     if ret < 0 {

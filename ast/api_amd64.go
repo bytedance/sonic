@@ -27,6 +27,7 @@ func quote(buf *[]byte, val string) {
     nb := len(val)
     b := (*rt.GoSlice)(unsafe.Pointer(buf))
 
+    rt.StopProf()
     // input buffer
     for nb > 0 {
         // output buffer
@@ -50,6 +51,7 @@ func quote(buf *[]byte, val string) {
         nb -= ret
         sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
     }
+    rt.StartProf()
 
     runtime.KeepAlive(buf)
     runtime.KeepAlive(sp)
@@ -61,22 +63,32 @@ func unquote(src string) (string, types.ParsingError) {
 }
 
 func decodeBase64(src string) ([]byte, error) {
-    return base64x.StdEncoding.DecodeString(src)
+    rt.StopProf()
+    out, err := base64x.StdEncoding.DecodeString(src)
+    rt.StartProf()
+    return out, err
 }
 
 func encodeBase64(src []byte) string {
-    return base64x.StdEncoding.EncodeToString(src)
+    rt.StopProf()
+    out := base64x.StdEncoding.EncodeToString(src)
+    rt.StartProf()
+    return out
 }
 
 func (self *Parser) decodeValue() (val types.JsonState) {
     sv := (*rt.GoString)(unsafe.Pointer(&self.s))
+    rt.StopProf()
     self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, 0)
+    rt.StartProf()
     return
 }
 
 func (self *Parser) skip() (int, types.ParsingError) {
     fsm := types.NewStateMachine()
+    rt.StopProf()
     start := native.SkipOne(&self.s, &self.p, fsm, 0)
+    rt.StartProf()
     types.FreeStateMachine(fsm)
 
     if start < 0 {
@@ -87,11 +99,16 @@ func (self *Parser) skip() (int, types.ParsingError) {
 
 func (self *Node) encodeInterface(buf *[]byte) error {
     //WARN: NOT compatible with json.Encoder
-    return encoder.EncodeInto(buf, self.packAny(), 0)
+    rt.StopProf()
+    err := encoder.EncodeInto(buf, self.packAny(), 0)
+    rt.StartProf()
+    return err
 }
 
 func (self *Parser) skipFast() (int, types.ParsingError) {
+    rt.StopProf()
     start := native.SkipOneFast(&self.s, &self.p)
+    rt.StartProf()
     if start < 0 {
         return self.p, types.ParsingError(-start)
     }
@@ -99,7 +116,9 @@ func (self *Parser) skipFast() (int, types.ParsingError) {
 }
 
 func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+    rt.StopProf()
     start := native.GetByPath(&self.s, &self.p, &path)
+    rt.StartProf()
     runtime.KeepAlive(path)
     if start < 0 {
         return self.p, types.ParsingError(-start)
