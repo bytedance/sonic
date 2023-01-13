@@ -651,7 +651,7 @@ func (self *_Assembler) go_panic() {
     self.Emit("MOVQ", _SP_p, _BX)
     self.call_go(_F_panic)
 }
-
+const  _VtableOff  = int64(unsafe.Offsetof(_Stack{}.vtb))
 func (self *_Assembler) encode_string(doubleQuote bool) {       
     self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _AX)  // MOVQ  8(SP.p), AX
     self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
@@ -698,7 +698,8 @@ func (self *_Assembler) encode_string(doubleQuote bool) {
     }
 
     /* call the native quoter */
-    self.call_c(_F_quote)                   // CALL  quote
+    self.Emit("MOVQ", jit.Ptr(_ST, _VtableOff), _AX)            // MOVQ _VtableOff(ST), _AX
+    self.call_c(_AX)                   // CALL  quote
     self.Emit("ADDQ" , _VAR_dn, _RL)        // ADDQ  dn, RL
 
     self.Emit("TESTQ", _AX, _AX)            // TESTQ AX, AX

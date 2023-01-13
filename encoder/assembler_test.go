@@ -26,6 +26,7 @@ import (
     `testing`
     `unsafe`
 
+    `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/assert`
@@ -97,6 +98,7 @@ func testOpCode(t *testing.T, v interface{}, ex string, err error, ins _Program)
     p := ins
     m := []byte(nil)
     s := new(_Stack)
+    s.vtb = int64(native.S_quote)
     a := newAssembler(p)
     f := a.Load()
     e := f(&m, rt.UnpackEface(v).Value, s, 0)
@@ -365,6 +367,7 @@ func TestAssembler_StringMoreSpace(t *testing.T) {
     p := _Program{newInsOp(_OP_str)}
     m := make([]byte, 0, 8)
     s := new(_Stack)
+    s.vtb = int64(native.S_quote)
     a := newAssembler(p)
     f := a.Load()
     v := "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010"

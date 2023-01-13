@@ -174,6 +174,14 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
 func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     stk := newStack()
     efv := rt.UnpackEface(val)
+
+    // configure all options as virtual functions
+    if opts & EscapeHTML == 0 {
+        stk.vtb = int64(native.S_quote)
+    } else {
+        stk.vtb = int64(native.S_quote)
+    }
+
     err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
 
     /* return the stack into pool */

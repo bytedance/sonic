@@ -25,6 +25,7 @@ import (
 
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/option`
+    `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/rt`
 )
 
@@ -50,8 +51,9 @@ type _State struct {
 }
 
 type _Stack struct {
-    sp uint64
-    sb [_MaxStack]_State
+    sp  uint64
+    sb  [_MaxStack]_State
+    vtb int64
 }
 
 type _Encoder func(
@@ -96,12 +98,14 @@ func newBytes() []byte {
     }
 }
 
-func newStack() *_Stack {
+func newStack() (r *_Stack) {
     if ret := stackPool.Get(); ret == nil {
-        return new(_Stack)
+        r = new(_Stack)
     } else {
-        return ret.(*_Stack)
+        r = ret.(*_Stack)
     }
+    r.vtb = int64(native.S_quote)
+    return 
 }
 
 func resetStack(p *_Stack) {

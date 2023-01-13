@@ -412,10 +412,12 @@ func (self *_Assembler) slice_grow_ax(ret string) {
 const (
     _StateSize  = int64(unsafe.Sizeof(_State{}))
     _StackLimit = _MaxStack * _StateSize
+    _StateSpOff = 0
+    _VtableOff  = int64(unsafe.Offsetof(_Stack{}.vtb))
 )
 
 func (self *_Assembler) save_state() {
-    self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
+    self.Emit("MOVQ", jit.Ptr(_ST, _StateSpOff), _CX)             // MOVQ (ST), CX
     self.Emit("LEAQ", jit.Ptr(_CX, _StateSize), _R8)    // LEAQ _StateSize(CX), R8
     self.Emit("CMPQ", _R8, jit.Imm(_StackLimit))        // CMPQ R8, $_StackLimit
     self.Sjmp("JAE" , _LB_error_too_deep)               // JA   _error_too_deep
@@ -423,13 +425,13 @@ func (self *_Assembler) save_state() {
     self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16))  // MOVQ SP.f, 16(ST)(CX)
     self.WriteRecNotAX(0, _SP_p, jit.Sib(_ST, _CX, 1, 24)) // MOVQ SP.p, 24(ST)(CX)
     self.WriteRecNotAX(1, _SP_q, jit.Sib(_ST, _CX, 1, 32)) // MOVQ SP.q, 32(ST)(CX)
-    self.Emit("MOVQ", _R8, jit.Ptr(_ST, 0))             // MOVQ R8, (ST)
+    self.Emit("MOVQ", _R8, jit.Ptr(_ST, _StateSpOff))             // MOVQ R8, (ST)
 }
 
 func (self *_Assembler) drop_state(decr int64) {
-    self.Emit("MOVQ" , jit.Ptr(_ST, 0), _AX)                // MOVQ  (ST), AX
+    self.Emit("MOVQ" , jit.Ptr(_ST, _StateSpOff), _AX)                // MOVQ  (ST), AX
     self.Emit("SUBQ" , jit.Imm(decr), _AX)                  // SUBQ  $decr, AX
-    self.Emit("MOVQ" , _AX, jit.Ptr(_ST, 0))                // MOVQ  AX, (ST)
+    self.Emit("MOVQ" , _AX, jit.Ptr(_ST, _StateSpOff))                // MOVQ  AX, (ST)
     self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 8), _SP_x)      // MOVQ  8(ST)(AX), SP.x
     self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 16), _SP_f)     // MOVQ  16(ST)(AX), SP.f
     self.Emit("MOVQ" , jit.Sib(_ST, _AX, 1, 24), _SP_p)     // MOVQ  24(ST)(AX), SP.p
@@ -686,7 +688,8 @@ func (self *_Assembler) encode_string(doubleQuote bool) {
     }
 
     /* call the native quoter */
-    self.call_c(_F_quote)                   // CALL  quote
+    self.Emit("MOVQ", jit.Ptr(_ST, _VtableOff), _AX)            // MOVQ _VtableOff(ST), _AX
+    self.call_c(_AX)                   // CALL  quote
     self.Emit("ADDQ" , _VAR_dn, _RL)        // ADDQ  dn, RL
     self.Emit("TESTQ", _AX, _AX)            // TESTQ AX, AX
     self.Sjmp("JS"   , "_str_space_{n}")    // JS    _str_space_{n}
@@ -990,7 +993,7 @@ func (self *_Assembler) _asm_OP_index(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_load(_ *_Instr) {
-    self.Emit("MOVQ", jit.Ptr(_ST, 0), _AX)                 // MOVQ (ST), AX
+    self.Emit("MOVQ", jit.Ptr(_ST, _StateSpOff), _AX)                 // MOVQ (ST), AX
     self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, -24), _SP_x)     // MOVQ -24(ST)(AX), SP.x
     self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, -8), _SP_p)      // MOVQ -8(ST)(AX), SP.p
     self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 0), _SP_q)       // MOVQ (ST)(AX), SP.q
