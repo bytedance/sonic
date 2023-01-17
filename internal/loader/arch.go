@@ -1,7 +1,5 @@
-// +build !go1.15 go1.21
-
-/*
- * Copyright 2021 ByteDance Inc.
+/**
+ * Copyright 2023 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +16,26 @@
 
 package loader
 
-// triggers a compilation error
+import "encoding/binary"
+
 const (
-	_ = panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17, 1.18, 1.19")
+	_MinLC uint8 = 1
+	_PtrSize uint8 = 8
 )
 
-func registerFunction(_ string, _ uintptr, _ int, _ int, _ uintptr) {
-    panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17, 1.18, 1.19")
+var (
+	byteOrder binary.ByteOrder = binary.LittleEndian
+)
+
+func Rnd(v int64, r int64) int64 {
+	if r <= 0 {
+		return v
+	}
+	v += r - 1
+	c := v % r
+	if c < 0 {
+		c += r
+	}
+	v -= c
+	return v
 }

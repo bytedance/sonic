@@ -24,10 +24,10 @@ import (
 
 //go:linkname lastmoduledatap runtime.lastmoduledatap
 //goland:noinspection GoUnusedGlobalVariable
-var lastmoduledatap *_ModuleData
+var lastmoduledatap *moduledata
 
 //go:linkname moduledataverify1 runtime.moduledataverify1
-func moduledataverify1(_ *_ModuleData)
+func moduledataverify1(_ *moduledata)
 
 // PCDATA and FUNCDATA table indexes.
 //
@@ -39,7 +39,7 @@ const (
 
 type funcInfo struct {
     *_Func
-    datap *_ModuleData
+    datap *moduledata
 }
 
 //go:linkname findfunc runtime.findfunc
@@ -50,7 +50,7 @@ func funcdata(f funcInfo, i uint8) unsafe.Pointer
 
 var (
     modLock sync.Mutex
-    modList []*_ModuleData
+    modList []*moduledata
 )
 
 var emptyByte byte
@@ -76,7 +76,7 @@ func encodeVariant(v int) []byte {
     return r
 }
 
-func registerModule(mod *_ModuleData) {
+func registerModule(mod *moduledata) {
     modLock.Lock()
     modList = append(modList, mod)
     lastmoduledatap.next = mod

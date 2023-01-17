@@ -116,13 +116,10 @@ type _ModuleData struct {
     next                  *_ModuleData
 }
 
-
 type _FindFuncBucket struct {
     idx        uint32
     subbuckets [16]byte
 }
-
-
 
 func makePCtab(fp int) []byte {
     return append([]byte{0}, encodeVariant((fp + 1) << 1)...)
