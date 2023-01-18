@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef XPRINTF_H
-#define XPRINTF_H
+#pragma once
 
 #include <sys/types.h>
 
+#ifdef LOG_LEVEL
+#define DEBUG
+#define LOG_TRACE(_VA_ARGS__...) do { if (LOG_LEVEL >= 0) xprintf(_VA_ARGS__ ); } while (0)
+#define LOG_DEBUG(_VA_ARGS__...) do { if (LOG_LEVEL >= 1) xprintf(_VA_ARGS__ ); } while (0)
+#define LOG_INFO(_VA_ARGS__...)  do { if (LOG_LEVEL >= 2) xprintf(_VA_ARGS__ ); } while (0)
+#else
+#define LOG_TRACE(_VA_ARGS__...) ((void)0)
+#define LOG_DEBUG(_VA_ARGS__...) ((void)0)
+#define LOG_INFO(_VA_ARGS__...)  ((void)0)
+#endif
+
+// Note: this code is on cross-compile, so we can't use System-specific Predefined Macros here.
+#if USE_APPLE
 static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
 {
     asm volatile(
@@ -35,6 +47,24 @@ static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
         "retq"
         "\n");
 }
+#else
+static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
+{
+    asm volatile(
+        "movq %rsi, %rdx"
+        "\n"
+        "movq %rdi, %rsi"
+        "\n"
+        "movq $1, %rdi"
+        "\n"
+        "movq $1, %rax"
+        "\n"
+        "syscall"
+        "\n"
+        "retq"
+        "\n");
+}
+#endif
 
 static inline void printch(const char ch)
 {
@@ -115,7 +145,7 @@ static inline void printhex(uintptr_t v)
     printstr(p);
 }
 
-#define MAX_BUF_LEN 100
+#define MAX_BUF_LEN 1000
 
 static inline void printbytes(GoSlice *s)
 {
@@ -150,9 +180,22 @@ static inline void printgostr(GoString *s)
     printch('"');
 }
 
-static inline void xprintf(const char *fmt, ...)
+static inline void printstrbytes(GoString *s)
 {
-#ifdef DEBUG
+    printch('"');
+    if (s->len < MAX_BUF_LEN)
+    {
+        write_syscall(s->buf, s->len);
+    }
+    else
+    {
+        write_syscall(s->buf, MAX_BUF_LEN);
+    }
+    printch('"');
+}
+
+static inline void do_xprintf(const char *fmt, ...)
+{
     __builtin_va_list va;
     char buf[256] = {};
     char *p = buf;
@@ -227,7 +270,26 @@ static inline void xprintf(const char *fmt, ...)
         *p = 0;
         printstr(buf);
     }
-#endif
 }
 
-#endif // XPRINTF_H
+#ifdef DEBUG
+#define xprintf(_VA_ARGS__...)  do_xprintf(_VA_ARGS__)
+#else
+#define xprintf(_VA_ARGS__...)  ((void)0)
+#endif
+
+static always_inline void print_longhex(const void *input, const char* s, int bytes) {
+    const uint8_t* p = (const uint8_t*)(input);
+    xprintf("%s : ", s);
+    for (int i = 0; i < bytes; i++) {
+        uintptr_t u = p[i];
+        if (u < 0x10) xprintf("0");
+        xprintf("%x", u);
+        if ((i + 1) < bytes && (i + 1) % 4 == 0) {
+            xprintf("-");
+        }
+    }
+    xprintf("\n");
+}
+
+#define psimd(simd) print_longhex((const void *)(simd), #simd, sizeof(*simd))

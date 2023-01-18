@@ -2,7 +2,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-// !NOT MODIFIED ONLY.
+// NOTE: !NOT MODIFIED ONLY.
 // This definitions are copied from internal/native/types/types.go.
 
 #define V_EOF           1
@@ -34,6 +34,8 @@
 #define ERR_NUMBER_FMT  6
 #define ERR_RECURSE_MAX 7
 #define ERR_FLOAT_INF   8
+#define ERR_MISMATCH    9
+#define ERR_INVAL_UTF8  10
 
 #define MAX_RECURSE     4096
 

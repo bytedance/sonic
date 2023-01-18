@@ -29,9 +29,9 @@ import (
     `testing`
     `time`
 
-    `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/assert`
     `github.com/bytedance/sonic/ast`
+    `github.com/davecgh/go-spew/spew`
 )
 
 func Parse(src string) (*ast.Node, error) {
@@ -224,36 +224,55 @@ func TestRandomData(t *testing.T) {
     }
 }
 
-func TestRandomValidStrings(t *testing.T) {
+func genValidJsonStr(t *testing.T, mlen int) string {
     rand.Seed(time.Now().UnixNano())
-    b := make([]byte, 200)
-    for i := 0; i < 1000; i++ {
-        n, err := rand.Read(b[:rand.Int()%len(b)])
-        if err != nil {
-            t.Fatal("get random data failed:", err)
-        }
-        sm, err := json.Marshal(string(b[:n]))
-        if err != nil {
-            t.Fatal("marshal data failed:",err)
-        }
-        var su string
-        if err := json.Unmarshal(sm, &su); err != nil {
-            t.Fatal("unmarshal data failed:",err)
-        }
-        token, err := GetFromString(`{"str":`+string(sm)+`}`, "str")
-        if err != nil {
-            spew.Dump(string(sm))
-            t.Fatal("search data failed:",err)
-        }
-        x, _ := token.Interface()
-        st, ok := x.(string)
-        if !ok {
-            t.Fatalf("type mismatch, exp: %v, got: %v", su, x)
-        }
-        if st != su {
-            t.Fatalf("string mismatch, exp: %v, got: %v", su, x)
-        }
+    b := make([]byte, mlen)
+    n, err := rand.Read(b[:rand.Int()%len(b)])
+    if err != nil {
+        t.Fatal("get random data failed:", err)
     }
+    sm, err := json.Marshal(string(b[:n]))
+    if err != nil {
+        t.Fatal("marshal data failed:",err)
+    }
+    return string(sm)
+}
+
+func TestSearch_RandomValidStrings(t *testing.T) {
+    compare := func(t *testing.T, jstr string) {
+        var jgot, sgot string
+        err := json.Unmarshal([]byte(jstr), &jgot)
+        assert.NoErrorf(t, err, "stdjson unmarshal data failed: %v", err)
+        
+        data := `{"str":`+ jstr +`}`
+        token, err := GetFromString(data, "str")
+        assert.NoErrorf(t, err,"search data has error %v",err )
+
+        // raw, err := token.Raw()
+        // assert.NoErrorf(t, err, "node 1 raw error: jstr is %v", jstr)
+        // assert.Equalf(t, jstr, raw, "node raw should equal jstr. \nraw %v \njstr %v\n", raw, jstr)
+
+        i, err := token.Interface()
+        assert.NoErrorf(t, err, "node 2 interface error: jstr %v err %v", spew.Sdump(jstr), err)
+        
+        sgot, ok := i.(string)
+        assert.Truef(t, ok, "type is not string, now is %v", i)
+        assert.Equalf(t, jgot, sgot, "string mismatch, jstr is %v exp: %v, got: %v", jstr, jgot, i)
+    }
+
+    for _, data := range []string{
+        "\"\\ufffd\\u001ay\\r\\ufffd\\ufffd\\u000eO\\ufffd\\t\\ufffd\\ufffd\\ufffd\\u001f/Q\\ufffd\\u0016,\\u001d\\ufffd\\ufffd\\ufffds\\ufffda@\\ufffd\\ufffd\\ufffd6\\ufffd\\ufffd\\ufffdj\\u0005̝p7i8\\u0011\\ufffd\\ufffd\\u000f\\ufffd\\ufffd}\\u001e:\\ufffd\\u0010\\u0019aHR@\\ufffd\\u0010O\\ufffd\\ufffd\\u001c\\ufffd\\ufffd\\u0005`\\ufffdd\\u001aO\\ufffdqkn\\ufffd\\u0011m5XJ|\"",
+    } {
+        compare(t, data)
+    }
+    // for i := 0; i < 50; i++ {
+    //     data := genValidJsonStr(t, 200)
+    //     spew.Dump([]byte(data))
+    //     spew.Dump(data)
+    //     compare(t, data)
+
+    // }
+    var _ = spew.Dump
 }
 
 

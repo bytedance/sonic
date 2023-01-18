@@ -35,7 +35,6 @@ import (
     `strings`
     `testing`
     `time`
-    `unicode/utf8`
     `unsafe`
 
     `github.com/bytedance/sonic/decoder`
@@ -1012,8 +1011,8 @@ var unmarshalTests = []unmarshalTest{
 
     {in: "\"\x00\"", ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validateString: true},
     {in: "\"\x00\"", ptr: new(string), err: fmt.Errorf("json: invald char"), validateString: true},
-    {in: "\"\xff\"", ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validateString: true},
-    {in: "\"\xff\"", ptr: new(string), err: fmt.Errorf("json: invald char"), validateString: true},
+    {in: "\"\xff\"", ptr: new(interface{}), out: interface{}("\ufffd"), validateString: true},
+    {in: "\"\xff\"", ptr: new(string), out: "\ufffd", validateString: true},
     {in: "\"\x00\"", ptr: new(interface{}), out: interface{}("\x00"), validateString: false},
     {in: "\"\x00\"", ptr: new(string), out: "\x00", validateString: false},
     {in: "\"\xff\"", ptr: new(interface{}), out: interface{}("\xff"), validateString: false},
@@ -1148,7 +1147,6 @@ func TestUnmarshal(t *testing.T) {
         }
 
         dec := decoder.NewDecoder(tt.in)
-        validUtf8 := true
         if tt.useNumber {
             dec.UseNumber()
         }
@@ -1157,10 +1155,9 @@ func TestUnmarshal(t *testing.T) {
         }
         if tt.validateString {
             dec.ValidateString()
-            validUtf8 = utf8.Valid([]byte(tt.in))
         }
-        if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil && validUtf8) {
-            spew.Dump(tt.in)
+        if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil) {
+            spew.Dump(tt)
             t.Fatalf("#%d: %v, want %v", i, err, tt.err)
             continue
         } else if err != nil {
@@ -2524,4 +2521,63 @@ func TestChangeTool(t *testing.T) {
         t.Fatalf("exp:%v, got:%v", "xxxx", a.T)
     }
 
+}
+
+func TestDecoder_LongestInvalidUtf8(t *testing.T) {
+    for _, data := range([]string{
+        "\"" + strings.Repeat("\x80", 4096) + "\"",
+        "\"" + strings.Repeat("\x80", 4095) + "\"",
+        "\"" + strings.Repeat("\x80", 4097) + "\"",
+        "\"" + strings.Repeat("\x80", 12345) + "\"",
+    }) {
+        testDecodeInvalidUtf8(t, data)
+    }
+}
+
+func testDecodeInvalidUtf8(t *testing.T, data string) {
+    var sgot, jgot string
+    config := Config{
+        EscapeHTML : true,
+        SortMapKeys: true,
+        CompactMarshaler: true,
+        CopyString : true,
+        ValidateString : true,
+    }.Froze()
+    serr := config.Unmarshal([]byte(data), &sgot)
+    jerr := json.Unmarshal([]byte(data), &jgot)
+    assert.Equal(t, serr != nil, jerr != nil)
+    if jerr == nil {
+        assert.Equal(t, sgot, jgot)
+    }
+}
+
+func TestDecoder_RandomInvalidUtf8(t *testing.T) {
+    // special testing
+    for _, data := range([]string{
+        "\"\xe4dL\"\xe0\xa6\xcd\xc1'\"",
+        "\"ǻ\x81\x869\xacH\"",
+        "\"\xf1\xefx\xb7\xbb\xfe`\xf1\"",
+        "\"\x06\x03\"",
+        "\"\\\xad\xedh\xe2M\xfb3\"",
+    }) {
+        spew.Dump("input : " + data)
+        testDecodeInvalidUtf8(t, data)
+    }
+
+    // random testing
+    var buf bytes.Buffer
+    nums := 1000
+    maxLen := 10
+    for i := 0; i < nums; i++ {
+        buf.Reset()
+        buf.WriteString(`"`)
+        length := rand.Intn(maxLen)
+        for j := 0; j < length; j++ {
+            buf.WriteString(string([]byte{byte(rand.Intn(256))}))
+        }
+        buf.WriteString(`"`)
+        data := buf.String()
+        spew.Dump("input : " + data)
+        testDecodeInvalidUtf8(t, data)
+    }
 }

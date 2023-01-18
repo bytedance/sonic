@@ -16,6 +16,7 @@
 
 #include "native.h"
 #include "utf8.h"
+#include "utils.h"
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
@@ -107,7 +108,7 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
         return ret;
     } else {
         *p -= dec;
-        for (int i = 0; src->buf[*p] == (val & 0xff) && i < 4; i++, ++*p) { val >>= 8; }
+        for (int i = 0; src->buf[*p] == (val & 0xff); i++, ++*p) { val >>= 8; }
         return -ERR_INVAL;
     }
 }
@@ -368,7 +369,7 @@ static inline int _mm_nonascii_mask(__m128i v) {
 
 static inline ssize_t advance_string_validate(const GoString *src, long p, int64_t *ep) {
     char     ch;
-    uint64_t m0, m1, m2, m3;
+    uint64_t m0, m1, m2;
     uint64_t es, fe, os;
     uint64_t cr = 0;
     long     qp = 0;
@@ -420,7 +421,6 @@ static inline ssize_t advance_string_validate(const GoString *src, long p, int64
     uint32_t s0, s1, s2, s3;
     uint32_t t0, t1, t2, t3;
     uint32_t c0, c1, c2, c3;
-    uint32_t u0, u1, u2, u3;
 #endif
 
 #define m0_mask(add)                \
@@ -442,12 +442,9 @@ simd_advance:
         t1 = _mm256_get_mask(v1, cx);
         c0 = _mm256_cchars_mask(v0);
         c1 = _mm256_cchars_mask(v1);
-        u0 = _mm256_nonascii_mask(v0);
-        u1 = _mm256_nonascii_mask(v1);
         m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
         m2 = ((uint64_t)c1 << 32) | (uint64_t)c0;
-        m3 = ((uint64_t)u1 << 32) | (uint64_t)u0;
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -465,14 +462,9 @@ simd_advance:
         c1 = _mm_cchars_mask(v1);
         c2 = _mm_cchars_mask(v2);
         c3 = _mm_cchars_mask(v3);
-        u0 = _mm_nonascii_mask(v0);
-        u1 = _mm_nonascii_mask(v1);
-        u2 = _mm_nonascii_mask(v2);
-        u3 = _mm_nonascii_mask(v3);
         m0 = ((uint64_t)s3 << 48) | ((uint64_t)s2 << 32) | ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t3 << 48) | ((uint64_t)t2 << 32) | ((uint64_t)t1 << 16) | (uint64_t)t0;
         m2 = ((uint64_t)c3 << 48) | ((uint64_t)c2 << 32) | ((uint64_t)c1 << 16) | (uint64_t)c0;
-        m3 = ((uint64_t)u3 << 48) | ((uint64_t)u2 << 32) | ((uint64_t)u1 << 16) | (uint64_t)u0;
 
 #endif
        
@@ -488,7 +480,6 @@ simd_advance:
 
         qp = m0 ? __builtin_ctzll(m0) : 64;
         np = m2 ? __builtin_ctzll(m2) : 64;
-        up = m3 ? __builtin_ctzll(m3) : 64;
        
         /* get the position of end quote */
         if (m0 != 0) {
@@ -498,9 +489,6 @@ simd_advance:
                
                 return -ERR_INVAL;
             }
-            if (up < qp) {
-                goto valid_utf8;
-            }
             return sp - ss + qp + 1;
         }
 
@@ -509,10 +497,6 @@ simd_advance:
             ep_setx(sp - ss + np)
            
             return -ERR_INVAL;
-        }
-
-        if (unlikely(m3 != 0)) {
-            goto valid_utf8;
         }
 
         /* move to the next block */
@@ -527,11 +511,9 @@ simd_advance:
         s0 = _mm256_get_mask (v0, cq);
         t0 = _mm256_get_mask (v0, cx);
         c0 = _mm256_cchars_mask(v0);
-        u0 = _mm256_nonascii_mask(v0);
         m0 = (uint64_t)s0;
         m1 = (uint64_t)t0;
         m2 = (uint64_t)c0;
-        m3 = (uint64_t)u0;
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -541,12 +523,9 @@ simd_advance:
         t1 = _mm_get_mask(v1, cx);
         c0 = _mm_cchars_mask(v0);
         c1 = _mm_cchars_mask(v1);
-        u0 = _mm_nonascii_mask(v0);
-        u1 = _mm_nonascii_mask(v1);
         m0 = ((uint64_t)s1 << 16) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 16) | (uint64_t)t0;
         m2 = ((uint64_t)c1 << 16) | (uint64_t)c0;
-        m3 = ((uint64_t)u1 << 16) | (uint64_t)u0;
 #endif
        
         /** update first quote position */
@@ -560,18 +539,13 @@ simd_advance:
         }
        
         qp = m0 ? __builtin_ctzll(m0) : 64;
-        up = m3 ? __builtin_ctzll(m3) : 64;
         np = m2 ? __builtin_ctzll(m2) : 64;
-       
        
         /* get the position of end quote */
         if (m0 != 0) {
             if (unlikely(np < qp)) {
                 ep_seterr(sp - ss + np)
                 return -ERR_INVAL;
-            }
-            if (up < qp) {
-                goto valid_utf8;
             }
             return sp - ss + qp + 1;
         }
@@ -580,10 +554,6 @@ simd_advance:
         if (unlikely(m2 != 0)) {
             ep_seterr(sp - ss + __builtin_ctzll(m2))
             return -ERR_INVAL;
-        }
-
-        if (m3 != 0) {
-            goto valid_utf8;
         }
 
         /* move to the next block */
@@ -626,43 +596,9 @@ remain:
             return -ERR_INVAL;
         }
 
-        /* valid utf8 chars */
-        if (ch & 0x80) {
-            uint32_t ubin = nb >= 4 ? *(uint32_t*)sp : less4byte_to_uint32(sp, nb);
-            if ((up = valid_utf8_4byte(ubin))) {
-                sp += up, nb -= up;
-                continue;
-            }
-            ep_seterr(sp - ss)
-            return -ERR_INVAL;
-        }
-
         sp++, nb--;
     }
     return -ERR_EOF;
-
-valid_utf8:
-    sp += up, nb -= up;
-    while (likely(nb >= 4)) {
-        up = valid_utf8_4byte(*(uint32_t*)sp);
-        if (unlikely(up == 0)) {
-            ep_seterr(sp - ss)
-            return -ERR_INVAL;
-        }
-
-        /* check continous utf-8 */
-        sp += up, nb -= up;
-        if (nb > 0 && (*(uint8_t*)sp & 0x80)) {
-           
-            continue;
-        }
-       
-        /* clear the last carried bit */
-        cr = 0;
-        goto simd_advance;
-    }
-    goto remain;
-
 #undef ep_init
 #undef ep_setc
 #undef ep_setx
@@ -1640,24 +1576,6 @@ static always_inline long skip_number_fast(const GoString *src, long *p) {
     return vi;
 }
 
-static always_inline void memcpy_p64(char * restrict dp, const char * restrict sp, size_t n) {
-    long nb = n;
-#if USE_AVX2
-    if (nb >= 32) { _mm256_storeu_si256((void *)dp, _mm256_loadu_si256((const void *)sp)); sp += 32, dp += 32, nb -= 32; }
-#endif
-    while (nb >= 16) { _mm_storeu_si128((void *)dp, _mm_loadu_si128((const void *)sp)); sp += 16, dp += 16, nb -= 16; }
-    if (nb >=  8) { *(uint64_t *)dp = *(const uint64_t *)sp;                         sp +=  8, dp +=  8, nb -=  8; }
-    if (nb >=  4) { *(uint32_t *)dp = *(const uint32_t *)sp;                         sp +=  4, dp +=  4, nb -=  4; }
-    if (nb >=  2) { *(uint16_t *)dp = *(const uint16_t *)sp;                         sp +=  2, dp +=  2, nb -=  2; }
-    if (nb >=  1) { *dp = *sp; }
-}
-
-static always_inline bool vec_cross_page(const void * p, size_t n) {
-#define PAGE_SIZE 4096
-    return (((size_t)(p)) & (PAGE_SIZE - 1)) > (PAGE_SIZE - n);
-#undef PAGE_SIZE
-}
-
 static always_inline long skip_container_fast(const GoString *src, long *p, char lc, char rc) {
     long nb = src->len - *p;
     const char *s = src->buf + *p;
@@ -1955,4 +1873,21 @@ skip_in_arr:
 err_inval:
     *p -= 1; // backward error position
     return -ERR_INVAL;
+}
+
+// 
+long validate_utf8(const GoString *src, long *p, StateMachine *m) {
+    xassert(*p >= 0 && src->len > *p);
+    return validate_utf8_with_errors(src->buf, src->len, p, m);
+}
+
+// validate_utf8_fast returns zero if valid, otherwise, the error position.
+long validate_utf8_fast(const GoString *s) {
+#if USE_AVX2
+    /* fast path for valid utf8 */
+    if (validate_utf8_avx2(s) == 0) {
+        return 0;
+    }
+#endif
+    return validate_utf8_errors(s);
 }

@@ -21,11 +21,11 @@ import (
     `encoding/json`
     `reflect`
     `runtime`
-    `unsafe`
 
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/internal/utf8`
     `github.com/bytedance/sonic/option`
 )
 
@@ -38,6 +38,7 @@ const (
     bitCompactMarshaler
     bitNoQuoteTextMarshaler
     bitNoNullSliceOrMap
+    bitValidateString
 
     // used for recursive compile
     bitPointerValue = 63
@@ -65,6 +66,10 @@ const (
     // NoNullSliceOrMap indicates all empty Array or Object are encoded as '[]' or '{}',
     // instead of 'null'
     NoNullSliceOrMap     Options = 1 << bitNoNullSliceOrMap
+
+    // ValidateString indicates that encoder should validate the input string
+    // before encoding it into JSON.
+    ValidateString       Options = 1 << bitValidateString
   
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
@@ -97,6 +102,15 @@ func (self *Encoder) SetEscapeHTML(f bool) {
         self.Opts |= EscapeHTML
     } else {
         self.Opts &= ^EscapeHTML
+    }
+}
+
+// SetValidateString specifies if option ValidateString opens
+func (self *Encoder) SetValidateString(f bool) {
+    if f {
+        self.Opts |= ValidateString
+    } else {
+        self.Opts &= ^ValidateString
     }
 }
 
@@ -156,7 +170,7 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
         return nil, err
     }
 
-    if opts & EscapeHTML != 0 {
+    if opts & EscapeHTML != 0 || opts & ValidateString != 0  {
         return buf, nil
     }
 
@@ -189,6 +203,12 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
         *buf = dest
     }
 
+    if opts & ValidateString != 0 && !utf8.Validate(*buf) {
+        dest, _ := utf8.CorrectWith(nil, *buf, `\ufffd`)
+        freeBytes(*buf) // free origin used buffer
+        *buf = dest
+    }
+
     /* avoid GC ahead */
     runtime.KeepAlive(buf)
     runtime.KeepAlive(efv)
@@ -203,38 +223,8 @@ var typeByte = rt.UnpackType(reflect.TypeOf(byte(0)))
 // For historical reasons, web browsers don't honor standard HTML
 // escaping within <script> tags, so an alternative JSON encoding must
 // be used.
-func HTMLEscape(dest []byte, src []byte) []byte {
-    nb := len(src)
-
-    // initilize dest buffer
-    cap := nb * 6 / 5
-    if dest == nil {
-        dest = make([]byte, 0, cap)
-    }
-    ds := (*rt.GoSlice)(unsafe.Pointer(&dest))
-    sp := (*rt.GoSlice)(unsafe.Pointer(&src)).Ptr
-    ds.Len = 0
-    if (ds.Cap < cap) {
-        *ds = growslice(typeByte, *ds, cap)
-    }
-
-    for nb > 0 {
-        dp := unsafe.Pointer(uintptr(ds.Ptr) + uintptr(ds.Len))
-        dn := ds.Cap - ds.Len
-
-        ret := native.HTMLEscape(sp, nb, dp, &dn)
-        ds.Len += dn
-
-        if ret >= 0 {
-            break
-        }
-        ret = ^ret
-        nb -= ret
-
-        *ds = growslice(typeByte, *ds, ds.Cap * 2)
-        sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
-    }
-    return dest
+func HTMLEscape(dst []byte, src []byte) []byte {
+    return htmlEscape(dst, src)
 }
 
 // EncodeIndented is like Encode but applies Indent to format the output.
@@ -302,14 +292,22 @@ func Valid(data []byte) (ok bool, start int) {
     p := 0
     m := types.NewStateMachine()
     ret := native.ValidateOne(&s, &p, m)
-    types.FreeStateMachine(m) 
+    types.FreeStateMachine(m)
+
     if ret < 0 {
         return false, p-1
     }
+
+    /* check for trailing spaces */
     for ;p < n; p++ {
         if (types.SPACE_MASK & (1 << data[p])) == 0 {
             return false, p
         }
+    }
+
+    /* check invalid utf8 */
+    if r := native.ValidateUTF8Fast(&s); r < 0 {
+        return false, -(r + 1)
     }
     return true, ret
 }

@@ -25,6 +25,7 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
+    `github.com/bytedance/sonic/internal/utf8`
 )
 
 const (
@@ -80,9 +81,39 @@ func (self *Decoder) Reset(s string) {
     // self.f = 0
 }
 
+func (self *Decoder) CheckTrailings() error {
+    pos := self.i
+    buf := self.s
+    /* skip all the trailing spaces */
+    if pos != len(buf) {
+        for pos < len(buf) && (types.SPACE_MASK & (1 << buf[pos])) != 0 {
+            pos++
+        }
+    }
+
+    /* then it must be at EOF */
+    if pos == len(buf) {
+        return nil
+    }
+
+    /* junk after JSON value */
+    return SyntaxError {
+        Src  : buf,
+        Pos  : pos,
+        Code : types.ERR_INVALID_CHAR,
+    }
+}
+
+
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
+    /* validate json if needed */
+    if (self.f & (1 << _F_validate_string)) != 0  && !utf8.ValidateString(self.s){
+        dbuf, _ := utf8.CorrectWith(nil, rt.Str2Mem(self.s), "\ufffd")
+        self.s = rt.Mem2Str(dbuf)
+    }
+
     vv := rt.UnpackEface(val)
     vp := vv.Value
 
@@ -99,7 +130,6 @@ func (self *Decoder) Decode(val interface{}) error {
     /* create a new stack, and call the decoder */
     sb, etp := newStack(), rt.PtrElem(vv.Type)
     nb, err := decodeTypedPointer(self.s, self.i, etp, vp, sb, self.f)
-
     /* return the stack back */
     self.i = nb
     freeStack(sb)

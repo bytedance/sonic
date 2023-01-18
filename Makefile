@@ -35,15 +35,18 @@ CC_amd64		:= clang
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py
 
 CFLAGS			:= -mno-red-zone
-CFLAGS			+= -arch x86_64
+CFLAGS			+= -target x86_64-apple-macos11
 CFLAGS			+= -fno-asynchronous-unwind-tables
 CFLAGS			+= -fno-builtin
 CFLAGS			+= -fno-exceptions
 CFLAGS			+= -fno-rtti
 CFLAGS			+= -fno-stack-protector
 CFLAGS			+= -nostdlib
-CFLAGS			+= -O3
-CFLAGS			+= -Wall -Werror
+CFLAGS			+= -O3 ${TFLAGS}
+# CFLAGS			+= -O3 -DLOG_LEVEL=0 
+# CFLAGS			+= -O3 -DDEBUG
+# CFLAGS			+= -O3 
+# CFLAGS			+= -Wall -Werror
 
 NATIVE_SRC		:= $(wildcard native/*.h)
 NATIVE_SRC		+= $(wildcard native/*.c)
@@ -100,8 +103,10 @@ endef
 all: ${ARCH}
 
 clean:
-	rm -vfr ${TMP_DIR}/{sse,avx,avx2}
-	rm -vfr ${OUT_DIR}/{sse,avx,avx2}
+	for arch in ${ARCH}; do \
+		rm -vfr ${TMP_DIR}/$${arch}; \
+		rm -vfr ${OUT_DIR}/$${arch}; \
+	done
 
 $(foreach 								\
 	arch,								\

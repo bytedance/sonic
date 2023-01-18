@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 #include "native.h"
+#include "test/xprintf.h"
+#include "test/xassert.h"
 #include "fastbytes.c"
 #include "fastfloat.c"
 #include "fastint.c"

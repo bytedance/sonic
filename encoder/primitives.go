@@ -111,3 +111,36 @@ func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler, opt Options) e
         return encodeString(buf, rt.Mem2Str(ret) )
     }
 }
+
+func htmlEscape(dst []byte, src []byte) []byte {
+    var sidx int
+
+    dst  = append(dst, src[:0]...) // avoid check nil dst
+    sbuf := (*rt.GoSlice)(unsafe.Pointer(&src))
+    dbuf := (*rt.GoSlice)(unsafe.Pointer(&dst))
+
+    /* grow dst if it is shorter */
+    if cap(dst) - len(dst) < len(src) + native.BufPaddingSize {
+        cap :=  len(src) * 3 / 2 + native.BufPaddingSize
+        *dbuf = growslice(typeByte, *dbuf, cap)
+    }
+
+    for sidx < sbuf.Len {
+        sp := padd(sbuf.Ptr, sidx)
+        dp := padd(dbuf.Ptr, dbuf.Len)
+
+        sn := sbuf.Len - sidx
+        dn := dbuf.Cap - dbuf.Len
+        nb := native.HTMLEscape(sp, sn, dp, &dn)
+
+        /* check for errors */
+        if dbuf.Len += dn; nb >= 0 {
+            break
+        }
+
+        /* not enough space, grow the slice and try again */
+        sidx += ^nb
+        *dbuf = growslice(typeByte, *dbuf, dbuf.Cap * 2)
+    }
+    return dst
+}
