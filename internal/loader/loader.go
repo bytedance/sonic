@@ -20,11 +20,12 @@
 package loader
 
 import (
-    `fmt`
-    `os`
-    `reflect`
-    `syscall`
-    `unsafe`
+	"encoding/binary"
+	"fmt"
+	"os"
+	"reflect"
+	"syscall"
+	"unsafe"
 )
 
 const (
@@ -33,8 +34,37 @@ const (
     _RW = syscall.PROT_READ | syscall.PROT_WRITE
 )
 
+const (
+	_MinLC uint8 = 1
+	_PtrSize uint8 = 8
+)
+
+var (
+	byteOrder binary.ByteOrder = binary.LittleEndian
+)
+
 type Loader   []byte
+
 type Function unsafe.Pointer
+
+func address(out []byte) (addr uintptr, size int) {
+    p := os.Getpagesize()
+    n := (((len(out) - 1) / p) + 1) * p
+    return mmap(n), n
+}
+
+func rnd(v int64, r int64) int64 {
+	if r <= 0 {
+		return v
+	}
+	v += r - 1
+	c := v % r
+	if c < 0 {
+		c += r
+	}
+	v -= c
+	return v
+}
 
 func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{}) (f Function) {
     p := os.Getpagesize()
