@@ -132,9 +132,9 @@ func (self *StackMap) String() string {
 	return sb.String()
 }
 
-func (self *StackMap) Marshal() ([]byte) {
+func (self *StackMap) MarshalBinary() ([]byte, error) {
 	size := int(self.N) * int(self.L) + int(unsafe.Sizeof(self.L)) + int(unsafe.Sizeof(self.N))
-	return rt.BytesFrom(unsafe.Pointer(self), size, size)
+	return rt.BytesFrom(unsafe.Pointer(self), size, size), nil
 }
 
 var (

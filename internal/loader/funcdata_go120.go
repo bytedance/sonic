@@ -20,6 +20,7 @@
 package loader
 
 import (
+	"encoding"
 	"fmt"
 	"os"
 	"reflect"
@@ -33,14 +34,17 @@ import (
 const (
     _Magic uint32 = 0xFFFFFFF1
 
-    _N_PC_DATA = 4
-    _N_FUNC_DATA = 4
+    N_PCDATA   = 4
+    N_FUNCDATA = 8
+    INVALID_FUNCDATA_OFFSET = ^uint32(0)
+    INVALID_PCDATA_OFFSET = 0
+
     _FUNC_SIZE = 11 * 4
 
-	MINFUNC = 16 // minimum size for a function
-    BUCKETSIZE    = 256 * MINFUNC
-	SUBBUCKETS    = 16
-	SUBBUCKETSIZE = BUCKETSIZE / SUBBUCKETS
+	_MINFUNC = 16 // minimum size for a function
+    _BUCKETSIZE    = 256 * _MINFUNC
+	_SUBBUCKETS    = 16
+	_SUB_BUCKETSIZE = _BUCKETSIZE / _SUBBUCKETS
 )
 
 type moduledata struct {
@@ -183,7 +187,7 @@ type modulehash struct {
 // This table uses 20 bytes for every 4096 bytes of code, or ~0.5% overhead.
 type findfuncbucket struct {
 	idx        uint32
-	subbuckets [16]byte
+	_SUBBUCKETS [16]byte
 }
 
 type Func struct {
@@ -199,20 +203,8 @@ type Func struct {
     Pcfile      uint32
     Pcline      uint32
     Name        string
-    Pcdata      []Pcvalue
-    Funcdata    Funcdata
-}
-
-type Pcvalue struct {
-    Val   int32
-    Delta int32
-}
-
-func (Pcvalue) Marshal() ([]byte, error)
-
-type Funcdata struct {
-    ArgsPointerMaps   *StackMap  
-    LocalsPointerMaps *StackMap
+    PcdataTab   [N_PCDATA]encoding.BinaryMarshaler
+    FuncdataTab [N_FUNCDATA]encoding.BinaryMarshaler
 }
 
 func getOffsetOf(data interface{}, field string) uintptr {
@@ -299,10 +291,8 @@ func makeFilenametab(cus []compilationUnit) (cutab []uint32, filetab []byte, cuO
     return
 }
 
-// PCTab format:
-//   pcDatas[0].pcsp pcDatas[0].pcfile pcDatas[0].pcln pcdatas[0].others[...] 
-//   pcDatas[1].pcsp pcDatas[1].pcfile pcDatas[1].pcln pcdatas[1].others[...]
-//   ...
+// makePctab generates pcdelta->valuedelta tables for functions,
+// and returns the table and the entry offset of every kind pcdata in the table.
 func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byte, pcdataOffs [][]uint32, _funcs []_Func) {
     _funcs = make([]_Func, len(funcs))
 
@@ -315,41 +305,34 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
     for i, f := range funcs {
         _f := &_funcs[i]
 
-        // rt.GuardSlice(&pctab, 12)
-        // l := len(pctab)
-        // _f.pcsp = uint32(l)
-        // byteOrder.PutUint32(pctab[l:l+4], uint32(f.Pcsp))
-        // pcdataOffs[i] = append(pcdataOffs[i], uint32(l))
+        for _, pc := range f.PcdataTab {
+            var ab []byte
+            var err error
 
-        // _f.pcfile = uint32(l + 4)
-        // byteOrder.PutUint32(pctab[l+4:l+8], uint32(f.Pcfile))
-        // pcdataOffs[i] = append(pcdataOffs[i], uint32(l+4))
-
-        // _f.pcln = uint32(l + 8)
-        // byteOrder.PutUint32(pctab[l+8:l+12], uint32(f.Pcline))
-        // pcdataOffs[i] = append(pcdataOffs[i], uint32(l+8))
-
-        // pctab = pctab[:len(pctab)+12]
-
-        for _, pc := range f.Pcdata {
-            pcdataOffs[i] = append(pcdataOffs[i], uint32(len(pctab)))
-            pb, err := pc.Marshal()
-            if err != nil {
-                panic(err)
+            if pc != nil {
+                ab, err = pc.MarshalBinary()
+                if err != nil {
+                    panic(err)
+                }
+                pcdataOffs[i] = append(pcdataOffs[i], uint32(len(pctab)))
+            } else {
+                ab = []byte{0}
+                pcdataOffs[i] = append(pcdataOffs[i], INVALID_PCDATA_OFFSET)
             }
-            pctab = append(pctab, pb...)
+
+            pctab = append(pctab, ab...)
         }
         
         _f.entryOff = f.EntryOff
         _f.nameOff = nameOffset[i]
         _f.args = f.Args
         _f.deferreturn = f.DeferReturn
-        _f.npcdata = uint32(len(f.Pcdata))
+        _f.npcdata = uint32(len(f.PcdataTab))
         _f.cuOffset = cuOffset[i]
         _f.startLine = f.StartLine
         _f.funcID = f.ID
         _f.flag = f.Flag
-        _f.nfuncdata = 3 // TODO: how to get this value dynamically?
+        _f.nfuncdata = uint8(len(f.FuncdataTab)) // TODO: how to get this value dynamically?
     }
 
     return
@@ -361,21 +344,23 @@ func writeFuncdata(out *[]byte, funcs []Func) (fstart int, funcdataOffs [][]uint
     *out = append(*out, byte(0))
     offs := uint32(1)
     for i, f := range funcs {
-
-        // write ArgsPointerMaps
-        if f.Funcdata.ArgsPointerMaps != nil {
-            funcdataOffs[i] = append(funcdataOffs[i], offs)
-            ab := f.Funcdata.ArgsPointerMaps.Marshal()
+        for j := 0; j < len(f.FuncdataTab); j++ {
+            // write ArgsPointerMaps
+            var ab []byte
+            var err error
+            if fd := f.FuncdataTab[j]; fd != nil {
+                ab, err = fd.MarshalBinary()
+                if err != nil {
+                    panic(err)
+                }
+                funcdataOffs[i] = append(funcdataOffs[i], offs)
+            } else {
+                ab = []byte{0}
+                funcdataOffs[i] = append(funcdataOffs[i], INVALID_FUNCDATA_OFFSET)
+            }
+            
             *out = append(*out, ab...)
             offs += uint32(len(ab))
-        }
-
-        // write LocalsPointerMaps
-        if f.Funcdata.LocalsPointerMaps != nil {
-            funcdataOffs[i] = append(funcdataOffs[i], offs)
-            lb := f.Funcdata.LocalsPointerMaps.Marshal()
-            *out = append(*out, lb...)
-            offs += uint32(len(lb))
         }
 
     }
@@ -455,14 +440,14 @@ func makePclntable(funcs []_Func, lastFuncSize uint32, pcdataOffs [][]uint32, fu
         pclntab[off+41] = f.flag
         pclntab[off+43] = f.nfuncdata
 
-        // pcdata
+        // pcdata refs as offsets from pctab
         off += _FUNC_SIZE
         for _, pcdata := range pcdataOffs[i] {
             byteOrder.PutUint32(pclntab[off:off+4], uint32(pcdata))
             off += 4
         }
 
-        // Write funcdata refs as offsets from go:func.* and go:funcrel.*.
+        // funcdata refs as offsets from gofunc
         for _, funcdata := range funcdataOffs[i] {
             byteOrder.PutUint32(pclntab[off:off+4], uint32(funcdata))
             off += 4
@@ -476,8 +461,8 @@ func makePclntable(funcs []_Func, lastFuncSize uint32, pcdataOffs [][]uint32, fu
 // findfunc table used to map pc to belonging func, 
 // returns the index in the func table.
 //
-// All text section are divided into buckets sized BUCKETSIZE(4K):
-//   every bucket is divided into subbuckets sized SUBBUCKETSIZE(64),
+// All text section are divided into buckets sized _BUCKETSIZE(4K):
+//   every bucket is divided into _SUBBUCKETS sized _SUB_BUCKETSIZE(64),
 //   and it has a base idx to plus the offset stored in jth subbucket.
 // see findfunc() in runtime/symtab.go
 func writeFindfunctab(out *[]byte, ftab []funcTab) (start int) {
@@ -485,25 +470,25 @@ func writeFindfunctab(out *[]byte, ftab []funcTab) (start int) {
 
     max := ftab[len(ftab)-1].entry
     min := ftab[0].entry
-    nbuckets := (max - min + BUCKETSIZE - 1) / BUCKETSIZE
-    n := (max - min + SUBBUCKETSIZE - 1) / SUBBUCKETSIZE
+    nbuckets := (max - min + _BUCKETSIZE - 1) / _BUCKETSIZE
+    n := (max - min + _SUB_BUCKETSIZE - 1) / _SUB_BUCKETSIZE
 
     tab := make([]findfuncbucket, 0, nbuckets)
     var s, e = 0, 0
     for i := 0; i<int(nbuckets); i++ {
-        var pc = min + uint32((i+1)*BUCKETSIZE)
+        var pc = min + uint32((i+1)*_BUCKETSIZE)
         // find the end func of the bucket
         for ; e < len(ftab)-1 && ftab[e+1].entry <= pc; e++ {}
         // store the start func of the bucket
         var fb = findfuncbucket{idx: uint32(s)}
 
-        for j := 0; j<SUBBUCKETS && (i*SUBBUCKETS+j)<int(n); j++ {
-            pc = min + uint32(i*BUCKETSIZE) + uint32((j+1)*SUBBUCKETSIZE)
+        for j := 0; j<_SUBBUCKETS && (i*_SUBBUCKETS+j)<int(n); j++ {
+            pc = min + uint32(i*_BUCKETSIZE) + uint32((j+1)*_SUB_BUCKETSIZE)
             var ss = s
             // find the end func of the subbucket
             for ; ss < len(ftab)-1 && ftab[ss+1].entry <= pc; ss++ {}
             // store the start func of the subbucket
-            fb.subbuckets[j] = byte(uint32(s) - fb.idx)
+            fb._SUBBUCKETS[j] = byte(uint32(s) - fb.idx)
             s = ss
         }
         s = e
