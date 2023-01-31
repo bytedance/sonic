@@ -55,6 +55,14 @@ var (
 
 var emptyByte byte
 
+func encodeValue(v int) []byte {
+    return encodeVariant(toZigzag(v))
+}
+
+func toZigzag(v int) int {
+    return (v << 1) ^ (v >> 31)
+}
+
 func encodeVariant(v int) []byte {
     var u int
     var r []byte
@@ -74,6 +82,19 @@ func encodeVariant(v int) []byte {
     /* add the last one */
     r = append(r, byte(v))
     return r
+}
+
+func rnd(v int64, r int64) int64 {
+	if r <= 0 {
+		return v
+	}
+	v += r - 1
+	c := v % r
+	if c < 0 {
+		c += r
+	}
+	v -= c
+	return v
 }
 
 func registerModule(mod *moduledata) {

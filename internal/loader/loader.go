@@ -47,28 +47,9 @@ type Loader   []byte
 
 type Function unsafe.Pointer
 
-func address(out []byte) (addr uintptr, size int) {
-    p := os.Getpagesize()
-    n := (((len(out) - 1) / p) + 1) * p
-    return mmap(n), n
-}
-
-func rnd(v int64, r int64) int64 {
-	if r <= 0 {
-		return v
-	}
-	v += r - 1
-	c := v % r
-	if c < 0 {
-		c += r
-	}
-	v -= c
-	return v
-}
-
 func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{}) (f Function) {
     p := os.Getpagesize()
-    n := (((len(self) - 1) / p) + 1) * p
+    n := int(rnd(int64(len(self)), int64(p)))
 
     /* register the function */
     m := mmap(n)
