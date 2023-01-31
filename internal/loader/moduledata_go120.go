@@ -191,8 +191,8 @@ type findfuncbucket struct {
 }
 
 type Func struct {
-	ID          uint8
-	Flag        uint8
+	ID          uint8 // see runtime/symtab.go
+	Flag        uint8 // see runtime/symtab.go
     Args        int32 // args count
     EntryOff    uint32 // start pc, offset to moduledata.text
     TextSize    uint32

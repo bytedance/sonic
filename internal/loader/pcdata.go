@@ -48,8 +48,8 @@ const (
 )
 
 type Pcvalue struct {
-	Val int32
 	PC  uint32 // PC offset from text section
+	Val int32
 }
 
 type Pcdata []Pcvalue
