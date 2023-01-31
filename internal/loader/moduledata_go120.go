@@ -199,12 +199,26 @@ type Func struct {
     StartLine   int32 
     DeferReturn uint32 // offset of start of a deferreturn call instruction from entry, if any.
     FileName    string
-    Pcsp        uint32
-    Pcfile      uint32
-    Pcline      uint32
     Name        string
-    PcdataTab   [N_PCDATA]encoding.BinaryMarshaler
-    FuncdataTab [N_FUNCDATA]encoding.BinaryMarshaler
+
+    // PC data
+    Pcsp            *Pcdata
+    Pcfile          *Pcdata
+    Pcline          *Pcdata
+    PcUnsafePoint   *Pcdata
+    PcStackMapIndex *Pcdata
+    PcInlTreeIndex  *Pcdata
+    PcArgLiveIndex  *Pcdata
+    
+    // Func data
+    ArgsPointerMaps    *StackMap
+    LocalsPointerMaps  *StackMap
+    StackObjects       interface{}
+    InlTree            interface{}
+    OpenCodedDeferInfo interface{}
+    ArgInfo            interface{}
+    ArgLiveInfo        interface{}
+    WrapInfo           interface{}
 }
 
 func getOffsetOf(data interface{}, field string) uintptr {
@@ -305,12 +319,11 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
     for i, f := range funcs {
         _f := &_funcs[i]
 
-        for _, pc := range f.PcdataTab {
+        var writer = func(pc *Pcdata) {
             var ab []byte
             var err error
-
             if pc != nil {
-                ab, err = pc.MarshalBinary()
+                ab, err = pc.Marshal(uintptr(f.EntryOff))
                 if err != nil {
                     panic(err)
                 }
@@ -319,20 +332,31 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
                 ab = []byte{0}
                 pcdataOffs[i] = append(pcdataOffs[i], INVALID_PCDATA_OFFSET)
             }
-
             pctab = append(pctab, ab...)
         }
+
+        _f.pcsp = uint32(len(pctab))
+        writer(f.Pcsp)
+        _f.pcln = uint32(len(pctab))
+        writer(f.Pcline)
+        _f.pcfile = uint32(len(pctab))
+        writer(f.Pcfile)
+        writer(f.PcUnsafePoint)
+        writer(f.PcStackMapIndex)
+        writer(f.PcInlTreeIndex)
+        writer(f.PcArgLiveIndex)
         
         _f.entryOff = f.EntryOff
         _f.nameOff = nameOffset[i]
         _f.args = f.Args
         _f.deferreturn = f.DeferReturn
-        _f.npcdata = uint32(len(f.PcdataTab))
+        // NOTICE: _func.pcdata is always as [PCDATA_UnsafePoint(0) : PCDATA_ArgLiveIndex(3)]
+        _f.npcdata = uint32(N_PCDATA)
         _f.cuOffset = cuOffset[i]
         _f.startLine = f.StartLine
         _f.funcID = f.ID
         _f.flag = f.Flag
-        _f.nfuncdata = uint8(len(f.FuncdataTab)) // TODO: how to get this value dynamically?
+        _f.nfuncdata = uint8(N_FUNCDATA)
     }
 
     return
@@ -344,12 +368,16 @@ func writeFuncdata(out *[]byte, funcs []Func) (fstart int, funcdataOffs [][]uint
     *out = append(*out, byte(0))
     offs := uint32(1)
     for i, f := range funcs {
-        for j := 0; j < len(f.FuncdataTab); j++ {
-            // write ArgsPointerMaps
+
+        var writer = func(fd interface{}) {
             var ab []byte
             var err error
-            if fd := f.FuncdataTab[j]; fd != nil {
-                ab, err = fd.MarshalBinary()
+            if fd != nil {
+                fb, ok := fd.(encoding.BinaryMarshaler)
+                if !ok {
+                    panic("funcdata not support marshal")
+                }
+                ab, err = fb.MarshalBinary()
                 if err != nil {
                     panic(err)
                 }
@@ -358,11 +386,18 @@ func writeFuncdata(out *[]byte, funcs []Func) (fstart int, funcdataOffs [][]uint
                 ab = []byte{0}
                 funcdataOffs[i] = append(funcdataOffs[i], INVALID_FUNCDATA_OFFSET)
             }
-            
             *out = append(*out, ab...)
             offs += uint32(len(ab))
         }
 
+        writer(f.ArgsPointerMaps)
+        writer(f.LocalsPointerMaps)
+        writer(f.StackObjects)
+        writer(f.InlTree)
+        writer(f.OpenCodedDeferInfo)
+        writer(f.ArgInfo)
+        writer(f.ArgLiveInfo)
+        writer(f.WrapInfo)
     }
     return 
 }
@@ -412,7 +447,6 @@ func makePclntable(funcs []_Func, lastFuncSize uint32, pcdataOffs [][]uint32, fu
 
     // write a map of pc->func info offsets 
     for i, f := range funcs {
-
         byteOrder.PutUint32(pclntab[len(pclntab):len(pclntab)+4], uint32(f.entryOff))
         byteOrder.PutUint32(pclntab[len(pclntab)+4:len(pclntab)+8], uint32(startLocations[i]))
         pclntab = pclntab[:len(pclntab)+8]
@@ -442,8 +476,10 @@ func makePclntable(funcs []_Func, lastFuncSize uint32, pcdataOffs [][]uint32, fu
 
         // pcdata refs as offsets from pctab
         off += _FUNC_SIZE
-        for _, pcdata := range pcdataOffs[i] {
-            byteOrder.PutUint32(pclntab[off:off+4], uint32(pcdata))
+
+        // NOTICE: _func.pcdata always starts from PcUnsafePoint, which is index 3
+        for j := 3; i < len(pcdataOffs[i]); j++ {
+            byteOrder.PutUint32(pclntab[off:off+4], uint32(pcdataOffs[i][j]))
             off += 4
         }
 
@@ -555,12 +591,17 @@ func makeModuledata(name string, funcs []Func, text []byte) (mod *moduledata) {
     p := os.Getpagesize()
     size := int(rnd(int64(len(text)), int64(p)))
     addr := mmap(size)
+    // make it executable
+    mprotect(addr, size)
+    // copy the machine code
+    s := rt.BytesFrom(unsafe.Pointer(addr), size, size)
+    copy(s, text)
+
+    // assign addresses
     mod.text = addr
     mod.etext = addr + uintptr(size)
     mod.minpc = addr
     mod.maxpc = addr + uintptr(len(text))
-    // make it executable
-    mprotect(addr, size)
 
     // cache funcdata and findfuncbucket
     moduleCache.Lock()
@@ -587,11 +628,6 @@ func makeModuledata(name string, funcs []Func, text []byte) (mod *moduledata) {
     mod.gcdata = uintptr(unsafe.Pointer(&emptyByte))
     mod.gcbss = uintptr(unsafe.Pointer(&emptyByte))
 
-    // copy the machine code
-    s := rt.BytesFrom(unsafe.Pointer(addr), size, size)
-    copy(s, out)
-
-    
     return
 }
 

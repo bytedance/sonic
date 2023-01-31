@@ -179,3 +179,4 @@ func (self *StackMapBuilder) AddFields(n int, ptr bool) {
 		self.b.AppendMany(n, 0)
 	}
 }
+

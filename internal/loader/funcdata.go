@@ -33,11 +33,6 @@ func moduledataverify1(_ *moduledata)
 //
 // See funcdata.h and $GROOT/src/cmd/internal/objabi/funcdata.go.
 const (
-	PCDATA_UnsafePoint   = 0
-	PCDATA_StackMapIndex = 1
-	PCDATA_InlTreeIndex  = 2
-	PCDATA_ArgLiveIndex  = 3
-
 	FUNCDATA_ArgsPointerMaps    = 0
 	FUNCDATA_LocalsPointerMaps  = 1
 	FUNCDATA_StackObjects       = 2
