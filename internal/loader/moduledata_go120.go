@@ -364,9 +364,10 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
 
 func writeFuncdata(out *[]byte, funcs []Func) (fstart int, funcdataOffs [][]uint32) {
     fstart = len(*out)
-
     *out = append(*out, byte(0))
     offs := uint32(1)
+
+    funcdataOffs = make([][]uint32, len(funcs))
     for i, f := range funcs {
 
         var writer = func(fd interface{}) {
@@ -443,23 +444,24 @@ func makePclntable(funcs []_Func, lastFuncSize uint32, pcdataOffs [][]uint32, fu
         size += int64(_FUNC_SIZE+len(funcdataOffs[i])*4+len(pcdataOffs[i])*4)
     }
 
-    pclntab = make([]byte, 0, size)
+    pclntab = make([]byte, size, size)
 
     // write a map of pc->func info offsets 
+    offs := 0
     for i, f := range funcs {
-        byteOrder.PutUint32(pclntab[len(pclntab):len(pclntab)+4], uint32(f.entryOff))
-        byteOrder.PutUint32(pclntab[len(pclntab)+4:len(pclntab)+8], uint32(startLocations[i]))
-        pclntab = pclntab[:len(pclntab)+8]
+        byteOrder.PutUint32(pclntab[offs:offs+4], uint32(f.entryOff))
+        byteOrder.PutUint32(pclntab[offs+4:offs+8], uint32(startLocations[i]))
+        offs += 8
     }
-
     // Final entry of table is just end pc offset.
     lastFunc := funcs[len(funcs)-1]
-    byteOrder.PutUint32(pclntab[len(pclntab):len(pclntab)+4], uint32(lastFunc.entryOff+lastFuncSize))
+    byteOrder.PutUint32(pclntab[offs:offs+4], uint32(lastFunc.entryOff+lastFuncSize))
 
     // write func info table
     for i, f := range funcs {
-        // functiono structure
         off := startLocations[i]
+
+        // functiono structure
         byteOrder.PutUint32(pclntab[off:off+4], uint32(f.entryOff))
         byteOrder.PutUint32(pclntab[off+4:off+8], uint32(f.nameOff))
         byteOrder.PutUint32(pclntab[off+8:off+12], uint32(f.args))
@@ -478,7 +480,7 @@ func makePclntable(funcs []_Func, lastFuncSize uint32, pcdataOffs [][]uint32, fu
         off += _FUNC_SIZE
 
         // NOTICE: _func.pcdata always starts from PcUnsafePoint, which is index 3
-        for j := 3; i < len(pcdataOffs[i]); j++ {
+        for j := 3; j < len(pcdataOffs[i]); j++ {
             byteOrder.PutUint32(pclntab[off:off+4], uint32(pcdataOffs[i][j]))
             off += 4
         }
@@ -591,11 +593,11 @@ func makeModuledata(name string, funcs []Func, text []byte) (mod *moduledata) {
     p := os.Getpagesize()
     size := int(rnd(int64(len(text)), int64(p)))
     addr := mmap(size)
+    // copy the machine code
+    s := rt.BytesFrom(unsafe.Pointer(addr), len(text), size)
+    copy(s, text)
     // make it executable
     mprotect(addr, size)
-    // copy the machine code
-    s := rt.BytesFrom(unsafe.Pointer(addr), size, size)
-    copy(s, text)
 
     // assign addresses
     mod.text = addr
@@ -614,14 +616,15 @@ func makeModuledata(name string, funcs []Func, text []byte) (mod *moduledata) {
     mod.pcHeader = &pcHeader {
         magic   : _Magic,
         minLC   : _MinLC,
-        nfunc   : len(funcs),
         ptrSize : _PtrSize,
+        nfunc   : len(funcs),
+        nfiles: uint(len(cu)),
         textStart: mod.text,
         funcnameOffset: getOffsetOf(moduledata{}, "funcnametab"),
         cuOffset: getOffsetOf(moduledata{}, "cutab"),
         filetabOffset: getOffsetOf(moduledata{}, "filetab"),
         pctabOffset: getOffsetOf(moduledata{}, "pctab"),
-        pclnOffset: getOffsetOf(moduledata{}, "pclntab"),
+        pclnOffset: getOffsetOf(moduledata{}, "pclntable"),
     }
 
     // sepecial case: gcdata and gcbss must by non-empty
@@ -642,7 +645,8 @@ func Load(modulename string, funcs []Func, text []byte) (out []Function) {
     // encapsulate function address
     out = make([]Function, len(funcs))
     for i, f := range funcs {
-        out[i] = Function(mod.text + uintptr(f.EntryOff))
+        m := uintptr(mod.text + uintptr(f.EntryOff))
+        out[i] = Function(&m)
     }
 
     return 
