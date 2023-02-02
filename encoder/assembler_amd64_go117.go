@@ -1,3 +1,4 @@
+//go:build go1.17 && !go1.21
 // +build go1.17,!go1.21
 
 /*
@@ -26,6 +27,7 @@ import (
 
     `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/loader`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
     `github.com/twitchyliquid64/golang-asm/obj/x86`
@@ -182,6 +184,7 @@ type _Assembler struct {
     jit.BaseAssembler
     p _Program
     x int
+    name string
 }
 
 func newAssembler(p _Program) *_Assembler {
@@ -191,7 +194,14 @@ func newAssembler(p _Program) *_Assembler {
 /** Assembler Interface **/
 
 func (self *_Assembler) Load() _Encoder {
-    return ptoenc(self.BaseAssembler.LoadWithFaker("json_encoder", _FP_size, _FP_args, _Encoder_Shadow))
+    args := loader.StackMapBuilder{}
+    args.AddField(true)
+    args.AddField(true)
+    args.AddField(true)
+    args.AddField(false)
+    locals := loader.StackMapBuilder{}
+    locals.AddFields(_FP_offs/int(_PTR_BYTE), false)
+    return ptoenc(self.BaseAssembler.Load(self.name+".Encoder", _FP_size, _FP_args, args.Build(), locals.Build()))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {

@@ -57,15 +57,15 @@ func faker4(in string) error {
 }
 
 func TestStackMap(t *testing.T) {
-    args1, locals1 := stackMap(faker1)
+    args1, locals1 := GetStackMap(faker1)
     fi1 := findfunc(reflect.ValueOf(faker1).Pointer())
     fmt.Printf("func1: %#v, args: %x, locals: %x\n", fi1, args1, locals1)
 
-    args2, locals2 := stackMap(faker2)
+    args2, locals2 := GetStackMap(faker2)
     fi2 := findfunc(reflect.ValueOf(faker2).Pointer())
     fmt.Printf("func2: %#v, args: %x, locals: %x\n", fi2, args2, locals2)
 
-    args4, locals4 := stackMap(faker4)
+    args4, locals4 := GetStackMap(faker4)
     fi4 := findfunc(reflect.ValueOf(faker4).Pointer())
     fmt.Printf("func4: %#v, args: %x, locals: %x\n", fi4, args4, locals4)
 

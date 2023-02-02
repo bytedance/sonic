@@ -139,7 +139,6 @@ func Quote(s string) string {
     /* allocate space for result */
     n = len(s) + 2
     p = make([]byte, 0, n)
-
     /* call the encoder */
     _ = encodeString(&p, s)
     return rt.Mem2Str(p)
@@ -173,9 +172,10 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
 // a new one.
 func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     stk := newStack()
+  
     efv := rt.UnpackEface(val)
     err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
-
+   
     /* return the stack into pool */
     if err != nil {
         resetStack(stk)

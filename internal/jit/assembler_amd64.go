@@ -202,14 +202,32 @@ func (self *BaseAssembler) Init(f func()) {
     self.o = sync.Once{}
 }
 
-func (self *BaseAssembler) Load(fn string, fp int, args int) loader.Function {
-    self.build()
-    return loader.Loader(self.c).Load(fn, fp, args)
-}
+// func (self *BaseAssembler) Load(fn string, fp int, args int) loader.Function {
+//     self.build()
+//     return loader.Loader(self.c).Load(fn, fp, args)
+// }
 
-func (self *BaseAssembler) LoadWithFaker(fn string, fp int, args int, faker interface{}) loader.Function {
+func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStackmap *loader.StackMap, localStackmap *loader.StackMap) loader.Function {
     self.build()
-    return loader.Loader(self.c).LoadWithFaker(fn, fp, args, faker)
+    size := uint32(len(self.c))
+    fn := loader.Func{
+        Name: name,
+        TextSize: size,
+        ArgsSize: int32(argSize),
+    }
+    fn.Pcsp = &loader.Pcdata{
+		{PC: size, Val: int32(frameSize)},
+	}
+    fn.PcUnsafePoint = &loader.Pcdata{
+        {PC: size, Val: loader.PCDATA_UnsafePointUnsafe},
+    }
+    fn.PcStackMapIndex = &loader.Pcdata{
+        {PC: size, Val: 0},
+    }
+    fn.ArgsPointerMaps = argStackmap
+    fn.LocalsPointerMaps = localStackmap
+    out := loader.Load("sonic.jit." + name, []string{"github.com/bytedance/sonic/jit.go"}, []loader.Func{fn}, self.c)
+    return out[0]
 }
 
 /** Assembler Stages **/

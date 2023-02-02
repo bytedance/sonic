@@ -104,6 +104,7 @@ const (
 const (
     _INT_SIZE = 32 << (^uint(0) >> 63)
     _PTR_SIZE = 32 << (^uintptr(0) >> 63)
+    _PTR_BYTE = unsafe.Sizeof(uintptr(0))
 )
 
 const (

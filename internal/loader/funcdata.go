@@ -117,7 +117,7 @@ func registerModule(mod *moduledata) {
     modLock.Unlock()
 }
 
-func stackMap(f interface{}) (args uintptr, locals uintptr) {
+func GetStackMap(f interface{}) (args uintptr, locals uintptr) {
     fv := reflect.ValueOf(f)
     if fv.Kind() != reflect.Func {
         panic("f must be reflect.Func kind!")

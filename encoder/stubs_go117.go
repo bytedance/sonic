@@ -37,7 +37,7 @@ var _subr__b64encode uintptr
 //goland:noinspection GoUnusedParameter
 func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 
-//go:linkname growslice runtime.growslice
+//go:linkname growslice reflect.growslice
 //goland:noinspection GoUnusedParameter
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 

@@ -1,3 +1,4 @@
+//go:build go1.17 && !go1.21
 // +build go1.17,!go1.21
 
 /*
@@ -25,9 +26,10 @@ import (
     `reflect`
     `strconv`
     `unsafe`
-    
+
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/loader`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
@@ -165,10 +167,10 @@ var (
 )
 
 var (
-    _VAR_sv = _VAR_sv_p
-    _VAR_sv_p = jit.Ptr(_SP, _FP_base + 48)
-    _VAR_sv_n = jit.Ptr(_SP, _FP_base + 56)
-    _VAR_vk   = jit.Ptr(_SP, _FP_base + 64)
+    _ARG_sv   = _ARG_sv_p
+    _ARG_sv_p = jit.Ptr(_SP, _FP_base + 48)
+    _ARG_sv_n = jit.Ptr(_SP, _FP_base + 56)
+    _ARG_vk   = jit.Ptr(_SP, _FP_base + 64)
 )
 
 var (
@@ -210,6 +212,7 @@ var (
 type _Assembler struct {
     jit.BaseAssembler
     p _Program
+    name string
 }
 
 func newAssembler(p _Program) *_Assembler {
@@ -219,7 +222,19 @@ func newAssembler(p _Program) *_Assembler {
 /** Assembler Interface **/
 
 func (self *_Assembler) Load() _Decoder {
-    return ptodec(self.BaseAssembler.LoadWithFaker("json_decoder", _FP_size, _FP_args, _Decoder_Shadow))
+    args := loader.StackMapBuilder{}
+    args.AddField(true)
+    args.AddField(false)
+    args.AddField(false)
+    args.AddField(true)
+    args.AddField(true)
+    args.AddField(false)
+    args.AddField(true)
+    args.AddField(false)
+    args.AddField(true)
+    locals := loader.StackMapBuilder{}
+    locals.AddFields(_FP_offs/int(_PTR_BYTE), false)
+    return ptodec(self.BaseAssembler.Load(self.name+".Decoder", _FP_size, _FP_args, args.Build(), locals.Build()))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {
@@ -348,8 +363,8 @@ func (self *_Assembler) epilogue() {
     self.Emit("MOVQ", _IC, _AX)                     // MOVQ IC, AX
     self.Emit("MOVQ", jit.Imm(0), _ARG_sp)        // MOVQ $0, sv.p<>+48(FP)
     self.Emit("MOVQ", jit.Imm(0), _ARG_vp)        // MOVQ $0, sv.p<>+48(FP)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sv_p)        // MOVQ $0, sv.p<>+48(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vk)          // MOVQ $0, vk<>+64(FP)
     self.Emit("MOVQ", jit.Ptr(_SP, _FP_offs), _BP)  // MOVQ _FP_offs(SP), BP
     self.Emit("ADDQ", jit.Imm(_FP_size), _SP)       // ADDQ $_FP_size, SP
     self.Emit("RET")                                // RET
@@ -370,9 +385,9 @@ func (self *_Assembler) prologue() {
     self.Emit("MOVQ", _SI, _ARG_sb)                 // MOVQ SI, sb<>+32(FP)
     self.Emit("MOVQ", _SI, _ST)                     // MOVQ SI, ST
     self.Emit("MOVQ", _R8, _ARG_fv)                 // MOVQ R8, fv<>+40(FP)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_sv_p)        // MOVQ $0, sv.p<>+48(FP)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_sv_n)        // MOVQ $0, sv.n<>+56(FP)
-    self.Emit("MOVQ", jit.Imm(0), _VAR_vk)          // MOVQ $0, vk<>+64(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sv_p)        // MOVQ $0, sv.p<>+48(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_sv_n)        // MOVQ $0, sv.n<>+56(FP)
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vk)          // MOVQ $0, vk<>+64(FP)
     self.Emit("MOVQ", jit.Imm(0), _VAR_et)          // MOVQ $0, et<>+120(FP)
     // initialize digital buffer first
     self.Emit("MOVQ", jit.Imm(_MaxDigitNums), _VAR_st_Dc)    // MOVQ $_MaxDigitNums, ss.Dcap
@@ -498,8 +513,8 @@ func (self *_Assembler) mismatch_error() {
 
 func (self *_Assembler) field_error() {
     self.Link(_LB_field_error)                  // _field_error:
-    self.Emit("MOVQ", _VAR_sv_p, _AX)           // MOVQ   sv.p, AX
-    self.Emit("MOVQ", _VAR_sv_n, _BX)           // MOVQ   sv.n, BX
+    self.Emit("MOVQ", _ARG_sv_p, _AX)           // MOVQ   sv.p, AX
+    self.Emit("MOVQ", _ARG_sv_n, _BX)           // MOVQ   sv.n, BX
     self.call_go(_F_error_field)                // CALL_GO error_field
     self.Sjmp("JMP" , _LB_error)                // JMP     _error
 }
@@ -745,11 +760,11 @@ func (self *_Assembler) copy_string() {
     self.Emit("MOVQ", _DI, _VAR_bs_p)
     self.Emit("MOVQ", _SI, _VAR_bs_n)
     self.Emit("MOVQ", _R9, _VAR_bs_LR)
-    self.malloc_AX(_SI, _VAR_sv_p)                              
+    self.malloc_AX(_SI, _ARG_sv_p)                              
     self.Emit("MOVQ", _VAR_bs_p, _BX)
     self.Emit("MOVQ", _VAR_bs_n, _CX)
     self.call_go(_F_memmove)
-    self.Emit("MOVQ", _VAR_sv_p, _DI)
+    self.Emit("MOVQ", _ARG_sv_p, _DI)
     self.Emit("MOVQ", _VAR_bs_n, _SI)
     self.Emit("MOVQ", _VAR_bs_LR, _R9)
     self.Rjmp("JMP", _R9)
@@ -762,7 +777,7 @@ func (self *_Assembler) escape_string() {
     self.Emit("MOVQ" , _SI, _VAR_bs_n)
     self.Emit("MOVQ" , _R9, _VAR_bs_LR)
     self.malloc_AX(_SI, _DX)                                    // MALLOC SI, DX
-    self.Emit("MOVQ" , _DX, _VAR_sv_p)
+    self.Emit("MOVQ" , _DX, _ARG_sv_p)
     self.Emit("MOVQ" , _VAR_bs_p, _DI)
     self.Emit("MOVQ" , _VAR_bs_n, _SI)                                  
     self.Emit("LEAQ" , _VAR_sr, _CX)                            // LEAQ   sr, CX
@@ -776,7 +791,7 @@ func (self *_Assembler) escape_string() {
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ  AX, AX
     self.Sjmp("JS"   , _LB_unquote_error)                       // JS     _unquote_error
     self.Emit("MOVQ" , _AX, _SI)
-    self.Emit("MOVQ" , _VAR_sv_p, _DI)
+    self.Emit("MOVQ" , _ARG_sv_p, _DI)
     self.Emit("MOVQ" , _VAR_bs_LR, _R9)
     self.Rjmp("JMP", _R9)
 }
@@ -787,7 +802,7 @@ func (self *_Assembler) escape_string_twice() {
     self.Emit("MOVQ" , _SI, _VAR_bs_n)
     self.Emit("MOVQ" , _R9, _VAR_bs_LR)
     self.malloc_AX(_SI, _DX)                                        // MALLOC SI, DX
-    self.Emit("MOVQ" , _DX, _VAR_sv_p)
+    self.Emit("MOVQ" , _DX, _ARG_sv_p)
     self.Emit("MOVQ" , _VAR_bs_p, _DI)
     self.Emit("MOVQ" , _VAR_bs_n, _SI)        
     self.Emit("LEAQ" , _VAR_sr, _CX)                                // LEAQ   sr, CX
@@ -803,7 +818,7 @@ func (self *_Assembler) escape_string_twice() {
     self.Emit("TESTQ", _AX, _AX)                                    // TESTQ  AX, AX
     self.Sjmp("JS"   , _LB_unquote_error)                           // JS     _unquote_error
     self.Emit("MOVQ" , _AX, _SI)
-    self.Emit("MOVQ" , _VAR_sv_p, _DI)
+    self.Emit("MOVQ" , _ARG_sv_p, _DI)
     self.Emit("MOVQ" , _VAR_bs_LR, _R9)
     self.Rjmp("JMP", _R9)
 }
@@ -1029,15 +1044,15 @@ func (self *_Assembler) mapassign_utext(t reflect.Type, addressable bool) {
     /* allocate the key, and call the unmarshaler */
     self.valloc(vk, _BX)                        // VALLOC  ${vk}, BX
     // must spill vk pointer since next call_go may invoke GC
-    self.Emit("MOVQ" , _BX, _VAR_vk)
+    self.Emit("MOVQ" , _BX, _ARG_vk)
     self.Emit("MOVQ" , jit.Type(tk), _AX)       // MOVQ    ${tk}, AX
-    self.Emit("MOVQ" , _VAR_sv_p, _CX)          // MOVQ    sv.p, CX
-    self.Emit("MOVQ" , _VAR_sv_n, _DI)          // MOVQ    sv.n, DI
+    self.Emit("MOVQ" , _ARG_sv_p, _CX)          // MOVQ    sv.p, CX
+    self.Emit("MOVQ" , _ARG_sv_n, _DI)          // MOVQ    sv.n, DI
     self.call_go(_F_decodeTextUnmarshaler)      // CALL_GO decodeTextUnmarshaler
     self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
-    self.Emit("MOVQ" , _VAR_vk, _AX)            // MOVQ    VAR.vk, AX
-    self.Emit("MOVQ", jit.Imm(0), _VAR_vk)
+    self.Emit("MOVQ" , _ARG_vk, _AX)            // MOVQ    VAR.vk, AX
+    self.Emit("MOVQ", jit.Imm(0), _ARG_vk)
 
     /* select the correct assignment function */
     if !pv {
@@ -1061,14 +1076,14 @@ func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool) {
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ     AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)                     // JS        _parse_error_v
     self.slice_from_r(_AX, 0)                                   // SLICE_R   AX, $0
-    self.Emit("MOVQ" , _DI, _VAR_sv_p)                          // MOVQ      DI, sv.p
-    self.Emit("MOVQ" , _SI, _VAR_sv_n)                          // MOVQ      SI, sv.n
+    self.Emit("MOVQ" , _DI, _ARG_sv_p)                          // MOVQ      DI, sv.p
+    self.Emit("MOVQ" , _SI, _ARG_sv_n)                          // MOVQ      SI, sv.n
     self.unmarshal_func(t, _F_decodeJsonUnmarshaler, deref)     // UNMARSHAL json, ${t}, ${deref}
 }
 
 func (self *_Assembler) unmarshal_text(t reflect.Type, deref bool) {
     self.parse_string()                                         // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)        // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_ARG_sv_p, _ARG_sv_n, true, true)        // UNQUOTE   once, sv.p, sv.n
     self.unmarshal_func(t, _F_decodeTextUnmarshaler, deref)     // UNMARSHAL text, ${t}, ${deref}
 }
 
@@ -1094,8 +1109,8 @@ func (self *_Assembler) unmarshal_func(t reflect.Type, fn obj.Addr, deref bool) 
     self.Emit("MOVQ", jit.Type(pt), _AX)        // MOVQ ${pt}, AX
 
     /* set the source string and call the unmarshaler */
-    self.Emit("MOVQ" , _VAR_sv_p, _CX)          // MOVQ    sv.p, CX
-    self.Emit("MOVQ" , _VAR_sv_n, _DI)          // MOVQ    sv.n, DI
+    self.Emit("MOVQ" , _ARG_sv_p, _CX)          // MOVQ    sv.p, CX
+    self.Emit("MOVQ" , _ARG_sv_n, _DI)          // MOVQ    sv.n, DI
     self.call_go(fn)                            // CALL_GO ${fn}
     self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
     self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
@@ -1557,26 +1572,26 @@ func (self *_Assembler) _asm_OP_map_key_f64(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_map_key_str(p *_Instr) {
     self.parse_string()                          // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)      // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_ARG_sv_p, _ARG_sv_n, true, true)      // UNQUOTE   once, sv.p, sv.n
     if vt := p.vt(); !mapfast(vt) {
         self.valloc(vt.Key(), _DI)
-        self.Emit("MOVOU", _VAR_sv, _X0)
+        self.Emit("MOVOU", _ARG_sv, _X0)
         self.Emit("MOVOU", _X0, jit.Ptr(_DI, 0))
         self.mapassign_std(vt, jit.Ptr(_DI, 0))        // MAPASSIGN string, DI, SI
     } else {
-        self.mapassign_str_fast(vt, _VAR_sv_p, _VAR_sv_n)    // MAPASSIGN string, DI, SI
+        self.mapassign_str_fast(vt, _ARG_sv_p, _ARG_sv_n)    // MAPASSIGN string, DI, SI
     }
 }
 
 func (self *_Assembler) _asm_OP_map_key_utext(p *_Instr) {
     self.parse_string()                         // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)     // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_ARG_sv_p, _ARG_sv_n, true, true)     // UNQUOTE   once, sv.p, sv.n
     self.mapassign_utext(p.vt(), false)         // MAPASSIGN utext, ${p.vt()}, false
 }
 
 func (self *_Assembler) _asm_OP_map_key_utext_p(p *_Instr) {
     self.parse_string()                         // PARSE     STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, true)     // UNQUOTE   once, sv.p, sv.n
+    self.unquote_once(_ARG_sv_p, _ARG_sv_n, true, true)     // UNQUOTE   once, sv.p, sv.n
     self.mapassign_utext(p.vt(), true)          // MAPASSIGN utext, ${p.vt()}, true
 }
 
@@ -1650,8 +1665,8 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
     self.parse_string()                                         // PARSE   STRING
-    self.unquote_once(_VAR_sv_p, _VAR_sv_n, true, false)                     // UNQUOTE once, sv.p, sv.n
-    self.Emit("LEAQ" , _VAR_sv, _AX)                            // LEAQ    sv, AX
+    self.unquote_once(_ARG_sv_p, _ARG_sv_n, true, false)                     // UNQUOTE once, sv.p, sv.n
+    self.Emit("LEAQ" , _ARG_sv, _AX)                            // LEAQ    sv, AX
     self.Emit("XORL" , _BX, _BX)                                // XORL    BX, BX
     self.call_go(_F_strhash)                                    // CALL_GO strhash
     self.Emit("MOVQ" , _AX, _R9)                                // MOVQ    AX, R9
@@ -1672,7 +1687,7 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("CMPQ" , _R8, _R9)                                // CMPQ    R8, R9
     self.Sjmp("JNE"  , "_loop_{n}")                             // JNE     _loop_{n}
     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Name + 8), _DX)         // MOVQ    FieldEntry.Name+8(DI), DX
-    self.Emit("CMPQ" , _DX, _VAR_sv_n)                          // CMPQ    DX, sv.n
+    self.Emit("CMPQ" , _DX, _ARG_sv_n)                          // CMPQ    DX, sv.n
     self.Sjmp("JNE"  , "_loop_{n}")                             // JNE     _loop_{n}
     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_ID), _R8)               // MOVQ    FieldEntry.ID(DI), R8
     self.Emit("MOVQ" , _AX, _VAR_ss_AX)                         // MOVQ    AX, ss.AX
@@ -1680,7 +1695,7 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , _SI, _VAR_ss_SI)                         // MOVQ    SI, ss.SI
     self.Emit("MOVQ" , _R8, _VAR_ss_R8)                         // MOVQ    R8, ss.R8
     self.Emit("MOVQ" , _R9, _VAR_ss_R9)                         // MOVQ    R9, ss.R9
-    self.Emit("MOVQ" , _VAR_sv_p, _AX)                          // MOVQ    _VAR_sv_p, AX
+    self.Emit("MOVQ" , _ARG_sv_p, _AX)                          // MOVQ    _VAR_sv_p, AX
     self.Emit("MOVQ" , jit.Ptr(_DI, _Fe_Name), _CX)             // MOVQ    FieldEntry.Name(DI), CX
     self.Emit("MOVQ" , _CX, _BX)                                // MOVQ    CX, 8(SP)
     self.Emit("MOVQ" , _DX, _CX)                                // MOVQ    DX, 16(SP)
@@ -1697,8 +1712,8 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Sjmp("JMP"  , "_end_{n}")                              // JMP     _end_{n}
     self.Link("_try_lowercase_{n}")                             // _try_lowercase_{n}:
     self.Emit("MOVQ" , jit.Imm(referenceFields(p.vf())), _AX)   // MOVQ    ${p.vf()}, AX
-    self.Emit("MOVQ", _VAR_sv_p, _BX)                            // MOVQ   sv, BX
-    self.Emit("MOVQ", _VAR_sv_n, _CX)                            // MOVQ   sv, CX
+    self.Emit("MOVQ", _ARG_sv_p, _BX)                            // MOVQ   sv, BX
+    self.Emit("MOVQ", _ARG_sv_n, _CX)                            // MOVQ   sv, CX
     self.call_go(_F_FieldMap_GetCaseInsensitive)                // CALL_GO FieldMap::GetCaseInsensitive
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, _VAR_sr
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ   AX, AX

@@ -20,116 +20,114 @@
 package loader
 
 import (
-	"encoding"
-	"os"
-	"strings"
-	"sync"
-	"unsafe"
+    `encoding`
+    `os`
+    `strings`
+    `sync`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 const (
     _Magic uint32 = 0xFFFFFFF1
 
-    _N_PCDATA   = 4
     _N_FUNCDATA = 8
     _INVALID_FUNCDATA_OFFSET = ^uint32(0)
-    _INVALID_PCDATA_OFFSET = 0
 
     _FUNC_SIZE = unsafe.Sizeof(_func{})
-	_MINFUNC = 16 // minimum size for a function
+    _MINFUNC = 16 // minimum size for a function
     _BUCKETSIZE    = 256 * _MINFUNC
-	_SUBBUCKETS    = 16
-	_SUB_BUCKETSIZE = _BUCKETSIZE / _SUBBUCKETS
+    _SUBBUCKETS    = 16
+    _SUB_BUCKETSIZE = _BUCKETSIZE / _SUBBUCKETS
 )
 
 type moduledata struct {
-	pcHeader     *pcHeader
-	funcnametab  []byte
-	cutab        []uint32
-	filetab      []byte
-	pctab        []byte
-	pclntable    []byte
-	ftab         []funcTab
-	findfunctab  uintptr
-	minpc, maxpc uintptr // first func address, last func address + last func size
+    pcHeader     *pcHeader
+    funcnametab  []byte
+    cutab        []uint32
+    filetab      []byte
+    pctab        []byte
+    pclntable    []byte
+    ftab         []funcTab
+    findfunctab  uintptr
+    minpc, maxpc uintptr // first func address, last func address + last func size
 
-	text, etext           uintptr // start/end of text, (etext-text) must be greater than MIN_FUNC
-	noptrdata, enoptrdata uintptr
-	data, edata           uintptr
-	bss, ebss             uintptr
-	noptrbss, enoptrbss   uintptr
-	covctrs, ecovctrs     uintptr
-	end, gcdata, gcbss    uintptr
-	types, etypes         uintptr
-	rodata                uintptr
+    text, etext           uintptr // start/end of text, (etext-text) must be greater than MIN_FUNC
+    noptrdata, enoptrdata uintptr
+    data, edata           uintptr
+    bss, ebss             uintptr
+    noptrbss, enoptrbss   uintptr
+    covctrs, ecovctrs     uintptr
+    end, gcdata, gcbss    uintptr
+    types, etypes         uintptr
+    rodata                uintptr
 
     // TODO: generate funcinfo object to memory
-	gofunc                uintptr // go.func.* is actual funcinfo object in image
+    gofunc                uintptr // go.func.* is actual funcinfo object in image
 
-	textsectmap []textSection // see runtime/symtab.go: textAddr()
-	typelinks   []int32 // offsets from types
-	itablinks   []*rt.GoItab
+    textsectmap []textSection // see runtime/symtab.go: textAddr()
+    typelinks   []int32 // offsets from types
+    itablinks   []*rt.GoItab
 
-	ptab []ptabEntry
+    ptab []ptabEntry
 
-	pluginpath string
-	pkghashes  []modulehash
+    pluginpath string
+    pkghashes  []modulehash
 
-	modulename   string
-	modulehashes []modulehash
+    modulename   string
+    modulehashes []modulehash
 
-	hasmain uint8 // 1 if module contains the main function, 0 otherwise
+    hasmain uint8 // 1 if module contains the main function, 0 otherwise
 
-	gcdatamask, gcbssmask bitVector
+    gcdatamask, gcbssmask bitVector
 
-	typemap map[int32]*rt.GoType // offset to *_rtype in previous module
+    typemap map[int32]*rt.GoType // offset to *_rtype in previous module
 
-	bad bool // module failed to load and should be ignored
+    bad bool // module failed to load and should be ignored
 
-	next *moduledata
+    next *moduledata
 }
 
 type _func struct {
     entryOff uint32 // start pc, as offset from moduledata.text/pcHeader.textStart
-	nameOff  int32  // function name, as index into moduledata.funcnametab.
+    nameOff  int32  // function name, as index into moduledata.funcnametab.
 
-	args        int32  // in/out args size
-	deferreturn uint32 // offset of start of a deferreturn call instruction from entry, if any.
+    args        int32  // in/out args size
+    deferreturn uint32 // offset of start of a deferreturn call instruction from entry, if any.
 
-	pcsp      uint32 
-	pcfile    uint32
-	pcln      uint32
-	npcdata   uint32
-	cuOffset  uint32 // runtime.cutab offset of this function's CU
-	startLine int32  // line number of start of function (func keyword/TEXT directive)
-	funcID    uint8 // set for certain special runtime functions
-	flag      uint8
-	_         [1]byte // pad
-	nfuncdata uint8   // 
+    pcsp      uint32 
+    pcfile    uint32
+    pcln      uint32
+    npcdata   uint32
+    cuOffset  uint32 // runtime.cutab offset of this function's CU
+    startLine int32  // line number of start of function (func keyword/TEXT directive)
+    funcID    uint8 // set for certain special runtime functions
+    flag      uint8
+    _         [1]byte // pad
+    nfuncdata uint8   // 
     
     // The end of the struct is followed immediately by two variable-length
-	// arrays that reference the pcdata and funcdata locations for this
-	// function.
+    // arrays that reference the pcdata and funcdata locations for this
+    // function.
 
-	// pcdata contains the offset into moduledata.pctab for the start of
-	// that index's table. e.g.,
-	// &moduledata.pctab[_func.pcdata[_PCDATA_UnsafePoint]] is the start of
-	// the unsafe point table.
-	//
-	// An offset of 0 indicates that there is no table.
-	//
-	// pcdata [npcdata]uint32
+    // pcdata contains the offset into moduledata.pctab for the start of
+    // that index's table. e.g.,
+    // &moduledata.pctab[_func.pcdata[_PCDATA_UnsafePoint]] is the start of
+    // the unsafe point table.
+    //
+    // An offset of 0 indicates that there is no table.
+    //
+    // pcdata [npcdata]uint32
 
-	// funcdata contains the offset past moduledata.gofunc which contains a
-	// pointer to that index's funcdata. e.g.,
-	// *(moduledata.gofunc +  _func.funcdata[_FUNCDATA_ArgsPointerMaps]) is
-	// the argument pointer map.
-	//
-	// An offset of ^uint32(0) indicates that there is no entry.
-	//
-	// funcdata [nfuncdata]uint32
+    // funcdata contains the offset past moduledata.gofunc which contains a
+    // pointer to that index's funcdata. e.g.,
+    // *(moduledata.gofunc +  _func.funcdata[_FUNCDATA_ArgsPointerMaps]) is
+    // the argument pointer map.
+    //
+    // An offset of ^uint32(0) indicates that there is no entry.
+    //
+    // funcdata [nfuncdata]uint32
 }
 
 type funcTab struct {
@@ -164,14 +162,14 @@ type ptabEntry struct {
 
 type textSection struct {
     vaddr    uintptr // prelinked section vaddr
-	end      uintptr // vaddr + section length
-	baseaddr uintptr // relocated section address
+    end      uintptr // vaddr + section length
+    baseaddr uintptr // relocated section address
 }
 
 type modulehash struct {
-	modulename   string
-	linktimehash string
-	runtimehash  *string
+    modulename   string
+    linktimehash string
+    runtimehash  *string
 }
 
 // findfuncbucket is an array of these structures.
@@ -183,8 +181,8 @@ type modulehash struct {
 // index to find the target function.
 // This table uses 20 bytes for every 4096 bytes of code, or ~0.5% overhead.
 type findfuncbucket struct {
-	idx        uint32
-	_SUBBUCKETS [16]byte
+    idx        uint32
+    _SUBBUCKETS [16]byte
 }
 
 func funcNameParts(name string) (string, string, string) {
@@ -268,8 +266,8 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
     _funcs = make([]_func, len(funcs))
 
     // Pctab offsets of 0 are considered invalid in the runtime. We respect
-	// that by just padding a single byte at the beginning of runtime.pctab,
-	// that way no real offsets can be zero.
+    // that by just padding a single byte at the beginning of runtime.pctab,
+    // that way no real offsets can be zero.
     pctab = make([]byte, 1, 12*len(funcs)+1)
     pcdataOffs = make([][]uint32, len(funcs))
 
@@ -287,16 +285,22 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
                 pcdataOffs[i] = append(pcdataOffs[i], uint32(len(pctab)))
             } else {
                 ab = []byte{0}
-                pcdataOffs[i] = append(pcdataOffs[i], _INVALID_PCDATA_OFFSET)
+                pcdataOffs[i] = append(pcdataOffs[i], _PCDATA_INVALID_OFFSET)
             }
             pctab = append(pctab, ab...)
         }
 
-        _f.pcsp = uint32(len(pctab))
+        if f.Pcsp != nil {
+            _f.pcsp = uint32(len(pctab))
+        }
         writer(f.Pcsp)
-        _f.pcln = uint32(len(pctab))
+        if f.Pcline != nil {
+            _f.pcln = uint32(len(pctab))
+        }
         writer(f.Pcline)
-        _f.pcfile = uint32(len(pctab))
+        if f.Pcfile != nil {
+            _f.pcfile = uint32(len(pctab))
+        }
         writer(f.Pcfile)
         writer(f.PcUnsafePoint)
         writer(f.PcStackMapIndex)
@@ -305,7 +309,7 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
         
         _f.entryOff = f.EntryOff
         _f.nameOff = nameOffset[i]
-        _f.args = f.Args
+        _f.args = f.ArgsSize
         _f.deferreturn = f.DeferReturn
         // NOTICE: _func.pcdata is always as [PCDATA_UnsafePoint(0) : PCDATA_ArgLiveIndex(3)]
         _f.npcdata = uint32(_N_PCDATA)
@@ -362,8 +366,8 @@ func writeFuncdata(out *[]byte, funcs []Func) (fstart int, funcdataOffs [][]uint
 
 func makeFtab(funcs []_func, lastFuncSize uint32) (ftab []funcTab) {
     // Allocate space for the pc->func table. This structure consists of a pc offset
-	// and an offset to the func structure. After that, we have a single pc
-	// value that marks the end of the last function in the binary.
+    // and an offset to the func structure. After that, we have a single pc
+    // value that marks the end of the last function in the binary.
     var size int64 = int64(len(funcs)*2*4 + 4)
     var startLocations = make([]uint32, len(funcs))
     for i, f := range funcs {
@@ -390,8 +394,8 @@ func makeFtab(funcs []_func, lastFuncSize uint32) (ftab []funcTab) {
 // Pcln table format: [...]funcTab + [...]_Func
 func makePclntable(funcs []_func, lastFuncSize uint32, pcdataOffs [][]uint32, funcdataOffs [][]uint32) (pclntab []byte) {
     // Allocate space for the pc->func table. This structure consists of a pc offset
-	// and an offset to the func structure. After that, we have a single pc
-	// value that marks the end of the last function in the binary.
+    // and an offset to the func structure. After that, we have a single pc
+    // value that marks the end of the last function in the binary.
     var size int64 = int64(len(funcs)*2*4 + 4)
     var startLocations = make([]uint32, len(funcs))
     for i := range funcs {

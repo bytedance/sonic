@@ -20,12 +20,12 @@
 package loader
 
 import (
-	"encoding/binary"
-	"fmt"
-	"os"
-	"reflect"
-	"syscall"
-	"unsafe"
+    `encoding/binary`
+    `fmt`
+    `os`
+    `reflect`
+    `syscall`
+    `unsafe`
 )
 
 const (
@@ -35,18 +35,18 @@ const (
 )
 
 const (
-	_MinLC uint8 = 1
-	_PtrSize uint8 = 8
+    _MinLC uint8 = 1
+    _PtrSize uint8 = 8
 )
 
 var (
-	byteOrder binary.ByteOrder = binary.LittleEndian
+    byteOrder binary.ByteOrder = binary.LittleEndian
 )
 
 type Func struct {
-	ID          uint8  // see runtime/symtab.go
-	Flag        uint8  // see runtime/symtab.go
-    Args        int32  // args count
+    ID          uint8  // see runtime/symtab.go
+    Flag        uint8  // see runtime/symtab.go
+    ArgsSize    int32  // args byte size
     EntryOff    uint32 // start pc, offset to moduledata.text
     TextSize    uint32 // size of func text
     StartLine   int32  // line number of first line in file of function
@@ -64,8 +64,8 @@ type Func struct {
     PcArgLiveIndex  *Pcdata
     
     // Func data
-    ArgsPointerMaps    *StackMap
-    LocalsPointerMaps  *StackMap
+    ArgsPointerMaps    interface{}
+    LocalsPointerMaps  interface{}
     StackObjects       interface{}
     InlTree            interface{}
     OpenCodedDeferInfo interface{}
@@ -95,7 +95,7 @@ func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{})
     /* register the function */
     m := mmap(n)
     v := fmt.Sprintf("runtime.__%s_%x", fn, m)
-    argsptr, localsptr := stackMap(faker)
+    argsptr, localsptr := GetStackMap(faker)
     registerFunction(v, m, uintptr(n), fp, args, uintptr(len(self)), argsptr, localsptr)
 
     /* reference as a slice */

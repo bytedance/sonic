@@ -1,3 +1,4 @@
+//go:build go1.17 && !go1.21
 // +build go1.17,!go1.21
 
 /*
@@ -25,6 +26,7 @@ import (
     `strconv`
 
     `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/loader`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
@@ -84,7 +86,11 @@ var (
 
 func (self *_ValueDecoder) build() uintptr {
     self.Init(self.compile)
-    return *(*uintptr)(self.LoadWithFaker("decode_value", _VD_size, _VD_args, _Decoder_Generic_Shadow))
+    args := loader.StackMapBuilder{}
+    args.AddField(true)
+    locals := loader.StackMapBuilder{}
+    locals.AddFields(_FP_offs/int(_PTR_BYTE), false)
+    return *(*uintptr)(self.Load("generic_decoder", _VD_size, _VD_args, args.Build(), locals.Build()))
 }
 
 /** Function Calling Helpers **/
