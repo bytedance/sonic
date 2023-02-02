@@ -43,7 +43,48 @@ var (
 	byteOrder binary.ByteOrder = binary.LittleEndian
 )
 
-type Loader   []byte
+type Func struct {
+	ID          uint8  // see runtime/symtab.go
+	Flag        uint8  // see runtime/symtab.go
+    Args        int32  // args count
+    EntryOff    uint32 // start pc, offset to moduledata.text
+    TextSize    uint32 // size of func text
+    StartLine   int32  // line number of first line in file of function
+    DeferReturn uint32 // offset of start of a deferreturn call instruction from entry, if any.
+    FileIndex   uint32 // index into filetab 
+    Name        string // name of function
+
+    // PC data
+    Pcsp            *Pcdata
+    Pcfile          *Pcdata
+    Pcline          *Pcdata
+    PcUnsafePoint   *Pcdata
+    PcStackMapIndex *Pcdata
+    PcInlTreeIndex  *Pcdata
+    PcArgLiveIndex  *Pcdata
+    
+    // Func data
+    ArgsPointerMaps    *StackMap
+    LocalsPointerMaps  *StackMap
+    StackObjects       interface{}
+    InlTree            interface{}
+    OpenCodedDeferInfo interface{}
+    ArgInfo            interface{}
+    ArgLiveInfo        interface{}
+    WrapInfo           interface{}
+}
+
+func getOffsetOf(data interface{}, field string) uintptr {
+    t := reflect.TypeOf(data)
+    fv, ok := t.FieldByName(field)
+    if !ok {
+        panic(fmt.Sprintf("field %s not found in struct %s", field, t.Name()))
+    }
+    return fv.Offset
+}
+
+
+type Loader []byte
 
 type Function unsafe.Pointer
 

@@ -50,7 +50,7 @@ const (
 )
 
 type funcInfo struct {
-    *_Func
+    *_func
     datap *moduledata
 }
 

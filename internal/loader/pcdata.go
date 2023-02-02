@@ -48,17 +48,17 @@ const (
 )
 
 type Pcvalue struct {
-	PC  uint32 // PC offset from text section
+	PC  uint32 // PC offset from func entry
 	Val int32
 }
 
 type Pcdata []Pcvalue
 
-func (self Pcdata) Marshal(startPC uintptr) (data []byte, err error) {
+// see https://docs.google.com/document/d/1lyPIbmsYbXnpNj57a261hgOYVpNRcgydurVQIyZOz_o/pub
+func (self Pcdata) MarshalBinary() (data []byte, err error) {
 	// delta value always starts from -1
-	// see https://docs.google.com/document/d/1lyPIbmsYbXnpNj57a261hgOYVpNRcgydurVQIyZOz_o/pub
 	sv := int32(_PCDATA_START_VAL)
-	sp := uint32(startPC)
+	sp := uint32(0)
 	for _, v := range self {
 		data = append(data, encodeVariant(toZigzag(int(v.Val - sv)))...)
 		data = append(data, encodeVariant(toZigzag(int(v.PC - sp)))...)
