@@ -1,5 +1,5 @@
-//go:build go1.20 && !go1.21
-// +build go1.20,!go1.21
+// go:build go1.18 && !go1.20
+// +build go1.18,!go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -24,8 +24,23 @@ import (
 )
 
 const (
-    _Magic uint32 = 0xFFFFFFF1
+    _Magic uint32 = 0xfffffff0
 )
+
+type pcHeader struct {
+    magic          uint32  // 0xFFFFFFF0
+    pad1, pad2     uint8   // 0,0
+    minLC          uint8   // min instruction size
+    ptrSize        uint8   // size of a ptr in bytes
+    nfunc          int     // number of functions in the module
+    nfiles         uint    // number of entries in the file tab
+    textStart      uintptr // base for function entry PC offsets in this module, equal to moduledata.text
+    funcnameOffset uintptr // offset to the funcnametab variable from pcHeader
+    cuOffset       uintptr // offset to the cutab variable from pcHeader
+    filetabOffset  uintptr // offset to the filetab variable from pcHeader
+    pctabOffset    uintptr // offset to the pctab variable from pcHeader
+    pclnOffset     uintptr // offset to the pclntab variable from pcHeader
+}
 
 type moduledata struct {
     pcHeader     *pcHeader
@@ -43,12 +58,9 @@ type moduledata struct {
     data, edata           uintptr
     bss, ebss             uintptr
     noptrbss, enoptrbss   uintptr
-    covctrs, ecovctrs     uintptr
     end, gcdata, gcbss    uintptr
     types, etypes         uintptr
     rodata                uintptr
-
-    // TODO: generate funcinfo object to memory
     gofunc                uintptr // go.func.* is actual funcinfo object in image
 
     textsectmap []textSection // see runtime/symtab.go: textAddr()
@@ -86,8 +98,7 @@ type _func struct {
     pcln      uint32
     npcdata   uint32
     cuOffset  uint32 // runtime.cutab offset of this function's CU
-    startLine int32  // line number of start of function (func keyword/TEXT directive)
-    funcID    uint8 // set for certain special runtime functions
+    funcID    uint8  // set for certain special runtime functions
     flag      uint8
     _         [1]byte // pad
     nfuncdata uint8   // 
@@ -118,21 +129,6 @@ type _func struct {
 type funcTab struct {
     entry   uint32
     funcoff uint32
-}
-
-type pcHeader struct {
-    magic          uint32  // 0xFFFFFFF0
-    pad1, pad2     uint8   // 0,0
-    minLC          uint8   // min instruction size
-    ptrSize        uint8   // size of a ptr in bytes
-    nfunc          int     // number of functions in the module
-    nfiles         uint    // number of entries in the file tab
-    textStart      uintptr // base for function entry PC offsets in this module, equal to moduledata.text
-    funcnameOffset uintptr // offset to the funcnametab variable from pcHeader
-    cuOffset       uintptr // offset to the cutab variable from pcHeader
-    filetabOffset  uintptr // offset to the filetab variable from pcHeader
-    pctabOffset    uintptr // offset to the pctab variable from pcHeader
-    pclnOffset     uintptr // offset to the pclntab variable from pcHeader
 }
 
 type bitVector struct {

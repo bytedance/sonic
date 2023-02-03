@@ -24,6 +24,11 @@ import (
 //goland:noinspection GoUnusedGlobalVariable
 var lastmoduledatap *moduledata
 
+func registerModule(mod *moduledata) {
+    lastmoduledatap.next = mod
+    lastmoduledatap = mod
+}
+
 //go:linkname moduledataverify1 runtime.moduledataverify1
 func moduledataverify1(_ *moduledata)
 

@@ -21,12 +21,11 @@ import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
-)
+	"strings"
+	"unsafe"
 
-func registerModule(mod *moduledata) {
-    lastmoduledatap.next = mod
-    lastmoduledatap = mod
-}
+	"github.com/bytedance/sonic/internal/rt"
+)
 
 const (
     _MinLC uint8 = 1
@@ -36,6 +35,12 @@ const (
 const (
     _N_FUNCDATA = 8
     _INVALID_FUNCDATA_OFFSET = ^uint32(0)
+    _FUNC_SIZE = unsafe.Sizeof(_func{})
+    
+    _MINFUNC = 16 // minimum size for a function
+    _BUCKETSIZE    = 256 * _MINFUNC
+    _SUBBUCKETS    = 16
+    _SUB_BUCKETSIZE = _BUCKETSIZE / _SUBBUCKETS
 )
 
 var (
@@ -49,19 +54,18 @@ type Func struct {
     ArgsSize    int32  // args byte size
     EntryOff    uint32 // start pc, offset to moduledata.text
     TextSize    uint32 // size of func text
-    StartLine   int32  // line number of first line in file of function
     DeferReturn uint32 // offset of start of a deferreturn call instruction from entry, if any.
     FileIndex   uint32 // index into filetab 
     Name        string // name of function
 
     // PC data
-    Pcsp            *Pcdata // PC -> SP delta table
-    Pcfile          *Pcdata // PC -> file index table
-    Pcline          *Pcdata // PC -> line number table
-    PcUnsafePoint   *Pcdata // PC -> unsafe point (-1 or -2) table
-    PcStackMapIndex *Pcdata // PC -> stack map index table, relative to ArgsPointerMaps and LocalsPointerMaps
-    PcInlTreeIndex  *Pcdata // PC -> inlining tree index table, relative to InlTree
-    PcArgLiveIndex  *Pcdata // PC -> arg live index table, relative to ArgLiveInfo
+    Pcsp            *Pcdata // PC -> SP delta
+    Pcfile          *Pcdata // PC -> file index
+    Pcline          *Pcdata // PC -> line number
+    PcUnsafePoint   *Pcdata // PC -> unsafe point, must be PCDATA_UnsafePointSafe or PCDATA_UnsafePointUnsafe
+    PcStackMapIndex *Pcdata // PC -> stack map index, relative to ArgsPointerMaps and LocalsPointerMaps
+    PcInlTreeIndex  *Pcdata // PC -> inlining tree index, relative to InlTree
+    PcArgLiveIndex  *Pcdata // PC -> arg live index, relative to ArgLiveInfo
     
     // Func data, must implement encoding.BinaryMarshaler
     ArgsPointerMaps    encoding.BinaryMarshaler // concrete type: *StackMap
@@ -147,3 +151,239 @@ func rnd(v int64, r int64) int64 {
 	return v
 }
 
+func funcNameParts(name string) (string, string, string) {
+    i := strings.IndexByte(name, '[')
+    if i < 0 {
+        return name, "", ""
+    }
+    // TODO: use LastIndexByte once the bootstrap compiler is >= Go 1.5.
+    j := len(name) - 1
+    for j > i && name[j] != ']' {
+        j--
+    }
+    if j <= i {
+        return name, "", ""
+    }
+    return name[:i], "[...]", name[j+1:]
+}
+
+// func name table format: 
+//   nameOff[0] -> namePartA namePartB namePartC \x00 
+//   nameOff[1] -> namePartA namePartB namePartC \x00
+//  ...
+func makeFuncnameTab(funcs []Func) (tab []byte, offs []int32) {
+    offs = make([]int32, len(funcs))
+    offset := 0
+
+    for i, f := range funcs {
+        offs[i] = int32(offset)
+
+        a, b, c := funcNameParts(f.Name)
+        tab = append(tab, a...)
+        tab = append(tab, b...)
+        tab = append(tab, c...)
+        tab = append(tab, 0)
+        offset += len(a) + len(b) + len(c) + 1
+    }
+
+    return
+}
+
+type compilationUnit struct {
+    fileNames []string
+}
+
+// CU table format:
+//  cuOffsets[0] -> filetabOffset[0] filetabOffset[1] ... filetabOffset[len(CUs[0].fileNames)-1]
+//  cuOffsets[1] -> filetabOffset[len(CUs[0].fileNames)] ... filetabOffset[len(CUs[0].fileNames) + len(CUs[1].fileNames)-1]
+//  ...
+//
+// file name table format:
+//  filetabOffset[0] -> CUs[0].fileNames[0] \x00
+//  ...
+//  filetabOffset[len(CUs[0]-1)] -> CUs[0].fileNames[len(CUs[0].fileNames)-1] \x00
+//  ...
+//  filetabOffset[SUM(CUs,fileNames)-1] -> CUs[len(CU)-1].fileNames[len(CUs[len(CU)-1].fileNames)-1] \x00
+func makeFilenametab(cus []compilationUnit) (cutab []uint32, filetab []byte, cuOffsets []uint32) {
+    cuOffsets = make([]uint32, len(cus))
+    cuOffset := 0
+    fileOffset := 0
+
+    for i, cu := range cus {
+        cuOffsets[i] = uint32(cuOffset)
+
+        for _, name := range cu.fileNames {
+            cutab = append(cutab, uint32(fileOffset))
+
+            fileOffset += len(name) + 1
+            filetab = append(filetab, name...)
+            filetab = append(filetab, 0)
+        }
+
+        cuOffset += len(cu.fileNames)
+    }
+
+    return
+}
+
+func writeFuncdata(out *[]byte, funcs []Func) (fstart int, funcdataOffs [][]uint32) {
+    fstart = len(*out)
+    *out = append(*out, byte(0))
+    offs := uint32(1)
+
+    funcdataOffs = make([][]uint32, len(funcs))
+    for i, f := range funcs {
+
+        var writer = func(fd encoding.BinaryMarshaler) {
+            var ab []byte
+            var err error
+            if fd != nil {
+                ab, err = fd.MarshalBinary()
+                if err != nil {
+                    panic(err)
+                }
+                funcdataOffs[i] = append(funcdataOffs[i], offs)
+            } else {
+                ab = []byte{0}
+                funcdataOffs[i] = append(funcdataOffs[i], _INVALID_FUNCDATA_OFFSET)
+            }
+            *out = append(*out, ab...)
+            offs += uint32(len(ab))
+        }
+
+        writer(f.ArgsPointerMaps)
+        writer(f.LocalsPointerMaps)
+        writer(f.StackObjects)
+        writer(f.InlTree)
+        writer(f.OpenCodedDeferInfo)
+        writer(f.ArgInfo)
+        writer(f.ArgLiveInfo)
+        writer(f.WrapInfo)
+    }
+    return 
+}
+
+func makeFtab(funcs []_func, lastFuncSize uint32) (ftab []funcTab) {
+    // Allocate space for the pc->func table. This structure consists of a pc offset
+    // and an offset to the func structure. After that, we have a single pc
+    // value that marks the end of the last function in the binary.
+    var size int64 = int64(len(funcs)*2*4 + 4)
+    var startLocations = make([]uint32, len(funcs))
+    for i, f := range funcs {
+        size = rnd(size, int64(_PtrSize))
+        //writePCToFunc
+        startLocations[i] = uint32(size)
+        size += int64(uint8(_FUNC_SIZE)+f.nfuncdata*4+uint8(f.npcdata)*4)
+    }
+
+    ftab = make([]funcTab, 0, len(funcs)+1)
+
+    // write a map of pc->func info offsets 
+    for i, f := range funcs {
+        ftab = append(ftab, funcTab{uint32(f.entryOff), uint32(startLocations[i])})
+    }
+
+    // Final entry of table is just end pc offset.
+    lastFunc := funcs[len(funcs)-1]
+    ftab = append(ftab, funcTab{uint32(lastFunc.entryOff + lastFuncSize), 0})
+
+    return
+}
+
+// Pcln table format: [...]funcTab + [...]_Func
+func makePclntable(funcs []_func, lastFuncSize uint32, pcdataOffs [][]uint32, funcdataOffs [][]uint32) (pclntab []byte) {
+    // Allocate space for the pc->func table. This structure consists of a pc offset
+    // and an offset to the func structure. After that, we have a single pc
+    // value that marks the end of the last function in the binary.
+    var size int64 = int64(len(funcs)*2*4 + 4)
+    var startLocations = make([]uint32, len(funcs))
+    for i := range funcs {
+        size = rnd(size, int64(_PtrSize))
+        //writePCToFunc
+        startLocations[i] = uint32(size)
+        size += int64(int(_FUNC_SIZE)+len(funcdataOffs[i])*4+len(pcdataOffs[i])*4)
+    }
+
+    pclntab = make([]byte, size, size)
+
+    // write a map of pc->func info offsets 
+    offs := 0
+    for i, f := range funcs {
+        byteOrder.PutUint32(pclntab[offs:offs+4], uint32(f.entryOff))
+        byteOrder.PutUint32(pclntab[offs+4:offs+8], uint32(startLocations[i]))
+        offs += 8
+    }
+    // Final entry of table is just end pc offset.
+    lastFunc := funcs[len(funcs)-1]
+    byteOrder.PutUint32(pclntab[offs:offs+4], uint32(lastFunc.entryOff+lastFuncSize))
+
+    // write func info table
+    for i, f := range funcs {
+        off := startLocations[i]
+
+        // write _func structure to pclntab
+        fb := rt.BytesFrom(unsafe.Pointer(&f), int(_FUNC_SIZE), int(_FUNC_SIZE))
+        copy(pclntab[off:off+uint32(_FUNC_SIZE)], fb)
+        off += uint32(_FUNC_SIZE)
+
+        // NOTICE: _func.pcdata always starts from PcUnsafePoint, which is index 3
+        for j := 3; j < len(pcdataOffs[i]); j++ {
+            byteOrder.PutUint32(pclntab[off:off+4], uint32(pcdataOffs[i][j]))
+            off += 4
+        }
+
+        // funcdata refs as offsets from gofunc
+        for _, funcdata := range funcdataOffs[i] {
+            byteOrder.PutUint32(pclntab[off:off+4], uint32(funcdata))
+            off += 4
+        }
+
+    }
+
+    return
+}
+
+// findfunc table used to map pc to belonging func, 
+// returns the index in the func table.
+//
+// All text section are divided into buckets sized _BUCKETSIZE(4K):
+//   every bucket is divided into _SUBBUCKETS sized _SUB_BUCKETSIZE(64),
+//   and it has a base idx to plus the offset stored in jth subbucket.
+// see findfunc() in runtime/symtab.go
+func writeFindfunctab(out *[]byte, ftab []funcTab) (start int) {
+    start = len(*out)
+
+    max := ftab[len(ftab)-1].entry
+    min := ftab[0].entry
+    nbuckets := (max - min + _BUCKETSIZE - 1) / _BUCKETSIZE
+    n := (max - min + _SUB_BUCKETSIZE - 1) / _SUB_BUCKETSIZE
+
+    tab := make([]findfuncbucket, 0, nbuckets)
+    var s, e = 0, 0
+    for i := 0; i<int(nbuckets); i++ {
+        var pc = min + uint32((i+1)*_BUCKETSIZE)
+        // find the end func of the bucket
+        for ; e < len(ftab)-1 && ftab[e+1].entry <= pc; e++ {}
+        // store the start func of the bucket
+        var fb = findfuncbucket{idx: uint32(s)}
+
+        for j := 0; j<_SUBBUCKETS && (i*_SUBBUCKETS+j)<int(n); j++ {
+            pc = min + uint32(i*_BUCKETSIZE) + uint32((j+1)*_SUB_BUCKETSIZE)
+            var ss = s
+            // find the end func of the subbucket
+            for ; ss < len(ftab)-1 && ftab[ss+1].entry <= pc; ss++ {}
+            // store the start func of the subbucket
+            fb._SUBBUCKETS[j] = byte(uint32(s) - fb.idx)
+            s = ss
+        }
+        s = e
+        tab = append(tab, fb)
+    }
+
+    // write findfuncbucket
+    if len(tab) > 0 {
+        size := int(unsafe.Sizeof(findfuncbucket{}))*len(tab)
+        *out = append(*out, rt.BytesFrom(unsafe.Pointer(&tab[0]), size, size)...)
+    }
+    return 
+}

@@ -1,12 +1,12 @@
 /**
  * Copyright 2023 ByteDance Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,9 +17,12 @@
 package loader
 
 import (
-    `fmt`
-    `testing`
-    `unsafe`
+	"errors"
+	"fmt"
+	"reflect"
+	"runtime"
+	"testing"
+	"unsafe"
 )
 
 type bitvector struct {
@@ -77,4 +80,42 @@ func TestStackMap_Dump(t *testing.T) {
     dumpstackmap((*StackMap)(unsafe.Pointer(args)))
     println("--- locals ---")
     dumpstackmap((*StackMap)(unsafe.Pointer(locals)))
+}
+
+func faker1(in string) error {
+    runtime.KeepAlive(in)
+    return errors.New("1")
+}  
+
+func faker2(in string) error {
+    runtime.KeepAlive(in)
+    return errors.New("2")
+}
+
+func faker4(in string) error {
+    return nil
+}
+
+func TestGetStackMap(t *testing.T) {
+    args1, locals1 := GetStackMap(faker1)
+    fi1 := findfunc(reflect.ValueOf(faker1).Pointer())
+    fmt.Printf("func1: %#v, args: %x, locals: %x\n", fi1, args1, locals1)
+
+    args2, locals2 := GetStackMap(faker2)
+    fi2 := findfunc(reflect.ValueOf(faker2).Pointer())
+    fmt.Printf("func2: %#v, args: %x, locals: %x\n", fi2, args2, locals2)
+
+    args4, locals4 := GetStackMap(faker4)
+    fi4 := findfunc(reflect.ValueOf(faker4).Pointer())
+    fmt.Printf("func4: %#v, args: %x, locals: %x\n", fi4, args4, locals4)
+
+    if reflect.DeepEqual(fi1, fi2) || reflect.DeepEqual(fi1, fi2) {
+        t.Fatal()
+    }
+    if args1 != args2 || locals1 != locals2 {
+        t.Fatal()
+    }
+    if args1 == args4 || locals1 == locals4 || args2 == args4 || locals2 == locals4 {
+        t.Fatal()
+    }
 }

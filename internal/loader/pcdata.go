@@ -67,3 +67,65 @@ func (self Pcdata) MarshalBinary() (data []byte, err error) {
     }
     return
 }
+
+// makePctab generates pcdelta->valuedelta tables for functions,
+// and returns the table and the entry offset of every kind pcdata in the table.
+func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byte, pcdataOffs [][]uint32, _funcs []_func) {
+    _funcs = make([]_func, len(funcs))
+
+    // Pctab offsets of 0 are considered invalid in the runtime. We respect
+    // that by just padding a single byte at the beginning of runtime.pctab,
+    // that way no real offsets can be zero.
+    pctab = make([]byte, 1, 12*len(funcs)+1)
+    pcdataOffs = make([][]uint32, len(funcs))
+
+    for i, f := range funcs {
+        _f := &_funcs[i]
+
+        var writer = func(pc *Pcdata) {
+            var ab []byte
+            var err error
+            if pc != nil {
+                ab, err = pc.MarshalBinary()
+                if err != nil {
+                    panic(err)
+                }
+                pcdataOffs[i] = append(pcdataOffs[i], uint32(len(pctab)))
+            } else {
+                ab = []byte{0}
+                pcdataOffs[i] = append(pcdataOffs[i], _PCDATA_INVALID_OFFSET)
+            }
+            pctab = append(pctab, ab...)
+        }
+
+        if f.Pcsp != nil {
+            _f.pcsp = uint32(len(pctab))
+        }
+        writer(f.Pcsp)
+        if f.Pcfile != nil {
+            _f.pcfile = uint32(len(pctab))
+        }
+        writer(f.Pcfile)
+        if f.Pcline != nil {
+            _f.pcln = uint32(len(pctab))
+        }
+        writer(f.Pcline)
+        writer(f.PcUnsafePoint)
+        writer(f.PcStackMapIndex)
+        writer(f.PcInlTreeIndex)
+        writer(f.PcArgLiveIndex)
+        
+        _f.entryOff = f.EntryOff
+        _f.nameOff = nameOffset[i]
+        _f.args = f.ArgsSize
+        _f.deferreturn = f.DeferReturn
+        // NOTICE: _func.pcdata is always as [PCDATA_UnsafePoint(0) : PCDATA_ArgLiveIndex(3)]
+        _f.npcdata = uint32(_N_PCDATA)
+        _f.cuOffset = cuOffset[i]
+        _f.funcID = f.ID
+        _f.flag = f.Flag
+        _f.nfuncdata = uint8(_N_FUNCDATA)
+    }
+
+    return
+}

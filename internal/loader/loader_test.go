@@ -30,7 +30,7 @@ import (
     `github.com/stretchr/testify/assert`
 )
 
-func TestLoader_Load(t *testing.T) {
+func TestLoader_LoadFunc(t *testing.T) {
     bc := []byte {
         0x48, 0x8b, 0x44, 0x24, 0x08,               // MOVQ  8(%rsp), %rax
         0x48, 0xc7, 0x00, 0xd2, 0x04, 0x00, 0x00,   // MOVQ  $1234, (%rax)
