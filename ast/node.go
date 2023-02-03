@@ -21,6 +21,7 @@ import (
     `fmt`
     `strconv`
     `unsafe`
+    `reflect`
     
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
@@ -58,6 +59,10 @@ const (
     V_STRING = 7
     V_NUMBER = int(_V_NUMBER)
     V_ANY    = int(_V_ANY)
+)
+
+var (
+    byteType = rt.UnpackType(reflect.TypeOf(byte(0)))
 )
 
 type Node struct {
@@ -151,7 +156,7 @@ func (self *Node) Raw() (string, error) {
         buf, err := self.MarshalJSON()
         return rt.Mem2Str(buf), err
     }
-    return addr2str(self.p, self.v), nil
+    return rt.StrFrom(self.p, self.v), nil
 }
 
 func (self *Node) checkRaw() error {
@@ -183,7 +188,7 @@ func (self *Node) Bool() (bool, error) {
             } else {
                 return false, err
             }
-        case types.V_STRING: return strconv.ParseBool(addr2str(self.p, self.v))
+        case types.V_STRING: return strconv.ParseBool(rt.StrFrom(self.p, self.v))
         case _V_ANY        :   
             any := self.packAny()     
             switch v := any.(type) {
@@ -389,7 +394,7 @@ func (self *Node) String() (string, error) {
         case types.V_NULL    : return "" , nil
         case types.V_TRUE    : return "true" , nil
         case types.V_FALSE   : return "false", nil
-        case types.V_STRING, _V_NUMBER  : return addr2str(self.p, self.v), nil
+        case types.V_STRING, _V_NUMBER  : return rt.StrFrom(self.p, self.v), nil
         case _V_ANY          :        
         any := self.packAny()
         switch v := any.(type) {
@@ -421,7 +426,7 @@ func (self *Node) StrictString() (string, error) {
         return "", err
     }
     switch self.t {
-        case types.V_STRING  : return addr2str(self.p, self.v), nil
+        case types.V_STRING  : return rt.StrFrom(self.p, self.v), nil
         case _V_ANY          :        
             if v, ok := self.packAny().(string); ok {
                 return v, nil
@@ -836,7 +841,7 @@ func (self *Node) UnsafeMap() ([]Pair, error) {
     if err := self.skipAllKey(); err != nil {
         return nil, err
     }
-    s := ptr2slice(self.p, int(self.len()), self.cap())
+    s := rt.Ptr2SlicePtr(self.p, int(self.len()), self.cap())
     return *(*[]Pair)(s), nil
 }
 
@@ -935,7 +940,7 @@ func (self *Node) UnsafeArray() ([]Node, error) {
     if err := self.skipAllIndex(); err != nil {
         return nil, err
     }
-    s := ptr2slice(self.p, self.len(), self.cap())
+    s := rt.Ptr2SlicePtr(self.p, self.len(), self.cap())
     return *(*[]Node)(s), nil
 }
 
@@ -953,7 +958,7 @@ func (self *Node) Interface() (interface{}, error) {
         case types.V_FALSE   : return false, nil
         case types.V_ARRAY   : return self.toGenericArray()
         case types.V_OBJECT  : return self.toGenericObject()
-        case types.V_STRING  : return addr2str(self.p, self.v), nil
+        case types.V_STRING  : return rt.StrFrom(self.p, self.v), nil
         case _V_NUMBER       : 
             v, err := numberToFloat64(self)
             if err != nil {
@@ -997,7 +1002,7 @@ func (self *Node) InterfaceUseNumber() (interface{}, error) {
         case types.V_FALSE   : return false, nil
         case types.V_ARRAY   : return self.toGenericArrayUseNumber()
         case types.V_OBJECT  : return self.toGenericObjectUseNumber()
-        case types.V_STRING  : return addr2str(self.p, self.v), nil
+        case types.V_STRING  : return rt.StrFrom(self.p, self.v), nil
         case _V_NUMBER       : return toNumber(self), nil
         case _V_ARRAY_LAZY   :
             if err := self.loadAllIndex(); err != nil {
@@ -1597,13 +1602,13 @@ func NewBool(v bool) Node {
 func NewNumber(v string) Node {
     return Node{
         v: int64(len(v) & _LEN_MASK),
-        p: str2ptr(v),
+        p: rt.StrPtr(v),
         t: _V_NUMBER,
     }
 }
 
 func toNumber(node *Node) json.Number {
-    return json.Number(addr2str(node.p, node.v))
+    return json.Number(rt.StrFrom(node.p, node.v))
 }
 
 func numberToFloat64(node *Node) (float64, error) {
@@ -1637,7 +1642,7 @@ func newBytes(v []byte) Node {
 func NewString(v string) Node {
     return Node{
         t: types.V_STRING,
-        p: str2ptr(v),
+        p: rt.StrPtr(v),
         v: int64(len(v) & _LEN_MASK),
     }
 }
@@ -1727,13 +1732,13 @@ func (self *Node) setLazyObject(p *Parser, v []Pair) {
 func newRawNode(str string, typ types.ValueType) Node {
     return Node{
         t: _V_RAW | typ,
-        p: str2ptr(str),
+        p: rt.StrPtr(str),
         v: int64(len(str) & _LEN_MASK),
     }
 }
 
 func (self *Node) parseRaw(full bool) {
-    raw := addr2str(self.p, self.v)
+    raw := rt.StrFrom(self.p, self.v)
     parser := NewParser(raw)
     if full {
         parser.noLazy = true

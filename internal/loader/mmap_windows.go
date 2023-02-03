@@ -35,36 +35,6 @@ var (
     libKernel32_VirtualProtect = libKernel32.NewProc("VirtualProtect")
 )
 
-type Loader   []byte
-type Function unsafe.Pointer
-
-func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{}) (f Function) {
-    p := os.Getpagesize()
-    n := (((len(self) - 1) / p) + 1) * p
-
-    /* register the function */
-    m := mmap(n)
-    v := fmt.Sprintf("runtime.__%s_%x", fn, m)
-    argsptr, localsptr := stackMap(faker)
-    registerFunction(v, m, uintptr(n), fp, args, uintptr(len(self)), argsptr, localsptr)
-
-    /* reference as a slice */
-    s := *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader {
-        Data : m,
-        Cap  : n,
-        Len  : len(self),
-    }))
-
-    /* copy the machine code, and make it executable */
-    copy(s, self)
-    mprotect(m, n)
-    return Function(&m)
-}
-
-func (self Loader) Load(fn string, fp int, args int) (f Function) {
-    return self.LoadWithFaker(fn, fp, args, func(){})
-}
-
 func mmap(nb int) uintptr {
     addr, err := winapi_VirtualAlloc(0, nb, MEM_COMMIT|MEM_RESERVE, syscall.PAGE_READWRITE)
     if err != nil {

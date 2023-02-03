@@ -32,9 +32,6 @@ import (
 const (
     _Magic uint32 = 0xFFFFFFF1
 
-    _N_FUNCDATA = 8
-    _INVALID_FUNCDATA_OFFSET = ^uint32(0)
-
     _FUNC_SIZE = unsafe.Sizeof(_func{})
     _MINFUNC = 16 // minimum size for a function
     _BUCKETSIZE    = 256 * _MINFUNC
@@ -595,22 +592,5 @@ func makeModuledata(name string, filenames []string, funcs []Func, text []byte) 
     return
 }
 
-func Load(modulename string, filenames []string, funcs []Func, text []byte) (out []Function) {
-    // generate module data and allocate memory address
-    mod := makeModuledata(modulename, filenames, funcs, text)
-
-    // verify and register the new module
-    moduledataverify1(mod)
-    registerModule(mod)
-
-    // encapsulate function address
-    out = make([]Function, len(funcs))
-    for i, f := range funcs {
-        m := uintptr(mod.text + uintptr(f.EntryOff))
-        out[i] = Function(&m)
-    }
-
-    return 
-}
 
 func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {}

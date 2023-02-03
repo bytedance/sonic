@@ -26,7 +26,6 @@ import (
     `strconv`
 
     `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/loader`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
@@ -84,13 +83,14 @@ var (
     _VAR_cs_d = jit.Ptr(_SP, _VD_fargs + _VD_saves + 88)
 )
 
+var (
+    argPtrs1   = []bool{true}
+    localPtrs1 = []bool{}
+)
+
 func (self *_ValueDecoder) build() uintptr {
     self.Init(self.compile)
-    args := loader.StackMapBuilder{}
-    args.AddField(true)
-    locals := loader.StackMapBuilder{}
-    locals.AddFields(_FP_offs/int(_PTR_BYTE), false)
-    return *(*uintptr)(self.Load("generic_decoder", _VD_size, _VD_args, args.Build(), locals.Build()))
+    return *(*uintptr)(self.Load("generic_decoder", _VD_size, _VD_args, argPtrs1, localPtrs1))
 }
 
 /** Function Calling Helpers **/

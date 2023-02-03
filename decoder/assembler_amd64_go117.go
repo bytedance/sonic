@@ -29,7 +29,6 @@ import (
 
     `github.com/bytedance/sonic/internal/caching`
     `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/loader`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
@@ -220,21 +219,13 @@ func newAssembler(p _Program) *_Assembler {
 }
 
 /** Assembler Interface **/
+var (
+    argPtrs   = []bool{true, false, false, true, true, false, true, false, true}
+    localPtrs = []bool{}
+)
 
 func (self *_Assembler) Load() _Decoder {
-    args := loader.StackMapBuilder{}
-    args.AddField(true)
-    args.AddField(false)
-    args.AddField(false)
-    args.AddField(true)
-    args.AddField(true)
-    args.AddField(false)
-    args.AddField(true)
-    args.AddField(false)
-    args.AddField(true)
-    locals := loader.StackMapBuilder{}
-    locals.AddFields(_FP_offs/int(_PTR_BYTE), false)
-    return ptodec(self.BaseAssembler.Load(self.name+".Decoder", _FP_size, _FP_args, args.Build(), locals.Build()))
+    return ptodec(self.BaseAssembler.Load(self.name+".Decoder", _FP_size, _FP_args, argPtrs, localPtrs))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {

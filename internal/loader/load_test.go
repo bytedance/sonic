@@ -90,9 +90,9 @@ func TestLoad(t *testing.T) {
     }
 
     fn.Pcline = &Pcdata{
-        {PC: 0x00, Val: 0},
-        {PC: 0x0e, Val: 1},
-        {PC: 0x1d, Val: 2},
+        {PC: 0x13, Val: 0},
+        {PC: 0x1b, Val: 1},
+        {PC: 0x23, Val: 2},
         {PC: size, Val: 3},
     }
 

@@ -207,27 +207,14 @@ func (self *BaseAssembler) Init(f func()) {
 //     return loader.Loader(self.c).Load(fn, fp, args)
 // }
 
-func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStackmap *loader.StackMap, localStackmap *loader.StackMap) loader.Function {
+func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) loader.Function {
     self.build()
-    size := uint32(len(self.c))
-    fn := loader.Func{
-        Name: name,
-        TextSize: size,
-        ArgsSize: int32(argSize),
+    l := loader.Loader{
+        Name: "sonic.jit",
+        File: "github.com/bytedance/sonic/jit.go",
     }
-    fn.Pcsp = &loader.Pcdata{
-		{PC: size, Val: int32(frameSize)},
-	}
-    fn.PcUnsafePoint = &loader.Pcdata{
-        {PC: size, Val: loader.PCDATA_UnsafePointUnsafe},
-    }
-    fn.PcStackMapIndex = &loader.Pcdata{
-        {PC: size, Val: 0},
-    }
-    fn.ArgsPointerMaps = argStackmap
-    fn.LocalsPointerMaps = localStackmap
-    out := loader.Load("sonic.jit." + name, []string{"github.com/bytedance/sonic/jit.go"}, []loader.Func{fn}, self.c)
-    return out[0]
+    l.NoPreempt = true
+    return l.LoadFunc(self.c, name, frameSize, argSize, argStackmap, localStackmap)
 }
 
 /** Assembler Stages **/

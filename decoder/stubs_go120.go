@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.20
-// +build go1.17,!go1.20
+//go:build go1.20
+// +build go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -74,7 +74,7 @@ func mallocgc(size uintptr, typ *rt.GoType, needzero bool) unsafe.Pointer
 func makeslice(et *rt.GoType, len int, cap int) unsafe.Pointer
 
 //go:noescape
-//go:linkname growslice runtime.growslice
+//go:linkname growslice reflect.growslice
 //goland:noinspection GoUnusedParameter
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 

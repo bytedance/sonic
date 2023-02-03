@@ -18,6 +18,7 @@ package loader
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"unsafe"
 
@@ -180,3 +181,11 @@ func (self *StackMapBuilder) AddFields(n int, ptr bool) {
 	}
 }
 
+func GetStackMap(f interface{}) (args uintptr, locals uintptr) {
+    fv := reflect.ValueOf(f)
+    if fv.Kind() != reflect.Func {
+        panic("f must be reflect.Func kind!")
+    }
+    fi := findfunc(fv.Pointer())
+    return uintptr(funcdata(fi, uint8(_FUNCDATA_ArgsPointerMaps))), uintptr(funcdata(fi, uint8(_FUNCDATA_LocalsPointerMaps)))
+}

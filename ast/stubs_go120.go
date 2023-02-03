@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.20
-// +build go1.17,!go1.20
+//go:build go1.20
+// +build go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -35,7 +35,7 @@ func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 //goland:noinspection GoUnusedParameter
 func unsafe_NewArray(typ *rt.GoType, n int) unsafe.Pointer
 
-//go:linkname growslice runtime.growslice
+//go:linkname growslice reflect.growslice
 //goland:noinspection GoUnusedParameter
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 
@@ -43,7 +43,6 @@ func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 func mem2ptr(s []byte) unsafe.Pointer {
     return (*rt.GoSlice)(unsafe.Pointer(&s)).Ptr
 }
-
 
 var (
     //go:linkname safeSet encoding/json.safeSet

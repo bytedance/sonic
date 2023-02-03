@@ -61,18 +61,6 @@ func isValidNumber(s string) bool
 //goland:noinspection GoUnusedParameter
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
-func asText(v unsafe.Pointer) (string, error) {
-    text := assertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(v))
-    r, e := (*(*encoding.TextMarshaler)(unsafe.Pointer(&text))).MarshalText()
-    return rt.Mem2Str(r), e
-}
-
-func asJson(v unsafe.Pointer) (string, error) {
-    text := assertI2I(_T_json_Marshaler, *(*rt.GoIface)(v))
-    r, e := (*(*json.Marshaler)(unsafe.Pointer(&text))).MarshalJSON()
-    return rt.Mem2Str(r), e
-}
-
 var _runtime_writeBarrier uintptr = rt.GcwbAddr()
 
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier

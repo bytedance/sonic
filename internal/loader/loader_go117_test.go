@@ -1,4 +1,4 @@
-// +build go1.17,!go1.21
+// +build go1.17
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -23,7 +23,6 @@ import (
     `fmt`
     `reflect`
     `runtime`
-    `runtime/debug`
     `testing`
     `unsafe`
 
@@ -36,11 +35,16 @@ func TestLoader_Load(t *testing.T) {
         0xc3,                                       // RET
     }
     v0 := 0
-    fn := Loader(bc).Load("test", 0, 8)
+    l := Loader{
+        Name: "test",
+        File: "test.go",
+    }
+    fn := l.LoadFunc(bc, "test", 0, 8, []bool{true}, []bool{})
     (*(*func(*int))(unsafe.Pointer(&fn)))(&v0)
     assert.Equal(t, 1234, v0)
     println(runtime.FuncForPC(*(*uintptr)(fn)).Name())
 }
+
 
 func faker1(in string) error {
     runtime.KeepAlive(in)
@@ -78,35 +82,4 @@ func TestStackMap(t *testing.T) {
     if args1 == args4 || locals1 == locals4 || args2 == args4 || locals2 == locals4 {
         t.Fatal()
     }
-}
-
-func funcWrap(f func(i *int)) int {
-    var ret int
-    var x int = 0
-    runtime.SetFinalizer(&x, func(xp *int){
-        fmt.Printf("x got dropped: %x\n", unsafe.Pointer(xp))
-    })
-    f(&x)
-    ret = x
-    return ret
-}
-
-func TestLoadWithStackMap(t *testing.T) {
-    var f = func(i *int) {
-        *i = 1234
-    }
-    v1 := funcWrap(f)
-    
-    bc := []byte {
-        0x48, 0xc7, 0x00, 0xd2, 0x04, 0x00, 0x00,   // MOVQ  $1234, (%rax)
-        0xc3,                                       // RET
-    }
-    fn := Loader(bc).LoadWithFaker("test", 0, 8, f)
-    f2 := (*(*func(*int))(unsafe.Pointer(&fn)))
-    v2 := funcWrap(f2)
-
-    runtime.GC()
-    debug.FreeOSMemory()
-    println(v1, v2)
-    assert.Equal(t, v1, v2)
 }
