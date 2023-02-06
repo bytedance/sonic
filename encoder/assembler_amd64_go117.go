@@ -191,11 +191,6 @@ func newAssembler(p _Program) *_Assembler {
 }
 
 /** Assembler Interface **/
-var (
-    argStackmap = []bool { true, true, true, false }
-    localStackmap = []bool{}
-)
-
 func (self *_Assembler) Load() _Encoder {
     return ptoenc(self.BaseAssembler.Load(self.name+".Encoder", _FP_size, _FP_args, argStackmap, localStackmap))
 }

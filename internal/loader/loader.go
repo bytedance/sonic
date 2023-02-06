@@ -20,8 +20,8 @@
 package loader
 
 import (
-    `syscall`
-    `unsafe`
+	"syscall"
+	"unsafe"
 )
 
 const (

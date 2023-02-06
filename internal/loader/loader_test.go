@@ -19,14 +19,9 @@
 package loader
 
 import (
-    `errors`
-    `fmt`
-    `reflect`
     `runtime`
-    `runtime/debug`
     `testing`
-    `unsafe`
-
+    
     `github.com/stretchr/testify/assert`
 )
 
