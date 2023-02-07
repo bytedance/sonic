@@ -114,8 +114,8 @@ func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler, opt Options) e
 }
 
 var (
-    argStackmap = []bool { true, true, true, false }
-    localStackmap = []bool{}
+    argPtrs   = []bool { true, true, true, false }
+    localPtrs = []bool{}
 )
 
 

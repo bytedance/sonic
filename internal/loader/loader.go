@@ -22,10 +22,10 @@ package loader
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"syscall"
 	"unsafe"
 
-	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
@@ -34,20 +34,25 @@ const (
     _RW = syscall.PROT_READ | syscall.PROT_WRITE
 )
 
-type Loader []byte
+type Loader   []byte
+type Function unsafe.Pointer
 
-func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{}) (f Function) {
+func (self Loader) Load(fn string, fp int, args int, argPtrs []bool, localPtrs []bool) (f Function) {
     p := os.Getpagesize()
-    n := int(rnd(int64(len(self)), int64(p)))
+    n := (((len(self) - 1) / p) + 1) * p
 
     /* register the function */
     m := mmap(n)
     v := fmt.Sprintf("runtime.__%s_%x", fn, m)
-    argsptr, localsptr := GetStackMap(faker)
-    registerFunction(v, m, uintptr(n), fp, args, uintptr(len(self)), argsptr, localsptr)
+    
+    registerFunction(v, m, uintptr(n), fp, args, uintptr(len(self)), argPtrs, localPtrs)
 
     /* reference as a slice */
-    s := rt.BytesFrom(unsafe.Pointer(m), len(self), n)
+    s := *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader {
+        Data : m,
+        Cap  : n,
+        Len  : len(self),
+    }))
 
     /* copy the machine code, and make it executable */
     copy(s, self)
@@ -55,79 +60,16 @@ func (self Loader) LoadWithFaker(fn string, fp int, args int, faker interface{})
     return Function(&m)
 }
 
-type ModuleLoader struct {
-    Name string
-    File string
-    Options
-}
-
-type Options struct {
-    NoPreempt bool
-}
-
-type Function unsafe.Pointer
-
-
-func (self ModuleLoader) LoadFunc(text []byte, funcName string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) Function {
-    size := uint32(len(text))
-
-    fn := Func{
-        Name: funcName,
-        TextSize: size,
-        ArgsSize: int32(argSize),
-    }
-
-    fn.Pcsp = &Pcdata{
-		{PC: size, Val: int32(frameSize)},
-	}
-
-    if self.NoPreempt {
-        fn.PcUnsafePoint = &Pcdata{
-            {PC: size, Val: PCDATA_UnsafePointUnsafe},
-        }
+func mmap(nb int) uintptr {
+    if m, _, e := syscall.RawSyscall6(syscall.SYS_MMAP, 0, uintptr(nb), _RW, _AP, 0, 0); e != 0 {
+        panic(e)
     } else {
-        fn.PcUnsafePoint = &Pcdata{
-            {PC: size, Val: PCDATA_UnsafePointSafe},
-        }
+        return m
     }
-
-    fn.PcStackMapIndex = &Pcdata{
-        {PC: size, Val: 0},
-    }
-
-    if argStackmap != nil {
-        args := StackMapBuilder{}
-        for _, b := range argStackmap {
-            args.AddField(b)
-        }
-        fn.ArgsPointerMaps = args.Build()
-    }
-    
-    if localStackmap != nil {
-        locals := StackMapBuilder{}
-        for _, b := range localStackmap {
-            locals.AddField(b)
-        }
-        fn.LocalsPointerMaps = locals.Build()
-    }
-
-    out := Load(self.Name + funcName, []string{self.File}, []Func{fn}, text)
-    return out[0]
 }
 
-func Load(modulename string, filenames []string, funcs []Func, text []byte) (out []Function) {
-    // generate module data and allocate memory address
-    mod := makeModuledata(modulename, filenames, funcs, text)
-
-    // verify and register the new module
-    moduledataverify1(mod)
-    registerModule(mod)
-
-    // encapsulate function address
-    out = make([]Function, len(funcs))
-    for i, f := range funcs {
-        m := uintptr(mod.text + uintptr(f.EntryOff))
-        out[i] = Function(&m)
+func mprotect(p uintptr, nb int) {
+    if _, _, err := syscall.RawSyscall(syscall.SYS_MPROTECT, p, uintptr(nb), _RX); err != 0 {
+        panic(err)
     }
-    return 
 }

@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package loader
+package rt
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"unsafe"
 
-	"github.com/bytedance/sonic/internal/rt"
 )
 
 type Bitmap struct {
@@ -135,11 +133,11 @@ func (self *StackMap) String() string {
 
 func (self *StackMap) MarshalBinary() ([]byte, error) {
 	size := int(self.N) * int(self.L) + int(unsafe.Sizeof(self.L)) + int(unsafe.Sizeof(self.N))
-	return rt.BytesFrom(unsafe.Pointer(self), size, size), nil
+	return BytesFrom(unsafe.Pointer(self), size, size), nil
 }
 
 var (
-	byteType = rt.UnpackEface(byte(0)).Type
+	byteType = UnpackEface(byte(0)).Type
 )
 
 const (
@@ -148,7 +146,7 @@ const (
 
 //go:linkname mallocgc runtime.mallocgc
 //goland:noinspection GoUnusedParameter
-func mallocgc(nb uintptr, vt *rt.GoType, zero bool) unsafe.Pointer
+func mallocgc(nb uintptr, vt *GoType, zero bool) unsafe.Pointer
 
 type StackMapBuilder struct {
 	b Bitmap
@@ -161,7 +159,7 @@ func (self *StackMapBuilder) Build() (p *StackMap) {
 	/* initialize as 1 bitmap of N bits */
 	p = (*StackMap)(bm)
 	p.N, p.L = 1, int32(self.b.N)
-	copy(rt.BytesFrom(unsafe.Pointer(&p.B), nb, nb), self.b.B)
+	copy(BytesFrom(unsafe.Pointer(&p.B), nb, nb), self.b.B)
 	return
 }
 
@@ -179,13 +177,4 @@ func (self *StackMapBuilder) AddFields(n int, ptr bool) {
 	} else {
 		self.b.AppendMany(n, 0)
 	}
-}
-
-func GetStackMap(f interface{}) (args uintptr, locals uintptr) {
-    fv := reflect.ValueOf(f)
-    if fv.Kind() != reflect.Func {
-        panic("f must be reflect.Func kind!")
-    }
-    fi := findfunc(fv.Pointer())
-    return uintptr(funcdata(fi, uint8(_FUNCDATA_ArgsPointerMaps))), uintptr(funcdata(fi, uint8(_FUNCDATA_LocalsPointerMaps)))
 }

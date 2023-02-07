@@ -24,7 +24,7 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
-type _func struct {
+type _Func struct {
     entry       uintptr // start pc
     nameoff     int32   // function name
     args        int32   // in/out args size
@@ -40,7 +40,7 @@ type _func struct {
     localptrs   uintptr
 }
 
-type _funcTab struct {
+type _FuncTab struct {
     entry   uintptr
     funcoff uintptr
 }
@@ -61,9 +61,9 @@ type _TextSection struct {
     baseaddr uintptr // relocated section address
 }
 
-type moduledata struct {
+type _ModuleData struct {
     pclntable             []byte
-    ftab                  []_funcTab
+    ftab                  []_FuncTab
     filetab               []uint32
     findfunctab           *_FindFuncBucket
     minpc, maxpc          uintptr
@@ -86,7 +86,7 @@ type moduledata struct {
     gcdatamask, gcbssmask _BitVector
     typemap               map[int32]*rt.GoType // offset to *_rtype in previous module
     bad                   bool                 // module failed to load and should be ignored
-    next                  *moduledata
+    next                  *_ModuleData
 }
 
 type _FindFuncBucket struct {
@@ -98,7 +98,8 @@ var findFuncTab = &_FindFuncBucket {
     idx: 1,
 }
 
-func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
+func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argPtrs []bool, localPtrs []bool) {
+    mod := new(_ModuleData)
     minpc := pc
     maxpc := pc + size
 
@@ -111,6 +112,9 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         4 << (^uintptr(0) >> 63),   // ptrSize : 4 << (^uintptr(0) >> 63)
     }
 
+    // cache arg and local stackmap
+    argptrs, localptrs := cacheStackmap(argPtrs, localPtrs, mod)
+
     /* add the function name */
     noff := len(pclnt)
     pclnt = append(append(pclnt, name...), 0)
@@ -121,14 +125,14 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     pclnt = append(pclnt, encodeVariant(int(size))...)
 
     /* function entry */
-    fnv := _func {
+    fnv := _Func {
         entry     : pc,
         nameoff   : int32(noff),
         args      : int32(args),
         pcsp      : int32(pcsp),
         nfuncdata : 2,
-        argptrs   : argptrs,
-        localptrs : localptrs,
+        argptrs   : uintptr(argptrs),
+        localptrs : uintptr(localptrs),
     }
 
     /* align the func to 8 bytes */
@@ -138,17 +142,17 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
 
     /* add the function descriptor */
     foff := len(pclnt)
-    pclnt = append(pclnt, (*(*[unsafe.Sizeof(_func{})]byte)(unsafe.Pointer(&fnv)))[:]...)
+    pclnt = append(pclnt, (*(*[unsafe.Sizeof(_Func{})]byte)(unsafe.Pointer(&fnv)))[:]...)
 
     /* function table */
-    tab := []_funcTab {
+    tab := []_FuncTab {
         {entry: pc, funcoff: uintptr(foff)},
         {entry: pc, funcoff: uintptr(foff)},
         {entry: maxpc},
     }
 
     /* module data */
-    mod := &moduledata {
+    *mod = _ModuleData {
         pclntable   : pclnt,
         ftab        : tab,
         findfunctab : findFuncTab,
@@ -162,8 +166,4 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     /* verify and register the new module */
     moduledataverify1(mod)
     registerModule(mod)
-}
-
-func makeModuledata(name string, filenames []string, funcs []Func, text []byte) (mod *moduledata) {
-    return
 }

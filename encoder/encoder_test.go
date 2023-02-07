@@ -26,27 +26,10 @@ import (
     `sync`
     `testing`
     `time`
-    `unsafe`
-
-    `github.com/bytedance/sonic/internal/loader`
+    
     `github.com/bytedance/sonic/internal/rt`
     `github.com/stretchr/testify/require`
 )
-
-func TestSS(t *testing.T) {
-    args := loader.StackMapBuilder{}
-    args.AddField(true)
-    args.AddField(true)
-    args.AddField(true)
-    args.AddField(false)
-    locals := loader.StackMapBuilder{}
-    for i := 0; i < _FP_size; i += 8 {
-        locals.AddField(false)
-    }
-    println(args.Build().String(), locals.Build().String())
-    a, l := loader.GetStackMap(_Encoder_Shadow)
-    println((*loader.StackMap)(unsafe.Pointer(a)).String(), (*loader.StackMap)(unsafe.Pointer(l)).String())
-}
 
 func TestMain(m *testing.M) {
     go func ()  {

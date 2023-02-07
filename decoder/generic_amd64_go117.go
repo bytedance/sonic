@@ -83,14 +83,9 @@ var (
     _VAR_cs_d = jit.Ptr(_SP, _VD_fargs + _VD_saves + 88)
 )
 
-var (
-    argPtrs1   = []bool{true}
-    localPtrs1 = []bool{}
-)
-
 func (self *_ValueDecoder) build() uintptr {
     self.Init(self.compile)
-    return *(*uintptr)(self.Load("decode_value", _VD_size, _VD_args, argPtrs1, localPtrs1))
+    return *(*uintptr)(self.Load("decode_value", _VD_size, _VD_args, argPtrs_generic, localPtrs_generic))
 }
 
 /** Function Calling Helpers **/

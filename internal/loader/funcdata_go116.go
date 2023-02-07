@@ -1,3 +1,4 @@
+//go:build go1.16 && !go1.18
 // +build go1.16,!go1.18
 
 /*
@@ -19,10 +20,10 @@
 package loader
 
 import (
-    `unsafe`
+	"unsafe"
 )
 
-type _func struct {
+type _Func struct {
     entry       uintptr // start pc
     nameoff     int32   // function name
     args        int32   // in/out args size
@@ -39,7 +40,7 @@ type _func struct {
     localptrs   uintptr
 }
 
-type _funcTab struct {
+type _FuncTab struct {
     entry   uintptr
     funcoff uintptr
 }
@@ -74,14 +75,14 @@ type _TextSection struct {
     baseaddr uintptr // relocated section address
 }
 
-type moduledata struct {
+type _ModuleData struct {
     pcHeader              *_PCHeader
     funcnametab           []byte
     cutab                 []uint32
     filetab               []byte
     pctab                 []byte
-    pclntable             []_func
-    ftab                  []_funcTab
+    pclntable             []_Func
+    ftab                  []_FuncTab
     findfunctab           *_FindFuncBucket
     minpc, maxpc          uintptr
     text, etext           uintptr
@@ -103,7 +104,7 @@ type moduledata struct {
     gcdatamask, gcbssmask _BitVector
     typemap               map[int32]unsafe.Pointer
     bad                   bool
-    next                  *moduledata
+    next                  *_ModuleData
 }
 
 type _FindFuncBucket struct {
@@ -126,30 +127,35 @@ func makePCtab(fp int) []byte {
     return append([]byte{0}, encodeVariant((fp + 1) << 1)...)
 }
 
-func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
+func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argPtrs []bool, localPtrs []bool) {
+    mod := new(_ModuleData)
+    
     minpc := pc
     maxpc := pc + size
 
+    // cache arg and local stackmap
+    argptrs, localptrs := cacheStackmap(argPtrs, localPtrs, mod)
+
     /* function entry */
-    lnt := []_func {{
+    lnt := []_Func {{
         entry     : pc,
         nameoff   : 1,
         args      : int32(args),
         pcsp      : 1,
         nfuncdata : 2,
-        argptrs   : argptrs,
-        localptrs : localptrs,
+        argptrs   : uintptr(argptrs),
+        localptrs : uintptr(localptrs),
     }}
 
     /* function table */
-    tab := []_funcTab {
+    tab := []_FuncTab {
         {entry: pc},
         {entry: pc},
         {entry: maxpc},
     }
 
     /* module data */
-    mod := &moduledata {
+    *mod = _ModuleData {
         pcHeader    : modHeader,
         funcnametab : append(append([]byte{0}, name...), 0),
         pctab       : append(makePCtab(fp), encodeVariant(int(size))...),
@@ -166,8 +172,4 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     /* verify and register the new module */
     moduledataverify1(mod)
     registerModule(mod)
-}
-
-func makeModuledata(name string, filenames []string, funcs []Func, text []byte) (mod *moduledata) {
-    return
 }

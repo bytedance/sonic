@@ -1,5 +1,4 @@
-//go:build go1.17
-// +build go1.17
+// +build go1.17,!go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -20,14 +19,14 @@
 package loader
 
 import (
-	"runtime"
-	"runtime/debug"
-	"strconv"
-	"testing"
-	"unsafe"
+    `errors`
+    `fmt`
+    `reflect`
+    `runtime`
+    `testing`
+    `unsafe`
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    `github.com/stretchr/testify/assert`
 )
 
 func TestLoader_Load(t *testing.T) {
@@ -36,116 +35,57 @@ func TestLoader_Load(t *testing.T) {
         0xc3,                                       // RET
     }
     v0 := 0
-    l := ModuleLoader{
-        Name: "test",
-        File: "test.go",
-    }
-    fn := l.LoadFunc(bc, "test", 0, 8, []bool{true}, []bool{})
+    fn := Loader(bc).Load("test", 0, 8, nil, nil)
     (*(*func(*int))(unsafe.Pointer(&fn)))(&v0)
     assert.Equal(t, 1234, v0)
     println(runtime.FuncForPC(*(*uintptr)(fn)).Name())
 }
 
-func TestLoad(t *testing.T) {
-    // defer func() {
-    //     if r := recover(); r != nil {
-    //         runtime.GC()
-    //         if r != "hook1" {
-    //             t.Fatal("not right panic:" + r.(string))
-    //         }
-    //     } else {
-    //         t.Fatal("not panic")
-    //     }
-    // }()
+func faker1(in string) error {
+    runtime.KeepAlive(in)
+    return errors.New("1")
+}  
 
-    var hstr string
+func faker2(in string) error {
+    runtime.KeepAlive(in)
+    return errors.New("2")
+}
 
-    type TestFunc func(i *int, hook func(i *int)) int
-    var hook = func(i *int) {
-        runtime.GC()
-        debug.FreeOSMemory()
-        hstr = ("hook" + strconv.Itoa(*i))
-        runtime.GC()
-        debug.FreeOSMemory()
+func faker4(in string) error {
+    return nil
+}
+
+func TestStackMap(t *testing.T) {
+    args1, locals1 := stackMap(faker1)
+    fi1 := findfunc(reflect.ValueOf(faker1).Pointer())
+    fmt.Printf("func1: %#v, args: %x, locals: %x\n", fi1, args1, locals1)
+
+    args2, locals2 := stackMap(faker2)
+    fi2 := findfunc(reflect.ValueOf(faker2).Pointer())
+    fmt.Printf("func2: %#v, args: %x, locals: %x\n", fi2, args2, locals2)
+
+    args4, locals4 := stackMap(faker4)
+    fi4 := findfunc(reflect.ValueOf(faker4).Pointer())
+    fmt.Printf("func4: %#v, args: %x, locals: %x\n", fi4, args4, locals4)
+
+    if reflect.DeepEqual(fi1, fi2) || reflect.DeepEqual(fi1, fi2) {
+        t.Fatal()
     }
-    // var f TestFunc = func(i *int, hook func(i *int)) int {
-    //     var t = *i
-    //     hook(i)
-    //     return t + *i
-    // }
-    bc := []byte {
-        0x48, 0x83, 0xec, 0x18,         // (0x00) subq $24, %rsp
-        0x48, 0x89, 0x6c, 0x24, 0x10,   // (0x04) movq %rbp, 16(%rsp)
-        0x48, 0x8d, 0x6c, 0x24, 0x10,   // (0x09) leaq 16(%rsp), %rbp
-        0x48, 0x89, 0x44, 0x24, 0x20,   // (0x0e) movq %rax, 32(%rsp)
-        0x48, 0x8b, 0x08,               // (0x13) movq (%rax), %rcx
-        0x48, 0x89, 0x4c, 0x24, 0x08,   // (0x16) movq %rcx, 8(%rsp)
-        0x48, 0x8b, 0x33,               // (0x1b) movq (%rbx), %rsi
-        0x48, 0x89, 0xda,               // (0x1e) movq %rbx, %rdx
-        0xff, 0xd6,                     // (0x21) callq %rsi
-        0x48, 0x8b, 0x44, 0x24, 0x08,   // (0x23) movq 8(%rsp), %rax
-        0x48, 0x8b, 0x4c, 0x24, 0x20,   // (0x28) movq 32(%rsp), %rcx
-        0x48, 0x03, 0x01,               // (0x2d) addq (%rcx), %rax
-        0x48, 0x8b, 0x6c, 0x24, 0x10,   // (0x30) movq 16(%rsp), %rbp
-        0x48, 0x83, 0xc4, 0x18,         // (0x35) addq $24, %rsp
-        0xc3,                           // (0x39) ret
+    if args1 != args2 || locals1 != locals2 {
+        t.Fatal()
     }
-    
-    size := uint32(len(bc))
-    fn := Func{
-        ID: 0,
-        Flag: 0,
-        ArgsSize: 16,
-        EntryOff: 0,
-        TextSize: size,
-        DeferReturn: 0,
-        FileIndex: 0,
-        Name: "dummy",
+    if args1 == args4 || locals1 == locals4 || args2 == args4 || locals2 == locals4 {
+        t.Fatal()
     }
+}
 
-    fn.Pcsp = &Pcdata{
-        {PC: 0x04, Val: 0},
-        {PC: size, Val: 24},
-    }
-
-    fn.Pcline = &Pcdata{
-        {PC: 0x13, Val: 0},
-        {PC: 0x1b, Val: 1},
-        {PC: 0x23, Val: 2},
-        {PC: size, Val: 3},
-    }
-
-    fn.Pcfile = &Pcdata{
-        {PC: size, Val: 0},
-    }
-
-    fn.PcUnsafePoint = &Pcdata{
-        {PC: size, Val: PCDATA_UnsafePointUnsafe},
-    }
-
-    fn.PcStackMapIndex = &Pcdata{
-        {PC: size, Val: 0},
-    }
-
-    args := StackMapBuilder{}
-    args.AddField(true)
-    args.AddField(true)
-    fn.ArgsPointerMaps = args.Build()
-
-    locals := StackMapBuilder{}
-    locals.AddField(false)
-    locals.AddField(false)
-    fn.LocalsPointerMaps = locals.Build()
-
-    rets := Load("dummy_module", []string{"github.com/bytedance/sonic/dummy.go"}, []Func{fn}, bc)
-    println("func address ", *(*unsafe.Pointer)(rets[0]))
-    // for k, _ := range moduleCache.m {
-    //     spew.Dump(k)
-    // }
-
-    f := *(*TestFunc)(unsafe.Pointer(&rets[0]))
-    i := 1
-    j := f(&i, hook)
-    require.Equal(t, 2, j)
-    require.Equal(t, "hook1", hstr)
+func funcWrap(f func(i *int)) int {
+    var ret int
+    var x int = 0
+    runtime.SetFinalizer(&x, func(xp *int){
+        fmt.Printf("x got dropped: %x\n", unsafe.Pointer(xp))
+    })
+    f(&x)
+    ret = x
+    return ret
 }

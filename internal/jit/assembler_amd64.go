@@ -22,7 +22,7 @@ import (
     `strings`
     `sync`
 
-    `github.com/bytedance/sonic/internal/loader`
+    `github.com/bytedance/sonic/loader`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/twitchyliquid64/golang-asm/obj`
     `github.com/twitchyliquid64/golang-asm/obj/x86`
@@ -207,19 +207,17 @@ func (self *BaseAssembler) Init(f func()) {
 //     return loader.Loader(self.c).Load(fn, fp, args)
 // }
 
-func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) loader.Function {
-    self.build()
-    l := loader.ModuleLoader{
-        Name: "sonic.jit",
-        File: "github.com/bytedance/sonic/jit.go",
-    }
-    l.NoPreempt = true
-    return l.LoadFunc(self.c, name, frameSize, argSize, argStackmap, localStackmap)
+var jitLoader = loader.ModuleLoader{
+    Name: "sonic.jit.",
+    File: "github.com/bytedance/sonic/jit.go",
+    Options: loader.Options{
+        NoPreempt: true,
+    },
 }
 
-func (self *BaseAssembler) LoadWithFaker(name string, frameSize int, argSize int, faker interface{}) loader.Function {
+func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) loader.Function {
     self.build()
-    return loader.Loader(self.c).LoadWithFaker(name, frameSize, argSize, faker)
+    return jitLoader.LoadFunc(self.c, name, frameSize, argSize, argStackmap, localStackmap)
 }
 
 /** Assembler Stages **/

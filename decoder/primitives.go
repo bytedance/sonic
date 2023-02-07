@@ -44,3 +44,13 @@ func decodeJsonUnmarshaler(vv interface{}, s string) error {
 func decodeTextUnmarshaler(vv interface{}, s string) error {
     return vv.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(s))
 }
+
+var (
+    argPtrs   = []bool{true, false, false, true, true, false, true, false, true}
+    localPtrs = []bool{}
+)
+
+var (
+    argPtrs_generic   = []bool{true}
+    localPtrs_generic = []bool{}
+)
