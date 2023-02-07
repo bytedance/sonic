@@ -1,3 +1,8 @@
+//go:build windows
+// +build windows
+
+// build
+
 /*
  * Copyright 2021 ByteDance Inc.
  *

@@ -25,16 +25,20 @@ import (
 	"github.com/bytedance/sonic/internal/rt"
 )
 
+// Function is a function pointer
+type Function unsafe.Pointer
+
+// Options used to load a module
 type Options struct {
+    // NoPreempt is used to disable async preemption for this module
     NoPreempt bool
 }
 
-type Function unsafe.Pointer
-
+// ModuleLoader is a helper used to load a module simply
 type ModuleLoader struct {
-    Name string
-    File string
-    Options
+    Name string // module name
+    File string // file name
+    Options 
 }
 
 func (self ModuleLoader) LoadFunc(text []byte, funcName string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) Function {
@@ -84,6 +88,9 @@ func (self ModuleLoader) LoadFunc(text []byte, funcName string, frameSize int, a
     return out[0]
 }
 
+// Load loads given machine codes and corresponding function information into go moduledata
+// and returns runnable function pointer
+// WARN: this API is experimental, use it carefully
 func Load(modulename string, filenames []string, funcs []Func, text []byte) (out []Function) {
     // generate module data and allocate memory address
     mod := makeModuledata(modulename, filenames, funcs, text)
