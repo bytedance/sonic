@@ -20,20 +20,20 @@
 package decoder
 
 import (
-	"encoding/json"
-	"fmt"
-	"math"
-	"reflect"
-	"strconv"
-	"unsafe"
+    `encoding/json`
+    `fmt`
+    `math`
+    `reflect`
+    `strconv`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/caching"
-	"github.com/bytedance/sonic/internal/jit"
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/twitchyliquid64/golang-asm/obj"
-	"github.com/twitchyliquid64/golang-asm/obj/x86"
+    `github.com/bytedance/sonic/internal/caching`
+    `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/twitchyliquid64/golang-asm/obj`
+    `github.com/twitchyliquid64/golang-asm/obj/x86`
 )
 
 /** Register Allocations

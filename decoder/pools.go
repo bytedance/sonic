@@ -17,7 +17,6 @@
 package decoder
 
 import (
-    `errors`
     `sync`
     `unsafe`
 
@@ -82,37 +81,15 @@ var _KeepAlive struct {
     frame_generic [_VD_offs]byte
 }
 
-var errCallShadow = errors.New("DON'T CALL THIS!")
+var (
+    argPtrs   = []bool{true, false, false, true, true, false, true, false, true}
+    localPtrs = []bool{}
+)
 
-// Faker func of _Decoder, used to export its stackmap as _Decoder's
-func _Decoder_Shadow(s string, i int, vp unsafe.Pointer, sb *_Stack, fv uint64, sv string, vk unsafe.Pointer) (ret int, err error) {
-    // align to assembler_amd64.go: _FP_offs
-    var frame [_FP_offs]byte
-
-    // keep all args and stacks alive
-    _KeepAlive.s = s
-    _KeepAlive.i = i
-    _KeepAlive.vp = vp
-    _KeepAlive.sb = sb
-    _KeepAlive.fv = fv
-    _KeepAlive.ret = ret
-    _KeepAlive.err = err
-    _KeepAlive.sv = sv
-    _KeepAlive.vk = vk
-    _KeepAlive.frame_decoder = frame
-    
-    return 0, errCallShadow
-}
-
-// Faker func of _Decoder_Generic, used to export its stackmap
-func _Decoder_Generic_Shadow(sb *_Stack) {
-    // align to generic_amd64.go: _VD_offs
-    var frame [_VD_offs]byte
-
-    // must keep sb noticeable to GC
-    _KeepAlive.sb = sb
-    _KeepAlive.frame_generic = frame
-}
+var (
+    argPtrs_generic   = []bool{true}
+    localPtrs_generic = []bool{}
+)
 
 func newStack() *_Stack {
     if ret := stackPool.Get(); ret == nil {

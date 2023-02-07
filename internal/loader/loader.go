@@ -20,12 +20,11 @@
 package loader
 
 import (
-	"fmt"
-	"os"
-	"reflect"
-	"syscall"
-	"unsafe"
-
+    `fmt`
+    `os`
+    `reflect`
+    `syscall`
+    `unsafe`
 )
 
 const (

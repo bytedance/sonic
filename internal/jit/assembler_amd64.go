@@ -202,12 +202,7 @@ func (self *BaseAssembler) Init(f func()) {
     self.o = sync.Once{}
 }
 
-// func (self *BaseAssembler) Load(fn string, fp int, args int) loader.Function {
-//     self.build()
-//     return loader.Loader(self.c).Load(fn, fp, args)
-// }
-
-var jitLoader = loader.ModuleLoader{
+var jitLoader = loader.Loader{
     Name: "sonic.jit.",
     File: "github.com/bytedance/sonic/jit.go",
     Options: loader.Options{
@@ -217,7 +212,7 @@ var jitLoader = loader.ModuleLoader{
 
 func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) loader.Function {
     self.build()
-    return jitLoader.LoadFunc(self.c, name, frameSize, argSize, argStackmap, localStackmap)
+    return jitLoader.LoadOne(self.c, name, frameSize, argSize, argStackmap, localStackmap)
 }
 
 /** Assembler Stages **/

@@ -17,15 +17,20 @@
 package encoder
 
 import (
-	"encoding/json"
-	"unsafe"
+    `encoding/json`
+    `unsafe`
 
-	"github.com/bytedance/sonic/loader"
+    `github.com/bytedance/sonic/loader`
 )
 
 //go:nosplit
 func padd(p unsafe.Pointer, v int) unsafe.Pointer {
     return unsafe.Pointer(uintptr(p) + uintptr(v))
+}
+
+//go:nosplit
+func ptoenc(p loader.Function) _Encoder {
+    return *(*_Encoder)(unsafe.Pointer(&p))
 }
 
 func compact(p *[]byte, v []byte) error {
@@ -45,9 +50,3 @@ func compact(p *[]byte, v []byte) error {
     freeBuffer(buf)
     return nil
 }
-
-//go:nosplit
-func ptoenc(p loader.Function) _Encoder {
-    return *(*_Encoder)(unsafe.Pointer(&p))
-}
-

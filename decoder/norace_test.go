@@ -20,12 +20,12 @@
 package decoder
 
 import (
-	"runtime"
-	"testing"
-	"time"
-	"unsafe"
+    `runtime`
+    `testing`
+    `time`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 var referred = false

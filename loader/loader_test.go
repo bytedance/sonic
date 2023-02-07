@@ -20,14 +20,14 @@
 package loader
 
 import (
-	"runtime"
-	"runtime/debug"
-	"strconv"
-	"testing"
-	"unsafe"
+    `runtime`
+    `runtime/debug`
+    `strconv`
+    `testing`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/stretchr/testify/require`
 )
 
 func TestLoad(t *testing.T) {
@@ -120,7 +120,7 @@ func TestLoad(t *testing.T) {
     locals.AddField(false)
     fn.LocalsPointerMaps = locals.Build()
 
-    rets := Load("dummy_module", []string{"github.com/bytedance/sonic/dummy.go"}, []Func{fn}, bc)
+    rets := Load(bc, []Func{fn}, "dummy_module", []string{"github.com/bytedance/sonic/dummy.go"})
     println("func address ", *(*unsafe.Pointer)(rets[0]))
     // for k, _ := range moduleCache.m {
     //     spew.Dump(k)

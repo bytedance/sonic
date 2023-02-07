@@ -1,8 +1,5 @@
-//go:build go1.15 && !go1.18
-// +build go1.15,!go1.18
-
-/*
- * Copyright 2021 ByteDance Inc.
+/**
+ * Copyright 2023 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +17,21 @@
 package loader
 
 import (
-
-    `github.com/bytedance/sonic/internal/loader`
+    `unsafe`
 )
 
-func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) Function {
-    return Function(loader.Loader(text).Load(funcName, frameSize, argSize, argStackmap, localStackmap))
+// Function is a function pointer
+type Function unsafe.Pointer
+
+// Options used to load a module
+type Options struct {
+    // NoPreempt is used to disable async preemption for this module
+    NoPreempt bool
 }
 
-func Load(modulename string, filenames []string, funcs []Func, text []byte) (out []Function) {
-    panic("not implemented") 
+// Loader is a helper used to load a module simply
+type Loader struct {
+    Name string // module name
+    File string // file name
+    Options 
 }

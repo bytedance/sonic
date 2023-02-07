@@ -17,11 +17,11 @@
 package loader
 
 import (
-	"reflect"
-	"sync"
-	"unsafe"
+    `reflect`
+    `sync`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 //go:linkname lastmoduledatap runtime.lastmoduledatap

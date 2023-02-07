@@ -22,9 +22,6 @@
 package loader
 
 import (
-    `fmt`
-    `os`
-    `reflect`
     `syscall`
     `unsafe`
 )

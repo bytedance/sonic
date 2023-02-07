@@ -17,13 +17,13 @@
 package encoder
 
 import (
-	"encoding"
-	"encoding/json"
-	"unsafe"
+    `encoding`
+    `encoding/json`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/jit"
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 /** Encoder Primitives **/
@@ -117,7 +117,6 @@ var (
     argPtrs   = []bool { true, true, true, false }
     localPtrs = []bool{}
 )
-
 
 var (
     _F_assertI2I = jit.Func(assertI2I)

@@ -19,7 +19,9 @@
 
 package loader
 
-import "syscall"
+import (
+    `syscall`
+)
 
 const (
     _AP = syscall.MAP_ANON  | syscall.MAP_PRIVATE

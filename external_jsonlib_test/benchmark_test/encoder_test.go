@@ -17,15 +17,15 @@
 package benchmark_test
 
 import (
-	"encoding/json"
-	"os"
-	"runtime"
-	"runtime/debug"
-	"testing"
-	"time"
+    `encoding/json`
+    `os`
+    `runtime`
+    `runtime/debug`
+    `testing`
+    `time`
 
-	gojson "github.com/goccy/go-json"
-	jsoniter "github.com/json-iterator/go"
+    gojson `github.com/goccy/go-json`
+    jsoniter `github.com/json-iterator/go`
 )
 
 var (

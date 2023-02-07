@@ -17,17 +17,17 @@
 package unit_test
 
 import (
-	"bytes"
-	"encoding/json"
-	"os"
-	"runtime"
-	"runtime/debug"
-	"testing"
-	"time"
+    `bytes`
+    `encoding/json`
+    `os`
+    `runtime`
+    `runtime/debug`
+    `testing`
+    `time`
 
-	"github.com/bytedance/sonic"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic`
+    jsoniter `github.com/json-iterator/go`
+    `github.com/stretchr/testify/require`
 )
 
 var (

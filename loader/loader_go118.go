@@ -20,28 +20,21 @@
 package loader
 
 import (
-	"unsafe"
-
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
-// Function is a function pointer
-type Function unsafe.Pointer
-
-// Options used to load a module
-type Options struct {
-    // NoPreempt is used to disable async preemption for this module
-    NoPreempt bool
-}
-
-// ModuleLoader is a helper used to load a module simply
-type ModuleLoader struct {
-    Name string // module name
-    File string // file name
-    Options 
-}
-
-func (self ModuleLoader) LoadFunc(text []byte, funcName string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) Function {
+// LoadFuncs loads only one function as module, and returns the function pointer
+//   - text: machine code
+//   - funcName: function name
+//   - frameSize: stack frame size. 
+//   - argSize: argument total size (in bytes)
+//   - argPtrs: indicates if a slot (8 Bytes) of arguments memory stores pointer, from low to high
+//   - localPtrs: indicates if a slot (8 Bytes) of local variants memory stores pointer, from low to high
+// 
+// WARN: 
+//   - the function MUST has fixed SP offset equaling to this, otherwise it go.gentraceback will fail
+//   - the function MUST has only one stack map for all arguments and local variants
+func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize int, argPtrs []bool, localPtrs []bool) Function {
     size := uint32(len(text))
 
     fn := Func{
@@ -50,9 +43,10 @@ func (self ModuleLoader) LoadFunc(text []byte, funcName string, frameSize int, a
         ArgsSize: int32(argSize),
     }
 
+    // NOTICE: suppose the function has fixed SP offset equaling to frameSize, thus make only one pcsp pair
     fn.Pcsp = &Pcdata{
-		{PC: size, Val: int32(frameSize)},
-	}
+        {PC: size, Val: int32(frameSize)},
+    }
 
     if self.NoPreempt {
         fn.PcUnsafePoint = &Pcdata{
@@ -64,34 +58,35 @@ func (self ModuleLoader) LoadFunc(text []byte, funcName string, frameSize int, a
         }
     }
 
+    // NOTICE: suppose the function has only one stack map at index 0
     fn.PcStackMapIndex = &Pcdata{
         {PC: size, Val: 0},
     }
 
-    if argStackmap != nil {
+    if argPtrs != nil {
         args := rt.StackMapBuilder{}
-        for _, b := range argStackmap {
+        for _, b := range argPtrs {
             args.AddField(b)
         }
         fn.ArgsPointerMaps = args.Build()
     }
     
-    if localStackmap != nil {
+    if localPtrs != nil {
         locals := rt .StackMapBuilder{}
-        for _, b := range localStackmap {
+        for _, b := range localPtrs {
             locals.AddField(b)
         }
         fn.LocalsPointerMaps = locals.Build()
     }
 
-    out := Load(self.Name + funcName, []string{self.File}, []Func{fn}, text)
+    out := Load(text, []Func{fn}, self.Name + funcName, []string{self.File})
     return out[0]
 }
 
 // Load loads given machine codes and corresponding function information into go moduledata
 // and returns runnable function pointer
 // WARN: this API is experimental, use it carefully
-func Load(modulename string, filenames []string, funcs []Func, text []byte) (out []Function) {
+func Load(text []byte, funcs []Func, modulename string, filenames []string) (out []Function) {
     // generate module data and allocate memory address
     mod := makeModuledata(modulename, filenames, funcs, text)
 

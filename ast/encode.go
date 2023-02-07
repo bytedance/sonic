@@ -17,10 +17,10 @@
 package ast
 
 import (
-	"sync"
-	"unicode/utf8"
+    `sync`
+    `unicode/utf8`
 
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 const (

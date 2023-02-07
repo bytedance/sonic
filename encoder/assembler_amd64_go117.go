@@ -20,19 +20,19 @@
 package encoder
 
 import (
-	"fmt"
-	"reflect"
-	"strconv"
-	"unsafe"
+    `fmt`
+    `reflect`
+    `strconv`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/cpu"
-	"github.com/bytedance/sonic/internal/jit"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/twitchyliquid64/golang-asm/obj"
-	"github.com/twitchyliquid64/golang-asm/obj/x86"
+    `github.com/bytedance/sonic/internal/cpu`
+    `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/twitchyliquid64/golang-asm/obj`
+    `github.com/twitchyliquid64/golang-asm/obj/x86`
 
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 /** Register Allocations
@@ -191,6 +191,7 @@ func newAssembler(p _Program) *_Assembler {
 }
 
 /** Assembler Interface **/
+
 func (self *_Assembler) Load() _Encoder {
     return ptoenc(self.BaseAssembler.Load("encode_"+self.name, _FP_size, _FP_args, argPtrs, localPtrs))
 }

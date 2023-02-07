@@ -20,11 +20,11 @@
 package loader
 
 import (
-	"encoding"
-	"os"
-	"unsafe"
+    `encoding`
+    `os`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 const (
