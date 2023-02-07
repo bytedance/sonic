@@ -209,12 +209,17 @@ func (self *BaseAssembler) Init(f func()) {
 
 func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) loader.Function {
     self.build()
-    l := loader.Loader{
+    l := loader.ModuleLoader{
         Name: "sonic.jit",
         File: "github.com/bytedance/sonic/jit.go",
     }
     l.NoPreempt = true
     return l.LoadFunc(self.c, name, frameSize, argSize, argStackmap, localStackmap)
+}
+
+func (self *BaseAssembler) LoadWithFaker(name string, frameSize int, argSize int, faker interface{}) loader.Function {
+    self.build()
+    return loader.Loader(self.c).LoadWithFaker(name, frameSize, argSize, faker)
 }
 
 /** Assembler Stages **/

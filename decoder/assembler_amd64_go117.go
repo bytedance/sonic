@@ -225,7 +225,7 @@ var (
 )
 
 func (self *_Assembler) Load() _Decoder {
-    return ptodec(self.BaseAssembler.Load(self.name+".Decoder", _FP_size, _FP_args, argPtrs, localPtrs))
+    return ptodec(self.BaseAssembler.Load("decode_"+self.name, _FP_size, _FP_args, argPtrs, localPtrs))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {

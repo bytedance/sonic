@@ -1,4 +1,3 @@
-//go:build go1.15 && !go1.17
 // +build go1.15,!go1.17
 
 /*
@@ -20,13 +19,10 @@
 package encoder
 
 import (
-	"encoding"
-	"encoding/json"
 	"unsafe"
 
 	_ "github.com/chenzhuoyu/base64x"
 
-	"github.com/bytedance/sonic/internal/jit"
 	"github.com/bytedance/sonic/internal/rt"
 )
 
@@ -67,19 +63,3 @@ var _runtime_writeBarrier uintptr = rt.GcwbAddr()
 
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
 func gcWriteBarrierAX()
-
-var (
-    _F_assertI2I = jit.Func(assertI2I)
-)
-
-func asText(v unsafe.Pointer) (string, error) {
-    text := assertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(v))
-    r, e := (*(*encoding.TextMarshaler)(unsafe.Pointer(&text))).MarshalText()
-    return rt.Mem2Str(r), e
-}
-
-func asJson(v unsafe.Pointer) (string, error) {
-    text := assertI2I(_T_json_Marshaler, *(*rt.GoIface)(v))
-    r, e := (*(*json.Marshaler)(unsafe.Pointer(&text))).MarshalJSON()
-    return rt.Mem2Str(r), e
-}

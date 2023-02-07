@@ -24,7 +24,7 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
-type _Func struct {
+type _func struct {
     entry       uintptr // start pc
     nameoff     int32   // function name
     args        int32   // in/out args size
@@ -40,7 +40,7 @@ type _Func struct {
     localptrs   uintptr
 }
 
-type _FuncTab struct {
+type _funcTab struct {
     entry   uintptr
     funcoff uintptr
 }
@@ -61,9 +61,9 @@ type _TextSection struct {
     baseaddr uintptr // relocated section address
 }
 
-type _ModuleData struct {
+type moduledata struct {
     pclntable             []byte
-    ftab                  []_FuncTab
+    ftab                  []_funcTab
     filetab               []uint32
     findfunctab           *_FindFuncBucket
     minpc, maxpc          uintptr
@@ -86,7 +86,7 @@ type _ModuleData struct {
     gcdatamask, gcbssmask _BitVector
     typemap               map[int32]*rt.GoType // offset to *_rtype in previous module
     bad                   bool                 // module failed to load and should be ignored
-    next                  *_ModuleData
+    next                  *moduledata
 }
 
 type _FindFuncBucket struct {
@@ -121,7 +121,7 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     pclnt = append(pclnt, encodeVariant(int(size))...)
 
     /* function entry */
-    fnv := _Func {
+    fnv := _func {
         entry     : pc,
         nameoff   : int32(noff),
         args      : int32(args),
@@ -138,17 +138,17 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
 
     /* add the function descriptor */
     foff := len(pclnt)
-    pclnt = append(pclnt, (*(*[unsafe.Sizeof(_Func{})]byte)(unsafe.Pointer(&fnv)))[:]...)
+    pclnt = append(pclnt, (*(*[unsafe.Sizeof(_func{})]byte)(unsafe.Pointer(&fnv)))[:]...)
 
     /* function table */
-    tab := []_FuncTab {
+    tab := []_funcTab {
         {entry: pc, funcoff: uintptr(foff)},
         {entry: pc, funcoff: uintptr(foff)},
         {entry: maxpc},
     }
 
     /* module data */
-    mod := &_ModuleData {
+    mod := &moduledata {
         pclntable   : pclnt,
         ftab        : tab,
         findfunctab : findFuncTab,
@@ -162,4 +162,8 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     /* verify and register the new module */
     moduledataverify1(mod)
     registerModule(mod)
+}
+
+func makeModuledata(name string, filenames []string, funcs []Func, text []byte) (mod *moduledata) {
+    return
 }

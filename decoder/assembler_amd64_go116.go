@@ -215,6 +215,7 @@ var (
 type _Assembler struct {
     jit.BaseAssembler
     p _Program
+    name string
 }
 
 func newAssembler(p _Program) *_Assembler {
@@ -224,7 +225,7 @@ func newAssembler(p _Program) *_Assembler {
 /** Assembler Interface **/
 
 func (self *_Assembler) Load() _Decoder {
-    return ptodec(self.BaseAssembler.LoadWithFaker("json_decoder", _FP_size, _FP_args, _Decoder_Shadow))
+    return ptodec(self.BaseAssembler.LoadWithFaker("decode_"+self.name, _FP_size, _FP_args, _Decoder_Shadow))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {

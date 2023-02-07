@@ -22,7 +22,7 @@ import (
     `unsafe`
 )
 
-type _Func struct {
+type _func struct {
     entry       uintptr // start pc
     nameoff     int32   // function name
     args        int32   // in/out args size
@@ -39,7 +39,7 @@ type _Func struct {
     localptrs   uintptr
 }
 
-type _FuncTab struct {
+type _funcTab struct {
     entry   uintptr
     funcoff uintptr
 }
@@ -74,14 +74,14 @@ type _TextSection struct {
     baseaddr uintptr // relocated section address
 }
 
-type _ModuleData struct {
+type moduledata struct {
     pcHeader              *_PCHeader
     funcnametab           []byte
     cutab                 []uint32
     filetab               []byte
     pctab                 []byte
-    pclntable             []_Func
-    ftab                  []_FuncTab
+    pclntable             []_func
+    ftab                  []_funcTab
     findfunctab           *_FindFuncBucket
     minpc, maxpc          uintptr
     text, etext           uintptr
@@ -103,7 +103,7 @@ type _ModuleData struct {
     gcdatamask, gcbssmask _BitVector
     typemap               map[int32]unsafe.Pointer
     bad                   bool
-    next                  *_ModuleData
+    next                  *moduledata
 }
 
 type _FindFuncBucket struct {
@@ -131,7 +131,7 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     maxpc := pc + size
 
     /* function entry */
-    lnt := []_Func {{
+    lnt := []_func {{
         entry     : pc,
         nameoff   : 1,
         args      : int32(args),
@@ -142,14 +142,14 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     }}
 
     /* function table */
-    tab := []_FuncTab {
+    tab := []_funcTab {
         {entry: pc},
         {entry: pc},
         {entry: maxpc},
     }
 
     /* module data */
-    mod := &_ModuleData {
+    mod := &moduledata {
         pcHeader    : modHeader,
         funcnametab : append(append([]byte{0}, name...), 0),
         pctab       : append(makePCtab(fp), encodeVariant(int(size))...),
@@ -166,4 +166,8 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     /* verify and register the new module */
     moduledataverify1(mod)
     registerModule(mod)
+}
+
+func makeModuledata(name string, filenames []string, funcs []Func, text []byte) (mod *moduledata) {
+    return
 }

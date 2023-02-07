@@ -90,7 +90,7 @@ var (
 
 func (self *_ValueDecoder) build() uintptr {
     self.Init(self.compile)
-    return *(*uintptr)(self.Load("generic_decoder", _VD_size, _VD_args, argPtrs1, localPtrs1))
+    return *(*uintptr)(self.Load("decode_value", _VD_size, _VD_args, argPtrs1, localPtrs1))
 }
 
 /** Function Calling Helpers **/

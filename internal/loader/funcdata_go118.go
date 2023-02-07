@@ -538,3 +538,5 @@ func makePctab(funcs []Func, cuOffset []uint32, nameOffset []int32) (pctab []byt
 
     return
 }
+
+func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {} 

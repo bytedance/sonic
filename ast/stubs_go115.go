@@ -1,5 +1,4 @@
-//go:build go1.17 && !go1.20
-// +build go1.17,!go1.20
+// +build go1.15,!go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -43,7 +42,6 @@ func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 func mem2ptr(s []byte) unsafe.Pointer {
     return (*rt.GoSlice)(unsafe.Pointer(&s)).Ptr
 }
-
 
 var (
     //go:linkname safeSet encoding/json.safeSet

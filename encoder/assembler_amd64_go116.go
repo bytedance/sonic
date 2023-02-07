@@ -187,7 +187,7 @@ func newAssembler(p _Program) *_Assembler {
 /** Assembler Interface **/
 
 func (self *_Assembler) Load() _Encoder {
-    return ptoenc(self.BaseAssembler.Load(self.name+".Encoder", _FP_size, _FP_args, argStackmap, localStackmap))
+    return ptoenc(self.BaseAssembler.LoadWithFaker("encode_"+self.name, _FP_size, _FP_args, _Encoder_Shadow))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {

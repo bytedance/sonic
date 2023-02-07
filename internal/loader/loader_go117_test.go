@@ -36,7 +36,7 @@ func TestLoader_Load(t *testing.T) {
         0xc3,                                       // RET
     }
     v0 := 0
-    l := Loader{
+    l := ModuleLoader{
         Name: "test",
         File: "test.go",
     }
