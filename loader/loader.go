@@ -1,5 +1,5 @@
-/*
- * Copyright 2021 ByteDance Inc.
+/**
+ * Copyright 2023 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,24 @@
  * limitations under the License.
  */
 
-package decoder
+package loader
 
 import (
     `unsafe`
-
-    `github.com/bytedance/sonic/loader`
 )
 
-//go:nosplit
-func pbool(v bool) uintptr {
-    return freezeValue(unsafe.Pointer(&v))
+// Function is a function pointer
+type Function unsafe.Pointer
+
+// Options used to load a module
+type Options struct {
+    // NoPreempt is used to disable async preemption for this module
+    NoPreempt bool
 }
 
-//go:nosplit
-func ptodec(p loader.Function) _Decoder {
-    return *(*_Decoder)(unsafe.Pointer(&p))
-}
-
-func assert_eq(v int64, exp int64, msg string) {
-    if v != exp {
-        panic(msg)
-    }
+// Loader is a helper used to load a module simply
+type Loader struct {
+    Name string // module name
+    File string // file name
+    Options 
 }

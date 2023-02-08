@@ -18,11 +18,36 @@ package benchmark_test
 
 import (
     `encoding/json`
+    `os`
+    `runtime`
+    `runtime/debug`
     `testing`
+    `time`
 
     gojson `github.com/goccy/go-json`
     jsoniter `github.com/json-iterator/go`
 )
+
+var (
+    debugSyncGC  = os.Getenv("SONIC_SYNC_GC") != ""
+    debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
+)
+
+func TestMain(m *testing.M) {
+    go func ()  {
+        if !debugAsyncGC {
+            return
+        }
+        println("Begin GC looping...")
+        for {
+           runtime.GC()
+           debug.FreeOSMemory() 
+        }
+        println("stop GC looping!")
+    }()
+    time.Sleep(time.Millisecond)
+    m.Run()
+}
 
 var _GenericValue interface{}
 var _BindingValue TwitterStruct

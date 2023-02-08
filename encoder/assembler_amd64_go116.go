@@ -177,6 +177,7 @@ type _Assembler struct {
     jit.BaseAssembler
     p _Program
     x int
+    name string
 }
 
 func newAssembler(p _Program) *_Assembler {
@@ -184,9 +185,8 @@ func newAssembler(p _Program) *_Assembler {
 }
 
 /** Assembler Interface **/
-
 func (self *_Assembler) Load() _Encoder {
-    return ptoenc(self.BaseAssembler.LoadWithFaker("json_encoder", _FP_size, _FP_args, _Encoder_Shadow))
+    return ptoenc(self.BaseAssembler.Load("encode_"+self.name, _FP_size, _FP_args, argPtrs, localPtrs))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {
@@ -482,10 +482,6 @@ func (self *_Assembler) load_buffer() {
 }
 
 /** Function Interface Helpers **/
-
-var (
-    _F_assertI2I = jit.Func(assertI2I)
-)
 
 func (self *_Assembler) call(pc obj.Addr) {
     self.Emit("MOVQ", pc, _AX)  // MOVQ $pc, AX

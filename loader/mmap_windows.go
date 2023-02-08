@@ -1,6 +1,8 @@
 //go:build windows
 // +build windows
 
+// build
+
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -20,9 +22,6 @@
 package loader
 
 import (
-    `fmt`
-    `os`
-    `reflect`
     `syscall`
     `unsafe`
 )
@@ -37,32 +36,6 @@ var (
     libKernel32_VirtualAlloc   = libKernel32.NewProc("VirtualAlloc")
     libKernel32_VirtualProtect = libKernel32.NewProc("VirtualProtect")
 )
-
-type Loader   []byte
-type Function unsafe.Pointer
-
-func (self Loader) Load(fn string, fp int, args int, argPtrs []bool, localPtrs []bool) (f Function) {
-    p := os.Getpagesize()
-    n := (((len(self) - 1) / p) + 1) * p
-
-    /* register the function */
-    m := mmap(n)
-    v := fmt.Sprintf("runtime.__%s_%x", fn, m)
-    
-    registerFunction(v, m, uintptr(n), fp, args, uintptr(len(self)), argPtrs, localPtrs)
-
-    /* reference as a slice */
-    s := *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader {
-        Data : m,
-        Cap  : n,
-        Len  : len(self),
-    }))
-
-    /* copy the machine code, and make it executable */
-    copy(s, self)
-    mprotect(m, n)
-    return Function(&m)
-}
 
 func mmap(nb int) uintptr {
     addr, err := winapi_VirtualAlloc(0, nb, MEM_COMMIT|MEM_RESERVE, syscall.PAGE_READWRITE)

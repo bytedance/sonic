@@ -1,4 +1,5 @@
-// +build go1.17,!go1.20
+//go:build go1.17 && !go1.21
+// +build go1.17,!go1.21
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -84,7 +85,7 @@ var (
 
 func (self *_ValueDecoder) build() uintptr {
     self.Init(self.compile)
-    return *(*uintptr)(self.LoadWithFaker("decode_value", _VD_size, _VD_args, _Decoder_Generic_Shadow))
+    return *(*uintptr)(self.Load("decode_value", _VD_size, _VD_args, argPtrs_generic, localPtrs_generic))
 }
 
 /** Function Calling Helpers **/

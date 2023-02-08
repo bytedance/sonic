@@ -135,7 +135,9 @@ func makeEncoder(vt *rt.GoType, ex ...interface{}) (interface{}, error) {
     if pp, err := newCompiler().compile(vt.Pack(), ex[0].(bool)); err != nil {
         return nil, err
     } else {
-        return newAssembler(pp).Load(), nil
+        as := newAssembler(pp)
+        as.name = vt.String()
+        return as.Load(), nil
     }
 }
 
@@ -156,7 +158,9 @@ func pretouchType(_vt reflect.Type, opts option.CompileOptions, v uint8) (map[re
         if pp, err := compiler.compile(_vt, ex[0].(bool)); err != nil {
             return nil, err
         } else {
-            return newAssembler(pp).Load(), nil
+            as := newAssembler(pp)
+            as.name = vt.String()
+            return as.Load(), nil
         }
     }
 

@@ -10,7 +10,8 @@ import (
     `github.com/stretchr/testify/assert`
 )
 
-func TestSortNodeTwitter(t *testing.T) {root, err := NewSearcher(_TwitterJson).GetByPath()
+func TestSortNodeTwitter(t *testing.T) {
+    root, err := NewSearcher(_TwitterJson).GetByPath()
     if err != nil {
         t.Fatal(err)
     }
