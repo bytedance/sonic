@@ -1,5 +1,4 @@
-//go:build !amd64
-// +build !amd64
+// +build !amd64 !go1.15 go1.21
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -119,7 +118,6 @@ func (cfg frozenConfig) NewDecoder(reader io.Reader) Decoder {
 func (cfg frozenConfig) Valid(data []byte) bool {
     return json.Valid(data)
 }
-
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
 // order to reduce the first-hit latency at **amd64** Arch.
