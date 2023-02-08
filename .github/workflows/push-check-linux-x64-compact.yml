@@ -1,4 +1,4 @@
-name: Push Check Linux-ARM
+name: Push Check Linux-X64
 
 on: push
 
@@ -6,9 +6,8 @@ jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.14.x, 1.15.x, 1.20.x]
-        os: [arm]
-    runs-on: ${{ matrix.os }}
+        go-version: [1.14.x]
+    runs-on: [self-hosted, X64]
     steps:
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
@@ -27,8 +26,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Compatibility Test - main
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race github.com/bytedance/sonic
-
-      - name: Compatibility Test - ast
-        run: GOMAXPROCS=4 go test -v -gcflags=-d=checkptr=0 -race github.com/bytedance/sonic/ast
+      - name: Unit Test
+        run: |
+          go test -v -gcflags=-d=checkptr=0 .
