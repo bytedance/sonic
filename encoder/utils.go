@@ -20,7 +20,7 @@ import (
     `encoding/json`
     `unsafe`
 
-    `github.com/bytedance/sonic/internal/loader`
+    `github.com/bytedance/sonic/loader`
 )
 
 //go:nosplit

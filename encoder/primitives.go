@@ -21,6 +21,7 @@ import (
     `encoding/json`
     `unsafe`
 
+    `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/rt`
 )
@@ -110,4 +111,25 @@ func encodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler, opt Options) e
         }
         return encodeString(buf, rt.Mem2Str(ret) )
     }
+}
+
+var (
+    argPtrs   = []bool { true, true, true, false }
+    localPtrs = []bool{}
+)
+
+var (
+    _F_assertI2I = jit.Func(assertI2I)
+)
+
+func asText(v unsafe.Pointer) (string, error) {
+    text := assertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(v))
+    r, e := (*(*encoding.TextMarshaler)(unsafe.Pointer(&text))).MarshalText()
+    return rt.Mem2Str(r), e
+}
+
+func asJson(v unsafe.Pointer) (string, error) {
+    text := assertI2I(_T_json_Marshaler, *(*rt.GoIface)(v))
+    r, e := (*(*json.Marshaler)(unsafe.Pointer(&text))).MarshalJSON()
+    return rt.Mem2Str(r), e
 }

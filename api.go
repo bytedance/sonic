@@ -18,6 +18,8 @@ package sonic
 
 import (
     `io`
+
+    `github.com/bytedance/sonic/ast`
 )
 
 // Config is a combination of sonic/encoder.Options and sonic/decoder.Options
@@ -160,4 +162,20 @@ func Unmarshal(buf []byte, val interface{}) error {
 // UnmarshalString is like Unmarshal, except buf is a string.
 func UnmarshalString(buf string, val interface{}) error {
     return ConfigDefault.UnmarshalFromString(buf, val)
+}
+
+// Get searches the given path json,
+// and returns its representing ast.Node.
+//
+// Each path arg must be integer or string:
+//     - Integer means searching current node as array
+//     - String means searching current node as object
+func Get(src []byte, path ...interface{}) (ast.Node, error) {
+    return GetFromString(string(src), path...)
+}
+
+// GetFromString is same with Get except src is string,
+// which can reduce unnecessary memory copy.
+func GetFromString(src string, path ...interface{}) (ast.Node, error) {
+    return ast.NewSearcher(src).GetByPath(path...)
 }

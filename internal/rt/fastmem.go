@@ -74,6 +74,7 @@ func IndexByte(ptr []byte, index int) unsafe.Pointer {
 	return unsafe.Pointer(uintptr((*GoSlice)(unsafe.Pointer(&ptr)).Ptr) + uintptr(index))
 }
 
+//go:nosplit
 func GuardSlice(buf *[]byte, n int) {
 	c := cap(*buf)
 	l := len(*buf)
@@ -87,4 +88,26 @@ func GuardSlice(buf *[]byte, n int) {
 		*buf = tmp
 	}
 	return
+}
+
+//go:nosplit
+func Ptr2SlicePtr(s unsafe.Pointer, l int, c int) unsafe.Pointer {
+    slice := &GoSlice{
+        Ptr: s,
+        Len: l,
+        Cap: c,
+    }
+    return unsafe.Pointer(slice)
+}
+
+//go:nosplit
+func StrPtr(s string) unsafe.Pointer {
+    return (*GoString)(unsafe.Pointer(&s)).Ptr
+}
+
+//go:nosplit
+func StrFrom(p unsafe.Pointer, n int64) (s string) {
+    (*GoString)(unsafe.Pointer(&s)).Ptr = p
+    (*GoString)(unsafe.Pointer(&s)).Len = int(n)
+    return
 }

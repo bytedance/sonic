@@ -17,9 +17,11 @@
 package loader
 
 import (
+    `reflect`
     `sync`
     `unsafe`
-    `reflect`
+
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 //go:linkname lastmoduledatap runtime.lastmoduledatap
@@ -91,4 +93,32 @@ func stackMap(f interface{}) (args uintptr, locals uintptr) {
     }
     fi := findfunc(fv.Pointer())
     return uintptr(funcdata(fi, uint8(_FUNCDATA_ArgsPointerMaps))), uintptr(funcdata(fi, uint8(_FUNCDATA_LocalsPointerMaps)))
+}
+
+var moduleCache = struct{
+    m map[*_ModuleData][]byte
+    l sync.Mutex
+}{
+    m : make(map[*_ModuleData][]byte),
+}
+
+func cacheStackmap(argPtrs []bool, localPtrs []bool, mod *_ModuleData) (argptrs uintptr, localptrs uintptr) {
+    as := rt.StackMapBuilder{}
+    for _, b := range argPtrs {
+        as.AddField(b)
+    }
+    ab, _ := as.Build().MarshalBinary()
+    ls := rt.StackMapBuilder{}
+    for _, b := range localPtrs {
+        ls.AddField(b)
+    }
+    lb, _ := ls.Build().MarshalBinary()
+    cache := make([]byte, len(ab) + len(lb))
+    copy(cache, ab)
+    copy(cache[len(ab):], lb)
+    moduleCache.l.Lock()
+    moduleCache.m[mod] = cache
+    moduleCache.l.Unlock()
+    return uintptr(rt.IndexByte(cache, 0)), uintptr(rt.IndexByte(cache, len(ab)))
+
 }

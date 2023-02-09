@@ -128,7 +128,9 @@ func makePCtab(fp int) []byte {
     return append([]byte{0}, encodeVariant((fp + 1) << 1)...)
 }
 
-func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argptrs uintptr, localptrs uintptr) {
+func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args int, size uintptr, argPtrs []bool, localPtrs []bool) {
+    mod := new(_ModuleData)
+
     minpc := pc
     maxpc := pc + size
 
@@ -141,6 +143,9 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         ptrSize : 4 << (^uintptr(0) >> 63),
         textStart: minpc,
     }
+
+    // cache arg and local stackmap
+    argptrs, localptrs := cacheStackmap(argPtrs, localPtrs, mod)
 
     base := argptrs
     if argptrs > localptrs {
@@ -173,7 +178,7 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
     pclntab = append(pclntab, rt.BytesFrom(plnt, nlnt, nlnt)...)
 
     /* module data */
-    mod := &_ModuleData {
+    *mod = _ModuleData {
         pcHeader    : modHeader,
         funcnametab : append(append([]byte{0}, name...), 0),
         pctab       : append(makePCtab(fp), encodeVariant(int(size))...),

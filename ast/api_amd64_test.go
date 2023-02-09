@@ -1,5 +1,4 @@
-//go:build amd64
-// +build amd64
+// +build amd64,go1.15,!go1.21
 
 package ast
 
@@ -10,7 +9,8 @@ import (
     `github.com/stretchr/testify/assert`
 )
 
-func TestSortNodeTwitter(t *testing.T) {root, err := NewSearcher(_TwitterJson).GetByPath()
+func TestSortNodeTwitter(t *testing.T) {
+    root, err := NewSearcher(_TwitterJson).GetByPath()
     if err != nil {
         t.Fatal(err)
     }
