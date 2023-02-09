@@ -3,7 +3,7 @@
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT (just-in-time compiling) and SIMD (single-instruction-multiple-data).
 
 ## Requirement
-- Go 1.15/1.16/1.17/1.18/1.19
+- Go 1.15~1.20
 - Linux/MacOS/Windows
 - Amd64 ARCH
 

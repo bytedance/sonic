@@ -23,7 +23,6 @@ import (
     `fmt`
     `reflect`
     `runtime`
-    `runtime/debug`
     `testing`
     `unsafe`
 
@@ -37,7 +36,7 @@ func TestLoader_Load(t *testing.T) {
         0xc3,                                       // RET
     }
     v0 := 0
-    fn := Loader(bc).Load("test", 0, 8)
+    fn := Loader(bc).Load("test", 0, 8, nil, nil)
     (*(*func(*int))(unsafe.Pointer(&fn)))(&v0)
     assert.Equal(t, 1234, v0)
     println(runtime.FuncForPC(*(*uintptr)(fn)).Name())
@@ -90,25 +89,4 @@ func funcWrap(f func(i *int)) int {
     f(&x)
     ret = x
     return ret
-}
-
-func TestLoadWithStackMap(t *testing.T) {
-    var f = func(i *int) {
-        *i = 1234
-    }
-    v1 := funcWrap(f)
-    
-    bc := []byte {
-        0x48, 0x8b, 0x44, 0x24, 0x08,               // MOVQ  8(%rsp), %rax
-        0x48, 0xc7, 0x00, 0xd2, 0x04, 0x00, 0x00,   // MOVQ  $1234, (%rax)
-        0xc3,                                       // RET
-    }
-    fn := Loader(bc).LoadWithFaker("test", 0, 8, f)
-    f2 := (*(*func(*int))(unsafe.Pointer(&fn)))
-    v2 := funcWrap(f2)
-
-    runtime.GC()
-    debug.FreeOSMemory()
-    println(v1, v2)
-    assert.Equal(t, v1, v2)
 }

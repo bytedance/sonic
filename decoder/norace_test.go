@@ -1,3 +1,4 @@
+//go:build !race
 // +build !race
 
 /*
@@ -19,11 +20,12 @@
 package decoder
 
 import (
-	`testing`
-	`unsafe`
-	`runtime`
+    `runtime`
+    `testing`
+    `time`
+    `unsafe`
 
-	`github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 var referred = false
@@ -34,7 +36,7 @@ func TestStringReferring(t *testing.T) {
     println("malloc *byte ", sp)
     runtime.SetFinalizer(sp, func(sp *byte){
         referred = false
-        println("*byte ", sp, " got free")
+        println("*byte ", sp, " got free 1")
     })
     runtime.GC()
     println("first GC")
@@ -50,6 +52,7 @@ func TestStringReferring(t *testing.T) {
     }
     runtime.GC()
     println("second GC")
+    time.Sleep(time.Millisecond)
     if referred {
         t.Fatal("*byte is being referred")
     }
@@ -73,6 +76,7 @@ func TestStringReferring(t *testing.T) {
     }
     runtime.GC()
     println("second GC")
+    time.Sleep(time.Millisecond)
     if referred {
         t.Fatal("*byte is being referred")
     }

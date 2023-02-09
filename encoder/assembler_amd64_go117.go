@@ -1,4 +1,5 @@
-// +build go1.17,!go1.20
+//go:build go1.17 && !go1.21
+// +build go1.17,!go1.21
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -182,6 +183,7 @@ type _Assembler struct {
     jit.BaseAssembler
     p _Program
     x int
+    name string
 }
 
 func newAssembler(p _Program) *_Assembler {
@@ -191,7 +193,7 @@ func newAssembler(p _Program) *_Assembler {
 /** Assembler Interface **/
 
 func (self *_Assembler) Load() _Encoder {
-    return ptoenc(self.BaseAssembler.LoadWithFaker("json_encoder", _FP_size, _FP_args, _Encoder_Shadow))
+    return ptoenc(self.BaseAssembler.Load("encode_"+self.name, _FP_size, _FP_args, argPtrs, localPtrs))
 }
 
 func (self *_Assembler) Init(p _Program) *_Assembler {

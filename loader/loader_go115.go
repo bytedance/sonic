@@ -1,4 +1,5 @@
-// +build !go1.15 go1.20
+//go:build go1.15 && !go1.18
+// +build go1.15,!go1.18
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -18,11 +19,15 @@
 
 package loader
 
-// triggers a compilation error
-const (
-	_ = panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17, 1.18, 1.19")
+import (
+
+    `github.com/bytedance/sonic/internal/loader`
 )
 
-func registerFunction(_ string, _ uintptr, _ int, _ int, _ uintptr) {
-    panic("Unsupported Go version. Supported versions are: 1.15, 1.16, 1.17, 1.18, 1.19")
+func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize int, argStackmap []bool, localStackmap []bool) Function {
+    return Function(loader.Loader(text).Load(funcName, frameSize, argSize, argStackmap, localStackmap))
+}
+
+func Load(modulename string, filenames []string, funcs []Func, text []byte) (out []Function) {
+    panic("not implemented") 
 }

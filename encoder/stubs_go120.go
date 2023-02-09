@@ -1,4 +1,4 @@
-// +build go1.15,!go1.17
+// +build go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -34,11 +34,11 @@ var _subr__b64encode uintptr
 //goland:noinspection GoUnusedParameter
 func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 
-//go:linkname growslice runtime.growslice
+//go:linkname growslice reflect.growslice
 //goland:noinspection GoUnusedParameter
 func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 
-//go:linkname assertI2I runtime.assertI2I
+//go:linkname assertI2I runtime.assertI2I2
 //goland:noinspection GoUnusedParameter
 func assertI2I(inter *rt.GoType, i rt.GoIface) rt.GoIface
 
@@ -59,7 +59,8 @@ func isValidNumber(s string) bool
 //goland:noinspection GoUnusedParameter
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
-var _runtime_writeBarrier uintptr = rt.GcwbAddr()
+//go:linkname _runtime_writeBarrier runtime.writeBarrier
+var _runtime_writeBarrier uintptr
 
 //go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
 func gcWriteBarrierAX()

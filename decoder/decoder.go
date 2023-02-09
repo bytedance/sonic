@@ -198,7 +198,9 @@ func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Typ
         if pp, err := compiler.compile(_vt); err != nil {
             return nil, err
         } else {
-            return newAssembler(pp).Load(), nil
+            as := newAssembler(pp)
+            as.name = _vt.String()
+            return as.Load(), nil
         }
     }
 
