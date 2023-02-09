@@ -34,10 +34,8 @@ import (
     `testing`
     `time`
     `unsafe`
-    `math/rand`
     `strings`
 
-    `github.com/davecgh/go-spew/spew`
     `github.com/bytedance/sonic/encoder`
     `github.com/stretchr/testify/assert`
 )
@@ -55,7 +53,6 @@ func TestMain(m *testing.M) {
             runtime.GC()
             debug.FreeOSMemory() 
         }
-        println("stop GC looping!")
     }()
     time.Sleep(time.Millisecond)
     m.Run()
@@ -1180,55 +1177,24 @@ func TestEncoder_LongestInvalidUtf8(t *testing.T) {
         "\"" + strings.Repeat("\x80", 4097) + "\"",
         "\"" + strings.Repeat("\x80", 12345) + "\"",
     }) {
-        testEncodeInvalidUtf8(t, data)
+        testEncodeInvalidUtf8(t, []byte(data))
     }
 }
 
-func testEncodeInvalidUtf8(t *testing.T, data string) {
-    config := Config{
-        EscapeHTML : true,
-        SortMapKeys: true,
-        CompactMarshaler: true,
-        CopyString : true,
-        ValidateString: true,
-    }.Froze()
+func testEncodeInvalidUtf8(t *testing.T, data []byte) {
     jgot, jerr := json.Marshal(data)
-    sgot, serr := config.Marshal(data)
+    sgot, serr := ConfigStd.Marshal(data)
     assert.Equal(t, serr != nil, jerr != nil)
     if jerr == nil {
         assert.Equal(t, sgot, jgot)
     }
 }
 
-var _ = rand.ExpFloat64
-
 func TestEncoder_RandomInvalidUtf8(t *testing.T) {
-    // special testing
-    for _, data := range([]string{
-        "\"\xe4dL\"\xe0\xa6\xcd\xc1'\"",
-        "\"ǻ\x81\x869\xacH\"",
-        "\"\xf1\xefx\xb7\xbb\xfe`\xf1\"",
-        "\"\\\xad\xedh\xe2M\xfb3\"",
-        "\"\x06\x03\"",
-    }) {
-        spew.Dump("input : " + data)
-        testEncodeInvalidUtf8(t, data)
-    }
-
-    // random testing
-    var buf bytes.Buffer
     nums := 1000
-    maxLen := 10
+    maxLen := 1000
     for i := 0; i < nums; i++ {
-        buf.Reset()
-        buf.WriteString(`"`)
-        length := rand.Intn(maxLen)
-        for j := 0; j < length; j++ {
-            buf.WriteString(string([]byte{byte(rand.Intn(256))}))
-        }
-        buf.WriteString(`"`)
-        data := buf.String()
-        spew.Dump("input : " + data)
-        testEncodeInvalidUtf8(t, data)
+        testEncodeInvalidUtf8(t, genRandJsonBytes(maxLen))
+        testEncodeInvalidUtf8(t, genRandJsonRune(maxLen))
     }
 }

@@ -691,7 +691,10 @@ func (self *Node) AddAny(val interface{}) error {
 }
 
 // GetByPath load given path on demands,
-// which only ensure nodes before this path got parsed
+// which only ensure nodes before this path got parsed.
+//
+// Note, the api expects the json is well-formed at least,
+// otherwise it may return unexpected result.
 func (self *Node) GetByPath(path ...interface{}) *Node {
     if !self.Valid() {
         return self

@@ -19,7 +19,7 @@
 package sonic_fuzz
 
 import (
-	`encoding/json`
+    `encoding/json`
     `testing`
     _ `unicode/utf8`
     `os`
@@ -106,50 +106,51 @@ func fuzzMain(t *testing.T, data []byte) {
 
 }
 
+
 type S struct {
-	A int    `json:",omitempty"`
-	B string `json:"B1,omitempty"`
-	C float64
-	D bool
-	E uint8
-	// F []byte // unmarshal []byte is different with encoding/json
-	G interface{}
-	H map[string]interface{}
-	I map[string]string
-	J []interface{}
-	K []string
-	L S1
-	M *S1
-	N *int
-	O **int
+    A int    `json:",omitempty"`
+    B string `json:"B1,omitempty"`
+    C float64
+    D bool
+    E uint8
+    // F []byte // unmarshal []byte is different with encoding/json
+    G interface{}
+    H map[string]interface{}
+    I map[string]string
+    J []interface{}
+    K []string
+    L S1
+    M *S1
+    N *int
+    O **int
     P int `json:",string"`
     Q float64 `json:",string"`
-	R int `json:"-"`
-	T struct {}
-	U [2]int
-	V uintptr
+    R int `json:"-"`
+    T struct {}
+    U [2]int
+    V uintptr
     W json.Number
     // X json.RawMessage
     Y Marshaller 
-	Z TextMarshaller
+    Z TextMarshaller
 }
 
 
 type S1 struct {
-	A int
-	B string
+    A int
+    B string
 }
 
 type Marshaller struct {
-	v string
+    v string
 }
 
 func (m *Marshaller) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.v)
+    return json.Marshal(m.v)
 }
 
 func (m *Marshaller) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &m.v)
+    return json.Unmarshal(data, &m.v)
 }
 
 type TextMarshaller struct {
@@ -182,16 +183,16 @@ const (
 )
 
 func setMemLimit(limit uint64) {
-	threshold := uint64(float64(limit) * 0.7)
-	numWorker := uint64(runtime.GOMAXPROCS(0))
+    threshold := uint64(float64(limit) * 0.7)
+    numWorker := uint64(runtime.GOMAXPROCS(0))
     if os.Getenv(MemoryLimitEnv) != "" {
-		if memGB, err := strconv.ParseUint(os.Getenv(MemoryLimitEnv), 10, 64); err == nil {
-			limit = memGB * GB
-		}
-	}
-	gctuner.Tuning(threshold / numWorker)
-	log.Printf("[%d] Memory Limit: %d GB, Memory Threshold: %d MB\n", os.Getpid(), limit/GB, threshold/MB)
-	log.Printf("[%d] Memory Threshold Per Worker: %d MB\n", os.Getpid(), threshold/numWorker/MB)
+        if memGB, err := strconv.ParseUint(os.Getenv(MemoryLimitEnv), 10, 64); err == nil {
+            limit = memGB * GB
+        }
+    }
+    gctuner.Tuning(threshold / numWorker)
+    log.Printf("[%d] Memory Limit: %d GB, Memory Threshold: %d MB\n", os.Getpid(), limit/GB, threshold/MB)
+    log.Printf("[%d] Memory Threshold Per Worker: %d MB\n", os.Getpid(), threshold/numWorker/MB)
 }
 
 func enableSyncGC() {

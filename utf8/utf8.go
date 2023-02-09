@@ -1,24 +1,29 @@
+/*
+ * Copyright 2022 ByteDance Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package utf8
 
 import (
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/native"
-    "fmt"
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/native`
 )
 
-type InvalidUTF8Error struct {
-    Pos  int
-    Src  string
-}
-
-func (self InvalidUTF8Error) Error() string {
-    return fmt.Sprintf("invalid UTF-8 postion is %d in string: %s", self.Pos, self.Src)
-} 
-
 // CorrectWith corrects the invalid utf8 byte with repl string.
-func CorrectWith(dst []byte, src []byte, repl string) ([]byte, error) {
-    var err error
+func CorrectWith(dst []byte, src []byte, repl string) []byte {
     sstr := rt.Mem2Str(src)
     sidx := 0
 
@@ -33,11 +38,6 @@ func CorrectWith(dst []byte, src []byte, repl string) ([]byte, error) {
         if m.Sp != 0 {
             if m.Sp > len(sstr) {
                 panic("numbers of invalid utf8 exceed the string len!")
-            }
-            /* error record the first invalid utf8 position */
-            err = &InvalidUTF8Error {
-                Pos: m.Vt[0],
-                Src: string(sstr),
             }
         }
         
@@ -57,7 +57,7 @@ func CorrectWith(dst []byte, src []byte, repl string) ([]byte, error) {
     }
 
     types.FreeStateMachine(m)
-    return dst, err
+    return dst
 }
 
 // Validate is a simd-accelereated drop-in replacement for the standard library's utf8.Valid.

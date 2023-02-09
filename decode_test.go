@@ -2529,54 +2529,60 @@ func TestDecoder_LongestInvalidUtf8(t *testing.T) {
         "\"" + strings.Repeat("\x80", 4097) + "\"",
         "\"" + strings.Repeat("\x80", 12345) + "\"",
     }) {
-        testDecodeInvalidUtf8(t, data)
+        testDecodeInvalidUtf8(t, []byte(data))
     }
 }
 
-func testDecodeInvalidUtf8(t *testing.T, data string) {
+func testDecodeInvalidUtf8(t *testing.T, data []byte) {
     var sgot, jgot string
-    config := Config{
-        EscapeHTML : true,
-        SortMapKeys: true,
-        CompactMarshaler: true,
-        CopyString : true,
-        ValidateString : true,
-    }.Froze()
-    serr := config.Unmarshal([]byte(data), &sgot)
-    jerr := json.Unmarshal([]byte(data), &jgot)
+    serr := ConfigStd.Unmarshal(data, &sgot)
+    jerr := json.Unmarshal(data, &jgot)
     assert.Equal(t, serr != nil, jerr != nil)
     if jerr == nil {
         assert.Equal(t, sgot, jgot)
     }
 }
 
-func TestDecoder_RandomInvalidUtf8(t *testing.T) {
-    // special testing
-    for _, data := range([]string{
-        "\"\xe4dL\"\xe0\xa6\xcd\xc1'\"",
-        "\"ǻ\x81\x869\xacH\"",
-        "\"\xf1\xefx\xb7\xbb\xfe`\xf1\"",
-        "\"\x06\x03\"",
-        "\"\\\xad\xedh\xe2M\xfb3\"",
-    }) {
-        spew.Dump("input : " + data)
-        testDecodeInvalidUtf8(t, data)
-    }
+func needEscape(b byte) bool {
+    return b == '"' || b == '\\' || b < '\x20'
+}
 
-    // random testing
+func genRandJsonBytes(length int) []byte {
     var buf bytes.Buffer
-    nums := 1000
-    maxLen := 10
-    for i := 0; i < nums; i++ {
-        buf.Reset()
-        buf.WriteString(`"`)
-        length := rand.Intn(maxLen)
-        for j := 0; j < length; j++ {
-            buf.WriteString(string([]byte{byte(rand.Intn(256))}))
+    buf.WriteByte('"')
+    for j := 0; j < length; j++ {
+        r := rand.Intn(0xff + 1)
+        if needEscape(byte(r)) {
+            buf.WriteByte('\\')
         }
-        buf.WriteString(`"`)
-        data := buf.String()
-        spew.Dump("input : " + data)
-        testDecodeInvalidUtf8(t, data)
+        buf.WriteByte(byte(r))
+    }
+    buf.WriteByte('"')
+    return buf.Bytes()
+}
+
+func genRandJsonRune(length int) []byte {
+    var buf bytes.Buffer
+    buf.WriteByte('"')
+    for j := 0; j < length; j++ {
+        r := rand.Intn(0x10FFFF + 1)
+        if r < 0x80 && needEscape(byte(r)) {
+            buf.WriteByte('\\')
+            buf.WriteByte(byte(r))
+        } else {
+            buf.WriteRune(rune(r))
+        }
+    }
+    buf.WriteByte('"')
+    return buf.Bytes()
+}
+
+func TestDecoder_RandomInvalidUtf8(t *testing.T) {
+    nums   := 1000
+    maxLen := 1000
+    for i := 0; i < nums; i++ {
+        length := rand.Intn(maxLen)
+        testDecodeInvalidUtf8(t, genRandJsonBytes(length))
+        testDecodeInvalidUtf8(t, genRandJsonRune(length))
     }
 }

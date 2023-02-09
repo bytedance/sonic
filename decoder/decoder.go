@@ -25,7 +25,7 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/option`
-    `github.com/bytedance/sonic/internal/utf8`
+    `github.com/bytedance/sonic/utf8`
 )
 
 const (
@@ -110,7 +110,7 @@ func (self *Decoder) CheckTrailings() error {
 func (self *Decoder) Decode(val interface{}) error {
     /* validate json if needed */
     if (self.f & (1 << _F_validate_string)) != 0  && !utf8.ValidateString(self.s){
-        dbuf, _ := utf8.CorrectWith(nil, rt.Str2Mem(self.s), "\ufffd")
+        dbuf := utf8.CorrectWith(nil, rt.Str2Mem(self.s), "\ufffd")
         self.s = rt.Mem2Str(dbuf)
     }
 

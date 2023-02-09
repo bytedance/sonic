@@ -165,12 +165,15 @@ func UnmarshalString(buf string, val interface{}) error {
     return ConfigDefault.UnmarshalFromString(buf, val)
 }
 
-// Get searches the given path json,
+// Get searches the given path from json,
 // and returns its representing ast.Node.
 //
 // Each path arg must be integer or string:
 //     - Integer means searching current node as array
 //     - String means searching current node as object
+//
+// Note, the api expects the json is well-formed at least,
+// otherwise it may return unexpected result.
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
     return GetFromString(string(src), path...)
 }

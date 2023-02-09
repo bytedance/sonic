@@ -25,7 +25,7 @@ import (
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
-    `github.com/bytedance/sonic/internal/utf8`
+    `github.com/bytedance/sonic/utf8`
     `github.com/bytedance/sonic/option`
 )
 
@@ -204,7 +204,7 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     }
 
     if opts & ValidateString != 0 && !utf8.Validate(*buf) {
-        dest, _ := utf8.CorrectWith(nil, *buf, `\ufffd`)
+        dest := utf8.CorrectWith(nil, *buf, `\ufffd`)
         freeBytes(*buf) // free origin used buffer
         *buf = dest
     }
@@ -283,6 +283,8 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 // Valid validates json and returns first non-blank character position,
 // if it is only one valid json value.
 // Otherwise returns invalid character position using start.
+//
+// Note: it does not check for the invalid UTF-8 characters.
 func Valid(data []byte) (ok bool, start int) {
     n := len(data)
     if n == 0 {
@@ -305,9 +307,5 @@ func Valid(data []byte) (ok bool, start int) {
         }
     }
 
-    /* check invalid utf8 */
-    if r := native.ValidateUTF8Fast(&s); r < 0 {
-        return false, -(r + 1)
-    }
     return true, ret
 }
