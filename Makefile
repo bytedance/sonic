@@ -42,11 +42,8 @@ CFLAGS			+= -fno-exceptions
 CFLAGS			+= -fno-rtti
 CFLAGS			+= -fno-stack-protector
 CFLAGS			+= -nostdlib
-CFLAGS			+= -O3 ${TFLAGS}
-# CFLAGS			+= -O3 -DLOG_LEVEL=0 
-# CFLAGS			+= -O3 -DDEBUG
-# CFLAGS			+= -O3 
-# CFLAGS			+= -Wall -Werror
+CFLAGS			+= -O3
+CFLAGS			+= -Wall -Werror
 
 NATIVE_SRC		:= $(wildcard native/*.h)
 NATIVE_SRC		+= $(wildcard native/*.c)

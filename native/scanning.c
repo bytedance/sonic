@@ -42,7 +42,7 @@ static inline uint64_t add32(uint64_t v1, uint64_t v2, uint64_t *vo) {
 }
 
 static inline uint64_t add64(uint64_t v1, uint64_t v2, uint64_t *vo) {
-    uint64_t v;
+    unsigned long long v;
     uint64_t c = __builtin_uaddll_overflow(v1, v2, &v);
 
     /* set the carry */
@@ -374,7 +374,6 @@ static inline ssize_t advance_string_validate(const GoString *src, long p, int64
     uint64_t cr = 0;
     long     qp = 0;
     long     np = 0;
-    long     up = 0;
 
     /* buffer pointers */
     size_t       nb = src->len;
@@ -407,7 +406,6 @@ static inline ssize_t advance_string_validate(const GoString *src, long p, int64
     uint32_t s0, s1;
     uint32_t t0, t1;
     uint32_t c0, c1;
-    uint32_t u0, u1;
 #else
     /* initialize vectors */
     __m128i v0;
@@ -430,7 +428,6 @@ static inline ssize_t advance_string_validate(const GoString *src, long p, int64
     es  = add(os, m1, &cr) << 1;    \
     m0 &= ~(fe & (es ^ EVEN_MASK));
 
-simd_advance:
     /* 64-byte SIMD loop */
     while (likely(nb >= 64)) {
 #if USE_AVX2
@@ -571,7 +568,6 @@ simd_advance:
         }
     }
 
-remain:
     /* handle the remaining bytes with scalar code */
     while (nb > 0) {
         ch = *sp;

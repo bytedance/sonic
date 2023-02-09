@@ -146,7 +146,6 @@ static always_inline long validate_utf8_with_errors(const char *src, long len, l
             start += n;
             continue;
         }
-        int pos = start - src;
         long err = write_error(start - src, m, MAX_RECURSE);
         if (err) {
             *p = start - src;
@@ -166,7 +165,6 @@ static always_inline long validate_utf8_with_errors(const char *src, long len, l
             start += n;
             continue;
         }
-        int pos = start - src;
         long err = write_error(start - src, m, MAX_RECURSE);
         if (err) {
             *p = start - src;
@@ -245,7 +243,7 @@ static always_inline long validate_utf8_errors(const GoString* s) {
       255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 255, 255, 255,
       255, 255, 255, 255, 255, 0b11110000u-1, 0b11100000u-1, 0b11000000u-1};
-        const __m256i max_value = _mm256_loadu_si256(tab);
+        const __m256i max_value = _mm256_loadu_si256((const __m256i_u *)(&tab[0]));
         return _mm256_subs_epu8(input, max_value);
     }
 
@@ -410,7 +408,6 @@ static always_inline long validate_utf8_errors(const GoString* s) {
     }
 
     static always_inline void check64(utf8_checker* checker, const uint8_t* start) {
-        GoString block = {start, 64};
         // fast path for contiguous ASCII
         __m256i input = _mm256_loadu_si256((__m256i*)start);
         __m256i input2 = _mm256_loadu_si256((__m256i*)(start + 32));
@@ -424,7 +421,6 @@ static always_inline long validate_utf8_errors(const GoString* s) {
     }
 
     static always_inline void check128(utf8_checker* checker, const uint8_t* start) {
-        GoString block = {start, 64};
         // fast path for contiguous ASCII
         __m256i input = _mm256_loadu_si256((__m256i*)start);
         __m256i input2 = _mm256_loadu_si256((__m256i*)(start + 32));
@@ -472,22 +468,22 @@ static always_inline long validate_utf8_errors(const GoString* s) {
     }
 
     static always_inline long validate_utf8_avx2(const GoString* s) {
-        xassert(s->buf != NULL);
+        xassert(s->buf != NULL || s->len != 0);
         const uint8_t* start = (const uint8_t*)(s->buf);
-        const uint8_t* origin = start;
-        const uint8_t* end = (const uint8_t*)(s->buf + s->len);
+        const uint8_t* end   = (const uint8_t*)(s->buf + s->len);
+        /* check eof */
+        if (s->len == 0) {
+            return 0;
+        }
         utf8_checker checker;
         utf8_checker_init(&checker);
         while (start < (end - 128)) {
-            GoString s = {start, 64};
-            GoSlice sl = {start, 64, 128};
             check128(&checker, start);
             if (check_error(&checker)) {
             }
             start += 128;
         };
         while (start < end - 64) {
-            GoString s = {start, 64};
             check64(&checker, start);
             start += 64;
         }

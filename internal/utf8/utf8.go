@@ -4,12 +4,7 @@ import (
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/native"
-    "os"
     "fmt"
-)
-
-var (
-    allCorrect = os.Getenv("SONIC_UTF8_ALL_RIGHT")  != ""
 )
 
 type InvalidUTF8Error struct {
@@ -23,9 +18,6 @@ func (self InvalidUTF8Error) Error() string {
 
 // CorrectWith corrects the invalid utf8 byte with repl string.
 func CorrectWith(dst []byte, src []byte, repl string) ([]byte, error) {
-    if allCorrect {
-        panic("should be right utf8, not panic here")
-    }
     var err error
     sstr := rt.Mem2Str(src)
     sidx := 0
@@ -63,6 +55,7 @@ func CorrectWith(dst []byte, src []byte, repl string) ([]byte, error) {
             m.Sp = 0
         }
     }
+
     types.FreeStateMachine(m)
     return dst, err
 }

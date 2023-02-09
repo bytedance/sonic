@@ -180,20 +180,6 @@ static inline void printgostr(GoString *s)
     printch('"');
 }
 
-static inline void printstrbytes(GoString *s)
-{
-    printch('"');
-    if (s->len < MAX_BUF_LEN)
-    {
-        write_syscall(s->buf, s->len);
-    }
-    else
-    {
-        write_syscall(s->buf, MAX_BUF_LEN);
-    }
-    printch('"');
-}
-
 static inline void do_xprintf(const char *fmt, ...)
 {
     __builtin_va_list va;
