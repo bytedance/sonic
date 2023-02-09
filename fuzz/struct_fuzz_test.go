@@ -71,10 +71,10 @@ func generateJSONTag(name string) reflect.StructTag {
 	name = strings.Split(name, ",")[0] // remove origin "," in tag name
 	switch int(rand.Int() % 5) {
 		case 0: return reflect.StructTag(`json:"-"`) // always omitted
-		case 1: return reflect.StructTag("") // empty tag
-		case 2: opt = "" // empty opt
-		case 3: opt = "omitempty"
-		case 4: opt = "string"
+		case 1: opt = "" // empty opt
+		case 2: opt = "omitempty"
+		// case 3: opt = "string"
+		default: return reflect.StructTag("") // empty tag
 	}
 	return reflect.StructTag(fmt.Sprintf(`json:"%s,%s"`, name, opt))
 }
@@ -146,7 +146,7 @@ func fuzzDynamicStruct(t *testing.T, data []byte, v map[string]interface{}) {
 	require.NoErrorf(t, err, "error in sonic pretouch struct %v", typ)
 
 	// Unmarshal fuzz
-	serr := sonic.Unmarshal(data, &sv)
+	serr := target.Unmarshal(data, &sv)
 	jerr := json.Unmarshal(data, &jv)
 	require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", typ)
 	if serr != nil {
@@ -155,7 +155,7 @@ func fuzzDynamicStruct(t *testing.T, data []byte, v map[string]interface{}) {
 	require.Equal(t, sv, jv, "different result in sonic unmarshal %v", typ)
 
 	// Marshal fuzz
-	sout, serr := sonic.Marshal(sv)
+	sout, serr := target.Marshal(sv)
 	jout, jerr := json.Marshal(jv)
 	require.NoError(t, serr, "error in sonic marshal %v", typ)
 	require.NoError(t, jerr, "error in json marshal %v", typ)

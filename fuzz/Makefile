@@ -1,12 +1,14 @@
+testname  := FuzzMain
+corpusdir := ./testdata/fuzz/${testname}
 
 fuzz: 
-	mkdir -p ./testdata/fuzz/FuzzMain
+	mkdir -p ${corpusdir}
 	rm -rf ./go-fuzz-corpus
 	git clone https://github.com/dvyukov/go-fuzz-corpus.git ./go-fuzz-corpus/
-	file2fuzz -o ./testdata/fuzz/FuzzMain ./go-fuzz-corpus/json/corpus/*  ./corpus/* 
+	file2fuzz -o ${corpusdir} ./go-fuzz-corpus/json/corpus/*  ./corpus/* 
 
 run:
-	GOARCH=amd64 go test -fuzz=Fuzz -v
+	GOARCH=amd64 go test -fuzz=${testname} -v
 
 clean:
 	rm -rf ./go-fuzz-corpus/
