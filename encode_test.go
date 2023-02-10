@@ -34,6 +34,7 @@ import (
     `testing`
     `time`
     `unsafe`
+    `strings`
 
     `github.com/bytedance/sonic/encoder`
     `github.com/stretchr/testify/assert`
@@ -52,7 +53,6 @@ func TestMain(m *testing.M) {
             runtime.GC()
             debug.FreeOSMemory() 
         }
-        println("stop GC looping!")
     }()
     time.Sleep(time.Millisecond)
     m.Run()
@@ -1168,4 +1168,33 @@ func TestMarshalNullNil(t *testing.T) {
     }.Froze().Marshal(v)
     assert.Nil(t, e)
     assert.Equal(t, `{"A":[],"B":{}}`, string(o))
+}
+
+func TestEncoder_LongestInvalidUtf8(t *testing.T) {
+    for _, data := range([]string{
+        "\"" + strings.Repeat("\x80", 4096) + "\"",
+        "\"" + strings.Repeat("\x80", 4095) + "\"",
+        "\"" + strings.Repeat("\x80", 4097) + "\"",
+        "\"" + strings.Repeat("\x80", 12345) + "\"",
+    }) {
+        testEncodeInvalidUtf8(t, []byte(data))
+    }
+}
+
+func testEncodeInvalidUtf8(t *testing.T, data []byte) {
+    jgot, jerr := json.Marshal(data)
+    sgot, serr := ConfigStd.Marshal(data)
+    assert.Equal(t, serr != nil, jerr != nil)
+    if jerr == nil {
+        assert.Equal(t, sgot, jgot)
+    }
+}
+
+func TestEncoder_RandomInvalidUtf8(t *testing.T) {
+    nums := 1000
+    maxLen := 1000
+    for i := 0; i < nums; i++ {
+        testEncodeInvalidUtf8(t, genRandJsonBytes(maxLen))
+        testEncodeInvalidUtf8(t, genRandJsonRune(maxLen))
+    }
 }

@@ -35,7 +35,7 @@ CC_amd64		:= clang
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py
 
 CFLAGS			:= -mno-red-zone
-CFLAGS			+= -arch x86_64
+CFLAGS			+= -target x86_64-apple-macos11
 CFLAGS			+= -fno-asynchronous-unwind-tables
 CFLAGS			+= -fno-builtin
 CFLAGS			+= -fno-exceptions
@@ -100,8 +100,10 @@ endef
 all: ${ARCH}
 
 clean:
-	rm -vfr ${TMP_DIR}/{sse,avx,avx2}
-	rm -vfr ${OUT_DIR}/{sse,avx,avx2}
+	for arch in ${ARCH}; do \
+		rm -vfr ${TMP_DIR}/$${arch}; \
+		rm -vfr ${OUT_DIR}/$${arch}; \
+	done
 
 $(foreach 								\
 	arch,								\

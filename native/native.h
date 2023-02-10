@@ -112,8 +112,8 @@ typedef struct {
 } JsonState;
 
 typedef struct {
-    int sp;
-    int vt[MAX_RECURSE];
+    int64_t sp;
+    int64_t vt[MAX_RECURSE];
 } StateMachine;
 
 int f64toa(char *out, double val);
@@ -144,9 +144,10 @@ long skip_number(const GoString *src, long *p);
 bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
 double atof_native(const char *sp, ssize_t nb, char *dbuf, ssize_t cap);
 
-ssize_t utf8_validate(const char *sp, ssize_t nb);
 long validate_string(const GoString *src, long *p);
 long validate_one(const GoString *src, long *p, StateMachine *m);
+long validate_utf8(const GoString *src, long *p, StateMachine *m);
+long validate_utf8_fast(const GoString *src); 
 
 long skip_one_fast(const GoString *src, long *p);
 long get_by_path(const GoString *src, long *p, const GoSlice *path);

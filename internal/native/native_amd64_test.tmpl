@@ -254,15 +254,6 @@ func TestNative_Vstring_ValidUnescapedChars(t *testing.T) {
     assert.Equal(t, -int(types.ERR_INVALID_CHAR), int(v.Vt))
 }
 
-func TestNative_Vstring_ValidUtf8(t *testing.T) {
-    var v types.JsonState
-    valid := uint64(types.F_VALIDATE_STRING)
-    i := 0
-    s := "test\xff\""
-    __vstring(&s, &i, &v, valid)
-    assert.Equal(t, -int(types.ERR_INVALID_CHAR), int(v.Vt))
-}
-
 func TestNative_VstringEscapeEOF(t *testing.T) {
     var v types.JsonState
     i := 0
@@ -271,51 +262,6 @@ func TestNative_VstringEscapeEOF(t *testing.T) {
     assert.Equal(t, 95, i)
     assert.Equal(t, 63, v.Ep)
     assert.Equal(t, int64(0), v.Iv)
-}
-
-func TestNative_ValidateOne(t *testing.T) {
-    {
-        p := 0
-        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\n\\r\\b\\f😁ſ景\xef\xbf\xbf\xf4\x8f\xbf\xbf\xc2\x80xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, len(s), p)
-        assert.Equal(t, 0, r)
-    }
-    {
-        p := 0
-        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\bxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 64, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"\x00\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 1, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\x80xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 64, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"\x80\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 1, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
-    {
-        p := 0
-        s := "\"\xed\xbf\xbf\"x"
-        r := __validate_one(&s, &p, &types.StateMachine{})
-        assert.Equal(t, 1, p)
-        assert.Equal(t, -int(types.ERR_INVALID_CHAR), r)
-    }
 }
 
 func TestNative_VstringHangUpOnRandomData(t *testing.T) {

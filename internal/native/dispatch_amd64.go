@@ -26,7 +26,10 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
 )
 
-const MaxFrameSize uintptr = 400
+const (
+    MaxFrameSize   uintptr = 400
+    BufPaddingSize int     = 64
+)
 
 var (
     S_f64toa uintptr
@@ -112,6 +115,16 @@ func U64toa(out *byte, val uint64) (ret int)
 //go:noescape
 //goland:noinspection GoUnusedParameter
 func F64toa(out *byte, val float64) (ret int)
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func ValidateUTF8(s *string, p *int, m *types.StateMachine) (ret int)
+
+//go:nosplit
+//go:noescape
+//goland:noinspection GoUnusedParameter
+func ValidateUTF8Fast(s *string) (ret int)
 
 func useAVX() {
     S_f64toa      = avx.S_f64toa

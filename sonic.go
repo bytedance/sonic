@@ -26,30 +26,8 @@ import (
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/encoder`
     `github.com/bytedance/sonic/option`
-    `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
-
-func checkTrailings(buf string, pos int) error {
-    /* skip all the trailing spaces */
-    if pos != len(buf) {
-        for pos < len(buf) && (types.SPACE_MASK & (1 << buf[pos])) != 0 {
-            pos++
-        }
-    }
-
-    /* then it must be at EOF */
-    if pos == len(buf) {
-        return nil
-    }
-
-    /* junk after JSON value */
-    return decoder.SyntaxError {
-        Src  : buf,
-        Pos  : pos,
-        Code : types.ERR_INVALID_CHAR,
-    }
-}
 
 type frozenConfig struct {
     Config
@@ -76,6 +54,9 @@ func (cfg Config) Froze() API {
     }
     if cfg.NoNullSliceOrMap {
         api.encoderOpts |= encoder.NoNullSliceOrMap
+    }
+    if cfg.ValidateString {
+        api.encoderOpts |= encoder.ValidateString
     }
 
     // configure decoder options:
@@ -118,13 +99,13 @@ func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
     dec := decoder.NewDecoder(buf)
     dec.SetOptions(cfg.decoderOpts)
     err := dec.Decode(val)
-    pos := dec.Pos()
 
     /* check for errors */
     if err != nil {
         return err
     }
-    return checkTrailings(buf, pos)
+
+    return dec.CheckTrailings()
 }
 
 // Unmarshal is implemented by sonic

@@ -45,7 +45,6 @@ TEXT ·HTMLEscape(SB), NOSPLIT, $0 - 40
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__html_escape(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__html_escape(SB)
 
-
 TEXT ·Value(SB), NOSPLIT, $0 - 48
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
@@ -81,6 +80,7 @@ TEXT ·GetByPath(SB), NOSPLIT, $0 - 32
     JE   2(PC)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__get_by_path(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__get_by_path(SB)
+
 TEXT ·ValidateOne(SB), NOSPLIT, $0 - 32
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)
@@ -90,6 +90,24 @@ TEXT ·ValidateOne(SB), NOSPLIT, $0 - 32
     JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__validate_one(SB)
     JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__validate_one(SB)
 
+TEXT ·ValidateUTF8(SB), NOSPLIT, $0 - 40
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__validate_utf8(SB)
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__validate_utf8(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__validate_utf8(SB)
+
+TEXT ·ValidateUTF8Fast(SB), NOSPLIT, $0 - 16
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx2·__validate_utf8_fast(SB)
+    CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX(SB), $0
+    JE   2(PC)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕avx·__validate_utf8_fast(SB)
+    JMP  github·com∕bytedance∕sonic∕internal∕native∕sse·__validate_utf8_fast(SB)
+    
 TEXT ·I64toa(SB), NOSPLIT, $0 - 32
     CMPB github·com∕bytedance∕sonic∕internal∕cpu·HasAVX2(SB), $0
     JE   2(PC)

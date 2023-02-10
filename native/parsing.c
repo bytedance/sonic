@@ -15,6 +15,7 @@
  */
 
 #include "native.h"
+#include "utils.h"
 #include <stdint.h>
 
 /** String Quoting **/
@@ -107,27 +108,6 @@ static const quoted_t _HtmlQuoteTab[256] = {
     [0xa8] = { .n = 6, .s = "\\u2028" },
     [0xa9] = { .n = 6, .s = "\\u2029" },
 };
-
-static inline void memcpy_p8(char *dp, const char *sp, ssize_t nb) {
-    if (nb >= 4) { *(uint32_t *)dp = *(const uint32_t *)sp; sp += 4, dp += 4, nb -= 4; }
-    if (nb >= 2) { *(uint16_t *)dp = *(const uint16_t *)sp; sp += 2, dp += 2, nb -= 2; }
-    if (nb >= 1) { *dp = *sp; }
-}
-
-static inline void memcpy_p16(char *dp, const char *sp, size_t nb) {
-    if (nb >= 8) { *(uint64_t *)dp = *(const uint64_t *)sp; sp += 8, dp += 8, nb -= 8; }
-    if (nb >= 4) { *(uint32_t *)dp = *(const uint32_t *)sp; sp += 4, dp += 4, nb -= 4; }
-    if (nb >= 2) { *(uint16_t *)dp = *(const uint16_t *)sp; sp += 2, dp += 2, nb -= 2; }
-    if (nb >= 1) { *dp = *sp; }
-}
-
-static inline void memcpy_p32(char *dp, const char *sp, size_t nb) {
-    if (nb >= 16) { _mm_storeu_si128((void *)dp, _mm_loadu_si128((const void *)sp)); sp += 16, dp += 16, nb -= 16; }
-    if (nb >=  8) { *(uint64_t *)dp = *(const uint64_t *)sp;                         sp +=  8, dp +=  8, nb -=  8; }
-    if (nb >=  4) { *(uint32_t *)dp = *(const uint32_t *)sp;                         sp +=  4, dp +=  4, nb -=  4; }
-    if (nb >=  2) { *(uint16_t *)dp = *(const uint16_t *)sp;                         sp +=  2, dp +=  2, nb -=  2; }
-    if (nb >=  1) { *dp = *sp; }
-}
 
 static inline __m128i _mm_find_quote(__m128i vv) {
     __m128i e1 = _mm_cmpgt_epi8   (vv, _mm_set1_epi8(-1));

@@ -345,7 +345,6 @@ func TestDecoder_Generic(t *testing.T) {
     pos, err := decode(TwitterJson, &v, false)
     assert.NoError(t, err)
     assert.Equal(t, len(TwitterJson), pos)
-    spew.Dump(v)
 }
 
 func TestDecoder_Binding(t *testing.T) {

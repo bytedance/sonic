@@ -25,7 +25,7 @@ type ValueType int
 type ParsingError uint
 type SearchingError uint
 
-// !NOT MODIFIED ONLY.
+// NOTE: !NOT MODIFIED ONLY.
 // This definitions are followed in native/types.h.
 
 const (
@@ -75,6 +75,7 @@ const (
     ERR_RECURSE_EXCEED_MAX ParsingError = 7
     ERR_FLOAT_INFINITY     ParsingError = 8
     ERR_MISMATCH           ParsingError = 9
+    ERR_INVALID_UTF8       ParsingError = 10
 )
 
 var _ParsingErrors = []string{
@@ -88,6 +89,7 @@ var _ParsingErrors = []string{
     ERR_RECURSE_EXCEED_MAX : "recursion exceeded max depth",
     ERR_FLOAT_INFINITY     : "float number is infinity",
     ERR_MISMATCH           : "mismatched type with value",
+    ERR_INVALID_UTF8       : "invalid UTF8",
 }
 
 func (self ParsingError) Error() string {

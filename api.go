@@ -66,8 +66,8 @@ type Config struct {
     // CopyString indicates decoder to decode string values by copying instead of referring.
     CopyString                    bool
 
-    // ValidateString indicates decoder to valid string values: decoder will return errors when
-    // invalid UTF-8 chars or unescaped control chars(\u0000-\u001f) in the string value of JSON.
+    // ValidateString indicates decoder and encoder to valid string values: decoder will return errors 
+    // when unescaped control chars(\u0000-\u001f) in the string value of JSON.
     ValidateString                    bool
 }
  
@@ -81,6 +81,7 @@ var (
         SortMapKeys: true,
         CompactMarshaler: true,
         CopyString : true,
+        ValidateString : true,
     }.Froze()
  
     // ConfigFastest is the fastest config of APIs, aiming at speed.
@@ -164,12 +165,15 @@ func UnmarshalString(buf string, val interface{}) error {
     return ConfigDefault.UnmarshalFromString(buf, val)
 }
 
-// Get searches the given path json,
+// Get searches the given path from json,
 // and returns its representing ast.Node.
 //
 // Each path arg must be integer or string:
 //     - Integer means searching current node as array
 //     - String means searching current node as object
+//
+// Note, the api expects the json is well-formed at least,
+// otherwise it may return unexpected result.
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
     return GetFromString(string(src), path...)
 }

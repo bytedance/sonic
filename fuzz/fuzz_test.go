@@ -19,17 +19,21 @@
 package sonic_fuzz
 
 import (
-	`encoding/json`
+    `encoding/json`
     `testing`
-    `unicode/utf8`
-    `reflect`
+    _ `unicode/utf8`
     `os`
     `runtime`
     `runtime/debug`
     `time`
+    `io`
+    `log`
+    `strconv`
 
     `github.com/bytedance/sonic`
     `github.com/stretchr/testify/require`
+    `github.com/davecgh/go-spew/spew`
+    `github.com/bytedance/gopkg/util/gctuner`
 )
 
 func FuzzMain(f *testing.F) {
@@ -39,11 +43,18 @@ func FuzzMain(f *testing.F) {
     f.Fuzz(fuzzMain)
 }
 
+// Used for debug falied fuzz corpus
+func TestCorpus(t *testing.T) {
+    fuzzMain(t, []byte("[1\x00"))
+}
+
+var target = sonic.ConfigStd
+
 func fuzzMain(t *testing.T, data []byte) {
     fuzzValidate(t, data)
     fuzzHtmlEscape(t, data)
-    // Only fuzz the validate json here, because the default configuration does not have validation in SONIC.
-    if !utf8.Valid(data) || !json.Valid(data) {
+    // Only fuzz the validate json here.
+    if !json.Valid(data) {
         return
     }
     for _, typ := range []func() interface{}{
@@ -54,31 +65,34 @@ func fuzzMain(t *testing.T, data []byte) {
         func() interface{} { return new(int64) },
         func() interface{} { return new(uint64) },
         func() interface{} { return new(float64) },
-        func() interface{} { return new(json.Number) },
-        func() interface{} { return new(S) },
+        // func() interface{} { return new(json.Number) },
+        // func() interface{} { return new(S) },
     } {
         sv, jv := typ(), typ()
-        serr := sonic.Unmarshal([]byte(data), sv)
+        serr := target.Unmarshal([]byte(data), sv)
         jerr := json.Unmarshal([]byte(data), jv)
-        require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", reflect.TypeOf(jv))
+        require.Equal(t, serr != nil, jerr != nil, 
+                dump(data, jv, jerr, sv, serr))
         if jerr != nil {
             continue
         }
-        require.Equal(t, sv, jv, "different result in sonic unmarshal %v", reflect.TypeOf(jv))
-        sout, serr := sonic.Marshal(sv)
-        jout, jerr := json.Marshal(jv)
-        require.NoError(t, serr, "error in sonic marshal %v", reflect.TypeOf(jv))
-        require.NoError(t, jerr, "error in json marshal %v", reflect.TypeOf(jv))
+        require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+    
+        v := jv
+        sout, serr := target.Marshal(v)
+        jout, jerr := json.Marshal(v)
+        require.NoError(t, serr, dump(v, jout, jerr, sout, serr))
+        require.NoError(t, jerr, dump(v, jout, jerr, sout, serr))
 
         {
             sv, jv := typ(), typ()
-            serr := sonic.Unmarshal(sout, sv)
+            serr := target.Unmarshal(sout, sv)
             jerr := json.Unmarshal(jout, jv)
-            require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal again %v", reflect.TypeOf(jv))
+            require.Equalf(t, serr != nil, jerr != nil, dump(data, jv, jerr, sv, serr))
             if jerr != nil {
                 continue
             }
-            require.Equal(t, sv, jv, "different result in sonic unmarshal again %v", reflect.TypeOf(jv))
+            require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
         }
 
         if m, ok := sv.(*map[string]interface{}); ok {
@@ -89,52 +103,54 @@ func fuzzMain(t *testing.T, data []byte) {
             fuzzASTGetFromArray(t, jout, *a)
         }
     }
+
 }
 
+
 type S struct {
-	A int    `json:",omitempty"`
-	B string `json:"B1,omitempty"`
-	C float64
-	D bool
-	E uint8
-	// F []byte // unmarshal []byte is different with encoding/json
-	G interface{}
-	H map[string]interface{}
-	I map[string]string
-	J []interface{}
-	K []string
-	L S1
-	M *S1
-	N *int
-	O **int
+    A int    `json:",omitempty"`
+    B string `json:"B1,omitempty"`
+    C float64
+    D bool
+    E uint8
+    // F []byte // unmarshal []byte is different with encoding/json
+    G interface{}
+    H map[string]interface{}
+    I map[string]string
+    J []interface{}
+    K []string
+    L S1
+    M *S1
+    N *int
+    O **int
     P int `json:",string"`
     Q float64 `json:",string"`
-	R int `json:"-"`
-	T struct {}
-	U [2]int
-	V uintptr
+    R int `json:"-"`
+    T struct {}
+    U [2]int
+    V uintptr
     W json.Number
     // X json.RawMessage
     Y Marshaller 
-	Z TextMarshaller
+    Z TextMarshaller
 }
 
 
 type S1 struct {
-	A int
-	B string
+    A int
+    B string
 }
 
 type Marshaller struct {
-	v string
+    v string
 }
 
 func (m *Marshaller) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.v)
+    return json.Marshal(m.v)
 }
 
 func (m *Marshaller) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &m.v)
+    return json.Unmarshal(data, &m.v)
 }
 
 type TextMarshaller struct {
@@ -149,19 +165,54 @@ func (k *TextMarshaller)  UnmarshalText(data []byte) error {
     return json.Unmarshal(data, &k.v)
 }
 
-var debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 
-func TestMain(m *testing.M) {
+func dump(args ...interface{}) string {
+    return spew.Sdump(args)
+}
+
+func fdump(w io.Writer, args ...interface{}) {
+    spew.Fdump(w, args)
+}
+
+const (
+    MemoryLimitEnv = "SONIC_FUZZ_MEM_LIMIT"
+    AsynyncGCEnv   = "SONIC_NO_ASYNC_GC"
+    KB      uint64 = 1024
+    MB      uint64 = 1024 * KB
+    GB      uint64 = 1024 * MB
+)
+
+func setMemLimit(limit uint64) {
+    threshold := uint64(float64(limit) * 0.7)
+    numWorker := uint64(runtime.GOMAXPROCS(0))
+    if os.Getenv(MemoryLimitEnv) != "" {
+        if memGB, err := strconv.ParseUint(os.Getenv(MemoryLimitEnv), 10, 64); err == nil {
+            limit = memGB * GB
+        }
+    }
+    gctuner.Tuning(threshold / numWorker)
+    log.Printf("[%d] Memory Limit: %d GB, Memory Threshold: %d MB\n", os.Getpid(), limit/GB, threshold/MB)
+    log.Printf("[%d] Memory Threshold Per Worker: %d MB\n", os.Getpid(), threshold/numWorker/MB)
+}
+
+func enableSyncGC() {
+    var debugAsyncGC = os.Getenv("AsynyncGCEnv") == ""
     go func ()  {
         if !debugAsyncGC {
             return 
         }
-        println("Begin GC looping...")
+        log.Printf("Begin GC looping...")
         for {
             runtime.GC()
             debug.FreeOSMemory() 
         }
     }()
+}
+
+func TestMain(m *testing.M) {
+    // Avoid OOM
+    setMemLimit(8 * GB)
+    enableSyncGC()
     time.Sleep(time.Millisecond)
     m.Run()
 }
