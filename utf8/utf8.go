@@ -65,6 +65,7 @@ func Validate(src []byte) bool {
     return ValidateString(rt.Mem2Str(src))
 }
 
+// ValidateString as Validate, but for string.
 func ValidateString(src string) bool {
     return native.ValidateUTF8Fast(&src) == 0
 }
