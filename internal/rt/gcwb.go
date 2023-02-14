@@ -17,6 +17,7 @@
 package rt
 
 import (
+    `os`
     `sync/atomic`
     `unsafe`
 
@@ -74,6 +75,11 @@ func GcwbAddr() uintptr {
         return uintptr(fp) + off
     }
 }
+
+// StopProfiling is used to stop traceback introduced by SIGPROF while native code is running.
+// WARN: this option is only a workaround for traceback issue (https://github.com/bytedance/sonic/issues/310),
+// and will be dropped when the issue is fixed.
+var StopProfiling = os.Getenv("SONIC_STOP_PROFILING") != ""
 
 // WARN: must be aligned with runtime.Prof
 // type Prof struct {
