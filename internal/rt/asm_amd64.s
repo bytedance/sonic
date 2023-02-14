@@ -22,6 +22,8 @@ _stack_grow:
 
 TEXT ·StopProf(SB), NOSPLIT, $0-0
     NO_LOCAL_POINTERS
+    CMPB github·com∕bytedance∕sonic∕internal∕rt·StopProfiling(SB), $0
+    JEQ  _ret_1
     MOVL $1, AX
     LEAQ github·com∕bytedance∕sonic∕internal∕rt·yieldCount(SB), CX
     LOCK
@@ -37,6 +39,8 @@ _ret_1:
 
 TEXT ·StartProf(SB), NOSPLIT, $0-0
     NO_LOCAL_POINTERS
+    CMPB github·com∕bytedance∕sonic∕internal∕rt·StopProfiling(SB), $0
+    JEQ  _ret_2
     MOVL $-1, AX
     LEAQ github·com∕bytedance∕sonic∕internal∕rt·yieldCount(SB), CX
     LOCK
