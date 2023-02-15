@@ -126,45 +126,6 @@ type _func struct {
     // funcdata [nfuncdata]uint32
 }
 
-type _Func struct {
-    entry    uintptr // start pc, as offset from moduledata.text/pcHeader.textStart
-    nameOff  int32  // function name, as index into moduledata.funcnametab.
-
-    args        int32  // in/out args size
-    deferreturn uint32 // offset of start of a deferreturn call instruction from entry, if any.
-
-    pcsp      uint32 
-    pcfile    uint32
-    pcln      uint32
-    npcdata   uint32
-    cuOffset  uint32 // runtime.cutab offset of this function's CU
-    funcID    uint8  // set for certain special runtime functions
-    _         [2]byte // pad
-    nfuncdata uint8   // 
-    
-    // The end of the struct is followed immediately by two variable-length
-    // arrays that reference the pcdata and funcdata locations for this
-    // function.
-
-    // pcdata contains the offset into moduledata.pctab for the start of
-    // that index's table. e.g.,
-    // &moduledata.pctab[_func.pcdata[_PCDATA_UnsafePoint]] is the start of
-    // the unsafe point table.
-    //
-    // An offset of 0 indicates that there is no table.
-    //
-    pcdata [_N_PCDATA]uint32
-
-    // funcdata contains the offset past moduledata.gofunc which contains a
-    // pointer to that index's funcdata. e.g.,
-    // *(moduledata.gofunc +  _func.funcdata[_FUNCDATA_ArgsPointerMaps]) is
-    // the argument pointer map.
-    //
-    // An offset of ^uint32(0) indicates that there is no entry.
-    //
-    funcdata [_N_FUNCDATA]uintptr
-}
-
 type funcTab struct {
     entry   uintptr
     funcoff uintptr
