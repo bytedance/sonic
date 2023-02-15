@@ -1,5 +1,5 @@
-//go:build go1.18
-// +build go1.18
+//go:build go1.16 && !go1.17
+// +build go1.16,!go1.17
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -20,6 +20,7 @@
 package loader
 
 import (
+    `fmt`
     `runtime`
     `runtime/debug`
     `strconv`
@@ -58,22 +59,25 @@ func TestLoad(t *testing.T) {
     //     return t + *i
     // }
     bc := []byte {
-        0x48, 0x83, 0xec, 0x18,         // (0x00) subq $24, %rsp
-        0x48, 0x89, 0x6c, 0x24, 0x10,   // (0x04) movq %rbp, 16(%rsp)
-        0x48, 0x8d, 0x6c, 0x24, 0x10,   // (0x09) leaq 16(%rsp), %rbp
-        0x48, 0x89, 0x44, 0x24, 0x20,   // (0x0e) movq %rax, 32(%rsp)
-        0x48, 0x8b, 0x08,               // (0x13) movq (%rax), %rcx
-        0x48, 0x89, 0x4c, 0x24, 0x08,   // (0x16) movq %rcx, 8(%rsp)
-        0x48, 0x8b, 0x33,               // (0x1b) movq (%rbx), %rsi
-        0x48, 0x89, 0xda,               // (0x1e) movq %rbx, %rdx
-        0xff, 0xd6,                     // (0x21) callq %rsi
-        0x48, 0x8b, 0x44, 0x24, 0x08,   // (0x23) movq 8(%rsp), %rax
-        0x48, 0x8b, 0x4c, 0x24, 0x20,   // (0x28) movq 32(%rsp), %rcx
-        0x48, 0x03, 0x01,               // (0x2d) addq (%rcx), %rax
-        0x48, 0x8b, 0x6c, 0x24, 0x10,   // (0x30) movq 16(%rsp), %rbp
-        0x48, 0x83, 0xc4, 0x18,         // (0x35) addq $24, %rsp
-        0xc3,                           // (0x39) ret
+        0x48, 0x83, 0xec, 0x18,       // (0x00) subq $24, %rsp
+        0x48, 0x89, 0x6c, 0x24, 0x10, // (0x04) movq %rbp, 16(%rsp)
+        0x48, 0x8d, 0x6c, 0x24, 0x10, // (0x09) leaq 16(%rsp), %rbp
+        0x48, 0x8b, 0x44, 0x24, 0x20, // (0x0e) movq 32(%rsp), %rax
+        0x48, 0x8b, 0x08,             // (0x13) movq (%rax), %rcx
+        0x48, 0x89, 0x4c, 0x24, 0x08, // (0x16) movq %rcx, 8(%rsp)
+        0x48, 0x8b, 0x54, 0x24, 0x28, // (0x1b) movq 40(%rsp), %rdx
+        0x48, 0x8b, 0x1a,             // (0x20) movq (%rdx), %rbx
+        0x48, 0x89, 0x04, 0x24,       // (0x23) movq %rax, (%rsp)
+        0xff, 0xd3,                   // (0x27) callq %rbx
+        0x48, 0x8b, 0x44, 0x24, 0x08, // (0x29) movq 8(%rsp), %rax
+        0x48, 0x8b, 0x4c, 0x24, 0x20, // (0x2e) movq 32(%rsp), %rcx
+        0x48, 0x03, 0x01,             // (0x33) addq (%rcx), %rax
+        0x48, 0x89, 0x44, 0x24, 0x30, // (0x36) movq %rax, 48(%rsp)
+        0x48, 0x8b, 0x6c, 0x24, 0x10, // (0x3b) movq 16(%rsp), %rbp
+        0x48, 0x83, 0xc4, 0x18,       // (0x40) addq $24, %rsp
+        0xc3,                         // (0x44) ret
     }
+    
     size := uint32(len(bc))
     fn := Func{
         ID: 0,
@@ -92,9 +96,9 @@ func TestLoad(t *testing.T) {
     }
 
     fn.Pcline = &Pcdata{
-        {PC: 0x00, Val: 0},
-        {PC: 0x0e, Val: 1},
-        {PC: 0x1d, Val: 2},
+        {PC: 0x13, Val: 0},
+        {PC: 0x1b, Val: 1},
+        {PC: 0x23, Val: 2},
         {PC: size, Val: 3},
     }
 
@@ -114,21 +118,25 @@ func TestLoad(t *testing.T) {
     args.AddField(true)
     args.AddField(true)
     fn.ArgsPointerMaps = args.Build()
+    ab, _ :=  fn.ArgsPointerMaps.MarshalBinary()
+    fmt.Printf("args: %+v\n", ab)
 
     locals := rt.StackMapBuilder{}
     locals.AddField(false)
     locals.AddField(false)
     fn.LocalsPointerMaps = locals.Build()
+    lb, _ :=  fn.LocalsPointerMaps.MarshalBinary()
+    fmt.Printf("locals: %+v\n", lb)
 
     rets := Load(bc, []Func{fn}, "dummy_module", []string{"github.com/bytedance/sonic/dummy.go"})
     println("func address ", *(*unsafe.Pointer)(rets[0]))
     // for k, _ := range moduleCache.m {
     //     spew.Dump(k)
     // }
-
     f := *(*TestFunc)(unsafe.Pointer(&rets[0]))
     i := 1
     j := f(&i, hook)
     require.Equal(t, 2, j)
     require.Equal(t, "hook1", hstr)
+
 }
