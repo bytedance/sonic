@@ -108,7 +108,7 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
         0xfb, 0xff, 0xff, 0xff,     // magic   : 0xfffffffb
         0,                          // pad1    : 0
         0,                          // pad2    : 0
-        1,                          // minLC   : 1
+        minLC,                      // minLC   : 1(amd64), 4(arm64)
         4 << (^uintptr(0) >> 63),   // ptrSize : 4 << (^uintptr(0) >> 63)
     }
 

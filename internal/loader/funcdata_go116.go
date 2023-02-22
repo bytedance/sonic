@@ -114,7 +114,7 @@ type _FindFuncBucket struct {
 
 var modHeader = &_PCHeader {
     magic   : 0xfffffffa,
-    minLC   : 1,
+    minLC   : minLC,
     nfunc   : 1,
     ptrSize : 4 << (^uintptr(0) >> 63),
 }

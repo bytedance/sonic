@@ -138,7 +138,7 @@ func registerFunction(name string, pc uintptr, textSize uintptr, fp int, args in
 
     modHeader := &_PCHeader {
         magic   : 0xfffffff0,
-        minLC   : 1,
+        minLC   : minLC,
         nfunc   : 1,
         ptrSize : 4 << (^uintptr(0) >> 63),
         textStart: minpc,

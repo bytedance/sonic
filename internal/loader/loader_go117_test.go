@@ -30,9 +30,21 @@ import (
 )
 
 func TestLoader_Load(t *testing.T) {
-    bc := []byte {
+    var bc []byte
+
+    switch Host {
+    case ARM64:
+        bc = []byte{
+        0xe1, 0x07, 0x40, 0xf9,                 // 0xf94007e1, MOVD addr+0(FP), R1
+        0x40, 0x9a, 0x80, 0xd2,                 // 0xd2824680, MOVD $1234, R0
+        0x20, 0x00, 0x00, 0xf9,                 // 0xf9000020, MOVD R0, 0x0(R1)
+        0xc0, 0x03, 0x5f, 0xd6,                 // 0xd65f03c0, RET
+    }
+    default:
+	bc = []byte {
         0x48, 0xc7, 0x00, 0xd2, 0x04, 0x00, 0x00,   // MOVQ  $1234, (%rax)
         0xc3,                                       // RET
+    }
     }
     v0 := 0
     fn := Loader(bc).Load("test", 0, 8, nil, nil)
