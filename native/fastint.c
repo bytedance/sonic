@@ -67,18 +67,18 @@ static const uint8_t VecShiftShuffles[144] __attribute__((aligned(16))) = {
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 };
 
-static inline int itoa1(char *out, int n, uint32_t v) {
+static always_inline int itoa1(char *out, int n, uint32_t v) {
     out[n++] = (char)v + '0';
     return n;
 }
 
-static inline int itoa2(char *out, int n, uint32_t v) {
+static always_inline int itoa2(char *out, int n, uint32_t v) {
     out[n++] = Digits[v];
     out[n++] = Digits[v + 1];
     return n;
 }
 
-static inline __m128i itoa8_sse2(uint32_t v) {
+static always_inline __m128i itoa8_sse2(uint32_t v) {
     __m128i v00 = _mm_cvtsi32_si128  (v);
     __m128i v01 = _mm_mul_epu32      (v00, as_m128v(Vec4xDiv10k));
     __m128i v02 = _mm_srli_epi64     (v01, 45);
@@ -96,7 +96,7 @@ static inline __m128i itoa8_sse2(uint32_t v) {
     return v13;
 }
 
-static inline int u32toa_small(char *out, uint32_t val) {
+static always_inline int u32toa_small(char *out, uint32_t val) {
     int      n  = 0;
     uint32_t d1 = (val / 100) << 1;
     uint32_t d2 = (val % 100) << 1;
@@ -121,7 +121,7 @@ static inline int u32toa_small(char *out, uint32_t val) {
     return n;
 }
 
-static inline int u32toa_medium(char *out, uint32_t val) {
+static always_inline int u32toa_medium(char *out, uint32_t val) {
     int      n  = 0;
     uint32_t b  = val / 10000;
     uint32_t c  = val % 10000;
@@ -154,7 +154,7 @@ static inline int u32toa_medium(char *out, uint32_t val) {
     return n;
 }
 
-static inline int u64toa_large_sse2(char *out, uint64_t val) {
+static always_inline int u64toa_large_sse2(char *out, uint64_t val) {
     uint32_t a = (uint32_t)(val / 100000000);
     uint32_t b = (uint32_t)(val % 100000000);
 
@@ -180,7 +180,7 @@ static inline int u64toa_large_sse2(char *out, uint64_t val) {
     return 16 - nd;
 }
 
-static inline int u64toa_xlarge_sse2(char *out, uint64_t val) {
+static always_inline int u64toa_xlarge_sse2(char *out, uint64_t val) {
     int      n = 0;
     uint64_t b = val % 10000000000000000;
     uint32_t a = (uint32_t)(val / 10000000000000000);

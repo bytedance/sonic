@@ -38,7 +38,7 @@
 #include "test/xassert.h"
 #include "test/xprintf.h"
 
-static inline ssize_t valid_utf8_4byte(uint32_t ubin) {
+static always_inline ssize_t valid_utf8_4byte(uint32_t ubin) {
     /*
      Each unicode code point is encoded as 1 to 4 bytes in UTF-8 encoding,
      we use 4-byte mask and pattern value to validate UTF-8 byte sequence,

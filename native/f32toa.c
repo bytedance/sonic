@@ -42,7 +42,7 @@ typedef struct {
     int32_t exp;
 } f32_dec;
 
-static inline unsigned ctz10_u32(const uint32_t v) {
+static always_inline unsigned ctz10_u32(const uint32_t v) {
     xassert(0 <= v && v < 1000000000u);
     if (v >= 100000) {
         if (v <   1000000) return 6;
@@ -58,7 +58,7 @@ static inline unsigned ctz10_u32(const uint32_t v) {
     }
 }
 
-static inline char* format_significand_f32(uint32_t sig, char *out, int cnt) {
+static always_inline char* format_significand_f32(uint32_t sig, char *out, int cnt) {
     char *r = out + cnt;
     int ctz = 0;
 
@@ -94,7 +94,7 @@ static inline char* format_significand_f32(uint32_t sig, char *out, int cnt) {
     return out + cnt - ctz;
 }
 
-static inline char* format_integer_u32(uint32_t sig, char *out, unsigned cnt) {
+static always_inline char* format_integer_u32(uint32_t sig, char *out, unsigned cnt) {
     char *r = out + cnt;
 
     /* at most 9 digits here */
@@ -125,7 +125,7 @@ static inline char* format_integer_u32(uint32_t sig, char *out, unsigned cnt) {
     return out + cnt;
 }
 
-static inline char* format_exponent_f32(f32_dec v, char *out, int cnt) {
+static always_inline char* format_exponent_f32(f32_dec v, char *out, int cnt) {
     char* p = out + 1;
     char* end = format_significand_f32(v.sig, p, cnt);
     while (*(end - 1) == '0') end--;
@@ -162,7 +162,7 @@ static inline char* format_exponent_f32(f32_dec v, char *out, int cnt) {
     return end;
 }
 
-static inline char* format_decimal_f32(f32_dec v, char* out, int cnt) {
+static always_inline char* format_decimal_f32(f32_dec v, char* out, int cnt) {
     char* p = out;
     char* end;
     int point = cnt + v.exp;
@@ -198,7 +198,7 @@ static inline char* format_decimal_f32(f32_dec v, char* out, int cnt) {
     return end;
 }
 
-static inline char* write_dec_f32(f32_dec dec, char* p) {
+static always_inline char* write_dec_f32(f32_dec dec, char* p) {
     int cnt = ctz10_u32(dec.sig);
     int dot = cnt + dec.exp;
     int sci_exp = dot - 1;
@@ -218,7 +218,7 @@ static inline char* write_dec_f32(f32_dec dec, char* p) {
     return end;
 }
 
-static inline uint32_t f32toraw(float fp) {
+static always_inline uint32_t f32toraw(float fp) {
     union {
         uint32_t u32;
         float   f32;
@@ -227,7 +227,7 @@ static inline uint32_t f32toraw(float fp) {
     return uval.u32;
 }
 
-static inline uint64_t pow10_ceil_sig_f32(int32_t k)
+static always_inline uint64_t pow10_ceil_sig_f32(int32_t k)
 {
     // There are unique beta and r such that 10^k = beta 2^r and
     // 2^63 <= beta < 2^64, namely r = floor(log_2 10^k) - 63 and
@@ -328,7 +328,7 @@ static inline uint64_t pow10_ceil_sig_f32(int32_t k)
 #undef KMAX
 }
 
-static inline uint32_t round_odd_f32(uint64_t g, uint32_t cp) {
+static always_inline uint32_t round_odd_f32(uint64_t g, uint32_t cp) {
     const uint128_t p = ((uint128_t)g) * cp;
     const uint32_t y1 = (uint64_t)(p >> 64);
     const uint32_t y0 = ((uint64_t)(p)) >> 32;
@@ -344,7 +344,7 @@ static inline uint32_t round_odd_f32(uint64_t g, uint32_t cp) {
  https://github.com/openjdk/jdk/pull/3402 (Java implementation)
  https://github.com/abolz/Drachennest (C++ implementation)
  */
-static inline f32_dec f32todec(uint32_t rsig, int32_t rexp, uint32_t c, int32_t q) {
+static always_inline f32_dec f32todec(uint32_t rsig, int32_t rexp, uint32_t c, int32_t q) {
     uint32_t cbl, cb, cbr, vbl, vb, vbr, lower, upper, s;
     int32_t k, h;
     bool even, irregular, w_inside, u_inside;

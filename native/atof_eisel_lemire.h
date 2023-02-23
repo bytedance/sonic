@@ -42,6 +42,7 @@
  * This file may have been modified by ByteDance authors. All ByteDance
  * Modifications are Copyright 2022 ByteDance Authors.
  */
+#pragma once
 
 #include "native.h"
 
@@ -53,11 +54,11 @@ typedef struct u128_output {
 
 static const uint64_t POW10_M128_TAB[697][2];
 
-static inline int count_leading_zeroes_u64(uint64_t u) {
+static always_inline int count_leading_zeroes_u64(uint64_t u) {
     return u ? __builtin_clzl(u) : 64;
 }
 
-static inline u128_output mul_u64(uint64_t x, uint64_t y) {
+static always_inline u128_output mul_u64(uint64_t x, uint64_t y) {
     u128_output ret;
     __uint128_t z = ((__uint128_t)x) * ((__uint128_t)y);
     ret.hi = (uint64_t)(z >> 64);
@@ -68,7 +69,7 @@ static inline u128_output mul_u64(uint64_t x, uint64_t y) {
 /* This is Eisel Lemire ParseFloat algorithm implemented in C.
  * reference: https://nigeltao.github.io/blog/2020/eisel-lemire.html 
  */
-bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
+static always_inline bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val) {
     if (exp10 < -348 || exp10 > 347) {
         return false;
     }

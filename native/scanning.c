@@ -32,7 +32,7 @@ static const double P10_TAB[23] = {
     1e+021, 1e+022 /* <= the connvertion to double is not exact when larger,  => */
 };
 
-static inline uint64_t add32(uint64_t v1, uint64_t v2, uint64_t *vo) {
+static always_inline uint64_t add32(uint64_t v1, uint64_t v2, uint64_t *vo) {
     uint32_t v;
     uint32_t c = __builtin_uadd_overflow((uint32_t)v1, (uint32_t)v2, &v);
 
@@ -41,7 +41,7 @@ static inline uint64_t add32(uint64_t v1, uint64_t v2, uint64_t *vo) {
     return v;
 }
 
-static inline uint64_t add64(uint64_t v1, uint64_t v2, uint64_t *vo) {
+static always_inline uint64_t add64(uint64_t v1, uint64_t v2, uint64_t *vo) {
     unsigned long long v;
     uint64_t c = __builtin_uaddll_overflow(v1, v2, &v);
 
@@ -50,13 +50,13 @@ static inline uint64_t add64(uint64_t v1, uint64_t v2, uint64_t *vo) {
     return v;
 }
 
-static inline char isspace(char ch) {
+static always_inline char isspace(char ch) {
     return ch == ' ' || ch == '\r' || ch == '\n' | ch == '\t';
 }
 
 const int MASK_USE_NUMBER = 1<<1;
 
-static inline void vdigits(const GoString *src, long *p, JsonState *ret, uint64_t flag) {
+static always_inline void vdigits(const GoString *src, long *p, JsonState *ret, uint64_t flag) {
     --*p;
     if (flag & MASK_USE_NUMBER) {
         long i = skip_number(src, p);
@@ -71,7 +71,7 @@ static inline void vdigits(const GoString *src, long *p, JsonState *ret, uint64_
     vnumber(src, p, ret);
 }
 
-static inline char advance_ns(const GoString *src, long *p) {
+static always_inline char advance_ns(const GoString *src, long *p) {
     size_t       vi = *p;
     size_t       nb = src->len;
     const char * sp = src->buf;
@@ -99,7 +99,7 @@ nospace:
     return src->buf[vi];
 }
 
-static inline int64_t advance_dword(const GoString *src, long *p, long dec, int64_t ret, uint32_t val) {
+static always_inline int64_t advance_dword(const GoString *src, long *p, long dec, int64_t ret, uint32_t val) {
     if (*p > src->len + dec - 4) {
         *p = src->len;
         return -ERR_EOF;
@@ -113,7 +113,7 @@ static inline int64_t advance_dword(const GoString *src, long *p, long dec, int6
     }
 }
 
-static inline ssize_t advance_string_default(const GoString *src, long p, int64_t *ep) {
+static always_inline ssize_t advance_string_default(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t es;
     uint64_t fe;
@@ -333,41 +333,41 @@ static inline ssize_t advance_string_default(const GoString *src, long p, int64_
 
 #if USE_AVX2
 
-static inline int _mm256_get_mask(__m256i v, __m256i t) {
+static always_inline int _mm256_get_mask(__m256i v, __m256i t) {
     return _mm256_movemask_epi8(_mm256_cmpeq_epi8(v, t));
 }
 
 // contrl char: 0x00 ~ 0x1F
-static inline int _mm256_cchars_mask(__m256i v) {
+static always_inline int _mm256_cchars_mask(__m256i v) {
     __m256i e1 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(-1));
     __m256i e2 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(31));
     return    _mm256_movemask_epi8 (_mm256_andnot_si256 (e2, e1));
 }
 
 // ascii: 0x00 ~ 0x7F
-static inline int _mm256_nonascii_mask(__m256i v) {
+static always_inline int _mm256_nonascii_mask(__m256i v) {
     return _mm256_movemask_epi8(v);
 }
 
 #endif
 
-static inline int _mm_get_mask(__m128i v, __m128i t) {
+static always_inline int _mm_get_mask(__m128i v, __m128i t) {
     return _mm_movemask_epi8(_mm_cmpeq_epi8(v, t));
 }
 
 // contrl char: 0x00 ~ 0x1F
-static inline int _mm_cchars_mask(__m128i v) {
+static always_inline int _mm_cchars_mask(__m128i v) {
     __m128i e1 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(-1));
     __m128i e2 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(31));
     return    _mm_movemask_epi8 (_mm_andnot_si128 (e2, e1));
 }
 
 // ascii: 0x00 ~ 0x7F
-static inline int _mm_nonascii_mask(__m128i v) {
+static always_inline int _mm_nonascii_mask(__m128i v) {
     return _mm_movemask_epi8(v);
 }
 
-static inline ssize_t advance_string_validate(const GoString *src, long p, int64_t *ep) {
+static always_inline ssize_t advance_string_validate(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t m0, m1, m2;
     uint64_t es, fe, os;
@@ -602,7 +602,7 @@ static inline ssize_t advance_string_validate(const GoString *src, long p, int64
 #undef m0_mask
 }
 
-static inline ssize_t advance_string(const GoString *src, long p, int64_t *ep, uint64_t flags) {
+static always_inline ssize_t advance_string(const GoString *src, long p, int64_t *ep, uint64_t flags) {
     if ((flags & MASK_VALIDATE_STRING) != 0) {
         return advance_string_validate(src, p, ep);
     } else {
@@ -785,7 +785,7 @@ void vstring(const GoString *src, long *p, JsonState *ret, uint64_t flags) {
     ret->iv = val;
 
 /** check whether float can represent the val exactly **/
-static inline bool is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
+static always_inline bool is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
     *val = (double)man;
 
     if (man >> 52 != 0) {
@@ -821,7 +821,7 @@ static inline bool is_atof_exact(uint64_t man, int exp, int sgn, double *val) {
     return false;
 }
 
-static inline double atof_fast(uint64_t man, int exp, int sgn, int trunc, double *val) {
+static always_inline double atof_fast(uint64_t man, int exp, int sgn, int trunc, double *val) {
     double val_up = 0.0;
 
     /* look-up for fast atof if the conversion can be exactly */
@@ -839,7 +839,7 @@ static inline double atof_fast(uint64_t man, int exp, int sgn, int trunc, double
     return false;
 }
 
-static bool inline is_overflow(uint64_t man, int sgn, int exp10) {
+static bool always_inline is_overflow(uint64_t man, int sgn, int exp10) {
     /* the former exp10 != 0 means man has overflowed
      * the later euqals to man*sgn < INT64_MIN or > INT64_MAX */
     return exp10 != 0 ||
@@ -948,7 +948,7 @@ void vnumber(const GoString *src, long *p, JsonState *ret) {
 parse_float:
     /* when fast algorithms failed, use slow fallback.*/
     if(!atof_fast(man, exp10, sgn, trunc, &val)) {
-        val = atof_native(s + *p, i - *p, dbuf, dcap);
+        val = atof_fallback(s + *p, i - *p, dbuf, dcap);
     }
 
     /* check parsed double val */
@@ -1003,12 +1003,12 @@ void vunsigned(const GoString *src, long *p, JsonState *ret) {
 #define FSM_CHAR(c)     do { if (ch != (c)) return -ERR_INVAL; } while (0)
 #define FSM_XERR(v)     do { long r = (v); if (r < 0) return r; } while (0)
 
-static inline void fsm_init(StateMachine *self, int vt) {
+static always_inline void fsm_init(StateMachine *self, int vt) {
     self->sp = 1;
     self->vt[0] = vt;
 }
 
-static inline long fsm_push(StateMachine *self, int vt) {
+static always_inline long fsm_push(StateMachine *self, int vt) {
     if (self->sp >= MAX_RECURSE) {
         return -ERR_RECURSE_MAX;
     } else {
@@ -1017,7 +1017,7 @@ static inline long fsm_push(StateMachine *self, int vt) {
     }
 }
 
-static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, uint64_t flags) {
+static always_inline long fsm_exec(StateMachine *self, const GoString *src, long *p, uint64_t flags) {
     int  vt;
     char ch;
     long vi = -1;
@@ -1164,7 +1164,7 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, ui
         }                                               \
     }
 
-static inline long do_skip_number(const char *sp, size_t nb) {
+static always_inline long do_skip_number(const char *sp, size_t nb) {
     long         di = -1;
     long         ei = -1;
     long         si = -1;

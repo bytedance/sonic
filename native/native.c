@@ -20,7 +20,5 @@
 #include "fastfloat.c"
 #include "fastint.c"
 #include "parsing.c"
-#include "atof_eisel_lemire.c"
-#include "atof_native.c"
 #include "scanning.c"
 #include "f32toa.c"

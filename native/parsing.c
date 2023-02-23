@@ -109,7 +109,7 @@ static const quoted_t _HtmlQuoteTab[256] = {
     [0xa9] = { .n = 6, .s = "\\u2029" },
 };
 
-static inline __m128i _mm_find_quote(__m128i vv) {
+static always_inline __m128i _mm_find_quote(__m128i vv) {
     __m128i e1 = _mm_cmpgt_epi8   (vv, _mm_set1_epi8(-1));
     __m128i e2 = _mm_cmpgt_epi8   (vv, _mm_set1_epi8(31));
     __m128i e3 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('"'));
@@ -121,7 +121,7 @@ static inline __m128i _mm_find_quote(__m128i vv) {
 }
 
 #if USE_AVX2
-static inline __m256i _mm256_find_quote(__m256i vv) {
+static always_inline __m256i _mm256_find_quote(__m256i vv) {
     __m256i e1 = _mm256_cmpgt_epi8   (vv, _mm256_set1_epi8(-1));
     __m256i e2 = _mm256_cmpgt_epi8   (vv, _mm256_set1_epi8(31));
     __m256i e3 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('"'));
@@ -133,7 +133,7 @@ static inline __m256i _mm256_find_quote(__m256i vv) {
 }
 #endif
 
-static inline ssize_t memcchr_quote(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
+static always_inline ssize_t memcchr_quote(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
     uint32_t     mm;
     const char * ss = sp;
 
@@ -242,11 +242,11 @@ static const bool _EscTab[256] = {
     // 0x60-0xFF are zeroes
 };
 
-static inline uint8_t escape_mask4(const char *sp) {
+static always_inline uint8_t escape_mask4(const char *sp) {
     return _EscTab[*(uint8_t *)(sp)] | (_EscTab[*(uint8_t *)(sp + 1)] << 1) | (_EscTab[*(uint8_t *)(sp + 2)] << 2) | (_EscTab[*(uint8_t *)(sp + 3)]  << 3);
 }
 
-static inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
+static always_inline ssize_t memcchr_quote_unsafe(const char *sp, ssize_t nb, char *dp, const quoted_t * tab) {
     uint32_t     mm;
     const char * ds = dp;
     size_t cn = 0;
@@ -456,7 +456,7 @@ static const char _UnquoteTab[256] = {
     ['\\'] = '\\',
 };
 
-static inline ssize_t memcchr_p32(const char *s, ssize_t nb, char *p) {
+static always_inline ssize_t memcchr_p32(const char *s, ssize_t nb, char *p) {
     int64_t      r;
     ssize_t      n = nb;
     const char * q = s;
@@ -526,15 +526,15 @@ static inline ssize_t memcchr_p32(const char *s, ssize_t nb, char *p) {
 #define ALL_7fh     (ALL_01h * 127)
 #define ALL_80h     (ALL_01h * 128)
 
-static inline uint32_t hasless(uint32_t x, uint8_t n) {
+static always_inline uint32_t hasless(uint32_t x, uint8_t n) {
     return (x - ALL_01h * n) & ~x & ALL_80h;
 }
 
-static inline uint32_t hasmore(uint32_t x, uint8_t n) {
+static always_inline uint32_t hasmore(uint32_t x, uint8_t n) {
     return (x + ALL_01h * (127 - n) | x) & ALL_80h;
 }
 
-static inline uint32_t hasbetween(uint32_t x, uint8_t m, uint8_t n) {
+static always_inline uint32_t hasbetween(uint32_t x, uint8_t m, uint8_t n) {
     return (ALL_01h * (127 + n) - (x & ALL_7fh) & ~x & (x & ALL_7fh) + ALL_01h * (127 - m)) & ALL_80h;
 }
 
@@ -542,22 +542,22 @@ static inline uint32_t hasbetween(uint32_t x, uint8_t m, uint8_t n) {
 #undef ALL_7fh
 #undef ALL_80h
 
-static inline char ishex(char c) {
+static always_inline char ishex(char c) {
     return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
-static inline void unirep(char **dp) {
+static always_inline void unirep(char **dp) {
     *(*dp)++ = 0xef;
     *(*dp)++ = 0xbf;
     *(*dp)++ = 0xbd;
 }
 
-static inline char unhex16_is(const char *s) {
+static always_inline char unhex16_is(const char *s) {
     uint32_t v = *(uint32_t *)s;
     return !(hasless(v, '0') || hasmore(v, 'f') || hasbetween(v, '9', 'A') || hasbetween(v, 'F', 'a'));
 }
 
-static inline uint32_t unhex16_fast(const char *s) {
+static always_inline uint32_t unhex16_fast(const char *s) {
     uint32_t a = __builtin_bswap32(*(uint32_t *)s);
     uint32_t b = 9 * ((~a & 0x10101010) >> 4) + (a & 0x0f0f0f0f);
     uint32_t c = (b >> 4) | b;
@@ -764,7 +764,7 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
     return dp + nb - p;
 }
 
-static inline __m128i _mm_find_html(__m128i vv) {
+static always_inline __m128i _mm_find_html(__m128i vv) {
     __m128i e1 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('<'));
     __m128i e2 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('>'));
     __m128i e3 = _mm_cmpeq_epi8   (vv, _mm_set1_epi8('&'));
@@ -776,7 +776,7 @@ static inline __m128i _mm_find_html(__m128i vv) {
 }
 
 #if USE_AVX2
-static inline __m256i _mm256_find_html(__m256i vv) {
+static always_inline __m256i _mm256_find_html(__m256i vv) {
     __m256i e1 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('<'));
     __m256i e2 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('>'));
     __m256i e3 = _mm256_cmpeq_epi8   (vv, _mm256_set1_epi8('&'));
@@ -788,7 +788,7 @@ static inline __m256i _mm256_find_html(__m256i vv) {
 }
 #endif
 
-static inline ssize_t memcchr_html_quote(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
+static always_inline ssize_t memcchr_html_quote(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
     uint32_t     mm;
     const char * ss = sp;
 
@@ -962,7 +962,7 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
 
 #undef MAX_ESCAPED_BYTES
 
-static inline long unescape(const char** src, const char* end, char* dp) {
+static always_inline long unescape(const char** src, const char* end, char* dp) {
     const char* sp = *src;
     long nb = end - sp;
     char cc = 0;
