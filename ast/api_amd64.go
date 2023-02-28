@@ -17,6 +17,7 @@ import (
 
 var typeByte = rt.UnpackEface(byte(0)).Type
 
+//go:nocheckptr
 func quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
     if len(val) == 0 {

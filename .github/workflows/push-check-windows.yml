@@ -24,4 +24,4 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Compatibility Test
-        run: go test -v -gcflags=-d=checkptr=0 .
+        run: go test -v .
