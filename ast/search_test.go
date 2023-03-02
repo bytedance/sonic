@@ -120,6 +120,66 @@ func TestSearcher_GetByPath(t *testing.T) {
     }
 }
 
+type testGetByPath struct {
+    json string
+    path []interface{}
+    value interface{}
+    hasError bool
+}
+
+func TestSearcher_GetByPathSingle(t *testing.T) {
+    type Path = []interface{}
+    const NoError = false
+    tests := []testGetByPath{
+        {`true`, Path{}, true, NoError},
+        {`false`, Path{}, false, NoError},
+        {`null`, Path{}, nil, NoError},
+        {`12345`, Path{}, 12345.0, NoError},
+        {`12345.6789`, Path{}, 12345.6789, NoError},
+        {`"abc"`, Path{}, "abc", NoError},
+        {`"a\"\\bc"`, Path{}, "a\"\\bc", NoError},
+        {`{"a":1}`, Path{"a"}, 1.0, NoError},
+        {`[1,2,3]`, Path{0}, 1.0, NoError},
+        {`[1,2,3]`, Path{1}, 2.0, NoError},
+        {`[1,2,3]`, Path{2}, 3.0, NoError},
+        {`[1,2,3]`, Path{2}, 3.0, NoError},
+    }
+    for _, test := range tests {
+        t.Run(test.json, func(t *testing.T) {
+            s := NewSearcher(test.json)
+            node, err1 := s.GetByPath(test.path...)
+            v, err2 := node.Interface()
+            assert.Equal(t, test.value, v)
+            hasError := err1 != nil || err2 != nil
+            assert.Equal(t, test.hasError, hasError)
+        })
+    }
+}
+
+func TestSearcher_GetByPathError(t *testing.T) {
+    type Path = []interface{}
+    const Error = true
+    tests := []testGetByPath{
+        {`tru`, Path{}, true, Error},
+        {`fal`, Path{}, false, Error},
+        {`nul`, Path{}, nil, Error},
+        {`{"a":1`, Path{}, nil, Error},
+        {`x12345.6789`, Path{}, 12345.6789, Error},
+        {`"abc`, Path{}, "abc", Error},
+        {`"a\"\\bc`, Path{}, "a\"\\bc", Error},
+        {`{"a":`, Path{"a"}, 1.0, Error},
+        {`[1,2,3]`, Path{4}, 1.0, Error},
+        {`[1,2,3]`, Path{"a"}, 3.0, Error},
+    }
+    for _, test := range tests {
+        t.Run(test.json, func(t *testing.T) {
+            s := NewSearcher(test.json)
+            _, err := s.GetByPath(test.path...)
+            assert.Equal(t, test.hasError, err != nil)
+        })
+    }
+}
+
 func TestSearcher_GetByPathErr(t *testing.T) {
     s := NewSearcher(` { "xx" : [] ,"yy" :{ }, "test" : [ true , 0.1 , "abc", ["h"], {"a":"bc"} ], "err1":[a, ] , "err2":{ ,"x":"xx"} } `)
     node, e := s.GetByPath("zz")
