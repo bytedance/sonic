@@ -1687,8 +1687,8 @@ long skip_one_fast(const GoString *src, long *p) {
         case '{': return skip_object_fast(src, p);
         case '"': return skip_string_fast(src, p);
         case '-': case '0' ... '9': return skip_number_fast(src, p);
-        case 't': case 'n': { if (*p + 3 < src->len) { *p += 3; } else { return -ERR_EOF; } }; break;
-        case 'f': { if (*p + 4 < src->len) { *p += 4; } else { return -ERR_EOF; } }; break;
+        case 't': case 'n': { if (*p + 3 <= src->len) { *p += 3; } else { return -ERR_EOF; } }; break;
+        case 'f': { if (*p + 4 <= src->len) { *p += 4; } else { return -ERR_EOF; } }; break;
         case  0 : return -ERR_EOF;
         default : *p -= 1; return -ERR_INVAL; // backward error position
     }
