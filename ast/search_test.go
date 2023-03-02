@@ -121,28 +121,28 @@ func TestSearcher_GetByPath(t *testing.T) {
 }
 
 type testGetByPath struct {
-    json string
-    path []interface{}
+    json  string
+    path  []interface{}
     value interface{}
-    hasError bool
+    ok    bool
 }
 
-func TestSearcher_GetByPathSingle(t *testing.T) {
+func TestSearcher_GetByPathOk(t *testing.T) {
     type Path = []interface{}
-    const NoError = false
+    const Ok = true
     tests := []testGetByPath{
-        {`true`, Path{}, true, NoError},
-        {`false`, Path{}, false, NoError},
-        {`null`, Path{}, nil, NoError},
-        {`12345`, Path{}, 12345.0, NoError},
-        {`12345.6789`, Path{}, 12345.6789, NoError},
-        {`"abc"`, Path{}, "abc", NoError},
-        {`"a\"\\bc"`, Path{}, "a\"\\bc", NoError},
-        {`{"a":1}`, Path{"a"}, 1.0, NoError},
-        {`[1,2,3]`, Path{0}, 1.0, NoError},
-        {`[1,2,3]`, Path{1}, 2.0, NoError},
-        {`[1,2,3]`, Path{2}, 3.0, NoError},
-        {`[1,2,3]`, Path{2}, 3.0, NoError},
+        {`true`, Path{}, true, Ok},
+        {`false`, Path{}, false, Ok},
+        {`null`, Path{}, nil, Ok},
+        {`12345`, Path{}, 12345.0, Ok},
+        {`12345.6789`, Path{}, 12345.6789, Ok},
+        {`"abc"`, Path{}, "abc", Ok},
+        {`"a\"\\bc"`, Path{}, "a\"\\bc", Ok},
+        {`{"a":1}`, Path{"a"}, 1.0, Ok},
+        {`[1,2,3]`, Path{0}, 1.0, Ok},
+        {`[1,2,3]`, Path{1}, 2.0, Ok},
+        {`[1,2,3]`, Path{2}, 3.0, Ok},
+        {`[1,2,3]`, Path{2}, 3.0, Ok},
     }
     for _, test := range tests {
         t.Run(test.json, func(t *testing.T) {
@@ -150,15 +150,15 @@ func TestSearcher_GetByPathSingle(t *testing.T) {
             node, err1 := s.GetByPath(test.path...)
             v, err2 := node.Interface()
             assert.Equal(t, test.value, v)
-            hasError := err1 != nil || err2 != nil
-            assert.Equal(t, test.hasError, hasError)
+            ok := err1 == nil && err2 == nil
+            assert.Equal(t, test.ok, ok)
         })
     }
 }
 
 func TestSearcher_GetByPathError(t *testing.T) {
     type Path = []interface{}
-    const Error = true
+    const Error = false
     tests := []testGetByPath{
         {`tru`, Path{}, true, Error},
         {`fal`, Path{}, false, Error},
@@ -175,7 +175,7 @@ func TestSearcher_GetByPathError(t *testing.T) {
         t.Run(test.json, func(t *testing.T) {
             s := NewSearcher(test.json)
             _, err := s.GetByPath(test.path...)
-            assert.Equal(t, test.hasError, err != nil)
+            assert.Equal(t, test.ok, err == nil)
         })
     }
 }
