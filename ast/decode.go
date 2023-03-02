@@ -333,6 +333,7 @@ func skipString(src string, pos int) (ret int, ep int) {
     sp := uintptr(rt.IndexChar(src, pos))
     se := uintptr(rt.IndexChar(src, len(src)))
 
+    // not start with quote
     if *(*byte)(unsafe.Pointer(sp)) != '"' {
         return -int(types.ERR_INVALID_CHAR), -1
     }
@@ -350,16 +351,13 @@ func skipString(src string, pos int) (ret int, ep int) {
         }
         sp += 1
         if c == '"' {
-            break
+            return int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr)), ep
         }
     }
 
-    if sp > se {
-        return -int(types.ERR_EOF), -1
-    }
-
     runtime.KeepAlive(src)
-    return int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr)), ep
+    // not found the closed quote until EOF
+    return -int(types.ERR_EOF), -1
 }
 
 //go:nocheckptr
