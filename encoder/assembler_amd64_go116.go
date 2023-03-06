@@ -24,7 +24,7 @@ import (
     `strconv`
     `unsafe`
 
-    `github.com/bytedance/sonic/internal/cpu`
+    `github.com/bytedance/sonic/nativex/cpu`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`

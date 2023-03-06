@@ -19,10 +19,10 @@ package native
 import (
     `unsafe`
 
-    `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/native/avx`
-    `github.com/bytedance/sonic/internal/native/avx2`
-    `github.com/bytedance/sonic/internal/native/sse`
+    `github.com/bytedance/sonic/nativex/cpu`
+    `github.com/bytedance/sonic/nativex/avx`
+    `github.com/bytedance/sonic/nativex/avx2`
+    `github.com/bytedance/sonic/nativex/sse`
     `github.com/bytedance/sonic/internal/native/types`
 )
 
