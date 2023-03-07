@@ -1634,7 +1634,7 @@ static always_inline long skip_array_fast(const GoString *src, long *p) {
 
 static always_inline long skip_string_fast(const GoString *src, long *p) {
     const char* s = src->buf + *p;
-    size_t nb = src->len - *p;
+    long nb = src->len - *p;
     long vi = *p - 1;
     uint64_t prev_bs = 0, escaped;
 
