@@ -127,9 +127,10 @@ type testGetByPath struct {
     ok    bool
 }
 
-func TestSearcher_GetByPathOk(t *testing.T) {
-    type Path = []interface{}
-    const Ok = true
+func TestSearcher_GetByPathSingle(t *testing.T) {
+    type Path   = []interface{}
+    const Ok    = true
+    const Error = false
     tests := []testGetByPath{
         {`true`, Path{}, true, Ok},
         {`false`, Path{}, false, Ok},
@@ -143,39 +144,28 @@ func TestSearcher_GetByPathOk(t *testing.T) {
         {`[1,2,3]`, Path{1}, 2.0, Ok},
         {`[1,2,3]`, Path{2}, 3.0, Ok},
         {`[1,2,3]`, Path{2}, 3.0, Ok},
-    }
-    for _, test := range tests {
-        t.Run(test.json, func(t *testing.T) {
-            s := NewSearcher(test.json)
-            node, err1 := s.GetByPath(test.path...)
-            v, err2 := node.Interface()
-            assert.Equal(t, test.value, v)
-            ok := err1 == nil && err2 == nil
-            assert.Equal(t, test.ok, ok)
-        })
-    }
-}
 
-func TestSearcher_GetByPathError(t *testing.T) {
-    type Path = []interface{}
-    const Error = false
-    tests := []testGetByPath{
-        {`tru`, Path{}, true, Error},
-        {`fal`, Path{}, false, Error},
+        {`tru`, Path{}, nil, Error},
+        {`fal`, Path{}, nil, Error},
         {`nul`, Path{}, nil, Error},
         {`{"a":1`, Path{}, nil, Error},
-        {`x12345.6789`, Path{}, 12345.6789, Error},
-        {`"abc`, Path{}, "abc", Error},
-        {`"a\"\\bc`, Path{}, "a\"\\bc", Error},
-        {`{"a":`, Path{"a"}, 1.0, Error},
-        {`[1,2,3]`, Path{4}, 1.0, Error},
-        {`[1,2,3]`, Path{"a"}, 3.0, Error},
+        {`x12345.6789`, Path{}, nil, Error},
+        {`"abc`, Path{}, nil, Error},
+        {`"a\"\\bc`, Path{}, nil, Error},
+        {`"a\"\`, Path{}, nil, Error},
+        {`{"a":`, Path{"a"}, nil, Error},
+        {`[1,2,3]`, Path{4}, nil, Error},
+        {`[1,2,3]`, Path{"a"}, nil, Error},
     }
     for _, test := range tests {
         t.Run(test.json, func(t *testing.T) {
             s := NewSearcher(test.json)
-            _, err := s.GetByPath(test.path...)
-            assert.Equal(t, test.ok, err == nil)
+            node, err1  := s.GetByPath(test.path...)
+            assert.Equal(t, test.ok, err1 == nil)
+
+            value, err2 := node.Interface()
+            assert.Equal(t, test.value, value)
+            assert.Equal(t, test.ok, err2 == nil)
         })
     }
 }
