@@ -827,11 +827,11 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
-    self.store_int(4, _F_i64toa, "MOVBQSX")
+    self.lookup_int("MOVBQSX")
 }
 
 func (self *_Assembler) _asm_OP_i16(_ *_Instr) {
-    self.store_int(6, _F_i64toa, "MOVWQSX")
+    self.lookup_int("MOVWQSX")
 }
 
 func (self *_Assembler) _asm_OP_i32(_ *_Instr) {
@@ -843,11 +843,28 @@ func (self *_Assembler) _asm_OP_i64(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_u8(_ *_Instr) {
-    self.store_int(3, _F_u64toa, "MOVBQZX")
+    self.lookup_int("MOVBQZX")
+}
+
+var (
+    _V_DigitTab  = jit.Imm(int64(uintptr(unsafe.Pointer(&_DigitTab[0]))))
+)
+
+// fast path for small integers range [-99_999, 99_999]
+func (self *_Assembler) lookup_int(ins string) {
+    self.check_size(10)
+    self.Emit(ins, jit.Ptr(_SP_p, 0), _AX)                     // MOVQ (SP.p), AX
+    self.Emit("ADDQ", jit.Imm(_TAB_OFFSET), _AX)               // ADDQ $_TAB_OFFSET, AX
+    self.Emit("MOVQ",    _V_DigitTab, _BX)                     // MOVQ $DigitTab, BX
+    self.Emit("MOVQ",    jit.Sib(_BX, _AX, int16(8), 0) , _DX) // MOVQ    (BX)(AX*8), DX
+    self.Emit("MOVBQZX", jit.Sib(_BX, _AX, int16(8), 0) , _CX) // MOVBQZX (BX)(AX*8), DX
+    self.Emit("SHRQ", jit.Imm(8), _DX)                         // SHRQ $8, DX
+    self.Emit("MOVQ", _DX, jit.Sib(_RP, _RL, 1, 0))            // MOVQ DX, (RP)(RL*1)
+    self.Emit("ADDQ", _CX, _RL)                                // ADDQ CX, RL
 }
 
 func (self *_Assembler) _asm_OP_u16(_ *_Instr) {
-    self.store_int(5, _F_u64toa, "MOVWQZX")
+    self.lookup_int("MOVWQZX")
 }
 
 func (self *_Assembler) _asm_OP_u32(_ *_Instr) {

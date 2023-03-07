@@ -181,7 +181,14 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsOp(_OP_i8)},
         exp: "-128",
         val: int8(-128),
-    }, {
+    }, 
+    {
+        key: "_OP_i8",
+        ins: []_Instr{newInsOp(_OP_i8)},
+        exp: "0",
+        val: int8(0),
+    }, 
+    {
         key: "_OP_i16",
         ins: []_Instr{newInsOp(_OP_i16)},
         exp: "-32768",
