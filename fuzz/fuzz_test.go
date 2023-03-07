@@ -53,6 +53,8 @@ var target = sonic.ConfigStd
 func fuzzMain(t *testing.T, data []byte) {
     fuzzValidate(t, data)
     fuzzHtmlEscape(t, data)
+    // fuzz ast get api, should not panic here.
+    fuzzAst(t, data)
     // Only fuzz the validate json here.
     if !json.Valid(data) {
         return
@@ -211,7 +213,7 @@ func enableSyncGC() {
 
 func TestMain(m *testing.M) {
     // Avoid OOM
-    setMemLimit(8 * GB)
+    setMemLimit(12 * GB)
     enableSyncGC()
     time.Sleep(time.Millisecond)
     m.Run()
