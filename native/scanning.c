@@ -1827,10 +1827,14 @@ query:
     /* match type: should query key in object, query index in array */
     c = advance_ns(src, p);
     if (is_str(ps)) {
-        if (c != '{') goto err_inval;
+        if (c != '{') {
+            goto err_inval;
+        }
         goto skip_in_obj;
     } else if (is_int(ps)) {
-        if (c != '[') goto err_inval;
+        if (c != '[') {
+            goto err_inval;
+        }
         goto skip_in_arr;
     } else {
         goto err_inval;
@@ -1840,7 +1844,9 @@ skip_in_obj:
     c = advance_ns(src, p);
     if (c != '"') goto err_inval;
     found = match_key(src, p, get_str(ps));
-    if (found < 0) return found; // parse string errors
+    if (found < 0) {
+        return found; // parse string errors
+    }
 
     /* value should after : */
     c = advance_ns(src, p);
@@ -1851,7 +1857,7 @@ skip_in_obj:
     } else {
         skip_one_fast(src, p);
         c = advance_ns(src, p);
-        if (c != ',') goto err_inval; // not found key
+        if (c != ',') goto not_found; // not found key
         goto skip_in_obj;
     }
 
@@ -1861,13 +1867,16 @@ skip_in_arr:
     while (index-- > 0) {
         skip_one_fast(src, p);
         c = advance_ns(src, p);
-        if (c != ',') goto err_inval; // out of range
+        if (c != ',') goto not_found; // out of range
     }
     ps++;
     goto query;
 
-err_inval:
+not_found:
     *p -= 1; // backward error position
+    return -ERR_NOT_FOUND;
+err_inval:
+    *p -= 1;
     return -ERR_INVAL;
 }
 

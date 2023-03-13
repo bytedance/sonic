@@ -84,6 +84,26 @@ func TestExportError(t *testing.T) {
     if err.Error() != `"Syntax error at index 1: invalid char\n\n\t{:\"b\"]\n\t.^....\n"` {
         t.Fatal(err)
     }
+
+    data = `{"a":null}`
+    p = NewSearcher(data)
+    _, err = p.GetByPath("b")
+    if err == nil {
+        t.Fatal()
+    }
+    if err != ErrNotExist {
+        t.Fatal(err)
+    }
+
+    data = `[1,2,3]`
+    p = NewSearcher(data)
+    _, err = p.GetByPath(4)
+    if err == nil {
+        t.Fatal()
+    }
+    if err != ErrNotExist {
+        t.Fatal(err)
+    }
 }
 
 func TestSearcher_GetByPath(t *testing.T) {

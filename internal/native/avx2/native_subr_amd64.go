@@ -24,7 +24,7 @@ var (
     _subr__u64toa             = __native_entry__() + 4144
     _subr__unquote            = __native_entry__() + 8336
     _subr__validate_one       = __native_entry__() + 26064
-    _subr__validate_utf8      = __native_entry__() + 30992
+    _subr__validate_utf8      = __native_entry__() + 31008
     _subr__validate_utf8_fast = __native_entry__() + 31952
     _subr__value              = __native_entry__() + 15472
     _subr__vnumber            = __native_entry__() + 19280
