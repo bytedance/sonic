@@ -25,9 +25,9 @@ import (
 )
 
 var (
-    defaultBufferSize    uint = 4096
-    growSliceFactorShift uint = 1
-    minLeftBufferShift   uint = 2
+    // DefaultBufferSize is the initial buffer size of StreamDecoder
+    DefaultBufferSize    uint = 128 * 1024
+    minLeftBufferShift   uint = 1
 )
 
 type StreamDecoder struct {
@@ -41,7 +41,7 @@ type StreamDecoder struct {
 
 var bufPool = sync.Pool{
     New: func () interface{} {
-        return make([]byte, 0, defaultBufferSize)
+        return make([]byte, 0, DefaultBufferSize)
     },
 }
 
@@ -206,8 +206,8 @@ func realloc(buf *[]byte) {
     c := uint(cap(*buf))
     if c - l <= c >> minLeftBufferShift {
         e := l+(l>>minLeftBufferShift)
-        if e < defaultBufferSize {
-            e = defaultBufferSize
+        if e < DefaultBufferSize {
+            e = DefaultBufferSize
         }
         tmp := make([]byte, l, e)
         copy(tmp, *buf)

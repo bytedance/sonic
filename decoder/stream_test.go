@@ -29,40 +29,40 @@ import (
 )
 
 var (
-    _Single_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"} { `
-    _Double_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"}    {"11111":"` + strings.Repeat("2", int(defaultBufferSize)) + `"}`     
-    _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b", int(defaultBufferSize)) + `"}{ } {"11111":"` + 
-    strings.Repeat("2", int(defaultBufferSize))+`"} b {}`
+    _Single_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"} { `
+    _Double_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"}    {"11111":"` + strings.Repeat("2", int(DefaultBufferSize)) + `"}`     
+    _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"}{ } {"11111":"` + 
+    strings.Repeat("2", int(DefaultBufferSize))+`"} b {}`
 )
 
 func TestStreamError(t *testing.T) {
     var qs = []string{
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`""}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":]`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":1x]`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":t`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":t}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":true]`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":f`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":f}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":false]`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":n`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":n}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":null]`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a}`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a"`,
-        `{`+strings.Repeat(" ", int(defaultBufferSize))+`"":"a"]`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`""}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":]`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":1x`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":1x}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":1x]`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":t`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":t}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":true]`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":f`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":f}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":false]`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":n`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":n}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":null]`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":"`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":"a`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":"a}`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":"a"`,
+        `{`+strings.Repeat(" ", int(DefaultBufferSize))+`"":"a"]`,
     }
 
     for i, q := range qs {
-        var qq = []byte(q[:int(defaultBufferSize)]+strings.Repeat(" ", i*100)+q[int(defaultBufferSize):])
+        var qq = []byte(q[:int(DefaultBufferSize)]+strings.Repeat(" ", i*100)+q[int(DefaultBufferSize):])
         var obj interface{}
         require.NotNil(t, NewStreamDecoder(bytes.NewReader(qq)).Decode(&obj))
     }
