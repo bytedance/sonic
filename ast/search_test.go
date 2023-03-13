@@ -95,9 +95,29 @@ func TestExportError(t *testing.T) {
         t.Fatal(err)
     }
 
+    data = `{}`
+    p = NewSearcher(data)
+    _, err = p.GetByPath("b")
+    if err == nil {
+        t.Fatal()
+    }
+    if err != ErrNotExist {
+        t.Fatal(err)
+    }
+
     data = `[1,2,3]`
     p = NewSearcher(data)
     _, err = p.GetByPath(4)
+    if err == nil {
+        t.Fatal()
+    }
+    if err != ErrNotExist {
+        t.Fatal(err)
+    }
+
+    data = `[]`
+    p = NewSearcher(data)
+    _, err = p.GetByPath(0)
     if err == nil {
         t.Fatal()
     }
@@ -162,7 +182,6 @@ func TestSearcher_GetByPathSingle(t *testing.T) {
         {`{"a":1}`, Path{"a"}, 1.0, Ok},
         {`[1,2,3]`, Path{0}, 1.0, Ok},
         {`[1,2,3]`, Path{1}, 2.0, Ok},
-        {`[1,2,3]`, Path{2}, 3.0, Ok},
         {`[1,2,3]`, Path{2}, 3.0, Ok},
 
         {`tru`, Path{}, nil, Error},
