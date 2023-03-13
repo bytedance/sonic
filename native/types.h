@@ -37,6 +37,9 @@
 #define ERR_MISMATCH    9
 #define ERR_INVAL_UTF8  10
 
+#define ERR_NOT_FOUND      33
+#define ERR_UNSUPPORT_TYPE 34
+
 #define MAX_RECURSE     4096
 
 #endif
