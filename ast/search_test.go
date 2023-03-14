@@ -54,7 +54,7 @@ func TestGC_Search(t *testing.T) {
     wg.Wait()
 }
 
-func TestExportError(t *testing.T) {
+func TestExportErrorInvalidChar(t *testing.T) {
     data := `{"a":]`
     p := NewSearcher(data)
     _, err := p.GetByPath("a")
@@ -83,6 +83,75 @@ func TestExportError(t *testing.T) {
     }
     if err.Error() != `"Syntax error at index 1: invalid char\n\n\t{:\"b\"]\n\t.^....\n"` {
         t.Fatal(err)
+    }
+
+    data = `{`
+    p = NewSearcher(data)
+    _, err = p.GetByPath("he")
+    if err == nil {
+        t.Fatal()
+    }
+    if err == ErrNotExist {
+        t.Fatal(err)
+    }
+
+    data = `[`
+    p = NewSearcher(data)
+    _, err = p.GetByPath(0)
+    if err == nil {
+        t.Fatal()
+    }
+    if err == ErrNotExist {
+        t.Fatal(err)
+    }
+}
+
+type testExportError struct {
+    data string
+    path []interface{}
+    err  error
+}
+
+func TestExportErrNotExist(t *testing.T)  {
+    tests := []testExportError{
+        // object
+        {`{}`, []interface{}{"b"}, ErrNotExist},
+        {` {  } `, []interface{}{"b"}, ErrNotExist},
+        {`{"a":null}`, []interface{}{"b"}, ErrNotExist},
+        // This should be invalid char errors.
+        // {`{"a":null}`, []interface{}{"a", "b"}, ErrNotExist},
+        // {`{"a":null}`, []interface{}{"a", 0}, ErrNotExist},
+        // {`{"a":null}`, []interface{}{"a", "b", 0}, ErrNotExist},
+        {`{"":{"b":123}}`, []interface{}{"b"}, ErrNotExist},
+        {`{"a":{"b":123}}`, []interface{}{"b"}, ErrNotExist},
+        {`{"a":{"b":123}}`, []interface{}{"a", "c"}, ErrNotExist},
+        {`{"a":{"c": null, "b":{}}}`, []interface{}{"a", "b", "c"}, ErrNotExist},
+        {`{"a":{"b":123}}`, []interface{}{"b", "b"}, ErrNotExist},
+        {`{"\"\\":{"b":123}}`, []interface{}{"\"", "b"}, ErrNotExist},
+        {`{"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\\":{"b":123}}`, 
+            []interface{}{"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"", "b"}, ErrNotExist},
+
+        // array
+        {`[]`, []interface{}{0}, ErrNotExist},
+        {`[]`, []interface{}{1}, ErrNotExist},
+        {` [ ] `, []interface{}{0}, ErrNotExist},
+        {`[null]`, []interface{}{1}, ErrNotExist},
+        {`[null, ["null", 123]]`, []interface{}{2}, ErrNotExist},
+        {`[null, true , false, 14, 2.35, -46, "hello7", "\"8"]`, []interface{}{8}, ErrNotExist},
+        {`[{}]`, []interface{}{1}, ErrNotExist},
+        {`[[]]`, []interface{}{1}, ErrNotExist},
+        {`[[],[{},{}, []],{}]`, []interface{}{3}, ErrNotExist},
+    }
+    
+    for _, test := range tests {
+        f := func(t *testing.T) {
+            p := NewSearcher(test.data)
+            node, err := p.GetByPath(test.path...)
+            if err !=  test.err || node.Exists(){
+                t.Fatal(err)
+            }
+        }
+        t.Run(test.data, f)
     }
 }
 
@@ -127,9 +196,10 @@ type testGetByPath struct {
     ok    bool
 }
 
-func TestSearcher_GetByPathOk(t *testing.T) {
-    type Path = []interface{}
-    const Ok = true
+func TestSearcher_GetByPathSingle(t *testing.T) {
+    type Path   = []interface{}
+    const Ok    = true
+    const Error = false
     tests := []testGetByPath{
         {`true`, Path{}, true, Ok},
         {`false`, Path{}, false, Ok},
@@ -142,40 +212,28 @@ func TestSearcher_GetByPathOk(t *testing.T) {
         {`[1,2,3]`, Path{0}, 1.0, Ok},
         {`[1,2,3]`, Path{1}, 2.0, Ok},
         {`[1,2,3]`, Path{2}, 3.0, Ok},
-        {`[1,2,3]`, Path{2}, 3.0, Ok},
-    }
-    for _, test := range tests {
-        t.Run(test.json, func(t *testing.T) {
-            s := NewSearcher(test.json)
-            node, err1 := s.GetByPath(test.path...)
-            v, err2 := node.Interface()
-            assert.Equal(t, test.value, v)
-            ok := err1 == nil && err2 == nil
-            assert.Equal(t, test.ok, ok)
-        })
-    }
-}
 
-func TestSearcher_GetByPathError(t *testing.T) {
-    type Path = []interface{}
-    const Error = false
-    tests := []testGetByPath{
-        {`tru`, Path{}, true, Error},
-        {`fal`, Path{}, false, Error},
+        {`tru`, Path{}, nil, Error},
+        {`fal`, Path{}, nil, Error},
         {`nul`, Path{}, nil, Error},
         {`{"a":1`, Path{}, nil, Error},
-        {`x12345.6789`, Path{}, 12345.6789, Error},
-        {`"abc`, Path{}, "abc", Error},
-        {`"a\"\\bc`, Path{}, "a\"\\bc", Error},
-        {`{"a":`, Path{"a"}, 1.0, Error},
-        {`[1,2,3]`, Path{4}, 1.0, Error},
-        {`[1,2,3]`, Path{"a"}, 3.0, Error},
+        {`x12345.6789`, Path{}, nil, Error},
+        {`"abc`, Path{}, nil, Error},
+        {`"a\"\\bc`, Path{}, nil, Error},
+        {`"a\"\`, Path{}, nil, Error},
+        {`{"a":`, Path{"a"}, nil, Error},
+        {`[1,2,3]`, Path{4}, nil, Error},
+        {`[1,2,3]`, Path{"a"}, nil, Error},
     }
     for _, test := range tests {
         t.Run(test.json, func(t *testing.T) {
             s := NewSearcher(test.json)
-            _, err := s.GetByPath(test.path...)
-            assert.Equal(t, test.ok, err == nil)
+            node, err1  := s.GetByPath(test.path...)
+            assert.Equal(t, test.ok, err1 == nil)
+
+            value, err2 := node.Interface()
+            assert.Equal(t, test.value, value)
+            assert.Equal(t, test.ok, err2 == nil)
         })
     }
 }

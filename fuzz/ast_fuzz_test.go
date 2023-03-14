@@ -26,6 +26,11 @@ import (
 	`github.com/davecgh/go-spew/spew`
 )
 
+// data is random, check whether is panic
+func fuzzAst(t *testing.T, data []byte) {
+	sonic.Get(data)
+}
+
 func fuzzASTGetFromObject(t *testing.T, data []byte, m map[string]interface{}) {
 	for k, expv := range(m) {
 		msg := fmt.Sprintf("Data:\n%s\nKey:\n%s\n", spew.Sdump(&data), spew.Sdump(&k))

@@ -116,6 +116,10 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     self.parser.p = 0
     start, err = self.parser.getByPath(path...)
     if err != 0 {
+        // for compatibility with old version
+        if err == types.ERR_NOT_FOUND {
+            return Node{}, ErrNotExist
+        }
         return Node{}, self.parser.syntaxError(err)
     }
 

@@ -9,7 +9,7 @@ package sse
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa             = __native_entry__() + 29200
+    _subr__f32toa             = __native_entry__() + 29264
     _subr__f64toa             = __native_entry__() + 448
     _subr__get_by_path        = __native_entry__() + 26208
     _subr__html_escape        = __native_entry__() + 9360
@@ -24,8 +24,8 @@ var (
     _subr__u64toa             = __native_entry__() + 3840
     _subr__unquote            = __native_entry__() + 6992
     _subr__validate_one       = __native_entry__() + 22576
-    _subr__validate_utf8      = __native_entry__() + 27968
-    _subr__validate_utf8_fast = __native_entry__() + 28640
+    _subr__validate_utf8      = __native_entry__() + 28032
+    _subr__validate_utf8_fast = __native_entry__() + 28704
     _subr__value              = __native_entry__() + 12560
     _subr__vnumber            = __native_entry__() + 16416
     _subr__vsigned            = __native_entry__() + 18064

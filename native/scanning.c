@@ -1634,7 +1634,7 @@ static always_inline long skip_array_fast(const GoString *src, long *p) {
 
 static always_inline long skip_string_fast(const GoString *src, long *p) {
     const char* s = src->buf + *p;
-    size_t nb = src->len - *p;
+    long nb = src->len - *p;
     long vi = *p - 1;
     uint64_t prev_bs = 0, escaped;
 
@@ -1824,13 +1824,18 @@ query:
     if (ps == pe) {
         return skip_one_fast(src, p);
     }
+
     /* match type: should query key in object, query index in array */
     c = advance_ns(src, p);
     if (is_str(ps)) {
-        if (c != '{') goto err_inval;
+        if (c != '{') {
+            goto err_inval;
+        }
         goto skip_in_obj;
     } else if (is_int(ps)) {
-        if (c != '[') goto err_inval;
+        if (c != '[') {
+            goto err_inval;
+        }
         goto skip_in_arr;
     } else {
         goto err_inval;
@@ -1838,36 +1843,69 @@ query:
 
 skip_in_obj:
     c = advance_ns(src, p);
-    if (c != '"') goto err_inval;
+    if (c == '}') {
+        goto not_found;
+    }
+    if (c != '"') {
+        goto err_inval;
+    }
+
+    /* parse the object key */
     found = match_key(src, p, get_str(ps));
-    if (found < 0) return found; // parse string errors
+    if (found < 0) {
+        return found; // parse string errors
+    }
 
     /* value should after : */
     c = advance_ns(src, p);
-    if (c != ':') goto err_inval;
+    if (c != ':') {
+        goto err_inval;
+    }
     if (found) {
         ps++;
         goto query;
-    } else {
-        skip_one_fast(src, p);
-        c = advance_ns(src, p);
-        if (c != ',') goto err_inval; // not found key
-        goto skip_in_obj;
     }
+
+    /* skip the unknown fields */
+    skip_one_fast(src, p);
+    c = advance_ns(src, p);
+    if (c == '}') {
+        goto not_found;
+    }
+    if (c != ',') {
+        goto err_inval;
+    }
+    goto skip_in_obj;
 
 skip_in_arr:
     index = get_int(ps);
+
+    /* check empty array */
+    c = advance_ns(src, p);
+    if (c == ']') {
+        goto not_found;
+    }
+    *p -= 1;
+
     /* skip array elem one by one */
     while (index-- > 0) {
         skip_one_fast(src, p);
         c = advance_ns(src, p);
-        if (c != ',') goto err_inval; // out of range
+        if (c == ']') {
+            goto not_found;
+        }
+        if (c != ',') {
+            goto err_inval;
+        }
     }
     ps++;
     goto query;
 
-err_inval:
+not_found:
     *p -= 1; // backward error position
+    return -ERR_NOT_FOUND;
+err_inval:
+    *p -= 1;
     return -ERR_INVAL;
 }
 
