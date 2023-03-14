@@ -639,11 +639,6 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     skip2 := p.pc()
     p.rtt(op, vt)
 
-    /* match the closing quote if needed */
-    if op != _OP_map_key_str && op != _OP_map_key_utext && op != _OP_map_key_utext_p {
-        p.chr(_OP_match_char, '"')
-    }
-
     /* match the value separator */
     p.add(_OP_lspace)
     p.chr(_OP_match_char, ':')
@@ -659,11 +654,6 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.chr(_OP_match_char, '"')
     skip3 := p.pc()
     p.rtt(op, vt)
-
-    /* match the closing quote if needed */
-    if op != _OP_map_key_str && op != _OP_map_key_utext && op != _OP_map_key_utext_p {
-        p.chr(_OP_match_char, '"')
-    }
 
     /* match the value separator */
     p.add(_OP_lspace)
