@@ -106,45 +106,52 @@ func TestExportErrorInvalidChar(t *testing.T) {
     }
 }
 
+type testExportError struct {
+    data string
+    path []interface{}
+    err  error
+}
+
 func TestExportErrNotExist(t *testing.T)  {
-    data := `{"a":null}`
-    p := NewSearcher(data)
-    _, err := p.GetByPath("b")
-    if err == nil {
-        t.Fatal()
-    }
-    if err != ErrNotExist {
-        t.Fatal(err)
-    }
+    tests := []testExportError{
+        // object
+        {`{}`, []interface{}{"b"}, ErrNotExist},
+        {` {  } `, []interface{}{"b"}, ErrNotExist},
+        {`{"a":null}`, []interface{}{"b"}, ErrNotExist},
+        // This should be invalid char errors.
+        // {`{"a":null}`, []interface{}{"a", "b"}, ErrNotExist},
+        // {`{"a":null}`, []interface{}{"a", 0}, ErrNotExist},
+        // {`{"a":null}`, []interface{}{"a", "b", 0}, ErrNotExist},
+        {`{"":{"b":123}}`, []interface{}{"b"}, ErrNotExist},
+        {`{"a":{"b":123}}`, []interface{}{"b"}, ErrNotExist},
+        {`{"a":{"b":123}}`, []interface{}{"a", "c"}, ErrNotExist},
+        {`{"a":{"c": null, "b":{}}}`, []interface{}{"a", "b", "c"}, ErrNotExist},
+        {`{"a":{"b":123}}`, []interface{}{"b", "b"}, ErrNotExist},
+        {`{"\"\\":{"b":123}}`, []interface{}{"\"", "b"}, ErrNotExist},
+        {`{"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\\":{"b":123}}`, 
+            []interface{}{"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"", "b"}, ErrNotExist},
 
-    data = `{}`
-    p = NewSearcher(data)
-    _, err = p.GetByPath("b")
-    if err == nil {
-        t.Fatal()
+        // array
+        {`[]`, []interface{}{0}, ErrNotExist},
+        {`[]`, []interface{}{1}, ErrNotExist},
+        {` [ ] `, []interface{}{0}, ErrNotExist},
+        {`[null]`, []interface{}{1}, ErrNotExist},
+        {`[null, ["null", 123]]`, []interface{}{2}, ErrNotExist},
+        {`[null, true , false, 14, 2.35, -46, "hello7", "\"8"]`, []interface{}{8}, ErrNotExist},
+        {`[{}]`, []interface{}{1}, ErrNotExist},
+        {`[[]]`, []interface{}{1}, ErrNotExist},
+        {`[[],[{},{}, []],{}]`, []interface{}{3}, ErrNotExist},
     }
-    if err != ErrNotExist {
-        t.Fatal(err)
-    }
-
-    data = `[1,2,3]`
-    p = NewSearcher(data)
-    _, err = p.GetByPath(4)
-    if err == nil {
-        t.Fatal()
-    }
-    if err != ErrNotExist {
-        t.Fatal(err)
-    }
-
-    data = `[]`
-    p = NewSearcher(data)
-    _, err = p.GetByPath(0)
-    if err == nil {
-        t.Fatal()
-    }
-    if err != ErrNotExist {
-        t.Fatal(err)
+    
+    for _, test := range tests {
+        f := func(t *testing.T) {
+            p := NewSearcher(test.data)
+            node, err := p.GetByPath(test.path...)
+            if err !=  test.err || node.Exists(){
+                t.Fatal(err)
+            }
+        }
+        t.Run(test.data, f)
     }
 }
 
