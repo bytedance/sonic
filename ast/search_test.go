@@ -54,7 +54,7 @@ func TestGC_Search(t *testing.T) {
     wg.Wait()
 }
 
-func TestExportError(t *testing.T) {
+func TestExportErrorInvalidChar(t *testing.T) {
     data := `{"a":]`
     p := NewSearcher(data)
     _, err := p.GetByPath("a")
@@ -85,9 +85,31 @@ func TestExportError(t *testing.T) {
         t.Fatal(err)
     }
 
-    data = `{"a":null}`
+    data = `{`
     p = NewSearcher(data)
-    _, err = p.GetByPath("b")
+    _, err = p.GetByPath("he")
+    if err == nil {
+        t.Fatal()
+    }
+    if err == ErrNotExist {
+        t.Fatal(err)
+    }
+
+    data = `[`
+    p = NewSearcher(data)
+    _, err = p.GetByPath(0)
+    if err == nil {
+        t.Fatal()
+    }
+    if err == ErrNotExist {
+        t.Fatal(err)
+    }
+}
+
+func TestExportErrNotExist(t *testing.T)  {
+    data := `{"a":null}`
+    p := NewSearcher(data)
+    _, err := p.GetByPath("b")
     if err == nil {
         t.Fatal()
     }
