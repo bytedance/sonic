@@ -21,12 +21,11 @@ import (
     `io`
     `sync`
 
+    `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/native/types`
 )
 
 var (
-    // DefaultBufferSize is the initial buffer size of StreamDecoder
-    DefaultBufferSize    uint = 128 * 1024
     minLeftBufferShift   uint = 1
 )
 
@@ -41,7 +40,7 @@ type StreamDecoder struct {
 
 var bufPool = sync.Pool{
     New: func () interface{} {
-        return make([]byte, 0, DefaultBufferSize)
+        return make([]byte, 0, option.DefaultDecoderBufferSize)
     },
 }
 
@@ -206,8 +205,8 @@ func realloc(buf *[]byte) {
     c := uint(cap(*buf))
     if c - l <= c >> minLeftBufferShift {
         e := l+(l>>minLeftBufferShift)
-        if e < DefaultBufferSize {
-            e = DefaultBufferSize
+        if e < option.DefaultDecoderBufferSize {
+            e = option.DefaultDecoderBufferSize
         }
         tmp := make([]byte, l, e)
         copy(tmp, *buf)

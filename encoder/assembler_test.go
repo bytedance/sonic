@@ -26,6 +26,7 @@ import (
     `testing`
     `unsafe`
 
+    `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/rt`
     `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/assert`
@@ -35,7 +36,7 @@ func TestEncoderMemoryCorruption(t *testing.T) {
     println("TestEncoderMemoryCorruption")
     var m = map[string]interface{}{
         "1": map[string]interface{} {
-            `"`+strings.Repeat("a", _MaxBuffer - 38)+`"`: "b",
+            `"`+strings.Repeat("a", int(option.DefaultEncoderBufferSize) - 38)+`"`: "b",
             "1": map[string]int32{
                 "b": 1658219785,
             },

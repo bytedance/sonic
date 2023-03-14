@@ -24,11 +24,13 @@ import (
     `strings`
     `testing`
 
+    `github.com/bytedance/sonic/option`
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
 )
 
 var (
+    DefaultBufferSize = option.DefaultDecoderBufferSize
     _Single_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"} { `
     _Double_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"}    {"11111":"` + strings.Repeat("2", int(DefaultBufferSize)) + `"}`     
     _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"}{ } {"11111":"` + 

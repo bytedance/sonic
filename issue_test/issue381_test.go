@@ -23,14 +23,14 @@ import (
     `testing`
 
     `github.com/bytedance/sonic`
-    `github.com/bytedance/sonic/decoder`
+    `github.com/bytedance/sonic/option`
     _ `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/require`
 
     _ `github.com/stretchr/testify/assert`
 )
 
-var decoderBufferSize = decoder.DefaultBufferSize
+var decoderBufferSize = option.DefaultDecoderBufferSize
 
 func testSonicUnmarshal(t *testing.T) {
     val := strings.Repeat(" ", int(decoderBufferSize-3)) + `{"123":{}}`
