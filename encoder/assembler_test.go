@@ -213,16 +213,21 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsOp(_OP_u16)},
         exp: "65535",
         val: uint16(65535),
-    }, {
-        key: "_OP_u32",
+    },{
+        key: "_OP_u32_faster",
         ins: []_Instr{newInsOp(_OP_u32)},
-        exp: "4294967295",
-        val: uint32(4294967295),
+        exp: "123",
+        val: uint32(123),
     }, {
         key: "_OP_u64",
         ins: []_Instr{newInsOp(_OP_u64)},
         exp: "18446744073709551615",
         val: uint64(18446744073709551615),
+    }, {
+        key: "_OP_u64_faster",
+        ins: []_Instr{newInsOp(_OP_u64)},
+        exp: "123",
+        val: uint64(123),
     }, {
         key: "_OP_f32",
         ins: []_Instr{newInsOp(_OP_f32)},
@@ -362,7 +367,7 @@ func TestAssembler_OpCode(t *testing.T) {
         val: &rec,
     }}
     for _, tv := range tests {
-        t.Run(tv.key, func(t *testing.T) {
+        t.Run(tv.key + ":" + tv.exp, func(t *testing.T) {
             testOpCode(t, tv.val, tv.exp, tv.err, tv.ins)
         })
     }
