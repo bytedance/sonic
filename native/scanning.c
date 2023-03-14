@@ -1824,6 +1824,7 @@ query:
     if (ps == pe) {
         return skip_one_fast(src, p);
     }
+
     /* match type: should query key in object, query index in array */
     c = advance_ns(src, p);
     if (is_str(ps)) {
@@ -1842,7 +1843,14 @@ query:
 
 skip_in_obj:
     c = advance_ns(src, p);
-    if (c != '"') goto err_inval;
+    if (c == '}') {
+        goto not_found;
+    }
+    if (c != '"') {
+        goto err_inval;
+    }
+
+    /* parse the object key */
     found = match_key(src, p, get_str(ps));
     if (found < 0) {
         return found; // parse string errors
@@ -1850,24 +1858,45 @@ skip_in_obj:
 
     /* value should after : */
     c = advance_ns(src, p);
-    if (c != ':') goto err_inval;
+    if (c != ':') {
+        goto err_inval;
+    }
     if (found) {
         ps++;
         goto query;
-    } else {
-        skip_one_fast(src, p);
-        c = advance_ns(src, p);
-        if (c != ',') goto not_found; // not found key
-        goto skip_in_obj;
     }
+
+    /* skip the unknown fields */
+    skip_one_fast(src, p);
+    c = advance_ns(src, p);
+    if (c == '}') {
+        goto not_found;
+    }
+    if (c != ',') {
+        goto err_inval;
+    }
+    goto skip_in_obj;
 
 skip_in_arr:
     index = get_int(ps);
+
+    /* check empty array */
+    c = advance_ns(src, p);
+    if (c == ']') {
+        goto not_found;
+    }
+    *p -= 1;
+
     /* skip array elem one by one */
     while (index-- > 0) {
         skip_one_fast(src, p);
         c = advance_ns(src, p);
-        if (c != ',') goto not_found; // out of range
+        if (c == ']') {
+            goto not_found;
+        }
+        if (c != ',') {
+            goto err_inval;
+        }
     }
     ps++;
     goto query;
