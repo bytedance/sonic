@@ -1128,7 +1128,7 @@ static inline long fsm_exec(StateMachine *self, const GoString *src, long *p, ui
             case 'f' : FSM_XERR(advance_dword(src, p, 0, *p - 1, VS_ALSE)); break;
             case '[' : FSM_XERR(fsm_push(self, FSM_ARR_0));                 break;
             case '{' : FSM_XERR(fsm_push(self, FSM_OBJ_0));                 break;
-            case '"' : FSM_XERR(skip_string(src, p, flags));                       break;
+            case '"' : FSM_XERR(skip_string(src, p, flags));                break;
             case  0  : return -ERR_EOF;
             default  : return -ERR_INVAL;
         }
@@ -1367,17 +1367,18 @@ long skip_object(const GoString *src, long *p, StateMachine *m, uint64_t flags) 
 
 long skip_string(const GoString *src, long *p, uint64_t flags) {
     int64_t v;
-    ssize_t q = *p - 1;
+    ssize_t q = *p - 1; // start position
     ssize_t e = advance_string(src, *p, &v, flags);
 
-    /* check for errors, and update the position */
-    if (e >= 0) {
-        *p = e;
-        return q;
-    } else {
+    /* check for errors */
+    if (e < 0) {
         *p = v;
         return e;
     }
+
+    /* update the position */
+    *p = e;
+    return q;
 }
 
 long skip_negative(const GoString *src, long *p) {
@@ -1812,7 +1813,7 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
     return sp == end && kp == ke;
 }
 
-long get_by_path(const GoString *src, long *p, const GoSlice *path) {
+long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm) {
     GoIface *ps = (GoIface*)(path->buf);
     GoIface *pe = (GoIface*)(path->buf) + path->len;
     char c = 0;
@@ -1822,7 +1823,7 @@ long get_by_path(const GoString *src, long *p, const GoSlice *path) {
 query:
     /* if empty path, skip the whole json */
     if (ps == pe) {
-        return skip_one_fast(src, p);
+        return skip_one(src, p, sm, 0);
     }
 
     /* match type: should query key in object, query index in array */

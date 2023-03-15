@@ -11,7 +11,7 @@ func __native_entry__() uintptr
 var (
     _subr__f32toa             = __native_entry__() + 34624
     _subr__f64toa             = __native_entry__() + 736
-    _subr__get_by_path        = __native_entry__() + 29232
+    _subr__get_by_path        = __native_entry__() + 29248
     _subr__html_escape        = __native_entry__() + 10944
     _subr__i64toa             = __native_entry__() + 4032
     _subr__lspace             = __native_entry__() + 224
@@ -24,7 +24,7 @@ var (
     _subr__u64toa             = __native_entry__() + 4144
     _subr__unquote            = __native_entry__() + 8336
     _subr__validate_one       = __native_entry__() + 26064
-    _subr__validate_utf8      = __native_entry__() + 31056
+    _subr__validate_utf8      = __native_entry__() + 31072
     _subr__validate_utf8_fast = __native_entry__() + 32016
     _subr__value              = __native_entry__() + 15472
     _subr__vnumber            = __native_entry__() + 19280
