@@ -3,107 +3,674 @@
 
 package sse
 
-//go:nosplit
-//go:noescape
-//goland:noinspection ALL
-func __native_entry__() uintptr
+import (
+	`github.com/bytedance/sonic/loader`
+)
+
+var Stubs = []loader.GoFunc{
+    {"_f32toa", &__f32toa},
+    {"_f64toa", &__f64toa},
+    {"_fsm_exec", &__fsm_exec},
+    {"_get_by_path", &__get_by_path},
+    {"_html_escape", &__html_escape},
+    {"_i64toa", &__i64toa},
+    {"_lspace", &__lspace},
+    {"_quote", &__quote},
+    {"_skip_array", &__skip_array},
+    {"_skip_number", &__skip_number},
+    {"_skip_object", &__skip_object},
+    {"_skip_one", &__skip_one},
+    {"_skip_one_fast", &__skip_one_fast},
+    {"_u64toa", &__u64toa},
+    {"_unquote", &__unquote},
+    {"_validate_one", &__validate_one},
+    {"_validate_utf8", &__validate_utf8},
+    {"_validate_utf8_fast", &__validate_utf8_fast},
+    {"_value", &__value},
+    {"_vnumber", &__vnumber},
+    {"_vsigned", &__vsigned},
+    {"_vstring", &__vstring},
+    {"_vunsigned", &__vunsigned},
+}
+
+var Funcs = []loader.CFunc{
+    {"__native_entry__", 0, 67, 0, nil},
+    {"_f32toa", _entry__f32toa, _size__f32toa, _stack__f32toa, _pcsp__f32toa},
+    {"_f64toa", _entry__f64toa, _size__f64toa, _stack__f64toa, _pcsp__f64toa},
+    {"_format_significand", _entry__format_significand, _size__format_significand, _stack__format_significand, _pcsp__format_significand},
+    {"_format_integer", _entry__format_integer, _size__format_integer, _stack__format_integer, _pcsp__format_integer},
+    {"_fsm_exec", _entry__fsm_exec, _size__fsm_exec, _stack__fsm_exec, _pcsp__fsm_exec},
+    {"_advance_ns", _entry__advance_ns, _size__advance_ns, _stack__advance_ns, _pcsp__advance_ns},
+    {"_advance_string", _entry__advance_string, _size__advance_string, _stack__advance_string, _pcsp__advance_string},
+    {"_advance_string_default", _entry__advance_string_default, _size__advance_string_default, _stack__advance_string_default, _pcsp__advance_string_default},
+    {"_do_skip_number", _entry__do_skip_number, _size__do_skip_number, _stack__do_skip_number, _pcsp__do_skip_number},
+    {"_get_by_path", _entry__get_by_path, _size__get_by_path, _stack__get_by_path, _pcsp__get_by_path},
+    {"_skip_one_fast", _entry__skip_one_fast, _size__skip_one_fast, _stack__skip_one_fast, _pcsp__skip_one_fast},
+    {"_html_escape", _entry__html_escape, _size__html_escape, _stack__html_escape, _pcsp__html_escape},
+    {"_i64toa", _entry__i64toa, _size__i64toa, _stack__i64toa, _pcsp__i64toa},
+    {"_u64toa", _entry__u64toa, _size__u64toa, _stack__u64toa, _pcsp__u64toa},
+    {"_lspace", _entry__lspace, _size__lspace, _stack__lspace, _pcsp__lspace},
+    {"_quote", _entry__quote, _size__quote, _stack__quote, _pcsp__quote},
+    {"_skip_array", _entry__skip_array, _size__skip_array, _stack__skip_array, _pcsp__skip_array},
+    {"_skip_number", _entry__skip_number, _size__skip_number, _stack__skip_number, _pcsp__skip_number},
+    {"_skip_object", _entry__skip_object, _size__skip_object, _stack__skip_object, _pcsp__skip_object},
+    {"_skip_one", _entry__skip_one, _size__skip_one, _stack__skip_one, _pcsp__skip_one},
+    {"_unquote", _entry__unquote, _size__unquote, _stack__unquote, _pcsp__unquote},
+    {"_validate_one", _entry__validate_one, _size__validate_one, _stack__validate_one, _pcsp__validate_one},
+    {"_validate_utf8", _entry__validate_utf8, _size__validate_utf8, _stack__validate_utf8, _pcsp__validate_utf8},
+    {"_validate_utf8_fast", _entry__validate_utf8_fast, _size__validate_utf8_fast, _stack__validate_utf8_fast, _pcsp__validate_utf8_fast},
+    {"_value", _entry__value, _size__value, _stack__value, _pcsp__value},
+    {"_vnumber", _entry__vnumber, _size__vnumber, _stack__vnumber, _pcsp__vnumber},
+    {"_atof_eisel_lemire64", _entry__atof_eisel_lemire64, _size__atof_eisel_lemire64, _stack__atof_eisel_lemire64, _pcsp__atof_eisel_lemire64},
+    {"_atof_native", _entry__atof_native, _size__atof_native, _stack__atof_native, _pcsp__atof_native},
+    {"_decimal_to_f64", _entry__decimal_to_f64, _size__decimal_to_f64, _stack__decimal_to_f64, _pcsp__decimal_to_f64},
+    {"_left_shift", _entry__left_shift, _size__left_shift, _stack__left_shift, _pcsp__left_shift},
+    {"_right_shift", _entry__right_shift, _size__right_shift, _stack__right_shift, _pcsp__right_shift},
+    {"_vsigned", _entry__vsigned, _size__vsigned, _stack__vsigned, _pcsp__vsigned},
+    {"_vstring", _entry__vstring, _size__vstring, _stack__vstring, _pcsp__vstring},
+    {"_vunsigned", _entry__vunsigned, _size__vunsigned, _stack__vunsigned, _pcsp__vunsigned},
+}
 
 var (
-    _subr__f32toa             = __native_entry__() + 29312
-    _subr__f64toa             = __native_entry__() + 448
-    _subr__get_by_path        = __native_entry__() + 26208
-    _subr__html_escape        = __native_entry__() + 9360
-    _subr__i64toa             = __native_entry__() + 3712
-    _subr__lspace             = __native_entry__() + 80
-    _subr__quote              = __native_entry__() + 5152
-    _subr__skip_array         = __native_entry__() + 18800
-    _subr__skip_number        = __native_entry__() + 22368
-    _subr__skip_object        = __native_entry__() + 20784
-    _subr__skip_one           = __native_entry__() + 22528
-    _subr__skip_one_fast      = __native_entry__() + 22752
-    _subr__u64toa             = __native_entry__() + 3840
-    _subr__unquote            = __native_entry__() + 6992
-    _subr__validate_one       = __native_entry__() + 22576
-    _subr__validate_utf8      = __native_entry__() + 28080
-    _subr__validate_utf8_fast = __native_entry__() + 28752
-    _subr__value              = __native_entry__() + 12560
-    _subr__vnumber            = __native_entry__() + 16416
-    _subr__vsigned            = __native_entry__() + 18064
-    _subr__vstring            = __native_entry__() + 14800
-    _subr__vunsigned          = __native_entry__() + 18448
+    _subr__f32toa             uintptr
+    _subr__f64toa             uintptr
+    _subr__fsm_exec           uintptr
+    _subr__get_by_path        uintptr
+    _subr__html_escape        uintptr
+    _subr__i64toa             uintptr
+    _subr__lspace             uintptr
+    _subr__quote              uintptr
+    _subr__skip_array         uintptr
+    _subr__skip_number        uintptr
+    _subr__skip_object        uintptr
+    _subr__skip_one           uintptr
+    _subr__skip_one_fast      uintptr
+    _subr__u64toa             uintptr
+    _subr__unquote            uintptr
+    _subr__validate_one       uintptr
+    _subr__validate_utf8      uintptr
+    _subr__validate_utf8_fast uintptr
+    _subr__value              uintptr
+    _subr__vnumber            uintptr
+    _subr__vsigned            uintptr
+    _subr__vstring            uintptr
+    _subr__vunsigned          uintptr
 )
 
 const (
-    _stack__f32toa = 48
+    _stack__f32toa = 64
     _stack__f64toa = 80
-    _stack__get_by_path = 256
+    _stack__format_significand = 24
+    _stack__format_integer = 16
+    _stack__fsm_exec = 160
+    _stack__advance_ns = 8
+    _stack__advance_string = 72
+    _stack__advance_string_default = 56
+    _stack__do_skip_number = 32
+    _stack__get_by_path = 248
+    _stack__skip_one_fast = 160
     _stack__html_escape = 64
     _stack__i64toa = 16
-    _stack__lspace = 8
-    _stack__quote = 64
-    _stack__skip_array = 128
-    _stack__skip_number = 72
-    _stack__skip_object = 128
-    _stack__skip_one = 128
-    _stack__skip_one_fast = 168
     _stack__u64toa = 8
-    _stack__unquote = 88
-    _stack__validate_one = 128
+    _stack__lspace = 8
+    _stack__quote = 80
+    _stack__skip_array = 168
+    _stack__skip_number = 72
+    _stack__skip_object = 168
+    _stack__skip_one = 168
+    _stack__unquote = 72
+    _stack__validate_one = 168
     _stack__validate_utf8 = 48
     _stack__validate_utf8_fast = 24
-    _stack__value = 328
-    _stack__vnumber = 240
+    _stack__value = 336
+    _stack__vnumber = 248
+    _stack__atof_eisel_lemire64 = 32
+    _stack__atof_native = 144
+    _stack__decimal_to_f64 = 88
+    _stack__left_shift = 32
+    _stack__right_shift = 16
     _stack__vsigned = 16
     _stack__vstring = 136
     _stack__vunsigned = 16
 )
 
-var (
-    _ = _subr__f32toa
-    _ = _subr__f64toa
-    _ = _subr__get_by_path
-    _ = _subr__html_escape
-    _ = _subr__i64toa
-    _ = _subr__lspace
-    _ = _subr__quote
-    _ = _subr__skip_array
-    _ = _subr__skip_number
-    _ = _subr__skip_object
-    _ = _subr__skip_one
-    _ = _subr__skip_one_fast
-    _ = _subr__u64toa
-    _ = _subr__unquote
-    _ = _subr__validate_one
-    _ = _subr__validate_utf8
-    _ = _subr__validate_utf8_fast
-    _ = _subr__value
-    _ = _subr__vnumber
-    _ = _subr__vsigned
-    _ = _subr__vstring
-    _ = _subr__vunsigned
+const (
+    _entry__f32toa = 30032
+    _entry__f64toa = 464
+    _entry__format_significand = 33664
+    _entry__format_integer = 3632
+    _entry__fsm_exec = 19712
+    _entry__advance_ns = 15248
+    _entry__advance_string = 16032
+    _entry__advance_string_default = 35200
+    _entry__do_skip_number = 21984
+    _entry__get_by_path = 27008
+    _entry__skip_one_fast = 23488
+    _entry__html_escape = 10432
+    _entry__i64toa = 4064
+    _entry__u64toa = 4192
+    _entry__lspace = 80
+    _entry__quote = 5472
+    _entry__skip_array = 19680
+    _entry__skip_number = 23104
+    _entry__skip_object = 21664
+    _entry__skip_one = 23264
+    _entry__unquote = 7248
+    _entry__validate_one = 23312
+    _entry__validate_utf8 = 28784
+    _entry__validate_utf8_fast = 29472
+    _entry__value = 13696
+    _entry__vnumber = 17408
+    _entry__atof_eisel_lemire64 = 11728
+    _entry__atof_native = 13088
+    _entry__decimal_to_f64 = 12096
+    _entry__left_shift = 34144
+    _entry__right_shift = 34688
+    _entry__vsigned = 18960
+    _entry__vstring = 15856
+    _entry__vunsigned = 19312
 )
 
 const (
-    _ = _stack__f32toa
-    _ = _stack__f64toa
-    _ = _stack__get_by_path
-    _ = _stack__html_escape
-    _ = _stack__i64toa
-    _ = _stack__lspace
-    _ = _stack__quote
-    _ = _stack__skip_array
-    _ = _stack__skip_number
-    _ = _stack__skip_object
-    _ = _stack__skip_one
-    _ = _stack__skip_one_fast
-    _ = _stack__u64toa
-    _ = _stack__unquote
-    _ = _stack__validate_one
-    _ = _stack__validate_utf8
-    _ = _stack__validate_utf8_fast
-    _ = _stack__value
-    _ = _stack__vnumber
-    _ = _stack__vsigned
-    _ = _stack__vstring
-    _ = _stack__vunsigned
+    _size__f32toa = 3616
+    _size__f64toa = 3149
+    _size__format_significand = 473
+    _size__format_integer = 426
+    _size__fsm_exec = 1410
+    _size__advance_ns = 601
+    _size__advance_string = 1320
+    _size__advance_string_default = 931
+    _size__do_skip_number = 903
+    _size__get_by_path = 1771
+    _size__skip_one_fast = 3007
+    _size__html_escape = 1296
+    _size__i64toa = 38
+    _size__u64toa = 1232
+    _size__lspace = 355
+    _size__quote = 1745
+    _size__skip_array = 27
+    _size__skip_number = 134
+    _size__skip_object = 27
+    _size__skip_one = 27
+    _size__unquote = 3110
+    _size__validate_one = 32
+    _size__validate_utf8 = 677
+    _size__validate_utf8_fast = 534
+    _size__value = 977
+    _size__vnumber = 1537
+    _size__atof_eisel_lemire64 = 360
+    _size__atof_native = 602
+    _size__decimal_to_f64 = 972
+    _size__left_shift = 523
+    _size__right_shift = 475
+    _size__vsigned = 340
+    _size__vstring = 118
+    _size__vunsigned = 340
+)
+
+var (
+    _pcsp__f32toa = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {2346, 64},
+        {2347, 48},
+        {2349, 40},
+        {2351, 32},
+        {2353, 24},
+        {2355, 16},
+        {2356, 8},
+        {2357, 0},
+        {3616, 64},
+    }
+    _pcsp__f64toa = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {14, 48},
+        {3054, 56},
+        {3055, 48},
+        {3057, 40},
+        {3059, 32},
+        {3061, 24},
+        {3063, 16},
+        {3064, 8},
+        {3065, 0},
+        {3149, 56},
+    }
+    _pcsp__format_significand = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {7, 16},
+        {469, 24},
+        {471, 16},
+        {472, 8},
+        {473, 0},
+    }
+    _pcsp__format_integer = [][2]uint32{
+        {1, 0},
+        {5, 8},
+        {413, 16},
+        {414, 8},
+        {415, 0},
+        {424, 16},
+        {425, 8},
+        {426, 0},
+    }
+    _pcsp__fsm_exec = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {1073, 88},
+        {1074, 48},
+        {1076, 40},
+        {1078, 32},
+        {1080, 24},
+        {1082, 16},
+        {1083, 8},
+        {1084, 0},
+        {1410, 88},
+    }
+    _pcsp__advance_ns = [][2]uint32{
+        {1, 0},
+        {587, 8},
+        {588, 0},
+        {594, 8},
+        {595, 0},
+        {601, 8},
+    }
+    _pcsp__advance_string = [][2]uint32{
+        {15, 0},
+        {20, 8},
+        {22, 16},
+        {24, 24},
+        {26, 32},
+        {27, 40},
+        {31, 48},
+        {591, 72},
+        {592, 48},
+        {594, 40},
+        {596, 32},
+        {598, 24},
+        {600, 16},
+        {601, 8},
+        {602, 0},
+        {1320, 72},
+    }
+    _pcsp__advance_string_default = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {14, 48},
+        {406, 56},
+        {407, 48},
+        {409, 40},
+        {411, 32},
+        {413, 24},
+        {415, 16},
+        {416, 8},
+        {417, 0},
+        {931, 56},
+    }
+    _pcsp__do_skip_number = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {9, 24},
+        {772, 32},
+        {774, 24},
+        {776, 16},
+        {777, 8},
+        {778, 0},
+        {903, 32},
+    }
+    _pcsp__get_by_path = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {1696, 88},
+        {1697, 48},
+        {1699, 40},
+        {1701, 32},
+        {1703, 24},
+        {1705, 16},
+        {1706, 8},
+        {1707, 0},
+        {1771, 88},
+    }
+    _pcsp__skip_one_fast = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {310, 152},
+        {311, 48},
+        {313, 40},
+        {315, 32},
+        {317, 24},
+        {319, 16},
+        {320, 8},
+        {321, 0},
+        {3007, 152},
+    }
+    _pcsp__html_escape = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {1285, 64},
+        {1286, 48},
+        {1288, 40},
+        {1290, 32},
+        {1292, 24},
+        {1294, 16},
+        {1295, 8},
+        {1296, 0},
+    }
+    _pcsp__i64toa = [][2]uint32{
+        {15, 0},
+        {37, 8},
+        {38, 0},
+    }
+    _pcsp__u64toa = [][2]uint32{
+        {1, 0},
+        {165, 8},
+        {166, 0},
+        {463, 8},
+        {464, 0},
+        {775, 8},
+        {776, 0},
+        {1231, 8},
+        {1232, 0},
+    }
+    _pcsp__lspace = [][2]uint32{
+        {1, 0},
+        {335, 8},
+        {336, 0},
+        {348, 8},
+        {349, 0},
+        {355, 8},
+    }
+    _pcsp__quote = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {1705, 80},
+        {1706, 48},
+        {1708, 40},
+        {1710, 32},
+        {1712, 24},
+        {1714, 16},
+        {1715, 8},
+        {1716, 0},
+        {1745, 80},
+    }
+    _pcsp__skip_array = [][2]uint32{
+        {1, 0},
+        {27, 8},
+    }
+    _pcsp__skip_number = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {11, 32},
+        {101, 40},
+        {103, 32},
+        {105, 24},
+        {107, 16},
+        {108, 8},
+        {109, 0},
+        {134, 40},
+    }
+    _pcsp__skip_object = [][2]uint32{
+        {1, 0},
+        {27, 8},
+    }
+    _pcsp__skip_one = [][2]uint32{
+        {1, 0},
+        {27, 8},
+    }
+    _pcsp__unquote = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {2434, 72},
+        {2435, 48},
+        {2437, 40},
+        {2439, 32},
+        {2441, 24},
+        {2443, 16},
+        {2444, 8},
+        {2445, 0},
+        {3110, 72},
+    }
+    _pcsp__validate_one = [][2]uint32{
+        {1, 0},
+        {32, 8},
+    }
+    _pcsp__validate_utf8 = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {11, 32},
+        {12, 40},
+        {643, 48},
+        {644, 40},
+        {646, 32},
+        {648, 24},
+        {650, 16},
+        {651, 8},
+        {652, 0},
+        {677, 48},
+    }
+    _pcsp__validate_utf8_fast = [][2]uint32{
+        {1, 0},
+        {5, 8},
+        {6, 16},
+        {251, 24},
+        {252, 16},
+        {253, 8},
+        {254, 0},
+        {531, 24},
+        {532, 16},
+        {533, 8},
+        {534, 0},
+    }
+    _pcsp__value = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {966, 88},
+        {967, 48},
+        {969, 40},
+        {971, 32},
+        {973, 24},
+        {975, 16},
+        {976, 8},
+        {977, 0},
+    }
+    _pcsp__vnumber = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {17, 48},
+        {794, 104},
+        {795, 48},
+        {797, 40},
+        {799, 32},
+        {801, 24},
+        {803, 16},
+        {804, 8},
+        {805, 0},
+        {1537, 104},
+    }
+    _pcsp__atof_eisel_lemire64 = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {9, 24},
+        {296, 32},
+        {298, 24},
+        {300, 16},
+        {301, 8},
+        {302, 0},
+        {360, 32},
+    }
+    _pcsp__atof_native = [][2]uint32{
+        {1, 0},
+        {8, 8},
+        {600, 56},
+        {601, 8},
+        {602, 0},
+    }
+    _pcsp__decimal_to_f64 = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {12, 32},
+        {13, 40},
+        {14, 48},
+        {955, 56},
+        {956, 48},
+        {958, 40},
+        {960, 32},
+        {962, 24},
+        {964, 16},
+        {965, 8},
+        {966, 0},
+        {972, 56},
+    }
+    _pcsp__left_shift = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {9, 24},
+        {419, 32},
+        {421, 24},
+        {423, 16},
+        {424, 8},
+        {425, 0},
+        {523, 32},
+    }
+    _pcsp__right_shift = [][2]uint32{
+        {1, 0},
+        {5, 8},
+        {453, 16},
+        {454, 8},
+        {455, 0},
+        {463, 16},
+        {464, 8},
+        {465, 0},
+        {473, 16},
+        {474, 8},
+        {475, 0},
+    }
+    _pcsp__vsigned = [][2]uint32{
+        {1, 0},
+        {5, 8},
+        {112, 16},
+        {113, 8},
+        {114, 0},
+        {125, 16},
+        {126, 8},
+        {127, 0},
+        {279, 16},
+        {280, 8},
+        {281, 0},
+        {285, 16},
+        {286, 8},
+        {287, 0},
+        {325, 16},
+        {326, 8},
+        {327, 0},
+        {338, 16},
+        {339, 8},
+        {340, 0},
+    }
+    _pcsp__vstring = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {8, 16},
+        {10, 24},
+        {11, 32},
+        {15, 40},
+        {109, 56},
+        {110, 40},
+        {112, 32},
+        {114, 24},
+        {116, 16},
+        {117, 8},
+        {118, 0},
+    }
+    _pcsp__vunsigned = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {7, 16},
+        {73, 24},
+        {75, 16},
+        {76, 8},
+        {77, 0},
+        {88, 24},
+        {90, 16},
+        {91, 8},
+        {92, 0},
+        {115, 24},
+        {117, 16},
+        {118, 8},
+        {119, 0},
+        {282, 24},
+        {284, 16},
+        {285, 8},
+        {286, 0},
+        {324, 24},
+        {326, 16},
+        {327, 8},
+        {328, 0},
+        {336, 24},
+        {338, 16},
+        {339, 8},
+        {340, 0},
+    }
 )

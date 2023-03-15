@@ -66,7 +66,7 @@ define build_arch
 	$(eval @cpu		:= $(value CPU_$(1)))
 	$(eval @deps	:= $(foreach tmpl,$(value TMPL_$(1)),${OUT_DIR}/$(1)/${tmpl}.go))
 	$(eval @asmin	:= ${TMP_DIR}/$(1)/native.s)
-	$(eval @asmout	:= ${OUT_DIR}/$(1)/native_${@cpu}.s)
+	$(eval @asmout	:= ${OUT_DIR}/$(1)/native_text_${@cpu}.go)
 	$(eval @stubin	:= ${OUT_DIR}/native_${@cpu}.tmpl)
 	$(eval @stubout	:= ${OUT_DIR}/$(1)/native_${@cpu}.go)
 
@@ -75,8 +75,7 @@ $(1): ${@asmout} ${@deps}
 ${@asmout}: ${@stubout} ${NATIVE_SRC}
 	mkdir -p ${TMP_DIR}/$(1)
 	$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
-	python3 $${ASM2ASM_${@cpu}} ${@asmout} ${TMP_DIR}/$(1)/native.s
-	asmfmt -w ${@asmout}
+	python3 $${ASM2ASM_${@cpu}} -r ${@stubout} ${TMP_DIR}/$(1)/native.s
 
 $(eval $(call 	\
 	build_tmpl,	\

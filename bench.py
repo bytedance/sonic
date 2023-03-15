@@ -48,7 +48,7 @@ def run_r(cmd):
             exit(1)
     return data.decode("utf-8") 
 
-def compare(args):
+def compare(args, package):
     # detech current branch.
     # result = run_r("git branch")
     current_branch = run_s("git status | head -n1 | sed 's/On branch //'")
@@ -73,7 +73,7 @@ def compare(args):
 
     # benchmark current branch    
     (fd, target) = tempfile.mkstemp(".target.txt")
-    run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix, args, target))
+    run("%s %s %s 2>&1 | tee %s" %(gbench_prefix, args, package, target))
 
     # trying to switch to the latest main branch
     run("git checkout -- .")
@@ -83,7 +83,7 @@ def compare(args):
 
     # benchmark main branch
     (fd, main) = tempfile.mkstemp(".main.txt")
-    run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix, args, main))
+    run("%s %s %s 2>&1 | tee %s" %(gbench_prefix, args, package, main))
 
     # diff the result
     # benchstat = "go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat"
@@ -106,8 +106,14 @@ def main():
         help='benchmark the times')
     argparser.add_argument('-r', '--repeat_times', dest='count', required=False,
         help='benchmark the count')
+    argparser.add_argument('-p', '--package', dest='package', required=False,
+        help='benchmark all subpackages')
     args = argparser.parse_args()
     
+    package = "./..."
+    if args.package:
+        package = args.package
+        
     if args.filter:
         gbench_args = "-bench=%s"%(args.filter)
     else:
@@ -122,13 +128,13 @@ def main():
         gbench_args += " -count=10"
 
     if args.compare:
-        target = compare(gbench_args)
+        target = compare(gbench_args, package)
     else:
         target = None
 
     if not target:
         (fd, target) = tempfile.mkstemp(".target.txt")
-        run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix, gbench_args, target))
+        run("%s %s %s 2>&1 | tee %s" %(gbench_prefix, package, gbench_args, target))
 
 if __name__ == "__main__":
     main()

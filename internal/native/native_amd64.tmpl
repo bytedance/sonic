@@ -22,112 +22,50 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
 )
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __i64toa(out *byte, val int64) (ret int)
+var (
+    __i64toa func(out *byte, val int64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __u64toa(out *byte, val uint64) (ret int)
+    __u64toa func(out *byte, val uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __f64toa(out *byte, val float64) (ret int)
+    __f64toa func(out *byte, val float64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __f32toa(out *byte, val float32) (ret int)
+    __f32toa func(out *byte, val float32) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __lspace(sp unsafe.Pointer, nb int, off int) (ret int)
+    __lspace func(sp unsafe.Pointer, nb int, off int) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __quote(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) (ret int)
+    __quote func(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __html_escape(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) (ret int)
+    __html_escape func(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __unquote(sp unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) (ret int)
+    __unquote func(sp unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __value(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) (ret int)
+    __value func(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __vstring(s *string, p *int, v *types.JsonState, flags uint64)
+    __vstring func(s *string, p *int, v *types.JsonState, flags uint64)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __vnumber(s *string, p *int, v *types.JsonState)
+    __vnumber func(s *string, p *int, v *types.JsonState)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __vsigned(s *string, p *int, v *types.JsonState)
+    __vsigned func(s *string, p *int, v *types.JsonState)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __vunsigned(s *string, p *int, v *types.JsonState)
+    __vunsigned func(s *string, p *int, v *types.JsonState)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __skip_one(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)
+    __skip_one func(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __skip_one_fast(s *string, p *int) (ret int)
+    __skip_one_fast func(s *string, p *int) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __skip_array(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)
+    __skip_array func(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __skip_object(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)
+    __skip_object func(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __skip_number(s *string, p *int) (ret int)
+    __skip_number func(s *string, p *int) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __validate_one(s *string, p *int, m *types.StateMachine) (ret int)
+    __validate_one func(s *string, p *int, m *types.StateMachine) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __get_by_path(s *string, p *int, path *[]interface{}) (ret int)
+    __get_by_path func(s *string, p *int, path *[]interface{}) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __validate_utf8(s *string, p *int, m *types.StateMachine) (ret int)
+    __validate_utf8 func(s *string, p *int, m *types.StateMachine) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __validate_utf8_fast(s *string)  (ret int)
+    __validate_utf8_fast func(s *string)  (ret int)
+
+    __fsm_exec func(m *types.StateMachine, s *string, p *int, flags uint64) (ret int)
+)

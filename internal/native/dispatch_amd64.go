@@ -17,13 +17,14 @@
 package native
 
 import (
-    `unsafe`
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/native/avx`
-    `github.com/bytedance/sonic/internal/native/avx2`
-    `github.com/bytedance/sonic/internal/native/sse`
-    `github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/cpu"
+	"github.com/bytedance/sonic/internal/native/avx"
+	"github.com/bytedance/sonic/internal/native/avx2"
+	"github.com/bytedance/sonic/internal/native/sse"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/loader"
 )
 
 const (
@@ -61,70 +62,50 @@ var (
     S_skip_number uintptr
 )
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func Quote(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) int
+var (
+    Quote func(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int
+    Unquote func(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func HTMLEscape(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int
+    HTMLEscape func(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) int
+    Value func(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func SkipOne(s *string, p *int, m *types.StateMachine, flags uint64) int
+    SkipOne func(s *string, p *int, m *types.StateMachine, flags uint64) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func SkipOneFast(s *string, p *int) int
+    SkipOneFast func(s *string, p *int) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func GetByPath(s *string, p *int, path *[]interface{}) int
+    GetByPath func(s *string, p *int, path *[]interface{}) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func ValidateOne(s *string, p *int, m *types.StateMachine) int
+    ValidateOne func(s *string, p *int, m *types.StateMachine) int
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func I64toa(out *byte, val int64) (ret int)
+    I64toa func(out *byte, val int64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func U64toa(out *byte, val uint64) (ret int)
+    U64toa func(out *byte, val uint64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func F64toa(out *byte, val float64) (ret int)
+    F64toa func(out *byte, val float64) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func ValidateUTF8(s *string, p *int, m *types.StateMachine) (ret int)
+    ValidateUTF8 func(s *string, p *int, m *types.StateMachine) (ret int)
 
-//go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func ValidateUTF8Fast(s *string) (ret int)
+    ValidateUTF8Fast func(s *string) (ret int)
+)
+
+var Stubs = []loader.GoFunc{
+    {"_f64toa", &F64toa},
+    {"_get_by_path", &GetByPath},
+    {"_html_escape", &HTMLEscape},
+    {"_i64toa", &I64toa},
+    {"_quote", &Quote},
+    {"_skip_one", &SkipOne},
+    {"_skip_one_fast", &SkipOneFast},
+    {"_u64toa", &U64toa},
+    {"_unquote", &Unquote},
+    {"_validate_one", &ValidateOne},
+    {"_validate_utf8", &ValidateUTF8},
+    {"_validate_utf8_fast", &ValidateUTF8Fast},
+    {"_value", &Value},
+}
+
 
 func useAVX() {
     S_f64toa      = avx.S_f64toa
@@ -145,6 +126,8 @@ func useAVX() {
     S_skip_object = avx.S_skip_object
     S_skip_number = avx.S_skip_number
     S_get_by_path = avx.S_get_by_path
+
+    loader.WrapC(avx.Text___native_entry__, avx.Funcs, Stubs, "avx", "avx/native.c")
 }
 
 func useAVX2() {
@@ -166,6 +149,8 @@ func useAVX2() {
     S_skip_object = avx2.S_skip_object
     S_skip_number = avx2.S_skip_number
     S_get_by_path = avx2.S_get_by_path
+
+    loader.WrapC(avx2.Text___native_entry__, avx2.Funcs, Stubs, "avx2", "avx2/native.c")
 }
 
 func useSSE() {
@@ -187,6 +172,8 @@ func useSSE() {
     S_skip_object = sse.S_skip_object
     S_skip_number = sse.S_skip_number
     S_get_by_path = sse.S_get_by_path
+
+    loader.WrapC(sse.Text___native_entry__, sse.Funcs, Stubs, "sse", "sse/native.c")
 }
 
 func init() {
