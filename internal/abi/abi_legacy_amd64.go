@@ -26,8 +26,8 @@ import (
 	. "github.com/chenzhuoyu/iasm/x86_64"
 )
 
-var ReservedRegs = []Register64 {
-    RBX,
+func ReservedRegs(callc bool) []Register64 {
+    return []Register64 {}
 }
 
 func salloc(p []Parameter, sp uint32, vt reflect.Type) (uint32, []Parameter) {
@@ -84,7 +84,7 @@ func NewFunctionLayout(ft reflect.Type) FunctionLayout {
 func (self *Frame) emitExchangeArgs(p *Program) {
     iregArgs, xregArgs := 0, 0
     for _, v := range self.desc.Args {
-        if v.IsFloat {
+        if v.IsFloat != EnumNotFloat {
             xregArgs += 1
         } else {
             iregArgs += 1
@@ -95,14 +95,17 @@ func (self *Frame) emitExchangeArgs(p *Program) {
         panic("too many arguments, only support at most 6 integer arguments now")
     }
     if xregArgs > len(xregOrderC) {
-        panic("too many arguments, only support at most 8 integer arguments now")
+        panic("too many arguments, only support at most 8 float arguments now")
     }
 
     ic, xc := iregArgs, xregArgs
     for i := 0; i < len(self.desc.Args); i++ {
         arg := self.desc.Args[i]
-        if arg.IsFloat {
+        if arg.IsFloat == EnumFloat64 {
             p.MOVSD(self.Argv(i), xregOrderC[xregArgs - xc])
+            xc -= 1 
+        } else if arg.IsFloat == EnumFloat32 {
+            p.MOVSS(self.Argv(i), xregOrderC[xregArgs - xc])
             xc -= 1 
         } else {
             p.MOVQ(self.Argv(i), iregOrderC[iregArgs - ic])
@@ -151,8 +154,10 @@ func (self *Frame) emitExchangeRets(p *Program) {
     }    
     // store result
     if len(self.desc.Rets) ==1 {
-        if self.desc.Rets[0].IsFloat {
+        if self.desc.Rets[0].IsFloat == EnumFloat64 {
             p.MOVSD(xregOrderC[0], self.Retv(0))
+        } else if self.desc.Rets[0].IsFloat == EnumFloat32 {
+            p.MOVSS(xregOrderC[0], self.Retv(0))
         } else {
             p.MOVQ(RAX, self.Retv(0))
         }

@@ -54,33 +54,6 @@ var (
     ptrType = reflect.TypeOf(unsafe.Pointer(nil))
 )
 
-/** Frame Structure of the Generated Function
-    FP  +------------------------------+
-        |             . . .            |
-        | 2nd reg argument spill space |
-        + 1st reg argument spill space |
-        | <pointer-sized alignment>    |
-        |             . . .            |
-        | 2nd stack-assigned result    |
-        + 1st stack-assigned result    |
-        | <pointer-sized alignment>    |
-        |             . . .            |
-        | 2nd stack-assigned argument  |
-        | 1st stack-assigned argument  |
-        | stack-assigned receiver      |
-prev()  +------------------------------+ (Previous Frame)
-                Return PC              |
-size()  -------------------------------|
-               Saved RBP               |
-offs()  -------------------------------|
-           1th Reserved Registers      |
-        -------------------------------|
-           2th Reserved Registers      |
-        -------------------------------|
-           Local Variables             |
-    RSP -------------------------------|↓ lower addresses
-*/
-
 func (self *Frame) Argv(i int) *MemoryOperand {
     return Ptr(RSP, int32(self.Prev() + self.desc.Args[i].Mem))
 }
@@ -103,9 +76,11 @@ func (self *Frame) emitGrowStack(p *Program, entry *Label) {
     // spill all register arguments
     for i, v := range self.desc.Args {
         if v.InRegister {
-            if v.IsFloat {
+            if v.IsFloat == EnumFloat64 {
                 p.MOVSD(v.Reg, self.Spillv(i))
-            } else {
+            } else if v.IsFloat == EnumFloat32 {
+                p.MOVSS(v.Reg, self.Spillv(i))
+            }else {
                 p.MOVQ(v.Reg, self.Spillv(i))
             }
         }
@@ -117,9 +92,11 @@ func (self *Frame) emitGrowStack(p *Program, entry *Label) {
     // load all register arguments
     for i, v := range self.desc.Args {
         if v.InRegister {
-            if v.IsFloat {
+            if v.IsFloat == EnumFloat64 {
                 p.MOVSD(self.Spillv(i), v.Reg)
-            } else {
+            } else if v.IsFloat == EnumFloat32 {
+                p.MOVSS(self.Spillv(i), v.Reg)
+            }else {
                 p.MOVQ(self.Spillv(i), v.Reg)
             }
         }
@@ -134,9 +111,11 @@ func (self *Frame) GrowStackTextSize() uint32 {
     // spill all register arguments
     for i, v := range self.desc.Args {
         if v.InRegister {
-            if v.IsFloat {
+            if v.IsFloat == EnumFloat64 {
                 p.MOVSD(v.Reg, self.Spillv(i))
-            } else {
+            } else if v.IsFloat == EnumFloat32 {
+                p.MOVSS(v.Reg, self.Spillv(i))
+            }else {
                 p.MOVQ(v.Reg, self.Spillv(i))
             }
         }
@@ -148,8 +127,10 @@ func (self *Frame) GrowStackTextSize() uint32 {
     // load all register arguments
     for i, v := range self.desc.Args {
         if v.InRegister {
-            if v.IsFloat {
+            if v.IsFloat == EnumFloat64 {
                 p.MOVSD(self.Spillv(i), v.Reg)
+            } else if v.IsFloat == EnumFloat32 {
+                p.MOVSS(self.Spillv(i), v.Reg)
             } else {
                 p.MOVQ(self.Spillv(i), v.Reg)
             }
@@ -176,11 +157,21 @@ func (self *Frame) emitEpilogue(p *Program) {
     p.RET()
 }
 
-func (self *Frame) emitSpillRegs(p *Program) {
+func (self *Frame) emitReserveRegs(p *Program) {
     // spill reserved registers
-    for i, r := range ReservedRegs {
+    for i, r := range ReservedRegs(self.ccall) {
         p.MOVQ(r, self.Resv(i))
     }
+}
+
+func (self *Frame) emitRestoreRegs(p *Program) {
+    // load reserved registers
+    for i, r := range ReservedRegs(self.ccall) {
+        p.MOVQ(self.Resv(i), r)
+    }
+}
+
+func (self *Frame) emitSpillRegs(p *Program) {
     // spill pointer argument registers
     for i, r := range self.desc.Args {
         if r.InRegister && r.IsPointer {
@@ -189,26 +180,23 @@ func (self *Frame) emitSpillRegs(p *Program) {
     }
 }
 
-func (self *Frame) emitLoadRegs(p *Program) {
-    // load reserved registers
-    for i, r := range ReservedRegs {
-        p.MOVQ(self.Resv(i), r)
-    }
-}
-
 func (self *Frame) emitCallC(p *Program, addr uintptr) {
     p.MOVQ(addr, RAX)
     p.CALLQ(RAX)
 }
 
-func (self *Frame) emitDebug(p *Program) {
-    p.INT(3)
-}
+type EnumFloat uint8
+
+const (
+    EnumNotFloat EnumFloat = iota
+    EnumFloat32
+    EnumFloat64
+)
 
 type Parameter struct {
     InRegister bool
     IsPointer  bool
-    IsFloat    bool
+    IsFloat    EnumFloat
     Reg        Register
     Mem        uint32
     Type       reflect.Type
@@ -222,11 +210,22 @@ func mkIReg(vt reflect.Type, reg Register64) (p Parameter) {
     return
 }
 
+func isFloat(vt reflect.Type) EnumFloat {
+    switch vt.Kind() {
+    case reflect.Float32:
+        return EnumFloat32
+    case reflect.Float64:
+        return EnumFloat64
+    default:
+        return EnumNotFloat
+    }
+}
+
 func mkXReg(vt reflect.Type, reg XMMRegister) (p Parameter) {
     p.Reg = reg
     p.Type = vt
     p.InRegister = true
-    p.IsFloat = true
+    p.IsFloat = isFloat(vt)
     return
 }
 
@@ -235,6 +234,7 @@ func mkStack(vt reflect.Type, mem uint32) (p Parameter) {
     p.Type = vt
     p.InRegister = false
     p.IsPointer = isPointer(vt)
+    p.IsFloat = isFloat(vt)
     return
 }
 
@@ -254,14 +254,22 @@ func CallC(addr uintptr, fr Frame, maxStack uintptr) []byte {
     p.Link(entry)
     fr.emitStackCheck(p, stack, maxStack)
     fr.emitPrologue(p)
+    fr.emitReserveRegs(p)
     fr.emitSpillRegs(p)
     fr.emitExchangeArgs(p)
+    fr.emitDebug(p)
     fr.emitCallC(p, addr)
+    fr.emitDebug(p)
     fr.emitExchangeRets(p)
-    fr.emitLoadRegs(p)
+    fr.emitRestoreRegs(p)
     fr.emitEpilogue(p)
     p.Link(stack)
     fr.emitGrowStack(p, entry)
 
     return p.Assemble(0)
+}
+
+
+func (self *Frame) emitDebug(p *Program) {
+    // p.INT(3)
 }

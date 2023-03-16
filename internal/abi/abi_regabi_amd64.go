@@ -31,6 +31,33 @@ import (
 	. "github.com/chenzhuoyu/iasm/x86_64"
 )
 
+/** Frame Structure of the Generated Function
+    FP  +------------------------------+
+        |             . . .            |
+        | 2nd reg argument spill space |
+        + 1st reg argument spill space |
+        | <pointer-sized alignment>    |
+        |             . . .            |
+        | 2nd stack-assigned result    |
+        + 1st stack-assigned result    |
+        | <pointer-sized alignment>    |
+        |             . . .            |
+        | 2nd stack-assigned argument  |
+        | 1st stack-assigned argument  |
+        | stack-assigned receiver      |
+prev()  +------------------------------+ (Previous Frame)
+                Return PC              |
+size()  -------------------------------|
+               Saved RBP               |
+offs()  -------------------------------|
+           1th Reserved Registers      |
+        -------------------------------|
+           2th Reserved Registers      |
+        -------------------------------|
+           Local Variables             |
+    RSP -------------------------------|↓ lower addresses
+*/
+
 var iregOrderGo = [...]Register64 {
     RAX,// RDI
     RBX,// RSI
@@ -61,9 +88,14 @@ var xregOrderGo = [...]XMMRegister {
     XMM14,
 }
 
-var ReservedRegs = []Register64 {
-    R14, // current goroutine
-    R15, // GOT reference
+func ReservedRegs(callc bool) []Register64 {
+    if callc {
+        return nil
+    }
+    return []Register64 {
+        R14, // current goroutine
+        R15, // GOT reference
+    }
 }
 
 type stackAlloc struct {
@@ -140,15 +172,12 @@ func (self *stackAlloc) alloc(p []Parameter, vt reflect.Type) []Parameter {
     }
 }
 
-func isFloat(v reflect.Type) bool {
-    return v.Kind() == reflect.Float64 || v.Kind() == reflect.Float32
-}
-
 func (self *stackAlloc) valloc(p []Parameter, vts ...reflect.Type) []Parameter {
     for _, vt := range vts { 
-        if isFloat(vt) && self.x < len(xregOrderGo) {
+        enum := isFloat(vt)
+        if enum != EnumNotFloat && self.x < len(xregOrderGo) {
             p = append(p, self.xreg(vt))
-        }else if !isFloat(vt) && self.i < len(iregOrderGo) {
+        } else if enum == EnumNotFloat && self.i < len(iregOrderGo) {
             p = append(p, self.ireg(vt))
         } else {
             p = append(p, self.stack(vt))
@@ -193,7 +222,7 @@ func (self *Frame) emitExchangeArgs(p *Program) {
     xregArgs := 0
     for _, v := range self.desc.Args {
         if v.InRegister {
-            if v.IsFloat {
+            if v.IsFloat != EnumNotFloat {
                 xregArgs += 1
             } else {
                 iregArgs = append(iregArgs, v)
@@ -211,7 +240,7 @@ func (self *Frame) emitExchangeArgs(p *Program) {
         //Fast-Path: when arguments count are less than four, just exchange the registers
         for i := 0; i < len(iregArgs); i++ {
             arg := iregArgs[i]
-            if !arg.IsFloat {
+            if arg.IsFloat == EnumNotFloat {
                 p.MOVQ(iregOrderGo[i], iregOrderC[i])
             }
         }
@@ -259,9 +288,11 @@ func (self *Frame) emitExchangeRets(p *Program) {
         panic("too many results, only support one result now")
     }    
     // store result
-    if len(self.desc.Rets) ==1 && !self.desc.Rets[0].InRegister {
-        if self.desc.Rets[0].IsFloat {
+    if len(self.desc.Rets) == 1 && !self.desc.Rets[0].InRegister {
+        if self.desc.Rets[0].IsFloat == EnumFloat64 {
             p.MOVSD(xregOrderC[0], self.Retv(0))
+        } else if self.desc.Rets[0].IsFloat == EnumFloat32 {
+            p.MOVSS(xregOrderC[0], self.Retv(0))
         } else {
             p.MOVQ(RAX, self.Retv(0))
         }

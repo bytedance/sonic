@@ -62,7 +62,7 @@ func TestWrapC(t *testing.T) {
         0xc3,                    // ret
     }
     
-    WrapC(ct, []CFunc{{
+    WrapGoC(ct, []CFunc{{
 		Name:     "add",
 		EntryOff: 0,
 		TextSize: uint32(len(ct)),
@@ -70,8 +70,8 @@ func TestWrapC(t *testing.T) {
 		Pcsp:     [][2]uint32{
             {uint32(len(ct)), 8},
         },
-	}}, []GoFunc{{
-		Name:     "add",
+	}}, []GoC{{
+		CName:     "add",
 		GoFunc:   &stub,
 	} }, "dummy/native", "dummy/native.c")
     

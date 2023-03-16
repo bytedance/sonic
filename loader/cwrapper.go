@@ -32,12 +32,24 @@ type CFunc struct {
 	Pcsp     [][2]uint32
 }
 
-type GoFunc struct {
-	Name     string
-	GoFunc   interface{}
+type GoC struct {
+	// CName is the name of corresponding C function
+	CName     string
+
+	// CEntry points out where to store the entry address of corresponding C function.
+	// It won't be set if nil
+	CEntry   *uintptr
+
+	// GoFunc is the POINTER of corresponding go stub function. 
+	// It is used to generate Go-C ABI conversion wrapper and receive the wrapper's address 
+	//   eg. &func(a int, b int) int 
+	//	 FOR 
+	//	 int add(int a, int b)
+	// It won't be set if nil
+	GoFunc   interface{} 
 }
 
-func WrapC(text []byte, natives []CFunc, stubs []GoFunc, modulename string, filename string) {
+func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filename string) {
 	funcs := make([]Func, len(natives))
 	
 	// register C funcs
@@ -50,6 +62,7 @@ func WrapC(text []byte, natives []CFunc, stubs []GoFunc, modulename string, file
 		if len(f.Pcsp) != 0 {
 			fn.Pcsp = (*Pcdata)(unsafe.Pointer(&natives[i].Pcsp))
 		}
+		// NOTICE: always forbid async preempt
 		fn.PcUnsafePoint = &Pcdata{
 			{PC: f.TextSize, Val: PCDATA_UnsafePointUnsafe},
 		}
@@ -59,33 +72,47 @@ func WrapC(text []byte, natives []CFunc, stubs []GoFunc, modulename string, file
 
 	// got absolute entry address
 	native_entry := **(**uintptr)(unsafe.Pointer(&rets[0]))
+	println("native_entry: ", native_entry)
 
-	wraps := make([]Func, len(stubs))
-	code := make([]byte, 0, len(wraps)*256)
+	wraps := make([]Func, 0, len(stubs))
+	wrapIds := make([]int, 0, len(stubs))
+	code := make([]byte, 0, len(wraps))
 	entryOff := uint32(0)
 
-	// register wrapper go funcs
-	for i, w := range stubs {
-		for _, f := range natives {
-			if w.Name != f.Name {
+	// register go wrappers
+	for i := range stubs {
+		for j := range natives {
+			if stubs[i].CName != natives[j].Name {
+				continue
+			}
+			
+			// calculate corresponding C entry
+			pc := uintptr(native_entry + uintptr(natives[j].EntryOff))
+			println("c func ", natives[j].Name, "entry: ", pc)
+			if stubs[i].CEntry != nil {
+				*stubs[i].CEntry = pc
+			}
+
+			// no need to generate wrapper, continue next
+			if stubs[i].GoFunc == nil {
 				continue
 			}
 
 			// assemble wrapper codes
-			layout := abi.NewFunctionLayout(reflect.TypeOf(w.GoFunc).Elem())
-			frame := abi.NewFrame(&layout, []bool{false, false}) 
-			tcode := abi.CallC(uintptr(native_entry + uintptr(f.EntryOff)), frame, f.MaxStack)
+			layout := abi.NewFunctionLayout(reflect.TypeOf(stubs[i].GoFunc).Elem())
+			frame := abi.NewFrame(&layout, nil, true) 
+			tcode := abi.CallC(pc, frame, natives[j].MaxStack)
 			code = append(code, tcode...)
-
 			size := uint32(len(tcode))
 		
 			fn := Func{
 				ArgsSize: int32(layout.ArgSize()),
 				EntryOff: entryOff,
 				TextSize: size,
-				Name: reflect.ValueOf(w.GoFunc).String(),
+				Name: stubs[i].CName + "_go",
 			}
-			// NOTICE: need add check-stack and grow-stack pcsp
+
+			// add check-stack and grow-stack texts' pcsp
 			fn.Pcsp = &Pcdata{
 				{PC: uint32(frame.StackCheckTextSize()), Val: 0},
 				{PC: size - uint32(frame.GrowStackTextSize()), Val: int32(frame.Size())},
@@ -102,16 +129,17 @@ func WrapC(text []byte, natives []CFunc, stubs []GoFunc, modulename string, file
 			fn.LocalsPointerMaps = frame.LocalPtrs()
 
 			entryOff += size
-			wraps[i] = fn
+			wraps = append(wraps, fn)
+			wrapIds = append(wrapIds, i)
 		}
 	}
     gofuncs := Load(code, wraps, modulename+"/go", []string{filename+".go"})
-	
+
 	// set go func value 
-	for i, f := range gofuncs {
-		println(stubs[i].Name, " pc:", **(**unsafe.Pointer)(unsafe.Pointer(&f)))
-		println(stubs[i].GoFunc, " type:", reflect.ValueOf(stubs[i].GoFunc).String())
-        w := rt.UnpackEface(stubs[i].GoFunc)
-		*(*Function)(w.Value) = f
+	for i := range gofuncs {
+		idx := wrapIds[i]
+        w := rt.UnpackEface(stubs[idx].GoFunc)
+		println("go stub ", stubs[idx].CName, "pc: ", **(**uintptr)(unsafe.Pointer(&gofuncs[i])))
+		*(*Function)(w.Value) = gofuncs[i]
 	}
 }

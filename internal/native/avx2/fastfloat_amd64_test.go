@@ -39,7 +39,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-    loader.WrapC(Text___native_entry__, Funcs, Stubs, "avx2", "avx2/native.c")
+    loader.WrapGoC(Text__native_entry__, Funcs, Stubs, "avx2", "avx2/native.c")
     
     go func ()  {
         if !debugAsyncGC {

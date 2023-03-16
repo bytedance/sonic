@@ -458,7 +458,7 @@ static always_inline long validate_utf8_errors(const GoString* s) {
     }
 
     static always_inline void check_remain(utf8_checker* checker, const uint8_t* start, const uint8_t* end) {
-        uint8_t buffer[64] = {0};
+        uint8_t buffer[64] __attribute__((aligned(1))) = {0};
         int i = 0;
         while (start < end) {
             buffer[i++] = *(start++);

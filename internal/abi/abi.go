@@ -106,12 +106,14 @@ func (self FunctionLayout) formatSeq(v []Parameter, fp *uint32) string {
 type Frame struct {
     desc      *FunctionLayout
     locals    []bool
+    ccall     bool
 }
 
-func NewFrame(desc *FunctionLayout, locals []bool) Frame {
+func NewFrame(desc *FunctionLayout, locals []bool, ccall bool) Frame {
     fr := Frame{}
     fr.desc = desc
     fr.locals = locals
+    fr.ccall = ccall
     return fr
 }
 
@@ -124,7 +126,7 @@ func (self *Frame) String() string {
     out += fmt.Sprintf("\n%#4x [RBP]", off)
     off -= 8
 
-    for _, v := range ReservedRegs {
+    for _, v := range ReservedRegs(self.ccall) {
         out += fmt.Sprintf("\n%#4x [%v]", off, v)
         off -= PtrSize
     }
@@ -146,7 +148,7 @@ func (self *Frame) Size() uint32 {
 }
 
 func (self *Frame) Offs() uint32 {
-    return uint32(len(ReservedRegs) * PtrSize + len(self.locals)*PtrSize)
+    return uint32(len(ReservedRegs(self.ccall)) * PtrSize + len(self.locals)*PtrSize)
 }
 
 func (self *Frame) ArgPtrs() *rt.StackMap {
@@ -156,7 +158,7 @@ func (self *Frame) ArgPtrs() *rt.StackMap {
 func (self *Frame) LocalPtrs() *rt.StackMap {
     var m rt.StackMapBuilder
     for _, b := range self.locals {
-        m.AddFields(len(ReservedRegs), b)
+        m.AddFields(len(ReservedRegs(self.ccall)), b)
     }
     return m.Build()
 }

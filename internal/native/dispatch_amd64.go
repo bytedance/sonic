@@ -41,8 +41,9 @@ var (
 )
 
 var (
-    S_quote   uintptr
-    S_unquote uintptr
+    S_quote       uintptr
+    S_unquote     uintptr
+    S_html_escape uintptr
 )
 
 var (
@@ -54,12 +55,18 @@ var (
 )
 
 var (
-    S_skip_one    uintptr
-    S_skip_one_fast    uintptr
-    S_get_by_path    uintptr
-    S_skip_array  uintptr
-    S_skip_object uintptr
-    S_skip_number uintptr
+    S_skip_one      uintptr
+    S_skip_one_fast uintptr
+    S_get_by_path   uintptr
+    S_skip_array    uintptr
+    S_skip_object   uintptr
+    S_skip_number   uintptr
+)
+
+var (
+    S_validate_one       uintptr
+    S_validate_utf8      uintptr
+    S_validate_utf8_fast uintptr
 )
 
 var (
@@ -90,90 +97,42 @@ var (
     ValidateUTF8Fast func(s *string) (ret int)
 )
 
-var Stubs = []loader.GoFunc{
-    {"_f64toa", &F64toa},
-    {"_get_by_path", &GetByPath},
-    {"_html_escape", &HTMLEscape},
-    {"_i64toa", &I64toa},
-    {"_quote", &Quote},
-    {"_skip_one", &SkipOne},
-    {"_skip_one_fast", &SkipOneFast},
-    {"_u64toa", &U64toa},
-    {"_unquote", &Unquote},
-    {"_validate_one", &ValidateOne},
-    {"_validate_utf8", &ValidateUTF8},
-    {"_validate_utf8_fast", &ValidateUTF8Fast},
-    {"_value", &Value},
+var Stubs = []loader.GoC{
+    {"_f64toa", &S_f64toa, &F64toa},
+    {"_f32toa", &S_f32toa, nil},
+    {"_i64toa", &S_i64toa, &I64toa},
+    {"_u64toa", &S_u64toa, &U64toa},
+    {"_lspace", &S_lspace, nil},
+    {"_quote", &S_quote, &Quote},
+    {"_unquote", &S_unquote, &Unquote},
+    {"_html_escape", &S_html_escape, &HTMLEscape},
+    {"_value", &S_value, &Value},
+    {"_vstring", &S_vstring, nil},
+    {"_vnumber", &S_vnumber, nil},
+    {"_vsigned", &S_vsigned, nil},
+    {"_vunsigned", &S_vunsigned, nil},
+    {"_skip_one", &S_skip_one, &SkipOne},
+    {"_skip_one_fast", &S_skip_one_fast, &SkipOneFast},
+    {"_get_by_path", &S_get_by_path, &GetByPath},
+    {"_skip_array", &S_skip_array, nil},
+    {"_skip_object", &S_skip_object, nil},
+    {"_skip_number", &S_skip_number, nil},
+    {"_validate_one", &S_validate_one, &ValidateOne},
+    {"_validate_utf8", &S_validate_utf8, &ValidateUTF8},
+    {"_validate_utf8_fast", &S_validate_utf8_fast, &ValidateUTF8Fast},
 }
 
 
 func useAVX() {
-    S_f64toa      = avx.S_f64toa
-    S_f32toa      = avx.S_f32toa
-    S_i64toa      = avx.S_i64toa
-    S_u64toa      = avx.S_u64toa
-    S_lspace      = avx.S_lspace
-    S_quote       = avx.S_quote
-    S_unquote     = avx.S_unquote
-    S_value       = avx.S_value
-    S_vstring     = avx.S_vstring
-    S_vnumber     = avx.S_vnumber
-    S_vsigned     = avx.S_vsigned
-    S_vunsigned   = avx.S_vunsigned
-    S_skip_one    = avx.S_skip_one
-    S_skip_one_fast = avx.S_skip_one_fast
-    S_skip_array  = avx.S_skip_array
-    S_skip_object = avx.S_skip_object
-    S_skip_number = avx.S_skip_number
-    S_get_by_path = avx.S_get_by_path
-
-    loader.WrapC(avx.Text___native_entry__, avx.Funcs, Stubs, "avx", "avx/native.c")
+    loader.WrapGoC(avx.Text__native_entry__, avx.Funcs, Stubs, "avx", "avx/native.c")
 }
 
 func useAVX2() {
-    S_f64toa      = avx2.S_f64toa
-    S_f32toa      = avx2.S_f32toa
-    S_i64toa      = avx2.S_i64toa
-    S_u64toa      = avx2.S_u64toa
-    S_lspace      = avx2.S_lspace
-    S_quote       = avx2.S_quote
-    S_unquote     = avx2.S_unquote
-    S_value       = avx2.S_value
-    S_vstring     = avx2.S_vstring
-    S_vnumber     = avx2.S_vnumber
-    S_vsigned     = avx2.S_vsigned
-    S_vunsigned   = avx2.S_vunsigned
-    S_skip_one    = avx2.S_skip_one
-    S_skip_one_fast = avx2.S_skip_one_fast
-    S_skip_array  = avx2.S_skip_array
-    S_skip_object = avx2.S_skip_object
-    S_skip_number = avx2.S_skip_number
-    S_get_by_path = avx2.S_get_by_path
-
-    loader.WrapC(avx2.Text___native_entry__, avx2.Funcs, Stubs, "avx2", "avx2/native.c")
+    loader.WrapGoC(avx2.Text__native_entry__, avx2.Funcs, Stubs, "avx2", "avx2/native.c")
 }
 
 func useSSE() {
-    S_f64toa = sse.S_f64toa
-    S_f32toa = sse.S_f32toa
-    S_i64toa = sse.S_i64toa
-    S_u64toa = sse.S_u64toa
-    S_lspace = sse.S_lspace
-    S_quote = sse.S_quote
-    S_unquote = sse.S_unquote
-    S_value = sse.S_value
-    S_vstring = sse.S_vstring
-    S_vnumber = sse.S_vnumber
-    S_vsigned = sse.S_vsigned
-    S_vunsigned = sse.S_vunsigned
-    S_skip_one = sse.S_skip_one
-    S_skip_one_fast = sse.S_skip_one_fast
-    S_skip_array = sse.S_skip_array
-    S_skip_object = sse.S_skip_object
-    S_skip_number = sse.S_skip_number
-    S_get_by_path = sse.S_get_by_path
-
-    loader.WrapC(sse.Text___native_entry__, sse.Funcs, Stubs, "sse", "sse/native.c")
+    loader.WrapGoC(sse.Text__native_entry__, sse.Funcs, Stubs, "sse", "sse/native.c")
 }
 
 func init() {
