@@ -101,12 +101,13 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 
 			// assemble wrapper codes
 			layout := abi.NewFunctionLayout(reflect.TypeOf(stubs[i].GoFunc).Elem())
-			frame := abi.NewFrame(&layout, nil, true) 
+			frame := abi.NewFrame(&layout, []bool{true, true, true, true, true, true, true, true, true, true, true, true}, true) 
 			tcode := abi.CallC(pc, frame, natives[j].MaxStack)
 			code = append(code, tcode...)
 			size := uint32(len(tcode))
 		
 			fn := Func{
+				Flag: FuncFlag_ASM,
 				ArgsSize: int32(layout.ArgSize()),
 				EntryOff: entryOff,
 				TextSize: size,

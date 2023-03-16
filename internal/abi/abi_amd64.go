@@ -171,11 +171,20 @@ func (self *Frame) emitRestoreRegs(p *Program) {
     }
 }
 
-func (self *Frame) emitSpillRegs(p *Program) {
+func (self *Frame) emitSpillPtrs(p *Program) {
     // spill pointer argument registers
     for i, r := range self.desc.Args {
         if r.InRegister && r.IsPointer {
             p.MOVQ(r.Reg, self.Argv(i))
+        }
+    }
+}
+
+func (self *Frame) emitClearPtrs(p *Program) {
+    // spill pointer argument registers
+    for i, r := range self.desc.Args {
+        if r.InRegister && r.IsPointer {
+            p.MOVQ(int64(0), self.Argv(i))
         }
     }
 }
@@ -255,12 +264,13 @@ func CallC(addr uintptr, fr Frame, maxStack uintptr) []byte {
     fr.emitStackCheck(p, stack, maxStack)
     fr.emitPrologue(p)
     fr.emitReserveRegs(p)
-    fr.emitSpillRegs(p)
+    fr.emitSpillPtrs(p)
     fr.emitExchangeArgs(p)
     fr.emitDebug(p)
     fr.emitCallC(p, addr)
     fr.emitDebug(p)
     fr.emitExchangeRets(p)
+    fr.emitClearPtrs(p)
     fr.emitRestoreRegs(p)
     fr.emitEpilogue(p)
     p.Link(stack)

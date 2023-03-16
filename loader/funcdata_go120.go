@@ -20,7 +20,6 @@
 package loader
 
 import (
-
     `github.com/bytedance/sonic/internal/rt`
 )
 
