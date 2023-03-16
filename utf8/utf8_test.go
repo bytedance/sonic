@@ -50,7 +50,6 @@ func TestMain(m *testing.M) {
         println("stop GC looping!")
     }()
     time.Sleep(time.Millisecond*100)
-    debug.SetGCPercent(-1)
     m.Run()
 }
 

@@ -42,6 +42,13 @@ const (
     _SUB_BUCKETSIZE = _BUCKETSIZE / _SUBBUCKETS
 )
 
+// Note: This list must match the list in runtime/symtab.go.
+const (
+	FuncFlag_TOPFRAME = 1 << iota
+	FuncFlag_SPWRITE
+	FuncFlag_ASM
+)
+
 // PCDATA and FUNCDATA table indexes.
 //
 // See funcdata.h and $GROOT/src/cmd/internal/objabi/funcdata.go.
