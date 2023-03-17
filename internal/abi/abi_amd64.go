@@ -160,14 +160,14 @@ func (self *Frame) emitEpilogue(p *Program) {
 func (self *Frame) emitReserveRegs(p *Program) {
     // spill reserved registers
     for i, r := range ReservedRegs(self.ccall) {
-        p.MOVQ(r, self.Resv(i))
-    }
-}
-
-func (self *Frame) emitRestoreRegs(p *Program) {
-    // load reserved registers
-    for i, r := range ReservedRegs(self.ccall) {
-        p.MOVQ(self.Resv(i), r)
+        switch r.(type) {
+        case Register64:
+            p.MOVQ(r, self.Resv(i))
+        case XMMRegister:
+            p.MOVSD(r, self.Resv(i))
+        default:
+            panic(fmt.Sprintf("unsupported register type %t to reserve", r))
+        }
     }
 }
 

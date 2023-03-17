@@ -20,14 +20,15 @@
 package abi
 
 import (
+    "fmt"
 	"reflect"
 	"runtime"
 
 	. "github.com/chenzhuoyu/iasm/x86_64"
 )
 
-func ReservedRegs(callc bool) []Register64 {
-    return []Register64 {}
+func ReservedRegs(callc bool) []Register {
+    return nil
 }
 
 func salloc(p []Parameter, sp uint32, vt reflect.Type) (uint32, []Parameter) {
@@ -160,6 +161,20 @@ func (self *Frame) emitExchangeRets(p *Program) {
             p.MOVSS(xregOrderC[0], self.Retv(0))
         } else {
             p.MOVQ(RAX, self.Retv(0))
+        }
+    }
+}
+
+func (self *Frame) emitRestoreRegs(p *Program) {
+    // load reserved registers
+    for i, r := range ReservedRegs(self.ccall) {
+        switch r.(type) {
+        case Register64:
+            p.MOVQ(self.Resv(i), r)
+        case XMMRegister:
+            p.MOVSD(self.Resv(i), r)
+        default:
+            panic(fmt.Sprintf("unsupported register type %t to reserve", r))
         }
     }
 }

@@ -26,6 +26,7 @@
 package abi
 
 import (
+	"fmt"
 	"reflect"
 
 	. "github.com/chenzhuoyu/iasm/x86_64"
@@ -58,6 +59,8 @@ offs()  -------------------------------|
     RSP -------------------------------|↓ lower addresses
 */
 
+const zeroRegGo = XMM15
+
 var iregOrderGo = [...]Register64 {
     RAX,// RDI
     RBX,// RSI
@@ -88,11 +91,11 @@ var xregOrderGo = [...]XMMRegister {
     XMM14,
 }
 
-func ReservedRegs(callc bool) []Register64 {
+func ReservedRegs(callc bool) []Register {
     if callc {
         return nil
     }
-    return []Register64 {
+    return []Register {
         R14, // current goroutine
         R15, // GOT reference
     }
@@ -294,4 +297,20 @@ func (self *Frame) emitExchangeRets(p *Program) {
             p.MOVQ(RAX, self.Retv(0))
         }
     }
+}
+
+func (self *Frame) emitRestoreRegs(p *Program) {
+    // load reserved registers
+    for i, r := range ReservedRegs(self.ccall) {
+        switch r.(type) {
+        case Register64:
+            p.MOVQ(self.Resv(i), r)
+        case XMMRegister:
+            p.MOVSD(self.Resv(i), r)
+        default:
+            panic(fmt.Sprintf("unsupported register type %t to reserve", r))
+        }
+    }
+    // zero xmm15 for go abi
+    p.XORPS(zeroRegGo, zeroRegGo)
 }

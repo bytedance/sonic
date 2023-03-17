@@ -25,6 +25,8 @@ import (
 	"github.com/bytedance/sonic/internal/rt"
 )
 
+var _C_Redzone = []bool{false, false, false, false}
+
 type CFunc struct {
 	Name     string
 	EntryOff uint32
@@ -90,7 +92,6 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 			
 			// calculate corresponding C entry
 			pc := uintptr(native_entry + uintptr(natives[j].EntryOff))
-			println("c func ", natives[j].Name, "entry: ", pc)
 			if stubs[i].CEntry != nil {
 				*stubs[i].CEntry = pc
 			}
@@ -102,7 +103,7 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 
 			// assemble wrapper codes
 			layout := abi.NewFunctionLayout(reflect.TypeOf(stubs[i].GoFunc).Elem())
-			frame := abi.NewFrame(&layout, []bool{false, false, false, false}, true) 
+			frame := abi.NewFrame(&layout, _C_Redzone, true) 
 			tcode := abi.CallC(pc, frame, natives[j].MaxStack)
 			code = append(code, tcode...)
 			size := uint32(len(tcode))
@@ -127,16 +128,9 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 			fn.PcStackMapIndex = &Pcdata{
 				{PC: size, Val: 0},
 			}
-			args := frame.ArgPtrs()
-			// println("  argPtrs:", args.String())
-			// ab, _ := args.MarshalBinary()
-			// fmt.Printf("%#v\n", ab)
-			fn.ArgsPointerMaps = args
-			locals := frame.LocalPtrs()
-			// println(" locals:", locals.String())
-			// lb, _ := locals.MarshalBinary()
-			// fmt.Printf("%#v\n", lb)
-			fn.LocalsPointerMaps = locals
+
+			fn.ArgsPointerMaps = frame.ArgPtrs()
+			fn.LocalsPointerMaps = frame.LocalPtrs()
 
 			entryOff += size
 			wraps = append(wraps, fn)
@@ -149,7 +143,6 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 	for i := range gofuncs {
 		idx := wrapIds[i]
         w := rt.UnpackEface(stubs[idx].GoFunc)
-		// println("go stub ", stubs[idx].CName, "pc: ", **(**uintptr)(unsafe.Pointer(&gofuncs[i])))
 		*(*Function)(w.Value) = gofuncs[i]
 	}
 }
