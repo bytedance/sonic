@@ -56,7 +56,7 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 	// register C funcs
 	for i, f := range natives {
 		fn := Func{
-			Flag: FuncFlag_ASM | FuncFlag_SPWRITE,
+			Flag: FuncFlag_ASM,
 			EntryOff: f.EntryOff,
 			TextSize: f.TextSize,
 			Name: f.Name,
