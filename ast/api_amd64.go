@@ -1,4 +1,4 @@
-// +build amd64,go1.15,!go1.21
+// +build amd64,go1.16,!go1.21
 
 
 package ast

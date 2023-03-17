@@ -270,7 +270,6 @@ func CallC(addr uintptr, fr Frame, maxStack uintptr) []byte {
     fr.emitCallC(p, addr)
     fr.emitDebug(p)
     fr.emitExchangeRets(p)
-    fr.emitClearPtrs(p)
     fr.emitRestoreRegs(p)
     fr.emitEpilogue(p)
     p.Link(stack)

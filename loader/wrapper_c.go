@@ -17,6 +17,7 @@
 package loader
 
 import (
+	// "fmt"
 	"reflect"
 	"unsafe"
 
@@ -73,7 +74,7 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 
 	// got absolute entry address
 	native_entry := **(**uintptr)(unsafe.Pointer(&rets[0]))
-	println("native_entry: ", native_entry)
+	// println("native_entry: ", native_entry)
 
 	wraps := make([]Func, 0, len(stubs))
 	wrapIds := make([]int, 0, len(stubs))
@@ -101,7 +102,7 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 
 			// assemble wrapper codes
 			layout := abi.NewFunctionLayout(reflect.TypeOf(stubs[i].GoFunc).Elem())
-			frame := abi.NewFrame(&layout, []bool{true, true, true, true, true, true, true, true, true, true, true, true}, true) 
+			frame := abi.NewFrame(&layout, []bool{false, false, false, false}, true) 
 			tcode := abi.CallC(pc, frame, natives[j].MaxStack)
 			code = append(code, tcode...)
 			size := uint32(len(tcode))
@@ -126,9 +127,16 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 			fn.PcStackMapIndex = &Pcdata{
 				{PC: size, Val: 0},
 			}
-
-			fn.ArgsPointerMaps = frame.ArgPtrs()
-			fn.LocalsPointerMaps = frame.LocalPtrs()
+			args := frame.ArgPtrs()
+			// println("  argPtrs:", args.String())
+			// ab, _ := args.MarshalBinary()
+			// fmt.Printf("%#v\n", ab)
+			fn.ArgsPointerMaps = args
+			locals := frame.LocalPtrs()
+			// println(" locals:", locals.String())
+			// lb, _ := locals.MarshalBinary()
+			// fmt.Printf("%#v\n", lb)
+			fn.LocalsPointerMaps = locals
 
 			entryOff += size
 			wraps = append(wraps, fn)
@@ -141,7 +149,7 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 	for i := range gofuncs {
 		idx := wrapIds[i]
         w := rt.UnpackEface(stubs[idx].GoFunc)
-		println("go stub ", stubs[idx].CName, "pc: ", **(**uintptr)(unsafe.Pointer(&gofuncs[i])))
+		// println("go stub ", stubs[idx].CName, "pc: ", **(**uintptr)(unsafe.Pointer(&gofuncs[i])))
 		*(*Function)(w.Value) = gofuncs[i]
 	}
 }

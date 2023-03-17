@@ -239,10 +239,7 @@ func (self *Frame) emitExchangeArgs(p *Program) {
     case 0, 1, 2, 3: {
         //Fast-Path: when arguments count are less than four, just exchange the registers
         for i := 0; i < len(iregArgs); i++ {
-            arg := iregArgs[i]
-            if arg.IsFloat == EnumNotFloat {
-                p.MOVQ(iregOrderGo[i], iregOrderC[i])
-            }
+            p.MOVQ(iregOrderGo[i], iregOrderC[i])
         }
     }
     case 4, 5, 6: {
