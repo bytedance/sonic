@@ -6,9 +6,10 @@ fuzz:
 	rm -rf ./go-fuzz-corpus
 	git clone https://github.com/dvyukov/go-fuzz-corpus.git ./go-fuzz-corpus/
 	file2fuzz -o ${corpusdir} ./go-fuzz-corpus/json/corpus/*  ./corpus/* 
+	rm -rf ./go-fuzz-corpus/
 
 run:
-	GOARCH=amd64 go test -fuzz=${testname} -v
+	GOMAXPROCS=4 GOARCH=amd64 go test -fuzz=${testname} -v
 
 clean:
 	rm -rf ./go-fuzz-corpus/
