@@ -313,6 +313,7 @@ func TestSearchNotExist(t *testing.T) {
 func BenchmarkGetOne_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
     ast := NewSearcher(_TwitterJson)
+    b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node, err := ast.GetByPath("statuses", 3, "id")
         if err != nil {
@@ -328,6 +329,7 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
 func BenchmarkGetWithManyCompare_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_LotsCompare)))
     ast := NewSearcher(_LotsCompare)
+    b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node, err := ast.GetByPath("is")
         if err != nil {
@@ -342,6 +344,7 @@ func BenchmarkGetWithManyCompare_Sonic(b *testing.B) {
 
 func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_TwitterJson)))
+    b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         ast := NewSearcher(_TwitterJson)
         for pb.Next() {
