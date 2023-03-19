@@ -9,7 +9,7 @@ fuzz:
 	rm -rf ./go-fuzz-corpus/
 
 run:
-	GOMAXPROCS=4 GOARCH=amd64 go test -fuzz=${testname} -v -fuzztime 3m
+	GOMAXPROCS=4 GOARCH=amd64 go test -fuzz=${testname} -v -fuzztime 5m
 
 clean:
 	rm -rf ./go-fuzz-corpus/
