@@ -326,7 +326,7 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
     }
 }
 
-func BenchmarkGetWithManyCompare_Sonic(b *testing.B) {
+func BenchmarkGetWithManyCompare(b *testing.B) {
     b.SetBytes(int64(len(_LotsCompare)))
     ast := NewSearcher(_LotsCompare)
     b.ResetTimer()
