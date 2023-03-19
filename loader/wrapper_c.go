@@ -70,6 +70,12 @@ func WrapGoC(text []byte, natives []CFunc, stubs []GoC, modulename string, filen
 		fn.PcUnsafePoint = &Pcdata{
 			{PC: f.TextSize, Val: PCDATA_UnsafePointUnsafe},
 		}
+		fn.Pcfile = &Pcdata{
+			{PC: f.TextSize, Val: 0},
+		}
+		fn.Pcline = &Pcdata{
+			{PC: f.TextSize, Val: 1},
+		}
 		funcs[i] = fn
 	}
 	rets := Load(text, funcs, modulename, []string{filename})
