@@ -1615,7 +1615,7 @@ skip:
         return -ERR_EOF;
     }
 
-    char tbuf[64] __attribute__((aligned(1))) = {0};
+    char tbuf[64] = {0};
     bool cross_page = vec_cross_page(s, 64);
     if (cross_page) {
         memcpy_p64(tbuf, s, nb);

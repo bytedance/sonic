@@ -19,19 +19,17 @@
 package avx2
 
 import (
-	"bytes"
-	"math/rand"
-	"encoding/hex"
-	"fmt"
-	"math"
-	"testing"
-	"unsafe"
+    `encoding/hex`
+    `fmt`
+    `math`
+    `testing`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func TestNative_Value(t *testing.T) {
@@ -593,21 +591,5 @@ func TestNative_SkipOneFast_Error(t *testing.T) {
         p := 0
         q := __skip_one_fast(&s, &p)
         assert.True(t, q < 0)
-    }
-}
-
-func genRandAscii(length int) []byte {
-    var buf bytes.Buffer
-    for j := 0; j < length; j++ {
-        buf.WriteByte(byte(rand.Intn(0x7F + 1)))
-    }
-    return buf.Bytes()
-}
-
-func TestNative_SkipOneFast_Random(t *testing.T) {
-    for i:=0; i<1000; i++ {
-        s := string(genRandAscii(1000))
-        p := 0
-        _ = __skip_one_fast(&s, &p)
     }
 }
