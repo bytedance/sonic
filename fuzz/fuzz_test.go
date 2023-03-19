@@ -185,13 +185,13 @@ const (
 )
 
 func setMemLimit(limit uint64) {
-    threshold := uint64(float64(limit) * 0.7)
-    numWorker := uint64(runtime.GOMAXPROCS(0))
     if os.Getenv(MemoryLimitEnv) != "" {
         if memGB, err := strconv.ParseUint(os.Getenv(MemoryLimitEnv), 10, 64); err == nil {
             limit = memGB * GB
         }
     }
+    threshold := uint64(float64(limit) * 0.7)
+    numWorker := uint64(runtime.GOMAXPROCS(0))
     gctuner.Tuning(threshold / numWorker)
     log.Printf("[%d] Memory Limit: %d GB, Memory Threshold: %d MB\n", os.Getpid(), limit/GB, threshold/MB)
     log.Printf("[%d] Memory Threshold Per Worker: %d MB\n", os.Getpid(), threshold/numWorker/MB)
@@ -213,7 +213,7 @@ func enableSyncGC() {
 
 func TestMain(m *testing.M) {
     // Avoid OOM
-    setMemLimit(12 * GB)
+    setMemLimit(6 * GB)
     enableSyncGC()
     time.Sleep(time.Millisecond)
     m.Run()
