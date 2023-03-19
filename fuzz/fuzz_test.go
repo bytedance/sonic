@@ -45,7 +45,7 @@ func FuzzMain(f *testing.F) {
 
 // Used for debug falied fuzz corpus
 func TestCorpus(t *testing.T) {
-    fuzzMain(t, []byte("[1\x00"))
+    fuzzMain(t, []byte("{\"\":26,\"\xba\xa5-\x9a\xf1\x8c\xdd7c\":6,\"e\":1}"))
 }
 
 var target = sonic.ConfigStd
