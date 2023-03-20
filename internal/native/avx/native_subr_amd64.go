@@ -36,7 +36,7 @@ var (
 const (
     _stack__f32toa = 48
     _stack__f64toa = 80
-    _stack__get_by_path = 320
+    _stack__get_by_path = 304
     _stack__html_escape = 64
     _stack__i64toa = 16
     _stack__lspace = 8

@@ -1782,6 +1782,12 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
     /* compare non-escaped strings */
     if (likely(v == -1 || v > se)) {
         long sn = se - si - 1;
+
+        // check empty keys
+        if (!sn && !key.len) {
+            return true;
+        }
+        
         return sn == key.len && xmemcmpeq(src->buf + si, key.buf, key.len);
     }
 
