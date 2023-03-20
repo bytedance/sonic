@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Fuzz sonic
-        run: 
-          - cd ./fuzz
-          - make fuzz
-          - make run 
+        run: |
+          cd ./fuzz
+          make fuzz
+          make run 
