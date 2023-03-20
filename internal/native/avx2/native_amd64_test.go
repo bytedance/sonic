@@ -593,3 +593,22 @@ func TestNative_SkipOneFast_Error(t *testing.T) {
         assert.True(t, q < 0)
     }
 }
+
+func BenchmarkNative_SkipOneFast(b *testing.B) {
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        s := `{"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
+        p := 0
+        _ = __skip_one_fast(&s, &p)
+    }
+}
+
+func BenchmarkNative_GetByPath(b *testing.B) {
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        s := `{"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
+        p := 0
+        path := []interface{}{"asdf", 3}
+        _ = __get_by_path(&s, &p, &path)
+    }
+}
