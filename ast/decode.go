@@ -419,9 +419,9 @@ func skipValue(src string, pos int) (ret int, start int) {
     case '"':
         ret, _ = skipString(src, pos)
     case '{':
-        ret = skipPair(src, pos, '{', '}')
+        ret, _ = skipObject(src, pos)
     case '[':
-        ret = skipPair(src, pos, '[', ']')
+        ret, _ = skipArray(src, pos)
     case 't':
         ret = decodeTrue(src, pos)
     case 'f':
@@ -432,4 +432,105 @@ func skipValue(src string, pos int) (ret int, start int) {
         ret = -int(types.ERR_INVALID_CHAR)
     }
     return ret, pos
+}
+
+func skipObject(src string, pos int) (ret int, start int) {
+    start = skipBlank(src, pos)
+    if start < 0 {
+        return start, -1
+    }
+
+    if src[start] != '{' {
+        return -int(types.ERR_INVALID_CHAR), -1
+    }
+
+    pos = start + 1
+    pos = skipBlank(src, pos)
+    if pos < 0 {
+        return pos, -1
+    }
+    if src[pos] == '}' {
+        return pos + 1, start
+    }
+
+    for {
+        if src[pos] != '"' {
+            return -int(types.ERR_INVALID_CHAR), -1
+        }
+        pos, _ = skipString(src, pos)
+        if pos < 0 {
+            return pos, -1
+        }
+
+        pos = skipBlank(src, pos)
+        if pos < 0 {
+            return pos, -1
+        }
+        if src[pos] != ':' {
+            return -int(types.ERR_INVALID_CHAR), -1
+        }
+
+        pos++
+        pos, _ = skipValue(src, pos)
+        if pos < 0 {
+            return pos, -1
+        }
+
+        pos = skipBlank(src, pos)
+        if pos < 0 {
+            return pos, -1
+        }
+        if src[pos] == '}' {
+            return pos + 1, start
+        }
+        if src[pos] != ',' {
+            return -int(types.ERR_INVALID_CHAR), -1
+        }
+
+        pos++
+        pos = skipBlank(src, pos)
+        if pos < 0 {
+            return pos, -1
+        }
+
+    }
+}
+
+func skipArray(src string, pos int) (ret int, start int) {
+    start = skipBlank(src, pos)
+    if start < 0 {
+        return start, -1
+    }
+
+    if src[start] != '[' {
+        return -int(types.ERR_INVALID_CHAR), -1
+    }
+
+    pos = start + 1
+    pos = skipBlank(src, pos)
+    if pos < 0 {
+        return pos, -1
+    }
+    if src[pos] == ']' {
+        return pos + 1, start
+    }
+
+    for {
+        pos, _ = skipValue(src, pos)
+        if pos < 0 {
+            return pos, -1
+        }
+
+        pos = skipBlank(src, pos)
+        if pos < 0 {
+            return pos, -1
+        }
+        if src[pos] == ']' {
+            return pos + 1, start
+        }
+        if src[pos] != ',' {
+            return -int(types.ERR_INVALID_CHAR), -1
+        }
+        pos++
+    }
 }

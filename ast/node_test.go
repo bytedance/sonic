@@ -593,8 +593,8 @@ func TestUnset(t *testing.T) {
         t.Fatalf("decode failed: %v", derr.Error())
     }
     entities := root.GetByPath("statuses", 0, "entities")
-    if !entities.Exists() {
-        t.Fatal()
+    if !entities.Exists() || entities.Check() != nil {
+        t.Fatal(entities.Check().Error())
     }
     exist, err := entities.Unset("urls")
     if !exist || err != nil {
