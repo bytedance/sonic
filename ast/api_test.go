@@ -34,10 +34,16 @@ type testGetApi struct {
 type checkError func(error) bool
 
 func isSyntaxError(err error) bool {
+    if err == nil {
+        return false
+    }
     return strings.HasPrefix(err.Error(), `"Syntax error at index`)
 }
 
 func isEmptySource(err error) bool {
+    if err == nil {
+        return false
+    }
     return strings.Contains(err.Error(), "no sources available")
 }
 
@@ -83,6 +89,7 @@ func TestGetFromSyntaxError(t *testing.T) {
         { "-e123", Path{} },
         { "-1.e123", Path{} },
         { "-12e456.1", Path{} },
+        // { "-12e456xyz", Path{} },
         { "-12e.1", Path{} },
         { "[", Path{} },
         { "{", Path{} },
@@ -131,9 +138,9 @@ func TestGetFromSyntaxError(t *testing.T) {
             testSyntaxJson(t, test.json, test.path...)
             path := append(Path{"key"}, test.path...)
             testSyntaxJson(t, `{"key":` + test.json, path...)
-            path = append(Path{""}, test.path...)
+            path  = append(Path{""}, test.path...)
             testSyntaxJson(t, `{"":` + test.json, path...)
-            path = append(Path{1}, test.path...)
+            path  = append(Path{1}, test.path...)
             testSyntaxJson(t, `["",` + test.json, path...)
         }
         t.Run(test.json, f)

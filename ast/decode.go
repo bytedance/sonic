@@ -146,7 +146,7 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
     ret = int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
     (*rt.GoString)(unsafe.Pointer(&vv)).Ptr = unsafe.Pointer(ss)
     (*rt.GoString)(unsafe.Pointer(&vv)).Len = ret - pos
-
+    println(vv)
     v, err = strconv.ParseInt(vv, 10, 64)
     if err != nil {
         //NOTICE: allow overflow here
@@ -286,7 +286,7 @@ func skipNumber(src string, pos int) (ret int) {
         } else if nextNeedDigit {
             return -int(types.ERR_INVALID_CHAR)
         } else if c == '.' {
-            if !lastIsDigit || pointer || sp == ss {
+            if !lastIsDigit || pointer || exponent || sp == ss {
                 return -int(types.ERR_INVALID_CHAR)
             }
             pointer = true
