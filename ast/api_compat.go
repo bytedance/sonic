@@ -72,6 +72,9 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     for _, p := range path {
         switch p := p.(type) {
         case int:
+            if (p < 0) {
+                return Node{}, ErrUnsupportType
+            }
             if err = self.parser.searchIndex(p); err != 0 {
                 return Node{}, self.parser.ExportError(err)
             }

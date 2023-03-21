@@ -115,6 +115,18 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     var err types.ParsingError
     var start int
 
+    // check path
+    for _, p := range path {
+        switch p := p.(type) {
+        case string:
+        case int: 
+            if (p < 0) {
+                return Node{}, ErrUnsupportType
+            }
+        default: panic("path must be either int or string")
+        }
+    }
+
     self.parser.p = 0
     start, err = self.parser.getByPath(path...)
     if err != 0 {
