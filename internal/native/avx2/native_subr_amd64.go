@@ -18,7 +18,7 @@ var (
     _subr__quote              = __native_entry__() + 5520
     _subr__skip_array         = __native_entry__() + 21616
     _subr__skip_number        = __native_entry__() + 25840
-    _subr__skip_object        = __native_entry__() + 23680
+    _subr__skip_object        = __native_entry__() + 23648
     _subr__skip_one           = __native_entry__() + 26000
     _subr__skip_one_fast      = __native_entry__() + 26416
     _subr__u64toa             = __native_entry__() + 4144

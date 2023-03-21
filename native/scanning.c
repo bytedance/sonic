@@ -1366,13 +1366,13 @@ long skip_object(const GoString *src, long *p, StateMachine *m, uint64_t flags) 
 }
 
 long skip_string(const GoString *src, long *p, uint64_t flags) {
-    int64_t v;
+    int64_t v = -1;
     ssize_t q = *p - 1; // start position
     ssize_t e = advance_string(src, *p, &v, flags);
 
     /* check for errors */
     if (e < 0) {
-        *p = v;
+        *p = e == -ERR_EOF ? src->len : v;
         return e;
     }
 

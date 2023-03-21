@@ -9,23 +9,23 @@ package sse
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa             = __native_entry__() + 29328
+    _subr__f32toa             = __native_entry__() + 29408
     _subr__f64toa             = __native_entry__() + 448
-    _subr__get_by_path        = __native_entry__() + 26224
+    _subr__get_by_path        = __native_entry__() + 26304
     _subr__html_escape        = __native_entry__() + 9360
     _subr__i64toa             = __native_entry__() + 3712
     _subr__lspace             = __native_entry__() + 80
     _subr__quote              = __native_entry__() + 5152
     _subr__skip_array         = __native_entry__() + 18800
-    _subr__skip_number        = __native_entry__() + 22368
-    _subr__skip_object        = __native_entry__() + 20784
-    _subr__skip_one           = __native_entry__() + 22528
-    _subr__skip_one_fast      = __native_entry__() + 22752
+    _subr__skip_number        = __native_entry__() + 22448
+    _subr__skip_object        = __native_entry__() + 20832
+    _subr__skip_one           = __native_entry__() + 22608
+    _subr__skip_one_fast      = __native_entry__() + 22832
     _subr__u64toa             = __native_entry__() + 3840
     _subr__unquote            = __native_entry__() + 6992
-    _subr__validate_one       = __native_entry__() + 22576
-    _subr__validate_utf8      = __native_entry__() + 28096
-    _subr__validate_utf8_fast = __native_entry__() + 28768
+    _subr__validate_one       = __native_entry__() + 22656
+    _subr__validate_utf8      = __native_entry__() + 28176
+    _subr__validate_utf8_fast = __native_entry__() + 28848
     _subr__value              = __native_entry__() + 12560
     _subr__vnumber            = __native_entry__() + 16416
     _subr__vsigned            = __native_entry__() + 18064
