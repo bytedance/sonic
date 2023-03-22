@@ -1,5 +1,3 @@
-package ast
-
 /*
  * Copyright 2022 ByteDance Inc.
  *
@@ -16,6 +14,7 @@ package ast
  * limitations under the License.
  */
 
+package ast
 
 import (
     `testing`
