@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package ast
 
 import (
@@ -89,7 +89,7 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
         switch p := p.(type) {
         case int:
             if (p < 0) {
-                return Node{}, ErrUnsupportType
+                panic("path must be either int(>=0) or string")
             }
             if err = self.parser.searchIndex(p); err != 0 {
                 return Node{}, self.parser.ExportError(err)
@@ -99,7 +99,7 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
                 return Node{}, self.parser.ExportError(err)
             }
         default:
-            panic("path must be either int or string")
+            panic("path must be either int(>=0) or string")
         }
     }
 

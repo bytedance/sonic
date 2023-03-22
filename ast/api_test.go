@@ -150,14 +150,14 @@ func TestGetFromSyntaxError(t *testing.T) {
 
 func TestGet_InvalidPathType(t *testing.T) {
     assert.Panics(t, assert.PanicTestFunc(func() {
-        s := NewSearcher(`{"a":[{"b":true}]}`)
+        data := `{"a":[{"b":true}]}`
+        s := NewSearcher(data)
         s.GetByPath("a", true)
-        s = NewSearcher(`{"a":[{"b":true}]}`)
-        s.GetByPath("a", nil)
-    }))
 
-    s := NewSearcher(`{"a":[{"b":true}]}`)
-    _, err := s.GetByPath("a", -1)
-    assert.Error(t, err)
-    
+        s = NewSearcher(data)
+        s.GetByPath("a", nil)
+
+        s = NewSearcher(data)
+        s.GetByPath("a", -1)
+    }))
 }

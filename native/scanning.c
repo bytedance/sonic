@@ -1701,16 +1701,12 @@ static always_inline GoKind kind(const GoIface* iface) {
     return (iface->type->kind_flags) &  GO_KIND_MASK;
 }
 
-static always_inline bool is_nil(const GoIface* iface) {
-    return iface->type == NULL;
-}
-
 static always_inline bool is_int(const GoIface* iface) {
-    return kind(iface) == Int;
+    return iface->type != NULL && kind(iface) == Int;
 }
 
 static always_inline bool is_str(const GoIface* iface) {
-    return kind(iface) == String;
+    return iface->type != NULL && kind(iface) == String;
 }
 
 static always_inline GoString get_str(const GoIface* iface) {
@@ -1838,9 +1834,6 @@ query:
 
     /* match type: should query key in object, query index in array */
     c = advance_ns(src, p);
-    if (is_nil(ps)) {
-        goto err_path;
-    }
     if (is_str(ps)) {
         if (c != '{') {
             goto err_inval;

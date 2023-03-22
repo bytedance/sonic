@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package ast
 
 import (
@@ -125,21 +125,6 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     return start, 0
 }
 
-func checkPath(path ...interface{}) error {
-    for _, p := range path {
-        switch p := p.(type) {
-        case int:
-            if (p < 0) {
-               return ErrUnsupportType
-            }
-        case string:
-        default:
-            panic("path must be either int or string")
-        }
-    }
-    return nil
-}
-
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     var err types.ParsingError
     var start int
@@ -152,7 +137,7 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
             return Node{}, ErrNotExist
         }
         if err == types.ERR_UNSUPPORT_TYPE {
-            return Node{}, checkPath(path...)
+            panic("path must be either int(>=0) or string")
         }
         return Node{}, self.parser.syntaxError(err)
     }
