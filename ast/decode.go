@@ -424,6 +424,32 @@ func skipPair(src string, pos int, lchar byte, rchar byte) (ret int) {
     return int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
 }
 
+func skipValueFast(src string, pos int) (ret int, start int) {
+    pos = skipBlank(src, pos)
+    if pos < 0 {
+        return pos, -1
+    }
+    switch c := src[pos]; c {
+    case 'n':
+        ret = decodeNull(src, pos)
+    case '"':
+        ret, _ = skipString(src, pos)
+    case '{':
+        ret = skipPair(src, pos, '{', '}')
+    case '[':
+        ret = skipPair(src, pos, '[', ']')
+    case 't':
+        ret = decodeTrue(src, pos)
+    case 'f':
+        ret = decodeFalse(src, pos)
+    case '-', '+', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+        ret = skipNumber(src, pos)
+    default:
+        ret = -int(types.ERR_INVALID_CHAR)
+    }
+    return ret, pos
+}
+
 func skipValue(src string, pos int) (ret int, start int) {
     pos = skipBlank(src, pos)
     if pos < 0 {

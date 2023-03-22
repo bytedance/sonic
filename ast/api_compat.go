@@ -69,7 +69,12 @@ func (self *Parser) skip() (int, types.ParsingError) {
 }
 
 func (self *Parser) skipFast() (int, types.ParsingError) {
-    return self.skip()
+    e, s := skipValueFast(self.s, self.p)
+    if e < 0 {
+        return self.p, types.ParsingError(-e)
+    }
+    self.p = e
+    return s, 0
 }
 
 func (self *Node) encodeInterface(buf *[]byte) error {
