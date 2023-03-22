@@ -454,9 +454,6 @@ func skipObject(src string, pos int) (ret int, start int) {
     }
 
     for {
-        if src[pos] != '"' {
-            return -int(types.ERR_INVALID_CHAR), -1
-        }
         pos, _ = skipString(src, pos)
         if pos < 0 {
             return pos, -1
