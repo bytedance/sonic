@@ -9,7 +9,7 @@ package avx
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa             = __native_entry__() + 28768
+    _subr__f32toa             = __native_entry__() + 28800
     _subr__f64toa             = __native_entry__() + 448
     _subr__get_by_path        = __native_entry__() + 25664
     _subr__html_escape        = __native_entry__() + 9296
@@ -24,8 +24,8 @@ var (
     _subr__u64toa             = __native_entry__() + 3856
     _subr__unquote            = __native_entry__() + 6928
     _subr__validate_one       = __native_entry__() + 22448
-    _subr__validate_utf8      = __native_entry__() + 27520
-    _subr__validate_utf8_fast = __native_entry__() + 28192
+    _subr__validate_utf8      = __native_entry__() + 27552
+    _subr__validate_utf8_fast = __native_entry__() + 28224
     _subr__value              = __native_entry__() + 12480
     _subr__vnumber            = __native_entry__() + 16256
     _subr__vsigned            = __native_entry__() + 17872

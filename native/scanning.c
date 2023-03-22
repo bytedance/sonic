@@ -1701,6 +1701,10 @@ static always_inline GoKind kind(const GoIface* iface) {
     return (iface->type->kind_flags) &  GO_KIND_MASK;
 }
 
+static always_inline bool is_nil(const GoIface* iface) {
+    return iface->type == NULL;
+}
+
 static always_inline bool is_int(const GoIface* iface) {
     return kind(iface) == Int;
 }
@@ -1827,13 +1831,16 @@ long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine
     long found;
 
 query:
-    /* if empty path, skip the whole json */
+    /* to be safer for invalid json, use slower skip for the demanded fields */
     if (ps == pe) {
         return skip_one(src, p, sm, 0);
     }
 
     /* match type: should query key in object, query index in array */
     c = advance_ns(src, p);
+    if (is_nil(ps)) {
+        goto err_path;
+    }
     if (is_str(ps)) {
         if (c != '{') {
             goto err_inval;
@@ -1843,9 +1850,15 @@ query:
         if (c != '[') {
             goto err_inval;
         }
+
+        index = get_int(ps);
+        if (index < 0) {
+            goto err_path;
+        }
+
         goto skip_in_arr;
     } else {
-        goto err_inval;
+        goto err_path;
     }
 
 skip_in_obj:
@@ -1885,8 +1898,6 @@ skip_in_obj:
     goto skip_in_obj;
 
 skip_in_arr:
-    index = get_int(ps);
-
     /* check empty array */
     c = advance_ns(src, p);
     if (c == ']') {
@@ -1914,6 +1925,9 @@ not_found:
 err_inval:
     *p -= 1;
     return -ERR_INVAL;
+err_path:
+    *p -= 1;
+    return -ERR_UNSUPPORT_TYPE;
 }
 
 // 
