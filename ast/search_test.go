@@ -325,6 +325,19 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
     }
 }
 
+func BenchmarkGetFull_Sonic(b *testing.B) {
+    ast := NewSearcher(_TwitterJson)
+    b.SetBytes(int64(len(_TwitterJson)))
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        node, err := ast.GetByPath()
+        if err != nil || node.Type() != V_OBJECT {
+            b.Fatal(err)
+        }
+    }
+}
+
 func BenchmarkGetWithManyCompare_Sonic(b *testing.B) {
     b.SetBytes(int64(len(_LotsCompare)))
     ast := NewSearcher(_LotsCompare)
