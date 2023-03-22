@@ -84,11 +84,9 @@ func TestGetFromSyntaxError(t *testing.T) {
         { "123.", Path{} },
         { "+124", Path{} },
         { "-", Path{} },
-        // { "-0123", Path{} },
         { "-e123", Path{} },
         { "-1.e123", Path{} },
         { "-12e456.1", Path{} },
-        // { "-12e456xyz", Path{} },
         { "-12e.1", Path{} },
         { "[", Path{} },
         { "{", Path{} },
@@ -97,8 +95,6 @@ func TestGetFromSyntaxError(t *testing.T) {
         { "{,}", Path{} },
         { "[,]", Path{} },
         { "tru", Path{} },
-        // { "truex", Path{} },
-        // { "false,", Path{} },
         { "fals", Path{} },
         { "nul", Path{} },
         { `{"a":"`, Path{"a"} },
@@ -143,6 +139,35 @@ func TestGetFromSyntaxError(t *testing.T) {
             testSyntaxJson(t, `{"":` + test.json, path...)
             path  = append(Path{1}, test.path...)
             testSyntaxJson(t, `["",` + test.json, path...)
+        }
+        t.Run(test.json, f)
+    }
+}
+
+// NOTE: GetByPath API not validate the undemanded fields for performance.
+func TestGetWithInvalidUndemandedField(t *testing.T) {
+    type Any = interface{}
+    tests := []struct {
+        json string
+        path Path
+        exp  Any
+    } {
+        { "-0xyz", Path{}, Any(float64(-0))},
+        { "-12e4xyz", Path{}, Any(float64(-12e4))},
+        { "truex",  Path{}, Any(true)},
+        { "false,", Path{}, Any(false)},
+        { `{"a":{,xxx},"b":true}`, Path{"b"}, Any(true)},
+        { `{"a":[,xxx],"b":true}`, Path{"b"}, Any(true)},
+    }
+
+    for _, test := range tests {
+        f := func(t *testing.T) {
+            search := NewSearcher(test.json)
+            node, err := search.GetByPath(test.path...)
+            assert.NoError(t, err)
+            v, err := node.Interface()
+            assert.NoError(t, err)
+            assert.Equal(t, v, test.exp)
         }
         t.Run(test.json, f)
     }

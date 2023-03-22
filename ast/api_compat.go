@@ -40,8 +40,6 @@ func unquote(src string) (string, types.ParsingError) {
     return rt.Mem2Str(out), 0
 }
 
-
-
 func decodeBase64(src string) ([]byte, error) {
     return base64.StdEncoding.DecodeString(src)
 }
@@ -91,19 +89,15 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
 
     var err types.ParsingError
     for _, p := range path {
-        switch p := p.(type) {
-        case int:
-            if (p < 0) {
-                panic("path must be either int(>=0) or string")
-            }
-            if err = self.parser.searchIndex(p); err != 0 {
+        if idx, ok := p.(int); ok && idx >= 0 {
+            if err = self.parser.searchIndex(idx); err != 0 {
                 return Node{}, self.parser.ExportError(err)
             }
-        case string:
-            if err = self.parser.searchKey(p); err != 0 {
+        } else if key, ok := p.(string); ok {
+            if err = self.parser.searchKey(key); err != 0 {
                 return Node{}, self.parser.ExportError(err)
             }
-        default:
+        } else {
             panic("path must be either int(>=0) or string")
         }
     }
