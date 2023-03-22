@@ -9,23 +9,23 @@ package avx2
 func __native_entry__() uintptr
 
 var (
-    _subr__f32toa             = __native_entry__() + 34656
+    _subr__f32toa             = __native_entry__() + 34720
     _subr__f64toa             = __native_entry__() + 736
-    _subr__get_by_path        = __native_entry__() + 29232
+    _subr__get_by_path        = __native_entry__() + 29248
     _subr__html_escape        = __native_entry__() + 10944
     _subr__i64toa             = __native_entry__() + 4032
     _subr__lspace             = __native_entry__() + 224
     _subr__quote              = __native_entry__() + 5520
     _subr__skip_array         = __native_entry__() + 21616
     _subr__skip_number        = __native_entry__() + 25840
-    _subr__skip_object        = __native_entry__() + 23680
+    _subr__skip_object        = __native_entry__() + 23648
     _subr__skip_one           = __native_entry__() + 26000
     _subr__skip_one_fast      = __native_entry__() + 26416
     _subr__u64toa             = __native_entry__() + 4144
     _subr__unquote            = __native_entry__() + 8336
     _subr__validate_one       = __native_entry__() + 26064
-    _subr__validate_utf8      = __native_entry__() + 31088
-    _subr__validate_utf8_fast = __native_entry__() + 32048
+    _subr__validate_utf8      = __native_entry__() + 31152
+    _subr__validate_utf8_fast = __native_entry__() + 32112
     _subr__value              = __native_entry__() + 15472
     _subr__vnumber            = __native_entry__() + 19280
     _subr__vsigned            = __native_entry__() + 20896

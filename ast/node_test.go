@@ -272,7 +272,12 @@ func TestTypeCast(t *testing.T) {
         {"ArrayUseNumber", NewArray([]Node{NewNumber("1")}), []interface{}{json.Number("1")}, nil},
         {"Raw", Node{}, "", ErrNotExist},
         {"Raw", NewAny(""), `""`, nil},
+        {"Raw", NewRaw(" "), "", nonEmptyErr},
+        {"Raw", NewRaw(" [ ] "), "[ ]", nil},
         {"Raw", NewRaw("[ ]"), "[ ]", nil},
+        {"Raw", NewRaw(` { "a" : [ true, -1.2e34 ] } `), `{ "a" : [ true, -1.2e34 ] }`, nil},
+        {"Raw", NewRaw(` { "a" : [ true, -1.2e34 ] `), "", nonEmptyErr},
+        {"Raw", NewRaw(` { "a" : [ true, -1.2e34 }`), "", nonEmptyErr},
         {"Raw", NewBool(true), "true", nil},
         {"Raw", NewNumber("-0.0"), "-0.0", nil},
         {"Raw", NewString(""), `""`, nil},
@@ -593,8 +598,8 @@ func TestUnset(t *testing.T) {
         t.Fatalf("decode failed: %v", derr.Error())
     }
     entities := root.GetByPath("statuses", 0, "entities")
-    if !entities.Exists() {
-        t.Fatal()
+    if !entities.Exists() || entities.Check() != nil {
+        t.Fatal(entities.Check().Error())
     }
     exist, err := entities.Unset("urls")
     if !exist || err != nil {
