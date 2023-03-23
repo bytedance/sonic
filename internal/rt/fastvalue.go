@@ -22,13 +22,19 @@ import (
 )
 
 var (
-	reflectRtypeItab = findReflectRtypeItab()
+    reflectRtypeItab = findReflectRtypeItab()
 )
 
 const (
     F_direct    = 1 << 5
     F_kind_mask = (1 << 5) - 1
 )
+
+type GoValue struct {
+    Typ  *GoType
+    Ptr  unsafe.Pointer
+    Flag uintptr
+}
 
 type GoType struct {
     Size       uintptr
@@ -192,6 +198,10 @@ func UnpackEface(v interface{}) GoEface {
 
 func UnpackIface(v interface{}) GoIface {
     return *(*GoIface)(unsafe.Pointer(&v))
+}
+
+func UnpackValue(v reflect.Value) GoValue {
+    return *(*GoValue)(unsafe.Pointer(&v))
 }
 
 func findReflectRtypeItab() *GoItab {
