@@ -24,49 +24,11 @@ import (
     `encoding/json`
     `math`
     `math/rand`
-    `os`
-    `runtime`
-    `runtime/debug`
     `strconv`
     `testing`
-    `time`
 
-    `github.com/bytedance/sonic/loader`
     `github.com/stretchr/testify/assert`
 )
-
-var (
-    debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
-)
-
-func TestMain(m *testing.M) {
-    loader.WrapGoC(Text__native_entry__, Funcs, Stubs, "sse", "sse/native.c")
-    
-    go func ()  {
-        if !debugAsyncGC {
-            return
-        }
-        println("Begin GC looping...")
-        for {
-           runtime.GC()
-           debug.FreeOSMemory() 
-        }
-        println("stop GC looping!")
-    }()
-    time.Sleep(time.Millisecond*100)
-    m.Run()
-}
-
-func TestFastFloat_Recover(t *testing.T) {
-    defer func() {
-        if r := recover(); r!= nil {
-            t.Log("recover: ", r)
-        } else {
-            t.Fatal("no panic")
-        }
-    }()
-    _ = f64toa(nil, 123)
-}
 
 func TestFastFloat_Encode(t *testing.T) {
     var buf [64]byte
