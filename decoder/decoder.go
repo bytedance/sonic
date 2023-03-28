@@ -128,15 +128,13 @@ func (self *Decoder) Decode(val interface{}) error {
         return &json.InvalidUnmarshalError{Type: vv.Type.Pack()}
     }
 
-    /* check the defined pointer type for issue 379
-     * type's Flags always be 0xf */
     etp := rt.PtrElem(vv.Type)
-    if vv.Type.Flags == 0xf {
-        // New a pointer
-        var newp unsafe.Pointer = vp
-        nv := reflect.NewAt(vv.Type.Pack(), unsafe.Pointer(&newp))
-        etp = vv.Type
-        vp  = rt.UnpackValue(nv).Ptr
+
+    /* check the defined pointer type for issue 379 */
+    if vv.Type.IsNamed() {
+        newp := vp
+        etp  = vv.Type
+        vp   = unsafe.Pointer(&newp)
     }
 
     /* create a new stack, and call the decoder */

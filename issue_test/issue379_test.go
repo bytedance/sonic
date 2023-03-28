@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 ByteDance Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package issue_test
 
 import (
@@ -81,8 +97,3 @@ func TestIssue379(t *testing.T) {
         require.Equal(t, jerr, serr)
     }
 }
-// *Foo TypeInfo:
-//reflect.rtype {size: 8, ptrdata: 8, hash: 3423087479, tflag: tflagUncommon|tflagRegularMemory (9), align: 8, fieldAlign: 8, kind: 54, equal: runtime.memequal64, gcdata: *1, str: 48583, ptrToThis: 0}
-
-// MyPtrType TypeInfo:
-// reflect.rtype {size: 8, ptrdata: 8, hash: 3863140068, tflag: tflagUncommon|tflagExtraStar|tflagNamed|tflagRegularMemory (15), align: 8, fieldAlign: 8, kind: 54, equal: runtime.memequal64, gcdata: *1, str: 56864, ptrToThis: 135104}
