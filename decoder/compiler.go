@@ -679,12 +679,38 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
 
     /* dereference all the way down */
     for et.Kind() == reflect.Ptr {
+        if et.Implements(jsonUnmarshalerType) {
+            p.rtt(_OP_unmarshal_p, et)
+            return
+        }
+
+        if et.Implements(encodingTextUnmarshalerType) {
+            p.add(_OP_lspace)
+            self.compileUnmarshalTextPtr(p, et)
+            return
+        }
+
         et = et.Elem()
         p.rtt(_OP_deref, et)
     }
 
-    /* compile the element type */
-    self.compileOne(p, sp + 1, et)
+    /* check for recursive nesting */
+    ok := self.tab[et]
+    if ok {
+        p.rtt(_OP_recurse, et)
+        return
+    }
+
+    /* enter the recursion */
+    p.add(_OP_lspace)
+    self.tab[et] = true
+    
+    /* not inline the pointer type
+     * recursing the defined pointer type's elem will casue issue379.
+     */
+    self.compileOps(p, sp, et)
+    delete(self.tab, et)
+
     j := p.pc()
     p.add(_OP_goto)
     p.pin(i)
