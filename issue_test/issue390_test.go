@@ -112,3 +112,22 @@ func TestDirectStructType(t *testing.T) {
         require.Equal(t, jerr, serr)
     }
 }
+
+
+type recurePtr struct {
+    Name string
+    Recur *recurePtr
+}
+
+func TestRecursiveIssue(t *testing.T) {
+    data := `{
+        "Name": "",
+        "Recur": null
+    }`
+    jv, sv := recurePtr{}, recurePtr{}
+    jerr := json.Unmarshal([]byte(data), &jv)
+    serr := sonic.Unmarshal([]byte(data), &sv)
+    require.Equal(t, jv, sv)
+    require.Equal(t, jerr, serr)
+}
+
