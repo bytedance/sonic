@@ -698,17 +698,16 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
     ok := self.tab[et]
     if ok {
         p.rtt(_OP_recurse, et)
-        return
+    } else {
+        /* enter the recursion */
+        p.add(_OP_lspace)
+        self.tab[et] = true
+        
+        /* not inline the pointer type
+        * recursing the defined pointer type's elem will casue issue379.
+        */
+        self.compileOps(p, sp, et)
     }
-
-    /* enter the recursion */
-    p.add(_OP_lspace)
-    self.tab[et] = true
-    
-    /* not inline the pointer type
-     * recursing the defined pointer type's elem will casue issue379.
-     */
-    self.compileOps(p, sp, et)
     delete(self.tab, et)
 
     j := p.pc()
