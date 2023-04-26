@@ -17,38 +17,30 @@
 package issue_test
 
 import (
-	"testing"
-    "encoding/json"
-    `github.com/davecgh/go-spew/spew`
-	`github.com/stretchr/testify/require`
-
-	"github.com/bytedance/sonic"
+    `testing`
+    `encoding/json`
+    `github.com/stretchr/testify/require`
+    `github.com/bytedance/sonic`
 )
-var mapdata = `{
-      "ptrslice": [{"id": "1"}, {"id": "2"}, {"id": "3"}, {"id": "4"}]
-  }`;
 
-  
 type FooId struct {
-	Id   int    `json:"id"`
+    Id   int    `json:"id"`
 }
 
 func TestUnmarshalErrorInMapSlice(t *testing.T) {
- 	var a, b map[string][]FooId
- 	se := json.Unmarshal([]byte(mapdata), &a)
-	je := sonic.Unmarshal([]byte(mapdata), &b)
-    spew.Dump(se, a) // len(a) = 4
-    spew.Dump(je, b) // len(b) = 1
-	require.Equal(t, a, b);
+    var a, b map[string][]FooId
+    mapdata := `{"ptrslice": [{"id": "1"}, {"id": "2"}, {"id": "3"}, {"id": "4"}]}`
+    se := json.Unmarshal([]byte(mapdata), &a)
+    je := sonic.Unmarshal([]byte(mapdata), &b)
+    require.Equal(t, se == nil,  je == nil);
+    require.Equal(t, a, b);
 }
-
-var slicedata = `[{"id": "1"}, {"id": "2"}, {"id": "3"}, {"id": 4}]`;
 
 func TestUnmarshalErrorInSlice(t *testing.T) {
    var a, b []*FooId
+   slicedata := `[{"id": "1"}, {"id": "2"}, {"id": "3"}, {"id": 4}]`
    je := json.Unmarshal([]byte(slicedata), &a)
    se := sonic.Unmarshal([]byte(slicedata), &b)
-   spew.Dump("sonic ", se, b)
-   spew.Dump("json ", je, a)
+   require.Equal(t, se == nil,  je == nil);
    require.Equal(t, a, b);
 }

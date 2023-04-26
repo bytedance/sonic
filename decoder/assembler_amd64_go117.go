@@ -1124,7 +1124,7 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
     self.Emit("MOVQ", _ARG_sp, _AX)            // MOVQ    sp, AX
     self.Emit("MOVQ", _ARG_sl, _BX)            // MOVQ    sp, BX
     self.Emit("MOVQ" , _IC, _CX)                // MOVQ    IC, CX
-    self.Emit("MOVQ" , _ST, _R8)                // MOVQ    ST, R8 
+    self.Emit("MOVQ" , _ST, _R8)                // MOVQ    ST, R8
     self.Emit("MOVQ" , _ARG_fv, _R9)            // MOVQ    fv, R9
     self.save(_REG_rt...)
     self.Emit("MOVQ", _F_decodeTypedPointer, _IL)  // MOVQ ${fn}, R11
