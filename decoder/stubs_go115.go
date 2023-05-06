@@ -109,3 +109,7 @@ func memclrHasPointers(ptr unsafe.Pointer, n uintptr)
 //go:linkname memclrNoHeapPointers runtime.memclrNoHeapPointers
 //goland:noinspection GoUnusedParameter
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
+
+//go:linkname zerobase runtime.zerobase
+//goland:noinspection GoUnusedParameter
+var zerobase uintptr
