@@ -26,7 +26,8 @@ import (
 )
 
 const (
-    _MinSlice = 16
+    // used least slice to decrease the GC overhead
+    _MinSlice = 1
     _MaxStack = 4096 // 4k slots
     _MaxStackBytes = _MaxStack * _PtrBytes
     _MaxDigitNums = 800  // used in atof fallback algorithm
