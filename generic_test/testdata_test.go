@@ -20,6 +20,8 @@
 package generic_test
 
 import (
+    `bytes`
+    `compress/gzip`
     `io/ioutil`
     `path/filepath`
     `sort`
@@ -51,26 +53,33 @@ func jsonTestdata() []jsonTestdataEntry {
         }
         sort.Slice(fis, func(i, j int) bool { return fis[i].Name() < fis[j].Name() })
         for _, fi := range fis {
-            if !strings.HasSuffix(fi.Name(), ".json") {
+            if !strings.HasSuffix(fi.Name(), ".json.gz") {
                 continue
             }
 
             // Convert snake_case file name to CamelCase.
-            words := strings.Split(strings.TrimSuffix(fi.Name(), ".json"), "_")
+            words := strings.Split(strings.TrimSuffix(fi.Name(), ".json.gz"), "_")
             for i := range words {
                 words[i] = strings.Title(words[i])
             }
             name := strings.Join(words, "")
 
             // Read and decompress the test data.
-            data, err := ioutil.ReadFile(filepath.Join("../testdata", fi.Name()))
+            b, err := ioutil.ReadFile(filepath.Join("../testdata", fi.Name()))
+            if err != nil {
+                panic(err)
+            }
+            zr, err := gzip.NewReader(bytes.NewReader(b))
+            if err != nil {
+                panic(err)
+            }
+            data, err := ioutil.ReadAll(zr)
             if err != nil {
                 panic(err)
             }
 
             // Check whether there is a concrete type for this data.
             var newFn func() any
-            println("name is ", name)
             switch name {
             case "CanadaGeometry":
                 newFn = func() any { return new(canadaRoot) }
@@ -86,8 +95,6 @@ func jsonTestdata() []jsonTestdataEntry {
                 newFn = func() any { return new(syntheaRoot) }
             case "TwitterStatus":
                 newFn = func() any { return new(twitterRoot) }
-            default:
-                continue;
             }
 
             var newFnI = func() any { return new(any) }
