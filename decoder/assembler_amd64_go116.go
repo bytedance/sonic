@@ -319,6 +319,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_dismatch_err     : (*_Assembler)._asm_OP_dismatch_err,
     _OP_go_skip          : (*_Assembler)._asm_OP_go_skip,
     _OP_add              : (*_Assembler)._asm_OP_add,
+    _OP_check_empty      : (*_Assembler)._asm_OP_check_empty,
 }
 
 func (self *_Assembler) instr(v *_Instr) {
@@ -1119,6 +1120,7 @@ var (
 
 func init() {
     _F_decodeTypedPointer = jit.Func(decodeTypedPointer)
+    _Zero_Base = int64(uintptr(unsafe.Pointer(&zerobase)))
 }
 
 func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
@@ -1172,6 +1174,7 @@ var (
 
 var (
     _F_FieldMap_GetCaseInsensitive obj.Addr
+    _Zero_Base int64
 )
 
 const (
@@ -1640,6 +1643,23 @@ func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
     self.Link("_done_{n}")                          // _done_{n}:
     self.Emit("XORL" , _AX, _AX)                    // XORL    AX, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))        // MOVQ    AX, 8(VP)
+}
+
+func (self *_Assembler) _asm_OP_check_empty(p *_Instr) {
+    rbrace := p.vb()
+    if rbrace == ']' {
+        self.check_eof(1)
+        self.Emit("LEAQ", jit.Ptr(_IC, 1), _AX)                            // LEAQ    1(IC), AX
+        self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(rbrace))) // CMPB    (IP)(IC), ']'
+        self.Sjmp("JNE", "_not_empty_array{n}")                            // JNE     _not_empty_array{n}
+        self.Emit("MOVQ", _AX, _IC)                                        // MOVQ    AX, IC
+        self.Emit("MOVQ", jit.Imm(_Zero_Base), jit.Ptr(_VP, 0))            // MOVQ    $zerobase, (VP)
+        self.Xjmp("JMP"  , p.vi())                                         // JMP     {p.vi()}
+        self.Link("_not_empty_array{n}")
+    } else {
+        // empty map not need optimize here.
+        panic("only implement check empty array here!")
+    }
 }
 
 func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
