@@ -1120,7 +1120,7 @@ var (
 
 func init() {
     _F_decodeTypedPointer = jit.Func(decodeTypedPointer)
-    _Zero_Base = int64(uintptr(unsafe.Pointer(&zerobase)))
+    _Zero_Base = int64(uintptr(unsafe.Pointer(&_zerobase)))
 }
 
 func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
@@ -1175,6 +1175,7 @@ var (
 var (
     _F_FieldMap_GetCaseInsensitive obj.Addr
     _Zero_Base int64
+    _zerobase  uintptr // &_zerobase is the data pointer of empty slice.
 )
 
 const (

@@ -1167,6 +1167,7 @@ var (
 var (
     _F_FieldMap_GetCaseInsensitive obj.Addr
     _Zero_Base int64
+    _zerobase  uintptr // &_zerobase is the data pointer of empty slice.
 )
 
 const (
@@ -1186,7 +1187,7 @@ const (
 
 func init() {
     _F_FieldMap_GetCaseInsensitive = jit.Func((*caching.FieldMap).GetCaseInsensitive)
-    _Zero_Base = int64(uintptr(unsafe.Pointer(&zerobase)))
+    _Zero_Base = int64(uintptr(unsafe.Pointer(&_zerobase)))
 }
 
 func (self *_Assembler) _asm_OP_any(_ *_Instr) {
