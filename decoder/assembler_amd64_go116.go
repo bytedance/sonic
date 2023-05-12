@@ -1661,12 +1661,34 @@ func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
     self.WriteRecNotAX(8, _DI, jit.Ptr(_VP, 0), true, true)// MOVQ    DI, (VP)
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))            // MOVQ    AX, 8(VP)
     self.Emit("MOVQ" , _SI, jit.Ptr(_VP, 16))           // MOVQ    SI, 16(VP)
+
+    // because growslice not zero memory {oldcap, newlen} when append et not has ptrdata.
+    // but we should zero it, avoid decode it as random values.
+    if rt.UnpackType(p.vt()).PtrData == 0 {
+        self.Emit("SUBQ" , _AX, _SI)                        // MOVQ    AX, SI
+    
+        self.Emit("ADDQ" , jit.Imm(1), jit.Ptr(_VP, 8))     // ADDQ    $1, 8(VP)
+        self.Emit("MOVQ" , _DI, _VP)                        // MOVQ    DI, VP
+        self.Emit("MOVQ" , jit.Imm(int64(p.vlen())), _CX)   // MOVQ    ${p.vlen()}, CX
+        self.From("MULQ" , _CX)                             // MULQ    CX
+        self.Emit("ADDQ" , _AX, _VP)                        // ADDQ    AX, VP
+
+        self.Emit("MOVQ" , _SI, _AX)                        // MOVQ    SI, AX
+        self.From("MULQ" , _CX)                             // MULQ    CX
+        self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 8))            // MOVQ    AX, 8(SP)
+
+        self.Emit("MOVQ" , _VP, jit.Ptr(_SP, 0))            // MOVQ    VP, (SP)
+        self.mem_clear_fn(true)                             // CALL_GO memclr{Has,NoHeap}
+        self.Sjmp("JMP", "_append_slice_end_{n}")           // JMP    _append_slice_end_{n}
+    }
+
     self.Link("_index_{n}")                             // _index_{n}:
     self.Emit("ADDQ" , jit.Imm(1), jit.Ptr(_VP, 8))     // ADDQ    $1, 8(VP)
     self.Emit("MOVQ" , jit.Ptr(_VP, 0), _VP)            // MOVQ    (VP), VP
     self.Emit("MOVQ" , jit.Imm(int64(p.vlen())), _CX)   // MOVQ    ${p.vlen()}, CX
     self.From("MULQ" , _CX)                             // MULQ    CX
     self.Emit("ADDQ" , _AX, _VP)                        // ADDQ    AX, VP
+    self.Link("_append_slice_end_{n}")
 }
 
 func (self *_Assembler) _asm_OP_object_skip(_ *_Instr) {

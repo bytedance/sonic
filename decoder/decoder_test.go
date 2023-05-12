@@ -134,9 +134,9 @@ func TestSkipMismatchTypeError(t *testing.T) {
             t.Fatal("invalid error")
         }
     })
-    t.Run("array", func(t *testing.T) {
+    t.Run("short array", func(t *testing.T) {
         var obj, obj2 = &[]int{}, &[]int{}
-        var data = `["",1,true]`
+        var data = `[""]`
         d := NewDecoder(data)
         err := d.Decode(obj)
         err2 := json.Unmarshal([]byte(data), obj2)
@@ -145,6 +145,32 @@ func TestSkipMismatchTypeError(t *testing.T) {
         // assert.Equal(t, len(data), d.i)
         assert.Equal(t, obj2, obj)
     })
+
+    t.Run("int ", func(t *testing.T) {
+        var obj int = 123
+        var obj2 int = 123
+        var data = `[""]`
+        d := NewDecoder(data)
+        err := d.Decode(&obj)
+        err2 := json.Unmarshal([]byte(data), &obj2)
+        println(err.Error(), obj, obj2)
+        assert.Equal(t, err2 == nil, err == nil)
+        // assert.Equal(t, len(data), d.i)
+        assert.Equal(t, obj2, obj)
+    })
+
+    t.Run("array", func(t *testing.T) {
+        var obj, obj2 = &[]int{}, &[]int{}
+        var data = `["",true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]`
+        d := NewDecoder(data)
+        err := d.Decode(obj)
+        err2 := json.Unmarshal([]byte(data), obj2)
+        // println(err2.Error())
+        assert.Equal(t, err2 == nil, err == nil)
+        // assert.Equal(t, len(data), d.i)
+        assert.Equal(t, obj2, obj)
+    })
+
     t.Run("map", func(t *testing.T) {
         var obj, obj2 = &map[int]int{}, &map[int]int{}
         var data = `{"true" : { },"1":1,"2" : true,"3":3}`
