@@ -1124,7 +1124,7 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
     self.Emit("MOVQ", _ARG_sp, _AX)            // MOVQ    sp, AX
     self.Emit("MOVQ", _ARG_sl, _BX)            // MOVQ    sp, BX
     self.Emit("MOVQ" , _IC, _CX)                // MOVQ    IC, CX
-    self.Emit("MOVQ" , _ST, _R8)                // MOVQ    ST, R8
+    self.Emit("MOVQ" , _ST, _R8)                // MOVQ    ST, R8 
     self.Emit("MOVQ" , _ARG_fv, _R9)            // MOVQ    fv, R9
     self.save(_REG_rt...)
     self.Emit("MOVQ", _F_decodeTypedPointer, _IL)  // MOVQ ${fn}, R11
@@ -1646,6 +1646,28 @@ func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
     self.WritePtrAX(8, jit.Ptr(_VP, 0), false)          // MOVQ    AX, (VP)
     self.Emit("MOVQ" , _BX, jit.Ptr(_VP, 8))            // MOVQ    BX, 8(VP)
     self.Emit("MOVQ" , _CX, jit.Ptr(_VP, 16))           // MOVQ    CX, 16(VP)
+
+    // because growslice not zero memory {oldcap, newlen} when append et not has ptrdata.
+    // but we should zero it, avoid decode it as random values.
+    if rt.UnpackType(p.vt()).PtrData == 0 {
+        self.Emit("MOVQ" , _CX, _DI)                        // MOVQ    CX, DI
+        self.Emit("SUBQ" , _BX, _DI)                        // MOVQ    BX, DI
+    
+        self.Emit("ADDQ" , jit.Imm(1), jit.Ptr(_VP, 8))     // ADDQ    $1, 8(VP)
+        self.Emit("MOVQ" , _AX, _VP)                        // MOVQ    AX, VP
+        self.Emit("MOVQ" , jit.Imm(int64(p.vlen())), _CX)   // MOVQ    ${p.vlen()}, CX
+        self.Emit("MOVQ" , _BX, _AX)                        // MOVQ    BX, AX 
+        self.From("MULQ" , _CX)                             // MULQ    CX
+        self.Emit("ADDQ" , _AX, _VP)                        // ADDQ    AX, VP
+
+        self.Emit("MOVQ" , _DI, _AX)                        // MOVQ    SI, AX
+        self.From("MULQ" , _CX)                             // MULQ    BX
+        self.Emit("MOVQ" , _AX, _BX)                        // ADDQ    AX, BX
+        self.Emit("MOVQ" , _VP, _AX)                        // MOVQ    VP, AX
+        self.mem_clear_fn(true)                             // CALL_GO memclr{Has,NoHeap}
+        self.Sjmp("JMP", "_append_slice_end_{n}")
+    }
+
     self.Emit("MOVQ" , _BX, _AX)                        // MOVQ    BX, AX
     self.Link("_index_{n}")                             // _index_{n}:
     self.Emit("ADDQ" , jit.Imm(1), jit.Ptr(_VP, 8))     // ADDQ    $1, 8(VP)
@@ -1653,6 +1675,7 @@ func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
     self.Emit("MOVQ" , jit.Imm(int64(p.vlen())), _CX)   // MOVQ    ${p.vlen()}, CX
     self.From("MULQ" , _CX)                             // MULQ    CX
     self.Emit("ADDQ" , _AX, _VP)                        // ADDQ    AX, VP
+    self.Link("_append_slice_end_{n}")
 }
 
 func (self *_Assembler) _asm_OP_object_skip(_ *_Instr) {
