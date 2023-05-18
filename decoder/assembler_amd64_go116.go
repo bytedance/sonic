@@ -1173,8 +1173,8 @@ var (
 
 var (
     _F_FieldMap_GetCaseInsensitive obj.Addr
-    _zerobase  uintptr // &_zerobase is the data pointer of empty slice.
-    _Zero_Base = int64(uintptr(unsafe.Pointer(&_zerobase)))
+    _Empty_Slice = make([]byte, 0)
+    _Zero_Base = int64(uintptr(((*rt.GoSlice)(unsafe.Pointer(&_Empty_Slice))).Ptr))
 )
 
 const (
