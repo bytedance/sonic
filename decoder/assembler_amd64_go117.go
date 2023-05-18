@@ -1166,8 +1166,8 @@ var (
 
 var (
     _F_FieldMap_GetCaseInsensitive obj.Addr
-    _Zero_Base int64
     _zerobase  uintptr // &_zerobase is the data pointer of empty slice.
+    _Zero_Base = int64(uintptr(unsafe.Pointer(&_zerobase)))
 )
 
 const (
@@ -1187,7 +1187,6 @@ const (
 
 func init() {
     _F_FieldMap_GetCaseInsensitive = jit.Func((*caching.FieldMap).GetCaseInsensitive)
-    _Zero_Base = int64(uintptr(unsafe.Pointer(&_zerobase)))
 }
 
 func (self *_Assembler) _asm_OP_any(_ *_Instr) {
@@ -1642,11 +1641,11 @@ func (self *_Assembler) _asm_OP_check_empty(p *_Instr) {
         self.check_eof(1)
         self.Emit("LEAQ", jit.Ptr(_IC, 1), _AX)                              // LEAQ    1(IC), AX
         self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(rbracket))) // CMPB    (IP)(IC), ']'
-        self.Sjmp("JNE" , "_not_empty_array{n}")                             // JNE     _not_empty_array{n}
+        self.Sjmp("JNE" , "_not_empty_array_{n}")                            // JNE     _not_empty_array_{n}
         self.Emit("MOVQ", _AX, _IC)                                          // MOVQ    AX, IC
         self.Emit("MOVQ", jit.Imm(_Zero_Base), jit.Ptr(_VP, 0))              // MOVQ    $zerobase, (VP)
         self.Xjmp("JMP" , p.vi())                                            // JMP     {p.vi()}
-        self.Link("_not_empty_array{n}")
+        self.Link("_not_empty_array_{n}")
     } else {
         panic("only implement check empty array here!")
     }
