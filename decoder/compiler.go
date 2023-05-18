@@ -816,7 +816,7 @@ func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
     p.rtt(_OP_slice_init, et)
     p.add(_OP_save)
     p.rtt(_OP_slice_append, et)
-    self.compileOne(p, sp + 1, et) 
+    self.compileOne(p, sp + 1, et)
     p.add(_OP_load)
     k0 := p.pc()
     p.add(_OP_lspace)
