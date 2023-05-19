@@ -12,7 +12,7 @@ Before starting our design, we need to figure out some questions:
 
 ### Why is Json-iterator faster than Standard Library?
 First of all, the **schema-based processing mechanism** used by the standard library is commendable, in which the parser can obtain meta information in advance when scanning, thereby shortening the time of branch selection. However, its original implementation did not make good use of this mechanism, instead, **it spent a lot of time reflecting to obtain meta info of schema**. Meanwhile, The approach of json-iterator is: Interprete structure as field-by-field encoding and decoding functions, and then assembled and cached them, minimizing the performance loss cost by reflection. But does it work once and for all? No. In practical tests, we found that **the deeper and larger the input JSON got, the smaller the gap between json-iterator and other libraries gradually became** - eventually event got surpassed:
-![Scalability](introduction-1.png) 
+![Scalability](./imgs/introduction-1.png) 
 
 The reason is that **this implementation transforms into a large number of interface encapsulations and function calls**, followed by function-call losses:
 1. **Calling interface involves dynamic addressing of itab**
@@ -39,7 +39,7 @@ Based on the above questions, our design is easy to implement:
 2. For practical scenarios where big data and small data coexist, we **use pre-conditional judgment** (string size, floating precision, etc.) **to combine `SIMD` with scalar instructions** to achieve the best adaptation.
 3. As for insufficiency in compiling optimization of go language, we decided to **use `C/Clang` to write and compile core computational functions**, and **developed a set of [asm2asm](https://github.com/chenzhuoyu/asm2asm) tools to translate the fully optimized x86 assembly into plan9** and finally load it into Golang runtime.
 4. Giving the big speed gap between parsing and skipping, the **`lazy-load` mechanism** is certainly used in our AST parser, but in **a more adaptive and efficient way to reduce the overhead of multiple-key queries**.
-![design](introduction-2.png)
+![design](./imgs/introduction-2.png)
 
 In detail,  we conducted some further optimization:
 1. Since the native-asm functions cannot be inlined in Golang, we found that its cost even exceeded the improvement brought by the optimization of the C compiler. So we reimplemented a set of lightweight function-calls in JIT:

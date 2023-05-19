@@ -76,14 +76,14 @@ BenchmarkSetOne_Parallel_Sjson-16                      18194 ns/op         715.7
 BenchmarkSetOne_Parallel_Jsoniter-16                   33560 ns/op         388.05 MB/s       45892 B/op        964 allocs/op
 ```
 - [Small](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 keys, 3 layers)
-![small benchmarks](bench-small.png)
+![small benchmarks](./docs/imgs/bench-small.png)
 - [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitter.json) (635KB, 10000+ key, 6 layers)
-![large benchmarks](bench-large.png)
+![large benchmarks](./docs/imgs/bench-large.png)
 
 See [bench.sh](https://github.com/bytedance/sonic/blob/main/bench.sh) for benchmark codes.
 
 ## How it works
-See [INTRODUCTION.md](INTRODUCTION.md).
+See [INTRODUCTION.md](./docs/INTRODUCTION.md).
 
 ## Usage
 
