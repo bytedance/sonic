@@ -104,28 +104,29 @@ err := sonic.Unmarshal(output, &data)
 Sonic supports decoding json from `io.Reader` or encoding objects into `io.`Writer`, aims at handling multiple values as well as reducing memory consumption.
 - encoder
 ```go
-import "github.com/bytedance/sonic/encoder"
-
 var o1 = map[string]interface{}{
     "a": "b",
 }
 var o2 = 1
 var w = bytes.NewBuffer(nil)
-var enc = encoder.NewStreamEncoder(w)
+var enc = sonic.ConfigDefault.NewEncoder(w)
 enc.Encode(o1)
 enc.Encode(o2)
-println(w.String()) // "{"a":"b"}\n1"
+fmt.Println(w.String())
+// Output:
+// {"a":"b"}
+// 1
 ```
 - decoder
 ```go
-import "github.com/bytedance/sonic/decoder"
-
 var o =  map[string]interface{}{}
 var r = strings.NewReader(`{"a":"b"}{"1":"2"}`)
-var dec = decoder.NewStreamDecoder(r)
+var dec = sonic.ConfigDefault.NewDecoder(r)
 dec.Decode(&o)
 dec.Decode(&o)
-fmt.Printf("%+v", o) // map[1:2 a:b]
+fmt.Printf("%+v", o)
+// Output:
+// map[1:2 a:b]
 ```
 
 ### Use Number/Use Int64
