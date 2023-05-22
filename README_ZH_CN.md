@@ -89,7 +89,7 @@ BenchmarkSetOne_Parallel_Jsoniter-16                   33560 ns/op         388.0
 
 ## 工作原理
 
-请参阅 [INTRODUCTION_ZH_CN.md](./docs/INTRODUCTION.md).
+请参阅 [INTRODUCTION_ZH_CN.md](./docs/INTRODUCTION_ZH_CN.md).
 
 ## 使用方式
 
