@@ -351,15 +351,6 @@ func (self *_Assembler) rbuf_di() {
     }
 }
 
-func (self *_Assembler) store_int(nd int, fn obj.Addr, ins string) {
-    self.check_size(nd)
-    self.save_c()                           // SAVE   $C_regs
-    self.rbuf_di()                          // MOVQ   RP, DI
-    self.Emit(ins, jit.Ptr(_SP_p, 0), _SI)  // $ins   (SP.p), SI
-    self.call_c(fn)                         // CALL_C $fn
-    self.Emit("ADDQ", _AX, _RL)             // ADDQ   AX, RL
-}
-
 func (self *_Assembler) store_str(s string) {
     i := 0
     m := rt.Str2Mem(s)
@@ -828,11 +819,13 @@ func (self *_Assembler) _asm_OP_bool(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
-    self.store_int(4, _F_i64toa, "MOVBQSX")
+    self.check_size(8)
+    self.lookup_int("MOVBQSX")
 }
 
 func (self *_Assembler) _asm_OP_i16(_ *_Instr) {
-    self.store_int(6, _F_i64toa, "MOVWQSX")
+    self.check_size(8)
+    self.lookup_int("MOVWQSX")
 }
 
 func (self *_Assembler) _asm_OP_i32(_ *_Instr) {
@@ -844,19 +837,73 @@ func (self *_Assembler) _asm_OP_i64(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_u8(_ *_Instr) {
-    self.store_int(3, _F_u64toa, "MOVBQZX")
+    self.lookup_int("MOVBQZX")
 }
 
+var (
+    _V_DigitTab  = jit.Imm(int64(uintptr(unsafe.Pointer(&_DigitTab[0]))))
+)
+
 func (self *_Assembler) _asm_OP_u16(_ *_Instr) {
-    self.store_int(5, _F_u64toa, "MOVWQZX")
+    self.lookup_int("MOVWQZX")
 }
 
 func (self *_Assembler) _asm_OP_u32(_ *_Instr) {
-    self.store_int(16, _F_u64toa, "MOVLQZX")
+    self.store_uint(16, _F_u64toa, "MOVLQZX")
 }
 
 func (self *_Assembler) _asm_OP_u64(_ *_Instr) {
-    self.store_int(20, _F_u64toa, "MOVQ")
+    self.store_uint(20, _F_u64toa, "MOVQ")
+}
+
+func (self *_Assembler) lookup_int(ins string) {
+    self.check_size(8)
+    self.Emit(ins,  jit.Ptr(_SP_p, 0), _AX)  // $ins   (SP.p), AX
+    self.lookupint_inner()
+}
+
+func (self *_Assembler) lookupint_inner() {
+    self.Emit("ADDQ",    jit.Imm(_TAB_OFFSET), _AX)            // ADDQ $_TAB_OFFSET, AX
+    self.Emit("MOVQ",    _V_DigitTab, _BX)                     // MOVQ $DigitTab, BX
+    self.Emit("MOVQ",    jit.Sib(_BX, _AX, int16(8), 0) , _DX) // MOVQ    (BX)(AX*8), DX
+    self.Emit("MOVBQZX", jit.Sib(_BX, _AX, int16(8), 0) , _CX) // MOVBQZX (BX)(AX*8), DX
+    self.Emit("SHRQ",    jit.Imm(8), _DX)                      // SHRQ $8, DX
+    self.Emit("MOVQ",    _DX, jit.Sib(_RP, _RL, 1, 0))         // MOVQ DX, (RP)(RL*1)
+    self.Emit("ADDQ",    _CX, _RL)
+}
+
+func (self *_Assembler) storeint_inner(fn obj.Addr, ins string) {
+    self.save_c()                                
+    self.rbuf_di()                               // MOVQ   RP, DI
+    self.Emit(ins,  jit.Ptr(_SP_p, 0), _SI)      // $ins   (SP.p), SI
+    self.call_c(fn)                              // CALL_C $fn
+    self.Emit("ADDQ", _AX, _RL)                  // ADDQ   AX, RL
+}
+
+func (self *_Assembler) store_uint(nd int, fn obj.Addr, ins string) {
+    self.check_size(nd)
+    self.Emit(ins, jit.Ptr(_SP_p, 0), _AX)       // $ins (SP.p), AX
+    self.Emit("CMPQ", _AX, jit.Imm(_MAX_NUMBER)) // CMPQ AX, $_MAX_NUMBER
+    self.Sjmp("JA",   "_uint_{n}")               // JA   _uint_{n}
+    self.lookupint_inner()
+    self.Sjmp("JMP" , "_end_{n}")                // JMP  _end_{n}
+    self.Link("_uint_{n}")
+    self.storeint_inner(fn, ins)
+    self.Link("_end_{n}")
+}
+
+func (self *_Assembler) store_int(nd int, fn obj.Addr, ins string) {
+    self.check_size(nd)
+    self.Emit(ins, jit.Ptr(_SP_p, 0), _AX)       // $ins (SP.p), AX
+    self.Emit("CMPQ", _AX, jit.Imm(_MAX_NUMBER)) // CMPQ (SP.p), $_MAX_NUMBER
+    self.Sjmp("JA",   "_int_{n}")                // JA   _int_{n}
+    self.Emit("CMPQ", _AX, jit.Imm(_MIN_NUMBER)) // CMPQ (SP.p), $_MIN_NUMBER
+    self.Sjmp("JB",   "_int_{n}")                // JB  _int_{n}
+    self.lookupint_inner()
+    self.Sjmp("JMP" , "_end_{n}")                // JMP  _end_{n}
+    self.Link("_int_{n}")
+    self.storeint_inner(fn, ins)
+    self.Link("_end_{n}")
 }
 
 func (self *_Assembler) _asm_OP_f32(_ *_Instr) {
