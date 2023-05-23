@@ -46,6 +46,8 @@ func FuzzMain(f *testing.F) {
 // Used for debug falied fuzz corpus
 func TestCorpus(t *testing.T) {
     fuzzMain(t, []byte("[1\x00"))
+    fuzzMain(t, []byte("\"\\uDE1D\\uDE1D\\uDEDD\\uDE1D\\uDE1D\\uDE1D\\uDE1D\\uDEDD\\uDE1D\""))
+    // fuzzMain(t, []byte(`{"":null}`))
 }
 
 var target = sonic.ConfigStd
@@ -59,7 +61,7 @@ func fuzzMain(t *testing.T, data []byte) {
     if !json.Valid(data) {
         return
     }
-    for _, typ := range []func() interface{}{
+    for i, typ := range []func() interface{}{
         func() interface{} { return new(interface{}) },
         func() interface{} { return new(map[string]interface{}) },
         func() interface{} { return new([]interface{}) },
@@ -70,9 +72,10 @@ func fuzzMain(t *testing.T, data []byte) {
         // func() interface{} { return new(json.Number) },
         // func() interface{} { return new(S) },
     } {
-        sv, jv := typ(), typ()
-        serr := target.Unmarshal([]byte(data), sv)
-        jerr := json.Unmarshal([]byte(data), jv)
+        var sv = typ()
+        var jv = typ()
+        serr := target.Unmarshal(data, sv)
+        jerr := json.Unmarshal(data, jv)
         require.Equal(t, serr != nil, jerr != nil, 
                 dump(data, jv, jerr, sv, serr))
         if jerr != nil {
@@ -87,13 +90,27 @@ func fuzzMain(t *testing.T, data []byte) {
         require.NoError(t, jerr, dump(v, jout, jerr, sout, serr))
 
         {
-            sv, jv := typ(), typ()
+            sv, jv = typ(), typ()
             serr := target.Unmarshal(sout, sv)
             jerr := json.Unmarshal(jout, jv)
             require.Equalf(t, serr != nil, jerr != nil, dump(data, jv, jerr, sv, serr))
             if jerr != nil {
                 continue
             }
+            require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+        }
+
+        // fuzz ast MarshalJSON API
+        if i == 0 {
+            root, aerr := sonic.Get(data)
+            require.Equal(t, aerr, nil)
+            aerr = root.LoadAll()
+            require.Equal(t, aerr, nil, dump(data, jv, jerr, root, aerr))
+            aout, aerr := root.MarshalJSON()
+            require.Equal(t, aerr, nil)
+            sv = typ()
+            serr := json.Unmarshal(aout, sv)
+            require.Equal(t, serr, nil)
             require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
         }
 
