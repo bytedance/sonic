@@ -37,6 +37,7 @@ func quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
     if len(val) == 0 {
         *buf = append(*buf, '"')
+        return
     }
 
     sp := rt.IndexChar(val, 0)
