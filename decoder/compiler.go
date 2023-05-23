@@ -98,6 +98,7 @@ const (
     _OP_dismatch_err
     _OP_go_skip
     _OP_add
+    _OP_check_empty
     _OP_debug
 )
 
@@ -174,6 +175,9 @@ var _OpNames = [256]string {
     _OP_check_char_0     : "check_char_0",
     _OP_dismatch_err     : "dismatch_err",
     _OP_add              : "add",
+    _OP_go_skip          : "go_skip",
+    _OP_check_empty      : "check_empty",
+    _OP_debug            : "debug",
 }
 
 func (self _Op) String() string {
@@ -806,11 +810,11 @@ func (self *_Compiler) compileSliceList(p *_Program, sp int, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
-    p.rtt(_OP_slice_init, et)
-    p.add(_OP_save)
     p.add(_OP_lspace)
     j := p.pc()
-    p.chr(_OP_check_char, ']')
+    p.chr(_OP_check_empty, ']')
+    p.rtt(_OP_slice_init, et)
+    p.add(_OP_save)
     p.rtt(_OP_slice_append, et)
     self.compileOne(p, sp + 1, et)
     p.add(_OP_load)
@@ -823,9 +827,9 @@ func (self *_Compiler) compileSliceBody(p *_Program, sp int, et reflect.Type) {
     self.compileOne(p, sp + 1, et)
     p.add(_OP_load)
     p.int(_OP_goto, k0)
-    p.pin(j)
     p.pin(k1)
     p.add(_OP_drop)
+    p.pin(j)
 }
 
 func (self *_Compiler) compileString(p *_Program, vt reflect.Type) {

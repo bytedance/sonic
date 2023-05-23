@@ -315,6 +315,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_dismatch_err     : (*_Assembler)._asm_OP_dismatch_err,
     _OP_go_skip          : (*_Assembler)._asm_OP_go_skip,
     _OP_add              : (*_Assembler)._asm_OP_add,
+    _OP_check_empty      : (*_Assembler)._asm_OP_check_empty,
     _OP_debug            : (*_Assembler)._asm_OP_debug,
 }
 
@@ -1165,6 +1166,8 @@ var (
 
 var (
     _F_FieldMap_GetCaseInsensitive obj.Addr
+    _Empty_Slice = make([]byte, 0)
+    _Zero_Base = int64(uintptr(((*rt.GoSlice)(unsafe.Pointer(&_Empty_Slice))).Ptr))
 )
 
 const (
@@ -1630,6 +1633,22 @@ func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
     self.Emit("XORL" , _AX, _AX)                    // XORL    AX, AX
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 8))        // MOVQ    AX, 8(VP)
     self.Link("_done_{n}")                          // _done_{n}
+}
+
+func (self *_Assembler) _asm_OP_check_empty(p *_Instr) {
+    rbracket := p.vb()
+    if rbracket == ']' {
+        self.check_eof(1)
+        self.Emit("LEAQ", jit.Ptr(_IC, 1), _AX)                              // LEAQ    1(IC), AX
+        self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(rbracket))) // CMPB    (IP)(IC), ']'
+        self.Sjmp("JNE" , "_not_empty_array_{n}")                            // JNE     _not_empty_array_{n}
+        self.Emit("MOVQ", _AX, _IC)                                          // MOVQ    AX, IC
+        self.Emit("MOVQ", jit.Imm(_Zero_Base), jit.Ptr(_VP, 0))              // MOVQ    $zerobase, (VP)
+        self.Xjmp("JMP" , p.vi())                                            // JMP     {p.vi()}
+        self.Link("_not_empty_array_{n}")
+    } else {
+        panic("only implement check empty array here!")
+    }
 }
 
 func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
