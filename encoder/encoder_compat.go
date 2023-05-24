@@ -151,9 +151,7 @@ func Quote(s string) string {
 
 // Encode returns the JSON encoding of val, encoded with opts.
 func Encode(val interface{}, opts Options) ([]byte, error) {
-   buf := make([]byte, 0)
-   err := EncodeInto(&buf, val, opts)
-   return buf, err
+   return json.Marshal(val)
 }
 
 // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating
