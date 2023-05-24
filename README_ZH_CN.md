@@ -240,7 +240,7 @@ fmt.Printf("%+v", data) // {A:0 B:1}
 
 Sonic/ast.Node 是完全独立的 JSON 抽象语法树库。它实现了序列化和反序列化，并提供了获取和修改通用数据的鲁棒的 API。
 
-#### 索引
+#### 查找/索引
 
 通过给定的路径搜索 JSON 片段，路径必须为非负整数，字符串或 `nil` 。
 ```go
@@ -256,7 +256,7 @@ raw := root.Raw() // == string(input)
 root, err := sonic.Get(input, "key1", 1, "key2")
 sub := root.Get("key3").Index(2).Int64() // == 3
 ```
-**提示**：由于 `Index()` 使用偏移量来定位数据，比使用扫描的 `Get()` 要快的多，建议尽可能的使用 `Index` 。 Sonic 也提供了另一个 API， `IndexOrGet()` ，以偏移量为基础并且也确保键的匹配。
+**注意**：由于 `Index()` 使用偏移量来定位数据，比使用扫描的 `Get()` 要快的多，建议尽可能的使用 `Index` 。 Sonic 也提供了另一个 API， `IndexOrGet()` ，以偏移量为基础并且也确保键的匹配。
 
 #### 修改
 
@@ -309,7 +309,7 @@ println(string(buf) == string(exp)) // true
 - `ConfigStd`: 在支持 sonic 的环境下与标准库兼容的配置（`EscapeHTML=true`，`SortKeys=true`等）。行为与 `encoding/json` 一致。
 - `ConfigFastest`: 在支持 sonic 的环境下运行最快的配置（`NoQuoteTextMarshaler=true`）。行为与具有相应配置的 `encoding/json` 一致，某些选项将无效。
 
-## 提示
+## 注意事项
 
 ### 预热
 由于 Sonic 使用 [golang-asm](https://github.com/twitchyliquid64/golang-asm) 作为 JIT 汇编器，这个库并不适用于运行时编译，第一次运行一个大型模式可能会导致请求超时甚至进程内存溢出。为了更好地稳定性，我们建议在运行大型模式或在内存有限的应用中，在使用 `Marshal()/Unmarshal()` 前运行 `Pretouch()`。
@@ -342,7 +342,7 @@ func init() {
 当解码 **没有转义字符的字符串**时， sonic 会从原始的 JSON 缓冲区内引用而不是复制到新的一个缓冲区中。这对 CPU 的性能方面很有帮助，但是可能因此在解码后对象仍在使用的时候将整个 JSON 缓冲区保留在内存中。实践中我们发现，通过引用 JSON 缓冲区引入的额外内存通常是解码后对象的 20% 至 80% ，一旦应用长期保留这些对象（如缓存以备重用），服务器所使用的内存可能会增加。我们提供了选项 `decoder.CopyString()` 供用户选择，不引用 JSON 缓冲区。这可能在一定程度上降低 CPU 性能。
 
 ### 传递字符串还是字节数组？
-为了和 `encoding/json` 保持一致，我们提供了传递 `[]byte` 作为参数的 API ，但考虑到安全性，字符串到字节的复制是同时进行的，这在原始 JSON 非常大时可能会导致性能损失。因此，你可以使用 `UnmarshalString()` 和 `GetFromString()` 来传递字符串，只要你的原始数据是字符串，或**无复制类型转换**对于你的字节数组是安全的。我们也提供了 `MarshalString()` 的 API ，以便对编码的 JSON 字节数组进行**非复制类型转换**，因为 sonic 输出的字节始终是重复并且唯一的，所以这样是安全的。
+为了和 `encoding/json` 保持一致，我们提供了传递 `[]byte` 作为参数的 API ，但考虑到安全性，字符串到字节的复制是同时进行的，这在原始 JSON 非常大时可能会导致性能损失。因此，你可以使用 `UnmarshalString()` 和 `GetFromString()` 来传递字符串，只要你的原始数据是字符串，或**零拷贝类型转换**对于你的字节数组是安全的。我们也提供了 `MarshalString()` 的 API ，以便对编码的 JSON 字节数组进行**零拷贝类型转换**，因为 sonic 输出的字节始终是重复并且唯一的，所以这样是安全的。
 
 ### 加速 `encoding.TextMarshaler`
 
