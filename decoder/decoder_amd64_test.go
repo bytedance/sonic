@@ -237,7 +237,7 @@ func decode(s string, v interface{}, copy bool) (int, error) {
     if err != nil {
         return 0, err
     }
-    return d.i, err
+    return d.Pos(), err
 }
 
 func TestCopyString(t *testing.T) {
