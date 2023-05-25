@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-package encoder
-
-import (
-  `os`
-)
-
-var (
-  debugSyncGC  = os.Getenv("SONIC_SYNC_GC") != ""
-  debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
-)
+package decoder
 
 const TwitterJson = `{
   "statuses": [
