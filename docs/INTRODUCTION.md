@@ -1,4 +1,7 @@
 # Introduction to Sonic
+
+English | [中文](INTRODUCTION_ZH_CN.md)
+
 ## Background
 According to the overall profiling of production services in Bytedance, we found that the overhead of JSON serialization and deserialization is unexpectedly high: the total is near to 10% CPU, and the extreme one accounts for more than 40% CPU. Therefore, **the performance of JSON lib is a key issue for the promotion of machine utilization**.
 
