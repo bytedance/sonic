@@ -72,18 +72,15 @@ func (self *BaseAssembler) NOPn(n int) {
     }
 }
 
-func (self *BaseAssembler) StoreImm(imm64 int64, to obj.Addr) {
-    if (to.Type != obj.TYPE_MEM) {
-        panic("must store imm to memory")
+func (self *BaseAssembler) StorePtr(ptr int64, to obj.Addr, tmp obj.Addr) {
+    if (to.Type != obj.TYPE_MEM) || (tmp.Type != obj.TYPE_REG) {
+        panic("must store imm to memory, tmp must be register")
     }
-    if (imm64 >> 32) != 0 {
-        lo, hi := to, to
-        hi.Offset += 4
-        lomask := (int64(1) << 32) - 1
-        self.Emit("MOVL", Imm(imm64 & lomask), lo)
-        self.Emit("MOVL", Imm(imm64 >> 32), hi)
+    if (ptr >> 32) != 0 {
+        self.Emit("MOVQ", Imm(ptr), tmp)
+        self.Emit("MOVQ", tmp, to)
     } else {
-        self.Emit("MOVQ", Imm(imm64), to);
+        self.Emit("MOVQ", Imm(ptr), to);
     }
 }
 
