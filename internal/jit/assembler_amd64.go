@@ -72,6 +72,21 @@ func (self *BaseAssembler) NOPn(n int) {
     }
 }
 
+func (self *BaseAssembler) StoreImm(imm64 int64, to obj.Addr) {
+    if (to.Type != obj.TYPE_MEM) {
+        panic("must store imm to memory")
+    }
+    if (imm64 >> 32) != 0 {
+        lo, hi := to, to
+        hi.Offset += 4
+        lomask := (int64(1) << 32) - 1
+        self.Emit("MOVL", Imm(imm64 & lomask), lo)
+        self.Emit("MOVL", Imm(imm64 >> 32), hi)
+    } else {
+        self.Emit("MOVQ", Imm(imm64), to);
+    }
+}
+
 func (self *BaseAssembler) Byte(v ...byte) {
     for ; len(v) >= 8; v = v[8:] { self.From("QUAD", Imm(rt.Get64(v))) }
     for ; len(v) >= 4; v = v[4:] { self.From("LONG", Imm(int64(rt.Get32(v)))) }

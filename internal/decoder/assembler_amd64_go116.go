@@ -1653,7 +1653,7 @@ func (self *_Assembler) _asm_OP_check_empty(p *_Instr) {
         self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(rbracket))) // CMPB    (IP)(IC), ']'
         self.Sjmp("JNE" , "_not_empty_array_{n}")                            // JNE     _not_empty_array_{n}
         self.Emit("MOVQ", _AX, _IC)                                          // MOVQ    AX, IC
-        self.Emit("MOVQ", jit.Imm(_Zero_Base), jit.Ptr(_VP, 0))              // MOVQ    $zerobase, (VP)
+        self.StoreImm(_Zero_Base, jit.Ptr(_VP, 0))                           // MOVQ    $zerobase, (VP)
         self.Xjmp("JMP" , p.vi())                                            // JMP     {p.vi()}
         self.Link("_not_empty_array_{n}")
     } else {
