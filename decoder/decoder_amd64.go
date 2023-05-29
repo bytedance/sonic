@@ -22,12 +22,10 @@ import (
     `github.com/bytedance/sonic/internal/decoder`
 )
 
-// Decoder is the decoder context object
 type Decoder = decoder.Decoder
 
 type MismatchTypeError = decoder.MismatchTypeError
 
-// Options for decode.
 type Options = decoder.Options
 
 const (
@@ -39,28 +37,14 @@ const (
     OptionValidateString   Options = decoder.OptionValidateString
 )
 
-// StreamDecoder is the decoder context object for streaming input.
 type StreamDecoder = decoder.StreamDecoder
 
 type SyntaxError = decoder.SyntaxError
 
-var (
-    // NewDecoder creates a new decoder instance.
-    NewDecoder = decoder.NewDecoder
+var Pretouch = decoder.Pretouch
 
-    // NewStreamDecoder adapts to encoding/json.NewDecoder API.
-    //
-    // NewStreamDecoder returns a new decoder that reads from r.
-    NewStreamDecoder = decoder.NewStreamDecoder
+var Skip = decoder.Skip
 
-    // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
-    // order to reduce the first-hit latency.
-    //
-    // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
-    // a compile option to set the depth of recursive compile for the nested struct type.
-    Pretouch = decoder.Pretouch
-    
-    // Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
-    // Otherwise, returns negative error code using start and invalid character position using end
-    Skip = decoder.Skip
-)
+var NewDecoder = decoder.NewDecoder
+
+var NewStreamDecoder = decoder.NewStreamDecoder

@@ -21,7 +21,7 @@ import (
     `io`
 )
 
-// StreamEncoder uses io.Writer as input.
+// StreamEncoder uses io.Writer as 
 type StreamEncoder struct {
     w io.Writer
     Encoder
