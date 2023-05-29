@@ -1646,6 +1646,8 @@ func (self *_Assembler) _asm_OP_check_empty(p *_Instr) {
         self.Sjmp("JNE" , "_not_empty_array_{n}")                            // JNE     _not_empty_array_{n}
         self.Emit("MOVQ", _AX, _IC)                                          // MOVQ    AX, IC
         self.StorePtr(_Zero_Base, jit.Ptr(_VP, 0), _AX)                      // MOVQ    $zerobase, (VP)
+        self.Emit("PXOR", _X0, _X0)                                          // PXOR    X0, X0
+        self.Emit("MOVOU", _X0, jit.Ptr(_VP, 8))                             // MOVOU   X0, 8(VP)
         self.Xjmp("JMP" , p.vi())                                            // JMP     {p.vi()}
         self.Link("_not_empty_array_{n}")
     } else {
