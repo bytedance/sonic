@@ -22,18 +22,14 @@ import (
     `github.com/bytedance/sonic/internal/encoder`
 )
 
-var (
-    Encode = encoder.Encode
-    EncodeIndented = encoder.EncodeIndented
-    EncodeInto = encoder.EncodeInto
-    HTMLEscape = encoder.HTMLEscape
-    Pretouch = encoder.Pretouch
-    Quote = encoder.Quote
-    Valid = encoder.Valid
-)
 
+// Encoder represents a specific set of encoder configurations.
 type Encoder = encoder.Encoder
 
+// StreamEncoder uses io.Writer as input.
+type StreamEncoder = encoder.StreamEncoder
+
+// Options is a set of encoding options.
 type Options = encoder.Options
 
 const (
@@ -67,6 +63,46 @@ const (
     CompatibleWithStd Options = encoder.CompatibleWithStd
 )
 
-type StreamEncoder = encoder.StreamEncoder
 
-var NewStreamEncoder = encoder.NewStreamEncoder
+var (
+    // Encode returns the JSON encoding of val, encoded with opts.
+    Encode = encoder.Encode
+
+    // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating a new one.
+    EncodeIndented = encoder.EncodeIndented
+
+    // EncodeIndented is like Encode but applies Indent to format the output.
+    // Each JSON element in the output will begin on a new line beginning with prefix
+    // followed by one or more copies of indent according to the indentation nesting.
+    EncodeInto = encoder.EncodeInto
+
+    // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
+    // characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029
+    // so that the JSON will be safe to embed inside HTML <script> tags.
+    // For historical reasons, web browsers don't honor standard HTML
+    // escaping within <script> tags, so an alternative JSON encoding must
+    // be used.
+    HTMLEscape = encoder.HTMLEscape
+
+    // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
+    // order to reduce the first-hit latency.
+    //
+    // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+    // a compile option to set the depth of recursive compile for the nested struct type.
+    Pretouch = encoder.Pretouch
+
+    // Quote returns the JSON-quoted version of s.
+    Quote = encoder.Quote
+
+    // Valid validates json and returns first non-blank character position,
+    // if it is only one valid json value.
+    // Otherwise returns invalid character position using start.
+    //
+    // Note: it does not check for the invalid UTF-8 characters.
+    Valid = encoder.Valid
+
+    // NewStreamEncoder adapts to encoding/json.NewDecoder API.
+    //
+    // NewStreamEncoder returns a new encoder that write to w.
+    NewStreamEncoder = encoder.NewStreamEncoder
+)
