@@ -492,9 +492,10 @@ func (self *_Assembler) type_error() {
 
 func (self *_Assembler) mismatch_error() {
     self.Link(_LB_mismatch_error)                     // _type_error:
-    self.Emit("MOVQ", _VAR_et, _ET)                   // MOVQ _VAR_et, _ET
-    self.Emit("MOVQ", _VAR_ic, _EP)                   // MOVQ _VAR_ic, _EP
-    self.Emit("CMPQ", _ET, _I_json_MismatchTypeError) // CMPQ _ET, _I_json_MismatchType
+    self.Emit("MOVQ", _VAR_et, _ET)                   // MOVQ _VAR_et, ET
+    self.Emit("MOVQ", _VAR_ic, _EP)                   // MOVQ _VAR_ic, EP
+    self.Emit("MOVQ", _I_json_MismatchTypeError, _CX) // MOVQ _I_json_MismatchType, CX
+    self.Emit("CMPQ", _ET, _CX)                       // CMPQ ET, CX
     self.Sjmp("JE"  , _LB_error)                      // JE _LB_error
     self.Emit("MOVQ", _ARG_sp, _AX)
     self.Emit("MOVQ", _ARG_sl, _BX)
@@ -1136,8 +1137,9 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
     self.Emit("MOVQ" , _CX, _EP)                // MOVQ    CX, EP
     self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
     self.Sjmp("JE", "_decode_dynamic_end_{n}")  // JE, _decode_dynamic_end_{n}
-    self.Emit("CMPQ",  _ET, _I_json_MismatchTypeError)
-    self.Sjmp("JNE"  , _LB_error)               // JNE  LB_error
+    self.Emit("MOVQ", _I_json_MismatchTypeError, _CX) // MOVQ _I_json_MismatchTypeError, CX
+    self.Emit("CMPQ", _ET, _CX)                 // CMPQ ET, CX
+    self.Sjmp("JNE",  _LB_error)                // JNE  LB_error
     self.Emit("MOVQ", _EP, _VAR_ic)             // MOVQ EP, VAR_ic
     self.Emit("MOVQ", _ET, _VAR_et)             // MOVQ ET, VAR_et
     self.Link("_decode_dynamic_end_{n}")
