@@ -29,6 +29,7 @@ var (
     minLeftBufferShift   uint = 1
 )
 
+// StreamDecoder is the decoder context object for streaming input.
 type StreamDecoder struct {
     r       io.Reader
     buf     []byte
