@@ -1,5 +1,5 @@
-//go:build go1.15 && !go1.16
-// +build go1.15,!go1.16
+// go:build go1.18 && !go1.21
+// +build go1.18,!go1.21
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -20,16 +20,18 @@
 package loader
 
 import (
-    `encoding`
-    `os`
-    `unsafe`
+	"encoding"
+	"os"
+	"sort"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
-const (
-    _Magic uint32 = 0xfffffffa
-)
+type funcTab struct {
+    entry   uint32
+    funcoff uint32
+}
 
 type pcHeader struct {
     magic          uint32  // 0xFFFFFFF0
@@ -38,97 +40,12 @@ type pcHeader struct {
     ptrSize        uint8   // size of a ptr in bytes
     nfunc          int     // number of functions in the module
     nfiles         uint    // number of entries in the file tab
+    textStart      uintptr // base for function entry PC offsets in this module, equal to moduledata.text
     funcnameOffset uintptr // offset to the funcnametab variable from pcHeader
     cuOffset       uintptr // offset to the cutab variable from pcHeader
     filetabOffset  uintptr // offset to the filetab variable from pcHeader
     pctabOffset    uintptr // offset to the pctab variable from pcHeader
     pclnOffset     uintptr // offset to the pclntab variable from pcHeader
-}
-
-type moduledata struct {
-    pcHeader     *pcHeader
-    funcnametab  []byte
-    cutab        []uint32
-    filetab      []byte
-    pctab        []byte
-    pclntable    []byte
-    ftab         []funcTab
-    findfunctab  uintptr
-    minpc, maxpc uintptr // first func address, last func address + last func size
-
-    text, etext           uintptr // start/end of text, (etext-text) must be greater than MIN_FUNC
-    noptrdata, enoptrdata uintptr
-    data, edata           uintptr
-    bss, ebss             uintptr
-    noptrbss, enoptrbss   uintptr
-    end, gcdata, gcbss    uintptr
-    types, etypes         uintptr
-    
-    textsectmap []textSection // see runtime/symtab.go: textAddr()
-    typelinks   []int32 // offsets from types
-    itablinks   []*rt.GoItab
-
-    ptab []ptabEntry
-
-    pluginpath string
-    pkghashes  []modulehash
-
-    modulename   string
-    modulehashes []modulehash
-
-    hasmain uint8 // 1 if module contains the main function, 0 otherwise
-
-    gcdatamask, gcbssmask bitVector
-
-    typemap map[int32]*rt.GoType // offset to *_rtype in previous module
-
-    bad bool // module failed to load and should be ignored
-
-    next *moduledata
-}
-
-type _func struct {
-    entry    uintptr // start pc, as offset from moduledata.text/pcHeader.textStart
-    nameOff  int32  // function name, as index into moduledata.funcnametab.
-
-    args        int32  // in/out args size
-    deferreturn uint32 // offset of start of a deferreturn call instruction from entry, if any.
-
-    pcsp      uint32 
-    pcfile    uint32
-    pcln      uint32
-    npcdata   uint32
-    cuOffset  uint32 // runtime.cutab offset of this function's CU
-    funcID    uint8  // set for certain special runtime functions
-    _         [2]byte // pad
-    nfuncdata uint8   // 
-    
-    // The end of the struct is followed immediately by two variable-length
-    // arrays that reference the pcdata and funcdata locations for this
-    // function.
-
-    // pcdata contains the offset into moduledata.pctab for the start of
-    // that index's table. e.g.,
-    // &moduledata.pctab[_func.pcdata[_PCDATA_UnsafePoint]] is the start of
-    // the unsafe point table.
-    //
-    // An offset of 0 indicates that there is no table.
-    //
-    // pcdata [npcdata]uint32
-
-    // funcdata contains the offset past moduledata.gofunc which contains a
-    // pointer to that index's funcdata. e.g.,
-    // *(moduledata.gofunc +  _func.funcdata[_FUNCDATA_ArgsPointerMaps]) is
-    // the argument pointer map.
-    //
-    // An offset of ^uint32(0) indicates that there is no entry.
-    //
-    // funcdata [nfuncdata]uint32
-}
-
-type funcTab struct {
-    entry   uintptr
-    funcoff uintptr
 }
 
 type bitVector struct {
@@ -166,11 +83,6 @@ type findfuncbucket struct {
     _SUBBUCKETS [16]byte
 }
 
-
-type compilationUnit struct {
-    fileNames []string
-}
-
 // func name table format: 
 //   nameOff[0] -> namePartA namePartB namePartC \x00 
 //   nameOff[1] -> namePartA namePartB namePartC \x00
@@ -191,6 +103,10 @@ func makeFuncnameTab(funcs []Func) (tab []byte, offs []int32) {
     }
 
     return
+}
+
+type compilationUnit struct {
+    fileNames []string
 }
 
 // CU table format:
@@ -263,7 +179,7 @@ func writeFuncdata(out *[]byte, funcs []Func) (fstart int, funcdataOffs [][]uint
     return 
 }
 
-func makeFtab(funcs []_func, lastFuncSize uint32) (ftab []funcTab, pclntabSize int64, startLocations []uint32) {
+func makeFtab(funcs []_func, maxpc uint32) (ftab []funcTab, pclntabSize int64, startLocations []uint32) {
     // Allocate space for the pc->func table. This structure consists of a pc offset
     // and an offset to the func structure. After that, we have a single pc
     // value that marks the end of the last function in the binary.
@@ -273,66 +189,46 @@ func makeFtab(funcs []_func, lastFuncSize uint32) (ftab []funcTab, pclntabSize i
         pclntabSize = rnd(pclntabSize, int64(_PtrSize))
         //writePCToFunc
         startLocations[i] = uint32(pclntabSize)
-        pclntabSize += int64(uint8(_FUNC_SIZE) + f.nfuncdata*_PtrSize + uint8(f.npcdata)*4)
+        pclntabSize += int64(uint8(_FUNC_SIZE)+f.nfuncdata*4+uint8(f.npcdata)*4)
     }
+
     ftab = make([]funcTab, 0, len(funcs)+1)
 
     // write a map of pc->func info offsets 
     for i, f := range funcs {
-        ftab = append(ftab, funcTab{uintptr(f.entry), uintptr(startLocations[i])})
+        ftab = append(ftab, funcTab{uint32(f.entryOff), uint32(startLocations[i])})
     }
 
     // Final entry of table is just end pc offset.
-    lastFunc := funcs[len(funcs)-1]
-    ftab = append(ftab, funcTab{lastFunc.entry + uintptr(lastFuncSize), 0})
-
+    ftab = append(ftab, funcTab{maxpc, 0})
     return
 }
 
 // Pcln table format: [...]funcTab + [...]_Func
-func makePclntable(size int64, startLocations []uint32, funcs []_func, lastFuncSize uint32, pcdataOffs [][]uint32, funcdataAddr uintptr, funcdataOffs [][]uint32) (pclntab []byte) {
+func makePclntable(size int64, startLocations []uint32, funcs []_func, maxpc uint32, pcdataOffs [][]uint32, funcdataOffs [][]uint32) (pclntab []byte) {
+    // Allocate space for the pc->func table. This structure consists of a pc offset
+    // and an offset to the func structure. After that, we have a single pc
+    // value that marks the end of the last function in the binary.
     pclntab = make([]byte, size, size)
 
     // write a map of pc->func info offsets 
     offs := 0
     for i, f := range funcs {
-        byteOrder.PutUint64(pclntab[offs:offs+8], uint64(f.entry))
-        byteOrder.PutUint64(pclntab[offs+8:offs+16], uint64(startLocations[i]))
-        offs += 16
+        byteOrder.PutUint32(pclntab[offs:offs+4], uint32(f.entryOff))
+        byteOrder.PutUint32(pclntab[offs+4:offs+8], uint32(startLocations[i]))
+        offs += 8
     }
     // Final entry of table is just end pc offset.
-    lastFunc := funcs[len(funcs)-1]
-    byteOrder.PutUint64(pclntab[offs:offs+8], uint64(lastFunc.entry)+uint64(lastFuncSize))
-    offs += 8
+    byteOrder.PutUint32(pclntab[offs:offs+4], maxpc)
 
     // write func info table
-    for i, f := range funcs {
+    for i := range funcs {
         off := startLocations[i]
 
         // write _func structure to pclntab
-        byteOrder.PutUint64(pclntab[off:off+8], uint64(f.entry))
-        off += 8
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.nameOff))
-        off += 4
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.args))
-        off += 4
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.deferreturn))
-        off += 4
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.pcsp))
-        off += 4
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.pcfile))
-        off += 4
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.pcln))
-        off += 4
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.npcdata))
-        off += 4
-        byteOrder.PutUint32(pclntab[off:off+4], uint32(f.cuOffset))
-        off += 4
-        pclntab[off] = f.funcID
-        // NOTICE: _[2]byte alignment
-        off += 3
-        pclntab[off] = f.nfuncdata
-        off += 1
+        fb := rt.BytesFrom(unsafe.Pointer(&funcs[i]), int(_FUNC_SIZE), int(_FUNC_SIZE))
+        copy(pclntab[off:off+uint32(_FUNC_SIZE)], fb)
+        off += uint32(_FUNC_SIZE)
 
         // NOTICE: _func.pcdata always starts from PcUnsafePoint, which is index 3
         for j := 3; j < len(pcdataOffs[i]); j++ {
@@ -340,17 +236,12 @@ func makePclntable(size int64, startLocations []uint32, funcs []_func, lastFuncS
             off += 4
         }
 
-        off = uint32(rnd(int64(off), int64(_PtrSize)))
-
         // funcdata refs as offsets from gofunc
         for _, funcdata := range funcdataOffs[i] {
-            if funcdata == _INVALID_FUNCDATA_OFFSET {
-                byteOrder.PutUint64(pclntab[off:off+8], 0)
-            } else {
-                byteOrder.PutUint64(pclntab[off:off+8], uint64(funcdataAddr)+uint64(funcdata))
-            }
-            off += 8
+            byteOrder.PutUint32(pclntab[off:off+4], uint32(funcdata))
+            off += 4
         }
+
     }
 
     return
@@ -374,21 +265,22 @@ func writeFindfunctab(out *[]byte, ftab []funcTab) (start int) {
     tab := make([]findfuncbucket, 0, nbuckets)
     var s, e = 0, 0
     for i := 0; i<int(nbuckets); i++ {
-        var pc = min + uintptr((i+1)*_BUCKETSIZE)
-        // find the end func of the bucket
-        for ; e < len(ftab)-1 && ftab[e+1].entry <= pc; e++ {}
-        // store the start func of the bucket
+        // store the start s-th func of the bucket
         var fb = findfuncbucket{idx: uint32(s)}
 
+        // find the last e-th func of the bucket
+        var pc = min + uint32((i+1)*_BUCKETSIZE)
+        for ; e < len(ftab)-1 && ftab[e+1].entry <= pc; e++ {}
+
         for j := 0; j<_SUBBUCKETS && (i*_SUBBUCKETS+j)<int(n); j++ {
-            pc = min + uintptr(i*_BUCKETSIZE) + uintptr((j+1)*_SUB_BUCKETSIZE)
-            var ss = s
-            // find the end func of the subbucket
-            for ; ss < len(ftab)-1 && ftab[ss+1].entry <= pc; ss++ {}
             // store the start func of the subbucket
             fb._SUBBUCKETS[j] = byte(uint32(s) - fb.idx)
-            s = ss
+
+            // find the s-th end func of the subbucket
+            pc = min + uint32(i*_BUCKETSIZE) + uint32((j+1)*_SUB_BUCKETSIZE)
+            for ; s < len(ftab)-1 && ftab[s+1].entry <= pc; s++ {}            
         }
+
         s = e
         tab = append(tab, fb)
     }
@@ -401,15 +293,20 @@ func writeFindfunctab(out *[]byte, ftab []funcTab) (start int) {
     return 
 }
 
-func makeModuledata(name string, filenames []string, funcs []Func, text []byte) (mod *moduledata) {
+func makeModuledata(name string, filenames []string, funcsp *[]Func, text []byte) (mod *moduledata) {
     mod = new(moduledata)
     mod.modulename = name
 
+    // sort funcs by entry
+    funcs := *funcsp
+    sort.Slice(funcs, func(i, j int) bool {
+        return funcs[i].EntryOff < funcs[j].EntryOff
+    })
+    *funcsp = funcs
+
     // make filename table
     cu := make([]string, 0, len(filenames))
-    for _, f := range filenames {
-        cu = append(cu, f)
-    }
+    cu = append(cu, filenames...)
     cutab, filetab, cuOffs := makeFilenametab([]compilationUnit{{cu}})
     mod.cutab = cutab
     mod.filetab = filetab
@@ -428,9 +325,16 @@ func makeModuledata(name string, filenames []string, funcs []Func, text []byte) 
     // make it executable
     mprotect(addr, size)
 
+    // assign addresses
+    mod.text = addr
+    mod.etext = addr + uintptr(size)
+    mod.minpc = addr
+    mod.maxpc = addr + uintptr(len(text))
+
     // make pcdata table
     // NOTICE: _func only use offset to index pcdata, thus no need mmap() pcdata 
-    pctab, pcdataOffs, _funcs := makePctab(funcs, addr, cuOffs, nameOffs)
+    cuOff := cuOffs[0]
+    pctab, pcdataOffs, _funcs := makePctab(funcs, cuOff, nameOffs)
     mod.pctab = pctab
 
     // write func data
@@ -440,8 +344,7 @@ func makeModuledata(name string, filenames []string, funcs []Func, text []byte) 
     fstart, funcdataOffs := writeFuncdata(&cache, funcs)
 
     // make pc->func (binary search) func table
-    lastFuncsize := funcs[len(funcs)-1].TextSize
-    ftab, pclntSize, startLocations := makeFtab(_funcs, lastFuncsize)
+    ftab, pclntSize, startLocations := makeFtab(_funcs, uint32(len(text)))
     mod.ftab = ftab
 
     // write pc->func (modmap) findfunc table
@@ -451,18 +354,12 @@ func makeModuledata(name string, filenames []string, funcs []Func, text []byte) 
     moduleCache.Lock()
     moduleCache.m[mod] = cache
     moduleCache.Unlock()
-    mod.findfunctab = uintptr(rt.IndexByte(cache, ffstart))
-    funcdataAddr := uintptr(rt.IndexByte(cache, fstart))
+    mod.gofunc = uintptr(unsafe.Pointer(&cache[fstart]))
+    mod.findfunctab = uintptr(unsafe.Pointer(&cache[ffstart]))
 
     // make pclnt table
-    pclntab := makePclntable(pclntSize, startLocations, _funcs, lastFuncsize, pcdataOffs, funcdataAddr, funcdataOffs)
+    pclntab := makePclntable(pclntSize, startLocations, _funcs, uint32(len(text)), pcdataOffs, funcdataOffs)
     mod.pclntable = pclntab
-
-    // assign addresses
-    mod.text = addr
-    mod.etext = addr + uintptr(size)
-    mod.minpc = addr
-    mod.maxpc = addr + uintptr(len(text))
 
     // make pc header
     mod.pcHeader = &pcHeader {
@@ -471,6 +368,7 @@ func makeModuledata(name string, filenames []string, funcs []Func, text []byte) 
         ptrSize : _PtrSize,
         nfunc   : len(funcs),
         nfiles: uint(len(cu)),
+        textStart: mod.text,
         funcnameOffset: getOffsetOf(moduledata{}, "funcnametab"),
         cuOffset: getOffsetOf(moduledata{}, "cutab"),
         filetabOffset: getOffsetOf(moduledata{}, "filetab"),
@@ -487,7 +385,7 @@ func makeModuledata(name string, filenames []string, funcs []Func, text []byte) 
 
 // makePctab generates pcdelta->valuedelta tables for functions,
 // and returns the table and the entry offset of every kind pcdata in the table.
-func makePctab(funcs []Func, addr uintptr, cuOffset []uint32, nameOffset []int32) (pctab []byte, pcdataOffs [][]uint32, _funcs []_func) {
+func makePctab(funcs []Func, cuOffset uint32, nameOffset []int32) (pctab []byte, pcdataOffs [][]uint32, _funcs []_func) {
     _funcs = make([]_func, len(funcs))
 
     // Pctab offsets of 0 are considered invalid in the runtime. We respect
@@ -532,14 +430,15 @@ func makePctab(funcs []Func, addr uintptr, cuOffset []uint32, nameOffset []int32
         writer(f.PcInlTreeIndex)
         writer(f.PcArgLiveIndex)
         
-        _f.entry = addr + uintptr(f.EntryOff)
+        _f.entryOff = f.EntryOff
         _f.nameOff = nameOffset[i]
         _f.args = f.ArgsSize
         _f.deferreturn = f.DeferReturn
         // NOTICE: _func.pcdata is always as [PCDATA_UnsafePoint(0) : PCDATA_ArgLiveIndex(3)]
         _f.npcdata = uint32(_N_PCDATA)
-        _f.cuOffset = cuOffset[i]
+        _f.cuOffset = cuOffset
         _f.funcID = f.ID
+        _f.flag = f.Flag
         _f.nfuncdata = uint8(_N_FUNCDATA)
     }
 

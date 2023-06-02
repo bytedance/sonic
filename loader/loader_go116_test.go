@@ -91,7 +91,6 @@ func TestLoad(t *testing.T) {
     }
 
     fn.Pcsp = &Pcdata{
-        {PC: 0x04, Val: 0},
         {PC: size, Val: 24},
     }
 
