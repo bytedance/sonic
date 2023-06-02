@@ -138,4 +138,9 @@ func TestLoad(t *testing.T) {
     require.Equal(t, 2, j)
     require.Equal(t, "hook1", hstr)
 
+    fi := runtime.FuncForPC(*(*uintptr)(rets[0]))
+    require.Equal(t, "dummy", fi.Name())
+    file, line := fi.FileLine(0)
+    require.Equal(t, "github.com/bytedance/sonic/dummy.go", file)
+    require.Equal(t, 0, line)
 }
