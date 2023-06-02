@@ -19,6 +19,10 @@
 
 package loader
 
+import (
+    `github.com/bytedance/sonic/internal/loader`
+)
+
 // LoadFuncs loads only one function as module, and returns the function pointer
 //   - text: machine code
 //   - funcName: function name
@@ -31,7 +35,7 @@ package loader
 //   - the function MUST has fixed SP offset equaling to this, otherwise it go.gentraceback will fail
 //   - the function MUST has only one stack map for all arguments and local variants
 func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize int, argPtrs []bool, localPtrs []bool) Function {
-    panic("not implemented")
+    return Function(loader.Loader(text).Load(funcName, frameSize, argSize, argPtrs, localPtrs))
 }
 
 // Load loads given machine codes and corresponding function information into go moduledata
