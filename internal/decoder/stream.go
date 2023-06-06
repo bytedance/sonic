@@ -105,7 +105,7 @@ read_more:
             if repeat {
                 goto read_more
             } else {
-                err = SyntaxError{self.i, self.s, types.ParsingError(-ret), ""}
+                err = SyntaxError{x, self.s, types.ParsingError(-ret), ""}
                 self.err = err
                 return
             }
