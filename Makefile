@@ -30,7 +30,7 @@ TMPL_sse 		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_e
 CFLAGS_avx		:= -msse -mssse3 -mno-sse4 -mavx -mpclmul -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0
 CFLAGS_avx2		:= -msse -mssse3 -mno-sse4 -mavx -mpclmul -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1 
 CFLAGS_sse		:= -msse -mssse3 -mno-sse4 -mno-avx -mno-avx2 -mpclmul
-TARGETFLAGS		:= -target x86_64-apple-macos11 -nostdlib -fno-builtin -fno-asynchronous-unwind-tables
+TARGETFLAGS		:= -nostdlib -fno-builtin -fno-asynchronous-unwind-tables
 
 
 CC_amd64		:= clang

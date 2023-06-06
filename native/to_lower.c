@@ -29,6 +29,4 @@ void to_lower(char* dst, const char* src, size_t len) {
         src++;
         q++;
     }
-
-    return dst;
 }
