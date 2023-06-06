@@ -87,12 +87,11 @@ func TestLoad(t *testing.T) {
     }
 
     fn.Pcsp = &Pcdata{
-        {PC: 0x04, Val: 0},
         {PC: size, Val: 24},
     }
 
     fn.Pcline = &Pcdata{
-        {PC: 0x00, Val: 0},
+        {PC: 0x01, Val: 0},
         {PC: 0x0e, Val: 1},
         {PC: 0x1d, Val: 2},
         {PC: size, Val: 3},
@@ -131,4 +130,10 @@ func TestLoad(t *testing.T) {
     j := f(&i, hook)
     require.Equal(t, 2, j)
     require.Equal(t, "hook1", hstr)
+
+    fi := runtime.FuncForPC(*(*uintptr)(rets[0]))
+    require.Equal(t, "dummy", fi.Name())
+    file, line := fi.FileLine(0)
+    require.Equal(t, "github.com/bytedance/sonic/dummy.go", file)
+    require.Equal(t, 0, line)
 }
