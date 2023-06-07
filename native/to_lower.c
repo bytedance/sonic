@@ -1,10 +1,11 @@
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <immintrin.h>
+#include "native.h"
 
-
-// src 是输入的字符串，可能包含大写字符，dst是转换后的小写字符串，dst位置已经预分配长度为len的内存
+/**
+ * @brief uppercase to lowercase
+ * @param[in] src original string
+ * @param[in, out] dst lowercase string
+ * @param[in] len length of the string
+*/
 void to_lower(char* dst, const char* src, size_t len) {
     const __m128i _A = _mm_set1_epi8('A' - 1);
     const __m128i Z_ = _mm_set1_epi8('Z' + 1);
