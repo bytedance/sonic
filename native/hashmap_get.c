@@ -3,7 +3,7 @@
 
 #include "xxhash.h"
 
-// Get hashmap, 返回匹配的id，如果没有找到，就返回 -1。
+// Get hashmap, return the matching ID, and if not found, return -1.
 int64_t field_hashmap_get(FieldHashMap *fmap, const GoString* key){
     XXH64_hash_t seed   =    123456789;
     size_t len          =    fmap->N;
@@ -13,7 +13,3 @@ int64_t field_hashmap_get(FieldHashMap *fmap, const GoString* key){
         return fmap.bucket[hash]->id;
     }
 }
-
-
-
-

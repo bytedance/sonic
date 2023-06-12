@@ -117,19 +117,18 @@ typedef struct {
 } StateMachine;
 
 typedef struct {
-    const char * buf; // 字符串指针
-    size_t       len; // 字符串长度
+    const char * buf;
+    size_t       len;
 } GoString;
 
-// FieldEntry 是 hash表中的 key-value 对。
 typedef struct {
-    GoString name; // 字符串key
-    uint64_t hash; // 字符串hash值
-    int64_t  id;   // key对应的value 
+    GoString name;
+    uint64_t hash;
+    int64_t  id;
 } FieldEntry;
 
 typedef struct {
-    size_t N; // 哈希表 bucket的大小
+    size_t N;
     FieldEntry* bucket;
 } FieldHashMap;
 
