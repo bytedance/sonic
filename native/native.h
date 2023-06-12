@@ -116,6 +116,23 @@ typedef struct {
     int64_t vt[MAX_RECURSE];
 } StateMachine;
 
+typedef struct {
+    const char * buf; // 字符串指针
+    size_t       len; // 字符串长度
+} GoString;
+
+// FieldEntry 是 hash表中的 key-value 对。
+typedef struct {
+    GoString name; // 字符串key
+    uint64_t hash; // 字符串hash值
+    int64_t  id;   // key对应的value 
+} FieldEntry;
+
+typedef struct {
+    size_t N; // 哈希表 bucket的大小
+    FieldEntry* bucket;
+} FieldHashMap;
+
 int f64toa(char *out, double val);
 int i64toa(char *out, int64_t val);
 int u64toa(char *out, uint64_t val);
@@ -151,4 +168,8 @@ long validate_utf8_fast(const GoString *src);
 
 long skip_one_fast(const GoString *src, long *p);
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm);
+
+void field_hashmap_set(FieldHashMap *fmap, const GoString* key, int64_t id);
+int64_t field_hashmap_get(FieldHashMap *fmap, const GoString* key);
+
 #endif
