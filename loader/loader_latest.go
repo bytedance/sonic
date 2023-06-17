@@ -87,18 +87,27 @@ func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize 
 // and returns runnable function pointer
 // WARN: this API is experimental, use it carefully
 func Load(text []byte, funcs []Func, modulename string, filenames []string) (out []Function) {
+    ids := make([]string, len(funcs))
+    for i, f := range funcs {
+        ids[i] = f.Name
+    }
     // generate module data and allocate memory address
-    mod := makeModuledata(modulename, filenames, funcs, text)
+    mod := makeModuledata(modulename, filenames, &funcs, text)
 
     // verify and register the new module
     moduledataverify1(mod)
     registerModule(mod)
 
+    // 
     // encapsulate function address
     out = make([]Function, len(funcs))
-    for i, f := range funcs {
-        m := uintptr(mod.text + uintptr(f.EntryOff))
-        out[i] = Function(&m)
+    for i, s := range ids {
+        for _, f := range funcs {
+            if f.Name == s {
+                m := uintptr(mod.text + uintptr(f.EntryOff))
+                out[i] = Function(&m)
+            }
+        }
     }
     return 
 }
