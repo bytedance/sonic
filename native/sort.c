@@ -15,16 +15,16 @@ void swap(MapPair* lhs, MapPair* rhs) {
     *rhs = temp;
 }
 
-int my_strcmp(const char *p,const char *q){
-	while(*p==*q && *p != '\0'){
-		p++;
-		q++;
-	}
-	return *p - *q;
+int _strcmp(const char *p,const char *q){
+    while(*p && *q && *p == *q) {
+        p++, q++;
+    }
+
+    return *p - *q;
 }
 
 bool compare(MapPair lhs, MapPair rhs) {
-    return my_strcmp(lhs.key.buf, rhs.key.buf) < 0;
+    return _strcmp(lhs.key.buf, rhs.key.buf) < 0;
 }
 
 void heap_adjust(MapPair* kvs, size_t root, size_t end) {
