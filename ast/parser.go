@@ -470,7 +470,7 @@ func (self *Node) skipNextNode() *Node {
     switch parser.s[parser.p] {
     case ',':
         parser.p++
-        self.setLazyArray(parser, ret)
+        self.setLazyArray(parser, ret, stack)
         return &ret[len(ret)-1]
     case ']':
         parser.p++
@@ -553,7 +553,7 @@ func (self *Node) skipNextPair() (*Pair) {
     switch parser.s[parser.p] {
     case ',':
         parser.p++
-        self.setLazyObject(parser, ret)
+        self.setLazyObject(parser, ret, stack)
         return &ret[len(ret)-1]
     case '}':
         parser.p++

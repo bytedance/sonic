@@ -1713,8 +1713,7 @@ func newLazyArray(p *Parser, v []Node) Node {
     }
 }
 
-func (self *Node) setLazyArray(p *Parser, v []Node) {
-    s := new(parseArrayStack)
+func (self *Node) setLazyArray(p *Parser, v []Node, s *parseArrayStack) {
     s.parser = *p
     s.v = v
     self.t = _V_ARRAY_LAZY
@@ -1734,8 +1733,7 @@ func newLazyObject(p *Parser, v []Pair) Node {
     }
 }
 
-func (self *Node) setLazyObject(p *Parser, v []Pair) {
-    s := new(parseObjectStack)
+func (self *Node) setLazyObject(p *Parser, v []Pair, s *parseObjectStack) {
     s.parser = *p
     s.v = v
     self.t = _V_OBJECT_LAZY
