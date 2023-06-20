@@ -459,6 +459,7 @@ func (self *Node) skipNextNode() *Node {
 
     /* add the value to result */
     ret = append(ret, val)
+    stack.v = ret
     parser.p = parser.lspace(parser.p)
 
     /* check for EOF */
@@ -542,6 +543,7 @@ func (self *Node) skipNextPair() (*Pair) {
 
     /* add the value to result */
     ret = append(ret, Pair{Key: key, Value: val})
+    stack.v = ret
     parser.p = parser.lspace(parser.p)
 
     /* check for EOF */
