@@ -27,21 +27,19 @@ TMPL_avx		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_ex
 TMPL_avx2		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 TMPL_sse 		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test native_export_amd64
 
-CFLAGS_avx		:= -msse -mno-sse4 -mavx -mpclmul -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0
-CFLAGS_avx2		:= -msse -mno-sse4 -mavx -mpclmul -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1 
-CFLAGS_sse		:= -msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul
+CFLAGS_avx		:= -msse -mssse3 -mno-sse4 -mavx -mpclmul -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0
+CFLAGS_avx2		:= -msse -mssse3 -mno-sse4 -mavx -mpclmul -mavx2    -DUSE_AVX=1 -DUSE_AVX2=1 
+CFLAGS_sse		:= -msse -mssse3 -mno-sse4 -mno-avx -mno-avx2 -mpclmul
+TARGETFLAGS		:= -target x86_64-apple-macos11 -nostdlib -fno-builtin -fno-asynchronous-unwind-tables
+
 
 CC_amd64		:= clang
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py
 
 CFLAGS			:= -mno-red-zone
-CFLAGS			+= -target x86_64-apple-macos11
-CFLAGS			+= -fno-asynchronous-unwind-tables
-CFLAGS			+= -fno-builtin
 CFLAGS			+= -fno-exceptions
 CFLAGS			+= -fno-rtti
 CFLAGS			+= -fno-stack-protector
-CFLAGS			+= -nostdlib
 CFLAGS			+= -O3
 CFLAGS			+= -Wall -Werror
 
@@ -74,7 +72,12 @@ $(1): ${@asmout} ${@deps}
 
 ${@asmout}: ${@stubout} ${NATIVE_SRC}
 	mkdir -p ${TMP_DIR}/$(1)
-	$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
+	$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} ${TARGETFLAGS} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
+	$(foreach file, 
+		$(wildcard native/unittest/*), 
+		$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} -I./native -o ${TMP_DIR}/$(1)/test $(file)
+		./${TMP_DIR}/$(1)/test
+	)
 	python3 $${ASM2ASM_${@cpu}} ${@asmout} ${TMP_DIR}/$(1)/native.s
 	asmfmt -w ${@asmout}
 
@@ -110,3 +113,4 @@ $(foreach 								\
 	${ARCH},							\
 	$(eval $(call build_arch,${arch}))	\
 )
+
