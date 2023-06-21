@@ -832,11 +832,11 @@ func (self *_Assembler) range_single() {
     self.Emit("MOVQ"    , _V_max_f32, _AX)              // MOVQ     _max_f32, AX
     self.Emit("MOVQ"    , jit.Gitab(_I_float32), _ET)   // MOVQ     ${itab(float32)}, ET
     self.Emit("MOVQ"    , jit.Gtype(_T_float32), _EP)   // MOVQ     ${type(float32)}, EP
-    self.Emit("UCOMISD" , jit.Ptr(_AX, 0), _X0)         // UCOMISD  (AX), X0
+    self.Emit("UCOMISS" , jit.Ptr(_AX, 0), _X0)         // UCOMISS  (AX), X0
     self.Sjmp("JA"      , _LB_range_error)              // JA       _range_error
     self.Emit("MOVQ"    , _V_min_f32, _AX)              // MOVQ     _min_f32, AX
-    self.Emit("UCOMISD" , jit.Ptr(_AX, 0), _X0)         // UCOMISD  (AX), X0
-    self.Sjmp("JA"      , _LB_range_error)              // JA       _range_error
+    self.Emit("UCOMISS" , jit.Ptr(_AX, 0), _X0)         // UCOMISS  (AX), X0
+    self.Sjmp("JB"      , _LB_range_error)              // JB       _range_error
 }
 
 func (self *_Assembler) range_signed(i *rt.GoItab, t *rt.GoType, a int64, b int64) {
