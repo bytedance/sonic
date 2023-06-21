@@ -19,8 +19,6 @@ package ast
 import (
     `sync`
     `unicode/utf8`
-
-    `github.com/bytedance/sonic/internal/rt`
 )
 
 const (
@@ -165,18 +163,18 @@ func (self *Node) encodeFalse(buf *[]byte) error {
 }
 
 func (self *Node) encodeNumber(buf *[]byte) error {
-    str := rt.StrFrom(self.p, self.v)
+    str := self.toString()
     *buf = append(*buf, str...)
     return nil
 }
 
 func (self *Node) encodeString(buf *[]byte) error {
-    if self.v == 0 {
+    if self.l == 0 {
         *buf = append(*buf, '"', '"')
         return nil
     }
 
-    quote(buf, rt.StrFrom(self.p, self.v))
+    quote(buf, self.toString())
     return nil
 }
 
