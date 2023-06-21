@@ -818,8 +818,8 @@ var (
 )
 
 var (
-    _Vp_max_f32 = new(float64)
-    _Vp_min_f32 = new(float64)
+    _Vp_max_f32 = new(float32)
+    _Vp_min_f32 = new(float32)
 )
 
 func init() {
@@ -828,17 +828,15 @@ func init() {
 }
 
 func (self *_Assembler) range_single() {
-    self.Emit("MOVSD"   , _VAR_st_Dv, _X0)              // MOVSD    st.Dv, X0
+    self.Emit("CVTSD2SS", _VAR_st_Dv, _X0)              // CVTSD2SS st.Dv, X0
     self.Emit("MOVQ"    , _V_max_f32, _AX)              // MOVQ     _max_f32, AX
     self.Emit("MOVQ"    , jit.Gitab(_I_float32), _ET)   // MOVQ     ${itab(float32)}, ET
     self.Emit("MOVQ"    , jit.Gtype(_T_float32), _EP)   // MOVQ     ${type(float32)}, EP
     self.Emit("UCOMISD" , jit.Ptr(_AX, 0), _X0)         // UCOMISD  (AX), X0
     self.Sjmp("JA"      , _LB_range_error)              // JA       _range_error
     self.Emit("MOVQ"    , _V_min_f32, _AX)              // MOVQ     _min_f32, AX
-    self.Emit("MOVSD"   , jit.Ptr(_AX, 0), _X1)         // MOVSD    (AX), X1
-    self.Emit("UCOMISD" , _X0, _X1)                     // UCOMISD  X0, X1
+    self.Emit("UCOMISD" , jit.Ptr(_AX, 0), _X0)         // UCOMISD  (AX), X0
     self.Sjmp("JA"      , _LB_range_error)              // JA       _range_error
-    self.Emit("CVTSD2SS", _X0, _X0)                     // CVTSD2SS X0, X0
 }
 
 func (self *_Assembler) range_signed(i *rt.GoItab, t *rt.GoType, a int64, b int64) {
