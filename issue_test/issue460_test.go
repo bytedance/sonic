@@ -32,6 +32,7 @@ func TestIssue460_UnmarshalMaxFloat32(t *testing.T) {
         "3.40282347e+38",
         "3.40282348e+38",
         "3.4028235e+38",
+        // TODO: fix this case
         // "3.4028235677973366e+38",  // Bits: 1000111111011111111111111111111111_10000000000000000000000000000
 
         // overflow for float32, round up to max.MaxFloat32 + 1
