@@ -74,7 +74,7 @@ ${@asmout}: ${@stubout} ${NATIVE_SRC}
 	mkdir -p ${TMP_DIR}/$(1)
 	$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} ${TARGETFLAGS} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
 	$(foreach file, 
-		$(wildcard native/unittest/*), 
+		$(shell find native/unittest/ -type f -name "*.c"),
 		$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} -I./native -o ${TMP_DIR}/$(1)/test $(file)
 		./${TMP_DIR}/$(1)/test
 	)
