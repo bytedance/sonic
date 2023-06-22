@@ -22,7 +22,10 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
-const _DEFAULT_NODE_CAP int = 16
+const (
+    _DEFAULT_NODE_CAP int = 8
+    _APPEND_GROW_SHIFT = 2
+)
 
 const (
     _ERR_NOT_FOUND      types.ParsingError = 33
@@ -107,7 +110,7 @@ func (self *Parser) lspace(sp int) int {
     return sp
 }
 
-func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
+func (self *Parser) decodeArray(ret *linkedNodes, l int) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
@@ -149,7 +152,8 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
         }
 
         /* add the value to result */
-        ret = append(ret, val)
+        ret.Add(val)
+        l++
         self.p = self.lspace(self.p)
 
         /* check for EOF */
@@ -160,17 +164,17 @@ func (self *Parser) decodeArray(ret []Node) (Node, types.ParsingError) {
         /* check for the next character */
         switch self.s[self.p] {
             case ',' : self.p++
-            case ']' : self.p++; return NewArray(ret), 0
-        default:
-            if val.isLazy() {
-                return newLazyArray(self, ret), 0
-            }
-            return Node{}, types.ERR_INVALID_CHAR
+            case ']' : self.p++; return newArray(ret, l), 0
+            default:
+                if val.isLazy() {
+                    return newLazyArray(self, ret), 0
+                }
+                return Node{}, types.ERR_INVALID_CHAR
         }
     }
 }
 
-func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
+func (self *Parser) decodeObject(ret *linkedPairs, l int) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
@@ -235,7 +239,9 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
         }
 
         /* add the value to result */
-        ret = append(ret, Pair{Key: key, Value: val})
+        // FIXME: ret's address may change here, thus previous referred node in ret may be invalid !!
+        ret.Add(Pair{Key: key, Value: val})
+        l++
         self.p = self.lspace(self.p)
 
         /* check for EOF */
@@ -246,7 +252,7 @@ func (self *Parser) decodeObject(ret []Pair) (Node, types.ParsingError) {
         /* check for the next character */
         switch self.s[self.p] {
             case ',' : self.p++
-            case '}' : self.p++; return NewObject(ret), 0
+            case '}' : self.p++; return newObject(ret, l), 0
         default:
             if val.isLazy() {
                 return newLazyObject(self, ret), 0
@@ -291,14 +297,14 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
         case types.V_STRING  : return self.decodeString(val.Iv, val.Ep)
         case types.V_ARRAY:
             if self.noLazy {
-                return self.decodeArray(make([]Node, 0, _DEFAULT_NODE_CAP))
+                return self.decodeArray(new(linkedNodes), 0)
             }
-            return newLazyArray(self, make([]Node, 0, _DEFAULT_NODE_CAP)), 0
+            return newLazyArray(self, new(linkedNodes)), 0
         case types.V_OBJECT:
             if self.noLazy {
-                return self.decodeObject(make([]Pair, 0, _DEFAULT_NODE_CAP))
+                return self.decodeObject(new(linkedPairs), 0)
             }
-            return newLazyObject(self, make([]Pair, 0, _DEFAULT_NODE_CAP)), 0
+            return newLazyObject(self, new(linkedPairs)), 0
         case types.V_DOUBLE  : return NewNumber(self.s[val.Ep:self.p]), 0
         case types.V_INTEGER : return NewNumber(self.s[val.Ep:self.p]), 0
         default              : return Node{}, types.ParsingError(-val.Vt)
@@ -458,7 +464,8 @@ func (self *Node) skipNextNode() *Node {
     }
 
     /* add the value to result */
-    ret = append(ret, val)
+    ret.Add(val)
+    self.l++
     stack.v = ret
     parser.p = parser.lspace(parser.p)
 
@@ -472,11 +479,11 @@ func (self *Node) skipNextNode() *Node {
     case ',':
         parser.p++
         self.setLazyArray(parser, ret, stack)
-        return &ret[len(ret)-1]
+        return ret.At(ret.Len()-1)
     case ']':
         parser.p++
         self.setArray(ret)
-        return &ret[len(ret)-1]
+        return ret.At(ret.Len()-1)
     default:
         return newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))
     }
@@ -542,7 +549,8 @@ func (self *Node) skipNextPair() (*Pair) {
     }
 
     /* add the value to result */
-    ret = append(ret, Pair{Key: key, Value: val})
+    ret.Add(Pair{Key: key, Value: val})
+    self.l++
     stack.v = ret
     parser.p = parser.lspace(parser.p)
 
@@ -556,11 +564,11 @@ func (self *Node) skipNextPair() (*Pair) {
     case ',':
         parser.p++
         self.setLazyObject(parser, ret, stack)
-        return &ret[len(ret)-1]
+        return ret.At(ret.Len()-1)
     case '}':
         parser.p++
         self.setObject(ret)
-        return &ret[len(ret)-1]
+        return ret.At(ret.Len()-1)
     default:
         return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
     }

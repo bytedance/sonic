@@ -560,20 +560,12 @@ func (self *Node) Set(key string, node Node) (bool, error) {
     }
 
     p := self.Get(key)
+
     if !p.Exists() {
-        l := self.len()
-        c := self.cap()
-        if l == c {
-            // TODO: maybe change append size in future
-            c += _DEFAULT_NODE_CAP
-            mem := unsafe_NewArray(_PAIR_TYPE, c)
-            memmove(mem, self.p, _PAIR_SIZE * uintptr(l))
-            self.p = mem
-        }
-        v := self.pairAt(l)
-        v.Key = key
-        v.Value = node
-        self.setCapAndLen(c, l+1)
+        // self must be fully-loaded here
+        s := (*linkedPairs)(self.p)
+        s.Add(Pair{key, node})
+        self.l++
         return false, nil
 
     } else if err := p.Check(); err != nil {
@@ -671,16 +663,10 @@ func (self *Node) Add(node Node) error {
         return err
     }
 
-    var p rt.GoSlice
-    p.Cap = self.cap()
-    p.Len = self.len()
-    p.Ptr = self.p
+    s := *(*linkedNodes)(self.p)
+    s.Add(node)
 
-    s := *(*[]Node)(unsafe.Pointer(&p))
-    s = append(s, node)
-
-    self.p = unsafe.Pointer(&s[0])
-    self.setCapAndLen(cap(s), len(s))
+    self.l++
     return nil
 }
 
@@ -843,8 +829,7 @@ func (self *Node) UnsafeMap() ([]Pair, error) {
     if err := self.skipAllKey(); err != nil {
         return nil, err
     }
-    s := rt.Ptr2SlicePtr(self.p, int(self.len()), self.cap())
-    return *(*[]Pair)(s), nil
+    return self.toGenericObjectUsePair()
 }
 
 // SortKeys sorts children of a V_OBJECT node in ascending key-order.
@@ -942,8 +927,7 @@ func (self *Node) UnsafeArray() ([]Node, error) {
     if err := self.skipAllIndex(); err != nil {
         return nil, err
     }
-    s := rt.Ptr2SlicePtr(self.p, self.len(), self.cap())
-    return *(*[]Node)(s), nil
+    return self.toGenericArrayUseNode()
 }
 
 // Interface loads all children under all pathes from this node,
@@ -1113,14 +1097,14 @@ var (
     _PAIR_TYPE = rt.UnpackEface(Pair{}).Type
 )
 
-func (self *Node) setCapAndLen(cap int, len int) {
-    if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY {
-        self.l = uint32(len)
-        self.c = uint32(cap)
-    } else {
-        panic("value does not have a length")
-    }
-}
+// func (self *Node) setCapAndLen(cap int, len int) {
+//     if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY {
+//         self.l = uint32(len)
+//         self.c = uint32(cap)
+//     } else {
+//         panic("value does not have a length")
+//     }
+// }
 
 func (self *Node) unsafe_next() *Node {
     return (*Node)(unsafe.Pointer(uintptr(unsafe.Pointer(self)) + _NODE_SIZE))
@@ -1153,21 +1137,21 @@ func (self *Node) should(t types.ValueType, s string) error {
 }
 
 func (self *Node) nodeAt(i int) *Node {
-    var p = self.p
+    var p = (*linkedNodes)(self.p)
     if self.isLazy() {
         _, stack := self.getParserAndArrayStack()
-        p = *(*unsafe.Pointer)(unsafe.Pointer(&stack.v))
+        p = stack.v
     }
-    return (*Node)(unsafe.Pointer(uintptr(p) + uintptr(i)*_NODE_SIZE))
+    return p.At(i)
 }
 
 func (self *Node) pairAt(i int) *Pair {
-    var p = self.p
+    var p = (*linkedPairs)(self.p)
     if self.isLazy() {
         _, stack := self.getParserAndObjectStack()
-        p = *(*unsafe.Pointer)(unsafe.Pointer(&stack.v))
+        p = stack.v
     }
-    return (*Pair)(unsafe.Pointer(uintptr(p) + uintptr(i)*_PAIR_SIZE))
+    return p.At(i)
 }
 
 func (self *Node) getParserAndArrayStack() (*Parser, *parseArrayStack) {
@@ -1194,7 +1178,7 @@ func (self *Node) skipAllIndex() error {
     parser, stack := self.getParserAndArrayStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v)
+    *self, err = parser.decodeArray(stack.v, self.len())
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1209,7 +1193,7 @@ func (self *Node) skipAllKey() error {
     parser, stack := self.getParserAndObjectStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v)
+    *self, err = parser.decodeObject(stack.v, self.len())
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1223,21 +1207,16 @@ func (self *Node) skipKey(key string) (*Node, int) {
     if nb > 0 {
         /* linear search */
         var p *Pair
+        var i int
         if lazy {
             s := (*parseObjectStack)(self.p)
-            p = &s.v[0]
+            p, i = s.v.Get(key)
         } else {
-            p = (*Pair)(self.p)
+            p, i = (*linkedPairs)(self.p).Get(key)
         }
 
-        if p.Key == key {
-            return &p.Value, 0
-        }
-        for i := 1; i < nb; i++ {
-            p = p.unsafe_next()
-            if p.Key == key {
-                return &p.Value, i
-            }
+        if p != nil {
+            return &p.Value, i
         }
     }
 
@@ -1311,7 +1290,7 @@ func (self *Node) loadAllIndex() error {
     var err types.ParsingError
     parser, stack := self.getParserAndArrayStack()
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v)
+    *self, err = parser.decodeArray(stack.v, self.len())
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1325,7 +1304,7 @@ func (self *Node) loadAllKey() error {
     var err types.ParsingError
     parser, stack := self.getParserAndObjectStack()
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v)
+    *self, err = parser.decodeObject(stack.v, self.len())
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1333,39 +1312,23 @@ func (self *Node) loadAllKey() error {
 }
 
 func (self *Node) removeNode(i int) {
-    nb := self.len() - 1
     node := self.nodeAt(i)
-    if i == nb {
-        self.setCapAndLen(self.cap(), nb)
-        *node = Node{}
+    if node == nil {
         return
     }
-
-    from := self.nodeAt(i + 1)
-    memmove(unsafe.Pointer(node), unsafe.Pointer(from), _NODE_SIZE * uintptr(nb - i))
-
-    last := self.nodeAt(nb)
-    *last = Node{}
-    
-    self.setCapAndLen(self.cap(), nb)
+    *node = Node{}
+    // NOTICE: for consistency with linkedNodes, we DOSEN'T reduce size here
+    // self.l--
 }
 
 func (self *Node) removePair(i int) {
-    nb := self.len() - 1
-    node := self.pairAt(i)
-    if i == nb {
-        self.setCapAndLen(self.cap(), nb)
-        *node = Pair{}
+    last := self.pairAt(i)
+    if last == nil {
         return
     }
-
-    from := self.pairAt(i + 1)
-    memmove(unsafe.Pointer(node), unsafe.Pointer(from), _PAIR_SIZE * uintptr(nb - i))
-
-    last := self.pairAt(nb)
     *last = Pair{}
-    
-    self.setCapAndLen(self.cap(), nb)
+    // NOTICE: for consistency with linkedNodes, we DOSEN'T reduce size here
+    // self.l--
 }
 
 func (self *Node) toGenericArray() ([]interface{}, error) {
@@ -1376,15 +1339,9 @@ func (self *Node) toGenericArray() ([]interface{}, error) {
     }
 
     /* convert each item */
-    var p = (*Node)(self.p)
-    x, err := p.Interface()
-    if err != nil {
-        return nil, err
-    }
-    ret[0] = x
-
-    for i := 1; i < nb; i++ {
-        p = p.unsafe_next()
+    var s = (*linkedNodes)(self.p)
+    for i := 0; i < nb; i++ {
+        p := s.At(i)
         x, err := p.Interface()
         if err != nil {
             return nil, err
@@ -1404,15 +1361,9 @@ func (self *Node) toGenericArrayUseNumber() ([]interface{}, error) {
     }
 
     /* convert each item */
-    var p = (*Node)(self.p)
-    x, err := p.InterfaceUseNumber()
-    if err != nil {
-        return nil, err
-    }
-    ret[0] = x
-
-    for i := 1; i < nb; i++ {
-        p = p.unsafe_next()
+    var s = (*linkedNodes)(self.p)
+    for i := 0; i < nb; i++ {
+        p := s.At(i)
         x, err := p.InterfaceUseNumber()
         if err != nil {
             return nil, err
@@ -1426,24 +1377,13 @@ func (self *Node) toGenericArrayUseNumber() ([]interface{}, error) {
 
 func (self *Node) toGenericArrayUseNode() ([]Node, error) {
     var nb = self.len()
-    var out = make([]Node, nb)
     if nb == 0 {
-        return out, nil
+        return []Node{}, nil
     }
 
-    var p = (*Node)(self.p)
-    out[0] = *p
-    if err := p.Check(); err != nil {
-        return nil, err
-    }
-
-    for i := 1; i < nb; i++ {
-        p = p.unsafe_next()
-        if err := p.Check(); err != nil {
-            return nil, err
-        }
-        out[i] = *p
-    }
+    var s = (*linkedNodes)(self.p)
+    var out = make([]Node, s.Len())
+    s.DumpTo(out)
 
     return out, nil
 }
@@ -1456,15 +1396,9 @@ func (self *Node) toGenericObject() (map[string]interface{}, error) {
     }
 
     /* convert each item */
-    var p = (*Pair)(self.p)
-    x, err := p.Value.Interface()
-    if err != nil {
-        return nil, err
-    }
-    ret[p.Key] = x
-
-    for i := 1; i < nb; i++ {
-        p = p.unsafe_next()
+    var s = (*linkedPairs)(self.p)
+    for i := 0; i < nb; i++ {
+        p := s.At(i)
         x, err := p.Value.Interface()
         if err != nil {
             return nil, err
@@ -1485,15 +1419,9 @@ func (self *Node) toGenericObjectUseNumber() (map[string]interface{}, error) {
     }
 
     /* convert each item */
-    var p = (*Pair)(self.p)
-    x, err := p.Value.InterfaceUseNumber()
-    if err != nil {
-        return nil, err
-    }
-    ret[p.Key] = x
-
-    for i := 1; i < nb; i++ {
-        p = p.unsafe_next()
+    var s = (*linkedPairs)(self.p)
+    for i := 0; i < nb; i++ {
+        p := s.At(i)
         x, err := p.Value.InterfaceUseNumber()
         if err != nil {
             return nil, err
@@ -1507,24 +1435,27 @@ func (self *Node) toGenericObjectUseNumber() (map[string]interface{}, error) {
 
 func (self *Node) toGenericObjectUseNode() (map[string]Node, error) {
     var nb = self.len()
-    var out = make(map[string]Node, nb)
     if nb == 0 {
-        return out, nil
+        return map[string]Node{}, nil
     }
 
-    var p = (*Pair)(self.p)
-    out[p.Key] = p.Value
-    if err := p.Value.Check(); err != nil {
-        return nil, err
+    var s = (*linkedPairs)(self.p)
+    var out = make(map[string]Node, s.Len())
+    s.DumpToMap(out)
+
+    /* all done */
+    return out, nil
+}
+
+func (self *Node) toGenericObjectUsePair() ([]Pair, error) {
+    var nb = self.len()
+    if nb == 0 {
+        return []Pair{}, nil
     }
 
-    for i := 1; i < nb; i++ {
-        p = p.unsafe_next()
-        if err := p.Value.Check(); err != nil {
-            return nil, err
-        }
-        out[p.Key] = p.Value
-    }
+    var s = (*linkedPairs)(self.p)
+    var out = make([]Pair, s.Len())
+    s.DumpTo(out)
 
     /* all done */
     return out, nil
@@ -1660,84 +1591,98 @@ func NewString(v string) Node {
 // NewArray creates a node of type V_ARRAY,
 // using v as its underlying children
 func NewArray(v []Node) Node {
+    s := new(linkedNodes)
+    //OPT: should use batch memory-copy here
+    for _, vv := range v {
+        s.Add(vv)
+    }
+    return newArray(s, s.Len())
+}
+
+func newArray(v *linkedNodes, l int) Node {
     return Node{
         t: types.V_ARRAY,
-        l: uint32(len(v)),
-        c: uint32(cap(v)),
-        p: *(*unsafe.Pointer)(unsafe.Pointer(&v)),
+        l: uint32(l),
+        c: uint32(v.Cap()),
+        p: unsafe.Pointer(v),
     }
 }
 
-func (self *Node) setArray(v []Node) {
+func (self *Node) setArray(v *linkedNodes) {
     self.t = types.V_ARRAY
-    self.setCapAndLen(cap(v), len(v))
-    self.p = *(*unsafe.Pointer)(unsafe.Pointer(&v))
+    self.p = unsafe.Pointer(v)
 }
 
 // NewObject creates a node of type V_OBJECT,
 // using v as its underlying children
 func NewObject(v []Pair) Node {
+    s := new(linkedPairs)
+    //OPT: should use batch memory-copy here
+    for _, vv := range v {
+        s.Add(vv)
+    }
+    return newObject(s, s.Len())
+}
+
+func newObject(v *linkedPairs, l int) Node {
     return Node{
         t: types.V_OBJECT,
-        l: uint32(len(v)),
-        c: uint32(cap(v)),
-        p: *(*unsafe.Pointer)(unsafe.Pointer(&v)),
+        l: uint32(l),
+        c: uint32(v.Cap()),
+        p: unsafe.Pointer(v),
     }
 }
 
-func (self *Node) setObject(v []Pair) {
+func (self *Node) setObject(v *linkedPairs) {
     self.t = types.V_OBJECT
-    self.setCapAndLen(cap(v), len(v))
-    self.p = *(*unsafe.Pointer)(unsafe.Pointer(&v))
+    self.p = unsafe.Pointer(v)
 }
 
 type parseObjectStack struct {
     parser Parser
-    v      []Pair
+    v      *linkedPairs
 }
 
 type parseArrayStack struct {
     parser Parser
-    v      []Node
+    v      *linkedNodes
 }
 
-func newLazyArray(p *Parser, v []Node) Node {
+func newLazyArray(p *Parser, v *linkedNodes) Node {
     s := new(parseArrayStack)
     s.parser = *p
     s.v = v
     return Node{
         t: _V_ARRAY_LAZY,
-        l: uint32(len(v)),
-        c: uint32(cap(v)),
+        l: uint32(v.Len()),
+        c: uint32(v.Cap()),
         p: unsafe.Pointer(s),
     }
 }
 
-func (self *Node) setLazyArray(p *Parser, v []Node, s *parseArrayStack) {
+func (self *Node) setLazyArray(p *Parser, v *linkedNodes, s *parseArrayStack) {
     s.parser = *p
     s.v = v
     self.t = _V_ARRAY_LAZY
-    self.setCapAndLen(cap(v), len(v))
     self.p = (unsafe.Pointer)(s)
 }
 
-func newLazyObject(p *Parser, v []Pair) Node {
+func newLazyObject(p *Parser, v *linkedPairs) Node {
     s := new(parseObjectStack)
     s.parser = *p
     s.v = v
     return Node{
         t: _V_OBJECT_LAZY,
-        l: uint32(len(v)),
-        c: uint32(cap(v)),
+        l: uint32(v.Len()),
+        c: uint32(v.Cap()),
         p: unsafe.Pointer(s),
     }
 }
 
-func (self *Node) setLazyObject(p *Parser, v []Pair, s *parseObjectStack) {
+func (self *Node) setLazyObject(p *Parser, v *linkedPairs, s *parseObjectStack) {
     s.parser = *p
     s.v = v
     self.t = _V_OBJECT_LAZY
-    self.setCapAndLen(cap(v), len(v))
     self.p = (unsafe.Pointer)(s)
 }
 
