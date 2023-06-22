@@ -193,17 +193,13 @@ func (self *Node) encodeArray(buf *[]byte) error {
     
     *buf = append(*buf, '[')
 
-    var p = (*Node)(self.p)
-    err := p.encode(buf)
-    if err != nil {
-        return err
-    }
-    for i := 1; i < nb; i++ {
-        *buf = append(*buf, ',')
-        p = p.unsafe_next()
-        err := p.encode(buf)
-        if err != nil {
+    var s = (*linkedNodes)(self.p)
+    for i := 0; i < nb; i++ {
+        if err := s.At(i).encode(buf); err != nil {
             return err
+        }
+        if i != nb-1 {
+            *buf = append(*buf, ',')
         }
     }
 
@@ -238,17 +234,13 @@ func (self *Node) encodeObject(buf *[]byte) error {
     
     *buf = append(*buf, '{')
 
-    var p = (*Pair)(self.p)
-    err := p.encode(buf)
-    if err != nil {
-        return err
-    }
-    for i := 1; i < nb; i++ {
-        *buf = append(*buf, ',')
-        p = p.unsafe_next()
-        err := p.encode(buf)
-        if err != nil {
+    var s = (*linkedPairs)(self.p)
+    for i := 0; i < nb; i++ {
+        if err := s.At(i).encode(buf); err != nil {
             return err
+        }
+        if i != nb-1 {
+            *buf = append(*buf, ',')
         }
     }
 

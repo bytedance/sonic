@@ -127,15 +127,6 @@ func (self *Node)  Check() error {
     }
 }
 
-// Error returns error message if the node is invalid
-func (self Node) Error() string {
-    if self.t != V_ERROR {
-        return ""
-    } else {
-        return *(*string)(self.p)
-    } 
-}
-
 // IsRaw returns true if node's underlying value is raw json
 func (self Node) IsRaw() bool {
     return self.t&_V_RAW != 0
@@ -832,6 +823,16 @@ func (self *Node) UnsafeMap() ([]Pair, error) {
     return self.toGenericObjectUsePair()
 }
 
+func (self *Node) unsafeMap() (*linkedPairs, error) {
+    if err := self.should(types.V_OBJECT, "an object"); err != nil {
+        return nil, err
+    }
+    if err := self.skipAllKey(); err != nil {
+        return nil, err
+    }
+    return (*linkedPairs)(self.p), nil
+}
+
 // SortKeys sorts children of a V_OBJECT node in ascending key-order.
 // If recurse is true, it recursively sorts children's children as long as a V_OBJECT node is found.
 func (self *Node) SortKeys(recurse bool) (err error) {
@@ -840,6 +841,7 @@ func (self *Node) SortKeys(recurse bool) (err error) {
         return err
     }
     PairSlice(ps).Sort()
+    *self = NewObject(ps)
     if recurse {
         var sc Scanner
         sc = func(path Sequence, node *Node) bool {
@@ -928,6 +930,16 @@ func (self *Node) UnsafeArray() ([]Node, error) {
         return nil, err
     }
     return self.toGenericArrayUseNode()
+}
+
+func (self *Node) unsafeArray() (*linkedNodes, error) {
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return nil, err
+    }
+    if err := self.skipAllIndex(); err != nil {
+        return nil, err
+    }
+    return (*linkedNodes)(self.p), nil
 }
 
 // Interface loads all children under all pathes from this node,
@@ -1383,7 +1395,7 @@ func (self *Node) toGenericArrayUseNode() ([]Node, error) {
 
     var s = (*linkedNodes)(self.p)
     var out = make([]Node, s.Len())
-    s.DumpTo(out)
+    s.ToSlice(out)
 
     return out, nil
 }
@@ -1441,7 +1453,7 @@ func (self *Node) toGenericObjectUseNode() (map[string]Node, error) {
 
     var s = (*linkedPairs)(self.p)
     var out = make(map[string]Node, s.Len())
-    s.DumpToMap(out)
+    s.ToMap(out)
 
     /* all done */
     return out, nil
@@ -1455,7 +1467,7 @@ func (self *Node) toGenericObjectUsePair() ([]Pair, error) {
 
     var s = (*linkedPairs)(self.p)
     var out = make([]Pair, s.Len())
-    s.DumpTo(out)
+    s.ToSlice(out)
 
     /* all done */
     return out, nil
@@ -1592,10 +1604,7 @@ func NewString(v string) Node {
 // using v as its underlying children
 func NewArray(v []Node) Node {
     s := new(linkedNodes)
-    //OPT: should use batch memory-copy here
-    for _, vv := range v {
-        s.Add(vv)
-    }
+    s.FromSlice(v)
     return newArray(s, s.Len())
 }
 
@@ -1617,10 +1626,7 @@ func (self *Node) setArray(v *linkedNodes) {
 // using v as its underlying children
 func NewObject(v []Pair) Node {
     s := new(linkedPairs)
-    //OPT: should use batch memory-copy here
-    for _, vv := range v {
-        s.Add(vv)
-    }
+    s.FromSlice(v)
     return newObject(s, s.Len())
 }
 

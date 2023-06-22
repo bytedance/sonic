@@ -16,9 +16,11 @@
 
 package ast
 
+type nodeChunk [_DEFAULT_NODE_CAP]Node
+
 type linkedNodes struct {
-	head   [_DEFAULT_NODE_CAP]Node
-	tail [][_DEFAULT_NODE_CAP]Node
+	head   nodeChunk
+	tail   []*nodeChunk
 	size   int
 }
 
@@ -52,18 +54,22 @@ func (self *linkedNodes) Add(v Node) {
 	a, b, c := self.size/_DEFAULT_NODE_CAP-1 , self.size%_DEFAULT_NODE_CAP, cap(self.tail)
 	if a - c >= 0 {
 		c += 1 + c>>_APPEND_GROW_SHIFT
-		tmp := make([][_DEFAULT_NODE_CAP]Node, a + 1, c)
+		tmp := make([]*nodeChunk, a + 1, c)
 		copy(tmp, self.tail)
 		self.tail = tmp
 	} else if a >= len(self.tail) {
 		self.tail = self.tail[:a+1]
 	}
 	
-	self.tail[a][b] = v
+	var n = &self.tail[a]
+	if *n == nil {
+		*n = new(nodeChunk)
+	}
+	(*n)[b] = v
 	self.size++
 }
 
-func (self *linkedNodes) DumpTo(con []Node) {
+func (self *linkedNodes) ToSlice(con []Node) {
 	if len(con) < self.size {
 		return
 	}
@@ -83,9 +89,38 @@ func (self *linkedNodes) DumpTo(con []Node) {
 	copy(con, self.tail[a][:b])
 }
 
+func (self *linkedNodes) FromSlice(con []Node) {
+	self.size = len(con)
+	a, b := self.size/_DEFAULT_NODE_CAP-1, self.size%_DEFAULT_NODE_CAP
+	if a < 0 {
+		copy(self.head[:self.size], con)
+		return
+	} else {
+		copy(self.head[:], con)
+		con = con[_DEFAULT_NODE_CAP:]
+	}
+
+	if cap(self.tail) <= a {
+		c := (a+1) + (a+1)>>_APPEND_GROW_SHIFT
+		self.tail = make([]*nodeChunk, a+1, c)
+	}
+	self.tail = self.tail[:a+1]
+
+	for i:=0; i<a; i++ {
+		self.tail[i] = new(nodeChunk)
+		copy(self.tail[i][:], con)
+		con = con[_DEFAULT_NODE_CAP:]
+	}
+
+	self.tail[a] = new(nodeChunk)
+	copy(self.tail[a][:b], con)
+}
+
+type pairChunk [_DEFAULT_NODE_CAP]Pair
+
 type linkedPairs struct {
-	head   [_DEFAULT_NODE_CAP]Pair
-	tail [][_DEFAULT_NODE_CAP]Pair
+	head pairChunk
+	tail []*pairChunk
 	size int
 }
 
@@ -119,14 +154,18 @@ func (self *linkedPairs) Add(v Pair) {
 	a, b, c := self.size/_DEFAULT_NODE_CAP-1 , self.size%_DEFAULT_NODE_CAP, cap(self.tail)
 	if a - c >= 0 {
 		c += 1 + c>>_APPEND_GROW_SHIFT
-		tmp := make([][_DEFAULT_NODE_CAP]Pair, a + 1, c)
+		tmp := make([]*pairChunk, a + 1, c)
 		copy(tmp, self.tail)
 		self.tail = tmp
 	} else if a >= len(self.tail) {
 		self.tail = self.tail[:a+1]
 	}
 
-	self.tail[a][b] = v
+	var n = &self.tail[a]
+	if *n == nil {
+		*n = new(pairChunk)
+	}
+	(*n)[b] = v
 	self.size++
 }
 
@@ -140,7 +179,7 @@ func (self *linkedPairs) Get(key string) (*Pair, int) {
 	return nil, -1
 }
 
-func (self *linkedPairs) DumpTo(con []Pair) {
+func (self *linkedPairs) ToSlice(con []Pair) {
 	if len(con) < self.size {
 		return
 	}
@@ -160,7 +199,7 @@ func (self *linkedPairs) DumpTo(con []Pair) {
 	copy(con, self.tail[a][:b])
 }
 
-func (self *linkedPairs) DumpToMap(con map[string]Node) {
+func (self *linkedPairs) ToMap(con map[string]Node) {
 	if len(con) < self.size {
 		return
 	}
@@ -168,4 +207,31 @@ func (self *linkedPairs) DumpToMap(con map[string]Node) {
 		n := self.At(i)
 		con[n.Key] = n.Value
 	}
+}
+
+func (self *linkedPairs) FromSlice(con []Pair) {
+	self.size = len(con)
+	a, b := self.size/_DEFAULT_NODE_CAP-1, self.size%_DEFAULT_NODE_CAP
+	if a < 0 {
+		copy(self.head[:self.size], con)
+		return
+	} else {
+		copy(self.head[:], con)
+		con = con[_DEFAULT_NODE_CAP:]
+	}
+
+	if cap(self.tail) <= a {
+		c := (a+1) + (a+1)>>_APPEND_GROW_SHIFT
+		self.tail = make([]*pairChunk, a+1, c)
+	}
+	self.tail = self.tail[:a+1]
+
+	for i:=0; i<a; i++ {
+		self.tail[i] = new(pairChunk)
+		copy(self.tail[i][:], con)
+		con = con[_DEFAULT_NODE_CAP:]
+	}
+
+	self.tail[a] = new(pairChunk)
+	copy(self.tail[a][:b], con)
 }
