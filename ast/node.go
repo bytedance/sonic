@@ -66,9 +66,8 @@ var (
 )
 
 type Node struct {
-    l uint32
-    c uint32
     t types.ValueType
+    l uint
     p unsafe.Pointer
 }
 
@@ -524,17 +523,14 @@ func (self *Node) Cap() (int, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
     }
-    if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY {
-        return int(self.c), nil
-    } else if self.t == _V_NONE || self.t == types.V_NULL {
-        return 0, nil
-    } else {
-        return 0, ErrUnsupportType
+    switch self.t {
+    case types.V_ARRAY: return (*linkedNodes)(self.p).Cap(), nil
+    case types.V_OBJECT: return (*linkedPairs)(self.p).Cap(), nil
+    case _V_ARRAY_LAZY: return (*parseArrayStack)(self.p).v.Cap(), nil
+    case _V_OBJECT_LAZY: return (*parseObjectStack)(self.p).v.Cap(), nil
+    case _V_NONE, V_NULL: return 0, nil
+    default: return 0, ErrUnsupportType
     }
-}
-
-func (self Node) cap() int {
-    return int(self.c)
 }
 
 // Set sets the node of given key under self, and reports if the key has existed.
@@ -555,7 +551,7 @@ func (self *Node) Set(key string, node Node) (bool, error) {
     if !p.Exists() {
         // self must be fully-loaded here
         if self.len() == 0 {
-            *self = newObject(new(linkedPairs), 0)
+            *self = newObject(new(linkedPairs))
         }
         s := (*linkedPairs)(self.p)
         s.Add(Pair{key, node})
@@ -831,7 +827,7 @@ func (self *Node) unsafeMap() (*linkedPairs, error) {
         return nil, err
     }
     if self.p == nil {
-        *self = newObject(new(linkedPairs), 0)
+        *self = newObject(new(linkedPairs))
     }
     return (*linkedPairs)(self.p), nil
 }
@@ -942,7 +938,7 @@ func (self *Node) unsafeArray() (*linkedNodes, error) {
         return nil, err
     }
     if self.p == nil {
-        *self = newArray(new(linkedNodes), 0)
+        *self = newArray(new(linkedNodes))
     }
     return (*linkedNodes)(self.p), nil
 }
@@ -1193,7 +1189,7 @@ func (self *Node) skipAllIndex() error {
     parser, stack := self.getParserAndArrayStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v, self.len())
+    *self, err = parser.decodeArray(stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1208,7 +1204,7 @@ func (self *Node) skipAllKey() error {
     parser, stack := self.getParserAndObjectStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v, self.len())
+    *self, err = parser.decodeObject(stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1305,7 +1301,7 @@ func (self *Node) loadAllIndex() error {
     var err types.ParsingError
     parser, stack := self.getParserAndArrayStack()
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v, self.len())
+    *self, err = parser.decodeArray(stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1319,7 +1315,7 @@ func (self *Node) loadAllKey() error {
     var err types.ParsingError
     parser, stack := self.getParserAndObjectStack()
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v, self.len())
+    *self, err = parser.decodeObject(stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1550,7 +1546,7 @@ func NewBool(v bool) Node {
 // v must be a decimal string complying with RFC8259
 func NewNumber(v string) Node {
     return Node{
-        l: uint32(len(v)),
+        l: uint(len(v)),
         p: rt.StrPtr(v),
         t: _V_NUMBER,
     }
@@ -1584,7 +1580,7 @@ func newBytes(v []byte) Node {
     return Node{
         t: types.V_STRING,
         p: mem2ptr(v),
-        l: uint32(len(v)),
+        l: uint(len(v)),
     }
 }
 
@@ -1596,7 +1592,7 @@ func NewString(v string) Node {
     return Node{
         t: types.V_STRING,
         p: rt.StrPtr(v),
-        l: uint32(len(v)),
+        l: uint(len(v)),
     }
 }
 
@@ -1605,14 +1601,13 @@ func NewString(v string) Node {
 func NewArray(v []Node) Node {
     s := new(linkedNodes)
     s.FromSlice(v)
-    return newArray(s, s.Len())
+    return newArray(s)
 }
 
-func newArray(v *linkedNodes, l int) Node {
+func newArray(v *linkedNodes) Node {
     return Node{
         t: types.V_ARRAY,
-        l: uint32(l),
-        c: uint32(v.Cap()),
+        l: uint(v.Len()),
         p: unsafe.Pointer(v),
     }
 }
@@ -1627,14 +1622,13 @@ func (self *Node) setArray(v *linkedNodes) {
 func NewObject(v []Pair) Node {
     s := new(linkedPairs)
     s.FromSlice(v)
-    return newObject(s, s.Len())
+    return newObject(s)
 }
 
-func newObject(v *linkedPairs, l int) Node {
+func newObject(v *linkedPairs) Node {
     return Node{
         t: types.V_OBJECT,
-        l: uint32(l),
-        c: uint32(v.Cap()),
+        l: uint(v.Len()),
         p: unsafe.Pointer(v),
     }
 }
@@ -1660,8 +1654,7 @@ func newLazyArray(p *Parser, v *linkedNodes) Node {
     s.v = v
     return Node{
         t: _V_ARRAY_LAZY,
-        l: uint32(v.Len()),
-        c: uint32(v.Cap()),
+        l: uint(v.Len()),
         p: unsafe.Pointer(s),
     }
 }
@@ -1679,8 +1672,7 @@ func newLazyObject(p *Parser, v *linkedPairs) Node {
     s.v = v
     return Node{
         t: _V_OBJECT_LAZY,
-        l: uint32(v.Len()),
-        c: uint32(v.Cap()),
+        l: uint(v.Len()),
         p: unsafe.Pointer(s),
     }
 }
@@ -1696,7 +1688,7 @@ func newRawNode(str string, typ types.ValueType) Node {
     return Node{
         t: _V_RAW | typ,
         p: rt.StrPtr(str),
-        l: uint32(len(str)),
+        l: uint(len(str)),
     }
 }
 

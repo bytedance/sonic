@@ -12,7 +12,7 @@ import (
 func newError(err types.ParsingError, msg string) *Node {
     return &Node{
         t: V_ERROR,
-        c: uint32(err),
+        l: uint(err),
         p: unsafe.Pointer(&msg),
     }
 }
@@ -30,7 +30,7 @@ func newSyntaxError(err SyntaxError) *Node {
     msg := err.Description()
     return &Node{
         t: V_ERROR,
-        c: uint32(err.Code),
+        l: uint(err.Code),
         p: unsafe.Pointer(&msg),
     }
 }

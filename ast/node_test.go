@@ -1067,7 +1067,7 @@ func TestNodeSet(t *testing.T) {
     if val != 111 {
         t.Fatalf("exp: %+v, got: %+v", 111, val)
     }
-    for i := root.GetByPath("statuses", 3).cap(); i >= 0; i-- {
+    for i, _ := root.GetByPath("statuses", 3).Cap(); i >= 0; i-- {
         root.GetByPath("statuses", 3).Set("id_str"+strconv.Itoa(i), app)
     }
     val, _ = root.GetByPath("statuses", 3, "id_str0").Int64()
@@ -1156,7 +1156,7 @@ func TestNodeAdd(t *testing.T) {
     }
     app, _ := NewParser("111").Parse()
 
-    for i := root.GetByPath("statuses").cap(); i >= 0; i-- {
+    for i, _ := root.GetByPath("statuses").Cap(); i >= 0; i-- {
         root.GetByPath("statuses").Add(app)
     }
     val, _ := root.GetByPath("statuses", 4).Int64()

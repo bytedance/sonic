@@ -110,7 +110,7 @@ func (self *Parser) lspace(sp int) int {
     return sp
 }
 
-func (self *Parser) decodeArray(ret *linkedNodes, l int) (Node, types.ParsingError) {
+func (self *Parser) decodeArray(ret *linkedNodes) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
@@ -153,7 +153,6 @@ func (self *Parser) decodeArray(ret *linkedNodes, l int) (Node, types.ParsingErr
 
         /* add the value to result */
         ret.Add(val)
-        l++
         self.p = self.lspace(self.p)
 
         /* check for EOF */
@@ -164,7 +163,7 @@ func (self *Parser) decodeArray(ret *linkedNodes, l int) (Node, types.ParsingErr
         /* check for the next character */
         switch self.s[self.p] {
             case ',' : self.p++
-            case ']' : self.p++; return newArray(ret, l), 0
+            case ']' : self.p++; return newArray(ret), 0
             default:
                 if val.isLazy() {
                     return newLazyArray(self, ret), 0
@@ -174,7 +173,7 @@ func (self *Parser) decodeArray(ret *linkedNodes, l int) (Node, types.ParsingErr
     }
 }
 
-func (self *Parser) decodeObject(ret *linkedPairs, l int) (Node, types.ParsingError) {
+func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
 
@@ -241,7 +240,6 @@ func (self *Parser) decodeObject(ret *linkedPairs, l int) (Node, types.ParsingEr
         /* add the value to result */
         // FIXME: ret's address may change here, thus previous referred node in ret may be invalid !!
         ret.Add(Pair{Key: key, Value: val})
-        l++
         self.p = self.lspace(self.p)
 
         /* check for EOF */
@@ -252,7 +250,7 @@ func (self *Parser) decodeObject(ret *linkedPairs, l int) (Node, types.ParsingEr
         /* check for the next character */
         switch self.s[self.p] {
             case ',' : self.p++
-            case '}' : self.p++; return newObject(ret, l), 0
+            case '}' : self.p++; return newObject(ret), 0
         default:
             if val.isLazy() {
                 return newLazyObject(self, ret), 0
@@ -297,12 +295,12 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
         case types.V_STRING  : return self.decodeString(val.Iv, val.Ep)
         case types.V_ARRAY:
             if self.noLazy {
-                return self.decodeArray(new(linkedNodes), 0)
+                return self.decodeArray(new(linkedNodes))
             }
             return newLazyArray(self, new(linkedNodes)), 0
         case types.V_OBJECT:
             if self.noLazy {
-                return self.decodeObject(new(linkedPairs), 0)
+                return self.decodeObject(new(linkedPairs))
             }
             return newLazyObject(self, new(linkedPairs)), 0
         case types.V_DOUBLE  : return NewNumber(self.s[val.Ep:self.p]), 0
