@@ -194,20 +194,27 @@ func (self *Node) encodeArray(buf *[]byte) error {
     *buf = append(*buf, '[')
 
     var s = (*linkedNodes)(self.p)
-    for i := 0; i < nb; i++ {
+    var started bool
+    if nb > 0 {
+        n := s.At(0)
+        if n.Exists() {
+            if err := n.encode(buf); err != nil {
+                return err
+            }
+            started = true
+        }
+    }
+
+    for i := 1; i < nb; i++ {
         n := s.At(i)
         if !n.Exists() {
-            if i == nb-1 {
-                // last index, should trim last comma
-                *buf = (*buf)[:len(*buf)-1]
-            }
             continue
+        }
+        if started {
+            *buf = append(*buf, ',')
         }
         if err := n.encode(buf); err != nil {
             return err
-        }
-        if i != nb-1 {
-            *buf = append(*buf, ',')
         }
     }
 
@@ -243,20 +250,27 @@ func (self *Node) encodeObject(buf *[]byte) error {
     *buf = append(*buf, '{')
 
     var s = (*linkedPairs)(self.p)
-    for i := 0; i < nb; i++ {
+    var started bool
+    if nb > 0 {
+        n := s.At(0)
+        if n.Value.Exists() {
+            if err := n.encode(buf); err != nil {
+                return err
+            }
+            started = true
+        }
+    }
+
+    for i := 1; i < nb; i++ {
         n := s.At(i)
         if !n.Value.Exists() {
-            if i == nb-1 {
-                // last index, should trim last comma
-                *buf = (*buf)[:len(*buf)-1]
-            }
             continue
+        }
+        if started {
+            *buf = append(*buf, ',')
         }
         if err := n.encode(buf); err != nil {
             return err
-        }
-        if i != nb-1 {
-            *buf = append(*buf, ',')
         }
     }
 
