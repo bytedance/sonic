@@ -224,9 +224,6 @@ func (self *linkedPairs) ToSlice(con []Pair) {
 }
 
 func (self *linkedPairs) ToMap(con map[string]Node) {
-	if len(con) < self.size {
-		return
-	}
 	for i:=0; i<self.size; i++ {
 		n := self.At(i)
 		con[n.Key] = n.Value

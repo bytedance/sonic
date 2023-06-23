@@ -195,7 +195,15 @@ func (self *Node) encodeArray(buf *[]byte) error {
 
     var s = (*linkedNodes)(self.p)
     for i := 0; i < nb; i++ {
-        if err := s.At(i).encode(buf); err != nil {
+        n := s.At(i)
+        if !n.Exists() {
+            if i == nb-1 {
+                // last index, should trim last comma
+                *buf = (*buf)[:len(*buf)-1]
+            }
+            continue
+        }
+        if err := n.encode(buf); err != nil {
             return err
         }
         if i != nb-1 {
@@ -236,7 +244,15 @@ func (self *Node) encodeObject(buf *[]byte) error {
 
     var s = (*linkedPairs)(self.p)
     for i := 0; i < nb; i++ {
-        if err := s.At(i).encode(buf); err != nil {
+        n := s.At(i)
+        if !n.Value.Exists() {
+            if i == nb-1 {
+                // last index, should trim last comma
+                *buf = (*buf)[:len(*buf)-1]
+            }
+            continue
+        }
+        if err := n.encode(buf); err != nil {
             return err
         }
         if i != nb-1 {

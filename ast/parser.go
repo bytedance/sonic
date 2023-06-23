@@ -122,7 +122,7 @@ func (self *Parser) decodeArray(ret *linkedNodes, l int) (Node, types.ParsingErr
     /* check for empty array */
     if self.s[self.p] == ']' {
         self.p++
-        return emptyArrayNode, 0
+        return Node{t: V_ARRAY}, 0
     }
 
     /* allocate array space and parse every element */
@@ -186,7 +186,7 @@ func (self *Parser) decodeObject(ret *linkedPairs, l int) (Node, types.ParsingEr
     /* check for empty object */
     if self.s[self.p] == '}' {
         self.p++
-        return emptyObjectNode, 0
+        return Node{t: V_OBJECT}, 0
     }
 
     /* decode each pair */

@@ -17,18 +17,20 @@
 package ast
 
 import (
-   `encoding/json`
-   `errors`
-   `fmt`
-   `reflect`
-   `runtime`
-   `runtime/debug`
-   `strconv`
-   `testing`
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"testing"
 
-   `github.com/bytedance/sonic/internal/native/types`
-   `github.com/bytedance/sonic/internal/rt`
-   `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 
@@ -471,16 +473,16 @@ func TestTypeCast(t *testing.T) {
         {"Cap", NewAny(0), 0, ErrUnsupportType},
         {"Cap", NewNull(), 0, nil},
         {"Cap", NewRaw(`[1]`), _DEFAULT_NODE_CAP, nil},
-        {"Cap", NewObject([]Pair{{"",NewNull()}}), 1, nil},
+        {"Cap", NewObject([]Pair{{"",NewNull()}}), _DEFAULT_NODE_CAP, nil},
         {"Cap", NewRaw(`{"a":1}`), _DEFAULT_NODE_CAP, nil},
     }
     lazyArray.skipAllIndex()
     lazyObject.skipAllKey()
     cases = append(cases, 
+        tcase{"Len", lazyArray, 17, nil},
         tcase{"Len", lazyObject, 17, nil},
-        tcase{"Len", lazyObject, 17, nil},
-        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*2, nil},
-        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*2, nil},
+        tcase{"Cap", lazyArray, _DEFAULT_NODE_CAP*3, nil},
+        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*3, nil},
     )
 
     for i, c := range cases {
@@ -601,7 +603,7 @@ func TestUnset(t *testing.T) {
     if !entities.Exists() || entities.Check() != nil {
         t.Fatal(entities.Check().Error())
     }
-    exist, err := entities.Unset("urls")
+    exist, err := entities.Unset("urls") // NOTICE: Unset() won't change node.Len() here
     if !exist || err != nil {
         t.Fatal()
     }
@@ -609,9 +611,15 @@ func TestUnset(t *testing.T) {
     if e.Exists() {
         t.Fatal()
     }
-    if entities.len() != 2 {
-        t.Fatal()
+    if entities.len() != 3 { 
+        t.Fatal(entities.len())
     }
+    out, err := entities.MarshalJSON()
+    require.NoError(t, err)
+    buf := bytes.NewBuffer(nil)
+    json.Compact(buf, out)
+    require.Equal(t, 
+`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[]}`, buf.String())
 
     entities.Set("urls", NewString("a"))
     e = entities.Get("urls")
@@ -619,6 +627,14 @@ func TestUnset(t *testing.T) {
     if !e.Exists() || x != "a" {
         t.Fatal()
     }
+
+    out, err = entities.MarshalJSON()
+    require.NoError(t, err)
+    buf = bytes.NewBuffer(nil)
+    json.Compact(buf, out)
+    require.Equal(t, 
+`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[],"urls":"a"}`, buf.String())
+
     exist, err = entities.UnsetByIndex(entities.len()-1)
     if !exist || err != nil {
         t.Fatal()
@@ -627,12 +643,13 @@ func TestUnset(t *testing.T) {
     if e.Exists() {
         t.Fatal()
     }
+  
 
     hashtags := entities.Get("hashtags").Index(0)
     hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
-    exist, err = hashtags.Unset("indices")
-    if !exist || err != nil || hashtags.len() != 2 {
-        t.Fatal()
+    exist, err = hashtags.Unset("indices") // NOTICE: Unset() won't change node.Len() here
+    if !exist || err != nil || hashtags.len() != 3 {
+        t.Fatal(hashtags.len())
     }
     y, _ := hashtags.Get("text").String()
     if y != "freebandnames" {
@@ -649,15 +666,26 @@ func TestUnset(t *testing.T) {
     if ums.len() != 3 {
         t.Fatal()
     }
-    exist, err = ums.UnsetByIndex(1)
+    exist, err = ums.UnsetByIndex(2)
     if !exist || err != nil {
         t.Fatal()
     }
     v1, _ := ums.Index(0).Interface()
-    v2, _ := ums.Index(1).Interface()
-    if v1 != nil || v2 != false {
+    v2, _ := ums.Index(1).Interface() // NOTICE: unseted index 1 still can be find here
+    v3, _ := ums.Index(2).Interface()
+    if v1 != nil {
         t.Fatal()
     } 
+    if v2 != true {
+        t.Fatal()
+    } 
+    if v3 != nil {
+        t.Fatal()
+    }
+    out, err = entities.MarshalJSON()
+    require.NoError(t, err)
+    require.Equal(t, 
+`{"hashtags":[{"text":"freebandnames","text2":{}}],"user_mentions":[null,true]}`, string(out))
 
 }
 

@@ -554,6 +554,9 @@ func (self *Node) Set(key string, node Node) (bool, error) {
 
     if !p.Exists() {
         // self must be fully-loaded here
+        if self.len() == 0 {
+            *self = newObject(new(linkedPairs), 0)
+        }
         s := (*linkedPairs)(self.p)
         s.Add(Pair{key, node})
         self.l++
@@ -647,19 +650,16 @@ func (self *Node) Add(node Node) error {
         return nil
     }
 
-    if err := self.should(types.V_ARRAY, "an array"); err != nil {
-        return err
-    }
-    if err := self.skipAllIndex(); err != nil {
+    s, err := self.unsafeArray()
+    if err != nil {
         return err
     }
 
-    s := *(*linkedNodes)(self.p)
     s.Add(node)
-
     self.l++
     return nil
 }
+
 
 // SetAny wraps val with V_ANY node, and Add() the node.
 func (self *Node) AddAny(val interface{}) error {
@@ -830,6 +830,9 @@ func (self *Node) unsafeMap() (*linkedPairs, error) {
     if err := self.skipAllKey(); err != nil {
         return nil, err
     }
+    if self.p == nil {
+        *self = newObject(new(linkedPairs), 0)
+    }
     return (*linkedPairs)(self.p), nil
 }
 
@@ -937,6 +940,9 @@ func (self *Node) unsafeArray() (*linkedNodes, error) {
     }
     if err := self.skipAllIndex(); err != nil {
         return nil, err
+    }
+    if self.p == nil {
+        *self = newArray(new(linkedNodes), 0)
     }
     return (*linkedNodes)(self.p), nil
 }
@@ -1148,36 +1154,34 @@ func (self *Node) should(t types.ValueType, s string) error {
 }
 
 func (self *Node) nodeAt(i int) *Node {
-    var p = (*linkedNodes)(self.p)
+    var p *linkedNodes
     if self.isLazy() {
         _, stack := self.getParserAndArrayStack()
         p = stack.v
+    } else {
+        p = (*linkedNodes)(self.p)
     }
     return p.At(i)
 }
 
 func (self *Node) pairAt(i int) *Pair {
-    var p = (*linkedPairs)(self.p)
+    var p *linkedPairs
     if self.isLazy() {
         _, stack := self.getParserAndObjectStack()
         p = stack.v
+    } else {
+        p = (*linkedPairs)(self.p)
     }
     return p.At(i)
 }
 
 func (self *Node) getParserAndArrayStack() (*Parser, *parseArrayStack) {
     stack := (*parseArrayStack)(self.p)
-    ret := (*rt.GoSlice)(unsafe.Pointer(&stack.v))
-    ret.Len = self.len()
-    ret.Cap = self.cap()
     return &stack.parser, stack
 }
 
 func (self *Node) getParserAndObjectStack() (*Parser, *parseObjectStack) {
     stack := (*parseObjectStack)(self.p)
-    ret := (*rt.GoSlice)(unsafe.Pointer(&stack.v))
-    ret.Len = self.len()
-    ret.Cap = self.cap()
     return &stack.parser, stack
 }
 
@@ -1478,9 +1482,6 @@ var (
     nullNode  = Node{t: types.V_NULL}
     trueNode  = Node{t: types.V_TRUE}
     falseNode = Node{t: types.V_FALSE}
-
-    emptyArrayNode  = Node{t: types.V_ARRAY}
-    emptyObjectNode = Node{t: types.V_OBJECT}
 )
 
 // NewRaw creates a node of raw json.
