@@ -51,12 +51,12 @@ const (
 const (
     V_NONE   = 0
     V_ERROR  = 1
-    V_NULL   = 2
-    V_TRUE   = 3
-    V_FALSE  = 4
-    V_ARRAY  = 5
-    V_OBJECT = 6
-    V_STRING = 7
+    V_NULL   = int(types.V_NULL)
+    V_TRUE   = int(types.V_TRUE)
+    V_FALSE  = int(types.V_FALSE)
+    V_ARRAY  = int(types.V_ARRAY)
+    V_OBJECT = int(types.V_OBJECT)
+    V_STRING = int(types.V_STRING)
     V_NUMBER = int(_V_NUMBER)
     V_ANY    = int(_V_ANY)
 )
@@ -528,7 +528,7 @@ func (self *Node) Cap() (int, error) {
     case types.V_OBJECT: return (*linkedPairs)(self.p).Cap(), nil
     case _V_ARRAY_LAZY: return (*parseArrayStack)(self.p).v.Cap(), nil
     case _V_OBJECT_LAZY: return (*parseObjectStack)(self.p).v.Cap(), nil
-    case _V_NONE, V_NULL: return 0, nil
+    case _V_NONE, types.V_NULL: return 0, nil
     default: return 0, ErrUnsupportType
     }
 }
@@ -1344,11 +1344,11 @@ func (self *Node) removePair(i int) {
 
 func (self *Node) toGenericArray() ([]interface{}, error) {
     nb := self.len()
-    ret := make([]interface{}, nb)
     if nb == 0 {
-        return ret, nil
+        return []interface{}{}, nil
     }
-
+    ret := make([]interface{}, nb)
+    
     /* convert each item */
     var s = (*linkedNodes)(self.p)
     for i := 0; i < nb; i++ {
@@ -1366,10 +1366,10 @@ func (self *Node) toGenericArray() ([]interface{}, error) {
 
 func (self *Node) toGenericArrayUseNumber() ([]interface{}, error) {
     nb := self.len()
-    ret := make([]interface{}, nb)
     if nb == 0 {
-        return ret, nil
+        return []interface{}{}, nil
     }
+    ret := make([]interface{}, nb)
 
     /* convert each item */
     var s = (*linkedNodes)(self.p)
@@ -1393,7 +1393,7 @@ func (self *Node) toGenericArrayUseNode() ([]Node, error) {
     }
 
     var s = (*linkedNodes)(self.p)
-    var out = make([]Node, s.Len())
+    var out = make([]Node, nb)
     s.ToSlice(out)
 
     return out, nil
@@ -1401,10 +1401,10 @@ func (self *Node) toGenericArrayUseNode() ([]Node, error) {
 
 func (self *Node) toGenericObject() (map[string]interface{}, error) {
     nb := self.len()
-    ret := make(map[string]interface{}, nb)
     if nb == 0 {
-        return ret, nil
+        return map[string]interface{}{}, nil
     }
+    ret := make(map[string]interface{}, nb)
 
     /* convert each item */
     var s = (*linkedPairs)(self.p)
@@ -1424,10 +1424,10 @@ func (self *Node) toGenericObject() (map[string]interface{}, error) {
 
 func (self *Node) toGenericObjectUseNumber() (map[string]interface{}, error) {
     nb := self.len()
-    ret := make(map[string]interface{}, nb)
     if nb == 0 {
-        return ret, nil
+        return map[string]interface{}{}, nil
     }
+    ret := make(map[string]interface{}, nb)
 
     /* convert each item */
     var s = (*linkedPairs)(self.p)
@@ -1451,7 +1451,7 @@ func (self *Node) toGenericObjectUseNode() (map[string]Node, error) {
     }
 
     var s = (*linkedPairs)(self.p)
-    var out = make(map[string]Node, s.Len())
+    var out = make(map[string]Node, nb)
     s.ToMap(out)
 
     /* all done */
@@ -1465,7 +1465,7 @@ func (self *Node) toGenericObjectUsePair() ([]Pair, error) {
     }
 
     var s = (*linkedPairs)(self.p)
-    var out = make([]Pair, s.Len())
+    var out = make([]Pair, nb)
     s.ToSlice(out)
 
     /* all done */

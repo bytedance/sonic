@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, softwareskipBlank(self.s, self.p)
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -122,7 +122,7 @@ func (self *Parser) decodeArray(ret *linkedNodes) (Node, types.ParsingError) {
     /* check for empty array */
     if self.s[self.p] == ']' {
         self.p++
-        return Node{t: V_ARRAY}, 0
+        return Node{t: types.V_ARRAY}, 0
     }
 
     /* allocate array space and parse every element */
@@ -185,7 +185,7 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
     /* check for empty object */
     if self.s[self.p] == '}' {
         self.p++
-        return Node{t: V_OBJECT}, 0
+        return Node{t: types.V_OBJECT}, 0
     }
 
     /* decode each pair */
@@ -294,11 +294,19 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
         case types.V_FALSE   : return falseNode, 0
         case types.V_STRING  : return self.decodeString(val.Iv, val.Ep)
         case types.V_ARRAY:
+            if p := skipBlank(self.s, self.p); p >= self.p && self.s[p] == ']' {
+                self.p = p + 1
+                return Node{t: types.V_ARRAY}, 0
+            }
             if self.noLazy {
                 return self.decodeArray(new(linkedNodes))
             }
             return newLazyArray(self, new(linkedNodes)), 0
         case types.V_OBJECT:
+            if p := skipBlank(self.s, self.p); p >= self.p && self.s[p] == '}' {
+                self.p = p + 1
+                return Node{t: types.V_OBJECT}, 0
+            }
             if self.noLazy {
                 return self.decodeObject(new(linkedPairs))
             }
