@@ -1473,7 +1473,7 @@ var (
 // NewRaw creates a node of raw json.
 // If the input json is invalid, NewRaw returns a error Node.
 func NewRaw(json string) Node {
-    parser := NewParser(json)
+    parser := NewParserObj(json)
     start, err := parser.skip()
     if err != 0 {
         return *newError(err, err.Message()) 
@@ -1640,7 +1640,7 @@ func newRawNode(str string, typ types.ValueType) Node {
 
 func (self *Node) parseRaw(full bool) {
     raw := self.toString()
-    parser := NewParser(raw)
+    parser := NewParserObj(raw)
     if full {
         parser.noLazy = true
         parser.skipValue = false

@@ -617,7 +617,7 @@ func NewParser(src string) *Parser {
     return &Parser{s: src}
 }
 
-func NewParserCopy(src string) Parser {
+func NewParserObj(src string) Parser {
     return Parser{s: src}
 }
 
