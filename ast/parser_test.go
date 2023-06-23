@@ -17,15 +17,16 @@
 package ast
 
 import (
-    `encoding/json`
-    `os`
-    `runtime`
-    `runtime/debug`
-    `sync`
-    `testing`
-    `time`
+	"encoding/json"
+	"os"
+	"runtime"
+	"runtime/debug"
+	"sync"
+	"testing"
+	"time"
 
-    `github.com/stretchr/testify/assert`
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -268,6 +269,20 @@ func BenchmarkParser_Parallel_Sonic(b *testing.B) {
             _ = r.LoadAll()
         }
     })
+}
+
+func BenchmarkParseEmpty_Sonic(b *testing.B) {
+    var emptySample = `{"a":[],"b":{},"c":[{},{},{},{}],"d":{"e":[],"f":[],"g":[],"h":[]}}`
+    p := NewParserObj(emptySample)
+    ast, _ := p.Parse()
+    require.NoError(b, ast.LoadAll())
+    b.SetBytes(int64(len(_TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        p := NewParserObj(emptySample)
+        ast, _ := p.Parse()
+        _ = ast.LoadAll()
+    }
 }
 
 func BenchmarkParseOne_Sonic(b *testing.B) {
