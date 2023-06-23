@@ -836,12 +836,11 @@ func (self *Node) unsafeMap() (*linkedPairs, error) {
 // SortKeys sorts children of a V_OBJECT node in ascending key-order.
 // If recurse is true, it recursively sorts children's children as long as a V_OBJECT node is found.
 func (self *Node) SortKeys(recurse bool) (err error) {
-    ps, err := self.UnsafeMap()
+    ps, err := self.unsafeMap()
     if err != nil {
         return err
     }
-    PairSlice(ps).Sort()
-    *self = NewObject(ps)
+    ps.Sort()
     if recurse {
         var sc Scanner
         sc = func(path Sequence, node *Node) bool {

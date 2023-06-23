@@ -16,6 +16,8 @@
 
 package ast
 
+import "sort"
+
 type nodeChunk [_DEFAULT_NODE_CAP]Node
 
 type linkedNodes struct {
@@ -25,14 +27,23 @@ type linkedNodes struct {
 }
 
 func (self *linkedNodes) Cap() int {
+	if self == nil {
+		return 0
+	}
 	return (len(self.tail)+1)*_DEFAULT_NODE_CAP 
 }
 
 func (self *linkedNodes) Len() int {
+	if self == nil {
+		return 0
+	}
 	return self.size 
 }
 
 func (self *linkedNodes) At(i int) (*Node) {
+	if self == nil {
+		return nil
+	}
 	if i >= 0 && i<self.size && i < _DEFAULT_NODE_CAP {
 		return &self.head[i]
 	} else if i >= _DEFAULT_NODE_CAP && i<self.size  {
@@ -73,9 +84,10 @@ func (self *linkedNodes) ToSlice(con []Node) {
 	if len(con) < self.size {
 		return
 	}
-	a, b := self.size/_DEFAULT_NODE_CAP-1, self.size%_DEFAULT_NODE_CAP
+	i := (self.size-1)
+	a, b := i/_DEFAULT_NODE_CAP-1, i%_DEFAULT_NODE_CAP
 	if a < 0 {
-		copy(con, self.head[:self.size])
+		copy(con, self.head[:b+1])
 		return
 	} else {
 		copy(con, self.head[:])
@@ -86,14 +98,15 @@ func (self *linkedNodes) ToSlice(con []Node) {
 		copy(con, self.tail[i][:])
 		con = con[_DEFAULT_NODE_CAP:]
 	}
-	copy(con, self.tail[a][:b])
+	copy(con, self.tail[a][:b+1])
 }
 
 func (self *linkedNodes) FromSlice(con []Node) {
 	self.size = len(con)
-	a, b := self.size/_DEFAULT_NODE_CAP-1, self.size%_DEFAULT_NODE_CAP
+	i := self.size-1
+	a, b := i/_DEFAULT_NODE_CAP-1, i%_DEFAULT_NODE_CAP
 	if a < 0 {
-		copy(self.head[:self.size], con)
+		copy(self.head[:b+1], con)
 		return
 	} else {
 		copy(self.head[:], con)
@@ -113,7 +126,7 @@ func (self *linkedNodes) FromSlice(con []Node) {
 	}
 
 	self.tail[a] = new(nodeChunk)
-	copy(self.tail[a][:b], con)
+	copy(self.tail[a][:b+1], con)
 }
 
 type pairChunk [_DEFAULT_NODE_CAP]Pair
@@ -125,14 +138,23 @@ type linkedPairs struct {
 }
 
 func (self *linkedPairs) Cap() int {
+	if self == nil {
+		return 0
+	}
 	return (len(self.tail)+1)*_DEFAULT_NODE_CAP 
 }
 
 func (self *linkedPairs) Len() int {
+	if self == nil {
+		return 0
+	}
 	return self.size 
 }
 
 func (self *linkedPairs) At(i int) *Pair {
+	if self == nil {
+		return nil
+	}
 	if i >= 0 && i < _DEFAULT_NODE_CAP && i<self.size {
 		return &self.head[i]
 	} else if i >= _DEFAULT_NODE_CAP && i<self.size {
@@ -183,9 +205,11 @@ func (self *linkedPairs) ToSlice(con []Pair) {
 	if len(con) < self.size {
 		return
 	}
-	a, b := self.size/_DEFAULT_NODE_CAP-1, self.size%_DEFAULT_NODE_CAP
+	i := self.size-1
+	a, b := i/_DEFAULT_NODE_CAP-1, i%_DEFAULT_NODE_CAP
+
 	if a < 0 {
-		copy(con, self.head[:self.size])
+		copy(con, self.head[:b+1])
 		return
 	} else {
 		copy(con, self.head[:])
@@ -196,7 +220,7 @@ func (self *linkedPairs) ToSlice(con []Pair) {
 		copy(con, self.tail[i][:])
 		con = con[_DEFAULT_NODE_CAP:]
 	}
-	copy(con, self.tail[a][:b])
+	copy(con, self.tail[a][:b+1])
 }
 
 func (self *linkedPairs) ToMap(con map[string]Node) {
@@ -211,9 +235,10 @@ func (self *linkedPairs) ToMap(con map[string]Node) {
 
 func (self *linkedPairs) FromSlice(con []Pair) {
 	self.size = len(con)
-	a, b := self.size/_DEFAULT_NODE_CAP-1, self.size%_DEFAULT_NODE_CAP
+	i := self.size-1
+	a, b := i/_DEFAULT_NODE_CAP-1, i%_DEFAULT_NODE_CAP
 	if a < 0 {
-		copy(self.head[:self.size], con)
+		copy(self.head[:b+1], con)
 		return
 	} else {
 		copy(self.head[:], con)
@@ -233,5 +258,33 @@ func (self *linkedPairs) FromSlice(con []Pair) {
 	}
 
 	self.tail[a] = new(pairChunk)
-	copy(self.tail[a][:b], con)
+	copy(self.tail[a][:b+1], con)
+}
+
+func (self *linkedPairs) Less(i, j int) bool {
+	return lessFrom(self.At(i).Key, self.At(j).Key, 0)
+}
+
+func (self *linkedPairs) Swap(i, j int) {
+	a, b := self.At(i), self.At(j)
+	*a, *b = *b, *a
+}
+
+func (self *linkedPairs) Sort() {
+	sort.Sort(self)
+}
+
+// Compare two strings from the pos d.
+func lessFrom(a, b string, d int) bool {
+    l := len(a)
+    if l > len(b) {
+        l = len(b)
+    }
+    for i := d; i < l; i++ {
+        if a[i] == b[i] {
+            continue
+        }
+        return a[i] < b[i]
+    }
+    return len(a) < len(b)
 }

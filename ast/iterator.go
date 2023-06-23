@@ -156,9 +156,3 @@ func (self *Node) ForEach(sc Scanner) error {
     }
     return self.Check()
 }
-
-type PairSlice []Pair
-
-func (self PairSlice) Sort() {
-    radixQsort(self, 0, maxDepth(len(self)))
-}
