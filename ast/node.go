@@ -1153,7 +1153,7 @@ func (self *Node) nodeAt(i int) *Node {
     var p *linkedNodes
     if self.isLazy() {
         _, stack := self.getParserAndArrayStack()
-        p = stack.v
+        p = &stack.v
     } else {
         p = (*linkedNodes)(self.p)
     }
@@ -1164,21 +1164,11 @@ func (self *Node) pairAt(i int) *Pair {
     var p *linkedPairs
     if self.isLazy() {
         _, stack := self.getParserAndObjectStack()
-        p = stack.v
+        p = &stack.v
     } else {
         p = (*linkedPairs)(self.p)
     }
     return p.At(i)
-}
-
-func (self *Node) getParserAndArrayStack() (*Parser, *parseArrayStack) {
-    stack := (*parseArrayStack)(self.p)
-    return &stack.parser, stack
-}
-
-func (self *Node) getParserAndObjectStack() (*Parser, *parseObjectStack) {
-    stack := (*parseObjectStack)(self.p)
-    return &stack.parser, stack
 }
 
 func (self *Node) skipAllIndex() error {
@@ -1189,7 +1179,7 @@ func (self *Node) skipAllIndex() error {
     parser, stack := self.getParserAndArrayStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v)
+    *self, err = parser.decodeArray(&stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1204,7 +1194,7 @@ func (self *Node) skipAllKey() error {
     parser, stack := self.getParserAndObjectStack()
     parser.skipValue = true
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v)
+    *self, err = parser.decodeObject(&stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1301,7 +1291,7 @@ func (self *Node) loadAllIndex() error {
     var err types.ParsingError
     parser, stack := self.getParserAndArrayStack()
     parser.noLazy = true
-    *self, err = parser.decodeArray(stack.v)
+    *self, err = parser.decodeArray(&stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1315,7 +1305,7 @@ func (self *Node) loadAllKey() error {
     var err types.ParsingError
     parser, stack := self.getParserAndObjectStack()
     parser.noLazy = true
-    *self, err = parser.decodeObject(stack.v)
+    *self, err = parser.decodeObject(&stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }
@@ -1614,6 +1604,7 @@ func newArray(v *linkedNodes) Node {
 
 func (self *Node) setArray(v *linkedNodes) {
     self.t = types.V_ARRAY
+    self.l = uint(v.Len())
     self.p = unsafe.Pointer(v)
 }
 
@@ -1635,53 +1626,8 @@ func newObject(v *linkedPairs) Node {
 
 func (self *Node) setObject(v *linkedPairs) {
     self.t = types.V_OBJECT
+    self.l = uint(v.Len())
     self.p = unsafe.Pointer(v)
-}
-
-type parseObjectStack struct {
-    parser Parser
-    v      *linkedPairs
-}
-
-type parseArrayStack struct {
-    parser Parser
-    v      *linkedNodes
-}
-
-func newLazyArray(p *Parser, v *linkedNodes) Node {
-    s := new(parseArrayStack)
-    s.parser = *p
-    s.v = v
-    return Node{
-        t: _V_ARRAY_LAZY,
-        l: uint(v.Len()),
-        p: unsafe.Pointer(s),
-    }
-}
-
-func (self *Node) setLazyArray(p *Parser, v *linkedNodes, s *parseArrayStack) {
-    s.parser = *p
-    s.v = v
-    self.t = _V_ARRAY_LAZY
-    self.p = (unsafe.Pointer)(s)
-}
-
-func newLazyObject(p *Parser, v *linkedPairs) Node {
-    s := new(parseObjectStack)
-    s.parser = *p
-    s.v = v
-    return Node{
-        t: _V_OBJECT_LAZY,
-        l: uint(v.Len()),
-        p: unsafe.Pointer(s),
-    }
-}
-
-func (self *Node) setLazyObject(p *Parser, v *linkedPairs, s *parseObjectStack) {
-    s.parser = *p
-    s.v = v
-    self.t = _V_OBJECT_LAZY
-    self.p = (unsafe.Pointer)(s)
 }
 
 func newRawNode(str string, typ types.ValueType) Node {

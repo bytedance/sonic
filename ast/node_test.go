@@ -616,8 +616,9 @@ func TestUnset(t *testing.T) {
     }
     out, err := entities.MarshalJSON()
     require.NoError(t, err)
+    println(string(out))
     buf := bytes.NewBuffer(nil)
-    json.Compact(buf, out)
+    require.NoError(t, json.Compact(buf, out))
     require.Equal(t, 
 `{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[]}`, buf.String())
 

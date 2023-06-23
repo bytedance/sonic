@@ -16,7 +16,10 @@
 
 package ast
 
-import "sort"
+import (
+	"sort"
+	"unsafe"
+)
 
 type nodeChunk [_DEFAULT_NODE_CAP]Node
 
@@ -285,3 +288,42 @@ func lessFrom(a, b string, d int) bool {
     }
     return len(a) < len(b)
 }
+
+type parseObjectStack struct {
+    parser Parser
+    v      linkedPairs
+}
+
+type parseArrayStack struct {
+    parser Parser
+    v      linkedNodes
+}
+
+func newLazyArray(p *Parser) Node {
+    s := new(parseArrayStack)
+    s.parser = *p
+    return Node{
+        t: _V_ARRAY_LAZY,
+        p: unsafe.Pointer(s),
+    }
+}
+
+func newLazyObject(p *Parser) Node {
+    s := new(parseObjectStack)
+    s.parser = *p
+    return Node{
+        t: _V_OBJECT_LAZY,
+        p: unsafe.Pointer(s),
+    }
+}
+
+func (self *Node) getParserAndArrayStack() (*Parser, *parseArrayStack) {
+    stack := (*parseArrayStack)(self.p)
+    return &stack.parser, stack
+}
+
+func (self *Node) getParserAndObjectStack() (*Parser, *parseObjectStack) {
+    stack := (*parseObjectStack)(self.p)
+    return &stack.parser, stack
+}
+

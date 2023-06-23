@@ -213,6 +213,7 @@ func (self *Node) encodeArray(buf *[]byte) error {
         if started {
             *buf = append(*buf, ',')
         }
+        started = true
         if err := n.encode(buf); err != nil {
             return err
         }
@@ -269,6 +270,7 @@ func (self *Node) encodeObject(buf *[]byte) error {
         if started {
             *buf = append(*buf, ',')
         }
+        started = true
         if err := n.encode(buf); err != nil {
             return err
         }
