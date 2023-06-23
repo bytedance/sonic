@@ -20,11 +20,11 @@
 package ast
 
 import (
-	"encoding/json"
-	"testing"
+    `encoding/json`
+    `testing`
 
-	"github.com/bytedance/sonic/encoder"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/encoder`
+    `github.com/stretchr/testify/require`
 )
 
 func TestSortNodeTwitter(t *testing.T) {

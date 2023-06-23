@@ -17,16 +17,16 @@
 package ast
 
 import (
-	"encoding/json"
-	"os"
-	"runtime"
-	"runtime/debug"
-	"sync"
-	"testing"
-	"time"
+    `encoding/json`
+    `os`
+    `runtime`
+    `runtime/debug`
+    `sync`
+    `testing`
+    `time`
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 var (

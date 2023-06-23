@@ -17,14 +17,14 @@
 package ast
 
 import (
-	"encoding/json"
-	"runtime"
-	"sync"
-	"testing"
+    "encoding/json"
+    "runtime"
+    "sync"
+    "testing"
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    "github.com/bytedance/sonic/internal/native/types"
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
 )
 
 func TestGC_Encode(t *testing.T) {

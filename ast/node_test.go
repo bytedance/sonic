@@ -17,20 +17,20 @@
 package ast
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"reflect"
-	"runtime"
-	"runtime/debug"
-	"strconv"
-	"testing"
+    `bytes`
+    `encoding/json`
+    `errors`
+    `fmt`
+    `reflect`
+    `runtime`
+    `runtime/debug`
+    `strconv`
+    `testing`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 
