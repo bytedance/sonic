@@ -15,7 +15,7 @@ void swap(MapPair* lhs, MapPair* rhs) {
     *rhs = temp;
 }
 
-int _strcmp(const char *p,const char *q){
+static always_inline int _strcmp(const char *p,const char *q){
     while(*p && *q && *p == *q) {
         p++, q++;
     }
@@ -23,17 +23,17 @@ int _strcmp(const char *p,const char *q){
     return *p - *q;
 }
 
-bool compare(MapPair lhs, MapPair rhs) {
+static always_inline bool less(MapPair lhs, MapPair rhs) {
     return _strcmp(lhs.key.buf, rhs.key.buf) < 0;
 }
 
 void heap_adjust(MapPair* kvs, size_t root, size_t end) {
     for(size_t child=2*root + 1; child<=end; child = child*2 + 1) {
-        if(child < end && compare(kvs[child], kvs[child+1])) {
+        if(child < end && less(kvs[child], kvs[child+1])) {
             child++;
         }
 
-        if(!compare(kvs[root], kvs[child])) {
+        if(!less(kvs[root], kvs[child])) {
             break;
         } else {
             swap(&kvs[root], &kvs[child]);
@@ -43,7 +43,7 @@ void heap_adjust(MapPair* kvs, size_t root, size_t end) {
 }
 
 void heap_sort(MapPair* kvs, size_t n) {
-    if(n == 1) {
+    if(n <= 1) {
         return;
     }
 
@@ -58,17 +58,18 @@ void heap_sort(MapPair* kvs, size_t n) {
 }
 
 void insert_sort(MapPair* kvs, size_t n) {
-    if(n == 1) {
+    if(n <= 1) {
         return;
     }
 
     for(size_t i=1; i<n; i++) {
         MapPair temp = kvs[i];
-        size_t j=i-1;
-        while(j>=0 && compare(temp, kvs[j])) {
+        int j=i-1;
+        while(j>=0 && less(temp, kvs[j])) {
             kvs[j + 1] = kvs[j];
             j--;
         }
         kvs[j+1] = temp;
     }
+
 }
