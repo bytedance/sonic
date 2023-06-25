@@ -5,24 +5,25 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <native.h>
+#include "native.h"
+#include "types.h"
 
 #define ERR_INVAL       2
 #define ERR_RECURSE_MAX 7
 
 typedef struct {
-    union { // u64 »ò i64 array µÄÖ¸Õë
+    union {                    // the pointer of u64 or i64 array 
         int64_t*  iptr;
         uint64_t* uptr; 
     };
-    size_t len; // s ³¤¶È
-    size_t cap; // slice ÈÝÁ¿
+    size_t len;                // the length of slice
+    size_t cap;               // the capacity of slice 
 } GoIntSlice;
 
 
 
 bool isSpace(char a){
-    if( a == 32){
+    if( a == ' '){
         return true;
     }else{
         return false;
@@ -30,7 +31,7 @@ bool isSpace(char a){
 }
 
 bool isIntger(char a){
-	if(a<48 ||a>57){
+	if(a<'0' ||a>'9'){
 		return false;
 	}else{
 		return true;
@@ -38,88 +39,62 @@ bool isIntger(char a){
 }
 
 int charToNum(char c){
-	return c-48;
+	return c-'0';
 }
-// ÊäÈë²ÎÊý£ºsrc ÊÇ ÊäÈëµÄjson, p ÊÇµ±Ç°Î»ÖÃ.
-// ·µ»ØÖµ£º
-// Èç¹ûÊÇºÏ·¨µÄjson Êý×é£¬·µ»Ø0 ±íÊ¾½âÎö³É¹¦£¬
-// Èç¹û½âÎöµÄÔªËØÊÇ·Ç·¨json£¬·µ»Ø-ERR_INVAL
-// Èç¹û½âÎöµÄÔªËØÊÇjson ÀàÐÍ²»Æ¥Åä£¬µ«ÊÇ json ÊÇºÏ·¨µÄ£¬·µ»Ø -ERR_MISMATCH
-// Èç¹û slice cap ²»¹»£¬·µ»Ø -ERR_RECURSE_MAX¡£
-// ½«½âÎö½á¹û´æ·Åµ½arrÖÐ£¬len +1£¬Ö±µ½cap¡£
 
-// Àý×Ó1
-// ÊäÈë:
-// src£º Ò»¸ö×Ö·û´®£¬ÊÇjsonÕûÊýÊý×é£¬ÀýÈç"[1,2,3,4]" 
-// p: µ±Ç°µÄÎ»ÖÃ£¬¼ÙÈçÊÇ0, 
-// arr: ¼ÙÈçÊÇlen=0, cap=256
-// Êä³ö£º
-// p: ½âÎöºóÖ¸ÏòµÄÎ»ÖÃ£¬ÕâÀïÓ¦¸ÃÊÇjson½áÊøÎ»ÖÃ£¬¼´9
-// arr: uptrÖ¸ÕëÒÀ´Î´æÈë1,2,3£¬4. È»ºólen = 4, cap²»±ä¡£
-// ·µ»ØÖµÊÇ0
 
-// Àý×Ó2
-// ÊäÈë£º
-// src£º Ò»¸ö×Ö·û´®£¬ÀýÈç"{[]}"£¬ºÍ "[1,2,3,4.5], Õâ¸öjsonÆ¬¶ÎÊÇ·Ç·¨µÄ»òÕß²»ÊÇÊý×Ö
-// p: µ±Ç°µÄÎ»ÖÃ£¬¼ÙÈçÊÇ0, 
-// arr: ¼ÙÈçÊÇlen=0, cap=256
-// Êä³ö£º
-// p: ½âÎöºóÖ¸ÏòµÄÎ»ÖÃ£¬ÕâÀïÓ¦¸ÃÊÇjson³ö´íÎ»ÖÃ
-// arr: ½âÎöºó·¢ÏÖÊÇ·Ç·¨µÄjson£¬ÐèÒª·µ»Ø-ERR_INVALID£¬Í¬Ê±arrÖÐ³¤¶ÈÐèÒªÖØÖÃÎª0
-// ·µ»ØÖµÊÇ ERR_INVAL
-
-long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){ //ÎÞ·ûºÅÊý×Ö
+long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){  
     char* pos = src->buf;
     int i =0;
     
-    while(isSpace(*(pos+i))){      //Èç¹û×î¿ªÊ¼Ç°ÃæÓÐ¿Õ¸ñ£¬ÏÈ³Ôµô¿Õ¸ñ 
+    while(isSpace(pos[i])){                                             //If there is a space before the beginning, eat the space first 
     	i++;                           
 	}
-    if(*(pos+i) != 91){  //µÚÒ»¸ö²»ÊÇ×óÖÐÀ¨ºÅµÄ»°Ö±½Ó·µ»Ø·Ç·¨
-        *p = i+1;    //pÖ¸ÏòµÚÒ»¸ö³ö´íºóÎ»ÖÃ 
+    if(pos[i] != '['){                                                  //If the first one is not a left bracket, returning it directly is illegal
+        *p = i+1;                                                       //P points to the first position after the error 
         arr->len = 0;
         return ERR_INVAL;
     }
-    i++;  //ÊÇ×óÀ¨ºÅ
-    int k =0;   //ÐèÒªÒ»¸öÓÎ±êk,m
-    int num = 0; //´æ´¢Êý×Ö 
-    while(*(pos+i) !=0){
-        if(k==arr->cap){   //ÈÝÁ¿²»¹»
+    i++;                                                                //It's a left parenthesis
+    int k =0;                                                           //K+1 represents the number of digits in the string src
+    int num = 0;                                                        //Num is used to store the current number 
+    while(pos[i] !='\0'){
+        if(k==arr->cap){                                                //If the capacity is insufficient, return ERR_ RECURSE_ MAX
         	*p = i+1;
             return ERR_RECURSE_MAX;
         }
-        while(isSpace(*(pos+i))){   //ÊÇ¿Õ¸ñ¾ÍÍùºóÌø 
+        while(isSpace(pos[i])){                                         //Jump back if it's a space 
         	i++;             
 		}
-		if(*(pos+i)<48 || *(pos+i)>57){
-			*p = i+1;    //pÖ¸ÏòµÚÒ»¸ö³ö´íºóÎ»ÖÃ 
+		if(pos[i]<'0' || pos[i]>'9'){
+			*p = i+1;                                                   //P points to the first position after the error 
         	arr->len = 0;
-			return ERR_INVAL;                    //µÚÒ»¸ö²»ÊÇÊý×Ö¿Ï¶¨·Ç·¨ 
+			return ERR_INVAL;                                           //The first one is not a number, it must be illegal 
 		}else{
-			num = charToNum(*(pos+i));
+			num = charToNum(pos[i]);
 		} 
 		    
 		i++; 
-		while(!isSpace(*(pos+i))&& *(pos+i) !=44){   //ºóÃæ²»ÊÇ¿Õ¸ñÒ²²»ÊÇ¶ººÅ, ÄÇÃ´ËµÃ÷ÊÇÊý×Ö»òÕß·¢Éú´íÎó 
-		 	if(isIntger(*(pos+i))){
+		while(!isSpace(pos[i])&& pos[i] !=','){                         //If it is not followed by a space or a comma, it indicates that it is a number or an error has occurred
+		 	if(isIntger(pos[i])){
 		 		
-		 		num = num*10 + charToNum(*(pos+i));
+		 		num = num*10 + charToNum(pos[i]);
         		i++;		
-			}else if(*(pos+i) ==93){             //ÓÒÀ¨ºÅµÄ»°¿ÉÒÔÊÕÆðÀ´ £¬²¢·µ»ØÖµ 
+			}else if(pos[i] ==']'){                                     //If the right bracket is used, it can be closed and a value can be returned 
 				(arr->uptr)[k] = num;
 				arr->len = k+1;
 				*p = i+1;
 				return 0;
 			}else{
-				*p = i+1;               //²»ÊÇÊý×Ö²»ÊÇ¶ººÅ¾Í³ö´íÁË  pÖ¸Ïò³ö´íºóÎ»ÖÃ 
+				*p = i+1;                                               //If it's not a number or a comma, it's an error. Point to the position after the error and return ERR_ INVAL 
         		arr->len = 0;
         		return ERR_INVAL;
 			} 
-	}
-		while(isSpace(*(pos+i))){
+		}
+		while(isSpace(pos[i])){
 			i++;
 		}
-		if(*(pos+i) ==44){          //ÊÇ¶ººÅµÄ»°ÊÕÆðÀ´ 
+		if(pos[i] ==','){                                               //If it's a comma, put it away 
 			(arr->uptr)[k] = num; 
 			k++;
 			i++;
@@ -135,52 +110,52 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){ //ÎÞ·ûºÅÊ
 
 
 
-long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){//ÓÐ·ûºÅÊý×Ö
+long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){   
 	char* pos = src->buf;
 	int i =0;
 	    
-	while(isSpace(*(pos+i))){      //Èç¹û×î¿ªÊ¼Ç°ÃæÓÐ¿Õ¸ñ£¬ÏÈ³Ôµô¿Õ¸ñ 
+	while(isSpace(pos[i])){                                             
 	    i++;                           
-	}
-    if(*(pos+i) != 91){  //µÚÒ»¸ö²»ÊÇ×óÖÐÀ¨ºÅµÄ»°Ö±½Ó·µ»Ø·Ç·¨
-        *p = i+1;    //pÖ¸ÏòµÚÒ»¸ö³ö´íºóÎ»ÖÃ 
+	} 
+    if(pos[i] != '['){                                                  
+        *p = i+1;                                                       
         arr->len = 0;
         return ERR_INVAL;
     }
-    i++;  //ÊÇ×óÀ¨ºÅ
-    int k =0;     //ÐèÒªÒ»¸öÓÎ±êk,m
-    int num = 0;    //´æ´¢Êý×Ö 
-    char flag ='+';   //°Ñflag³õÊ¼»¯ÎªÕýºÅ 
-    while(*(pos+i) !=0){
-        if(k==arr->cap){   //ÈÝÁ¿²»¹»
+    i++;                                                                
+    int k =0;                                                          
+    int num = 0;                                                        
+    char flag ='+';                                                     //Define a flag to represent the symbol of a signed number
+    while(pos[i] !=0){
+        if(k==arr->cap){                                                
         	*p = i+1;
             return ERR_RECURSE_MAX;
         }
-        while(isSpace(*(pos+i))){   //ÊÇ¿Õ¸ñ¾ÍÍùºóÌø 
+        while(isSpace(pos[i])){                                         
         	i++;             
 		}
-		if((*(pos+i)<48 || *(pos+i)>57) && (*(pos+i)!=43 && *(pos+i)!=45 )){
+		if((pos[i]<'0' || pos[i]>'9') && (pos[i]!='+' && pos[i]!='-' )){
 			
-			*p = i+1;    //pÖ¸ÏòµÚÒ»¸ö³ö´íºóÎ»ÖÃ 
+			*p = i+1;                                                   
         	arr->len = 0;
-			return ERR_INVAL;                    //µÚÒ»¸ö¼È²»ÊÇÊý×Ö£¬ÓÖ²»ÊÇÕý¸ººÅ£¬ÄÇÃ´¿Ï¶¨·Ç·¨ 
-		}else if(*(pos+i)==43 || *(pos+i)==45){
-			flag =  *(pos+i);                     //ÊÇ·ûºÅµÄ»°¾Í¶¨·ûºÅ ,²¢ÇÒºóÃæ½ô°¤×ÅµÄµÚÒ»¸öÊý×ÖÒ²´æÈënum ²¢°Ñi+1 
+			return ERR_INVAL;                                           //The first one is neither a number nor a Plus¨Cminus sign, so it must be illegal 
+		}else if(pos[i]=='+' || pos[i]=='-'){
+			flag =  pos[i];                                             //If it is a symbol, then the symbol is fixed, and the first digit immediately after it is also stored in num and i+1 
 			i++;
-			num = charToNum(*(pos+i));
+			num = charToNum(pos[i]);
 			
 		}else{
-			num = charToNum(*(pos+i));            
+			num = charToNum(pos[i]);            
 		} 
 		    
 		i++; 
-		while(!isSpace(*(pos+i))&& *(pos+i) !=44){   //ºóÃæ²»ÊÇ¿Õ¸ñÒ²²»ÊÇ¶ººÅ, ÄÇÃ´ËµÃ÷ÊÇÊý×Ö»òÕß·¢Éú´íÎó 
-		 	if(isIntger(*(pos+i))){
+		while(!isSpace(pos[i])&& pos[i] !=','){                          
+		 	if(isIntger(pos[i])){
 		 		
-		 		num = num*10 + charToNum(*(pos+i));
+		 		num = num*10 + charToNum(pos[i]);
         		i++;		
-			}else if(*(pos+i) ==93){             //ÓÒÀ¨ºÅµÄ»°¿ÉÒÔÊÕÆðÀ´ £¬²¢·µ»ØÖµ 
-			    if(flag ==45){
+			}else if(pos[i] ==']'){                                     
+			    if(flag =='-'){
 			    	num = -(num);
 				}
 				(arr->iptr)[k] = num;
@@ -188,27 +163,28 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){//ÓÐ·ûºÅÊý×
 				*p = i+1;
 				return 0;
 			}else{
-				*p = i+1;               //²»ÊÇÊý×Ö²»ÊÇ¶ººÅ¾Í³ö´íÁË  pÖ¸Ïò³ö´íºóÎ»ÖÃ 
+				*p = i+1;                                                
         		arr->len = 0;
         		return ERR_INVAL;
 			} 
-	} 
-		while(isSpace(*(pos+i))){
+		} 
+		while(isSpace(pos[i])){
 			i++;
 		}
-		if(*(pos+i) ==44){          //ÊÇ¶ººÅµÄ»°ÊÕÆðÀ´ 
+		if(pos[i] ==','){                                                
 			
-			if(flag ==45){
+			if(flag =='-'){
 			    num = -(num);
 			}
 			(arr->iptr)[k] = num; 
 			k++;
 			i++;
 		}
-		flag = '+';		          //ÖØÐÂ°ÑflagÖÃÎªÕýºÅ 
+		flag = '+';		                                                 //Reset flag to positive sign 
 			             
     }
 }
+
 
 
 
