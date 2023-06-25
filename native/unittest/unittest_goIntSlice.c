@@ -23,13 +23,9 @@ void test_decode_i64_array(const char* test_str){
     printf("%lld ,%lld\n",*pp,res);
 	
     for(int z=0;z<demo.len;z++){
-    	printf(" %d ",demo.iptr[z]);
-    	
-	}
-	
-	free(demo.iptr);
-	
-	
+    	printf(" %d ",demo.iptr[z]);    	
+	}	
+    free(demo.iptr);	
 }
 
 void test_decode_u64_array(const char* test_str){
@@ -52,16 +48,13 @@ void test_decode_u64_array(const char* test_str){
     printf("%lld ,%lld\n",*pp,res);
 	
     for(int z=0;z<demo.len;z++){
-    	printf(" %d ",demo.uptr[z]);
-    	
-	}
-	
-	free(demo.uptr);
+    	printf(" %d ",demo.uptr[z]);    	
+	}	
+    free(demo.uptr);
 }
 
 int main(){
-    
-    
+      
     char teststr[10][100] = {"{[1,2,3,4]","[1,2,3.5,4]","[1,  2,3, 4]","[  1,2,3,4]","[1,2,3,4]","[1,2,3]","[1  ,2,3,4]","[1,-2,-3,4]","[1,-2,  -3, 4]","[1, -2.3, 4]"};
     
     for(int i=0;i<10;i++){
@@ -69,8 +62,5 @@ int main(){
     	printf("*");
     	test_decode_i64_array(teststr[i]);
     	printf("*");
-	}
-    	
-	
-    
+	}    
 }
