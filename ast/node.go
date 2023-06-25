@@ -500,7 +500,8 @@ func (self *Node) StrictFloat64() (float64, error) {
 /** Sequencial Value Methods **/
 
 // Len returns children count of a array|object|string node
-// For partially loaded node, it also works but only counts the parsed children
+// WARN: For partially loaded node, it also works but only counts the parsed children
+// WARN: For ARRAY|OBJECT nodes which has been conducted `UnsetXX()`, its length WON'T change
 func (self *Node) Len() (int, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
@@ -572,6 +573,7 @@ func (self *Node) SetAny(key string, val interface{}) (bool, error) {
 }
 
 // Unset remove the node of given key under object parent, and reports if the key has existed.
+// WARN: After conducting `UnsetXX()`, the node's length WON'T change
 func (self *Node) Unset(key string) (bool, error) {
     self.must(types.V_OBJECT, "an object")
     p, i := self.skipKey(key)
@@ -610,6 +612,7 @@ func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
 }
 
 // UnsetByIndex remove the node of given index
+// WARN: After conducting `UnsetXX()`, the node's length WON'T change
 func (self *Node) UnsetByIndex(index int) (bool, error) {
     var p *Node
     it := self.itype()
@@ -702,6 +705,8 @@ func (self *Node) Get(key string) *Node {
 
 // Index indexies node at given idx,
 // node type CAN be either V_OBJECT or V_ARRAY
+// WARN: After conducting `UnsetXX()`, the node's length WON'T change,
+// thus its children's indexing WON'T change too
 func (self *Node) Index(idx int) *Node {
     if err := self.checkRaw(); err != nil {
         return unwrapError(err)
@@ -725,6 +730,8 @@ func (self *Node) Index(idx int) *Node {
 
 // IndexPair indexies pair at given idx,
 // node type MUST be either V_OBJECT
+// WARN: After conducting `UnsetXX()`, the node's length WON'T change,
+// thus its children's indexing WON'T change too
 func (self *Node) IndexPair(idx int) *Pair {
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil
@@ -809,6 +816,8 @@ func (self *Node) MapUseNode() (map[string]Node, error) {
 
 // MapUnsafe exports the underlying pointer to its children map
 // WARN: don't use it unless you know what you are doing
+//
+// Deprecated:  this API now returns copied nodes instead of directly reference, 
 func (self *Node) UnsafeMap() ([]Pair, error) {
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil, err
@@ -920,6 +929,9 @@ func (self *Node) ArrayUseNode() ([]Node, error) {
 
 // ArrayUnsafe exports the underlying pointer to its children array
 // WARN: don't use it unless you know what you are doing
+//
+// Deprecated:  this API now returns copied nodes instead of directly reference, 
+// which has no difference with ArrayUseNode
 func (self *Node) UnsafeArray() ([]Node, error) {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err

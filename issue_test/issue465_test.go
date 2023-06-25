@@ -25,8 +25,8 @@ import (
     `github.com/stretchr/testify/require`
 )
 
-func TestUnmarshalErrorIXXXnMapSlice(t *testing.T) {
-    subscribeContent := `
+func TestIssue465(t *testing.T) {
+    data := `
 {
     "data": {
     "1": "",
@@ -52,7 +52,7 @@ func TestUnmarshalErrorIXXXnMapSlice(t *testing.T) {
     "17": {"d":{"e":1}}
     }
 }`
-    root, _ := sonic.GetFromString(subscribeContent)
+    root, _ := sonic.GetFromString(data)
     sp := root.GetByPath("data", "5")
     node := sp.Get("a")
     require.True(t, node.Exists())

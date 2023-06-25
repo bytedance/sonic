@@ -613,10 +613,12 @@ func LoadsUseNumber(src string) (int, interface{}, error) {
     }
 }
 
+// NewParser returns pointer of new allocated parser
 func NewParser(src string) *Parser {
     return &Parser{s: src}
 }
 
+// NewParser returns new allocated parser
 func NewParserObj(src string) Parser {
     return Parser{s: src}
 }
