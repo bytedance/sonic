@@ -67,9 +67,9 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
         	i++;             
 		}
 		if(pos[i]<'0' || pos[i]>'9'){
-			*p = i+1;                                                //P points to the first position after the error 
+			*p = i+1;                                    //P points to the first position after the error 
         	arr->len = 0;
-			return ERR_INVAL;                                        //The first one is not a number, it must be illegal 
+			return ERR_INVAL;                            //The first one is not a number, it must be illegal 
 		}else{
 			num = charToNum(pos[i]); 
 		} 
@@ -81,7 +81,7 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 			 if(isInteger(pos[i])){		 		
 		 		num = num*10 + charToNum(pos[i]);
         		i++;		
-			}else if(pos[i] ==']'){                                  //If the right bracket is used, it can be closed and a value can be returned 
+			}else if(pos[i] ==']'){                      //If the right bracket is used, it can be closed and a value can be returned 
 				(arr->uptr)[k] = num;
 				arr->len = k+1;
 				*p = i+1;
@@ -117,16 +117,9 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 			*p = i+1;
 			arr->len = 0;
 			return ERR_INVAL;
-		}
-			 			             
+		}			 			             
     }
-    
-
-  
-
 }
-
-
 
 long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){   
 	char* pos = src->buf;
