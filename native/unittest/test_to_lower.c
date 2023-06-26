@@ -2,7 +2,7 @@
 #include<assert.h>
 
 void test_to_lower(const char* input, const char* expect) {
-    int len = sizeof(input);
+    int len = strlen(input);
     char* dst = (char*)malloc(len);
     to_lower(dst, input, len);
     assert(strncmp(expect, dst) == 0);

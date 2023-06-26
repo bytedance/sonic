@@ -25,6 +25,7 @@ void to_lower(char* dst, const char* src, size_t len) {
     } while (len >= 16);
 
     while(len > 0) {
+        len--;
         bool isUpper = (*src >= 'A' && *src <= 'Z');
         *q = isUpper? (*src + 32): *src;
         src++;
