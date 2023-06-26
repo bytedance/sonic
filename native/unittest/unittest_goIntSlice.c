@@ -53,8 +53,7 @@ void test_decode_u64_array(const char* test_str){
     free(demo.uptr);
 }
 
-int main(){
-      
+int main(){     
     char teststr[10][100] = {"{[1,2,3,4]","[1,2,3.5,4]","[1,  2,3, 4]","[  1,2,3,4]","[1,2,3,4]","[1,2,3]","[1  ,2,3,4]","[1,-2,-3,4]","[1,-2,  -3, 4]","[1, -2.3, 4]"};
     
     for(int i=0;i<10;i++){
