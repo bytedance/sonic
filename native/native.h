@@ -117,11 +117,6 @@ typedef struct {
 } StateMachine;
 
 typedef struct {
-    const char * buf;
-    size_t       len;
-} GoString;
-
-typedef struct {
     GoString name;
     uint64_t hash;
     int64_t  id;
@@ -168,7 +163,6 @@ long validate_utf8_fast(const GoString *src);
 long skip_one_fast(const GoString *src, long *p);
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm);
 
-void field_hashmap_set(FieldHashMap *fmap, const GoString* key, int64_t id);
 int64_t field_hashmap_get(FieldHashMap *fmap, const GoString* key);
 
 #endif

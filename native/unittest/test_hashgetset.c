@@ -2,7 +2,6 @@
 #include <inttypes.h>
 #include "../native.h"
 #include "../hashmap_get.c"
-#include "../hashmap_set.c"
 
 int main() {
     FieldHashMap map;
@@ -37,7 +36,3 @@ int main() {
     value3 = field_hashmap_get(&map, &key3);
     printf("The value3 is: %" PRId64 "\n", value3);
 }
-
-
-
-
