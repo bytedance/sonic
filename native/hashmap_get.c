@@ -11,10 +11,10 @@ int64_t field_hashmap_get(FieldHashMap *fmap, const GoString* key){
     uint64_t hash       =    XXH64(key->name, len, seed) % len;
     int64_t  id         =    -1;
 
-    if(fmap.bucket[hash] != NULL \
-    && fmap.bucket[hash]->name->len == key->len \
-    && memcmp(fmap.bucket[hash]->name->buf, key->buf, key->len)){
-        id              =    fmap.bucket[hash]->id;
+    if(fmap->bucket[hash] != NULL \
+    && fmap->bucket[hash]->name->len == key->len \
+    && memcmp(fmap->bucket[hash]->name->buf, key->buf, key->len)){
+        id              =    fmap->bucket[hash]->id;
     }
     return id;
 }

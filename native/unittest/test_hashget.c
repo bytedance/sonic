@@ -1,7 +1,21 @@
+#define XXH_STATIC_LINKING_ONLY   /* access advanced declarations */
+#define XXH_IMPLEMENTATION   /* access definitions */
+
 #include <stdio.h>
 #include <inttypes.h>
+#include "../xxhash.h"
 #include "../native.h"
 #include "../hashmap_get.c"
+
+void field_hashmap_set(FieldHashMap *fmap, const GoString* key, int64_t id){
+    XXH64_hash_t seed   =    123456789;
+    size_t len          =    fmap->N;
+    uint64_t hash       =    XXH64(key->name, len, seed) % len;
+    fmap->bucket[hash]->name  =     key;
+    fmap->bucket[hash]->hash  =     hash;
+    fmap->bucket[hash]->id    =     id;
+    return;
+}
 
 int main() {
     FieldHashMap map;
