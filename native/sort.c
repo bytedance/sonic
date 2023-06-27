@@ -15,16 +15,19 @@ void swap(MapPair* lhs, MapPair* rhs) {
     *rhs = temp;
 }
 
-static always_inline int _strcmp(const char *p,const char *q){
-    while(*p && *q && *p == *q) {
-        p++, q++;
-    }
-
-    return *p - *q;
+static always_inline size_t min(size_t x, size_t y) {
+    return x > y ? y : x;
 }
 
 static always_inline bool less(MapPair lhs, MapPair rhs) {
-    return _strcmp(lhs.key.buf, rhs.key.buf) < 0;
+    size_t index = 0;
+    size_t size = min(lhs.key.len, rhs.key.len);
+    while(index < size && *lhs.key.buf && *rhs.key.buf && *lhs.key.buf == *rhs.key.buf) {
+        lhs.key.buf++, rhs.key.buf++;
+        index++;
+    }
+
+    return *(unsigned char *)lhs.key.buf - *(unsigned char *)rhs.key.buf < 0;
 }
 
 void heap_adjust(MapPair* kvs, size_t root, size_t end) {
