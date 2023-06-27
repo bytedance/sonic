@@ -29,7 +29,7 @@ bool is_space(char a){
 }
 
 bool is_integer(char a){
-    return a>='0'&& a=<'9';
+    return a>='0'&& a<='9';
 }
 
 bool is_overflow(int i ,size_t srclen){
@@ -39,7 +39,6 @@ bool is_overflow(int i ,size_t srclen){
 int char_to_num(char c){
     return c-'0';
 }
-
 
 long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){  
     char* pos = src->buf;
