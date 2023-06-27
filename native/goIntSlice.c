@@ -180,7 +180,7 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
     char flag ='+';       
     while(!is_overflow(i,src->len)){
         if(k==arr->cap){                                                
-            *p = i+1;
+            *p = i;
             return ERR_RECURSE_MAX;
         }
         while(!is_overflow(i,src->len) && is_space(pos[i])){                                         
