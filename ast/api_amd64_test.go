@@ -1,3 +1,4 @@
+//go:build amd64 && go1.15 && !go1.21
 // +build amd64,go1.15,!go1.21
 
 /*
@@ -15,14 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package ast
 
 import (
+    `encoding/json`
     `testing`
 
     `github.com/bytedance/sonic/encoder`
-    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func TestSortNodeTwitter(t *testing.T) {
@@ -38,6 +40,9 @@ func TestSortNodeTwitter(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
+    var expObj interface{}
+    require.NoError(t, json.Unmarshal(exp, &expObj))
+
     if err := root.SortKeys(true); err != nil {
         t.Fatal(err)
     }
@@ -45,6 +50,9 @@ func TestSortNodeTwitter(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    assert.Equal(t, len(exp), len(act))
-    assert.Equal(t, string(exp), string(act))
+    var actObj interface{}
+    require.NoError(t, json.Unmarshal(act, &actObj))
+    require.Equal(t, expObj, actObj)
+    require.Equal(t, len(exp), len(act))
+    require.Equal(t, string(exp), string(act))
 }

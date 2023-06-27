@@ -24,6 +24,7 @@ import (
 
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func TestGC_Encode(t *testing.T) {
@@ -207,4 +208,24 @@ func BenchmarkEncodeLoad_Sonic(b *testing.B) {
             b.Fatal(err)
         }
     }
+}
+
+func TestEncodeNone(t *testing.T) {
+    n := NewObject([]Pair{{Key:"a", Value:Node{}}})
+    out, err := n.MarshalJSON()
+    require.NoError(t, err)
+    require.Equal(t, "{}", string(out))
+    n = NewObject([]Pair{{Key:"a", Value:NewNull()}, {Key:"b", Value:Node{}}})
+    out, err = n.MarshalJSON()
+    require.NoError(t, err)
+    require.Equal(t, `{"a":null}`, string(out))
+
+    n = NewArray([]Node{Node{}})
+    out, err = n.MarshalJSON()
+    require.NoError(t, err)
+    require.Equal(t, "[]", string(out))
+    n = NewArray([]Node{NewNull(), Node{}})
+    out, err = n.MarshalJSON()
+    require.NoError(t, err)
+    require.Equal(t, `[null]`, string(out))
 }
