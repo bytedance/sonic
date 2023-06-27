@@ -20,9 +20,7 @@ typedef struct {
     size_t cap;                // the capacity of slice 
 } GoIntSlice;
 
-
-
-bool isSpace(char a){
+bool is_space(char a){
     if( a == ' '||a == '\t'||a == '\r'||a == '\n'){
         return true;
     }else{
@@ -30,13 +28,13 @@ bool isSpace(char a){
     }
 }
 
-bool isInteger(char a){
-    if(a<'0' ||a>'9'){
-	return false;
-    }else{
-	return true;
-    }
+bool is_integer(char a){
+    return a>='0'&& a=<'9';
 }
+
+bool is_overflow(int i ,size_t srclen){
+    return i >= srclen;
+} 
 
 int char_to_num(char c){
     return c-'0';
@@ -45,66 +43,95 @@ int char_to_num(char c){
 
 long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){  
     char* pos = src->buf;
-    int i =0;
-    
-    while(isSpace(pos[i])){                                          //If there is a space before the beginning, eat the space first 
+    int i =*p;
+    while(is_space(pos[i])){                                 //If there is a space before the beginning, eat the space first 
         i++;                           
-	}
-    if(pos[i] != '['){                                               //If the first one is not a left bracket, returning it directly is illegal
-        *p = i+1;                                                    //P points to the first position after the error 
+    }
+    if(is_overflow(i,src->len)){
+        *p = i;
+	arr->len = 0;
+	return ERR_INVAL;
+    }
+    if(pos[i] != '['){                                       //If the first one is not a left bracket, returning it directly is illegal
+        *p = i;                                            //P points to the first position after the error 
         arr->len = 0;
         return ERR_INVAL;
     }
-    i++;                                                             //It's a left parenthesis
-    int k =0;                                                        //K+1 represents the number of digits in the string src
-    int num = 0;                                                     //Num is used to store the current number 
+    i++;                                                     //It's a left parenthesis
+    int k =0;                                                //K+1 represents the number of digits in the string src
+    int num = 0;                                             //Num is used to store the current number 
     while(pos[i] !='\0'){
-        if(k==arr->cap){                                             //If the capacity is insufficient, return ERR_ RECURSE_ MAX
+        if(k==arr->cap){                                     //If the capacity is insufficient, return ERR_ RECURSE_ MAX
             *p = i+1;
             return ERR_RECURSE_MAX;
         }
-        while(isSpace(pos[i])){                                      //Jump back if it's a space 
+        while(is_space(pos[i])){                              //Jump back if it's a space 
             i++;             
 	    }
+	    if(is_overflow(i,src->len)){
+	        *p = i;
+	        arr->len = 0;
+	        return ERR_INVAL;
+		}
 	    if(pos[i]<'0' || pos[i]>'9'){
-		*p = i+1;                                    //P points to the first position after the error 
+		*p = i;                                    //P points to the first position after the error 
         	arr->len = 0;
 		return ERR_INVAL;                            //The first one is not a number, it must be illegal 
 	    }else{
 		num = char_to_num(pos[i]); 
-	    } 
-		    
+	    } 	    
 	    i++; 
-	    while(!isSpace(pos[i])&& pos[i] !=','){                         
-		 	  
+	    while(!is_space(pos[i])&& pos[i] !=','){                         
+		if(is_overflow(i,src->len)){
+	        *p = i;
+	        arr->len = 0;
+	        return ERR_INVAL;
+		} 	  
 	    //If it is not followed by a space or a comma, it indicates that it is a number or an error has occurred
-	    if(isInteger(pos[i])){		 		
+	    if(is_integer(pos[i])){		 		
 	        num = num*10 + char_to_num(pos[i]);
         	i++;		
-	    }else if(pos[i] ==']'){                      //If the right bracket is used, it can be closed and a value can be returned 
+	    }else if(pos[i] ==']'){                  //If the right bracket is used, it can be closed and a value can be returned 
+		while(!is_overflow(i+1,src->len)){
+		    if(is_space(pos[i+1])){
+		        i++;
+		    }else{
+		        *p = i+1;
+	                arr->len = 0;
+	                return ERR_INVAL;
+		    }
+		}
 		(arr->uptr)[k] = num;
 		arr->len = k+1;
-		*p = i+1;
+		*p = src->len;
 		return 0;
-	    }else{
-			
+	    }else{		
 	    //If it's not a number or a comma, it's an error. Point to the position after the error and return ERR_ INVAL 
-	        *p = i+1;                                               
+	        *p = i;                                               
         	arr->len = 0;
         	return ERR_INVAL;
 	    } 
 	}
-	    while(isSpace(pos[i])){
+	    while(is_space(pos[i])){
 	    i++;
 	    }
 	    if(pos[i] ==']'){
+	        while(!is_overflow(i+1,src->len)){
+		    if(is_space(pos[i+1])){
+		        i++;
+		    }else{
+		        *p = i+1;
+	                arr->len = 0;
+	                return ERR_INVAL;
+		    }
+	        }
 		(arr->uptr)[k] = num;
 		arr->len = k+1;
-		*p = i+1;
+		*p = src->len;
 		return 0;
 	    }
-	    if(isInteger(pos[i])){
-	        *p = i+1;
+	    if(is_integer(pos[i])){
+	        *p = i;
 		arr->len = 0;
 		return ERR_INVAL;
 	    }
@@ -113,11 +140,11 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 		k++;
 		i++;
 	    }
-	    if(pos[i] =='\0'){
-		*p = i+1;
-		arr->len = 0;
-		return ERR_INVAL;
-	    }			 			             
+	    if(is_overflow(i,src->len)){
+	        *p = i;
+	        arr->len = 0;
+	        return ERR_INVAL;
+		}			 			             
     }
 }
 
@@ -125,11 +152,16 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
     char* pos = src->buf;
     int i =0;
 	    
-    while(isSpace(pos[i])){                                             
+    while(is_space(pos[i])){                                             
         i++;                           
-    } 
+    }
+    if(is_overflow(i,src->len)){
+        *p = i;
+	arr->len = 0;
+	return ERR_INVAL;
+    }
     if(pos[i] != '['){                                                  
-        *p = i+1;                                                       
+        *p = i;                                                       
         arr->len = 0;
         return ERR_INVAL;
     }
@@ -142,16 +174,20 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
             *p = i+1;
             return ERR_RECURSE_MAX;
         }
-        while(isSpace(pos[i])){                                         
+        while(is_space(pos[i])){                                         
             i++;             
 	}
-	if((pos[i]<'0' || pos[i]>'9') && (pos[i]!='+' && pos[i]!='-' )){
-			
-	    *p = i+1;                                                   
+	if(is_overflow(i,src->len)){
+	    *p = i;
+	    arr->len = 0;
+	    return ERR_INVAL;
+	}
+	if((pos[i]<'0' || pos[i]>'9') && (pos[i]!='+' && pos[i]!='-' )){		
+	    *p = i;                                                   
             arr->len = 0;
-	    return ERR_INVAL;                        //The first one is neither a number nor a Plus¨Cminus sign, so it must be illegal 
-	}else if(pos[i]=='+' || pos[i]=='-'){
-			
+	    //The first one is neither a number nor a Plus¨Cminus sign, so it must be illegal 
+	    return ERR_INVAL;                        
+	}else if(pos[i]=='+' || pos[i]=='-'){		
 	    //If it is a symbol, then the symbol is fixed, and the first digit immediately after it is also stored in num and i+1 
 	    flag =  pos[i];                           
 	    i++;
@@ -160,35 +196,58 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
 	    num = char_to_num(pos[i]);            
 	} 	    
 	i++; 
-	while(!isSpace(pos[i])&& pos[i] !=','){                          
-	    if(isInteger(pos[i])){
+	while(!is_space(pos[i])&& pos[i] !=','){
+	    if(is_overflow(i,src->len)){
+	        *p = i;
+	        arr->len = 0;
+	        return ERR_INVAL;
+		}                          
+	    if(is_integer(pos[i])){
 	        num = num*10 + char_to_num(pos[i]);
         	i++;		
-	    }else if(pos[i] ==']'){                                     
+	    }else if(pos[i] ==']'){
+		while(!is_overflow(i+1,src->len)){
+		    if(is_space(pos[i+1])){
+			i++;
+		    }else{
+		        *p = i+1;
+	                arr->len = 0;
+	                return ERR_INVAL;
+		    }
+		}                                     
 	        if(flag =='-'){
 		    num = -(num);
 		}
 		(arr->iptr)[k] = num;
 		arr->len = k+1;
-		*p = i+1;
+		*p = src->len;
 		return 0;
 	    }else{
-		*p = i+1;                                                
+		*p = i;                                                
         	arr->len = 0;
         	return ERR_INVAL;
 		} 
 	    } 
-	while(isSpace(pos[i])){
+	while(is_space(pos[i])){
 	    i++;
 	}
 	if(pos[i] ==']'){
+	    while(!is_overflow(i+1,src->len)){
+	        if(is_space(pos[i+1])){
+		    i++;
+		}else{
+		    *p = i+1;
+	            arr->len = 0;
+	            return ERR_INVAL;
+		}
+	    }
 	    (arr->uptr)[k] = num;
 	    arr->len = k+1;
-	    *p = i+1;
+	    *p = src->len;
 	    return 0;
 	}
-	if(isInteger(pos[i])){
-	    *p = i+1;
+	if(is_integer(pos[i])){
+	    *p = i;
 	    arr->len = 0;
 	    return ERR_INVAL;
 	}
@@ -197,14 +256,14 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
 	        num = -(num);
 	    }
 	    (arr->iptr)[k] = num; 
-	        k++;
-		i++;
+	    k++;
+	    i++;
 	}
-	if(pos[i] =='\0'){
-	    *p = i+1;
+	if(is_overflow(i,src->len)){
+	    *p = i;
 	    arr->len = 0;
 	    return ERR_INVAL;
 	}
-	flag = '+';		                                                 //Reset flag to positive sign 			             
+	flag = '+';		                                //Reset flag to positive sign 			             
     }
 }
