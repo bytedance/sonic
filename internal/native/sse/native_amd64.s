@@ -118,7 +118,7 @@ LBB1_6:
 	LONG $0x000124b8; BYTE $0x00               // movl         $292, %eax
 	WORD $0x2944; BYTE $0xc8                   // subl         %r9d, %eax
 	LONG $0x04e0c148                           // shlq         $4, %rax
-	LONG $0x4a158d48; WORD $0x00c1; BYTE $0x00 // leaq         $49482(%rip), %rdx  /* _pow10_ceil_sig.g(%rip) */
+	LONG $0x6a158d48; WORD $0x00c1; BYTE $0x00 // leaq         $49514(%rip), %rdx  /* _pow10_ceil_sig.g(%rip) */
 	LONG $0x101c8b4c                           // movq         (%rax,%rdx), %r11
 	LONG $0x106c8b4c; BYTE $0x08               // movq         $8(%rax,%rdx), %r13
 	WORD $0xc1fe                               // incb         %cl
@@ -300,7 +300,7 @@ LBB1_51:
 	LONG $0x009d820f; WORD $0x0000             // jb           LBB1_64, $157(%rip)
 	LONG $0x01678d4d                           // leaq         $1(%r15), %r12
 	WORD $0x894c; BYTE $0xe6                   // movq         %r12, %rsi
-	LONG $0x0088bfe8; BYTE $0x00               // callq        _format_significand, $35007(%rip)
+	LONG $0x0088dfe8; BYTE $0x00               // callq        _format_significand, $35039(%rip)
 	WORD $0x8948; BYTE $0xc3                   // movq         %rax, %rbx
 	QUAD $0x9090909090909090; LONG $0x90909090 // .p2align 4, 0x90
 
@@ -335,7 +335,7 @@ LBB1_60:
 	WORD $0x0c8d; BYTE $0x12                   // leal         (%rdx,%rdx), %ecx
 	WORD $0x0c8d; BYTE $0x89                   // leal         (%rcx,%rcx,4), %ecx
 	WORD $0xc829                               // subl         %ecx, %eax
-	LONG $0x240d8d48; WORD $0x00bd; BYTE $0x00 // leaq         $48420(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x440d8d48; WORD $0x00bd; BYTE $0x00 // leaq         $48452(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x510cb70f                           // movzwl       (%rcx,%rdx,2), %ecx
 	LONG $0x024b8966                           // movw         %cx, $2(%rbx)
 	WORD $0x300c                               // orb          $48, %al
@@ -417,7 +417,7 @@ LBB1_61:
 	WORD $0xf883; BYTE $0x0a                   // cmpl         $10, %eax
 	LONG $0x00878c0f; WORD $0x0000             // jl           LBB1_63, $135(%rip)
 	WORD $0xc089                               // movl         %eax, %eax
-	LONG $0xdd0d8d48; WORD $0x00bb; BYTE $0x00 // leaq         $48093(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xfd0d8d48; WORD $0x00bb; BYTE $0x00 // leaq         $48125(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	LONG $0x02438966                           // movw         %ax, $2(%rbx)
 	LONG $0x04c38348                           // addq         $4, %rbx
@@ -606,7 +606,7 @@ LBB1_77:
 
 LBB1_78:
 	WORD $0x894c; BYTE $0xfe             // movq         %r15, %rsi
-	LONG $0x0083c9e8; BYTE $0x00         // callq        _format_significand, $33737(%rip)
+	LONG $0x0083e9e8; BYTE $0x00         // callq        _format_significand, $33769(%rip)
 	QUAD $0x9090909090909090; BYTE $0x90 // .p2align 4, 0x90
 
 LBB1_79:
@@ -830,7 +830,7 @@ LBB2_2:
 	WORD $0xcf6b; BYTE $0x64                   // imull        $100, %edi, %ecx
 	WORD $0xc829                               // subl         %ecx, %eax
 	LONG $0xd8b70f44                           // movzwl       %ax, %r11d
-	LONG $0xa00d8d48; WORD $0x00b5; BYTE $0x00 // leaq         $46496(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xc00d8d48; WORD $0x00b5; BYTE $0x00 // leaq         $46528(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x04b70f42; BYTE $0x51               // movzwl       (%rcx,%r10,2), %eax
 	LONG $0x40894166; BYTE $0xfe               // movw         %ax, $-2(%r8)
 	LONG $0x04b70f42; BYTE $0x49               // movzwl       (%rcx,%r9,2), %eax
@@ -846,7 +846,7 @@ LBB2_2:
 
 LBB2_5:
 	LONG $0x1759b941; WORD $0xd1b7             // movl         $3518437209, %r9d
-	LONG $0x59158d4c; WORD $0x00b5; BYTE $0x00 // leaq         $46425(%rip), %r10  /* _Digits(%rip) */
+	LONG $0x79158d4c; WORD $0x00b5; BYTE $0x00 // leaq         $46457(%rip), %r10  /* _Digits(%rip) */
 	QUAD $0x9090909090909090; BYTE $0x90       // .p2align 4, 0x90
 
 LBB2_6:
@@ -878,7 +878,7 @@ LBB2_7:
 	WORD $0xc86b; BYTE $0x64                   // imull        $100, %eax, %ecx
 	WORD $0xca29                               // subl         %ecx, %edx
 	WORD $0xb70f; BYTE $0xca                   // movzwl       %dx, %ecx
-	LONG $0xe1158d48; WORD $0x00b4; BYTE $0x00 // leaq         $46305(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0x01158d48; WORD $0x00b5; BYTE $0x00 // leaq         $46337(%rip), %rdx  /* _Digits(%rip) */
 	LONG $0x4a0cb70f                           // movzwl       (%rdx,%rcx,2), %ecx
 	LONG $0x4b894166; BYTE $0xfe               // movw         %cx, $-2(%r11)
 	LONG $0xfec38349                           // addq         $-2, %r11
@@ -888,7 +888,7 @@ LBB2_9:
 	WORD $0xfa83; BYTE $0x0a                   // cmpl         $10, %edx
 	LONG $0x0018820f; WORD $0x0000             // jb           LBB2_11, $24(%rip)
 	WORD $0xd089                               // movl         %edx, %eax
-	LONG $0xc00d8d48; WORD $0x00b4; BYTE $0x00 // leaq         $46272(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xe00d8d48; WORD $0x00b4; BYTE $0x00 // leaq         $46304(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	LONG $0x43894166; BYTE $0xfe               // movw         %ax, $-2(%r11)
 	WORD $0x894c; BYTE $0xc0                   // movq         %r8, %rax
@@ -977,7 +977,7 @@ _u64toa:
 	WORD $0x0148; BYTE $0xc0                   // addq         %rax, %rax
 	LONG $0x03e8fe81; WORD $0x0000             // cmpl         $1000, %esi
 	LONG $0x0016820f; WORD $0x0000             // jb           LBB4_3, $22(%rip)
-	LONG $0xdc0d8d48; WORD $0x00b3; BYTE $0x00 // leaq         $46044(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xfc0d8d48; WORD $0x00b3; BYTE $0x00 // leaq         $46076(%rip), %rcx  /* _Digits(%rip) */
 	WORD $0x0c8a; BYTE $0x0a                   // movb         (%rdx,%rcx), %cl
 	WORD $0x0f88                               // movb         %cl, (%rdi)
 	LONG $0x000001b9; BYTE $0x00               // movl         $1, %ecx
@@ -991,14 +991,14 @@ LBB4_3:
 LBB4_4:
 	WORD $0xb70f; BYTE $0xd2                   // movzwl       %dx, %edx
 	LONG $0x01ca8348                           // orq          $1, %rdx
-	LONG $0xb4358d48; WORD $0x00b3; BYTE $0x00 // leaq         $46004(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0xd4358d48; WORD $0x00b3; BYTE $0x00 // leaq         $46036(%rip), %rsi  /* _Digits(%rip) */
 	WORD $0x148a; BYTE $0x32                   // movb         (%rdx,%rsi), %dl
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc1ff                               // incl         %ecx
 	WORD $0x1488; BYTE $0x37                   // movb         %dl, (%rdi,%rsi)
 
 LBB4_6:
-	LONG $0xa3158d48; WORD $0x00b3; BYTE $0x00 // leaq         $45987(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0xc3158d48; WORD $0x00b3; BYTE $0x00 // leaq         $46019(%rip), %rdx  /* _Digits(%rip) */
 	WORD $0x148a; BYTE $0x10                   // movb         (%rax,%rdx), %dl
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc1ff                               // incl         %ecx
@@ -1007,7 +1007,7 @@ LBB4_6:
 LBB4_7:
 	WORD $0xb70f; BYTE $0xc0                   // movzwl       %ax, %eax
 	LONG $0x01c88348                           // orq          $1, %rax
-	LONG $0x8b158d48; WORD $0x00b3; BYTE $0x00 // leaq         $45963(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0xab158d48; WORD $0x00b3; BYTE $0x00 // leaq         $45995(%rip), %rdx  /* _Digits(%rip) */
 	WORD $0x048a; BYTE $0x10                   // movb         (%rax,%rdx), %al
 	WORD $0xca89                               // movl         %ecx, %edx
 	WORD $0xc1ff                               // incl         %ecx
@@ -1054,7 +1054,7 @@ LBB4_8:
 	WORD $0x014d; BYTE $0xdb                   // addq         %r11, %r11
 	LONG $0x9680fe81; WORD $0x0098             // cmpl         $10000000, %esi
 	LONG $0x0017820f; WORD $0x0000             // jb           LBB4_11, $23(%rip)
-	LONG $0xe9058d48; WORD $0x00b2; BYTE $0x00 // leaq         $45801(%rip), %rax  /* _Digits(%rip) */
+	LONG $0x09058d48; WORD $0x00b3; BYTE $0x00 // leaq         $45833(%rip), %rax  /* _Digits(%rip) */
 	LONG $0x02048a41                           // movb         (%r10,%rax), %al
 	WORD $0x0788                               // movb         %al, (%rdi)
 	LONG $0x000001b9; BYTE $0x00               // movl         $1, %ecx
@@ -1068,14 +1068,14 @@ LBB4_11:
 LBB4_12:
 	WORD $0x8944; BYTE $0xd0                   // movl         %r10d, %eax
 	LONG $0x01c88348                           // orq          $1, %rax
-	LONG $0xbd358d48; WORD $0x00b2; BYTE $0x00 // leaq         $45757(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0xdd358d48; WORD $0x00b2; BYTE $0x00 // leaq         $45789(%rip), %rsi  /* _Digits(%rip) */
 	WORD $0x048a; BYTE $0x30                   // movb         (%rax,%rsi), %al
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc1ff                               // incl         %ecx
 	WORD $0x0488; BYTE $0x37                   // movb         %al, (%rdi,%rsi)
 
 LBB4_14:
-	LONG $0xac058d48; WORD $0x00b2; BYTE $0x00 // leaq         $45740(%rip), %rax  /* _Digits(%rip) */
+	LONG $0xcc058d48; WORD $0x00b2; BYTE $0x00 // leaq         $45772(%rip), %rax  /* _Digits(%rip) */
 	LONG $0x01048a41                           // movb         (%r9,%rax), %al
 	WORD $0xce89                               // movl         %ecx, %esi
 	WORD $0xc1ff                               // incl         %ecx
@@ -1084,7 +1084,7 @@ LBB4_14:
 LBB4_15:
 	LONG $0xc1b70f41                           // movzwl       %r9w, %eax
 	LONG $0x01c88348                           // orq          $1, %rax
-	LONG $0x92358d48; WORD $0x00b2; BYTE $0x00 // leaq         $45714(%rip), %rsi  /* _Digits(%rip) */
+	LONG $0xb2358d48; WORD $0x00b2; BYTE $0x00 // leaq         $45746(%rip), %rsi  /* _Digits(%rip) */
 	WORD $0x048a; BYTE $0x30                   // movb         (%rax,%rsi), %al
 	WORD $0xca89                               // movl         %ecx, %edx
 	WORD $0x0488; BYTE $0x17                   // movb         %al, (%rdi,%rdx)
@@ -1170,7 +1170,7 @@ LBB4_16:
 	LONG $0x000010b9; BYTE $0x00               // movl         $16, %ecx
 	WORD $0xc129                               // subl         %eax, %ecx
 	LONG $0x04e0c148                           // shlq         $4, %rax
-	LONG $0x88158d48; WORD $0x00d8; BYTE $0x00 // leaq         $55432(%rip), %rdx  /* _VecShiftShuffles(%rip) */
+	LONG $0xa8158d48; WORD $0x00d8; BYTE $0x00 // leaq         $55464(%rip), %rdx  /* _VecShiftShuffles(%rip) */
 	LONG $0x00380f66; WORD $0x100c             // pshufb       (%rax,%rdx), %xmm1
 	LONG $0x0f7f0ff3                           // movdqu       %xmm1, (%rdi)
 	WORD $0xc889                               // movl         %ecx, %eax
@@ -1196,7 +1196,7 @@ LBB4_20:
 	WORD $0xfa83; BYTE $0x63                   // cmpl         $99, %edx
 	LONG $0x001f870f; WORD $0x0000             // ja           LBB4_22, $31(%rip)
 	WORD $0xd089                               // movl         %edx, %eax
-	LONG $0xcb0d8d48; WORD $0x00b0; BYTE $0x00 // leaq         $45259(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xeb0d8d48; WORD $0x00b0; BYTE $0x00 // leaq         $45291(%rip), %rcx  /* _Digits(%rip) */
 	WORD $0x148a; BYTE $0x41                   // movb         (%rcx,%rax,2), %dl
 	LONG $0x0141448a                           // movb         $1(%rcx,%rax,2), %al
 	WORD $0x1788                               // movb         %dl, (%rdi)
@@ -1221,7 +1221,7 @@ LBB4_22:
 	WORD $0xc96b; BYTE $0x64                   // imull        $100, %ecx, %ecx
 	WORD $0xc829                               // subl         %ecx, %eax
 	WORD $0xb70f; BYTE $0xc0                   // movzwl       %ax, %eax
-	LONG $0x760d8d48; WORD $0x00b0; BYTE $0x00 // leaq         $45174(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x960d8d48; WORD $0x00b0; BYTE $0x00 // leaq         $45206(%rip), %rcx  /* _Digits(%rip) */
 	WORD $0x148a; BYTE $0x41                   // movb         (%rcx,%rax,2), %dl
 	LONG $0x0141448a                           // movb         $1(%rcx,%rax,2), %al
 	WORD $0x5788; BYTE $0x01                   // movb         %dl, $1(%rdi)
@@ -1233,7 +1233,7 @@ LBB4_24:
 	WORD $0xc86b; BYTE $0x64                   // imull        $100, %eax, %ecx
 	WORD $0xca29                               // subl         %ecx, %edx
 	WORD $0xb70f; BYTE $0xc0                   // movzwl       %ax, %eax
-	LONG $0x50058d4c; WORD $0x00b0; BYTE $0x00 // leaq         $45136(%rip), %r8  /* _Digits(%rip) */
+	LONG $0x70058d4c; WORD $0x00b0; BYTE $0x00 // leaq         $45168(%rip), %r8  /* _Digits(%rip) */
 	LONG $0x400c8a41                           // movb         (%r8,%rax,2), %cl
 	LONG $0x40448a41; BYTE $0x01               // movb         $1(%r8,%rax,2), %al
 	WORD $0x0f88                               // movb         %cl, (%rdi)
@@ -1326,8 +1326,8 @@ _quote:
 	WORD $0x8948; BYTE $0xf0                   // movq         %rsi, %rax
 	WORD $0x8b4c; BYTE $0x19                   // movq         (%rcx), %r11
 	LONG $0x01c0f641                           // testb        $1, %r8b
-	LONG $0xc80d8d48; WORD $0x00d6; BYTE $0x00 // leaq         $54984(%rip), %rcx  /* __SingleQuoteTab(%rip) */
-	LONG $0xc1058d4c; WORD $0x00e6; BYTE $0x00 // leaq         $59073(%rip), %r8  /* __DoubleQuoteTab(%rip) */
+	LONG $0xe80d8d48; WORD $0x00d6; BYTE $0x00 // leaq         $55016(%rip), %rcx  /* __SingleQuoteTab(%rip) */
+	LONG $0xe1058d4c; WORD $0x00e6; BYTE $0x00 // leaq         $59105(%rip), %r8  /* __DoubleQuoteTab(%rip) */
 	LONG $0xc1440f4c                           // cmoveq       %rcx, %r8
 	QUAD $0x00000000f50c8d48                   // leaq         (,%rsi,8), %rcx
 	WORD $0x3949; BYTE $0xcb                   // cmpq         %rcx, %r11
@@ -1434,7 +1434,7 @@ LBB5_15:
 	LONG $0x34b60f41; BYTE $0x24               // movzbl       (%r12), %esi
 	WORD $0x8948; BYTE $0xf2                   // movq         %rsi, %rdx
 	LONG $0x04e2c148                           // shlq         $4, %rdx
-	LONG $0x0d1d8d48; WORD $0x00d5; BYTE $0x00 // leaq         $54541(%rip), %rbx  /* __SingleQuoteTab(%rip) */
+	LONG $0x2d1d8d48; WORD $0x00d5; BYTE $0x00 // leaq         $54573(%rip), %rbx  /* __SingleQuoteTab(%rip) */
 	LONG $0x1a3c8348; BYTE $0x00               // cmpq         $0, (%rdx,%rbx)
 	LONG $0x0082850f; WORD $0x0000             // jne          LBB5_21, $130(%rip)
 	LONG $0xff518d48                           // leaq         $-1(%rcx), %rdx
@@ -1651,7 +1651,7 @@ LBB5_74:
 	LONG $0x00025de9; BYTE $0x00 // jmp          LBB5_76, $605(%rip)
 
 LBB5_51:
-	LONG $0x560d8d4c; WORD $0x00f2; BYTE $0x00 // leaq         $62038(%rip), %r9  /* __EscTab(%rip) */
+	LONG $0x760d8d4c; WORD $0x00f2; BYTE $0x00 // leaq         $62070(%rip), %r9  /* __EscTab(%rip) */
 	QUAD $0xfffffb2e056f0f66                   // movdqa       $-1234(%rip), %xmm0  /* LCPI5_0(%rip) */
 	QUAD $0xfffffb360d6f0f66                   // movdqa       $-1226(%rip), %xmm1  /* LCPI5_1(%rip) */
 	QUAD $0xfffffb3e156f0f66                   // movdqa       $-1218(%rip), %xmm2  /* LCPI5_2(%rip) */
@@ -1878,7 +1878,7 @@ _unquote:
 	LONG $0xb845894c                           // movq         %r8, $-72(%rbp)
 	WORD $0x8945; BYTE $0xc2                   // movl         %r8d, %r10d
 	LONG $0x01e28341                           // andl         $1, %r10d
-	LONG $0x8a058d4c; WORD $0x00f0; BYTE $0x00 // leaq         $61578(%rip), %r8  /* __UnquoteTab(%rip) */
+	LONG $0xaa058d4c; WORD $0x00f0; BYTE $0x00 // leaq         $61610(%rip), %r8  /* __UnquoteTab(%rip) */
 	QUAD $0xffffffb2056f0f66                   // movdqa       $-78(%rip), %xmm0  /* LCPI6_0(%rip) */
 	WORD $0x8949; BYTE $0xf9                   // movq         %rdi, %r9
 	WORD $0x8949; BYTE $0xf5                   // movq         %rsi, %r13
@@ -2568,7 +2568,7 @@ _html_escape:
 	QUAD $0xffffff910d6f0f66                   // movdqa       $-111(%rip), %xmm1  /* LCPI7_1(%rip) */
 	QUAD $0xffffff99156f0f66                   // movdqa       $-103(%rip), %xmm2  /* LCPI7_2(%rip) */
 	QUAD $0xffffffa11d6f0f66                   // movdqa       $-95(%rip), %xmm3  /* LCPI7_3(%rip) */
-	LONG $0x2a1d8d4c; WORD $0x00e8; BYTE $0x00 // leaq         $59434(%rip), %r11  /* __HtmlQuoteTab(%rip) */
+	LONG $0x4a1d8d4c; WORD $0x00e8; BYTE $0x00 // leaq         $59466(%rip), %r11  /* __HtmlQuoteTab(%rip) */
 	WORD $0x8949; BYTE $0xff                   // movq         %rdi, %r15
 	LONG $0xd0558b4c                           // movq         $-48(%rbp), %r10
 	WORD $0x9090; BYTE $0x90                   // .p2align 4, 0x90
@@ -2956,7 +2956,7 @@ LBB8_5:
 	WORD $0xd348; BYTE $0xe7                   // shlq         %cl, %rdi
 	WORD $0xc389                               // movl         %eax, %ebx
 	LONG $0x04e3c148                           // shlq         $4, %rbx
-	LONG $0xb1358d4c; WORD $0x006d; BYTE $0x00 // leaq         $28081(%rip), %r14  /* _POW10_M128_TAB(%rip) */
+	LONG $0xd1358d4c; WORD $0x006d; BYTE $0x00 // leaq         $28113(%rip), %r14  /* _POW10_M128_TAB(%rip) */
 	WORD $0x8948; BYTE $0xf8                   // movq         %rdi, %rax
 	LONG $0x3364f74a; BYTE $0x08               // mulq         $8(%rbx,%r14)
 	WORD $0x8949; BYTE $0xc7                   // movq         %rax, %r15
@@ -3083,7 +3083,7 @@ LBB9_5:
 	LONG $0xd05d8948                           // movq         %rbx, $-48(%rbp)
 	LONG $0x005a8e0f; WORD $0x0000             // jle          LBB9_12, $90(%rip)
 	WORD $0x3145; BYTE $0xe4                   // xorl         %r12d, %r12d
-	LONG $0x98358d4c; WORD $0x0097; BYTE $0x00 // leaq         $38808(%rip), %r14  /* _POW_TAB(%rip) */
+	LONG $0xb8358d4c; WORD $0x0097; BYTE $0x00 // leaq         $38840(%rip), %r14  /* _POW_TAB(%rip) */
 	LONG $0x00002de9; BYTE $0x00               // jmp          LBB9_8, $45(%rip)
 	WORD $0x9090; BYTE $0x90                   // .p2align 4, 0x90
 
@@ -3096,7 +3096,7 @@ LBB9_10:
 LBB9_11:
 	WORD $0x894c; BYTE $0xff     // movq         %r15, %rdi
 	WORD $0xde89                 // movl         %ebx, %esi
-	LONG $0x006695e8; BYTE $0x00 // callq        _right_shift, $26261(%rip)
+	LONG $0x0066b5e8; BYTE $0x00 // callq        _right_shift, $26293(%rip)
 
 LBB9_7:
 	WORD $0x0141; BYTE $0xdc       // addl         %ebx, %r12d
@@ -3113,7 +3113,7 @@ LBB9_8:
 	LONG $0xffffd3e9; BYTE $0xff   // jmp          LBB9_7, $-45(%rip)
 
 LBB9_12:
-	LONG $0x41358d4c; WORD $0x0097; BYTE $0x00 // leaq         $38721(%rip), %r14  /* _POW_TAB(%rip) */
+	LONG $0x61358d4c; WORD $0x0097; BYTE $0x00 // leaq         $38753(%rip), %r14  /* _POW_TAB(%rip) */
 	LONG $0x00002de9; BYTE $0x00               // jmp          LBB9_14, $45(%rip)
 
 LBB9_18:
@@ -3125,7 +3125,7 @@ LBB9_18:
 LBB9_20:
 	WORD $0x894c; BYTE $0xff     // movq         %r15, %rdi
 	WORD $0xde89                 // movl         %ebx, %esi
-	LONG $0x006446e8; BYTE $0x00 // callq        _left_shift, $25670(%rip)
+	LONG $0x006466e8; BYTE $0x00 // callq        _left_shift, $25702(%rip)
 	LONG $0x14478b41             // movl         $20(%r15), %eax
 
 LBB9_13:
@@ -3168,7 +3168,7 @@ LBB9_21:
 LBB9_25:
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	LONG $0x00003cbe; BYTE $0x00   // movl         $60, %esi
-	LONG $0x0065a3e8; BYTE $0x00   // callq        _right_shift, $26019(%rip)
+	LONG $0x0065c3e8; BYTE $0x00   // callq        _right_shift, $26051(%rip)
 	LONG $0x3cc48341               // addl         $60, %r12d
 	LONG $0x88fc8341               // cmpl         $-120, %r12d
 	LONG $0xffe58c0f; WORD $0xffff // jl           LBB9_25, $-27(%rip)
@@ -3194,7 +3194,7 @@ LBB9_31:
 	WORD $0xf741; BYTE $0xdc       // negl         %r12d
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	WORD $0x8944; BYTE $0xe6       // movl         %r12d, %esi
-	LONG $0x006550e8; BYTE $0x00   // callq        _right_shift, $25936(%rip)
+	LONG $0x006570e8; BYTE $0x00   // callq        _right_shift, $25968(%rip)
 	LONG $0xfc02be41; WORD $0xffff // movl         $-1022, %r14d
 
 LBB9_32:
@@ -3202,7 +3202,7 @@ LBB9_32:
 	LONG $0x000d840f; WORD $0x0000 // je           LBB9_34, $13(%rip)
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	LONG $0x000035be; BYTE $0x00   // movl         $53, %esi
-	LONG $0x006342e8; BYTE $0x00   // callq        _left_shift, $25410(%rip)
+	LONG $0x006362e8; BYTE $0x00   // callq        _left_shift, $25442(%rip)
 
 LBB9_34:
 	LONG $0x14478b41                           // movl         $20(%r15), %eax
@@ -4137,7 +4137,7 @@ LCPI13_2:
 _advance_string:
 	WORD $0xc1f6; BYTE $0x20       // testb        $32, %cl
 	LONG $0x0005850f; WORD $0x0000 // jne          LBB13_2, $5(%rip)
-	LONG $0x005af2e9; BYTE $0x00   // jmp          _advance_string_default, $23282(%rip)
+	LONG $0x005b12e9; BYTE $0x00   // jmp          _advance_string_default, $23314(%rip)
 
 LBB13_2:
 	BYTE $0x55                                             // pushq        %rbp
@@ -4858,7 +4858,7 @@ LBB14_62:
 	WORD $0xfe83; BYTE $0x17                   // cmpl         $23, %esi
 	LONG $0x00a68c0f; WORD $0x0000             // jl           LBB14_73, $166(%rip)
 	WORD $0x468d; BYTE $0xea                   // leal         $-22(%rsi), %eax
-	LONG $0x2e0d8d48; WORD $0x00f3; BYTE $0x00 // leaq         $62254(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0x4e0d8d48; WORD $0x00f3; BYTE $0x00 // leaq         $62286(%rip), %rcx  /* _P10_TAB(%rip) */
 	LONG $0x04590ff2; BYTE $0xc1               // mulsd        (%rcx,%rax,8), %xmm0
 	LONG $0x45110ff2; BYTE $0xc8               // movsd        %xmm0, $-56(%rbp)
 	LONG $0x000016b8; BYTE $0x00               // movl         $22, %eax
@@ -4880,7 +4880,7 @@ LBB14_70:
 	WORD $0xfe83; BYTE $0xea                   // cmpl         $-22, %esi
 	LONG $0x0096820f; WORD $0x0000             // jb           LBB14_77, $150(%rip)
 	WORD $0xdef7                               // negl         %esi
-	LONG $0xe5058d48; WORD $0x00f2; BYTE $0x00 // leaq         $62181(%rip), %rax  /* _P10_TAB(%rip) */
+	LONG $0x05058d48; WORD $0x00f3; BYTE $0x00 // leaq         $62213(%rip), %rax  /* _P10_TAB(%rip) */
 	LONG $0x045e0ff2; BYTE $0xf0               // divsd        (%rax,%rsi,8), %xmm0
 	LONG $0x45110ff2; BYTE $0xc8               // movsd        %xmm0, $-56(%rbp)
 	LONG $0x0000e0e9; BYTE $0x00               // jmp          LBB14_81, $224(%rip)
@@ -4912,7 +4912,7 @@ LBB14_74:
 	LONG $0xc82e0f66                           // ucomisd      %xmm0, %xmm1
 	LONG $0x0018870f; WORD $0x0000             // ja           LBB14_77, $24(%rip)
 	WORD $0xc089                               // movl         %eax, %eax
-	LONG $0x670d8d48; WORD $0x00f2; BYTE $0x00 // leaq         $62055(%rip), %rcx  /* _P10_TAB(%rip) */
+	LONG $0x870d8d48; WORD $0x00f2; BYTE $0x00 // leaq         $62087(%rip), %rcx  /* _P10_TAB(%rip) */
 	LONG $0x04590ff2; BYTE $0xc1               // mulsd        (%rcx,%rax,8), %xmm0
 	LONG $0x45110ff2; BYTE $0xc8               // movsd        %xmm0, $-56(%rbp)
 	LONG $0x000062e9; BYTE $0x00               // jmp          LBB14_81, $98(%rip)
@@ -8020,7 +8020,7 @@ LBB28_60:
 	WORD $0x894c; BYTE $0xdf       // movq         %r11, %rdi
 	WORD $0x8948; BYTE $0xde       // movq         %rbx, %rsi
 	LONG $0xb0558d48               // leaq         $-80(%rbp), %rdx
-	LONG $0x002684e8; BYTE $0x00   // callq        _advance_string_default, $9860(%rip)
+	LONG $0x0026a4e8; BYTE $0x00   // callq        _advance_string_default, $9892(%rip)
 	WORD $0x8548; BYTE $0xc0       // testq        %rax, %rax
 	LONG $0x0a77880f; WORD $0x0000 // js           LBB28_252, $2679(%rip)
 	LONG $0xd04d8b48               // movq         $-48(%rbp), %rcx
@@ -8146,7 +8146,7 @@ LBB28_86:
 	WORD $0x8548; BYTE $0xd2                   // testq        %rdx, %rdx
 	LONG $0x09038e0f; WORD $0x0000             // jle          LBB28_256, $2307(%rip)
 	LONG $0x0173b60f                           // movzbl       $1(%rbx), %esi
-	LONG $0xdf3d8d48; WORD $0x009c; BYTE $0x00 // leaq         $40159(%rip), %rdi  /* __UnquoteTab(%rip) */
+	LONG $0xff3d8d48; WORD $0x009c; BYTE $0x00 // leaq         $40191(%rip), %rdi  /* __UnquoteTab(%rip) */
 	LONG $0x3e3c8a44                           // movb         (%rsi,%rdi), %r15b
 	LONG $0xffff8041                           // cmpb         $-1, %r15b
 	LONG $0x003d840f; WORD $0x0000             // je           LBB28_93, $61(%rip)
@@ -9276,7 +9276,7 @@ LBB31_5:
 	WORD $0x0144; BYTE $0xf9                   // addl         %r15d, %ecx
 	LONG $0x00001fba; BYTE $0x00               // movl         $31, %edx
 	WORD $0x2944; BYTE $0xda                   // subl         %r11d, %edx
-	LONG $0x991d8d48; WORD $0x00b8; BYTE $0x00 // leaq         $47257(%rip), %rbx  /* _pow10_ceil_sig_f32.g(%rip) */
+	LONG $0xb91d8d48; WORD $0x00b8; BYTE $0x00 // leaq         $47289(%rip), %rbx  /* _pow10_ceil_sig_f32.g(%rip) */
 	WORD $0xc1fe                               // incb         %cl
 	WORD $0xe0d3                               // shll         %cl, %eax
 	LONG $0xd3248b4c                           // movq         (%rbx,%rdx,8), %r12
@@ -9410,7 +9410,7 @@ LBB31_22:
 	LONG $0x25e9c148                           // shrq         $37, %rcx
 	WORD $0xd16b; BYTE $0x64                   // imull        $100, %ecx, %edx
 	WORD $0xd029                               // subl         %edx, %eax
-	LONG $0x32158d48; WORD $0x0043; BYTE $0x00 // leaq         $17202(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0x52158d48; WORD $0x0043; BYTE $0x00 // leaq         $17234(%rip), %rdx  /* _Digits(%rip) */
 	LONG $0x4204b70f                           // movzwl       (%rdx,%rax,2), %eax
 	LONG $0x46894166; BYTE $0xfe               // movw         %ax, $-2(%r14)
 	LONG $0x4a04b70f                           // movzwl       (%rdx,%rcx,2), %eax
@@ -9441,7 +9441,7 @@ LBB31_26:
 	LONG $0x25eac148                           // shrq         $37, %rdx
 	WORD $0xda6b; BYTE $0x64                   // imull        $100, %edx, %ebx
 	WORD $0xd829                               // subl         %ebx, %eax
-	LONG $0xbc1d8d48; WORD $0x0042; BYTE $0x00 // leaq         $17084(%rip), %rbx  /* _Digits(%rip) */
+	LONG $0xdc1d8d48; WORD $0x0042; BYTE $0x00 // leaq         $17116(%rip), %rbx  /* _Digits(%rip) */
 	LONG $0x4304b70f                           // movzwl       (%rbx,%rax,2), %eax
 	LONG $0xfe468966                           // movw         %ax, $-2(%rsi)
 	LONG $0xfc468d48                           // leaq         $-4(%rsi), %rax
@@ -9472,7 +9472,7 @@ LBB31_30:
 
 LBB31_64:
 	WORD $0xff48; BYTE $0xc9                           // decq         %rcx
-	LONG $0x5b1d8d4c; WORD $0x0042; BYTE $0x00         // leaq         $16987(%rip), %r11  /* _Digits(%rip) */
+	LONG $0x7b1d8d4c; WORD $0x0042; BYTE $0x00         // leaq         $17019(%rip), %r11  /* _Digits(%rip) */
 	QUAD $0x9090909090909090; WORD $0x9090; BYTE $0x90 // .p2align 4, 0x90
 
 LBB31_65:
@@ -9494,7 +9494,7 @@ LBB31_66:
 	WORD $0xfa83; BYTE $0x0a                   // cmpl         $10, %edx
 	LONG $0x001d820f; WORD $0x0000             // jb           LBB31_68, $29(%rip)
 	WORD $0xd089                               // movl         %edx, %eax
-	LONG $0x0b0d8d48; WORD $0x0042; BYTE $0x00 // leaq         $16907(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x2b0d8d48; WORD $0x0042; BYTE $0x00 // leaq         $16939(%rip), %rcx  /* _Digits(%rip) */
 	WORD $0x148a; BYTE $0x41                   // movb         (%rcx,%rax,2), %dl
 	LONG $0x0141448a                           // movb         $1(%rcx,%rax,2), %al
 	LONG $0x01508841                           // movb         %dl, $1(%r8)
@@ -9533,7 +9533,7 @@ LBB31_73:
 
 LBB31_75:
 	WORD $0x9848                               // cltq
-	LONG $0x8c0d8d48; WORD $0x0041; BYTE $0x00 // leaq         $16780(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xac0d8d48; WORD $0x0041; BYTE $0x00 // leaq         $16812(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	LONG $0x46894166; BYTE $0x02               // movw         %ax, $2(%r14)
 	LONG $0x04c68349                           // addq         $4, %r14
@@ -9568,7 +9568,7 @@ LBB31_37:
 	LONG $0x25eec148                           // shrq         $37, %rsi
 	WORD $0xde6b; BYTE $0x64                   // imull        $100, %esi, %ebx
 	WORD $0xd929                               // subl         %ebx, %ecx
-	LONG $0x071d8d48; WORD $0x0041; BYTE $0x00 // leaq         $16647(%rip), %rbx  /* _Digits(%rip) */
+	LONG $0x271d8d48; WORD $0x0041; BYTE $0x00 // leaq         $16679(%rip), %rbx  /* _Digits(%rip) */
 	LONG $0x4b0cb70f                           // movzwl       (%rbx,%rcx,2), %ecx
 	LONG $0xfe488966                           // movw         %cx, $-2(%rax)
 	LONG $0x730cb70f                           // movzwl       (%rbx,%rsi,2), %ecx
@@ -9626,7 +9626,7 @@ LBB31_43:
 
 LBB31_44:
 	WORD $0xff48; BYTE $0xc8                   // decq         %rax
-	LONG $0x481d8d4c; WORD $0x0040; BYTE $0x00 // leaq         $16456(%rip), %r11  /* _Digits(%rip) */
+	LONG $0x681d8d4c; WORD $0x0040; BYTE $0x00 // leaq         $16488(%rip), %r11  /* _Digits(%rip) */
 	QUAD $0x9090909090909090                   // .p2align 4, 0x90
 
 LBB31_45:
@@ -9648,7 +9648,7 @@ LBB31_46:
 	WORD $0xf983; BYTE $0x0a                   // cmpl         $10, %ecx
 	LONG $0x0022820f; WORD $0x0000             // jb           LBB31_48, $34(%rip)
 	WORD $0xc989                               // movl         %ecx, %ecx
-	LONG $0xf8158d48; WORD $0x003f; BYTE $0x00 // leaq         $16376(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0x18158d48; WORD $0x0040; BYTE $0x00 // leaq         $16408(%rip), %rdx  /* _Digits(%rip) */
 	LONG $0x4a0cb70f                           // movzwl       (%rdx,%rcx,2), %ecx
 	LONG $0x08894166                           // movw         %cx, (%r8)
 	WORD $0x0149; BYTE $0xc0                   // addq         %rax, %r8
@@ -9705,7 +9705,7 @@ LBB31_55:
 
 LBB31_56:
 	WORD $0xff48; BYTE $0xc8                   // decq         %rax
-	LONG $0x32158d4c; WORD $0x003f; BYTE $0x00 // leaq         $16178(%rip), %r10  /* _Digits(%rip) */
+	LONG $0x52158d4c; WORD $0x003f; BYTE $0x00 // leaq         $16210(%rip), %r10  /* _Digits(%rip) */
 	WORD $0x9090                               // .p2align 4, 0x90
 
 LBB31_57:
@@ -9726,7 +9726,7 @@ LBB31_58:
 	WORD $0xfe83; BYTE $0x0a                   // cmpl         $10, %esi
 	LONG $0x0016820f; WORD $0x0000             // jb           LBB31_60, $22(%rip)
 	WORD $0xf089                               // movl         %esi, %eax
-	LONG $0xef0d8d48; WORD $0x003e; BYTE $0x00 // leaq         $16111(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0x0f0d8d48; WORD $0x003f; BYTE $0x00 // leaq         $16143(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	LONG $0x00894166                           // movw         %ax, (%r8)
 	LONG $0x000007e9; BYTE $0x00               // jmp          LBB31_61, $7(%rip)
@@ -9891,7 +9891,7 @@ LBB31_96:
 	LONG $0x25eac148                           // shrq         $37, %rdx
 	WORD $0xda6b; BYTE $0x64                   // imull        $100, %edx, %ebx
 	WORD $0xd929                               // subl         %ebx, %ecx
-	LONG $0x351d8d48; WORD $0x003c; BYTE $0x00 // leaq         $15413(%rip), %rbx  /* _Digits(%rip) */
+	LONG $0x551d8d48; WORD $0x003c; BYTE $0x00 // leaq         $15445(%rip), %rbx  /* _Digits(%rip) */
 	LONG $0x4b0cb70f                           // movzwl       (%rbx,%rcx,2), %ecx
 	LONG $0xfe488966                           // movw         %cx, $-2(%rax)
 	LONG $0x530cb70f                           // movzwl       (%rbx,%rdx,2), %ecx
@@ -9913,7 +9913,7 @@ LBB31_99:
 
 LBB31_103:
 	WORD $0xff48; BYTE $0xc8                   // decq         %rax
-	LONG $0xf2158d48; WORD $0x003b; BYTE $0x00 // leaq         $15346(%rip), %rdx  /* _Digits(%rip) */
+	LONG $0x12158d48; WORD $0x003c; BYTE $0x00 // leaq         $15378(%rip), %rdx  /* _Digits(%rip) */
 	WORD $0x9090                               // .p2align 4, 0x90
 
 LBB31_104:
@@ -9934,7 +9934,7 @@ LBB31_105:
 	WORD $0xf983; BYTE $0x0a                   // cmpl         $10, %ecx
 	LONG $0x0016820f; WORD $0x0000             // jb           LBB31_107, $22(%rip)
 	WORD $0xc889                               // movl         %ecx, %eax
-	LONG $0xac0d8d48; WORD $0x003b; BYTE $0x00 // leaq         $15276(%rip), %rcx  /* _Digits(%rip) */
+	LONG $0xcc0d8d48; WORD $0x003b; BYTE $0x00 // leaq         $15308(%rip), %rcx  /* _Digits(%rip) */
 	LONG $0x4104b70f                           // movzwl       (%rcx,%rax,2), %eax
 	LONG $0x00894166                           // movw         %ax, (%r8)
 	LONG $0x000006e9; BYTE $0x00               // jmp          LBB31_108, $6(%rip)
@@ -10162,126 +10162,138 @@ _swap:
 	QUAD $0x9090909090909090; LONG $0x90909090; WORD $0x9090 // .p2align 4, 0x90
 
 _heap_adjust:
-	BYTE $0x55                     // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5       // movq         %rsp, %rbp
-	WORD $0x5741                   // pushq        %r15
-	WORD $0x5641                   // pushq        %r14
-	BYTE $0x53                     // pushq        %rbx
-	LONG $0x18ec8348               // subq         $24, %rsp
-	LONG $0x364c8d4c; BYTE $0x01   // leaq         $1(%rsi,%rsi), %r9
-	WORD $0x3949; BYTE $0xd1       // cmpq         %rdx, %r9
-	LONG $0x014b870f; WORD $0x0000 // ja           LBB33_20, $331(%rip)
-	LONG $0x90909090; BYTE $0x90   // .p2align 4, 0x90
+	BYTE $0x55                           // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5             // movq         %rsp, %rbp
+	WORD $0x5741                         // pushq        %r15
+	WORD $0x5641                         // pushq        %r14
+	BYTE $0x53                           // pushq        %rbx
+	LONG $0x18ec8348                     // subq         $24, %rsp
+	LONG $0x36548d4c; BYTE $0x01         // leaq         $1(%rsi,%rsi), %r10
+	LONG $0x000066e9; BYTE $0x00         // jmp          LBB33_1, $102(%rip)
+	QUAD $0x9090909090909090; BYTE $0x90 // .p2align 4, 0x90
 
-LBB33_2:
-	WORD $0x3949; BYTE $0xd1       // cmpq         %rdx, %r9
-	LONG $0x0070830f; WORD $0x0000 // jae          LBB33_8, $112(%rip)
-	LONG $0x01418d4d               // leaq         $1(%r9), %r8
-	LONG $0x49048d4b               // leaq         (%r9,%r9,2), %rax
-	LONG $0xc7548b4c; BYTE $0x18   // movq         $24(%rdi,%rax,8), %r10
-	LONG $0xc74c8b48; BYTE $0x20   // movq         $32(%rdi,%rax,8), %rcx
+LBB33_16:
+	WORD $0x394d; BYTE $0xde       // cmpq         %r11, %r14
+	LONG $0x0151830f; WORD $0x0000 // jae          LBB33_17, $337(%rip)
+
+LBB33_19:
+	LONG $0xcf048d4a             // leaq         (%rdi,%r9,8), %rax
+	LONG $0xd70c8d4a             // leaq         (%rdi,%r10,8), %rcx
+	LONG $0x10708b48             // movq         $16(%rax), %rsi
+	LONG $0xe0758948             // movq         %rsi, $-32(%rbp)
+	WORD $0x8b48; BYTE $0x30     // movq         (%rax), %rsi
+	LONG $0x08588b48             // movq         $8(%rax), %rbx
+	LONG $0xd85d8948             // movq         %rbx, $-40(%rbp)
+	LONG $0xd0758948             // movq         %rsi, $-48(%rbp)
+	LONG $0x10718b48             // movq         $16(%rcx), %rsi
+	LONG $0x10708948             // movq         %rsi, $16(%rax)
+	WORD $0x8b48; BYTE $0x31     // movq         (%rcx), %rsi
+	LONG $0x08598b48             // movq         $8(%rcx), %rbx
+	LONG $0x08588948             // movq         %rbx, $8(%rax)
+	WORD $0x8948; BYTE $0x30     // movq         %rsi, (%rax)
+	LONG $0xe0458b48             // movq         $-32(%rbp), %rax
+	LONG $0x10418948             // movq         %rax, $16(%rcx)
+	LONG $0xd0458b48             // movq         $-48(%rbp), %rax
+	LONG $0xd8758b48             // movq         $-40(%rbp), %rsi
+	LONG $0x08718948             // movq         %rsi, $8(%rcx)
+	WORD $0x8948; BYTE $0x01     // movq         %rax, (%rcx)
+	LONG $0x00548d4f; BYTE $0x01 // leaq         $1(%r8,%r8), %r10
+	WORD $0x894c; BYTE $0xc6     // movq         %r8, %rsi
+
+LBB33_1:
+	WORD $0x3949; BYTE $0xd2       // cmpq         %rdx, %r10
+	LONG $0x00f4870f; WORD $0x0000 // ja           LBB33_17, $244(%rip)
+	WORD $0x3949; BYTE $0xd2       // cmpq         %rdx, %r10
+	LONG $0x0077830f; WORD $0x0000 // jae          LBB33_11, $119(%rip)
+	LONG $0x01428d4d               // leaq         $1(%r10), %r8
+	LONG $0x52048d4b               // leaq         (%r10,%r10,2), %rax
+	LONG $0xc7748b4c; BYTE $0x18   // movq         $24(%rdi,%rax,8), %r14
+	LONG $0xc74c8b4c; BYTE $0x20   // movq         $32(%rdi,%rax,8), %r9
 	LONG $0xc73c8b4c               // movq         (%rdi,%rax,8), %r15
-	LONG $0xc7448b48; BYTE $0x08   // movq         $8(%rdi,%rax,8), %rax
-	WORD $0x3948; BYTE $0xc8       // cmpq         %rcx, %rax
-	LONG $0xc1470f48               // cmovaq       %rcx, %rax
-	WORD $0x8548; BYTE $0xc0       // testq        %rax, %rax
-	LONG $0x0039840f; WORD $0x0000 // je           LBB33_6, $57(%rip)
-	LONG $0x021c8d4d               // leaq         (%r10,%rax), %r11
-	LONG $0x07348d4d               // leaq         (%r15,%rax), %r14
-	LONG $0x90909090               // .p2align 4, 0x90
+	LONG $0xc75c8b4c; BYTE $0x08   // movq         $8(%rdi,%rax,8), %r11
+	WORD $0x394d; BYTE $0xcb       // cmpq         %r9, %r11
+	WORD $0x894c; BYTE $0xdb       // movq         %r11, %rbx
+	LONG $0xd9470f49               // cmovaq       %r9, %rbx
+	WORD $0xc031                   // xorl         %eax, %eax
+	WORD $0x8548; BYTE $0xdb       // testq        %rbx, %rbx
+	LONG $0x0027840f; WORD $0x0000 // je           LBB33_7, $39(%rip)
+	BYTE $0x90                     // .p2align 4, 0x90
 
-LBB33_5:
-	LONG $0x1fb60f41               // movzbl       (%r15), %ebx
-	WORD $0xdb84                   // testb        %bl, %bl
-	LONG $0x0021840f; WORD $0x0000 // je           LBB33_6, $33(%rip)
-	LONG $0x0ab60f41               // movzbl       (%r10), %ecx
-	WORD $0xcb38                   // cmpb         %cl, %bl
-	LONG $0x001b850f; WORD $0x0000 // jne          LBB33_7, $27(%rip)
-	WORD $0xff49; BYTE $0xc7       // incq         %r15
-	WORD $0xff49; BYTE $0xc2       // incq         %r10
-	WORD $0xff48; BYTE $0xc8       // decq         %rax
-	LONG $0xffd9850f; WORD $0xffff // jne          LBB33_5, $-39(%rip)
-	WORD $0x894d; BYTE $0xda       // movq         %r11, %r10
-	WORD $0x894d; BYTE $0xf7       // movq         %r14, %r15
+LBB33_4:
+	LONG $0x0cb60f41; BYTE $0x07   // movzbl       (%r15,%rax), %ecx
+	LONG $0x060c3a41               // cmpb         (%r14,%rax), %cl
+	LONG $0x0011850f; WORD $0x0000 // jne          LBB33_6, $17(%rip)
+	WORD $0xff48; BYTE $0xc0       // incq         %rax
+	WORD $0x3948; BYTE $0xc3       // cmpq         %rax, %rbx
+	LONG $0xffe5850f; WORD $0xffff // jne          LBB33_4, $-27(%rip)
+	LONG $0x00000fe9; BYTE $0x00   // jmp          LBB33_8, $15(%rip)
 
 LBB33_6:
-	WORD $0x8a41; BYTE $0x1f // movb         (%r15), %bl
-	WORD $0x8a41; BYTE $0x0a // movb         (%r10), %cl
+	WORD $0x0149; BYTE $0xc6 // addq         %rax, %r14
+	WORD $0x0149; BYTE $0xc7 // addq         %rax, %r15
 
 LBB33_7:
-	WORD $0xcb38     // cmpb         %cl, %bl
-	LONG $0xc8420f4d // cmovbq       %r8, %r9
+	WORD $0x3948; BYTE $0xd8       // cmpq         %rbx, %rax
+	LONG $0x0008850f; WORD $0x0000 // jne          LBB33_9, $8(%rip)
 
 LBB33_8:
-	WORD $0x894d; BYTE $0xc8       // movq         %r9, %r8
-	LONG $0x760c8d4c               // leaq         (%rsi,%rsi,2), %r9
-	LONG $0x40148d4f               // leaq         (%r8,%r8,2), %r10
-	LONG $0xd73c8b4e               // movq         (%rdi,%r10,8), %r15
-	LONG $0xd7448b4a; BYTE $0x08   // movq         $8(%rdi,%r10,8), %rax
-	LONG $0xcf0c8b4a               // movq         (%rdi,%r9,8), %rcx
-	LONG $0xcf748b4a; BYTE $0x08   // movq         $8(%rdi,%r9,8), %rsi
-	WORD $0x3948; BYTE $0xc6       // cmpq         %rax, %rsi
-	LONG $0xf0470f48               // cmovaq       %rax, %rsi
-	WORD $0x8548; BYTE $0xf6       // testq        %rsi, %rsi
-	LONG $0x0036840f; WORD $0x0000 // je           LBB33_14, $54(%rip)
-	LONG $0x37348d4d               // leaq         (%r15,%rsi), %r14
-	LONG $0x311c8d4c               // leaq         (%rcx,%rsi), %r11
-	WORD $0x9090                   // .p2align 4, 0x90
+	WORD $0x394d; BYTE $0xcb     // cmpq         %r9, %r11
+	LONG $0x000006e9; BYTE $0x00 // jmp          LBB33_10, $6(%rip)
+
+LBB33_9:
+	WORD $0x8a41; BYTE $0x07 // movb         (%r15), %al
+	WORD $0x3a41; BYTE $0x06 // cmpb         (%r14), %al
 
 LBB33_10:
-	WORD $0xb60f; BYTE $0x19       // movzbl       (%rcx), %ebx
-	WORD $0xdb84                   // testb        %bl, %bl
-	LONG $0x0021840f; WORD $0x0000 // je           LBB33_14, $33(%rip)
-	LONG $0x07b60f41               // movzbl       (%r15), %eax
-	WORD $0xc338                   // cmpb         %al, %bl
-	LONG $0x001a850f; WORD $0x0000 // jne          LBB33_15, $26(%rip)
+	WORD $0x920f; BYTE $0xc0 // setb         %al
+	WORD $0xc084             // testb        %al, %al
+	LONG $0xd0450f4d         // cmovneq      %r8, %r10
+
+LBB33_11:
+	WORD $0x894d; BYTE $0xd0       // movq         %r10, %r8
+	LONG $0x760c8d4c               // leaq         (%rsi,%rsi,2), %r9
+	LONG $0x52148d4f               // leaq         (%r10,%r10,2), %r10
+	LONG $0xd73c8b4e               // movq         (%rdi,%r10,8), %r15
+	LONG $0xd75c8b4e; BYTE $0x08   // movq         $8(%rdi,%r10,8), %r11
+	LONG $0xcf348b4a               // movq         (%rdi,%r9,8), %rsi
+	LONG $0xcf748b4e; BYTE $0x08   // movq         $8(%rdi,%r9,8), %r14
+	WORD $0x394d; BYTE $0xde       // cmpq         %r11, %r14
+	WORD $0x894c; BYTE $0xf3       // movq         %r14, %rbx
+	LONG $0xdb470f49               // cmovaq       %r11, %rbx
+	WORD $0xc931                   // xorl         %ecx, %ecx
+	WORD $0x8548; BYTE $0xdb       // testq        %rbx, %rbx
+	LONG $0x002e840f; WORD $0x0000 // je           LBB33_15, $46(%rip)
+	QUAD $0x9090909090909090       // .p2align 4, 0x90
+
+LBB33_12:
+	LONG $0x0e04b60f               // movzbl       (%rsi,%rcx), %eax
+	LONG $0x0f043a41               // cmpb         (%r15,%rcx), %al
+	LONG $0x0012850f; WORD $0x0000 // jne          LBB33_14, $18(%rip)
 	WORD $0xff48; BYTE $0xc1       // incq         %rcx
-	WORD $0xff49; BYTE $0xc7       // incq         %r15
-	WORD $0xff48; BYTE $0xce       // decq         %rsi
-	LONG $0xffda850f; WORD $0xffff // jne          LBB33_10, $-38(%rip)
-	WORD $0x894d; BYTE $0xf7       // movq         %r14, %r15
-	WORD $0x894c; BYTE $0xd9       // movq         %r11, %rcx
+	WORD $0x3948; BYTE $0xcb       // cmpq         %rcx, %rbx
+	LONG $0xffe6850f; WORD $0xffff // jne          LBB33_12, $-26(%rip)
+	LONG $0xfffec1e9; BYTE $0xff   // jmp          LBB33_16, $-319(%rip)
+	BYTE $0x90                     // .p2align 4, 0x90
 
 LBB33_14:
-	WORD $0x198a             // movb         (%rcx), %bl
-	WORD $0x8a41; BYTE $0x07 // movb         (%r15), %al
+	WORD $0x0148; BYTE $0xce // addq         %rcx, %rsi
+	WORD $0x0149; BYTE $0xcf // addq         %rcx, %r15
 
 LBB33_15:
-	WORD $0xc338                   // cmpb         %al, %bl
-	LONG $0x005d830f; WORD $0x0000 // jae          LBB33_20, $93(%rip)
-	LONG $0xcf048d4a               // leaq         (%rdi,%r9,8), %rax
-	LONG $0xd70c8d4a               // leaq         (%rdi,%r10,8), %rcx
-	LONG $0x10708b48               // movq         $16(%rax), %rsi
-	LONG $0xe0758948               // movq         %rsi, $-32(%rbp)
-	WORD $0x8b48; BYTE $0x30       // movq         (%rax), %rsi
-	LONG $0x08588b48               // movq         $8(%rax), %rbx
-	LONG $0xd85d8948               // movq         %rbx, $-40(%rbp)
-	LONG $0xd0758948               // movq         %rsi, $-48(%rbp)
-	LONG $0x10718b48               // movq         $16(%rcx), %rsi
-	LONG $0x10708948               // movq         %rsi, $16(%rax)
-	WORD $0x8b48; BYTE $0x31       // movq         (%rcx), %rsi
-	LONG $0x08598b48               // movq         $8(%rcx), %rbx
-	LONG $0x08588948               // movq         %rbx, $8(%rax)
-	WORD $0x8948; BYTE $0x30       // movq         %rsi, (%rax)
-	LONG $0xe0458b48               // movq         $-32(%rbp), %rax
-	LONG $0x10418948               // movq         %rax, $16(%rcx)
-	LONG $0xd0458b48               // movq         $-48(%rbp), %rax
-	LONG $0xd8758b48               // movq         $-40(%rbp), %rsi
-	LONG $0x08718948               // movq         %rsi, $8(%rcx)
-	WORD $0x8948; BYTE $0x01       // movq         %rax, (%rcx)
-	LONG $0x004c8d4f; BYTE $0x01   // leaq         $1(%r8,%r8), %r9
-	WORD $0x894c; BYTE $0xc6       // movq         %r8, %rsi
-	WORD $0x3949; BYTE $0xd1       // cmpq         %rdx, %r9
-	LONG $0xfeba860f; WORD $0xffff // jbe          LBB33_2, $-326(%rip)
+	WORD $0x3948; BYTE $0xd9       // cmpq         %rbx, %rcx
+	LONG $0xfeb1840f; WORD $0xffff // je           LBB33_16, $-335(%rip)
+	WORD $0x068a                   // movb         (%rsi), %al
+	WORD $0x3a41; BYTE $0x07       // cmpb         (%r15), %al
+	LONG $0xfeaf820f; WORD $0xffff // jb           LBB33_19, $-337(%rip)
 
-LBB33_20:
-	LONG $0x18c48348                                                     // addq         $24, %rsp
-	BYTE $0x5b                                                           // popq         %rbx
-	WORD $0x5e41                                                         // popq         %r14
-	WORD $0x5f41                                                         // popq         %r15
-	BYTE $0x5d                                                           // popq         %rbp
-	BYTE $0xc3                                                           // retq
-	QUAD $0x9090909090909090; LONG $0x90909090; WORD $0x9090; BYTE $0x90 // .p2align 4, 0x90
+LBB33_17:
+	LONG $0x18c48348                                   // addq         $24, %rsp
+	BYTE $0x5b                                         // popq         %rbx
+	WORD $0x5e41                                       // popq         %r14
+	WORD $0x5f41                                       // popq         %r15
+	BYTE $0x5d                                         // popq         %rbp
+	BYTE $0xc3                                         // retq
+	QUAD $0x9090909090909090; WORD $0x9090; BYTE $0x90 // .p2align 4, 0x90
 
 _heap_sort:
 	BYTE $0x55                                               // pushq        %rbp
@@ -10307,7 +10319,7 @@ LBB34_3:
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	WORD $0x8948; BYTE $0xde       // movq         %rbx, %rsi
 	WORD $0x894c; BYTE $0xf2       // movq         %r14, %rdx
-	LONG $0xfffe32e8; BYTE $0xff   // callq        _heap_adjust, $-462(%rip)
+	LONG $0xfffe22e8; BYTE $0xff   // callq        _heap_adjust, $-478(%rip)
 	LONG $0xff438d48               // leaq         $-1(%rbx), %rax
 	WORD $0x8548; BYTE $0xdb       // testq        %rbx, %rbx
 	WORD $0x8948; BYTE $0xc3       // movq         %rax, %rbx
@@ -10345,7 +10357,7 @@ LBB34_6:
 	WORD $0x8944; BYTE $0xf2       // movl         %r14d, %edx
 	WORD $0x894c; BYTE $0xff       // movq         %r15, %rdi
 	WORD $0xf631                   // xorl         %esi, %esi
-	LONG $0xfffdafe8; BYTE $0xff   // callq        _heap_adjust, $-593(%rip)
+	LONG $0xfffd9fe8; BYTE $0xff   // callq        _heap_adjust, $-609(%rip)
 	WORD $0xff49; BYTE $0xcc       // decq         %r12
 	LONG $0xe8c38348               // addq         $-24, %rbx
 	WORD $0xff41; BYTE $0xce       // decl         %r14d
@@ -10363,111 +10375,120 @@ LBB34_7:
 	QUAD $0x9090909090909090; LONG $0x90909090; WORD $0x9090 // .p2align 4, 0x90
 
 _insert_sort:
-	BYTE $0x55                                               // pushq        %rbp
-	WORD $0x8948; BYTE $0xe5                                 // movq         %rsp, %rbp
-	WORD $0x5741                                             // pushq        %r15
-	WORD $0x5641                                             // pushq        %r14
-	WORD $0x5541                                             // pushq        %r13
-	WORD $0x5441                                             // pushq        %r12
-	BYTE $0x53                                               // pushq        %rbx
-	LONG $0x02fe8348                                         // cmpq         $2, %rsi
-	LONG $0x012a820f; WORD $0x0000                           // jb           LBB35_14, $298(%rip)
-	LONG $0x0001b841; WORD $0x0000                           // movl         $1, %r8d
-	LONG $0x00002de9; BYTE $0x00                             // jmp          LBB35_2, $45(%rip)
-	QUAD $0x9090909090909090; LONG $0x90909090; WORD $0x9090 // .p2align 4, 0x90
+	BYTE $0x55                     // pushq        %rbp
+	WORD $0x8948; BYTE $0xe5       // movq         %rsp, %rbp
+	WORD $0x5741                   // pushq        %r15
+	WORD $0x5641                   // pushq        %r14
+	WORD $0x5441                   // pushq        %r12
+	BYTE $0x53                     // pushq        %rbx
+	LONG $0x02fe8348               // cmpq         $2, %rsi
+	LONG $0x0133820f; WORD $0x0000 // jb           LBB35_17, $307(%rip)
+	LONG $0x0001b841; WORD $0x0000 // movl         $1, %r8d
+	LONG $0x000021e9; BYTE $0x00   // jmp          LBB35_2, $33(%rip)
 
-LBB35_12:
-	WORD $0x6348; BYTE $0xc1 // movslq       %ecx, %rax
+	// .p2align 4, 0x90
+LBB35_14:
+	WORD $0xd231 // xorl         %edx, %edx
+
+LBB35_15:
+	WORD $0x6348; BYTE $0xc2 // movslq       %edx, %rax
 	LONG $0x40048d48         // leaq         (%rax,%rax,2), %rax
-	LONG $0xc70c8d48         // leaq         (%rdi,%rax,8), %rcx
+	LONG $0xc7048d48         // leaq         (%rdi,%rax,8), %rax
 
-LBB35_13:
-	WORD $0x894c; BYTE $0x09       // movq         %r9, (%rcx)
-	LONG $0x417f0ff3; BYTE $0x08   // movdqu       %xmm0, $8(%rcx)
+LBB35_16:
+	WORD $0x894c; BYTE $0x20       // movq         %r12, (%rax)
+	LONG $0x407f0ff3; BYTE $0x08   // movdqu       %xmm0, $8(%rax)
 	WORD $0xff49; BYTE $0xc0       // incq         %r8
 	WORD $0x3949; BYTE $0xf0       // cmpq         %rsi, %r8
-	LONG $0x00f2840f; WORD $0x0000 // je           LBB35_14, $242(%rip)
+	LONG $0x0107840f; WORD $0x0000 // je           LBB35_17, $263(%rip)
 
 LBB35_2:
-	LONG $0x40048d4b                                       // leaq         (%r8,%r8,2), %rax
-	LONG $0xc70c8b4c                                       // movq         (%rdi,%rax,8), %r9
-	LONG $0x446f0ff3; WORD $0x08c7                         // movdqu       $8(%rdi,%rax,8), %xmm0
-	WORD $0x8944; BYTE $0xc0                               // movl         %r8d, %eax
-	WORD $0xc8ff                                           // decl         %eax
-	WORD $0x894c; BYTE $0xc1                               // movq         %r8, %rcx
-	LONG $0xffc5880f; WORD $0xffff                         // js           LBB35_12, $-59(%rip)
-	LONG $0x7e0f4966; BYTE $0xc2                           // movq         %xmm0, %r10
-	WORD $0x8945; BYTE $0xc3                               // movl         %r8d, %r11d
-	QUAD $0x9090909090909090; LONG $0x90909090; BYTE $0x90 // .p2align 4, 0x90
+	LONG $0x40048d4b               // leaq         (%r8,%r8,2), %rax
+	LONG $0xc7248b4c               // movq         (%rdi,%rax,8), %r12
+	LONG $0x446f0ff3; WORD $0x08c7 // movdqu       $8(%rdi,%rax,8), %xmm0
+	WORD $0x8944; BYTE $0xc0       // movl         %r8d, %eax
+	WORD $0xc8ff                   // decl         %eax
+	WORD $0x894c; BYTE $0xc2       // movq         %r8, %rdx
+	LONG $0xffc5880f; WORD $0xffff // js           LBB35_15, $-59(%rip)
+	LONG $0x7e0f4966; BYTE $0xc1   // movq         %xmm0, %r9
+	WORD $0x8945; BYTE $0xc3       // movl         %r8d, %r11d
+	LONG $0x000042e9; BYTE $0x00   // jmp          LBB35_4, $66(%rip)
+	LONG $0x90909090; WORD $0x9090 // .p2align 4, 0x90
 
-LBB35_4:
-	WORD $0x8941; BYTE $0xc4       // movl         %eax, %r12d
-	WORD $0xc089                   // movl         %eax, %eax
-	LONG $0x40048d48               // leaq         (%rax,%rax,2), %rax
-	LONG $0xc72c8b4c               // movq         (%rdi,%rax,8), %r13
-	LONG $0xc74c8b48; BYTE $0x08   // movq         $8(%rdi,%rax,8), %rcx
-	WORD $0x3949; BYTE $0xca       // cmpq         %rcx, %r10
-	LONG $0xca460f49               // cmovbeq      %r10, %rcx
-	WORD $0x8548; BYTE $0xc9       // testq        %rcx, %rcx
-	LONG $0x004e840f; WORD $0x0000 // je           LBB35_5, $78(%rip)
-	LONG $0x0d748d4d; BYTE $0x00   // leaq         (%r13,%rcx), %r14
-	LONG $0x093c8d4d               // leaq         (%r9,%rcx), %r15
-	WORD $0x894c; BYTE $0xcb       // movq         %r9, %rbx
-	WORD $0x9090                   // .p2align 4, 0x90
+LBB35_11:
+	LONG $0x52048d4b               // leaq         (%r10,%r10,2), %rax
+	LONG $0xc7048d48               // leaq         (%rdi,%rax,8), %rax
+	WORD $0x394d; BYTE $0xf1       // cmpq         %r14, %r9
+	LONG $0xffac830f; WORD $0xffff // jae          LBB35_16, $-84(%rip)
 
-LBB35_7:
-	WORD $0xb60f; BYTE $0x03                                 // movzbl       (%rbx), %eax
-	WORD $0xc084                                             // testb        %al, %al
-	LONG $0x0038840f; WORD $0x0000                           // je           LBB35_8, $56(%rip)
-	LONG $0x55b60f41; BYTE $0x00                             // movzbl       (%r13), %edx
-	WORD $0xd038                                             // cmpb         %dl, %al
-	LONG $0x0031850f; WORD $0x0000                           // jne          LBB35_9, $49(%rip)
-	WORD $0xff48; BYTE $0xc3                                 // incq         %rbx
-	WORD $0xff49; BYTE $0xc5                                 // incq         %r13
-	WORD $0xff48; BYTE $0xc9                                 // decq         %rcx
-	LONG $0xffd9850f; WORD $0xffff                           // jne          LBB35_7, $-39(%rip)
-	WORD $0x894d; BYTE $0xf5                                 // movq         %r14, %r13
-	WORD $0x894c; BYTE $0xfb                                 // movq         %r15, %rbx
-	LONG $0x000011e9; BYTE $0x00                             // jmp          LBB35_8, $17(%rip)
-	QUAD $0x9090909090909090; LONG $0x90909090; WORD $0x9090 // .p2align 4, 0x90
-
-LBB35_5:
-	WORD $0x894c; BYTE $0xcb // movq         %r9, %rbx
-
-LBB35_8:
-	WORD $0x038a     // movb         (%rbx), %al
-	LONG $0x00558a41 // movb         (%r13), %dl
-
-LBB35_9:
+LBB35_13:
 	WORD $0x6349; BYTE $0xcb       // movslq       %r11d, %rcx
 	LONG $0x490c8d48               // leaq         (%rcx,%rcx,2), %rcx
-	LONG $0xcf0c8d48               // leaq         (%rdi,%rcx,8), %rcx
-	WORD $0xd038                   // cmpb         %dl, %al
-	LONG $0xff2f830f; WORD $0xffff // jae          LBB35_13, $-209(%rip)
-	WORD $0x6349; BYTE $0xc4       // movslq       %r12d, %rax
-	LONG $0x40048d48               // leaq         (%rax,%rax,2), %rax
-	LONG $0xc7548b48; BYTE $0x10   // movq         $16(%rdi,%rax,8), %rdx
-	LONG $0x10518948               // movq         %rdx, $16(%rcx)
-	LONG $0xc7148b48               // movq         (%rdi,%rax,8), %rdx
-	LONG $0xc7448b48; BYTE $0x08   // movq         $8(%rdi,%rax,8), %rax
-	LONG $0x08418948               // movq         %rax, $8(%rcx)
-	WORD $0x8948; BYTE $0x11       // movq         %rdx, (%rcx)
-	WORD $0x8944; BYTE $0xe0       // movl         %r12d, %eax
+	LONG $0xcf548b48; BYTE $0x10   // movq         $16(%rdi,%rcx,8), %rdx
+	LONG $0x10508948               // movq         %rdx, $16(%rax)
+	LONG $0xcf148b48               // movq         (%rdi,%rcx,8), %rdx
+	LONG $0xcf4c8b48; BYTE $0x08   // movq         $8(%rdi,%rcx,8), %rcx
+	LONG $0x08488948               // movq         %rcx, $8(%rax)
+	WORD $0x8948; BYTE $0x10       // movq         %rdx, (%rax)
+	WORD $0x8944; BYTE $0xd8       // movl         %r11d, %eax
 	WORD $0xc8ff                   // decl         %eax
-	WORD $0x8945; BYTE $0xe3       // movl         %r12d, %r11d
-	LONG $0xff46890f; WORD $0xffff // jns          LBB35_4, $-186(%rip)
-	WORD $0xc931                   // xorl         %ecx, %ecx
-	LONG $0xfffeefe9; BYTE $0xff   // jmp          LBB35_12, $-273(%rip)
+	LONG $0xff74880f; WORD $0xffff // js           LBB35_14, $-140(%rip)
 
-LBB35_14:
-	BYTE $0x5b       // popq         %rbx
-	WORD $0x5c41     // popq         %r12
-	WORD $0x5d41     // popq         %r13
-	WORD $0x5e41     // popq         %r14
-	WORD $0x5f41     // popq         %r15
-	BYTE $0x5d       // popq         %rbp
-	BYTE $0xc3       // retq
-	LONG $0x90909090 // .p2align 4, 0x90
+LBB35_4:
+	WORD $0x634d; BYTE $0xd3               // movslq       %r11d, %r10
+	WORD $0x8941; BYTE $0xc3               // movl         %eax, %r11d
+	WORD $0xc089                           // movl         %eax, %eax
+	LONG $0x40048d48                       // leaq         (%rax,%rax,2), %rax
+	LONG $0xc7148b48                       // movq         (%rdi,%rax,8), %rdx
+	LONG $0xc7748b4c; BYTE $0x08           // movq         $8(%rdi,%rax,8), %r14
+	WORD $0x394d; BYTE $0xf1               // cmpq         %r14, %r9
+	WORD $0x894c; BYTE $0xcb               // movq         %r9, %rbx
+	LONG $0xde470f49                       // cmovaq       %r14, %rbx
+	WORD $0x8548; BYTE $0xdb               // testq        %rbx, %rbx
+	LONG $0x002c840f; WORD $0x0000         // je           LBB35_5, $44(%rip)
+	WORD $0xc031                           // xorl         %eax, %eax
+	QUAD $0x9090909090909090; WORD $0x9090 // .p2align 4, 0x90
+
+LBB35_7:
+	LONG $0x0cb60f41; BYTE $0x04   // movzbl       (%r12,%rax), %ecx
+	WORD $0x0c3a; BYTE $0x02       // cmpb         (%rdx,%rax), %cl
+	LONG $0x0032850f; WORD $0x0000 // jne          LBB35_9, $50(%rip)
+	WORD $0xff48; BYTE $0xc0       // incq         %rax
+	WORD $0x3948; BYTE $0xc3       // cmpq         %rax, %rbx
+	LONG $0xffe6850f; WORD $0xffff // jne          LBB35_7, $-26(%rip)
+	LONG $0xffff71e9; BYTE $0xff   // jmp          LBB35_11, $-143(%rip)
+	BYTE $0x90                     // .p2align 4, 0x90
+
+LBB35_5:
+	WORD $0x894d; BYTE $0xe7                               // movq         %r12, %r15
+	WORD $0xc031                                           // xorl         %eax, %eax
+	WORD $0x3948; BYTE $0xd8                               // cmpq         %rbx, %rax
+	LONG $0xff62840f; WORD $0xffff                         // je           LBB35_11, $-158(%rip)
+	LONG $0x00001de9; BYTE $0x00                           // jmp          LBB35_12, $29(%rip)
+	QUAD $0x9090909090909090; LONG $0x90909090; BYTE $0x90 // .p2align 4, 0x90
+
+LBB35_9:
+	WORD $0x0148; BYTE $0xc2       // addq         %rax, %rdx
+	LONG $0x043c8d4d               // leaq         (%r12,%rax), %r15
+	WORD $0x3948; BYTE $0xd8       // cmpq         %rbx, %rax
+	LONG $0xff40840f; WORD $0xffff // je           LBB35_11, $-192(%rip)
+
+LBB35_12:
+	WORD $0x8a41; BYTE $0x0f       // movb         (%r15), %cl
+	LONG $0x52048d4b               // leaq         (%r10,%r10,2), %rax
+	LONG $0xc7048d48               // leaq         (%rdi,%rax,8), %rax
+	WORD $0x0a3a                   // cmpb         (%rdx), %cl
+	LONG $0xff3e820f; WORD $0xffff // jb           LBB35_13, $-194(%rip)
+	LONG $0xfffee5e9; BYTE $0xff   // jmp          LBB35_16, $-283(%rip)
+
+LBB35_17:
+	BYTE $0x5b                                                           // popq         %rbx
+	WORD $0x5c41                                                         // popq         %r12
+	WORD $0x5e41                                                         // popq         %r14
+	WORD $0x5f41                                                         // popq         %r15
+	BYTE $0x5d                                                           // popq         %rbp
+	BYTE $0xc3                                                           // retq
+	QUAD $0x9090909090909090; LONG $0x90909090; WORD $0x9090; BYTE $0x90 // .p2align 4, 0x90
 
 _format_significand:
 	BYTE $0x55                     // pushq        %rbp
@@ -12617,7 +12638,7 @@ _Digits:
 	QUAD $0x3939383937393639                           // .ascii 8, '96979899'
 	QUAD $0x0000000000000000                           // .p2align 4, 0x00
 
-_LB_0e53103c: // _pow10_ceil_sig.g
+_LB_ee235cfd: // _pow10_ceil_sig.g
 	QUAD $0xff77b1fcbebcdc4f // .quad -38366372719436721
 	QUAD $0x25e8e89c13bb0f7b // .quad 2731688931043774331
 	QUAD $0x9faacf3df73609b1 // .quad -6941508010590729807
@@ -15272,7 +15293,7 @@ _P10_TAB:
 	QUAD $0x4480f0cf064dd592 // .quad 0x4480f0cf064dd592
 	QUAD $0x0000000000000000 // .p2align 4, 0x00
 
-_LB_bfe551e4: // _pow10_ceil_sig_f32.g
+_LB_9c6be400: // _pow10_ceil_sig_f32.g
 	QUAD $0x81ceb32c4b43fcf5 // .quad -9093133594791772939
 	QUAD $0xa2425ff75e14fc32 // .quad -6754730975062328270
 	QUAD $0xcad2f7f5359a3b3f // .quad -3831727700400522433

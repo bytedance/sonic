@@ -22,10 +22,18 @@ static always_inline size_t min(size_t x, size_t y) {
 static always_inline bool less(MapPair lhs, MapPair rhs) {
     size_t index = 0;
     size_t size = min(lhs.key.len, rhs.key.len);
-    while(index < size && *lhs.key.buf && *rhs.key.buf && *lhs.key.buf == *rhs.key.buf) {
+    while(index < size && *lhs.key.buf == *rhs.key.buf) {
         lhs.key.buf++, rhs.key.buf++;
         index++;
     }
+
+    if(index == size) {
+        if(lhs.key.len != rhs.key.len && index == lhs.key.len) {
+            return true;
+        } else {
+            return false;
+        }
+    } 
 
     return *(unsigned char *)lhs.key.buf - *(unsigned char *)rhs.key.buf < 0;
 }
