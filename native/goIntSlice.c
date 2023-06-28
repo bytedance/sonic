@@ -95,18 +95,9 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
                 i++;		
 	    //check if there are some illegal symbol after the right bracket ,if not, it can be closed and a value can be returned
 	    }else if(pos[i] ==']'){                   
-	        while(!is_overflow(i+1,src->len)){
-	            if(is_space(pos[i+1])){
-	                i++;
-	            }else{
-	                *p = i+1;
-	                arr->len = 0;
-	                return ERR_INVAL;
-	            }
-	        }
 	        (arr->uptr)[k] = num;
 	        arr->len = k+1;
-	        *p = src->len;
+	        *p = i+1;
 	        return 0;
 	    }else{		
 	    //If it's not a number or a comma, it's an error. Point to the position after the error and return ERR_ INVAL 
@@ -114,14 +105,9 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
                 arr->len = 0;
                 return ERR_INVAL;
 	    } 
-        }
-	if(is_overflow(i,src->len)){
-	    *p = i;
-	    arr->len = 0;
-	    return ERR_INVAL;
-	}   	
-	while(!is_overflow(i+1,src->len) && is_space(pos[i])){
-	i++;
+        }   	
+	while(!is_overflow(i,src->len) && is_space(pos[i])){
+	    i++;
 	}
 	if(is_overflow(i,src->len)){
 	    *p = i;
@@ -129,18 +115,9 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 	    return ERR_INVAL;
 	}
 	if(pos[i] ==']'){
-	    while(!is_overflow(i+1,src->len)){
-	        if(is_space(pos[i+1])){
-	            i++;
-	        }else{
-	            *p = i+1;
-	            arr->len = 0;
-	            return ERR_INVAL;
-	        }
-	    }
 	    (arr->uptr)[k] = num;
 	    arr->len = k+1;
-	    *p = src->len;
+	    *p = i+1;
 	    return 0;
 	}
 	if(is_integer(pos[i])){
@@ -209,22 +186,13 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
 	    if(is_integer(pos[i])){
 	        num = num*10 + char_to_num(pos[i]);
         	i++;		
-	    }else if(pos[i] ==']'){
-		while(!is_overflow(i+1,src->len)){
-		    if(is_space(pos[i+1])){
-			i++;
-		    }else{
-		        *p = i+1;
-	                arr->len = 0;
-	                return ERR_INVAL;
-		    }
-		}                                     
+	    }else if(pos[i] ==']'){                                     
 	        if(flag =='-'){
 		    num = -(num);
 		}
 		(arr->iptr)[k] = num;
 		arr->len = k+1;
-		*p = src->len;
+		*p = i+1;
 		return 0;
 	    }else{
 		*p = i;                                                
@@ -232,11 +200,6 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
         	return ERR_INVAL;
 	    } 
 	} 
-	if(is_overflow(i,src->len)){
-	    *p = i;
-	    arr->len = 0;
-	    return ERR_INVAL;
-	}
 	while(!is_overflow(i,src->len) && is_space(pos[i])){
 	    i++;
 	}
@@ -246,18 +209,9 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
 	    return ERR_INVAL;
 	}
 	if(pos[i] ==']'){
-	    while(!is_overflow(i+1,src->len)){
-	        if(is_space(pos[i+1])){
-		    i++;
-		}else{
-		    *p = i+1;
-	            arr->len = 0;
-	            return ERR_INVAL;
-		}
-	    }
 	    (arr->uptr)[k] = num;
 	    arr->len = k+1;
-	    *p = src->len;
+	    *p = i+1;
 	    return 0;
 	}
 	if(is_integer(pos[i])){
