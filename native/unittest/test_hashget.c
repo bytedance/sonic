@@ -7,20 +7,27 @@
 #include "../native.h"
 #include "../hashmap_get.c"
 
+// Set hashmap.
 void field_hashmap_set(FieldHashMap *fmap, const GoString* key, int64_t id){
     XXH64_hash_t seed   =    123456789;
-    size_t len          =    fmap->N;
-    uint64_t hash       =    XXH64(key->name, len, seed) % len;
-    fmap->bucket[hash]->name  =     key;
-    fmap->bucket[hash]->hash  =     hash;
-    fmap->bucket[hash]->id    =     id;
+    uint64_t hash       =    XXH64(key->buf, key->len, seed);
+    uint64_t index      =    hash % fmap->N;
+
+    while (fmap->bucket[index].hash != 0) {
+        index = (index + 1) % fmap->N;
+    }
+
+    fmap->bucket[index].name = (*key);
+    fmap->bucket[index].hash = hash;
+    fmap->bucket[index].id   = id;
     return;
 }
 
 int main() {
     FieldHashMap map;
     map.N      = 10000;
-    map.bucket = NULL;
+    map.bucket = (FieldEntry*)malloc(sizeof(FieldEntry) * map.N);
+    memset(map.bucket, 0, sizeof(sizeof(FieldEntry) * map.N));
 
     GoString key1;
     GoString key2;
@@ -49,4 +56,5 @@ int main() {
     field_hashmap_set(&map, &key3, 3);
     value3 = field_hashmap_get(&map, &key3);
     printf("The value3 is: %" PRId64 "\n", value3);
+    free(map.bucket);
 }

@@ -2,19 +2,23 @@
 #define XXH_IMPLEMENTATION   /* access definitions */
 
 #include <string.h>
+#include "native.h"
 #include "xxhash.h"
 
 // Get hashmap, return the matching ID, and if not found, return -1.
 int64_t field_hashmap_get(FieldHashMap *fmap, const GoString* key){
     XXH64_hash_t seed   =    123456789;
-    size_t len          =    fmap->N;
-    uint64_t hash       =    XXH64(key->name, len, seed) % len;
-    int64_t  id         =    -1;
+    uint64_t hash       =    XXH64(key->buf, key->len, seed);
+    uint64_t index      =    hash % fmap->N;
 
-    if(fmap->bucket[hash] != NULL \
-    && fmap->bucket[hash]->name->len == key->len \
-    && memcmp(fmap->bucket[hash]->name->buf, key->buf, key->len)){
-        id              =    fmap->bucket[hash]->id;
+    while (fmap->bucket[index].hash != 0) {
+        if(fmap->bucket[index].hash == hash \
+        && fmap->bucket[index].name.len == key->len \
+        && memcmp(fmap->bucket[index].name.buf, key->buf, key->len) == 0){ // memcmp 返回值是0 时才说明字符串相等
+            return fmap->bucket[index].id;
+        } else {
+            index = (index + 1) % fmap->N;
+        }
     }
-    return id;
+    return -1;
 }
