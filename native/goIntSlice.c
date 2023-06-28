@@ -131,6 +131,11 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 	    i++;
 	}				 			             
     }
+    if(is_overflow(i,src->len)){
+	*p = i;
+        arr->len = 0;
+	return ERR_INVAL;
+    }
 }
 
 long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){   
@@ -228,5 +233,10 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
 	    i++;
 	}
 	flag = '+';	      //Reset flag to positive sign 			             
+    }
+    if(is_overflow(i,src->len)){
+        *p = i;
+	arr->len = 0;
+	return ERR_INVAL;
     }
 }
