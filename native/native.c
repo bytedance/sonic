@@ -24,3 +24,4 @@
 #include "atof_native.c"
 #include "scanning.c"
 #include "f32toa.c"
+#include "to_lower.c"

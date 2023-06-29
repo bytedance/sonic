@@ -132,22 +132,22 @@ type Scanner func(path Sequence, node *Node) bool
 func (self *Node) ForEach(sc Scanner) error {
     switch self.itype() {
     case types.V_ARRAY:
-        ns, err := self.UnsafeArray()
+        ns, err := self.unsafeArray()
         if err != nil {
             return err
         }
-        for i := range ns {
-            if !sc(Sequence{i, nil}, &ns[i]) {
+        for i:=0; i<ns.Len(); i++ {
+            if !sc(Sequence{i, nil}, ns.At(i)) {
                 return err
             }
         }
     case types.V_OBJECT:
-        ns, err := self.UnsafeMap()
+        ns, err := self.unsafeMap()
         if err != nil {
             return err
         }
-        for i := range ns {
-            if !sc(Sequence{i, &ns[i].Key}, &ns[i].Value) {
+        for i:=0; i<ns.Len(); i++ {
+            if !sc(Sequence{i, &ns.At(i).Key}, &ns.At(i).Value) {
                 return err
             }
         }
@@ -155,10 +155,4 @@ func (self *Node) ForEach(sc Scanner) error {
         sc(Sequence{-1, nil}, self)
     }
     return self.Check()
-}
-
-type PairSlice []Pair
-
-func (self PairSlice) Sort() {
-    radixQsort(self, 0, maxDepth(len(self)))
 }
