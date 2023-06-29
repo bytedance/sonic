@@ -57,11 +57,6 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
     //Num is used to store the current number                                                
     int num = 0;                                              
     while(i < len){                   
-    	//If the capacity is insufficient, return ERR_ RECURSE_ MAX
-        if(k >= arr->cap){                                     
-            *p = i;
-            return ERR_RECURSE_MAX;
-        }
         //Jump back if it's a space
         while(i < len && is_space(pos[i])){     
             i++;             
@@ -74,55 +69,44 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 	}else{
 	    num = char_to_num(pos[i]); 
 	} 	     
-	int flag_index = i;  //set a flag to judge the num "0123" is false
 	i++;
-	while(i < len && !is_space(pos[i])&& pos[i] !=','){                         	  
-	    //If it is not followed by a space or a comma, it indicates that it is a number or an error has occurred
-	    if(is_integer(pos[i])){
-		if(flag_index == i-1 && num == 0){
-		    *p = i;                                               
-                    arr->len = 0;
-                    return ERR_INVAL;
-		}		 		
-	        num = num*10 + char_to_num(pos[i]);
-                i++;		
-	    //check if there are some illegal symbol after the right bracket ,if not, it can be closed and a value can be returned
-	    }else if(pos[i] ==']'){                   
-	        (arr->uptr)[k] = num;
-	        arr->len = k+1;
-	        *p = i+1;
-	        return 0;
-	    }else{		
-	    //If it's not a number or a comma, it's an error. Point to the position after the error and return ERR_ INVAL 
-	        *p = i;                                               
-                arr->len = 0;
-                return ERR_INVAL;
-	    } 
-        }   	
-	while(i <len && is_space(pos[i])){
-	    i++;
-	}
-	if(i >= len || is_integer(pos[i])){
-	    *p = i;
-	    arr->len = 0;
+	//"0123"is false
+	if(num == 0 && is_integer(pos[i])){
+	    *p = i;                                     
+            arr->len = 0;
 	    return ERR_INVAL;
 	}
-	if(pos[i] ==']'){
-	    (arr->uptr)[k] = num;
-	    arr->len = k+1;
-	    *p = i+1;
-	    return 0;
+	//parse the digital
+	while(i < len && is_integer(pos[i])){		 		
+	    num = num*10 + char_to_num(pos[i]);
+            i++;		
 	}
-	if(pos[i] ==','){      //If it's a comma, put it away 
-	    (arr->uptr)[k++] = num; 
-	    i++;
-	}				 			             
-    }
-    if(i >= len){
-	*p = i;
-        arr->len = 0;
-	return ERR_INVAL;
-    }
+	while(i < len && pos[i] != ',' && pos[i] != ']'){     
+            if(isspace(pos[i])){
+                i++;
+	    }else{
+	        *p = i;                                     
+                arr->len = 0;
+                return ERR_INVAL;
+	    }      
+	}	
+	//If the capacity is insufficient, return ERR_ RECURSE_ MAX
+	if(k >= arr->cap){
+            *p = i;
+            return ERR_RECURSE_MAX;
+        }
+        (arr->uptr)[k++] = num;
+	if (pos[i] == ']') {
+            arr->len = k;
+	    *p = i + 1;
+	    return 0;
+        }else{
+            i++;
+        }						 			             
+    }    
+    *p = i;
+    arr->len = 0;
+    return ERR_INVAL;   
 }
 
 long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){   
@@ -143,14 +127,10 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
     //Define a flag to represent the symbol of a signed number                                                        
     char flag ='+';       
     while(i < len){
-        if(k==arr->cap){                                                
-            *p = i;
-            return ERR_RECURSE_MAX;
-        }
         while(i < len && is_space(pos[i])){                                         
             i++;             
 	}
-	if(i >= len || (pos[i]<'0' || pos[i]>'9') && (pos[i]!='+' && pos[i]!='-' )){		
+	if(i >= len || (pos[i]<'0' || pos[i]>'9') && (pos[i]!='-' )){		
 	    *p = i;                                                   
             arr->len = 0;
 	    //The first one is neither a number nor a Plus or minus sign, so it must be illegal 
@@ -162,58 +142,45 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
 	    num = char_to_num(pos[i]);			
 	}else{
 	    num = char_to_num(pos[i]);            
-	} 
-	int flag_index = i;	    
-	i++; 
-	while(i <len && !is_space(pos[i])&& pos[i] !=','){                          
-	    if(is_integer(pos[i])){
-	    	if(flag_index == i-1 && num == 0){
-		    *p = i;                                               
-                    arr->len = 0;
-                    return ERR_INVAL;
-		}
-	        num = num*10 + char_to_num(pos[i]);
-        	i++;		
-	    }else if(pos[i] ==']'){                                     
-	        if(flag =='-'){
-		    num = -(num);
-		}
-		(arr->iptr)[k] = num;
-		arr->len = k+1; 
-		*p = i+1;
-		return 0;
-	    }else{
-		*p = i;                                                
-        	arr->len = 0;
-        	return ERR_INVAL;
-	    } 
-	} 
-	while(i <len && is_space(pos[i])){
-	    i++;
-	}
-	if(i >= len || is_integer(pos[i])){
-	    *p = i;
-	    arr->len = 0;
+	} 	    
+	i++;	
+	if(num == 0 && is_integer(pos[i])){
+            *p = i;                                     
+            arr->len = 0;
 	    return ERR_INVAL;
 	}
-	if(pos[i] ==']'){
-	    (arr->iptr)[k] = num;
-	    arr->len = k+1;
-	    *p = i+1;
+	while(i < len && is_integer(pos[i])){		 		
+	    num = num*10 + char_to_num(pos[i]);
+            i++;		
+	}
+	while(i < len && pos[i] != ',' && pos[i] != ']'){     
+            if(isspace(pos[i])){
+                i++;
+	    }else{
+		*p = i;                                     
+                arr->len = 0;
+                return ERR_INVAL;
+	    }      
+	}	
+	//If the capacity is insufficient, return ERR_ RECURSE_ MAX
+	if(k >= arr->cap){
+            *p = i;
+            return ERR_RECURSE_MAX;
+        }
+        if(flag =='-'){
+	    num = -(num);
+	}
+        (arr->iptr)[k++] = num;
+	if (pos[i] == ']') {
+            arr->len = k;
+	    *p = i + 1;
 	    return 0;
-	}
-	if(pos[i] ==','){                                                			
-	    if(flag =='-'){
-	        num = -(num);
-	    }
-	    (arr->iptr)[k++] = num; 
-	    i++;
-	}
-	flag = '+';	      //Reset flag to positive sign 			             
+        }else{
+            i++;
+        }
+	flag = '+';	      //Reset flag to positive sign	 			             
     }
-    if(i >= len){
-        *p = i;
-	arr->len = 0;
-	return ERR_INVAL;
-    }
+    *p = i;
+    arr->len = 0;
+    return ERR_INVAL;
 }
