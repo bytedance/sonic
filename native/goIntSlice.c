@@ -63,6 +63,12 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 	}
 	//eof or the first one is not a number, it must be illegal
 	if(i >= len || pos[i]<'0' || pos[i]>'9'){
+	    //"[   ]" is true example
+	    if(pos[i]==']' && k==0){
+	        arr->len = k;
+	        *p = i + 1;
+	        return 0;
+	    }
 	    *p = i;                                     
             arr->len = 0;
 	    return ERR_INVAL;                             
@@ -130,7 +136,12 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
         while(i < len && is_space(pos[i])){                                         
             i++;             
 	}
-	if(i >= len || (pos[i]<'0' || pos[i]>'9') && (pos[i]!='-' )){		
+	if(i >= len || (pos[i]<'0' || pos[i]>'9') && (pos[i]!='-' )){
+	    if(pos[i]==']' && k==0){
+	        arr->len = k;
+	        *p = i + 1;
+	        return 0;
+	    }		
 	    *p = i;                                                   
             arr->len = 0;
 	    //The first one is neither a number nor a Plus or minus sign, so it must be illegal 
