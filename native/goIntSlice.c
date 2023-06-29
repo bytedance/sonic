@@ -77,7 +77,7 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
 	} 	     
 	i++;
 	//"0123"is false
-	if(num == 0 && is_integer(pos[i])){
+	if(i>=len || (num == 0 && is_integer(pos[i]))){
 	    *p = i;                                     
             arr->len = 0;
 	    return ERR_INVAL;
@@ -146,16 +146,21 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
             arr->len = 0;
 	    //The first one is neither a number nor a Plus or minus sign, so it must be illegal 
 	    return ERR_INVAL;                        
-	}else if(pos[i]=='+' || pos[i]=='-'){		
+	}else if( pos[i]=='-'){		
 	    //Determine symbols , and the first digit immediately after it is also stored in num and i+1 
 	    flag =  pos[i];                           
 	    i++;
+	    if(i>=len || !is_integer(pos[i])){
+	    	*p = i;                                     
+                arr->len = 0;
+	        return ERR_INVAL;
+	    }
 	    num = char_to_num(pos[i]);			
 	}else{
 	    num = char_to_num(pos[i]);            
 	} 	    
 	i++;	
-	if(num == 0 && is_integer(pos[i])){
+	if(i>=len || (num == 0 && is_integer(pos[i]))){
             *p = i;                                     
             arr->len = 0;
 	    return ERR_INVAL;
