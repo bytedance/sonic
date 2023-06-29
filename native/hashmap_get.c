@@ -14,7 +14,7 @@ int64_t field_hashmap_get(FieldHashMap *fmap, const GoString* key){
     while (fmap->bucket[index].hash != 0) {
         if(fmap->bucket[index].hash == hash \
         && fmap->bucket[index].name.len == key->len \
-        && memcmp(fmap->bucket[index].name.buf, key->buf, key->len) == 0){ // memcmp 返回值是0 时才说明字符串相等
+        && memcmp(fmap->bucket[index].name.buf, key->buf, key->len) == 0){
             return fmap->bucket[index].id;
         } else {
             index = (index + 1) % fmap->N;
