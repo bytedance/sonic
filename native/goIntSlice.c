@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-
 #include "native.h"
 #include "types.h"
 
@@ -55,7 +54,7 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
     //K+1 represents the number of digits in the string src
     int k =0;
     //Num is used to store the current number                                                
-    int num = 0;                                              
+    uint64_t num = 0;                                              
     while(i < len){                   
         //Jump back if it's a space
         while(i < len && is_space(pos[i])){     
@@ -82,9 +81,13 @@ long decode_u64_array( const GoString* src, long* p, GoIntSlice* arr){
             arr->len = 0;
 	    return ERR_INVAL;
 	}
-	//parse the digital
-	while(i < len && is_integer(pos[i])){		 		
-	    num = num*10 + char_to_num(pos[i]);
+	//parse the digital and judge the overflow
+	while(i < len && is_integer(pos[i])){
+	    if( __builtin_mul_overflow(num,10,&num) || __builtin_add_overflow(num,char_to_num(pos[i]),&num)){
+	    	*p = i;                                     
+                arr->len = 0;
+	    	return ERR_INVAL;
+	    }		 		
             i++;		
 	}
 	while(i < len && pos[i] != ',' && pos[i] != ']'){     
@@ -129,7 +132,7 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
     }
     i++;                                                                
     int k =0;                                                          
-    int num = 0;
+    int64_t num = 0;
     //Define a flag to represent the symbol of a signed number                                                        
     char flag ='+';       
     while(i < len){
@@ -165,8 +168,12 @@ long decode_i64_array(const GoString* src, long* p, GoIntSlice* arr){
             arr->len = 0;
 	    return ERR_INVAL;
 	}
-	while(i < len && is_integer(pos[i])){		 		
-	    num = num*10 + char_to_num(pos[i]);
+	while(i < len && is_integer(pos[i])){
+	    if( __builtin_mul_overflow(num,10,&num) || __builtin_add_overflow(num,char_to_num(pos[i]),&num)){
+	    	*p = i;                                     
+                arr->len = 0;
+	    	return ERR_INVAL;
+	    }		 		
             i++;		
 	}
 	while(i < len && pos[i] != ',' && pos[i] != ']'){     
