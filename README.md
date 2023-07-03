@@ -298,7 +298,7 @@ type (
     UserArray   struct{ Value []UserNode }
 )
 ```
-Sonic provides the following API to return **the preorder traversal of a JSON AST**. You should implement `ast.Visitor` by yourself and pass it to `ast.Preorder()` method. In your visitor you can make your custom types to represent JSON values. There may be an O(n) space container (such as stack) in your visitor to record the object / array hierarchy.
+Sonic provides the following API to return **the preorder traversal of a JSON AST**. The `ast.Visitor` is a SAX style interface which is used in some C++ JSON library. You should implement `ast.Visitor` by yourself and pass it to `ast.Preorder()` method. In your visitor you can make your custom types to represent JSON values. There may be an O(n) space container (such as stack) in your visitor to record the object / array hierarchy.
 ```go
 func Preorder(str string, visitor Visitor) error
 
