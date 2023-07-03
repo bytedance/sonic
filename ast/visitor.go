@@ -60,8 +60,13 @@ type Visitor interface {
     // After this point the visitor will receive a sequence of callbacks like
     // [string, value, string, value, ......, ObjectEnd].
     //
-    // Notice that this is a recursive definition which means the value can
+    // Note:
+    // 1. This is a recursive definition which means the value can
     // also be a JSON object / array described by a sequence of callbacks.
+    // 2. The suggested capacity will be 0 if current object is empty.
+    // 3. Currently sonic use a fixed capacity for non-empty object (keep in
+    // sync with ast.Node) which might not be very suitable. This may be
+    // improved in future version.
     OnObjectBegin(capacity int) error
 
     // OnObjectKey handles a JSON object key string in member.
@@ -76,8 +81,13 @@ type Visitor interface {
     // After this point the visitor will receive a sequence of callbacks like
     // [value, value, value, ......, ArrayEnd].
     //
-    // Notice that this is a recursive definition which means the value can
+    // Note:
+    // 1. This is a recursive definition which means the value can
     // also be a JSON object / array described by a sequence of callbacks.
+    // 2. The suggested capacity will be 0 if current array is empty.
+    // 3. Currently sonic use a fixed capacity for non-empty array (keep in
+    // sync with ast.Node) which might not be very suitable. This may be
+    // improved in future version.
     OnArrayBegin(capacity int) error
 
     // OnArrayEnd handles the ending of a JSON array value.
