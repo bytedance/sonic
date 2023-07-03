@@ -306,7 +306,8 @@ type Visitor interface {
     OnNull() error
     OnBool(v bool) error
     OnString(v string) error
-    OnNumber(v json.Number, isInt64 bool) error
+    OnInt64(v int64, n json.Number) error
+    OnFloat64(v float64, n json.Number) error
     OnObjectBegin(capacity int) error
     OnObjectKey(key string) error
     OnObjectEnd() error

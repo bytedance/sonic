@@ -154,24 +154,32 @@ func (self *visitorNodeDiffTest) OnString(v string) error {
     return nil
 }
 
-func (self *visitorNodeDiffTest) OnNumber(v json.Number, isInt64 bool) error {
+func (self *visitorNodeDiffTest) OnInt64(v int64, n json.Number) error {
     if self.tracer != nil {
-        fmt.Fprintf(self.tracer, "OnNumber: %q, isInt64: %t\n", v, isInt64)
+        fmt.Fprintf(self.tracer, "OnInt64: %d (%q)\n", v, n)
     }
     self.requireType(V_NUMBER)
-    if isInt64 {
-        want, err := self.cursor.StrictInt64()
-        require.NoError(self.t, err)
-        got, err := v.Int64()
-        require.NoError(self.t, err)
-        require.EqualValues(self.t, want, got)
-    } else {
-        want, err := self.cursor.StrictFloat64()
-        require.NoError(self.t, err)
-        got, err := v.Float64()
-        require.NoError(self.t, err)
-        require.EqualValues(self.t, want, got)
+    want, err := self.cursor.StrictInt64()
+    require.NoError(self.t, err)
+    require.EqualValues(self.t, want, v)
+    nv, err := n.Int64()
+    require.NoError(self.t, err)
+    require.EqualValues(self.t, want, nv)
+    self.onValueEnd()
+    return nil
+}
+
+func (self *visitorNodeDiffTest) OnFloat64(v float64, n json.Number) error {
+    if self.tracer != nil {
+        fmt.Fprintf(self.tracer, "OnFloat64: %f (%q)\n", v, n)
     }
+    self.requireType(V_NUMBER)
+    want, err := self.cursor.StrictFloat64()
+    require.NoError(self.t, err)
+    require.EqualValues(self.t, want, v)
+    nv, err := n.Float64()
+    require.NoError(self.t, err)
+    require.EqualValues(self.t, want, nv)
     self.onValueEnd()
     return nil
 }
@@ -541,20 +549,16 @@ func (self *visitorUserNodeVisitorDecoder) OnString(v string) error {
     return self.onValueEnd()
 }
 
-func (self *visitorUserNodeVisitorDecoder) OnNumber(v json.Number, isInt64 bool) error {
-    if isInt64 {
-        i64, err := v.Int64()
-        if err != nil {
-            return err
-        }
-        self.stk[self.sp].val = &visitorUserInt64{Value: i64}
-    } else {
-        f64, err := v.Float64()
-        if err != nil {
-            return err
-        }
-        self.stk[self.sp].val = &visitorUserFloat64{Value: f64}
+func (self *visitorUserNodeVisitorDecoder) OnInt64(v int64, n json.Number) error {
+    self.stk[self.sp].val = &visitorUserInt64{Value: v}
+    if err := self.incrSP(); err != nil {
+        return err
     }
+    return self.onValueEnd()
+}
+
+func (self *visitorUserNodeVisitorDecoder) OnFloat64(v float64, n json.Number) error {
+    self.stk[self.sp].val = &visitorUserFloat64{Value: v}
     if err := self.incrSP(); err != nil {
         return err
     }

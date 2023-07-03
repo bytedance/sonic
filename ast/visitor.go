@@ -44,12 +44,11 @@ type Visitor interface {
     // OnString handles a JSON string value.
     OnString(v string) error
 
-    // OnNumber handles a JSON number value with its type after conversion.
-    //
-    // For a valid JSON, the v.Int64() method should parse the JSON number
-    // correctly and return no error if isInt64 is true, otherwise
-    // the v.Float64() method should work.
-    OnNumber(v json.Number, isInt64 bool) error
+    // OnInt64 handles a JSON number value with int64 type.
+    OnInt64(v int64, n json.Number) error
+
+    // OnFloat64 handles a JSON number value with float64 type.
+    OnFloat64(v float64, n json.Number) error
 
     // OnObjectBegin handles the beginning of a JSON object value with a
     // suggested capacity that can be used to make your custom object container.
@@ -125,11 +124,11 @@ func (self *traverser) decodeValue() error {
     case types.V_STRING:
         return self.decodeString(val.Iv, val.Ep)
     case types.V_DOUBLE:
-        return self.visitor.OnNumber(
-            json.Number(self.parser.s[val.Ep:self.parser.p]), false)
+        return self.visitor.OnFloat64(val.Dv,
+            json.Number(self.parser.s[val.Ep:self.parser.p]))
     case types.V_INTEGER:
-        return self.visitor.OnNumber(
-            json.Number(self.parser.s[val.Ep:self.parser.p]), true)
+        return self.visitor.OnInt64(val.Iv,
+            json.Number(self.parser.s[val.Ep:self.parser.p]))
     case types.V_ARRAY:
         return self.decodeArray()
     case types.V_OBJECT:
