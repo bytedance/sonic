@@ -38,11 +38,8 @@ type Visitor interface {
     // OnNull handles a JSON null value.
     OnNull() error
 
-    // OnTrue handles a JSON true value.
-    OnTrue() error
-
-    // OnFalse handles a JSON false value.
-    OnFalse() error
+    // OnBool handles a JSON true / false value.
+    OnBool(v bool) error
 
     // OnString handles a JSON string value.
     OnString(v string) error
@@ -122,9 +119,9 @@ func (self *traverser) decodeValue() error {
     case types.V_NULL:
         return self.visitor.OnNull()
     case types.V_TRUE:
-        return self.visitor.OnTrue()
+        return self.visitor.OnBool(true)
     case types.V_FALSE:
-        return self.visitor.OnFalse()
+        return self.visitor.OnBool(false)
     case types.V_STRING:
         return self.decodeString(val.Iv, val.Ep)
     case types.V_DOUBLE:

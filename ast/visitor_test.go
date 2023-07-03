@@ -129,20 +129,15 @@ func (self *visitorNodeDiffTest) OnNull() error {
     return nil
 }
 
-func (self *visitorNodeDiffTest) OnTrue() error {
+func (self *visitorNodeDiffTest) OnBool(v bool) error {
     if self.tracer != nil {
-        fmt.Fprintf(self.tracer, "OnTrue\n")
+        fmt.Fprintf(self.tracer, "OnBool: %t\n", v)
     }
-    self.requireType(V_TRUE)
-    self.onValueEnd()
-    return nil
-}
-
-func (self *visitorNodeDiffTest) OnFalse() error {
-    if self.tracer != nil {
-        fmt.Fprintf(self.tracer, "OnFalse\n")
+    if v {
+        self.requireType(V_TRUE)
+    } else {
+        self.requireType(V_FALSE)
     }
-    self.requireType(V_FALSE)
     self.onValueEnd()
     return nil
 }
@@ -530,16 +525,8 @@ func (self *visitorUserNodeVisitorDecoder) OnNull() error {
     return self.onValueEnd()
 }
 
-func (self *visitorUserNodeVisitorDecoder) OnTrue() error {
-    self.stk[self.sp].val = &visitorUserBool{Value: true}
-    if err := self.incrSP(); err != nil {
-        return err
-    }
-    return self.onValueEnd()
-}
-
-func (self *visitorUserNodeVisitorDecoder) OnFalse() error {
-    self.stk[self.sp].val = &visitorUserBool{Value: false}
+func (self *visitorUserNodeVisitorDecoder) OnBool(v bool) error {
+    self.stk[self.sp].val = &visitorUserBool{Value: v}
     if err := self.incrSP(); err != nil {
         return err
     }

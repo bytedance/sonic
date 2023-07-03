@@ -320,8 +320,7 @@ func Preorder(str string, visitor Visitor) error
 
 type Visitor interface {
     OnNull() error
-    OnTrue() error
-    OnFalse() error
+    OnBool(v bool) error
     OnString(v string) error
     OnNumber(v json.Number, isInt64 bool) error
     OnObjectBegin(capacity int) error
