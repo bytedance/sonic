@@ -184,3 +184,8 @@ func Get(src []byte, path ...interface{}) (ast.Node, error) {
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
 }
+
+// Valid reports whether data is a valid JSON encoding.
+func Valid(data []byte) bool {
+    return ConfigDefault.Valid(data)
+}

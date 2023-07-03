@@ -292,7 +292,6 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
     cfg := option.DefaultCompileOptions()
     for _, opt := range opts {
         opt(&cfg)
-        break
     }
     return pretouchRec(map[reflect.Type]uint8{vt: 0}, cfg)
 }
