@@ -30,6 +30,10 @@ import (
     `github.com/bytedance/sonic/option`
 )
 
+func init() {
+     println("WARNING: sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
+}
+
 const (
      _F_use_int64 = iota
      _F_use_number

@@ -27,6 +27,10 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
+func init() {
+    println("WARNING: sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
+}
+
 func quote(buf *[]byte, val string) {
     quoteString(buf, val)
 }
