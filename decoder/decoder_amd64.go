@@ -25,6 +25,10 @@ import (
 // Decoder is the decoder context object
 type Decoder = decoder.Decoder
 
+// SyntaxError represents json syntax error
+type SyntaxError = decoder.SyntaxError
+
+// MismatchTypeError represents dismatching between json and object
 type MismatchTypeError = decoder.MismatchTypeError
 
 // Options for decode.
@@ -41,8 +45,6 @@ const (
 
 // StreamDecoder is the decoder context object for streaming input.
 type StreamDecoder = decoder.StreamDecoder
-
-type SyntaxError = decoder.SyntaxError
 
 var (
     // NewDecoder creates a new decoder instance.
