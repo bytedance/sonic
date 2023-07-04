@@ -1,4 +1,5 @@
-// +build !amd64 go1.21
+//go:build !amd64 || !go1.16 || go1.21
+// +build !amd64 !go1.16 go1.21
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -14,18 +15,24 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package decoder
 
 import (
-     `encoding/json`
-     `bytes`
-     `reflect`
-     `github.com/bytedance/sonic/internal/native/types`
-     `github.com/bytedance/sonic/option`
-     `io`
+    `bytes`
+    `encoding/json`
+    `io`
+    `reflect`
+    `unsafe`
+
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/option`
 )
+
+func init() {
+     println("WARNING: sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
+}
 
 const (
      _F_use_int64 = iota
@@ -194,3 +201,17 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
    return dec.Decode(val)
 }
 
+// SyntaxError represents json syntax error
+type SyntaxError json.SyntaxError
+
+// Description
+func (s SyntaxError) Description() string {
+     return (*json.SyntaxError)(unsafe.Pointer(&s)).Error()
+}
+// Error
+func (s SyntaxError) Error() string {
+     return (*json.SyntaxError)(unsafe.Pointer(&s)).Error()
+}
+
+// MismatchTypeError represents dismatching between json and object
+type MismatchTypeError json.UnmarshalTypeError

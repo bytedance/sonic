@@ -1,4 +1,4 @@
-// +build !amd64 go1.21
+// +build !amd64 !go1.16 go1.21
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -26,6 +26,10 @@ import (
 
     `github.com/bytedance/sonic/option`
 )
+
+func init() {
+    println("WARNING: sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
+}
 
 // Options is a set of encoding options.
 type Options uint64

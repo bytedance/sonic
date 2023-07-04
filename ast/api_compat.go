@@ -1,4 +1,4 @@
-// +build !amd64 go1.21
+// +build !amd64 !go1.16 go1.21
 
 /*
  * Copyright 2022 ByteDance Inc.
@@ -26,6 +26,10 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
+
+func init() {
+    println("WARNING: sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
+}
 
 func quote(buf *[]byte, val string) {
     quoteString(buf, val)
