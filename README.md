@@ -5,8 +5,8 @@ English | [中文](README_ZH_CN.md)
 A blazingly fast JSON serializing &amp; deserializing library, accelerated by JIT (just-in-time compiling) and SIMD (single-instruction-multiple-data).
 
 ## Requirement
-- Go 1.15~1.20
-- Linux/MacOS/Windows
+- Go 1.16~1.20
+- Linux/MacOS/Windows(需要go1.17以上)
 - Amd64 ARCH
 
 ## Features
