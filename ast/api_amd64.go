@@ -87,7 +87,13 @@ func encodeBase64(src []byte) string {
 
 func (self *Parser) decodeValue() (val types.JsonState) {
     sv := (*rt.GoString)(unsafe.Pointer(&self.s))
-    self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, 0)
+    flag := types.F_USE_NUMBER
+    if self.dbuf != nil {
+        flag = 0
+        val.Dbuf = self.dbuf
+        val.Dcap = types.MaxDigitNums
+    }
+    self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, uint64(flag))
     return
 }
 

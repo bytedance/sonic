@@ -1184,6 +1184,56 @@ func BenchmarkLoadNode(b *testing.B) {
     b.Run("Interface()", func(b *testing.B) {
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+            if err != nil {
+                b.Fatal(err)
+            }
+            _, _ = root.Interface()
+        }
+    })
+
+    b.Run("LoadAll()", func(b *testing.B) {
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+            if err != nil {
+                b.Fatal(err)
+            }
+            _ = root.LoadAll()
+        }
+    })
+
+    b.Run("InterfaceUseNode()", func(b *testing.B) {
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+            if err != nil {
+                b.Fatal(err)
+            }
+            _, _ = root.InterfaceUseNode()
+        }
+    })
+
+    b.Run("Load()", func(b *testing.B) {
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
+            if err != nil {
+                b.Fatal(err)
+            }
+            _ = root.Load()
+        }
+    })
+}
+
+func BenchmarkLoadNode_Parallel(b *testing.B) {
+    b.Run("Interface()", func(b *testing.B) {
+        b.SetBytes(int64(len(_TwitterJson)))
+        b.ResetTimer()
         b.RunParallel(func(pb *testing.PB) {
             for pb.Next() {
                 root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)

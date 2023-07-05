@@ -53,7 +53,7 @@ func encodeBase64(src []byte) string {
 }
 
 func (self *Parser) decodeValue() (val types.JsonState) {
-    e, v := decodeValue(self.s, self.p)
+    e, v := decodeValue(self.s, self.p, self.dbuf == nil)
     if e < 0 {
         return v
     }
