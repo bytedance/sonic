@@ -17,11 +17,10 @@
 package ast
 
 import (
-	"fmt"
-	"sync"
+    `fmt`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 const (
@@ -626,24 +625,18 @@ func NewParserObj(src string) Parser {
     return Parser{s: src}
 }
 
-var parserPool = sync.Pool {
-    New: func() interface{} {
-        return &Parser{dbuf: types.NewDbuf()}
-    },
-}
-
-// newParserDecodeNum returns new parser with Dbuf allocated
-func newParserDecodeNum(src string) *Parser {
-    ret := parserPool.Get().(*Parser)
-    ret.s = src
-    return ret
-}
-
-func freeParserDecodeNum(p *Parser) {
-    if p.dbuf == nil {
-        panic("parser must have dbuf allocated")
+// decodeNumber controls if parser decodes the number values instead of skip them
+//   WARN: once you set decodeNumber(true), please set decodeNumber(false) before you drop the parser 
+//   otherwise the memory CANNOT be reused
+func (self *Parser) decodeNumber(decode bool) {
+    if !decode && self.dbuf != nil {
+        types.FreeDbuf(self.dbuf)
+        self.dbuf = nil
+        return
     }
-    parserPool.Put(p)
+    if decode && self.dbuf == nil {
+        self.dbuf = types.NewDbuf()
+    }
 }
 
 // ExportError converts types.ParsingError to std Error
