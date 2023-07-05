@@ -307,19 +307,29 @@ func (self *visitorNodeDiffTest) Run(t *testing.T, str string,
 
 func TestVisitor_NodeDiff(t *testing.T) {
     var suite visitorNodeDiffTest
-    var tracer io.Writer
 
-    const EnableTracer = false
-    if EnableTracer {
-        fp, err := os.Create(fmt.Sprintf("../output/%s.log", t.Name()))
+    newTracer := func(t *testing.T) io.Writer {
+        const EnableTracer = false
+        if !EnableTracer {
+            return nil
+        }
+        basename := strings.ReplaceAll(t.Name(), "/", "_")
+        fp, err := os.Create(fmt.Sprintf("../output/%s.log", basename))
         require.NoError(t, err)
-        t.Cleanup(func() { fp.Close() })
         writer := bufio.NewWriter(fp)
-        t.Cleanup(func() { writer.Flush() })
-        tracer = writer
+        t.Cleanup(func() {
+            _ = writer.Flush()
+            _ = fp.Close()
+        })
+        return writer
     }
 
-    suite.Run(t, _TwitterJson, tracer)
+    t.Run("default", func(t *testing.T) {
+        suite.Run(t, _TwitterJson, newTracer(t))
+    })
+    t.Run("issue_case01", func(t *testing.T) {
+        suite.Run(t, `[1193.6419677734375]`, newTracer(t))
+    })
 }
 
 type visitorUserNode interface {
@@ -608,10 +618,8 @@ func (self *visitorUserNodeVisitorDecoder) onValueEnd() error {
     return nil
 }
 
-func TestVisitor_UserNodeDiff(t *testing.T) {
-    var d1 visitorUserNodeASTDecoder
-    var d2 visitorUserNodeVisitorDecoder
-
+func testUserNodeDiff(t *testing.T, d1, d2 visitorUserNodeDecoder, str string) {
+    t.Helper()
     d1.Reset()
     n1, err := d1.Decode(_TwitterJson)
     require.NoError(t, err)
@@ -621,6 +629,18 @@ func TestVisitor_UserNodeDiff(t *testing.T) {
     require.NoError(t, err)
 
     require.True(t, compareUserNode(t, n1, n2))
+}
+
+func TestVisitor_UserNodeDiff(t *testing.T) {
+    var d1 visitorUserNodeASTDecoder
+    var d2 visitorUserNodeVisitorDecoder
+
+    t.Run("default", func(t *testing.T) {
+        testUserNodeDiff(t, &d1, &d2, _TwitterJson)
+    })
+    t.Run("issue_case01", func(t *testing.T) {
+        testUserNodeDiff(t, &d1, &d2, `[1193.6419677734375]`)
+    })
 }
 
 func BenchmarkVisitor_UserNode(b *testing.B) {

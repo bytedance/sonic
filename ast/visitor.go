@@ -102,7 +102,10 @@ func Preorder(str string, visitor Visitor) error {
         },
         visitor: visitor,
     }
-    return tv.decodeValue()
+    tv.parser.decodeNumber(true)
+    err := tv.decodeValue()
+    tv.parser.decodeNumber(false)
+    return err
 }
 
 type traverser struct {
