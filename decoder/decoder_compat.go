@@ -1,4 +1,5 @@
-// +build !amd64 go1.21
+//go:build !amd64 || !go1.16 || go1.21
+// +build !amd64 !go1.16 go1.21
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -14,28 +15,34 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package decoder
 
 import (
-     `encoding/json`
-     `bytes`
-     `reflect`
-     `github.com/bytedance/sonic/internal/native/types`
-     `github.com/bytedance/sonic/option`
-     `io`
+    `bytes`
+    `encoding/json`
+    `io`
+    `reflect`
+    `unsafe`
+
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/option`
 )
 
-const (
-     _F_use_int64 = iota
-     _F_use_number
-     _F_disable_urc
-     _F_disable_unknown
-     _F_copy_string
-     _F_validate_string
+func init() {
+     println("WARNING: sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
+}
 
-     _F_allow_control = 31
+const (
+     _F_use_int64       = 0
+     _F_disable_urc     = 2
+     _F_disable_unknown = 3
+     _F_copy_string     = 4
+ 
+     _F_use_number      = types.B_USE_NUMBER
+     _F_validate_string = types.B_VALIDATE_STRING
+     _F_allow_control   = types.B_ALLOW_CONTROL
 )
 
 type Options uint64
@@ -194,3 +201,17 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
    return dec.Decode(val)
 }
 
+// SyntaxError represents json syntax error
+type SyntaxError json.SyntaxError
+
+// Description
+func (s SyntaxError) Description() string {
+     return (*json.SyntaxError)(unsafe.Pointer(&s)).Error()
+}
+// Error
+func (s SyntaxError) Error() string {
+     return (*json.SyntaxError)(unsafe.Pointer(&s)).Error()
+}
+
+// MismatchTypeError represents dismatching between json and object
+type MismatchTypeError json.UnmarshalTypeError

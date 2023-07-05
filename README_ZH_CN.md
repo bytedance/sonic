@@ -6,8 +6,8 @@
 
 ## 依赖
 
-- Go 1.15~1.20
-- Linux/MacOS/Windows
+- Go 1.16~1.20
+- Linux / MacOS / Windows（需要 Go1.17 以上）
 - Amd64 架构
 
 ## 特色
@@ -79,6 +79,10 @@ BenchmarkSetOne_Jsoniter-16                            79475 ns/op         163.8
 BenchmarkSetOne_Parallel_Sonic-16                      850.9 ns/op       15305.31 MB/s        1584 B/op         17 allocs/op
 BenchmarkSetOne_Parallel_Sjson-16                      18194 ns/op         715.77 MB/s       52247 B/op          9 allocs/op
 BenchmarkSetOne_Parallel_Jsoniter-16                   33560 ns/op         388.05 MB/s       45892 B/op        964 allocs/op
+BenchmarkLoadNode/LoadAll()-16                         11384 ns/op        1143.93 MB/s        6307 B/op         25 allocs/op
+BenchmarkLoadNode_Parallel/LoadAll()-16                 5493 ns/op        2370.68 MB/s        7145 B/op         25 allocs/op
+BenchmarkLoadNode/Interface()-16                       17722 ns/op         734.85 MB/s       13323 B/op         88 allocs/op
+BenchmarkLoadNode_Parallel/Interface()-16              10330 ns/op        1260.70 MB/s       15178 B/op         88 allocs/op
 ```
 - [小型](https://github.com/bytedance/sonic/blob/main/testdata/small.go) (400B, 11 个键, 3 层)
 ![small benchmarks](./docs/imgs/bench-small.png)

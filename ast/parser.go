@@ -18,6 +18,7 @@ package ast
 
 import (
     `fmt`
+
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
@@ -42,6 +43,7 @@ type Parser struct {
     s           string
     noLazy      bool
     skipValue   bool
+    dbuf        *byte
 }
 
 /** Parser Private Methods **/
@@ -621,6 +623,20 @@ func NewParser(src string) *Parser {
 // NewParser returns new allocated parser
 func NewParserObj(src string) Parser {
     return Parser{s: src}
+}
+
+// decodeNumber controls if parser decodes the number values instead of skip them
+//   WARN: once you set decodeNumber(true), please set decodeNumber(false) before you drop the parser 
+//   otherwise the memory CANNOT be reused
+func (self *Parser) decodeNumber(decode bool) {
+    if !decode && self.dbuf != nil {
+        types.FreeDbuf(self.dbuf)
+        self.dbuf = nil
+        return
+    }
+    if decode && self.dbuf == nil {
+        self.dbuf = types.NewDbuf()
+    }
 }
 
 // ExportError converts types.ParsingError to std Error
