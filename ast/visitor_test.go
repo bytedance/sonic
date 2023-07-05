@@ -302,7 +302,7 @@ func (self *visitorNodeDiffTest) Run(t *testing.T, str string,
     self.stk = visitorNodeStack{}
     self.sp = 0
 
-    require.NoError(self.t, Preorder(self.str, self))
+    require.NoError(self.t, Preorder(self.str, self, nil))
 }
 
 func TestVisitor_NodeDiff(t *testing.T) {
@@ -514,7 +514,7 @@ func (self *visitorUserNodeVisitorDecoder) Reset() {
 }
 
 func (self *visitorUserNodeVisitorDecoder) Decode(str string) (visitorUserNode, error) {
-    if err := Preorder(str, self); err != nil {
+    if err := Preorder(str, self, nil); err != nil {
         return nil, err
     }
     return self.result()

@@ -90,10 +90,31 @@ type Visitor interface {
     OnArrayEnd() error
 }
 
+// VisitorOptions contains all Visitor's options. The default value is an
+// empty VisitorOptions{}.
+type VisitorOptions struct {
+    // OnlyNumber indicates parser to directly return number value without
+    // conversion, then the first argument of OnInt64 / OnFloat64 will always
+    // be zero.
+    OnlyNumber bool
+}
+
+var defaultVisitorOptions = &VisitorOptions{}
+
 // Preorder decodes the whole JSON string and callbacks each AST node to visitor
 // during preorder traversal. Any visitor method with an error returned will
-// break the traversal and the given error will be directly returned.
-func Preorder(str string, visitor Visitor) error {
+// break the traversal and the given error will be directly returned. The opts
+// argument can be reused after every call.
+func Preorder(str string, visitor Visitor, opts *VisitorOptions) error {
+    if opts == nil {
+        opts = defaultVisitorOptions
+    }
+    // process VisitorOptions first to guarantee that all options will be
+    // constant during decoding and make options more readable.
+    var (
+        optDecodeNumber = !opts.OnlyNumber
+    )
+
     tv := &traverser{
         parser: Parser{
             s:         str,
@@ -102,9 +123,16 @@ func Preorder(str string, visitor Visitor) error {
         },
         visitor: visitor,
     }
-    tv.parser.decodeNumber(true)
+
+    if optDecodeNumber {
+        tv.parser.decodeNumber(true)
+    }
+
     err := tv.decodeValue()
-    tv.parser.decodeNumber(false)
+
+    if optDecodeNumber {
+        tv.parser.decodeNumber(false)
+    }
     return err
 }
 
