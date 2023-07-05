@@ -85,19 +85,15 @@ func encodeBase64(src []byte) string {
     return base64x.StdEncoding.EncodeToString(src)
 }
 
-func (self *Parser) decodeValue(skipNumber bool) (val types.JsonState) {
+func (self *Parser) decodeValue() (val types.JsonState) {
     sv := (*rt.GoString)(unsafe.Pointer(&self.s))
-    flag := uint64(0)
-    if !skipNumber {
-        val.Dbuf = types.NewDbuf()
+    flag := types.F_USE_NUMBER
+    if self.dbuf != nil {
+        flag = 0
+        val.Dbuf = self.dbuf
         val.Dcap = types.MaxDigitNums
-    } else {
-        flag = types.F_USE_NUMBER
     }
-    self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, flag)
-    if !skipNumber {
-        types.FreeDbuf(val.Dbuf)
-    }
+    self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, uint64(flag))
     return
 }
 

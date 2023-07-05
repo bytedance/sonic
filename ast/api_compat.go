@@ -52,8 +52,8 @@ func encodeBase64(src []byte) string {
     return base64.StdEncoding.EncodeToString(src)
 }
 
-func (self *Parser) decodeValue(skipNumber bool) (val types.JsonState) {
-    e, v := decodeValue(self.s, self.p, skipNumber)
+func (self *Parser) decodeValue() (val types.JsonState) {
+    e, v := decodeValue(self.s, self.p, self.dbuf == nil)
     if e < 0 {
         return v
     }

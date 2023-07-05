@@ -17,9 +17,11 @@
 package ast
 
 import (
-    `fmt`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"fmt"
+	"sync"
+
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
@@ -42,6 +44,7 @@ type Parser struct {
     s           string
     noLazy      bool
     skipValue   bool
+    dbuf        *byte
 }
 
 /** Parser Private Methods **/
@@ -195,7 +198,7 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
         var err types.ParsingError
 
         /* decode the key */
-        if njs = self.decodeValue(true); njs.Vt != types.V_STRING {
+        if njs = self.decodeValue(); njs.Vt != types.V_STRING {
             return Node{}, types.ERR_INVALID_CHAR
         }
 
@@ -287,7 +290,7 @@ func (self *Parser) Pos() int {
 }
 
 func (self *Parser) Parse() (Node, types.ParsingError) {
-    switch val := self.decodeValue(true); val.Vt {
+    switch val := self.decodeValue(); val.Vt {
         case types.V_EOF     : return Node{}, types.ERR_EOF
         case types.V_NULL    : return nullNode, 0
         case types.V_TRUE    : return trueNode, 0
@@ -340,7 +343,7 @@ func (self *Parser) searchKey(match string) types.ParsingError {
     for {
 
         /* decode the key */
-        if njs = self.decodeValue(true); njs.Vt != types.V_STRING {
+        if njs = self.decodeValue(); njs.Vt != types.V_STRING {
             return types.ERR_INVALID_CHAR
         }
 
@@ -521,7 +524,7 @@ func (self *Node) skipNextPair() (*Pair) {
     var err types.ParsingError
 
     /* decode the key */
-    if njs = parser.decodeValue(true); njs.Vt != types.V_STRING {
+    if njs = parser.decodeValue(); njs.Vt != types.V_STRING {
         return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
     }
 
@@ -621,6 +624,26 @@ func NewParser(src string) *Parser {
 // NewParser returns new allocated parser
 func NewParserObj(src string) Parser {
     return Parser{s: src}
+}
+
+var parserPool = sync.Pool {
+    New: func() interface{} {
+        return &Parser{dbuf: types.NewDbuf()}
+    },
+}
+
+// newParserDecodeNum returns new parser with Dbuf allocated
+func newParserDecodeNum(src string) *Parser {
+    ret := parserPool.Get().(*Parser)
+    ret.s = src
+    return ret
+}
+
+func freeParserDecodeNum(p *Parser) {
+    if p.dbuf == nil {
+        panic("parser must have dbuf allocated")
+    }
+    parserPool.Put(p)
 }
 
 // ExportError converts types.ParsingError to std Error
