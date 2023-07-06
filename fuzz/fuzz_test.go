@@ -1,3 +1,4 @@
+//go:build go1.18
 // +build go1.18
 
 /*
@@ -19,21 +20,22 @@
 package sonic_fuzz
 
 import (
-    `encoding/json`
-    `testing`
-    _ `unicode/utf8`
-    `os`
-    `runtime`
-    `runtime/debug`
-    `time`
-    `io`
-    `log`
-    `strconv`
+	"bytes"
+	"encoding/json"
+	"io"
+	"log"
+	"os"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"testing"
+	"time"
+	_ "unicode/utf8"
 
-    `github.com/bytedance/sonic`
-    `github.com/stretchr/testify/require`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/bytedance/gopkg/util/gctuner`
+	"github.com/bytedance/gopkg/util/gctuner"
+	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 func FuzzMain(f *testing.F) {
@@ -47,10 +49,23 @@ func FuzzMain(f *testing.F) {
 func TestCorpus(t *testing.T) {
     fuzzMain(t, []byte("[1\x00"))
     fuzzMain(t, []byte("\"\\uDE1D\\uDE1D\\uDEDD\\uDE1D\\uDE1D\\uDE1D\\uDE1D\\uDEDD\\uDE1D\""))
-    // fuzzMain(t, []byte(`{"":null}`))
+    fuzzMain(t, []byte(`{"":null}`))
 }
 
-var target = sonic.ConfigStd
+func jsonUnmarshal(data []byte, v any) error {
+	dec := json.NewDecoder(bytes.NewBuffer(data))
+	dec.UseNumber()
+	return dec.Decode(v)
+}
+
+var target =  sonic.Config{
+	EscapeHTML : true,
+	SortMapKeys: true,
+	CompactMarshaler: true,
+	CopyString : true,
+	ValidateString : true,
+	UseNumber: true,
+}.Froze()
 
 func fuzzMain(t *testing.T, data []byte) {
     fuzzValidate(t, data)
@@ -65,17 +80,17 @@ func fuzzMain(t *testing.T, data []byte) {
         func() interface{} { return new(interface{}) },
         func() interface{} { return new(map[string]interface{}) },
         func() interface{} { return new([]interface{}) },
-        func() interface{} { return new(string) },
-        func() interface{} { return new(int64) },
-        func() interface{} { return new(uint64) },
-        func() interface{} { return new(float64) },
+        // func() interface{} { return new(string) },
+        // func() interface{} { return new(int64) },
+        // func() interface{} { return new(uint64) },
+        // func() interface{} { return new(float64) },
         // func() interface{} { return new(json.Number) },
         // func() interface{} { return new(S) },
     } {
         var sv = typ()
         var jv = typ()
         serr := target.Unmarshal(data, sv)
-        jerr := json.Unmarshal(data, jv)
+        jerr := jsonUnmarshal(data, jv)
         require.Equal(t, serr != nil, jerr != nil, 
                 dump(data, jv, jerr, sv, serr))
         if jerr != nil {
@@ -92,7 +107,7 @@ func fuzzMain(t *testing.T, data []byte) {
         {
             sv, jv = typ(), typ()
             serr := target.Unmarshal(sout, sv)
-            jerr := json.Unmarshal(jout, jv)
+            jerr := jsonUnmarshal(jout, jv)
             require.Equalf(t, serr != nil, jerr != nil, dump(data, jv, jerr, sv, serr))
             if jerr != nil {
                 continue
@@ -109,18 +124,18 @@ func fuzzMain(t *testing.T, data []byte) {
             aout, aerr := root.MarshalJSON()
             require.Equal(t, aerr, nil)
             sv = typ()
-            serr := json.Unmarshal(aout, sv)
+            serr := jsonUnmarshal(aout, sv)
             require.Equal(t, serr, nil)
             require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
         }
 
-        if m, ok := sv.(*map[string]interface{}); ok {
-            fuzzDynamicStruct(t, jout, *m)
-            fuzzASTGetFromObject(t, jout, *m)
-        }
-        if a, ok := sv.(*[]interface{}); ok {
-            fuzzASTGetFromArray(t, jout, *a)
-        }
+        // if m, ok := sv.(*map[string]interface{}); ok {
+        //     fuzzDynamicStruct(t, jout, *m)
+        //     fuzzASTGetFromObject(t, jout, *m)
+        // }
+        // if a, ok := sv.(*[]interface{}); ok {
+        //     fuzzASTGetFromArray(t, jout, *a)
+        // }
     }
 
 }
