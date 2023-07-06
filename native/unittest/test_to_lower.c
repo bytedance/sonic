@@ -1,11 +1,12 @@
 #include "../to_lower.c"
-#include<assert.h>
+#include <assert.h>
+#include <string.h>
 
 void test_to_lower(const char* input, const char* expect) {
     int len = strlen(input);
     char* dst = (char*)malloc(len);
     to_lower(dst, input, len);
-    assert(strncmp(expect, dst) == 0);
+    assert(strncmp(expect, dst, len) == 0);
     free(dst);
 }
 
