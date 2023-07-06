@@ -12,5 +12,6 @@ run:
 	SONIC_FUZZ_MEM_LIMIT=2 GOMAXPROCS=4 GOARCH=amd64 go test -fuzz=${testname} -v -fuzztime 5m
 
 clean:
+	git rm --cached go-fuzz-corpus
 	rm -rf ./go-fuzz-corpus/
 	rm -rf ./testdata/

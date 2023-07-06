@@ -1,3 +1,4 @@
+//go:build go1.18
 // +build go1.18
 
 /*
@@ -19,21 +20,22 @@
 package sonic_fuzz
 
 import (
-    `encoding/json`
-    `testing`
-    _ `unicode/utf8`
-    `os`
-    `runtime`
-    `runtime/debug`
-    `time`
-    `io`
-    `log`
-    `strconv`
+	"bytes"
+	"encoding/json"
+	"io"
+	"log"
+	"os"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"testing"
+	"time"
+	_ "unicode/utf8"
 
-    `github.com/bytedance/sonic`
-    `github.com/stretchr/testify/require`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/bytedance/gopkg/util/gctuner`
+	"github.com/bytedance/gopkg/util/gctuner"
+	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 func FuzzMain(f *testing.F) {
@@ -50,7 +52,105 @@ func TestCorpus(t *testing.T) {
     // fuzzMain(t, []byte(`{"":null}`))
 }
 
+var sonicConfigStdUseNumber = sonic.Config{
+	EscapeHTML : true,
+	SortMapKeys: true,
+	CompactMarshaler: true,
+	CopyString : true,
+	ValidateString : true,
+	UseNumber: true,
+}.Froze()
+
+func jsonUnmarshal(data []byte, v any) error {
+	dec := json.NewDecoder(bytes.NewBuffer(data))
+	dec.UseNumber()
+	return dec.Decode(v)
+}
+
+type NewType = func() interface{}
+
+type Api struct {
+	Unmarshal func(data []byte, v any) error
+	Marshal func(v any) ([]byte, error)
+}
+
 var target = sonic.ConfigStd
+var sonicStdDefault Api = Api {
+	Unmarshal: sonic.ConfigStd.Unmarshal,
+	Marshal: sonic.ConfigStd.Marshal,
+}
+
+var stdjsonDefault Api = Api {
+	Unmarshal: json.Unmarshal,
+	Marshal: json.Marshal,
+}
+
+var sonicDefaultUseNumber Api = Api {
+	Unmarshal: sonicConfigStdUseNumber.Unmarshal,
+	Marshal: sonicConfigStdUseNumber.Marshal,
+}
+
+var stdjsonUseNumber Api = Api {
+	Unmarshal: func (data []byte, v any) error {
+		dec := json.NewDecoder(bytes.NewBuffer(data))
+		dec.UseNumber()
+		return dec.Decode(v)
+	},
+	Marshal: json.Marshal,
+}
+
+func fuzzUnmarshal(t *testing.T, data []byte, typ NewType, jstd, sour Api) ([]byte, any) {
+	var sv = typ()
+	var jv = typ()
+	serr := sour.Unmarshal(data, sv)
+	jerr := jstd.Unmarshal(data, jv)
+	require.Equal(t, serr != nil, jerr != nil, 
+			dump(data, jv, jerr, sv, serr))
+	if jerr != nil {
+		return nil, nil
+	}
+	require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+
+	v := jv
+	sout, serr := sour.Marshal(v)
+	jout, jerr := jstd.Marshal(v)
+	require.NoError(t, serr, dump(v, jout, jerr, sout, serr))
+	require.NoError(t, jerr, dump(v, jout, jerr, sout, serr))
+
+	// compare the marshal result
+	{
+		sv, jv = typ(), typ()
+		serr := sour.Unmarshal(sout, sv)
+		jerr := jstd.Unmarshal(jout, jv)
+		require.Equalf(t, serr != nil, jerr != nil, dump(data, jv, jerr, sv, serr))
+		if jerr != nil {
+			return nil, nil
+		}
+		require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+	}
+	return jout, sv
+}
+
+// compare the unmarshaled result to compare two jsons. useNumber to make it not
+// not return error when very large numbers
+func assertJsonEqual(t *testing.T, json1, json2 []byte, msg string) {
+	var v1, v2 interface{}
+	err1 := stdjsonUseNumber.Unmarshal(json1, &v1)
+	err2 := stdjsonUseNumber.Unmarshal(json2, &v2)
+	require.Equal(t, err1, nil, msg)
+	require.Equal(t, err2, nil, msg)
+	require.Equal(t, v1, v2, msg)
+}
+
+func sonicAstMarshal(t *testing.T, data []byte) {
+	root, aerr := sonic.Get(data)
+	require.Equal(t, aerr, nil)
+	aerr = root.LoadAll()
+	require.Equal(t, aerr, nil, dump(data, root, aerr))
+	aout, aerr := root.MarshalJSON()
+	require.Equal(t, aerr, nil)
+	assertJsonEqual(t, data, aout, dump(data, aout, aerr))
+}
 
 func fuzzMain(t *testing.T, data []byte) {
     fuzzValidate(t, data)
@@ -61,6 +161,7 @@ func fuzzMain(t *testing.T, data []byte) {
     if !json.Valid(data) {
         return
     }
+	sonicAstMarshal(t, data)
     for i, typ := range []func() interface{}{
         func() interface{} { return new(interface{}) },
         func() interface{} { return new(map[string]interface{}) },
@@ -72,59 +173,20 @@ func fuzzMain(t *testing.T, data []byte) {
         // func() interface{} { return new(json.Number) },
         // func() interface{} { return new(S) },
     } {
-        var sv = typ()
-        var jv = typ()
-        serr := target.Unmarshal(data, sv)
-        jerr := json.Unmarshal(data, jv)
-        require.Equal(t, serr != nil, jerr != nil, 
-                dump(data, jv, jerr, sv, serr))
-        if jerr != nil {
-            continue
-        }
-        require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
-    
-        v := jv
-        sout, serr := target.Marshal(v)
-        jout, jerr := json.Marshal(v)
-        require.NoError(t, serr, dump(v, jout, jerr, sout, serr))
-        require.NoError(t, jerr, dump(v, jout, jerr, sout, serr))
-
-        {
-            sv, jv = typ(), typ()
-            serr := target.Unmarshal(sout, sv)
-            jerr := json.Unmarshal(jout, jv)
-            require.Equalf(t, serr != nil, jerr != nil, dump(data, jv, jerr, sv, serr))
-            if jerr != nil {
-                continue
-            }
-            require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
-        }
-
-        // fuzz ast MarshalJSON API
-        if i == 0 {
-            root, aerr := sonic.Get(data)
-            require.Equal(t, aerr, nil)
-            aerr = root.LoadAll()
-            require.Equal(t, aerr, nil, dump(data, jv, jerr, root, aerr))
-            aout, aerr := root.MarshalJSON()
-            require.Equal(t, aerr, nil)
-            sv = typ()
-            serr := json.Unmarshal(aout, sv)
-            require.Equal(t, serr, nil)
-            require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
-        }
-
-        if m, ok := sv.(*map[string]interface{}); ok {
-            fuzzDynamicStruct(t, jout, *m)
-            fuzzASTGetFromObject(t, jout, *m)
-        }
-        if a, ok := sv.(*[]interface{}); ok {
-            fuzzASTGetFromArray(t, jout, *a)
-        }
+		jout, sv := fuzzUnmarshal(t, data, typ, stdjsonDefault, sonicStdDefault)
+		if i < 3 {
+			fuzzUnmarshal(t, data, typ, stdjsonUseNumber, sonicDefaultUseNumber)
+		}
+        // if m, ok := sv.(*map[string]interface{}); ok {
+        //     fuzzDynamicStruct(t, data, *m)
+        //     fuzzASTGetFromObject(t, jout, *m)
+        // }
+        // if a, ok := sv.(*[]interface{}); ok {
+        //     fuzzASTGetFromArray(t, jout, *a)
+        // }
+		var _, _ = jout, sv
     }
-
 }
-
 
 type S struct {
     A int    `json:",omitempty"`
