@@ -27,9 +27,13 @@ var (
     HasAVX  = cpuid.CPU.Has(cpuid.AVX)
     HasAVX2 = cpuid.CPU.Has(cpuid.AVX2)
     HasSSE = cpuid.CPU.Has(cpuid.SSE)
+    HasNEON bool
 )
 
 func init() {
+    cpuid.DetectARM()
+    HasNEON = cpuid.CPU.Supports(cpuid.ASIMD, cpuid.AESARM, cpuid.FP, cpuid.CRC32)
+    
     switch v := os.Getenv("SONIC_MODE"); v {
         case ""       : break
         case "auto"   : break
