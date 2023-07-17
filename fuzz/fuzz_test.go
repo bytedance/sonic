@@ -43,11 +43,16 @@ func FuzzMain(f *testing.F) {
     f.Fuzz(fuzzMain)
 }
 
+func FuzzAst(f *testing.F) {
+    for _, corp := range(corpus()) {
+        f.Add(corp)
+    }
+    f.Fuzz(fuzzAst)
+}
+
 // Used for debug falied fuzz corpus
 func TestCorpus(t *testing.T) {
-    fuzzMain(t, []byte("[1\x00"))
-    fuzzMain(t, []byte("\"\\uDE1D\\uDE1D\\uDEDD\\uDE1D\\uDE1D\\uDE1D\\uDE1D\\uDEDD\\uDE1D\""))
-    // fuzzMain(t, []byte(`{"":null}`))
+    fuzzMain(t, []byte("\"\xff\x81\xff\xbd\xea\x90\xf9\xa8\xbd\""))
 }
 
 var target = sonic.ConfigStd

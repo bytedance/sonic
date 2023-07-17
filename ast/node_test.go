@@ -489,18 +489,19 @@ func TestTypeCast(t *testing.T) {
         m := rt.MethodByName(c.method)
         rets := m.Call([]reflect.Value{})
         if len(rets) != 2 {
-            t.Error(i, rets)
+            t.Fatal(i, rets)
         }
         if !reflect.DeepEqual(rets[0].Interface(), c.exp) {
-            t.Error(i, rets[0].Interface(), c.exp)
+            v := rets[0].Interface()
+            t.Fatal(i, v, c.exp)
         }
         v := rets[1].Interface();
         if c.err == nonEmptyErr {
             if reflect.ValueOf(v).IsNil() {
-                t.Error(i, v)
+                t.Fatal(i, v)
             }
         } else if  v != c.err {
-            t.Error(i, v)
+            t.Fatal(i, v)
         }
     }
 }

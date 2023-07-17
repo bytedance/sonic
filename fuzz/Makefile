@@ -10,6 +10,9 @@ fuzz:
 run:
 	GOARCH=amd64 go test -fuzz=${testname} -v
 
+run-arm:
+	GOARCH=arm64 go test -fuzz=FuzzAst -v
+
 clean:
 	rm -rf ./go-fuzz-corpus/
 	rm -rf ./testdata/

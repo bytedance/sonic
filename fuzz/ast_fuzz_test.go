@@ -1,3 +1,4 @@
+//go:build go1.18
 // +build go1.18
 
 /*
@@ -19,16 +20,37 @@
 package sonic_fuzz
 
 import (
-	`testing`
-	`fmt`
-	`github.com/bytedance/sonic`
-	`github.com/stretchr/testify/require`
-	`github.com/davecgh/go-spew/spew`
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"testing"
+
+	"github.com/bytedance/sonic"
+	"github.com/bytedance/sonic/utf8"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 // data is random, check whether is panic
 func fuzzAst(t *testing.T, data []byte) {
-	sonic.Get(data)
+	n, err := sonic.Get(data)
+	if err == nil && utf8.Validate(data) {
+		var x interface{}
+		if err := json.Unmarshal(data, &x); err != nil {
+			return
+		}
+		y, err := n.Interface()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(x, y) {
+			t.Fatalf("exp:%#v, got:%#v", x, y)
+		}
+		_, err = n.MarshalJSON()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 func fuzzASTGetFromObject(t *testing.T, data []byte, m map[string]interface{}) {

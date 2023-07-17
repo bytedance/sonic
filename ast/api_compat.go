@@ -1,4 +1,4 @@
-// +build go1.21
+// +build go1.21 !amd64,!arm64
 
 /*
  * Copyright 2022 ByteDance Inc.

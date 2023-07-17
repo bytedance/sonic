@@ -19,7 +19,7 @@
 package encoder
 
 import (
-   `io`
+    `io`
     `bytes`
     `encoding/json`
     `reflect`
@@ -151,21 +151,25 @@ func Quote(s string) string {
 
 // Encode returns the JSON encoding of val, encoded with opts.
 func Encode(val interface{}, opts Options) ([]byte, error) {
-   return json.Marshal(val)
+    return json.Marshal(val)
 }
 
 // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating
 // a new one.
 func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
-   if buf == nil {
-       panic("user-supplied buffer buf is nil")
-   }
-   w := bytes.NewBuffer(*buf)
-   enc := json.NewEncoder(w)
-   enc.SetEscapeHTML((opts & EscapeHTML) != 0)
-   err := enc.Encode(val)
-   *buf = w.Bytes()
-   return err
+    if buf == nil {
+        panic("user-supplied buffer buf is nil")
+    }
+    w := bytes.NewBuffer(*buf)
+    enc := json.NewEncoder(w)
+    enc.SetEscapeHTML((opts & EscapeHTML) != 0)
+    err := enc.Encode(val)
+    ret := w.Bytes()
+    if len(ret) > 0 && ret[len(ret)-1] == '\n' {
+        ret = ret[:len(ret)-1]
+    }
+    *buf = ret
+    return err
 }
 
 // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
@@ -175,22 +179,22 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
 // escaping within <script> tags, so an alternative JSON encoding must
 // be used.
 func HTMLEscape(dst []byte, src []byte) []byte {
-   d := bytes.NewBuffer(dst)
-   json.HTMLEscape(d, src)
-   return d.Bytes()
+    d := bytes.NewBuffer(dst)
+    json.HTMLEscape(d, src)
+    return d.Bytes()
 }
 
 // EncodeIndented is like Encode but applies Indent to format the output.
 // Each JSON element in the output will begin on a new line beginning with prefix
 // followed by one or more copies of indent according to the indentation nesting.
 func EncodeIndented(val interface{}, prefix string, indent string, opts Options) ([]byte, error) {
-   w := bytes.NewBuffer([]byte{})
-   enc := json.NewEncoder(w)
-   enc.SetEscapeHTML((opts & EscapeHTML) != 0)
-   enc.SetIndent(prefix, indent)
-   err := enc.Encode(val)
-   out := w.Bytes()
-   return out, err
+    w := bytes.NewBuffer([]byte{})
+    enc := json.NewEncoder(w)
+    enc.SetEscapeHTML((opts & EscapeHTML) != 0)
+    enc.SetIndent(prefix, indent)
+    err := enc.Encode(val)
+    out := w.Bytes()
+    return out, err
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
@@ -199,7 +203,7 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
-   return nil
+    return nil
 }
 
 // Valid validates json and returns first non-blank character position,
@@ -208,27 +212,27 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 //
 // Note: it does not check for the invalid UTF-8 characters.
 func Valid(data []byte) (ok bool, start int) {
-   return json.Valid(data), 0
+    return json.Valid(data), 0
 }
 
 // StreamEncoder uses io.Writer as 
 type StreamEncoder struct {
-   w io.Writer
-   Encoder
+    w io.Writer
+    Encoder
 }
 
 // NewStreamEncoder adapts to encoding/json.NewDecoder API.
 //
 // NewStreamEncoder returns a new encoder that write to w.
 func NewStreamEncoder(w io.Writer) *StreamEncoder {
-   return &StreamEncoder{w: w}
+    return &StreamEncoder{w: w}
 }
 
 // Encode encodes interface{} as JSON to io.Writer
 func (enc *StreamEncoder) Encode(val interface{}) (err error) {
-   jenc := json.NewEncoder(enc.w)
-   jenc.SetEscapeHTML((enc.Opts & EscapeHTML) != 0)
-   jenc.SetIndent(enc.prefix, enc.indent)
-   err = jenc.Encode(val)
-   return err
+    jenc := json.NewEncoder(enc.w)
+    jenc.SetEscapeHTML((enc.Opts & EscapeHTML) != 0)
+    jenc.SetIndent(enc.prefix, enc.indent)
+    err = jenc.Encode(val)
+    return err
 }

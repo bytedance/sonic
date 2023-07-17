@@ -31,7 +31,7 @@ var (
 )
 
 func init() {
-    cpuid.DetectARM()
+    // cpuid.DetectARM()
     HasNEON = cpuid.CPU.Supports(cpuid.ASIMD, cpuid.AESARM, cpuid.FP, cpuid.CRC32)
     
     switch v := os.Getenv("SONIC_MODE"); v {
