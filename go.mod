@@ -3,7 +3,7 @@ module github.com/bytedance/sonic
 go 1.15
 
 require (
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
+	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d
 	github.com/chenzhuoyu/iasm v0.9.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/klauspost/cpuid/v2 v2.0.9
