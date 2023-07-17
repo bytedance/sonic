@@ -1,6 +1,6 @@
 module github.com/bytedance/sonic
 
-go 1.15
+go 1.16
 
 require (
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d
