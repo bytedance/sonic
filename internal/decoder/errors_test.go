@@ -80,6 +80,12 @@ func Fuzz_calcBounds(f *testing.F) {
         if y > a {
             t.Fatal("y > a", y)
         }
+        if x > 31 {
+            t.Fatal("x > 31", x)
+        }
+        if y > 31 {
+            t.Fatal("y > 31", y)
+        }
         if p < 0 {
             t.Fatal("p < 0", p)
         }

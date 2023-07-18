@@ -118,7 +118,12 @@ var stackOverflow = &json.UnsupportedValueError {
 }
 
 func error_wrap(src string, pos int, code types.ParsingError) error {
-    return SyntaxError {
+    return *error_wrap_heap(src, pos, code)
+}
+
+//go:noinline
+func error_wrap_heap(src string, pos int, code types.ParsingError) *SyntaxError {
+    return &SyntaxError {
         Pos  : pos,
         Src  : src,
         Code : code,
