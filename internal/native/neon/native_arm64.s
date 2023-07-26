@@ -11653,7 +11653,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	  // .p2align 3, 0x00
-_LB_3a298556: // _pow10_ceil_sig.g
+_LB_a1547b26: // _pow10_ceil_sig.g
 	WORD $0xbebcdc4f; WORD $0xff77b1fc  // .quad -38366372719436721
 	WORD $0x13bb0f7b; WORD $0x25e8e89c  // .quad 2731688931043774331
 	WORD $0xf73609b1; WORD $0x9faacf3d  // .quad -6941508010590729807
@@ -17677,7 +17677,7 @@ _P10_TAB:
 	WORD $0xd6e2ef50; WORD $0x444b1ae4  // .quad 0x444b1ae4d6e2ef50
 	WORD $0x064dd592; WORD $0x4480f0cf  // .quad 0x4480f0cf064dd592
 	  // .p2align 3, 0x00
-_LB_b5e267ef: // _pow10_ceil_sig_f32.g
+_LB_f140dd8f: // _pow10_ceil_sig_f32.g
 	WORD $0x4b43fcf5; WORD $0x81ceb32c  // .quad -9093133594791772939
 	WORD $0x5e14fc32; WORD $0xa2425ff7  // .quad -6754730975062328270
 	WORD $0x359a3b3f; WORD $0xcad2f7f5  // .quad -3831727700400522433
@@ -17756,31 +17756,31 @@ _LB_b5e267ef: // _pow10_ceil_sig_f32.g
 	WORD $0x7bea5c70; WORD $0x8f7e32ce  // .quad -8106986416796705680
 	WORD $0x1ae4f38c; WORD $0xb35dbf82  // .quad -5522047002568494196
 
-TEXT ·__f32toa(SB), $0-24
+TEXT ·__f32toa(SB), $2048-24
 	NO_LOCAL_POINTERS
 
 _f32toa:
 	MOVD out+0(FP), R0
 	FMOVD val+8(FP), F0
-	ADD $0, RSP, RSP
+	ADD $2048, RSP, RSP
 	CALL ·__native_entry__+27304(SB)  // _f32toa
-	SUB $0, RSP, RSP
+	SUB $2048, RSP, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-TEXT ·__f64toa(SB), $64-24
+TEXT ·__f64toa(SB), $2176-24
 	NO_LOCAL_POINTERS
 
 _f64toa:
 	MOVD out+0(FP), R0
 	FMOVD val+8(FP), F0
-	ADD $64, RSP, RSP
+	ADD $2176, RSP, RSP
 	CALL ·__native_entry__+96(SB)  // _f64toa
-	SUB $64, RSP, RSP
+	SUB $2176, RSP, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-TEXT ·__get_by_path(SB), $352-40
+TEXT ·__get_by_path(SB), $2752-40
 	NO_LOCAL_POINTERS
 
 _get_by_path:
@@ -17788,13 +17788,13 @@ _get_by_path:
 	MOVD p+8(FP), R1
 	MOVD path+16(FP), R2
 	MOVD m+24(FP), R3
-	ADD $352, RSP, RSP
+	ADD $2752, RSP, RSP
 	CALL ·__native_entry__+23592(SB)  // _get_by_path
-	SUB $352, RSP, RSP
+	SUB $2752, RSP, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-TEXT ·__html_escape(SB), $16-40
+TEXT ·__html_escape(SB), $2080-40
 	NO_LOCAL_POINTERS
 
 _html_escape:
@@ -17802,38 +17802,38 @@ _html_escape:
 	MOVD nb+8(FP), R1
 	MOVD dp+16(FP), R2
 	MOVD dn+24(FP), R3
-	ADD $16, RSP, RSP
+	ADD $2080, RSP, RSP
 	CALL ·__native_entry__+8560(SB)  // _html_escape
-	SUB $16, RSP, RSP
+	SUB $2080, RSP, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-TEXT ·__i64toa(SB), $16-24
+TEXT ·__i64toa(SB), $2080-24
 	NO_LOCAL_POINTERS
 
 _i64toa:
 	MOVD out+0(FP), R0
 	MOVD val+8(FP), R1
-	ADD $16, RSP, RSP
+	ADD $2080, RSP, RSP
 	CALL ·__native_entry__+2840(SB)  // _i64toa
-	SUB $16, RSP, RSP
+	SUB $2080, RSP, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-TEXT ·__lspace(SB), $0-32
+TEXT ·__lspace(SB), $2048-32
 	NO_LOCAL_POINTERS
 
 _lspace:
 	MOVD sp+0(FP), R0
 	MOVD nb+8(FP), R1
 	MOVD off+16(FP), R2
-	ADD $0, RSP, RSP
+	ADD $2048, RSP, RSP
 	CALL ·__native_entry__+16(SB)  // _lspace
-	SUB $0, RSP, RSP
+	SUB $2048, RSP, RSP
 	MOVD R0, ret+24(FP)
 	RET
 
-TEXT ·__quote(SB), $0-48
+TEXT ·__quote(SB), $2048-48
 	NO_LOCAL_POINTERS
 
 _quote:
@@ -17842,13 +17842,13 @@ _quote:
 	MOVD dp+16(FP), R2
 	MOVD dn+24(FP), R3
 	MOVD flags+32(FP), R4
-	ADD $0, RSP, RSP
+	ADD $2048, RSP, RSP
 	CALL ·__native_entry__+4608(SB)  // _quote
-	SUB $0, RSP, RSP
+	SUB $2048, RSP, RSP
 	MOVD R0, ret+40(FP)
 	RET
 
-TEXT ·__skip_array(SB), $176-40
+TEXT ·__skip_array(SB), $2400-40
 	NO_LOCAL_POINTERS
 
 _skip_array:
@@ -17856,25 +17856,25 @@ _skip_array:
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	MOVD flags+24(FP), R3
-	ADD $176, RSP, RSP
+	ADD $2400, RSP, RSP
 	CALL ·__native_entry__+16160(SB)  // _skip_array
-	SUB $176, RSP, RSP
+	SUB $2400, RSP, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-TEXT ·__skip_number(SB), $96-24
+TEXT ·__skip_number(SB), $2240-24
 	NO_LOCAL_POINTERS
 
 _skip_number:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
-	ADD $96, RSP, RSP
+	ADD $2240, RSP, RSP
 	CALL ·__native_entry__+19692(SB)  // _skip_number
-	SUB $96, RSP, RSP
+	SUB $2240, RSP, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-TEXT ·__skip_object(SB), $64-40
+TEXT ·__skip_object(SB), $2176-40
 	NO_LOCAL_POINTERS
 
 _skip_object:
@@ -17882,13 +17882,13 @@ _skip_object:
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	MOVD flags+24(FP), R3
-	ADD $64, RSP, RSP
+	ADD $2176, RSP, RSP
 	CALL ·__native_entry__+18416(SB)  // _skip_object
-	SUB $64, RSP, RSP
+	SUB $2176, RSP, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-TEXT ·__skip_one(SB), $176-40
+TEXT ·__skip_one(SB), $2400-40
 	NO_LOCAL_POINTERS
 
 _skip_one:
@@ -17896,37 +17896,37 @@ _skip_one:
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	MOVD flags+24(FP), R3
-	ADD $176, RSP, RSP
+	ADD $2400, RSP, RSP
 	CALL ·__native_entry__+19920(SB)  // _skip_one
-	SUB $176, RSP, RSP
+	SUB $2400, RSP, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-TEXT ·__skip_one_fast(SB), $128-24
+TEXT ·__skip_one_fast(SB), $2304-24
 	NO_LOCAL_POINTERS
 
 _skip_one_fast:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
-	ADD $128, RSP, RSP
+	ADD $2304, RSP, RSP
 	CALL ·__native_entry__+20048(SB)  // _skip_one_fast
-	SUB $128, RSP, RSP
+	SUB $2304, RSP, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-TEXT ·__u64toa(SB), $0-24
+TEXT ·__u64toa(SB), $2048-24
 	NO_LOCAL_POINTERS
 
 _u64toa:
 	MOVD out+0(FP), R0
 	MOVD val+8(FP), R1
-	ADD $0, RSP, RSP
+	ADD $2048, RSP, RSP
 	CALL ·__native_entry__+3120(SB)  // _u64toa
-	SUB $0, RSP, RSP
+	SUB $2048, RSP, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-TEXT ·__unquote(SB), $160-48
+TEXT ·__unquote(SB), $2368-48
 	NO_LOCAL_POINTERS
 
 _unquote:
@@ -17935,50 +17935,50 @@ _unquote:
 	MOVD dp+16(FP), R2
 	MOVD ep+24(FP), R3
 	MOVD flags+32(FP), R4
-	ADD $160, RSP, RSP
+	ADD $2368, RSP, RSP
 	CALL ·__native_entry__+6064(SB)  // _unquote
-	SUB $160, RSP, RSP
+	SUB $2368, RSP, RSP
 	MOVD R0, ret+40(FP)
 	RET
 
-TEXT ·__validate_one(SB), $176-32
+TEXT ·__validate_one(SB), $2400-32
 	NO_LOCAL_POINTERS
 
 _validate_one:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
-	ADD $176, RSP, RSP
+	ADD $2400, RSP, RSP
 	CALL ·__native_entry__+19968(SB)  // _validate_one
-	SUB $176, RSP, RSP
+	SUB $2400, RSP, RSP
 	MOVD R0, ret+24(FP)
 	RET
 
-TEXT ·__validate_utf8(SB), $32-32
+TEXT ·__validate_utf8(SB), $2112-32
 	NO_LOCAL_POINTERS
 
 _validate_utf8:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
-	ADD $32, RSP, RSP
+	ADD $2112, RSP, RSP
 	CALL ·__native_entry__+26136(SB)  // _validate_utf8
-	SUB $32, RSP, RSP
+	SUB $2112, RSP, RSP
 	MOVD R0, ret+24(FP)
 	RET
 
-TEXT ·__validate_utf8_fast(SB), $16-16
+TEXT ·__validate_utf8_fast(SB), $2080-16
 	NO_LOCAL_POINTERS
 
 _validate_utf8_fast:
 	MOVD s+0(FP), R0
-	ADD $16, RSP, RSP
+	ADD $2080, RSP, RSP
 	CALL ·__native_entry__+26792(SB)  // _validate_utf8_fast
-	SUB $16, RSP, RSP
+	SUB $2080, RSP, RSP
 	MOVD R0, ret+8(FP)
 	RET
 
-TEXT ·__value(SB), $336-48
+TEXT ·__value(SB), $2720-48
 	NO_LOCAL_POINTERS
 
 _value:
@@ -17987,37 +17987,37 @@ _value:
 	MOVD p+16(FP), R2
 	MOVD v+24(FP), R3
 	MOVD flags+32(FP), R4
-	ADD $336, RSP, RSP
+	ADD $2720, RSP, RSP
 	CALL ·__native_entry__+11460(SB)  // _value
-	SUB $336, RSP, RSP
+	SUB $2720, RSP, RSP
 	MOVD R0, ret+40(FP)
 	RET
 
-TEXT ·__vnumber(SB), $240-24
+TEXT ·__vnumber(SB), $2528-24
 	NO_LOCAL_POINTERS
 
 _vnumber:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
-	ADD $240, RSP, RSP
+	ADD $2528, RSP, RSP
 	CALL ·__native_entry__+14052(SB)  // _vnumber
-	SUB $240, RSP, RSP
+	SUB $2528, RSP, RSP
 	RET
 
-TEXT ·__vsigned(SB), $0-24
+TEXT ·__vsigned(SB), $2048-24
 	NO_LOCAL_POINTERS
 
 _vsigned:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
-	ADD $0, RSP, RSP
+	ADD $2048, RSP, RSP
 	CALL ·__native_entry__+15448(SB)  // _vsigned
-	SUB $0, RSP, RSP
+	SUB $2048, RSP, RSP
 	RET
 
-TEXT ·__vstring(SB), $64-32
+TEXT ·__vstring(SB), $2176-32
 	NO_LOCAL_POINTERS
 
 _vstring:
@@ -18025,19 +18025,19 @@ _vstring:
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
 	MOVD flags+24(FP), R3
-	ADD $64, RSP, RSP
+	ADD $2176, RSP, RSP
 	CALL ·__native_entry__+12740(SB)  // _vstring
-	SUB $64, RSP, RSP
+	SUB $2176, RSP, RSP
 	RET
 
-TEXT ·__vunsigned(SB), $0-24
+TEXT ·__vunsigned(SB), $2048-24
 	NO_LOCAL_POINTERS
 
 _vunsigned:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
-	ADD $0, RSP, RSP
+	ADD $2048, RSP, RSP
 	CALL ·__native_entry__+15816(SB)  // _vunsigned
-	SUB $0, RSP, RSP
+	SUB $2048, RSP, RSP
 	RET
