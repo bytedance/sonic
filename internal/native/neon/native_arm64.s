@@ -11653,7 +11653,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	  // .p2align 3, 0x00
-_LB_1179ef90: // _pow10_ceil_sig.g
+_LB_ee285d9d: // _pow10_ceil_sig.g
 	WORD $0xbebcdc4f; WORD $0xff77b1fc  // .quad -38366372719436721
 	WORD $0x13bb0f7b; WORD $0x25e8e89c  // .quad 2731688931043774331
 	WORD $0xf73609b1; WORD $0x9faacf3d  // .quad -6941508010590729807
@@ -17677,7 +17677,7 @@ _P10_TAB:
 	WORD $0xd6e2ef50; WORD $0x444b1ae4  // .quad 0x444b1ae4d6e2ef50
 	WORD $0x064dd592; WORD $0x4480f0cf  // .quad 0x4480f0cf064dd592
 	  // .p2align 3, 0x00
-_LB_5614492e: // _pow10_ceil_sig_f32.g
+_LB_7b3d11c7: // _pow10_ceil_sig_f32.g
 	WORD $0x4b43fcf5; WORD $0x81ceb32c  // .quad -9093133594791772939
 	WORD $0x5e14fc32; WORD $0xa2425ff7  // .quad -6754730975062328270
 	WORD $0x359a3b3f; WORD $0xcad2f7f5  // .quad -3831727700400522433
@@ -17771,7 +17771,8 @@ TEXT ·__f64toa(SB), NOSPLIT, $0-24
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $80, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _f64toa:
@@ -17791,7 +17792,7 @@ TEXT ·__get_by_path(SB), NOSPLIT, $0-40
 
 _entry:
 	MOVD 16(g), R16
-	SUB $224, RSP, R17
+	SUB $368, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 
@@ -17814,7 +17815,8 @@ TEXT ·__html_escape(SB), NOSPLIT, $0-40
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $32, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _html_escape:
@@ -17836,7 +17838,8 @@ TEXT ·__i64toa(SB), NOSPLIT, $0-24
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $32, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _i64toa:
@@ -17880,7 +17883,7 @@ TEXT ·__skip_array(SB), NOSPLIT, $0-40
 
 _entry:
 	MOVD 16(g), R16
-	SUB $48, RSP, R17
+	SUB $192, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 
@@ -17903,7 +17906,8 @@ TEXT ·__skip_number(SB), NOSPLIT, $0-24
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $112, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _skip_number:
@@ -17923,7 +17927,8 @@ TEXT ·__skip_object(SB), NOSPLIT, $0-40
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $80, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _skip_object:
@@ -17945,7 +17950,7 @@ TEXT ·__skip_one(SB), NOSPLIT, $0-40
 
 _entry:
 	MOVD 16(g), R16
-	SUB $48, RSP, R17
+	SUB $192, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 
@@ -17968,7 +17973,8 @@ TEXT ·__skip_one_fast(SB), NOSPLIT, $0-24
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $144, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _skip_one_fast:
@@ -17998,7 +18004,7 @@ TEXT ·__unquote(SB), NOSPLIT, $0-48
 
 _entry:
 	MOVD 16(g), R16
-	SUB $32, RSP, R17
+	SUB $176, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 
@@ -18022,7 +18028,7 @@ TEXT ·__validate_one(SB), NOSPLIT, $0-32
 
 _entry:
 	MOVD 16(g), R16
-	SUB $48, RSP, R17
+	SUB $192, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 
@@ -18044,7 +18050,8 @@ TEXT ·__validate_utf8(SB), NOSPLIT, $0-32
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $48, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _validate_utf8:
@@ -18065,7 +18072,8 @@ TEXT ·__validate_utf8_fast(SB), NOSPLIT, $0-16
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $32, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _validate_utf8_fast:
@@ -18084,7 +18092,7 @@ TEXT ·__value(SB), NOSPLIT, $0-48
 
 _entry:
 	MOVD 16(g), R16
-	SUB $208, RSP, R17
+	SUB $352, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 
@@ -18108,7 +18116,7 @@ TEXT ·__vnumber(SB), NOSPLIT, $0-24
 
 _entry:
 	MOVD 16(g), R16
-	SUB $112, RSP, R17
+	SUB $256, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 
@@ -18139,7 +18147,8 @@ TEXT ·__vstring(SB), NOSPLIT, $0-32
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $80, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _vstring:
