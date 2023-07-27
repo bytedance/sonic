@@ -11650,7 +11650,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	  // .p2align 3, 0x00
-_LB_30e48055: // _pow10_ceil_sig.g
+_LB_0617e348: // _pow10_ceil_sig.g
 	WORD $0xbebcdc4f; WORD $0xff77b1fc  // .quad -38366372719436721
 	WORD $0x13bb0f7b; WORD $0x25e8e89c  // .quad 2731688931043774331
 	WORD $0xf73609b1; WORD $0x9faacf3d  // .quad -6941508010590729807
@@ -17674,7 +17674,7 @@ _P10_TAB:
 	WORD $0xd6e2ef50; WORD $0x444b1ae4  // .quad 0x444b1ae4d6e2ef50
 	WORD $0x064dd592; WORD $0x4480f0cf  // .quad 0x4480f0cf064dd592
 	  // .p2align 3, 0x00
-_LB_e57ddfb3: // _pow10_ceil_sig_f32.g
+_LB_f022a431: // _pow10_ceil_sig_f32.g
 	WORD $0x4b43fcf5; WORD $0x81ceb32c  // .quad -9093133594791772939
 	WORD $0x5e14fc32; WORD $0xa2425ff7  // .quad -6754730975062328270
 	WORD $0x359a3b3f; WORD $0xcad2f7f5  // .quad -3831727700400522433
@@ -17753,175 +17753,85 @@ _LB_e57ddfb3: // _pow10_ceil_sig_f32.g
 	WORD $0x7bea5c70; WORD $0x8f7e32ce  // .quad -8106986416796705680
 	WORD $0x1ae4f38c; WORD $0xb35dbf82  // .quad -5522047002568494196
 
-TEXT ·__f32toa(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__f32toa(SB), $32-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $16, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _f32toa:
 	MOVD out+0(FP), R0
 	FMOVD val+8(FP), F0
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
-	CALL ·__native_entry__+27280(SB)  // _f32toa
 	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	CALL ·__native_entry__+27280(SB)  // _f32toa
+	SUB $16, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__f64toa(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__f64toa(SB), $96-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $80, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _f64toa:
 	MOVD out+0(FP), R0
 	FMOVD val+8(FP), F0
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $80, RSP
 	CALL ·__native_entry__+96(SB)  // _f64toa
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $80, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__get_by_path(SB), NOSPLIT | NOFRAME, $0-40
+TEXT ·__get_by_path(SB), $368-40
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $352, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _get_by_path:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD path+16(FP), R2
 	MOVD m+24(FP), R3
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $352, RSP
 	CALL ·__native_entry__+23408(SB)  // _get_by_path
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $352, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__html_escape(SB), NOSPLIT | NOFRAME, $0-40
+TEXT ·__html_escape(SB), $48-40
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $32, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _html_escape:
 	MOVD sp+0(FP), R0
 	MOVD nb+8(FP), R1
 	MOVD dp+16(FP), R2
 	MOVD dn+24(FP), R3
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $32, RSP
 	CALL ·__native_entry__+8624(SB)  // _html_escape
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $32, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__i64toa(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__i64toa(SB), $48-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $32, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _i64toa:
 	MOVD out+0(FP), R0
 	MOVD val+8(FP), R1
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $32, RSP
 	CALL ·__native_entry__+2840(SB)  // _i64toa
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $32, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__lspace(SB), NOSPLIT | NOFRAME, $0-32
+TEXT ·__lspace(SB), $32-32
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $16, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _lspace:
 	MOVD sp+0(FP), R0
 	MOVD nb+8(FP), R1
 	MOVD off+16(FP), R2
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
-	CALL ·__native_entry__+16(SB)  // _lspace
 	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	CALL ·__native_entry__+16(SB)  // _lspace
+	SUB $16, RSP
 	MOVD R0, ret+24(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__quote(SB), NOSPLIT | NOFRAME, $0-48
+TEXT ·__quote(SB), $32-48
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $16, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _quote:
 	MOVD sp+0(FP), R0
@@ -17929,190 +17839,92 @@ _quote:
 	MOVD dp+16(FP), R2
 	MOVD dn+24(FP), R3
 	MOVD flags+32(FP), R4
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
-	CALL ·__native_entry__+4608(SB)  // _quote
 	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	CALL ·__native_entry__+4608(SB)  // _quote
+	SUB $16, RSP
 	MOVD R0, ret+40(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__skip_array(SB), NOSPLIT | NOFRAME, $0-40
+TEXT ·__skip_array(SB), $192-40
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $176, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _skip_array:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	MOVD flags+24(FP), R3
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $176, RSP
 	CALL ·__native_entry__+16256(SB)  // _skip_array
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $176, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__skip_number(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__skip_number(SB), $128-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $112, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _skip_number:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $112, RSP
 	CALL ·__native_entry__+19500(SB)  // _skip_number
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $112, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__skip_object(SB), NOSPLIT | NOFRAME, $0-40
+TEXT ·__skip_object(SB), $192-40
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $176, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _skip_object:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	MOVD flags+24(FP), R3
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $176, RSP
 	CALL ·__native_entry__+18232(SB)  // _skip_object
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $176, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__skip_one(SB), NOSPLIT | NOFRAME, $0-40
+TEXT ·__skip_one(SB), $192-40
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $176, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _skip_one:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	MOVD flags+24(FP), R3
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $176, RSP
 	CALL ·__native_entry__+19728(SB)  // _skip_one
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $176, RSP
 	MOVD R0, ret+32(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__skip_one_fast(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__skip_one_fast(SB), $176-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $160, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _skip_one_fast:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $160, RSP
 	CALL ·__native_entry__+19856(SB)  // _skip_one_fast
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $160, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__u64toa(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__u64toa(SB), $32-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $16, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _u64toa:
 	MOVD out+0(FP), R0
 	MOVD val+8(FP), R1
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
-	CALL ·__native_entry__+3120(SB)  // _u64toa
 	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	CALL ·__native_entry__+3120(SB)  // _u64toa
+	SUB $16, RSP
 	MOVD R0, ret+16(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__unquote(SB), NOSPLIT | NOFRAME, $0-48
+TEXT ·__unquote(SB), $192-48
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $176, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _unquote:
 	MOVD sp+0(FP), R0
@@ -18120,107 +17932,51 @@ _unquote:
 	MOVD dp+16(FP), R2
 	MOVD ep+24(FP), R3
 	MOVD flags+32(FP), R4
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $176, RSP
 	CALL ·__native_entry__+6064(SB)  // _unquote
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $176, RSP
 	MOVD R0, ret+40(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__validate_one(SB), NOSPLIT | NOFRAME, $0-32
+TEXT ·__validate_one(SB), $192-32
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $176, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _validate_one:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $176, RSP
 	CALL ·__native_entry__+19776(SB)  // _validate_one
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $176, RSP
 	MOVD R0, ret+24(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__validate_utf8(SB), NOSPLIT | NOFRAME, $0-32
+TEXT ·__validate_utf8(SB), $64-32
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $48, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _validate_utf8:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $48, RSP
 	CALL ·__native_entry__+26112(SB)  // _validate_utf8
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $48, RSP
 	MOVD R0, ret+24(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__validate_utf8_fast(SB), NOSPLIT | NOFRAME, $0-16
+TEXT ·__validate_utf8_fast(SB), $48-16
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $32, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _validate_utf8_fast:
 	MOVD s+0(FP), R0
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $32, RSP
 	CALL ·__native_entry__+26768(SB)  // _validate_utf8_fast
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $32, RSP
 	MOVD R0, ret+8(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__value(SB), NOSPLIT | NOFRAME, $0-48
+TEXT ·__value(SB), $368-48
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $352, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _value:
 	MOVD s+0(FP), R0
@@ -18228,121 +17984,57 @@ _value:
 	MOVD p+16(FP), R2
 	MOVD v+24(FP), R3
 	MOVD flags+32(FP), R4
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $352, RSP
 	CALL ·__native_entry__+11524(SB)  // _value
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $352, RSP
 	MOVD R0, ret+40(FP)
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__vnumber(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__vnumber(SB), $272-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $256, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _vnumber:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $256, RSP
 	CALL ·__native_entry__+14116(SB)  // _vnumber
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $256, RSP
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__vsigned(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__vsigned(SB), $32-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $16, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _vsigned:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
-	CALL ·__native_entry__+15544(SB)  // _vsigned
 	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	CALL ·__native_entry__+15544(SB)  // _vsigned
+	SUB $16, RSP
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__vstring(SB), NOSPLIT | NOFRAME, $0-32
+TEXT ·__vstring(SB), $96-32
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $80, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _vstring:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
 	MOVD flags+24(FP), R3
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
+	ADD $80, RSP
 	CALL ·__native_entry__+12804(SB)  // _vstring
-	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	SUB $80, RSP
 	RET
 
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
-
-TEXT ·__vunsigned(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__vunsigned(SB), $32-24
 	NO_LOCAL_POINTERS
-
-_entry:
-	MOVD 16(g), R16
-	SUB $16, RSP, R17
-	CMP  R16, R17
-	BLS  _stack_grow
 
 _vunsigned:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
-	STP.W (R29, R30), -16(RSP)
-	MOVD RSP, R29
-	SUB $16, RSP
-	CALL ·__native_entry__+15912(SB)  // _vunsigned
 	ADD $16, RSP
-	LDP.P 16(RSP), (R29, R30)
+	CALL ·__native_entry__+15912(SB)  // _vunsigned
+	SUB $16, RSP
 	RET
-
-_stack_grow:
-	MOVD R30, R3
-	CALL runtime·morestack_noctxt<>(SB)
-	JMP  _entry
