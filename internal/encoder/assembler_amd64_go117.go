@@ -1179,7 +1179,7 @@ func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
 var (
     _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
 
-    _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
+    _F_gcWriteBarrier1 = jit.Func(gcWriteBarrier1)
 )
 
 func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr) {
@@ -1192,8 +1192,12 @@ func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr) {
     self.xsave(_DI)
     self.Emit("MOVQ", ptr, _AX)
     self.Emit("LEAQ", rec, _DI)
-    self.Emit("MOVQ", _F_gcWriteBarrierAX, _BX)  // MOVQ ${fn}, AX
+    self.xsave(_SP_q)
+    self.Emit("MOVQ", _F_gcWriteBarrier1, _BX)  // MOVQ ${fn}, AX
     self.Rjmp("CALL", _BX)  
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP_q, 0))
+    self.Emit("MOVQ", _DI, jit.Ptr(_SP_q, 8))
+    self.xload(_SP_q)
     self.xload(_DI)  
     self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
     self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
