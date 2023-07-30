@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.21
-// +build go1.17,!go1.21
+//go:build go1.17 && !go1.22
+// +build go1.17,!go1.22
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -135,6 +135,7 @@ var (
     _SP = jit.Reg("SP")
     _R8 = jit.Reg("R8")
     _R9 = jit.Reg("R9")
+    _R11 = jit.Reg("R11")
     _X0 = jit.Reg("X0")
     _X1 = jit.Reg("X1")
 )
@@ -1933,13 +1934,14 @@ func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
 //go:linkname _runtime_writeBarrier runtime.writeBarrier
 var _runtime_writeBarrier uintptr
 
-//go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
-func gcWriteBarrierAX()
+//go:nosplit
+//go:linkname gcWriteBarrier1 runtime.gcWriteBarrier1
+func gcWriteBarrier1()
 
 var (
     _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
 
-    _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
+    _F_gcWriteBarrier1 = jit.Func(gcWriteBarrier1)
 )
 
 func (self *_Assembler) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
@@ -1950,7 +1952,11 @@ func (self *_Assembler) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
         self.save(_DI)
     }
     self.Emit("LEAQ", rec, _DI)
-    self.call(_F_gcWriteBarrierAX)  
+    self.save(_R11)
+    self.call(_F_gcWriteBarrier1)  
+    self.Emit("MOVQ", _AX, jit.Ptr(_R11, 0))
+    self.Emit("MOVQ", _DI, jit.Ptr(_R11, 8))
+    self.load(_R11)
     if saveDI {
         self.load(_DI)
     }    
@@ -1976,7 +1982,11 @@ func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI 
         self.save(_DI)
     }
     self.Emit("LEAQ", rec, _DI)
-    self.call(_F_gcWriteBarrierAX) 
+    self.save(_R11)
+    self.call(_F_gcWriteBarrier1)  
+    self.Emit("MOVQ", _AX, jit.Ptr(_R11, 0))
+    self.Emit("MOVQ", _DI, jit.Ptr(_R11, 8))
+    self.load(_R11)
     if saveDI {
         self.load(_DI)
     } 

@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.21
-// +build go1.17,!go1.21
+//go:build go1.17 && !go1.22
+// +build go1.17,!go1.22
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -202,6 +202,7 @@ var _R_tab = map[int]string {
 }
 
 func (self *_ValueDecoder) compile() {
+    println("_ValueDecoder Assembler")
     self.Emit("SUBQ", jit.Imm(_VD_size), _SP)       // SUBQ $_VD_size, SP
     self.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))  // MOVQ BP, _VD_offs(SP)
     self.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)  // LEAQ _VD_offs(SP), BP
@@ -728,7 +729,11 @@ func (self *_ValueDecoder) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
         self.save(_DI)
     }
     self.Emit("LEAQ", rec, _DI)
-    self.call(_F_gcWriteBarrierAX)
+    self.save(_R11)
+    self.call(_F_gcWriteBarrier1)  
+    self.Emit("MOVQ", _AX, jit.Ptr(_R11, 0))
+    self.Emit("MOVQ", _DI, jit.Ptr(_R11, 8))
+    self.load(_R11)
     if saveDI {
         self.load(_DI)
     }    
@@ -750,7 +755,11 @@ func (self *_ValueDecoder) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, save
         self.save(_DI)
     }
     self.Emit("LEAQ", rec, _DI)
-    self.call(_F_gcWriteBarrierAX)
+    self.save(_R11)
+    self.call(_F_gcWriteBarrier1)  
+    self.Emit("MOVQ", _AX, jit.Ptr(_R11, 0))
+    self.Emit("MOVQ", _DI, jit.Ptr(_R11, 8))
+    self.load(_R11)
     if saveDI {
         self.load(_DI)
     }    
