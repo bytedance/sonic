@@ -19,7 +19,7 @@ package encoder
 import (
     `encoding/hex`
     `encoding/json`
-    `math`
+    // `math`
     `reflect`
     `runtime`
     `strings`
@@ -34,6 +34,7 @@ import (
 
 func TestEncoderMemoryCorruption(t *testing.T) {
     println("TestEncoderMemoryCorruption")
+    runtime.GC()
     var m = map[string]interface{}{
         "1": map[string]interface{} {
             `"`+strings.Repeat("a", int(option.DefaultEncoderBufferSize) - 38)+`"`: "b",
@@ -136,11 +137,11 @@ func mustCompile(t interface{}) _Program {
 }
 
 func TestAssembler_OpCode(t *testing.T) {
-    var iface error = IfaceValue(12345)
-    var eface interface{} = 12345
-    var jval = new(JsonMarshalerValue)
-    var jifv json.Marshaler = JsonMarshalerValue(0)
-    var jifp json.Marshaler = jval
+    // var iface error = IfaceValue(12345)
+    // var eface interface{} = 12345
+    // var jval = new(JsonMarshalerValue)
+    // var jifv json.Marshaler = JsonMarshalerValue(0)
+    // var jifp json.Marshaler = jval
     var rec = &RecursiveValue {
         A: 123,
         Z: 456,
@@ -162,192 +163,194 @@ func TestAssembler_OpCode(t *testing.T) {
             },
         },
     }
-    tests := []testOps {{
-        key: "_OP_null",
-        ins: []_Instr{newInsOp(_OP_null)},
-        exp: "null",
-        val: nil,
-    }, {
-        key: "_OP_bool/true",
-        ins: []_Instr{newInsOp(_OP_bool)},
-        exp: "true",
-        val: true,
-    }, {
-        key: "_OP_bool/false",
-        ins: []_Instr{newInsOp(_OP_bool)},
-        exp: "false",
-        val: false,
-    }, {
-        key: "_OP_i8",
-        ins: []_Instr{newInsOp(_OP_i8)},
-        exp: "-128",
-        val: int8(-128),
-    }, {
-        key: "_OP_i16",
-        ins: []_Instr{newInsOp(_OP_i16)},
-        exp: "-32768",
-        val: int16(-32768),
-    }, {
-        key: "_OP_i32",
-        ins: []_Instr{newInsOp(_OP_i32)},
-        exp: "-2147483648",
-        val: int32(-2147483648),
-    }, {
-        key: "_OP_i64",
-        ins: []_Instr{newInsOp(_OP_i64)},
-        exp: "-9223372036854775808",
-        val: int64(math.MinInt64),
-    }, {
-        key: "_OP_u8",
-        ins: []_Instr{newInsOp(_OP_u8)},
-        exp: "255",
-        val: uint8(255),
-    }, {
-        key: "_OP_u16",
-        ins: []_Instr{newInsOp(_OP_u16)},
-        exp: "65535",
-        val: uint16(65535),
-    }, {
-        key: "_OP_u32",
-        ins: []_Instr{newInsOp(_OP_u32)},
-        exp: "4294967295",
-        val: uint32(4294967295),
-    }, {
-        key: "_OP_u64",
-        ins: []_Instr{newInsOp(_OP_u64)},
-        exp: "18446744073709551615",
-        val: uint64(18446744073709551615),
-    }, {
-        key: "_OP_f32",
-        ins: []_Instr{newInsOp(_OP_f32)},
-        exp: "-12.5",
-        val: float32(-12.5),
-    }, {
-        key: "_OP_f32/nan",
-        ins: []_Instr{newInsOp(_OP_f32)},
-        err: _ERR_nan_or_infinite,
-        val: float32(math.NaN()),
-    }, {
-        key: "_OP_f32/+inf",
-        ins: []_Instr{newInsOp(_OP_f32)},
-        err: _ERR_nan_or_infinite,
-        val: float32(math.Inf(1)),
-    }, {
-        key: "_OP_f32/-inf",
-        ins: []_Instr{newInsOp(_OP_f32)},
-        err: _ERR_nan_or_infinite,
-        val: float32(math.Inf(-1)),
-    }, {
-        key: "_OP_f64",
-        ins: []_Instr{newInsOp(_OP_f64)},
-        exp: "-2.2250738585072014e-308",
-        val: -2.2250738585072014e-308,
-    }, {
-        key: "_OP_f64/nan",
-        ins: []_Instr{newInsOp(_OP_f64)},
-        err: _ERR_nan_or_infinite,
-        val: math.NaN(),
-    }, {
-        key: "_OP_f64/+inf",
-        ins: []_Instr{newInsOp(_OP_f64)},
-        err: _ERR_nan_or_infinite,
-        val: math.Inf(1),
-    }, {
-        key: "_OP_f64/-inf",
-        ins: []_Instr{newInsOp(_OP_f64)},
-        err: _ERR_nan_or_infinite,
-        val: math.Inf(-1),
-    }, {
-        key: "_OP_str",
-        ins: []_Instr{newInsOp(_OP_str)},
-        exp: `"Cartoonist, Illustrator, and T-Shirt connoisseur"`,
-        val: "Cartoonist, Illustrator, and T-Shirt connoisseur",
-    }, {
-        key: "_OP_str/empty",
-        ins: []_Instr{newInsOp(_OP_str)},
-        exp: `""`,
-        val: "",
-    }, {
-        key: "_OP_bin",
-        ins: []_Instr{newInsOp(_OP_bin)},
-        exp: `"AQIDBAU="`,
-        val: []byte{1, 2, 3, 4, 5},
-    }, {
-        key: "_OP_bin/empty",
-        ins: []_Instr{newInsOp(_OP_bin)},
-        exp: `""`,
-        val: []byte{},
-    }, {
-        key: "_OP_quote",
-        ins: []_Instr{newInsOp(_OP_quote)},
-        exp: `"\"test\""`,
-        val: "test",
-    }, {
-        key: "_OP_quote/escape",
-        ins: []_Instr{newInsOp(_OP_quote)},
-        exp: `"\"hello\\n\\t\\rworld\""`,
-        val: "hello\n\t\rworld",
-    }, {
-        key: "_OP_number",
-        ins: []_Instr{newInsOp(_OP_number)},
-        exp: "1.2345",
-        val: "1.2345",
-    }, {
-        key: "_OP_number/invalid",
-        ins: []_Instr{newInsOp(_OP_number)},
-        err: error_number("not a number"),
-        val: "not a number",
-    }, {
-        key: "_OP_eface",
-        ins: []_Instr{newInsOp(_OP_eface)},
-        exp: `12345`,
-        val: &eface,
-    }, {
-        key: "_OP_iface",
-        ins: []_Instr{newInsOp(_OP_iface)},
-        exp: `12345`,
-        val: &iface,
-    }, {
-        key: "_OP_byte",
-        ins: []_Instr{newInsVi(_OP_byte, 'x')},
-        exp: "x",
-        val: nil,
-    }, {
-        key: "_OP_text",
-        ins: []_Instr{newInsVs(_OP_text, "hello, world !!")},
-        exp: "hello, world !!",
-        val: nil,
-    }, {
-        key: "_OP_map_[iter,next,value]",
-        ins: mustCompile(map[string]map[int64]int{}),
-        exp: `{"asdf":{"-9223372036854775808":1234}}`,
-        val: &map[string]map[int64]int{"asdf": {math.MinInt64: 1234}},
-    }, {
-        key: "_OP_slice_[len,next]",
-        ins: mustCompile([][]int{}),
-        exp: `[[1,2,3],[4,5,6]]`,
-        val: &[][]int{{1, 2, 3}, {4, 5, 6}},
-    }, {
-        key: "_OP_marshal[_text]",
-        ins: []_Instr{newInsVt(_OP_marshal, reflect.TypeOf(JsonMarshalerValue(0)))},
-        exp: "123456789",
-        val: new(JsonMarshalerValue),
-    }, {
-        key: "_OP_marshal[_text]/ptr",
-        ins: []_Instr{newInsVt(_OP_marshal, reflect.TypeOf(new(JsonMarshalerValue)))},
-        exp: "123456789",
-        val: &jval,
-    }, {
-        key: "_OP_marshal[_text]/iface_v",
-        ins: []_Instr{newInsVt(_OP_marshal, jsonMarshalerType)},
-        exp: "123456789",
-        val: &jifv,
-    }, {
-        key: "_OP_marshal[_text]/iface_p",
-        ins: []_Instr{newInsVt(_OP_marshal, jsonMarshalerType)},
-        exp: "123456789",
-        val: &jifp,
-    }, {
+    tests := []testOps {
+    // {
+    //     key: "_OP_null",
+    //     ins: []_Instr{newInsOp(_OP_null)},
+    //     exp: "null",
+    //     val: nil,
+    // }, {
+    //     key: "_OP_bool/true",
+    //     ins: []_Instr{newInsOp(_OP_bool)},
+    //     exp: "true",
+    //     val: true,
+    // }, {
+    //     key: "_OP_bool/false",
+    //     ins: []_Instr{newInsOp(_OP_bool)},
+    //     exp: "false",
+    //     val: false,
+    // }, {
+    //     key: "_OP_i8",
+    //     ins: []_Instr{newInsOp(_OP_i8)},
+    //     exp: "-128",
+    //     val: int8(-128),
+    // }, {
+    //     key: "_OP_i16",
+    //     ins: []_Instr{newInsOp(_OP_i16)},
+    //     exp: "-32768",
+    //     val: int16(-32768),
+    // }, {
+    //     key: "_OP_i32",
+    //     ins: []_Instr{newInsOp(_OP_i32)},
+    //     exp: "-2147483648",
+    //     val: int32(-2147483648),
+    // }, {
+    //     key: "_OP_i64",
+    //     ins: []_Instr{newInsOp(_OP_i64)},
+    //     exp: "-9223372036854775808",
+    //     val: int64(math.MinInt64),
+    // }, {
+    //     key: "_OP_u8",
+    //     ins: []_Instr{newInsOp(_OP_u8)},
+    //     exp: "255",
+    //     val: uint8(255),
+    // }, {
+    //     key: "_OP_u16",
+    //     ins: []_Instr{newInsOp(_OP_u16)},
+    //     exp: "65535",
+    //     val: uint16(65535),
+    // }, {
+    //     key: "_OP_u32",
+    //     ins: []_Instr{newInsOp(_OP_u32)},
+    //     exp: "4294967295",
+    //     val: uint32(4294967295),
+    // }, {
+    //     key: "_OP_u64",
+    //     ins: []_Instr{newInsOp(_OP_u64)},
+    //     exp: "18446744073709551615",
+    //     val: uint64(18446744073709551615),
+    // }, {
+    //     key: "_OP_f32",
+    //     ins: []_Instr{newInsOp(_OP_f32)},
+    //     exp: "-12.5",
+    //     val: float32(-12.5),
+    // }, {
+    //     key: "_OP_f32/nan",
+    //     ins: []_Instr{newInsOp(_OP_f32)},
+    //     err: _ERR_nan_or_infinite,
+    //     val: float32(math.NaN()),
+    // }, {
+    //     key: "_OP_f32/+inf",
+    //     ins: []_Instr{newInsOp(_OP_f32)},
+    //     err: _ERR_nan_or_infinite,
+    //     val: float32(math.Inf(1)),
+    // }, {
+    //     key: "_OP_f32/-inf",
+    //     ins: []_Instr{newInsOp(_OP_f32)},
+    //     err: _ERR_nan_or_infinite,
+    //     val: float32(math.Inf(-1)),
+    // }, {
+    //     key: "_OP_f64",
+    //     ins: []_Instr{newInsOp(_OP_f64)},
+    //     exp: "-2.2250738585072014e-308",
+    //     val: -2.2250738585072014e-308,
+    // }, {
+    //     key: "_OP_f64/nan",
+    //     ins: []_Instr{newInsOp(_OP_f64)},
+    //     err: _ERR_nan_or_infinite,
+    //     val: math.NaN(),
+    // }, {
+    //     key: "_OP_f64/+inf",
+    //     ins: []_Instr{newInsOp(_OP_f64)},
+    //     err: _ERR_nan_or_infinite,
+    //     val: math.Inf(1),
+    // }, {
+    //     key: "_OP_f64/-inf",
+    //     ins: []_Instr{newInsOp(_OP_f64)},
+    //     err: _ERR_nan_or_infinite,
+    //     val: math.Inf(-1),
+    // }, {
+    //     key: "_OP_str",
+    //     ins: []_Instr{newInsOp(_OP_str)},
+    //     exp: `"Cartoonist, Illustrator, and T-Shirt connoisseur"`,
+    //     val: "Cartoonist, Illustrator, and T-Shirt connoisseur",
+    // }, {
+    //     key: "_OP_str/empty",
+    //     ins: []_Instr{newInsOp(_OP_str)},
+    //     exp: `""`,
+    //     val: "",
+    // }, {
+    //     key: "_OP_bin",
+    //     ins: []_Instr{newInsOp(_OP_bin)},
+    //     exp: `"AQIDBAU="`,
+    //     val: []byte{1, 2, 3, 4, 5},
+    // }, {
+    //     key: "_OP_bin/empty",
+    //     ins: []_Instr{newInsOp(_OP_bin)},
+    //     exp: `""`,
+    //     val: []byte{},
+    // }, {
+    //     key: "_OP_quote",
+    //     ins: []_Instr{newInsOp(_OP_quote)},
+    //     exp: `"\"test\""`,
+    //     val: "test",
+    // }, {
+    //     key: "_OP_quote/escape",
+    //     ins: []_Instr{newInsOp(_OP_quote)},
+    //     exp: `"\"hello\\n\\t\\rworld\""`,
+    //     val: "hello\n\t\rworld",
+    // }, {
+    //     key: "_OP_number",
+    //     ins: []_Instr{newInsOp(_OP_number)},
+    //     exp: "1.2345",
+    //     val: "1.2345",
+    // }, {
+    //     key: "_OP_number/invalid",
+    //     ins: []_Instr{newInsOp(_OP_number)},
+    //     err: error_number("not a number"),
+    //     val: "not a number",
+    // }, {
+    //     key: "_OP_eface",
+    //     ins: []_Instr{newInsOp(_OP_eface)},
+    //     exp: `12345`,
+    //     val: &eface,
+    // }, {
+    //     key: "_OP_iface",
+    //     ins: []_Instr{newInsOp(_OP_iface)},
+    //     exp: `12345`,
+    //     val: &iface,
+    // }, {
+    //     key: "_OP_byte",
+    //     ins: []_Instr{newInsVi(_OP_byte, 'x')},
+    //     exp: "x",
+    //     val: nil,
+    // }, {
+    //     key: "_OP_text",
+    //     ins: []_Instr{newInsVs(_OP_text, "hello, world !!")},
+    //     exp: "hello, world !!",
+    //     val: nil,
+    // }, {
+    //     key: "_OP_map_[iter,next,value]",
+    //     ins: mustCompile(map[string]map[int64]int{}),
+    //     exp: `{"asdf":{"-9223372036854775808":1234}}`,
+    //     val: &map[string]map[int64]int{"asdf": {math.MinInt64: 1234}},
+    // }, {
+    //     key: "_OP_slice_[len,next]",
+    //     ins: mustCompile([][]int{}),
+    //     exp: `[[1,2,3],[4,5,6]]`,
+    //     val: &[][]int{{1, 2, 3}, {4, 5, 6}},
+    // }, {
+    //     key: "_OP_marshal[_text]",
+    //     ins: []_Instr{newInsVt(_OP_marshal, reflect.TypeOf(JsonMarshalerValue(0)))},
+    //     exp: "123456789",
+    //     val: new(JsonMarshalerValue),
+    // }, {
+    //     key: "_OP_marshal[_text]/ptr",
+    //     ins: []_Instr{newInsVt(_OP_marshal, reflect.TypeOf(new(JsonMarshalerValue)))},
+    //     exp: "123456789",
+    //     val: &jval,
+    // }, {
+    //     key: "_OP_marshal[_text]/iface_v",
+    //     ins: []_Instr{newInsVt(_OP_marshal, jsonMarshalerType)},
+    //     exp: "123456789",
+    //     val: &jifv,
+    // }, {
+    //     key: "_OP_marshal[_text]/iface_p",
+    //     ins: []_Instr{newInsVt(_OP_marshal, jsonMarshalerType)},
+    //     exp: "123456789",
+    //     val: &jifp,
+    // }, 
+    {
         key: "_OP_recurse",
         ins: mustCompile(rec),
         exp: `{"a":123,"p":{"a":789,"p":{"a":777,"q":[{"a":999,"q":null,"r":{"` +

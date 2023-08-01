@@ -1179,28 +1179,24 @@ func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
 var (
     _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
 
-    _F_gcWriteBarrier1 = jit.Func(gcWriteBarrier1)
+    _F_gcWriteBarrier2 = jit.Func(gcWriteBarrier2)
 )
 
-func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr) {
-    if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
+func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, old obj.Addr) {
+    if old.Reg == x86.REG_AX || old.Index == x86.REG_AX {
         panic("rec contains AX!")
     }
     self.Emit("MOVQ", _V_writeBarrier, _BX)
     self.Emit("CMPL", jit.Ptr(_BX, 0), jit.Imm(0))
     self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.xsave(_DI)
+    self.xsave(_DI, _SP_q)
     self.Emit("MOVQ", ptr, _AX)
-    self.Emit("LEAQ", rec, _DI)
-    self.xsave(_SP_q)
-    self.Emit("MOVQ", _F_gcWriteBarrier1, _BX)  // MOVQ ${fn}, AX
+    self.Emit("MOVQ", old, _DI)
+    self.Emit("MOVQ", _F_gcWriteBarrier2, _BX)  // MOVQ ${fn}, AX
     self.Rjmp("CALL", _BX)  
     self.Emit("MOVQ", _AX, jit.Ptr(_SP_q, 0))
     self.Emit("MOVQ", _DI, jit.Ptr(_SP_q, 8))
-    self.xload(_SP_q)
-    self.xload(_DI)  
-    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.xload(_DI, _SP_q)  
     self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", ptr, rec)
-    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
+    self.Emit("MOVQ", ptr, old)
 }

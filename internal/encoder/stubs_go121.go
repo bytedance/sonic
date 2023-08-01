@@ -62,5 +62,5 @@ func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 //go:linkname _runtime_writeBarrier runtime.writeBarrier
 var _runtime_writeBarrier uintptr
 
-//go:linkname gcWriteBarrier1 runtime.gcWriteBarrier1
-func gcWriteBarrier1()
+//go:linkname gcWriteBarrier2 runtime.gcWriteBarrier2
+func gcWriteBarrier2()
