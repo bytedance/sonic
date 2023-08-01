@@ -22,13 +22,11 @@ import (
     `encoding/json`
     `fmt`
     `reflect`
-    `strconv`
 
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
-    `github.com/twitchyliquid64/golang-asm/obj/x86`
 )
 
 /** Crucial Registers:
@@ -721,48 +719,6 @@ func (self *_ValueDecoder) compile() {
             self.Byte(0x00, 0x00, 0x00, 0x00)
         }
     }
-}
-
-func (self *_ValueDecoder) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
-    self.Emit("MOVQ", _V_writeBarrier, _R10)
-    self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
-    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    if saveDI {
-        self.save(_DI)
-    }
-    self.Emit("LEAQ", rec, _DI)
-    self.Emit("MOVQ", _F_gcWriteBarrierAX, _R10)  // MOVQ ${fn}, AX
-    self.Rjmp("CALL", _R10)  
-    if saveDI {
-        self.load(_DI)
-    }    
-    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", _AX, rec)
-    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
-}
-
-func (self *_ValueDecoder) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI bool) {
-    if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
-        panic("rec contains AX!")
-    }
-    self.Emit("MOVQ", _V_writeBarrier, _R10)
-    self.Emit("CMPL", jit.Ptr(_R10, 0), jit.Imm(0))
-    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", ptr, _AX)
-    if saveDI {
-        self.save(_DI)
-    }
-    self.Emit("LEAQ", rec, _DI)
-    self.Emit("MOVQ", _F_gcWriteBarrierAX, _R10)  // MOVQ ${fn}, AX
-    self.Rjmp("CALL", _R10)  
-    if saveDI {
-        self.load(_DI)
-    }    
-    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", ptr, rec)
-    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
 }
 
 /** Generic Decoder **/

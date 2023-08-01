@@ -23,13 +23,11 @@ import (
     `encoding/json`
     `fmt`
     `reflect`
-    `strconv`
 
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
-    `github.com/twitchyliquid64/golang-asm/obj/x86`
 )
 
 /** Crucial Registers:
@@ -217,7 +215,7 @@ func (self *_ValueDecoder) compile() {
     /* add ST offset */
     self.Emit("ADDQ", jit.Imm(_FsmOffset), _ST)                 // ADDQ _FsmOffset, _ST
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                // MOVQ CX, ST.Sp
-    self.WriteRecNotAX(0, _VP, jit.Ptr(_ST, _ST_Vp), false)                // MOVQ VP, ST.Vp[0]
+    self.WriteRecNotAX(0, _VP, jit.Ptr(_ST, _ST_Vp))                // MOVQ VP, ST.Vp[0]
     self.Emit("MOVQ", jit.Imm(_S_val), jit.Ptr(_ST, _ST_Vt))    // MOVQ _S_val, ST.Vt[0]
     self.Sjmp("JMP" , "_next")                                  // JMP  _next
 
@@ -232,7 +230,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("SUBQ" , jit.Imm(1), jit.Ptr(_ST, _ST_Sp))    // SUBQ  $1, ST.Sp
     self.Emit("XCHGQ", jit.Sib(_ST, _CX, 8, _ST_Vp), _SI)   // XCHGQ ST.Vp[CX], SI
     self.Emit("MOVQ" , _R8, jit.Ptr(_SI, 0))                // MOVQ  R8, (SI)
-    self.WriteRecNotAX(1, _R9, jit.Ptr(_SI, 8), false)           // MOVQ  R9, 8(SI)
+    self.WriteRecNotAX(1, _R9, jit.Ptr(_SI, 8))           // MOVQ  R9, 8(SI)
 
     /* check for value stack */
     self.Link("_next")                              // _next:
@@ -358,7 +356,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", jit.Imm(_S_arr), jit.Sib(_ST, _CX, 8, _ST_Vt))    // MOVQ _S_arr, ST.Vt[CX]
     self.Emit("MOVQ", _T_slice, _AX)                                    // MOVQ _T_slice, AX
     self.Emit("MOVQ", _AX, jit.Ptr(_SI, 0))                             // MOVQ AX, (SI)
-    self.WriteRecNotAX(2, _R8, jit.Ptr(_SI, 8), false)                  // MOVQ R8, 8(SI)
+    self.WriteRecNotAX(2, _R8, jit.Ptr(_SI, 8))                  // MOVQ R8, 8(SI)
 
     /* add a new slot for the first element */
     self.Emit("ADDQ", jit.Imm(1), _CX)                                  // ADDQ $1, CX
@@ -573,7 +571,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("SHLQ", jit.Imm(1), _DX)                                  // SHLQ $1, DX
     self.Emit("LEAQ", jit.Sib(_SI, _DX, 8, 0), _SI)                     // LEAQ (SI)(DX*8), SI
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, _ST_Sp))                        // MOVQ CX, ST.Sp
-    self.WriteRecNotAX(7 , _SI, jit.Sib(_ST, _CX, 8, _ST_Vp), false)           // MOVQ SI, ST.Vp[CX]
+    self.WriteRecNotAX(7 , _SI, jit.Sib(_ST, _CX, 8, _ST_Vp))           // MOVQ SI, ST.Vp[CX]
     self.Emit("MOVQ", jit.Imm(_S_val), jit.Sib(_ST, _CX, 8, _ST_Vt))    // MOVQ _S_val, ST.Vt[CX}
     self.Sjmp("JMP" , "_next")                                          // JMP  _next
 
@@ -642,7 +640,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", jit.Ptr(_SI, 8), _SI)                 // MOVQ 8(SI), SI
     self.Emit("MOVQ", _DX, jit.Ptr(_SI, 8))                 // MOVQ DX, 8(SI)
     self.Emit("MOVQ", _AX, jit.Ptr(_SI, 16))                // MOVQ AX, 16(AX)
-    self.WriteRecNotAX(8 , _DI, jit.Ptr(_SI, 0), false)                 // MOVQ R10, (SI)
+    self.WriteRecNotAX(8 , _DI, jit.Ptr(_SI, 0))                 // MOVQ R10, (SI)
     self.Sjmp("JMP" , "_array_append")                      // JMP  _array_append
 
     /* copy string */
@@ -719,54 +717,6 @@ func (self *_ValueDecoder) compile() {
             self.Byte(0x00, 0x00, 0x00, 0x00)
         }
     }
-}
-
-func (self *_ValueDecoder) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
-    self.Emit("MOVQ", _V_writeBarrier, _R9)
-    self.Emit("CMPL", jit.Ptr(_R9, 0), jit.Imm(0))
-    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    if saveDI {
-        self.save(_DI)
-    }
-    self.Emit("LEAQ", rec, _DI)
-    self.save(_R11)
-    self.call(_F_gcWriteBarrier1)  
-    self.Emit("MOVQ", _AX, jit.Ptr(_R11, 0))
-    self.Emit("MOVQ", _DI, jit.Ptr(_R11, 8))
-    self.load(_R11)
-    if saveDI {
-        self.load(_DI)
-    }    
-    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", _AX, rec)
-    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
-}
-
-func (self *_ValueDecoder) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI bool) {
-    if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
-        panic("rec contains AX!")
-    }
-    self.Emit("MOVQ", _V_writeBarrier, _AX)
-    self.Emit("CMPL", jit.Ptr(_AX, 0), jit.Imm(0))
-    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", ptr, _AX)
-    if saveDI {
-        self.save(_DI)
-    }
-    self.Emit("LEAQ", rec, _DI)
-    self.save(_R11)
-    self.call(_F_gcWriteBarrier1)  
-    self.Emit("MOVQ", _AX, jit.Ptr(_R11, 0))
-    self.Emit("MOVQ", _DI, jit.Ptr(_R11, 8))
-    self.load(_R11)
-    if saveDI {
-        self.load(_DI)
-    }    
-    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", ptr, rec)
-    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
 }
 
 /** Generic Decoder **/
