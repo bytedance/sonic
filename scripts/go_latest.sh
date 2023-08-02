@@ -1,11 +1,10 @@
-#!/bin/bash
+#!/bin/ba
+TAG=$1
 
-BRANCH=$1
+git clone https://github.com/golang/go.git $TAG
 
-git clone https://github.com/golang/go.git go_$BRANCH
-
-cd go_$BRANCH/src
-git checkout -b build/$BRANCH origin/$BRANCH 
+cd $TAG/src
+git checkout -b build/$TAG $TAG 
 
 ./all.bash
 
