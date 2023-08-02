@@ -1,10 +1,14 @@
-name: Push Check Go1.18-Linux-X64
+name: Push Check Linux-ARM
 
 on: pull_request
 
 jobs:
   build:
-    runs-on: [self-hosted, X64]
+    strategy:
+      matrix:
+        go-version: [1.17.x, 1.20.x]
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
@@ -14,7 +18,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: ${{ matrix.go-version }}
 
       - uses: actions/cache@v2
         with:
@@ -23,10 +27,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Unit Test
+      - name: main
+        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic
+
+      - name: ast
+        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
+
+      - name: external
         run: |
+          cd ./external_jsonlib_test
           GOMAXPROCS=4 go test -v -race ./...
-          GOMAXPROCS=4 go test -v -race ./external_jsonlib_test/...
-      
-      - name: Generic Test
-        run: GOMAXPROCS=4 go test -v -race ./generic_test
