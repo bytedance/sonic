@@ -31,12 +31,6 @@ import (
     `github.com/stretchr/testify/require`
 )
 
-func TestAssembler_PrologueAndEpilogue(t *testing.T) {
-    a := newAssembler(nil)
-    _, e := a.Load()("", 0, nil, nil, 0, "", nil)
-    assert.Nil(t, e)
-}
-
 var utextVar []byte
 type UtextValue int
 
@@ -140,29 +134,29 @@ func testOpCode(t *testing.T, ops *testOps) {
 
 func TestAssembler_OpCode(t *testing.T) {
     tests := []testOps{
-    // {
-    //     key: "_OP_any/stdlib",
-    //     ins: []_Instr{newInsOp(_OP_any)},
-    //     src: `{"a": [1, 2, 3]}`,
-    //     exp: map[string]interface{}{"a": []interface{}{1.0, 2.0, 3.0}},
-    //     val: new(interface{}),
-    // }, 
-    // {
-    //     key: "_OP_any/use_int64",
-    //     ins: []_Instr{newInsOp(_OP_any)},
-    //     src: `{"a": [1, 2, 3]}`,
-    //     opt: 1 << _F_use_int64,
-    //     exp: map[string]interface{}{"a": []interface{}{int64(1), int64(2), int64(3)}},
-    //     val: new(interface{}),
-    // }, 
-    // {
-    //     key: "_OP_any/use_number",
-    //     ins: []_Instr{newInsOp(_OP_any)},
-    //     src: `{"a": [1, 2, 3]}`,
-    //     opt: 1 << _F_use_number,
-    //     exp: map[string]interface{}{"a": []interface{}{json.Number("1"), json.Number("2"), json.Number("3")}},
-    //     val: new(interface{}),
-    // }, 
+    {
+        key: "_OP_any/stdlib",
+        ins: []_Instr{newInsOp(_OP_any)},
+        src: `{"a": [1, 2, 3]}`,
+        exp: map[string]interface{}{"a": []interface{}{1.0, 2.0, 3.0}},
+        val: new(interface{}),
+    }, 
+    {
+        key: "_OP_any/use_int64",
+        ins: []_Instr{newInsOp(_OP_any)},
+        src: `{"a": [1, 2, 3]}`,
+        opt: 1 << _F_use_int64,
+        exp: map[string]interface{}{"a": []interface{}{int64(1), int64(2), int64(3)}},
+        val: new(interface{}),
+    }, 
+    {
+        key: "_OP_any/use_number",
+        ins: []_Instr{newInsOp(_OP_any)},
+        src: `{"a": [1, 2, 3]}`,
+        opt: 1 << _F_use_number,
+        exp: map[string]interface{}{"a": []interface{}{json.Number("1"), json.Number("2"), json.Number("3")}},
+        val: new(interface{}),
+    }, 
     {
         key: "_OP_str/plain",
         ins: []_Instr{newInsOp(_OP_str)},
@@ -675,6 +669,7 @@ func TestAssembler_OpCode(t *testing.T) {
     }
     for _, tv := range tests {
         t.Run(tv.key, func(t *testing.T) {
+            println(tv.key)
             testOpCode(t, &tv)
         })
     }
@@ -704,6 +699,12 @@ func TestAssembler_DecodeStruct(t *testing.T) {
         C: map[string]int{"qwer": 4567},
         D: []int{1, 2, 3, 4, 5},
     }, v)
+}
+
+func TestAssembler_PrologueAndEpilogue(t *testing.T) {
+    a := newAssembler(nil)
+    _, e := a.Load()("", 0, nil, nil, 0, "", nil)
+    assert.Nil(t, e)
 }
 
 type Tx struct {
