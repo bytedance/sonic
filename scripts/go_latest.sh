@@ -14,4 +14,7 @@ export PATH=$GOROOT/bin:$PATH
 go version
 
 cd ..
-GOMAXPROCS=4 go test -v -race ./...
+GOMAXPROCS=4 go test -v -race .
+GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
+GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/internal/encoder
+GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/internal/decoder

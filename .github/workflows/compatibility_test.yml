@@ -1,4 +1,4 @@
-name: Push Check Linux-ARM
+name: Compatibility Test Linux-X64|ARM
 
 on: pull_request
 

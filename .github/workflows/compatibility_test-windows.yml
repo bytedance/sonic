@@ -1,4 +1,4 @@
-name: Push Check Windows-X64
+name: Compatibility Test Windows-X64
 
 on: pull_request
 

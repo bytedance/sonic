@@ -1,4 +1,4 @@
-name: Push Check Go1.18-Linux-X64
+name: Generic Test Go1.18-Linux-X64
 
 on: pull_request
 

@@ -1,4 +1,4 @@
-name: Push Check Go-Latest-Linux-X64
+name: Unit Test Go-Latest-Linux-X64
 
 on: push
 

@@ -1,4 +1,4 @@
-name: Fuzz Linux-X64
+name: Fuzz Test Linux-X64
 
 on: pull_request
 
