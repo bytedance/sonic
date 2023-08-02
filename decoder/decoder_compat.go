@@ -169,35 +169,13 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
      return nil
 }
 
-type StreamDecoder struct {
-   r       io.Reader
-   buf     []byte
-   scanp   int
-   scanned int64
-   err     error
-   Decoder
-}
+type StreamDecoder = json.Decoder
 
 // NewStreamDecoder adapts to encoding/json.NewDecoder API.
 //
 // NewStreamDecoder returns a new decoder that reads from r.
 func NewStreamDecoder(r io.Reader) *StreamDecoder {
-   return &StreamDecoder{r : r}
-}
-
-// Decode decodes input stream into val with corresponding data. 
-// Redundantly bytes may be read and left in its buffer, and can be used at next call.
-// Either io error from underlying io.Reader (except io.EOF) 
-// or syntax error from data will be recorded and stop subsequently decoding.
-func (self *StreamDecoder) Decode(val interface{}) (err error) {
-   dec := json.NewDecoder(self.r)
-   if (self.f | uint64(OptionUseNumber)) != 0  {
-       dec.UseNumber()
-   }
-   if (self.f | uint64(OptionDisableUnknown)) != 0  {
-       dec.DisallowUnknownFields()
-   }
-   return dec.Decode(val)
+   return json.NewDecoder(r)
 }
 
 // SyntaxError represents json syntax error

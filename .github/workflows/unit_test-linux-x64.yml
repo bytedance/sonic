@@ -32,5 +32,10 @@ jobs:
         run: |
           go test -race -covermode=atomic -coverprofile=coverage.txt ./...
 
+      - name: external
+        run: |
+          cd ./external_jsonlib_test
+          GOMAXPROCS=4 go test -v -race ./...
+      
       - name: Codecov
         run: bash <(curl -s https://codecov.io/bash)
