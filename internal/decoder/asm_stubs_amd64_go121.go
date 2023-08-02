@@ -33,6 +33,9 @@ var _runtime_writeBarrier uintptr
 //go:linkname gcWriteBarrier2 runtime.gcWriteBarrier2
 func gcWriteBarrier2()
 
+// Notice: gcWriteBarrier must use R11 register!!
+var _R11 = _IC
+
 var (
     _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
 
@@ -62,7 +65,7 @@ func (self *_Assembler) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
     self.Emit("MOVQ", _AX, rec)
 }
 
-func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveAX bool) {
+func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI bool, saveAX bool) {
     if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
         panic("rec contains AX!")
     }
@@ -112,7 +115,7 @@ func (self *_ValueDecoder) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
     self.Emit("MOVQ", _AX, rec)
 }
 
-func (self *_ValueDecoder) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr) {
+func (self *_ValueDecoder) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI bool) {
     if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
         panic("rec contains AX!")
     }

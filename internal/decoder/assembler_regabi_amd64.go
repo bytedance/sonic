@@ -133,7 +133,6 @@ var (
     _SP = jit.Reg("SP")
     _R8 = jit.Reg("R8")
     _R9 = jit.Reg("R9")
-    _R11 = jit.Reg("R11")
     _X0 = jit.Reg("X0")
     _X1 = jit.Reg("X1")
 )
@@ -902,7 +901,7 @@ func (self *_Assembler) unquote_once(p obj.Addr, n obj.Addr, stack bool, copy bo
     if stack {
         self.Emit("MOVQ", _DI, p) 
     } else {
-        self.WriteRecNotAX(10, _DI, p, false)
+        self.WriteRecNotAX(10, _DI, p, false, false)
     }
 }
 
@@ -932,7 +931,7 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr, stack bool) {
     if stack {
         self.Emit("MOVQ", _DI, p) 
     } else {
-        self.WriteRecNotAX(12, _DI, p, false)
+        self.WriteRecNotAX(12, _DI, p, false, false)
     }
     self.Link("_unquote_twice_end_{n}")
 }
@@ -1089,7 +1088,7 @@ func (self *_Assembler) unmarshal_func(t reflect.Type, fn obj.Addr, deref bool) 
         self.Emit("TESTQ", _BX, _BX)                // TESTQ  BX, BX
         self.Sjmp("JNZ"  , "_deref_{n}")            // JNZ    _deref_{n}
         self.valloc(t.Elem(), _BX)                  // VALLOC ${t.Elem()}, BX
-        self.WriteRecNotAX(3, _BX, jit.Ptr(_VP, 0), false)    // MOVQ   BX, (VP)
+        self.WriteRecNotAX(3, _BX, jit.Ptr(_VP, 0), false, false)    // MOVQ   BX, (VP)
         self.Link("_deref_{n}")                     // _deref_{n}:
     } else {
         /* set value pointer */
@@ -1250,7 +1249,7 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
     self.Emit("MOVQ" , _VP, _DI)                // MOVQ  VP, DI
 
     self.Emit("MOVQ" , jit.Ptr(_VP, 0), _R8)    // MOVQ SI, （VP)
-    self.WriteRecNotAX(4, _SI, jit.Ptr(_VP, 0), false)    // XCHGQ SI, (VP) 
+    self.WriteRecNotAX(4, _SI, jit.Ptr(_VP, 0), true, false)    // XCHGQ SI, (VP) 
     self.Emit("MOVQ" , _R8, _SI)
 
     self.Emit("XCHGQ", _DX, jit.Ptr(_VP, 8))    // XCHGQ DX, 8(VP)
@@ -1333,7 +1332,7 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
     self.Sjmp("JMP", "_copy_string")
     self.Link("_num_write_{n}")
     self.Emit("MOVQ", _SI, jit.Ptr(_VP, 8))     // MOVQ  SI, 8(VP)
-    self.WriteRecNotAX(13, _DI, jit.Ptr(_VP, 0), false)
+    self.WriteRecNotAX(13, _DI, jit.Ptr(_VP, 0), false, false)
     self.Emit("CMPQ", _VAR_fl, jit.Imm(1))
     self.Sjmp("JNE", "_num_end_{n}")
     self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm('"'))
@@ -1867,7 +1866,7 @@ func (self *_Assembler) _asm_OP_save(_ *_Instr) {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
     self.Emit("CMPQ", _CX, jit.Imm(_MaxStackBytes))     // CMPQ CX, ${_MaxStackBytes}
     self.Sjmp("JAE"  , _LB_stack_error)                  // JA   _stack_error
-    self.WriteRecNotAX(0 , _VP, jit.Sib(_ST, _CX, 1, 8), false) // MOVQ VP, 8(ST)(CX)
+    self.WriteRecNotAX(0 , _VP, jit.Sib(_ST, _CX, 1, 8), false, false) // MOVQ VP, 8(ST)(CX)
     self.Emit("ADDQ", jit.Imm(8), _CX)                  // ADDQ $8, CX
     self.Emit("MOVQ", _CX, jit.Ptr(_ST, 0))             // MOVQ CX, (ST)
 }

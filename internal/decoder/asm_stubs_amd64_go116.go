@@ -19,6 +19,7 @@ package decoder
 
 import (
     `strconv`
+    _ `unsafe`
 
     `github.com/bytedance/sonic/internal/jit`
     `github.com/bytedance/sonic/internal/rt`
