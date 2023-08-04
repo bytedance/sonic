@@ -117,7 +117,7 @@ func (self *Node) Valid() bool {
 //   - ErrNotExist If the node is nil
 //   - Its underlying error If the node is V_ERROR
 func (self *Node)  Check() error {
-    if self == nil || self.t == _V_NONE {
+    if self == nil {
         return ErrNotExist
     } else if self.t != V_ERROR {
         return nil
@@ -572,7 +572,7 @@ func (self *Node) SetAny(key string, val interface{}) (bool, error) {
     return self.Set(key, NewAny(val))
 }
 
-// Unset remove the node of given key under object parent, and reports if the key has existed.
+// Unset RESET the node of given key under object parent, and reports if the key has existed.
 // WARN: After conducting `UnsetXX()`, the node's length WON'T change
 func (self *Node) Unset(key string) (bool, error) {
     self.must(types.V_OBJECT, "an object")
@@ -619,6 +619,9 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
     if it == types.V_ARRAY {
         p = self.Index(index)
     }else if it == types.V_OBJECT {
+        if err := self.checkRaw(); err != nil {
+            return false, err
+        }
         pr := self.skipIndexPair(index)
         if pr == nil {
            return false, ErrNotExist
