@@ -82,9 +82,9 @@ func (self *Node) UnmarshalJSON(data []byte) (err error) {
 
 // Type returns json type represented by the node
 // It will be one of belows:
-//    V_NONE   = 0 (empty node)
+//    V_NONE   = 0 (empty node, key not exists)
 //    V_ERROR  = 1 (error node)
-//    V_NULL   = 2 (json value `null`)
+//    V_NULL   = 2 (json value `null`, key exists)
 //    V_TRUE   = 3 (json value `true`)
 //    V_FALSE  = 4 (json value `false`)
 //    V_ARRAY  = 5 (json value array)
@@ -102,7 +102,7 @@ func (self Node) itype() types.ValueType {
 
 // Exists returns false only if the self is nil or empty node V_NONE
 func (self *Node) Exists() bool {
-    return self != nil && self.t != _V_NONE
+    return self.Valid() && self.t != _V_NONE
 }
 
 // Valid reports if self is NOT V_ERROR or nil
@@ -114,10 +114,10 @@ func (self *Node) Valid() bool {
 }
 
 // Check checks if the node itself is valid, and return:
-//   - ErrNotFound If the node is nil
+//   - ErrNotExist If the node is nil
 //   - Its underlying error If the node is V_ERROR
 func (self *Node)  Check() error {
-    if self == nil {
+    if self == nil || self.t == _V_NONE {
         return ErrNotExist
     } else if self.t != V_ERROR {
         return nil
