@@ -17,13 +17,14 @@
 package encoder
 
 import (
-    `encoding`
-    `encoding/json`
-    `unsafe`
+	"encoding"
+	"encoding/json"
+	"sync"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 /** Encoder Primitives **/
@@ -66,19 +67,29 @@ func encodeString(buf *[]byte, val string) error {
     return nil
 }
 
+var vtMap sync.Map
+
+func more_stack(vt *rt.GoType) {
+    if _, load := vtMap.LoadOrStore(vt, true); !load {
+        morestack_noctxt()
+    }
+}
+
 func encodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *_Stack, fv uint64) error {
     if vt == nil {
         return encodeNil(buf)
     } else if fn, err := findOrCompile(vt, (fv&(1<<bitPointerValue)) != 0); err != nil {
         return err
     } else if vt.Indirect() {
-        rt.MoreStack(_FP_size + native.MaxFrameSize)
+        // rt.MoreStack(_FP_size + native.MaxFrameSize)
+        more_stack(vt)
         rt.StopProf()
         err := fn(buf, *vp, sb, fv)
         rt.StartProf()
         return err
     } else {
-        rt.MoreStack(_FP_size + native.MaxFrameSize)
+        // rt.MoreStack(_FP_size + native.MaxFrameSize)
+        more_stack(vt)
         rt.StopProf()
         err := fn(buf, unsafe.Pointer(vp), sb, fv)
         rt.StartProf()

@@ -867,3 +867,9 @@ type HugeStruct6 struct {
 	Field12 map[string]*bool   `json:"field_12,omitempty"`
 	Field13 []*HugeStruct5     `json:"field_13,omitempty"`
 }
+
+func GetHugeStruct6() *HugeStruct6 {
+	ret := new(HugeStruct6)
+
+	return ret
+}

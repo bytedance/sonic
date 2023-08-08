@@ -49,6 +49,18 @@ func BenchmarkIssue3_Encode_Sonic(b *testing.B) {
     }
 }
 
+func BenchmarkIssue3_Encode_Parallel_Sonic(b *testing.B) {
+    var v HugeStruct6
+    err := Pretouch(reflect.TypeOf(v))
+    assert.Nil(b, err)
+    b.ResetTimer()
+    b.RunParallel(func(p *testing.PB) {
+        for p.Next() {
+            _, _ = Marshal(v)
+        }
+    })
+}
+
 func BenchmarkIssue3_Encode_StdLib(b *testing.B) {
     var v HugeStruct6
     ret, err := json.Marshal(v)
