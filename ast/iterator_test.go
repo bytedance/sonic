@@ -17,11 +17,12 @@
 package ast
 
 import (
-    `fmt`
-    `strconv`
-    `testing`
+	"fmt"
+	"strconv"
+	"testing"
 
-    `github.com/stretchr/testify/assert`
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func getTestIteratorSample(loop int) (string, int) {
@@ -205,6 +206,71 @@ func TestIterator(t *testing.T) {
     if mi.HasNext() {
         t.Fatalf("should not have next")
     }
+}
+
+func TestExist(t *testing.T) {
+    n := NewRaw(`null`)
+    if !n.Exists() {
+        t.Fatal()
+    }
+    nn := n.Get("xx")
+    if nn.Exists() {
+        t.Fatal() 
+    }
+
+    root := NewRaw(`{"a":1, "b":[1,2], "c":{"1":1, "2":2}}`)
+    if !root.Exists() {
+        t.Fatal()
+    }
+    exi, err := root.Unset("a")
+    if !exi || err != nil {
+        t.Fatal(exi, err)
+    }
+
+    root.ForEach(func(path Sequence, node *Node) bool {
+        if path.Key != nil && *path.Key == "a" {
+            t.Fatal()
+        }
+        if path.Index == 1 {
+            if *path.Key != "b" {
+                t.Fatal()
+            }
+            exi, err := node.UnsetByIndex(1)
+            if !exi || err != nil {
+                t.Fatal(exi, err)
+            }
+            node.ForEach(func(path Sequence, node *Node) bool {
+                if path.Index == 1 {
+                    t.Fatal()
+                }
+                return true
+            })
+        }
+
+        if path.Index == 2 {
+            if *path.Key != "c" {
+                t.Fatal()
+            }
+            exi, err := node.UnsetByIndex(1)
+            if !exi || err != nil {
+                t.Fatal(exi, err)
+            }
+            node.ForEach(func(path Sequence, node *Node) bool {
+                if path.Index == 1 {
+                    t.Fatal()
+                }
+                return true
+            })
+        }
+        return true
+    })
+
+    out, err := root.Raw()
+    if err != nil {
+        t.Fatal(err)
+    }
+    require.Equal(t, `{"b":[1],"c":{"1":1}}`, out)
+
 }
 
 func BenchmarkArrays(b *testing.B) {
