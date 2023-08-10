@@ -1,4 +1,4 @@
-name: Push Check Windows-X64
+name: Compatibility Test Windows-X64
 
 on: pull_request
 
@@ -23,5 +23,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Compatibility Test
-        run: go test -v .
+      - name: main
+        run: |
+          set GOMAXPROCS=4
+          go test -v -race github.com/bytedance/sonic
+
+      - name: ast
+        run: |
+          set GOMAXPROCS=4
+          go test -v -race github.com/bytedance/sonic/ast
+
+      - name: external
+        run: |
+          cd ./external_jsonlib_test
+          set GOMAXPROCS=4
+          go test -v -race ./...

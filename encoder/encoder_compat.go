@@ -1,4 +1,4 @@
-// +build !amd64 !go1.16 go1.21
+// +build !amd64 !go1.16 go1.22
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -216,23 +216,12 @@ func Valid(data []byte) (ok bool, start int) {
 }
 
 // StreamEncoder uses io.Writer as 
-type StreamEncoder struct {
-   w io.Writer
-   Encoder
-}
+type StreamEncoder = json.Encoder
 
 // NewStreamEncoder adapts to encoding/json.NewDecoder API.
 //
 // NewStreamEncoder returns a new encoder that write to w.
 func NewStreamEncoder(w io.Writer) *StreamEncoder {
-   return &StreamEncoder{w: w}
+   return json.NewEncoder(w)
 }
 
-// Encode encodes interface{} as JSON to io.Writer
-func (enc *StreamEncoder) Encode(val interface{}) (err error) {
-   jenc := json.NewEncoder(enc.w)
-   jenc.SetEscapeHTML((enc.Opts & EscapeHTML) != 0)
-   jenc.SetIndent(enc.prefix, enc.indent)
-   err = jenc.Encode(val)
-   return err
-}

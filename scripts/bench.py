@@ -19,7 +19,7 @@ import os
 import subprocess
 import argparse
 
-gbench_prefix = "SONIC_NO_ASYNC_GC=1 go test -benchmem -run=none "
+gbench_prefix = "SONIC_NO_ASYNC_GC=1 %s test -benchmem -run=none "
 
 def run(cmd):
     print(cmd)
@@ -73,17 +73,22 @@ def compare(args):
 
     # benchmark current branch    
     (fd, target) = tempfile.mkstemp(".target.txt")
-    run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix, args, target))
-
+    run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix % "go", args, target))
+    
+   
     # trying to switch to the latest main branch
     run("git checkout -- .")
     if current_branch != "main":
         run("git checkout main")
     run("git pull --allow-unrelated-histories origin main")
-
     # benchmark main branch
     (fd, main) = tempfile.mkstemp(".main.txt")
-    run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix, args, main))
+    if gobin != "go":
+        # change GOROOT
+        run("export GOROOT=%s" % gobin)
+        run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix % (gobin+"/bin/go")), args, main)
+    else:
+        run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix % "go", args, main))
 
     # diff the result
     # benchstat = "go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat"
@@ -93,6 +98,7 @@ def compare(args):
     # restore branch
     if current_branch != "main":
         run("git checkout %s"%(current_branch))
+        
     run("patch -p1 < %s" % (diff))
     return target
 
@@ -106,7 +112,15 @@ def main():
         help='benchmark the times')
     argparser.add_argument('-r', '--repeat_times', dest='count', required=False,
         help='benchmark the count')
+    argparser.add_argument('-go', '--go_bin_path', dest='gobin', required=False,
+        help='benchmark the count')
     args = argparser.parse_args()
+    
+    global gobin 
+    if args.gobin:
+        gobin = args.gobin
+    else:
+        gobin = "go"
     
     if args.filter:
         gbench_args = "-bench=%s"%(args.filter)

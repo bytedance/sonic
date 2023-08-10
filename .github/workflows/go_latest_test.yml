@@ -1,14 +1,10 @@
-name: Push Check Linux-ARM
+name: Unit Test Go-Latest-Linux-X64
 
-on: pull_request
+on: push
 
 jobs:
   build:
-    strategy:
-      matrix:
-        go-version: [1.15.x, 1.16.x, 1.20.x]
-        os: [arm]
-    runs-on: ${{ matrix.os }}
+    runs-on: [self-hosted, X64]
     steps:
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
@@ -18,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.20.6
 
       - uses: actions/cache@v2
         with:
@@ -27,8 +23,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Compatibility Test - main
-        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic
-
-      - name: Compatibility Test - ast
-        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
+      - name: script
+        run: |
+          sh ./scripts/go_latest.sh go1.21.0

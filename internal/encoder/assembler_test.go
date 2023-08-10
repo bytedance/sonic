@@ -34,6 +34,7 @@ import (
 
 func TestEncoderMemoryCorruption(t *testing.T) {
     println("TestEncoderMemoryCorruption")
+    runtime.GC()
     var m = map[string]interface{}{
         "1": map[string]interface{} {
             `"`+strings.Repeat("a", int(option.DefaultEncoderBufferSize) - 38)+`"`: "b",
@@ -162,7 +163,8 @@ func TestAssembler_OpCode(t *testing.T) {
             },
         },
     }
-    tests := []testOps {{
+    tests := []testOps {
+    {
         key: "_OP_null",
         ins: []_Instr{newInsOp(_OP_null)},
         exp: "null",
@@ -347,7 +349,8 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsVt(_OP_marshal, jsonMarshalerType)},
         exp: "123456789",
         val: &jifp,
-    }, {
+    }, 
+    {
         key: "_OP_recurse",
         ins: mustCompile(rec),
         exp: `{"a":123,"p":{"a":789,"p":{"a":777,"q":[{"a":999,"q":null,"r":{"` +

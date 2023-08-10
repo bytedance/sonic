@@ -1,4 +1,4 @@
-name: Fuzz Linux-X64
+name: Fuzz Test Linux-X64
 
 on: pull_request
 
@@ -10,9 +10,6 @@ jobs:
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
 
       - uses: actions/checkout@v2
-
-      - name: Check Branch
-        run: ./check_branch_name.sh ${{ github.head_ref }}
 
       - name: Set up Go
         uses: actions/setup-go@v2

@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.21
-// +build go1.17,!go1.21
+//go:build go1.17 && !go1.22
+// +build go1.17,!go1.22
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -435,8 +435,8 @@ func (self *_Assembler) save_state() {
     self.Sjmp("JAE" , _LB_error_too_deep)               // JA   _error_too_deep
     self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _CX, 1, 8))   // MOVQ SP.x, 8(ST)(CX)
     self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16))  // MOVQ SP.f, 16(ST)(CX)
-    self.WriteRecNotAX(0, _SP_p, jit.Sib(_ST, _CX, 1, 24))  // MOVQ SP.p, 24(ST)(CX)
-    self.WriteRecNotAX(1, _SP_q, jit.Sib(_ST, _CX, 1, 32))  // MOVQ SP.q, 32(ST)(CX)
+    self.WritePtr(0, _SP_p, jit.Sib(_ST, _CX, 1, 24))  // MOVQ SP.p, 24(ST)(CX)
+    self.WritePtr(1, _SP_q, jit.Sib(_ST, _CX, 1, 32))  // MOVQ SP.q, 32(ST)(CX)
     self.Emit("MOVQ", _R9, jit.Ptr(_ST, 0))             // MOVQ R9, (ST)
 }
 
@@ -1174,29 +1174,4 @@ func (self *_Assembler) print_gc(i int, p1 *_Instr, p2 *_Instr) {
     self.Emit("MOVQ", jit.Imm(int64(p1.op())),  _BX) // MOVQ $(p1.op()), BX
     self.Emit("MOVQ", jit.Imm(int64(i)),  _AX)       // MOVQ $(i), CX
     self.call_go(_F_println)
-}
-
-var (
-    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
-
-    _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
-)
-
-func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr) {
-    if rec.Reg == x86.REG_AX || rec.Index == x86.REG_AX {
-        panic("rec contains AX!")
-    }
-    self.Emit("MOVQ", _V_writeBarrier, _BX)
-    self.Emit("CMPL", jit.Ptr(_BX, 0), jit.Imm(0))
-    self.Sjmp("JE", "_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.xsave(_DI)
-    self.Emit("MOVQ", ptr, _AX)
-    self.Emit("LEAQ", rec, _DI)
-    self.Emit("MOVQ", _F_gcWriteBarrierAX, _BX)  // MOVQ ${fn}, AX
-    self.Rjmp("CALL", _BX)  
-    self.xload(_DI)  
-    self.Sjmp("JMP", "_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Link("_no_writeBarrier" + strconv.Itoa(i) + "_{n}")
-    self.Emit("MOVQ", ptr, rec)
-    self.Link("_end_writeBarrier" + strconv.Itoa(i) + "_{n}")
 }

@@ -1,4 +1,4 @@
-// +build go1.15,!go1.17
+// +build go1.17,!go1.22
 
 //
 // Copyright 2021 ByteDance Inc.
@@ -24,14 +24,14 @@ TEXT ·decodeValueStub(SB), NOSPLIT, $0 - 72
     NO_LOCAL_POINTERS
     PXOR  X0, X0
     MOVOU X0, rv+48(FP)
-    MOVQ  st+0(FP), BX
-    MOVQ  sp+8(FP), R12
-    MOVQ  sn+16(FP), R13
-    MOVQ  ic+24(FP), R14
+    MOVQ  st+0(FP) , R13
+    MOVQ  sp+8(FP) , R10
+    MOVQ  sn+16(FP), R12
+    MOVQ  ic+24(FP), R11
     MOVQ  vp+32(FP), R15
-    MOVQ  df+40(FP), R10
-    MOVQ  ·_subr_decode_value(SB), AX
-    CALL  AX
-    MOVQ  R14, rp+48(FP)
-    MOVQ  R11, ex+56(FP)
+    MOVQ  df+40(FP), AX
+    MOVQ  ·_subr_decode_value(SB), BX
+    CALL  BX
+    MOVQ  R11, rp+48(FP)
+    MOVQ  BX, ex+56(FP)
     RET

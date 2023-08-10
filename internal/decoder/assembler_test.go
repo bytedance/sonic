@@ -31,12 +31,6 @@ import (
     `github.com/stretchr/testify/require`
 )
 
-func TestAssembler_PrologueAndEpilogue(t *testing.T) {
-    a := newAssembler(nil)
-    _, e := a.Load()("", 0, nil, nil, 0, "", nil)
-    assert.Nil(t, e)
-}
-
 var utextVar []byte
 type UtextValue int
 
@@ -675,6 +669,7 @@ func TestAssembler_OpCode(t *testing.T) {
     }
     for _, tv := range tests {
         t.Run(tv.key, func(t *testing.T) {
+            println(tv.key)
             testOpCode(t, &tv)
         })
     }
@@ -704,6 +699,12 @@ func TestAssembler_DecodeStruct(t *testing.T) {
         C: map[string]int{"qwer": 4567},
         D: []int{1, 2, 3, 4, 5},
     }, v)
+}
+
+func TestAssembler_PrologueAndEpilogue(t *testing.T) {
+    a := newAssembler(nil)
+    _, e := a.Load()("", 0, nil, nil, 0, "", nil)
+    assert.Nil(t, e)
 }
 
 type Tx struct {
