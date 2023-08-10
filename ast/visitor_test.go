@@ -216,7 +216,9 @@ func (self *visitorNodeDiffTest) OnObjectEnd() error {
     require.NotNil(self.t, object)
 
     node := self.stk[self.sp-1].Node
-    pairs, err := node.UnsafeMap()
+    ps, err := node.unsafeMap()
+    var pairs = make([]Pair, ps.Len())
+    ps.ToSlice(pairs)
     require.NoError(self.t, err)
 
     keysGot := make([]string, 0, len(object))
@@ -267,8 +269,10 @@ func (self *visitorNodeDiffTest) OnArrayEnd() error {
     require.NotNil(self.t, array)
 
     node := self.stk[self.sp-1].Node
-    values, err := node.UnsafeArray()
+    vs, err := node.unsafeArray()
     require.NoError(self.t, err)
+    var values = make([]Node, vs.Len())
+    vs.ToSlice(values)
 
     require.EqualValues(self.t, len(values), len(array))
 
@@ -458,13 +462,14 @@ func (self *visitorUserNodeASTDecoder) decodeValue(root *Node) (visitorUserNode,
             value, ierr, ferr)
 
     case V_ARRAY:
-        nodes, err := root.UnsafeArray()
+        nodes, err := root.unsafeArray()
         if err != nil {
             return nil, err
         }
-        values := make([]visitorUserNode, len(nodes))
-        for i := range nodes {
-            value, err := self.decodeValue(&nodes[i])
+        values := make([]visitorUserNode, nodes.Len())
+        for i := 0; i<nodes.Len(); i++ {
+            n := nodes.At(i)
+            value, err := self.decodeValue(n)
             if err != nil {
                 return nil, err
             }
@@ -473,17 +478,17 @@ func (self *visitorUserNodeASTDecoder) decodeValue(root *Node) (visitorUserNode,
         return &visitorUserArray{Value: values}, nil
 
     case V_OBJECT:
-        pairs, err := root.UnsafeMap()
+        pairs, err := root.unsafeMap()
         if err != nil {
             return nil, err
         }
-        values := make(map[string]visitorUserNode, len(pairs))
-        for i := range pairs {
-            value, err := self.decodeValue(&pairs[i].Value)
+        values := make(map[string]visitorUserNode, pairs.Len())
+        for i := 0; i < pairs.Len(); i++ {
+            value, err := self.decodeValue(&pairs.At(i).Value)
             if err != nil {
                 return nil, err
             }
-            values[pairs[i].Key] = value
+            values[pairs.At(i).Key] = value
         }
         return &visitorUserObject{Value: values}, nil
 
