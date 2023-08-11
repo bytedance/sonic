@@ -6,7 +6,7 @@
 
 ## 依赖
 
-- Go 1.16~1.20
+- Go 1.16~1.21
 - Linux / MacOS / Windows（需要 Go1.17 以上）
 - Amd64 架构
 
