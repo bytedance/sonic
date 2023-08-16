@@ -507,7 +507,161 @@ func TestTypeCast(t *testing.T) {
     }
 }
 
-func TestCheckError(t *testing.T) {
+func TestCheckError_Nil(t *testing.T) {
+    nill := (*Node)(nil)
+    if nill.Valid() || nill.Check() == nil {
+        t.Fail()
+    }
+    if nill.Get("").Check() == nil {
+        t.Fatal()
+    }
+    if nill.GetByPath("").Check() == nil {
+        t.Fatal()
+    }
+    if nill.Index(1).Check() == nil {
+        t.Fatal()
+    }
+    if nill.IndexOrGet(1, "a").Check() == nil {
+        t.Fatal()
+    }
+    if nill.IndexPair(1) != nil {
+        t.Fatal()
+    }
+    if _, err := nill.Set("", Node{}); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.SetByIndex(1, Node{}); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.SetAny("", 1); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.SetAnyByIndex(1, 1); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.Unset(""); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.UnsetByIndex(1); err == nil {
+        t.Fatal()
+    }
+    if err := nill.Add(Node{}); err == nil {
+        t.Fatal()
+    }
+    if err := nill.AddAny(1); err == nil {
+        t.Fatal()
+    }
+}
+
+func TestCheckError_None(t *testing.T) {
+    nill := Node{}
+    if !nill.Valid() || nill.Check() != nil {
+        t.Fail()
+    }
+    if nill.Get("").Check() == nil {
+        t.Fatal()
+    }
+    if nill.GetByPath("").Check() == nil {
+        t.Fatal()
+    }
+    if nill.Index(1).Check() == nil {
+        t.Fatal()
+    }
+    if nill.IndexOrGet(1, "a").Check() == nil {
+        t.Fatal()
+    }
+    if nill.IndexPair(1) != nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.Set("a", Node{}); err != nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.SetByIndex(0, Node{}); err != nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.SetByIndex(1, Node{}); err == nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.SetAny("a", 1); err != nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.SetAnyByIndex(0, 1); err != nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.SetAnyByIndex(1, 1); err == nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.Unset(""); err == nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if _, err := nill.UnsetByIndex(1); err == nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if err := nill.Add(Node{}); err != nil {
+        t.Fatal()
+    }
+    nill = Node{}
+    if err := nill.AddAny(1); err != nil {
+        t.Fatal()
+    }
+}
+
+func TestCheckError_Error(t *testing.T) {
+    nill := newError(types.ERR_EOF, "")
+    if nill.Valid() || nill.Check() == nil {
+        t.Fail()
+    }
+    if nill.Get("").Check() == nil {
+        t.Fatal()
+    }
+    if nill.GetByPath("").Check() == nil {
+        t.Fatal()
+    }
+    if nill.Index(1).Check() == nil {
+        t.Fatal()
+    }
+    if nill.IndexOrGet(1, "a").Check() == nil {
+        t.Fatal()
+    }
+    if nill.IndexPair(1) != nil {
+        t.Fatal()
+    }
+    if _, err := nill.Set("", Node{}); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.SetByIndex(1, Node{}); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.SetAny("", 1); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.SetAnyByIndex(1, 1); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.Unset(""); err == nil {
+        t.Fatal()
+    }
+    if _, err := nill.UnsetByIndex(1); err == nil {
+        t.Fatal()
+    }
+    if err := nill.Add(Node{}); err == nil {
+        t.Fatal()
+    }
+    if err := nill.AddAny(1); err == nil {
+        t.Fatal()
+    }
+}
+
+func TestCheckError_Empty(t *testing.T) {
     empty := Node{}
     if !empty.Valid() || empty.Check() != nil || empty.Error() != "" {
         t.Fatal()
