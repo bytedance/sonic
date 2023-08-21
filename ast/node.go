@@ -662,7 +662,9 @@ func (self *Node) Add(node Node) error {
         *self = NewArray([]Node{node})
         return nil
     }
-
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return err
+    }
     s, err := self.unsafeArray()
     if err != nil {
         return err
@@ -843,9 +845,6 @@ func (self *Node) MapUseNode() (map[string]Node, error) {
 // }
 
 func (self *Node) unsafeMap() (*linkedPairs, error) {
-    if err := self.should(types.V_OBJECT, "an object"); err != nil {
-        return nil, err
-    }
     if err := self.skipAllKey(); err != nil {
         return nil, err
     }
@@ -858,6 +857,31 @@ func (self *Node) unsafeMap() (*linkedPairs, error) {
 // SortKeys sorts children of a V_OBJECT node in ascending key-order.
 // If recurse is true, it recursively sorts children's children as long as a V_OBJECT node is found.
 func (self *Node) SortKeys(recurse bool) error {
+    if err := self.Check(); err != nil {
+        return err
+    }
+    if self.itype() == types.V_OBJECT {
+        return self.sortKeys(recurse)
+    } else {
+        var err error
+        err2 := self.ForEach(func(path Sequence, node *Node) bool {
+            it := self.itype()
+            if it == types.V_ARRAY || it == types.V_OBJECT {
+                err = node.SortKeys(recurse)
+                if err != nil {
+                    return false
+                }
+            }
+            return true
+        })
+        if err != nil {
+            return err
+        }
+        return err2
+    }
+}
+
+func (self *Node) sortKeys(recurse bool) (err error) {
     ps, err := self.unsafeMap()
     if err != nil {
         return err
@@ -867,7 +891,7 @@ func (self *Node) SortKeys(recurse bool) error {
         var sc Scanner
         sc = func(path Sequence, node *Node) bool {
             if node.itype() == types.V_OBJECT {
-                if err := node.SortKeys(recurse); err != nil {
+                if err := node.sortKeys(recurse); err != nil {
                     return false
                 }
             }
@@ -959,9 +983,6 @@ func (self *Node) ArrayUseNode() ([]Node, error) {
 // }
 
 func (self *Node) unsafeArray() (*linkedNodes, error) {
-    if err := self.should(types.V_ARRAY, "an array"); err != nil {
-        return nil, err
-    }
     if err := self.skipAllIndex(); err != nil {
         return nil, err
     }
