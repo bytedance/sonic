@@ -57,6 +57,29 @@ func TestNodeSortKeys(t *testing.T) {
     }
     assert.Equal(t, len(exp), len(act))
     assert.Equal(t, string(exp), string(act))
+
+    src = `[[1], {"b":1,"a":2,"c":3}, [], {}, [{"b":1,"a":2,"c":3,"d":[],"e":{}}]]`
+    root, err = NewSearcher(src).GetByPath()
+    if err != nil {
+        t.Fatal(err)
+    }
+    vv, err := root.Interface()
+    if err != nil {
+        t.Fatal(err)
+    }
+    exp, err = json.Marshal(vv)
+    if err != nil {
+        t.Fatal(err)
+    }
+    if err := root.SortKeys(true); err != nil {
+        t.Fatal(err)
+    }
+    act, err = root.MarshalJSON()
+    if err != nil {
+        t.Fatal(err)
+    }
+    assert.Equal(t, string(exp), string(act))
+
 }
 
 func BenchmarkNodeSortKeys(b *testing.B) {
