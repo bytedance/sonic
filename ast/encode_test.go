@@ -48,12 +48,14 @@ func TestGC_Encode(t *testing.T) {
             defer wg.Done()
             root, err := NewSearcher(_TwitterJson).GetByPath()
             if err != nil {
-                t.Fatal(err)
+                t.Error(err)
+                return
             }
             root.Load()
             _, err = root.MarshalJSON()
             if err != nil {
-                t.Fatal(err)
+                t.Error(err)
+                return
             }
             runtime.GC()
         }(wg)

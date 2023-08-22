@@ -66,7 +66,8 @@ func TestGC_Parse(t *testing.T) {
             defer wg.Done()
             _, _, err := Loads(_TwitterJson)
             if err != nil {
-                t.Fatal(err)
+                t.Error(err)
+                return
             }
             runtime.GC()
         }(wg)

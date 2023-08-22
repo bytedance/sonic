@@ -67,10 +67,12 @@ func TestGC(t *testing.T) {
             var w interface{}
             out, err := decode(TwitterJson, &w, true)
             if err != nil {
-                t.Fatal(err)
+                t.Error(err)
+                return
             }
             if out != len(TwitterJson) {
-                t.Fatal(out)
+                t.Error(out)
+                return
             }
             runtime.GC()
         }(wg)
