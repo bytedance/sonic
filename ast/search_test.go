@@ -46,7 +46,8 @@ func TestGC_Search(t *testing.T) {
             defer wg.Done()
             _, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0, "id")
             if err != nil {
-                t.Fatal(err)
+                t.Error(err)
+                return
             }
             runtime.GC()
         }(wg)

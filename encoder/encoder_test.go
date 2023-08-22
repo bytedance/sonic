@@ -64,10 +64,12 @@ func TestGC(t *testing.T) {
             defer wg.Done()
             out, err := Encode(_GenericValue, 0)
             if err != nil {
-                t.Fatal(err)
+                t.Error(err)
+                return
             }
             if len(out) != size {
-                t.Fatal(len(out), size)
+                t.Error(len(out), size)
+                return
             }
             runtime.GC()
         }(wg, n)
