@@ -86,7 +86,7 @@ BenchmarkLoadNode_Parallel/Interface()-16              10330 ns/op        1260.7
 - [Large](https://github.com/bytedance/sonic/blob/main/testdata/twitter.json) (635KB, 10000+ key, 6 layers)
 ![large benchmarks](./docs/imgs/bench-large.png)
 
-See [bench.sh](https://github.com/bytedance/sonic/blob/main/bench.sh) for benchmark codes.
+See [bench.sh](https://github.com/bytedance/sonic/blob/main/scripts/bench.sh) for benchmark codes.
 
 ## How it works
 See [INTRODUCTION.md](./docs/INTRODUCTION.md).
