@@ -17,13 +17,15 @@
 package encoder
 
 import (
-    `encoding`
-    `encoding/json`
-    `reflect`
+	"encoding"
+	"encoding/json"
+	"reflect"
+	"unsafe"
 )
 
 var (
     byteType                 = reflect.TypeOf(byte(0))
+    ptrType                  = reflect.TypeOf(unsafe.Pointer(nil))
     jsonNumberType           = reflect.TypeOf(json.Number(""))
     jsonUnsupportedValueType = reflect.TypeOf(new(json.UnsupportedValueError))
 )

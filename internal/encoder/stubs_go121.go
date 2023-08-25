@@ -29,6 +29,10 @@ import (
 //go:linkname _subr__b64encode github.com/chenzhuoyu/base64x._subr__b64encode
 var _subr__b64encode uintptr
 
+//go:linkname mallocgc runtime.mallocgc
+//goland:noinspection GoUnusedParameter
+func mallocgc(size uintptr, typ *rt.GoType, needzero bool) unsafe.Pointer
+
 //go:noescape
 //go:linkname memmove runtime.memmove
 //goland:noinspection GoUnusedParameter

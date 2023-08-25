@@ -17,13 +17,13 @@
 package encoder
 
 import (
-	"encoding"
-	"reflect"
-	"sync"
-	"unsafe"
+    `encoding`
+    `reflect`
+    `sync`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 type _MapPair struct {

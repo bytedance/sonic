@@ -1011,23 +1011,37 @@ func (self *_Assembler) _asm_OP_drop(_ *_Instr) {
     self.drop_state(_StateSize)
 }
 
+var (
+    _F_mallocgc = jit.Func(mallocgc)
+)
+
+func (self *_Assembler) valloc(vt reflect.Type, ret obj.Addr) {
+    self.Emit("MOVQ", jit.Imm(int64(vt.Size())), _AX)   // MOVQ    ${vt.Size()}, AX
+    self.Emit("MOVQ", jit.Type(vt), _BX)                // MOVQ    ${vt}, BX
+    self.Emit("MOVB", jit.Imm(1), _CX)                  // MOVB    $1, CX
+    self.call_go(_F_mallocgc)                           // CALL_GO mallocgc
+    self.Emit("MOVQ", _AX, ret)                         // MOVQ    AX, ${ret}
+}
+
 func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
     self.drop_state(_StateSize * 2)                     // DROP  $(_StateSize * 2)
     self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 56))   // MOVOU X0, 56(ST)(AX)
 }
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
-    self.prep_buffer_AX()                       // MOVE {buf}, (SP)
     vt, pv := p.vp()
-    self.Emit("MOVQ", jit.Type(vt), _BX)    // MOVQ $(type(p.vt())), BX
 
     /* check for indirection */
     if !rt.UnpackType(vt).Indirect() {
         self.Emit("MOVQ", _SP_p, _CX)           // MOVQ SP.p, CX
     } else {
-        self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, VAR.vp
-        self.Emit("LEAQ", _VAR_vp, _CX)    // LEAQ VAR.vp, CX
+        self.valloc(ptrType, _CX)
+        self.Emit("MOVQ", _CX, _VAR_vp)
+        self.WritePtr(3, _SP_p, jit.Ptr(_CX, 0)) 
     }
+
+    self.prep_buffer_AX()                       // MOVE {buf}, (SP)
+    self.Emit("MOVQ", jit.Type(vt), _BX)    // MOVQ $(type(p.vt())), BX
 
     /* call the encoder */
     self.Emit("MOVQ" , _ST, _DI)                // MOVQ  ST, DI
