@@ -1,4 +1,4 @@
-#!/bin/ba
+#!/bin/bash
 TAG=$1
 
 git clone https://github.com/golang/go.git $TAG
