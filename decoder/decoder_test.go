@@ -224,6 +224,36 @@ func TestDecodeCorrupt(t *testing.T) {
     }
 }
 
+func TestDecodeOption(t *testing.T) {
+    var s string
+    var d *Decoder
+    var out interface{}
+    var out2 struct {}
+    var err error
+
+    s = "123"
+    d = NewDecoder(s)
+    d.SetOptions(OptionUseNumber);
+    err = d.Decode(&out)
+    assert.NoError(t, err)
+    assert.Equal(t, out.(json.Number), json.Number("123"))
+
+    d = NewDecoder(s)
+    err = d.Decode(&out)
+    assert.NoError(t, err)
+    assert.Equal(t, out.(float64), float64(123))
+
+    s = `{"un": 123}`
+    d = NewDecoder(s)
+    d.SetOptions(OptionDisableUnknown);
+    err = d.Decode(&out2)
+    assert.Error(t, err)
+
+    d = NewDecoder(s)
+    err = d.Decode(&out2)
+    assert.NoError(t, err)
+}
+
 func decode(s string, v interface{}, copy bool) (int, error) {
     d := NewDecoder(s)
     if copy {
