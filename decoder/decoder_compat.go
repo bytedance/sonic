@@ -112,10 +112,10 @@ func (self *Decoder) CheckTrailings() error {
 func (self *Decoder) Decode(val interface{}) error {
     r := bytes.NewBufferString(self.s)
    dec := json.NewDecoder(r)
-   if (self.f | uint64(OptionUseNumber)) != 0  {
+   if (self.f & uint64(OptionUseNumber)) != 0  {
        dec.UseNumber()
    }
-   if (self.f | uint64(OptionDisableUnknown)) != 0  {
+   if (self.f & uint64(OptionDisableUnknown)) != 0  {
        dec.DisallowUnknownFields()
    }
    return dec.Decode(val)
