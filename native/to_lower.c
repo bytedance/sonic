@@ -11,7 +11,8 @@ void to_lower(char* dst, const char* src, size_t len) {
     const __m128i Z_ = _mm_set1_epi8('Z' + 1);
     const __m128i delta = _mm_set1_epi8('a' - 'A');
     char* q = dst;
-    do {
+
+    while (len >= 16){
         __m128i op = _mm_loadu_si128((__m128i*)src);
         __m128i gt = _mm_cmpgt_epi8(op, _A);
         __m128i lt = _mm_cmplt_epi8(op, Z_);
@@ -22,7 +23,7 @@ void to_lower(char* dst, const char* src, size_t len) {
         src += 16;
         q += 16;
         len -= 16;
-    } while (len >= 16);
+    };
 
     while(len > 0) {
         len--;
