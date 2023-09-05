@@ -1414,7 +1414,7 @@ long skip_positive(const GoString *src, long *p) {
 long skip_number(const GoString *src, long *p) {
     const char* ss = src->buf;
     const char* sp = src->buf + *p;
-    size_t nb = src->len;
+    size_t nb = src->len - *p;
     long i = *p;
     long r;
     bool neg = *sp == '-';
@@ -1426,7 +1426,7 @@ long skip_number(const GoString *src, long *p) {
         return -ERR_EOF;
     }
 
-    if (unlikely(i < nb && (*sp > '9' || *sp < '0'))) {
+    if (unlikely(nb > 0 && (*sp > '9' || *sp < '0'))) {
         *p = sp - ss;
         return -ERR_INVAL;
     }
