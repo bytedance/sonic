@@ -539,6 +539,14 @@ func TestNative_SkipNumber(t *testing.T) {
     assert.Equal(t, 0, q)
 }
 
+func TestNative_SkipNumberInJson(t *testing.T) {
+    p := 0x13
+    s := "{\"h\":\"1.00000\",\"i\":true,\"pass3\":1}"
+    q := skip_number(&s, &p)
+    assert.Equal(t, 0x13, p)
+    assert.Equal(t, -2, q)
+}
+
 func TestNative_SkipOneFast(t *testing.T) {
     p := 0
     s := ` {"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
