@@ -1,0 +1,2 @@
+git+https://github.com/Maratyszcza/PeachPy
+git+https://github.com/GrammaTech/mc-asm
