@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	MaxFrameSize   uintptr = 400
+	MaxFrameSize   uintptr = 200
 	BufPaddingSize int     = 64
 )
 
