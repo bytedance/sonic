@@ -59,6 +59,10 @@ const (
     // before encoding it into JSON.
     ValidateString Options = encoder.ValidateString
 
+    // NoValidateJSONMarshaler indicates that the encoder should not validate the output string
+    // after encoding the JSONMarshaler to JSON.
+    NoValidateJSONMarshaler Options = encoder.NoValidateJSONMarshaler
+
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = encoder.CompatibleWithStd
 )
