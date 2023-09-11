@@ -844,6 +844,7 @@ func (self *Node) MapUseNode() (map[string]Node, error) {
 //     return self.toGenericObjectUsePair()
 // }
 
+//go:nocheckptr
 func (self *Node) unsafeMap() (*linkedPairs, error) {
     if err := self.skipAllKey(); err != nil {
         return nil, err
@@ -866,7 +867,7 @@ func (self *Node) SortKeys(recurse bool) error {
     } else {
         var err error
         err2 := self.ForEach(func(path Sequence, node *Node) bool {
-            it := self.itype()
+            it := node.itype()
             if it == types.V_ARRAY || it == types.V_OBJECT {
                 err = node.SortKeys(recurse)
                 if err != nil {
