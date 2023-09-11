@@ -16,7 +16,7 @@
 
 #include "native.h"
 
-size_t lspace(const char *sp, size_t nb, size_t p) {
+INLINE_ALL size_t lspace(const char *sp, size_t nb, size_t p) {
     const char * ss = sp;
 
     /* seek to `p` */

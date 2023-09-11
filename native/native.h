@@ -17,9 +17,21 @@
 #ifndef NATIVE_H
 #define NATIVE_H
 
+#ifdef __aarch64__
+#define SIMDE_ENABLE_NATIVE_ALIASES
+#include <x86/sse.h>
+#include <x86/sse2.h>
+#include <x86/sse4.1.h>
+#include <x86/sse4.2.h>
+#include <x86/ssse3.h>
+#include <x86/clmul.h>
+#include <x86/avx2.h>
+#else
+#include <immintrin.h>
+#endif
+
 #include <stdint.h>
 #include <sys/types.h>
-#include <immintrin.h>
 #include <stdbool.h>
 
 #include "types.h"
@@ -34,6 +46,16 @@
 #define as_m128v(v)     (*(const __m128i *)(v))
 #define as_uint64v(p)   (*(uint64_t *)(p))
 #define is_infinity(v)  ((as_uint64v(&v) << 1) == 0xFFE0000000000000)
+
+#ifndef INLINE_ALL
+// All functions should be inlined because the position of LR in clang frame
+// is different from go.
+#if __aarch64__
+#define INLINE_ALL always_inline
+#else
+#define INLINE_ALL 
+#endif
+#endif
 
 typedef struct {
     void * buf;
@@ -140,6 +162,7 @@ long skip_string(const GoString *src, long *p, uint64_t flags);
 long skip_negative(const GoString *src, long *p);
 long skip_positive(const GoString *src, long *p);
 long skip_number(const GoString *src, long *p);
+long fsm_exec(StateMachine *self, const GoString *src, long *p, uint64_t flags); 
 
 bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
 double atof_native(const char *sp, ssize_t nb, char *dbuf, ssize_t cap);

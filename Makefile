@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-ARCH			:= avx avx2 sse
+ARCH			:= avx avx2 sse neon
 TMP_DIR			:= output
 OUT_DIR			:= internal/native
 SRC_FILE		:= native/native.c
@@ -22,20 +22,23 @@ SRC_FILE		:= native/native.c
 CPU_avx			:= amd64
 CPU_avx2		:= amd64
 CPU_sse  		:= amd64
+CPU_neon  		:= arm64
 
-TMPL_avx		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test recover_amd64_test
-TMPL_avx2		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test recover_amd64_test
-TMPL_sse 		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test recover_amd64_test
+TMPL_amd64		:= fastint_test fastfloat_test native_test recover_amd64_test
+TMPL_arm64		:= fastint_test fastfloat_test native_test recover_arm64_test
 
-CFLAGS_avx		:= -msse -mno-sse4 -mavx -mpclmul -mno-avx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=0
-CFLAGS_avx2		:= -msse -mno-sse4 -mavx -mpclmul -mavx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=1 
-CFLAGS_sse		:= -msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul
-
-CC_amd64		:= clang
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py
+ASM2ASM_arm64	:= tools/asm2arm/arm.py
+
+ASM_FLAGS_amd64 := -r
+ASM_FLAGS_arm64 := 
+
+ASM_OUT_amd64   := native_text_amd64.go
+ASM_OUT_arm64   := native_arm64.s
+
+CC		        := clang
 
 CFLAGS			:= -mno-red-zone
-CFLAGS			+= -target x86_64-apple-macos11
 CFLAGS			+= -fno-asynchronous-unwind-tables
 CFLAGS			+= -fno-builtin
 CFLAGS			+= -fno-exceptions
@@ -43,7 +46,11 @@ CFLAGS			+= -fno-rtti
 CFLAGS			+= -fno-stack-protector
 CFLAGS			+= -nostdlib
 CFLAGS			+= -O3
-CFLAGS			+= -Wall -Werror
+# CFLAGS			+= -Wall -Werror
+CFLAGS_avx		:= -target x86_64-apple-macos11 -msse -mno-sse4 -mavx -mpclmul -mno-avx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=0
+CFLAGS_avx2		:= -target x86_64-apple-macos11 -msse -mno-sse4 -mavx -mpclmul -mavx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=1 
+CFLAGS_sse		:= -target x86_64-apple-macos11 -msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul
+CFLAGS_neon		:= -target aarch64-apple-macos11 -march=armv8-a+simd -Itools/simde/simde
 
 NATIVE_SRC		:= $(wildcard native/*.h)
 NATIVE_SRC		+= $(wildcard native/*.c)
@@ -63,19 +70,12 @@ ${@dest}: ${@tmpl}
 endef
 
 define build_arch
-	$(eval @cpu		:= $(value CPU_$(1)))
-	$(eval @deps	:= $(foreach tmpl,$(value TMPL_$(1)),${OUT_DIR}/$(1)/${tmpl}.go))
-	$(eval @asmin	:= ${TMP_DIR}/$(1)/native.s)
-	$(eval @asmout	:= ${OUT_DIR}/$(1)/native_text_${@cpu}.go)
-	$(eval @stubin	:= ${OUT_DIR}/native_${@cpu}.tmpl)
-	$(eval @stubout	:= ${OUT_DIR}/$(1)/native_${@cpu}.go)
-
-$(1): ${@asmout} ${@deps}
-
-${@asmout}: ${@stubout} ${NATIVE_SRC}
-	mkdir -p ${TMP_DIR}/$(1)
-	$${CC_${@cpu}} $${CFLAGS} $${CFLAGS_$(1)} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
-	python3 $${ASM2ASM_${@cpu}} -r ${@stubout} ${TMP_DIR}/$(1)/native.s
+$(eval @cpu		:= $(value CPU_$(1)))
+$(eval @deps	:= $(foreach tmpl,$(value TMPL_${@cpu}),${OUT_DIR}/$(1)/${tmpl}.go))
+$(eval @asmin	:= ${TMP_DIR}/$(1)/native.s)
+$(eval @asmout	:= ${OUT_DIR}/$(1)/$(value ASM_OUT_${@cpu}))
+$(eval @stubin	:= ${OUT_DIR}/native_${@cpu}.tmpl)
+$(eval @stubout	:= ${OUT_DIR}/$(1)/native_${@cpu}.go)
 
 $(eval $(call 	\
 	build_tmpl,	\
@@ -84,9 +84,16 @@ $(eval $(call 	\
 	${@stubout}	\
 ))
 
+$(1): ${@asmout} ${@deps}
+
+${@asmout}: ${@stubout} ${NATIVE_SRC}
+	mkdir -p ${TMP_DIR}/$(1)
+	$${CC} $${CFLAGS} $${CFLAGS_$(1)} -S -o ${TMP_DIR}/$(1)/native.s ${SRC_FILE}
+	python3 $${ASM2ASM_${@cpu}} $${ASM_FLAGS_${@cpu}} ${@stubout} ${TMP_DIR}/$(1)/native.s
+
 $(foreach 							\
 	tmpl,							\
-	$(value TMPL_$(1)),				\
+	$(value TMPL_${@cpu}),			\
 	$(eval $(call 					\
 		build_tmpl,					\
 		$(1),						\

@@ -45,7 +45,7 @@ typedef struct f64_dec f64_dec;
 
 typedef __uint128_t uint128_t;
 
-static inline unsigned ctz10(const uint64_t v) {
+static always_inline unsigned ctz10(const uint64_t v) {
     xassert(0 <= v && v < 100000000000000000ull);
     if (v >= 10000000000ull) {
         if (v <      100000000000ull) return 11;
@@ -69,7 +69,7 @@ static inline unsigned ctz10(const uint64_t v) {
 
 }
 
-static inline char* format_significand(uint64_t sig, char *out, int cnt) {
+static always_inline char* format_significand(uint64_t sig, char *out, int cnt) {
     char *p = out + cnt;
     int ctz = 0;
 
@@ -120,7 +120,7 @@ static inline char* format_significand(uint64_t sig, char *out, int cnt) {
     return out + cnt - ctz;
 }
 
-static inline char* format_integer(uint64_t sig, char *out, unsigned cnt) {
+static always_inline char* format_integer(uint64_t sig, char *out, unsigned cnt) {
     char *p = out + cnt;
     if ((sig >> 32) != 0) {
         uint64_t q = sig / 100000000;
@@ -165,7 +165,7 @@ static inline char* format_integer(uint64_t sig, char *out, unsigned cnt) {
     return out + cnt;
 }
 
-static inline char* format_exponent(f64_dec v, char *out, unsigned cnt) {
+static always_inline char* format_exponent(f64_dec v, char *out, unsigned cnt) {
     char* p = out + 1;
     char* end = format_significand(v.sig, p, cnt);
     while (*(end - 1) == '0') end--;
@@ -202,7 +202,7 @@ static inline char* format_exponent(f64_dec v, char *out, unsigned cnt) {
     return end;
 }
 
-static inline char* format_decimal(f64_dec v, char* out, unsigned cnt) {
+static always_inline char* format_decimal(f64_dec v, char* out, unsigned cnt) {
     char* p = out;
     char* end;
     int point = cnt + v.exp;
@@ -238,7 +238,7 @@ static inline char* format_decimal(f64_dec v, char* out, unsigned cnt) {
     return end;
 }
 
-static inline char* write_dec(f64_dec dec, char* p) {
+static always_inline char* write_dec(f64_dec dec, char* p) {
     int cnt = ctz10(dec.sig);
     int dot = cnt + dec.exp;
     int sci_exp = dot - 1;
@@ -258,7 +258,7 @@ static inline char* write_dec(f64_dec dec, char* p) {
     return end;
 }
 
-static inline uint64_t f64toraw(double fp) {
+static always_inline uint64_t f64toraw(double fp) {
     union {
         uint64_t u64;
         double   f64;
@@ -267,7 +267,7 @@ static inline uint64_t f64toraw(double fp) {
     return uval.u64;
 }
 
-static inline uint64_t round_odd(uint64x2 g, uint64_t cp) {
+static always_inline uint64_t round_odd(uint64x2 g, uint64_t cp) {
     const uint128_t x = ((uint128_t)cp) * g.lo;
     const uint128_t y = ((uint128_t)cp) * g.hi + ((uint64_t)(x >> 64));
 
@@ -285,7 +285,7 @@ static inline uint64_t round_odd(uint64x2 g, uint64_t cp) {
  https://github.com/openjdk/jdk/pull/3402 (Java implementation)
  https://github.com/abolz/Drachennest (C++ implementation)
  */
-static inline f64_dec f64todec(uint64_t rsig, int32_t rexp, uint64_t c, int32_t q) {
+static always_inline f64_dec f64todec(uint64_t rsig, int32_t rexp, uint64_t c, int32_t q) {
     uint64_t cbl, cb, cbr, vbl, vb, vbr, lower, upper, s;
     int32_t k, h;
     bool even, irregular, w_inside, u_inside;
@@ -346,7 +346,7 @@ static inline f64_dec f64todec(uint64_t rsig, int32_t rexp, uint64_t c, int32_t 
     return dec;
 }
 
-int f64toa(char *out, double fp) {
+INLINE_ALL int f64toa(char *out, double fp) {
     char* p = out;
     uint64_t raw = f64toraw(fp);
     bool neg;

@@ -56,7 +56,7 @@ typedef struct lshift_cheat  {
  */
 const static lshift_cheat LSHIFT_TAB[61];
 
-static inline void decimal_init(Decimal *d, char *dbuf, size_t cap) {
+static always_inline void decimal_init(Decimal *d, char *dbuf, size_t cap) {
     d->d = dbuf;
     d->cap = cap;
     for (int i = 0; i < d->cap; ++i) {
@@ -68,7 +68,7 @@ static inline void decimal_init(Decimal *d, char *dbuf, size_t cap) {
     d->trunc = 0;
 }
 
-static inline void decimal_set(Decimal *d, const char *s, ssize_t len, char *dbuf, ssize_t cap) {
+static always_inline void decimal_set(Decimal *d, const char *s, ssize_t len, char *dbuf, ssize_t cap) {
     int i = 0;
 
     decimal_init(d, dbuf, cap);
@@ -127,7 +127,7 @@ static inline void decimal_set(Decimal *d, const char *s, ssize_t len, char *dbu
 }
 
 /* trim trailing zeros from number */
-static inline void trim(Decimal *d) {
+static always_inline void trim(Decimal *d) {
     while (d->nd > 0 && d->d[d->nd - 1] == '0') {
         d->nd--;
     }
@@ -137,7 +137,7 @@ static inline void trim(Decimal *d) {
 }
 
 /* Binary shift right (/ 2) by k bits.  k <= maxShift to avoid overflow */
-static inline void right_shift(Decimal *d, uint32_t k) {
+static always_inline void right_shift(Decimal *d, uint32_t k) {
     int      r = 0; // read pointer
     int      w = 0; // write pointer
     uint64_t n = 0;
@@ -190,7 +190,7 @@ static inline void right_shift(Decimal *d, uint32_t k) {
 }
 
 /* Compare the leading prefix, if b is lexicographically less, return 0 */
-static inline bool prefix_is_less(const char *b, const char *s, uint64_t bn) {
+static always_inline bool prefix_is_less(const char *b, const char *s, uint64_t bn) {
     int i = 0;
     for (; i < bn; i++) {
         if (s[i] == '\0') {
@@ -204,7 +204,7 @@ static inline bool prefix_is_less(const char *b, const char *s, uint64_t bn) {
 }
 
 /* Binary shift left (* 2) by k bits.  k <= maxShift to avoid overflow */
-static inline void left_shift(Decimal *d, uint32_t k) {
+static always_inline void left_shift(Decimal *d, uint32_t k) {
     int delta = LSHIFT_TAB[k].delta;
 
     if (prefix_is_less(d->d, LSHIFT_TAB[k].cutoff, d->nd)){
@@ -254,7 +254,7 @@ static inline void left_shift(Decimal *d, uint32_t k) {
     trim(d);
 }
 
-static inline void decimal_shift(Decimal *d, int k) {
+static always_inline void decimal_shift(Decimal *d, int k) {
     if (d->nd == 0 || k == 0) {
         return;
     }
@@ -281,7 +281,7 @@ static inline void decimal_shift(Decimal *d, int k) {
 
 }
 
-static inline int should_roundup(Decimal *d, int nd) {
+static always_inline int should_roundup(Decimal *d, int nd) {
     if (nd < 0 || nd >= d->nd) {
         return 0;
     }
@@ -299,7 +299,7 @@ static inline int should_roundup(Decimal *d, int nd) {
 }
 
 /* Extract integer part, rounded appropriately */
-static inline uint64_t rounded_integer(Decimal *d) {
+static always_inline uint64_t rounded_integer(Decimal *d) {
     if (d->dp > 20) { // overflow
         return 0xFFFFFFFFFFFFFFFF; //64 bits
     }
@@ -318,7 +318,7 @@ static inline uint64_t rounded_integer(Decimal *d) {
     return n;
 }
 
-int decimal_to_f64(Decimal *d, double *val) {
+INLINE_ALL int decimal_to_f64(Decimal *d, double *val) {
     int exp2 = 0;
     uint64_t mant = 0;
     uint64_t bits = 0;
@@ -415,7 +415,7 @@ out:
     return 0;
 }
 
-double atof_native(const char *sp, ssize_t nb, char* dbuf, ssize_t cap) {
+INLINE_ALL double atof_native(const char *sp, ssize_t nb, char* dbuf, ssize_t cap) {
     Decimal d;
     double val = 0;
     decimal_set(&d, sp, nb, dbuf, cap);
