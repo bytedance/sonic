@@ -25,7 +25,7 @@ CPU_sse  		:= amd64
 CPU_neon  		:= arm64
 
 TMPL_amd64		:= fastint_test fastfloat_test native_test recover_amd64_test
-TMPL_arm64		:= fastint_test fastfloat_test native_test recover_arm64_test
+TMPL_arm64		:= fastint_test fastfloat_test native_test recover_arm64_test native_export_arm64
 
 ASM2ASM_amd64	:= tools/asm2asm/asm2asm.py
 ASM2ASM_arm64	:= tools/asm2arm/arm.py
