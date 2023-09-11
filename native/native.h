@@ -138,6 +138,7 @@ typedef struct {
     int64_t vt[MAX_RECURSE];
 } StateMachine;
 
+int f32toa(char *out, float val);
 int f64toa(char *out, double val);
 int i64toa(char *out, int64_t val);
 int u64toa(char *out, uint64_t val);
