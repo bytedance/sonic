@@ -4,6 +4,7 @@
 import os
 import sys
 import string
+import argparse
 import itertools
 import functools
 
@@ -29,7 +30,7 @@ class InstrStreamer(mcasm.Streamer):
         self.instr = None
         self.fixups = []
         super().__init__()
-    
+
     def unhandled_event(self, name: str, base_impl, *args, **kwargs):
         if name == 'emit_instruction':
             self.instr = args[1]
@@ -243,6 +244,7 @@ TOKEN_NAME = 4
 TOKEN_PUNC = 5
 
 ARM_ADRP_IMM_BIT_SIZE = 21
+ARM_ADR_WIDTH = 1024 * 1024
 
 class Instruction:
     comments:   str
@@ -256,10 +258,15 @@ class Instruction:
     text_label: Optional[str]
     back_label: Optional[str]
     ADR_instr:  Optional[str]
+    adrp_asm:   Optional[str]
+    is_adrp:    bool
 
     def __init__(self, line: str, adrp_count=0):
         self.comments = ''
         self.offs_ = None
+        self.is_adrp = False
+        self.asm = mcasm.Assembler('aarch64-apple-macos11')
+
         self.parse(line, adrp_count)
 
     def __str__(self):
@@ -267,6 +274,11 @@ class Instruction:
 
     def __repr__(self):
         return '{INSTR %s}' % ( self.asm_code )
+    
+    @property
+    def jmptab(self) -> Optional[str]:
+        if self.is_adrp and self.label_name.find(CLANG_JUMPTABLE_LABLE) != -1:
+            return self.label_name
 
     @property
     def size(self) -> int:
@@ -294,11 +306,12 @@ class Instruction:
 
     @functools.cached_property
     def is_jmpq(self) -> bool:
-        return self.mnemonic == 'jmpq'
+        # return self.mnemonic == 'br'
+        return False
 
     @functools.cached_property
     def is_jmp(self) -> bool:
-        return self.mnemonic == 'jmp'
+        return self.mnemonic == 'b'
 
     @functools.cached_property
     def is_invoke(self) -> bool:
@@ -307,7 +320,7 @@ class Instruction:
     @property
     def is_branch_label(self) -> bool:
         return self.is_branch and (len(self.fixups) != 0)
-    
+
     @property
     def need_reloc(self) -> bool:
         return (len(self.fixups) != 0)
@@ -316,8 +329,8 @@ class Instruction:
         # arm64
         self.offs_ = off + 4
 
-    def _encode_normal_instr(self) -> str:
-        return self.encode(self.data, self.asm_code)
+    # def _encode_normal_instr(self) -> str:
+    #     return self.encode(self.data, self.asm_code)
 
     @functools.cached_property
     def encoded(self) -> str:
@@ -331,24 +344,25 @@ class Instruction:
             raise RuntimeError('offset is too larger, [assembly]: %s, [offset]: %d, [valid off size]: %d'
                 % (self.asm_code, self.offs_, self.fixups[0].kind_info.bit_size))
 
-    def _encode_adr(self) -> str:
+    def _encode_adr(self):
         buf = int.from_bytes(self.data, byteorder='little')
         bit_size = ARM_ADRP_IMM_BIT_SIZE
-        
+
         self._check_offs_is_valid(bit_size)
 
         # adrp op: | op | immlo | 1 0 0 0 0 | immhi | Rd |
         #          |31  |30   29|28       24|23    5|4  0|
-        imm_lo = (self.offs_ << 29) & 0x6000
-        imm_hi = (self.offs_ >> 2) << 5
+        imm_lo = (self.offs_ << 29) & 0x60000000
+        imm_hi = (self.offs_ << 3) & 0x00FFFFE0
         encode_data = (buf + imm_lo + imm_hi).to_bytes(4, byteorder='little')
-        return self.encode(encode_data, '%s $%s(%%rip)' % (str(self), self.offs_)) 
+        self.data = encode_data
+        # return self.encode(encode_data, '%s $%s(%%rip)' % (str(self), self.offs_))
 
-    def _encode_rel32(self) -> str:
+    def _encode_rel32(self):
         if self.mnemonic == 'adrp' or self.mnemonic == 'adr':
             return self._encode_adr()
         buf = int.from_bytes(self.data, byteorder='little')
-        
+
         imm = self.offs_
         imm_size = self.fixups[0].kind_info.bit_size
         imm_offset = self.fixups[0].kind_info.bit_offset
@@ -364,36 +378,43 @@ class Instruction:
         mask = (0x1 << (imm_size + imm_offset)) - 1
         buf = buf | (imm & mask)
         buf = buf.to_bytes(4, byteorder='little')
-        return self.encode(buf, '%s $%s(%%rip)' % (str(self), self.offs_))
+        self.data = buf
+        # return self.encode(buf, '%s $%s(%%rip)' % (str(self), self.offs_))
 
-    def _encode_page(self) -> str:
+    def _encode_page(self):
         if self.mnemonic != 'adrp':
             raise RuntimeError("not adrp instruction: %s" % self.asm_code)
         self.offs_ = self.offs_ >> 12
         return self._encode_rel32()
 
-    def _encode_pageoff(self) -> str:
+    def _encode_pageoff(self):
         self.offs_ = 0
         return self._encode_rel32()
 
-    def _encode_reloc_instr(self) -> str:
+    def _fixup_rel32(self):
         if self.offs_ is None:
             raise RuntimeError('unresolved label %s' % self.label_name)
 
         if self.mnemonic == 'adr':
-            return self._encode_rel32()
+            self._encode_adr()
+        elif self.fixups[0].value.variant_kind == mcasm.mc.SymbolRefExpr.VariantKind.PAGEOFF:
+            self._encode_pageoff()
+        elif self.fixups[0].value.variant_kind == mcasm.mc.SymbolRefExpr.VariantKind.PAGE:
+            self._encode_page()
+        else:
+            self._encode_rel32()
 
-        if self.fixups[0].value.variant_kind == mcasm.mc.SymbolRefExpr.VariantKind.PAGEOFF:
-            return self._encode_pageoff()
-
-        if self.fixups[0].value.variant_kind == mcasm.mc.SymbolRefExpr.VariantKind.PAGE:
-            return self._encode_page()
-
-        return self._encode_rel32()
-        
+    def _encode_reloc_instr(self) -> str:
+        self._fixup_rel32()
+        return self.encode(self.data, '%s $%s(%%rip)' % (str(self), self.offs_))
 
     def _encode_normal_instr(self) -> str:
         return self.encode(self.data, str(self))
+
+    def _raw_instr(self) -> bytes:
+        if self.need_reloc:
+            self._fixup_rel32()
+        return self.data
 
     def _fixup_adrp(self, line: str, adrp_count: int) -> str:
         reg = line.split()[1].split(',')[0]
@@ -401,11 +422,33 @@ class Instruction:
         self.ADRP_label = self.text_label + '_' + reg + '_' + str(adrp_count)
         self.back_label = '_back_adrp_' + str(adrp_count)
         self.ADR_instr = 'adr ' + reg + ', ' + self.text_label
-        self.asm_code = line
+        self.adrp_asm = line
+        self.is_adrp = True
         line = 'b ' + self.ADRP_label
-        self.asm_code = line + ' // ' + self.asm_code
-        
+        self.asm_code = line + ' // ' + self.adrp_asm
+
         return line
+
+    def _parse_by_mcasm(self, line: str):
+        streamer = InstrStreamer()
+        # self.asm.assemble(streamer, line, MCPU="", features_str="")
+        self.asm.assemble(streamer, line)
+        if streamer.instr is None:
+            raise RuntimeError('cannot parse assembly: %s' % line)
+        self.instr = streamer.instr
+
+        # instead of short jump instruction
+        self.data = streamer.data
+
+        self.fixups = streamer.fixups
+        self.mnemonic = line.split()[0]
+
+    def convert_to_adr(self):
+        self.is_adrp = True
+        adr_asm = self.adrp_asm.replace('adrp', 'adr')
+        self.asm_code = adr_asm + ' // ' + self.adrp_asm
+        # self._parse_by_mcasm(adr_asm)
+        return self.asm_code
 
     def parse(self, line: str, adrp_count: int):
         # machine code
@@ -415,35 +458,26 @@ class Instruction:
         self.text_label = None
         # turn adrp to jmp
         if (menmonic == 'adrp'):
-            line = self._fixup_adrp(line, adrp_count)
+            line = self.convert_to_adr()
         else:
             self.asm_code = line
-            
-        asm = mcasm.Assembler('aarch64-linux-gnu')
-        streamer = InstrStreamer() 
-        asm.assemble(streamer, line)
-        if streamer.instr is None:
-            raise RuntimeError('cannot parse assembly: %s' % line)
-        self.instr = streamer.instr
 
-        # instead of short jump instruction
-        self.data = streamer.data
-        
-        self.fixups = streamer.fixups
-        self.mnemonic = line.split()[0]
-        
+        self._parse_by_mcasm(line)
+
     @staticmethod
     def encode(buf: bytes, comments: str = '') -> str:
         i = 0
         r = []
         n = len(buf)
 
+        # @debug
+        # while i < n - 3:
+        #     r.append('%08x' % int.from_bytes(buf[i:i + 4], 'little'))
+        #     i += 4
+        # return '\n\t'.join(r)
+
         if (n % 4 != 0):
             raise RuntimeError("Unkown instruction which not encoding 4 bytes: %s " % comments, buf)
-
-        while i < n - 7:
-            r.append('DWORD $0x%08x' % int.from_bytes(buf[i:i + 8], 'little'))
-            i += 8
 
         while i < n - 3:
             r.append('WORD $0x%08x' % int.from_bytes(buf[i:i + 4], 'little'))
@@ -514,20 +548,20 @@ class Pcsp:
     out  : List[Tuple[int, int]]
     pc   : int
     sp   : int
-    
+
     def __init__(self, entry: int):
         self.out = []
         self.maxpc = entry
         self.entry = entry
         self.pc = entry
         self.sp = 0
-    
+
     def __str__(self) -> str:
         ret = '[][2]uint32{\n'
         for pc, sp in self.out:
             ret += '        {%d, %d},\n' % (pc, sp)
         return ret + '    }'
-    
+
     def optimize(self):
         # push the last record
         self.out.append((self.pc - self.entry, self.sp))
@@ -545,10 +579,10 @@ class Pcsp:
                 if len(tmp) > 0:
                     tmp.pop(-1)
                 tmp.append((pc, sp))
-                
+
             lpc, lsp = pc, sp
         self.out = tmp
-    
+
     def update(self, dpc: int, dsp: int):
         self.out.append((self.pc - self.entry, self.sp))
         self.pc += dpc
@@ -590,7 +624,7 @@ class PrototypeMap(Dict[str, Prototype]):
     @staticmethod
     def _tk(s: str, p: str) -> bool:
         return s.startswith(p) and (s == p or s[len(p)].isspace())
-    
+
     @classmethod
     def _punc(cls, s: str) -> bool:
         return s in cls.__puncs_
@@ -665,7 +699,7 @@ class PrototypeMap(Dict[str, Prototype]):
         pkg = ''
         ret = PrototypeMap()
         buf = src.splitlines()
-        
+
         # scan through all the lines
         while idx < len(buf):
             line = buf[idx]
@@ -682,7 +716,7 @@ class PrototypeMap(Dict[str, Prototype]):
                 continue
 
             if OUTPUT_RAW:
-                
+
                 # extract funcname like "[var ]{funcname} = func(..."
                 end = line.find('func(')
                 if end == -1:
@@ -691,17 +725,17 @@ class PrototypeMap(Dict[str, Prototype]):
                 name = line[:end].strip()
                 if name.startswith('var '):
                     name = name[4:].strip()
-                
+
                 # function names must be identifiers
                 if not name.isidentifier():
                     raise cls._err('invalid function prototype: ' + name)
-                
+
                 # register a empty prototype
                 ret[name] = Prototype(None, [])
                 idx += 1
-                
-            else:      
-                              
+
+            else:
+
                 # only cares about those functions that does not have bodies
                 if line[-1] == '{' or not cls._tk(line, 'func'):
                     idx += 1
@@ -1087,12 +1121,12 @@ class Instr:
     len   : int                     = NotImplemented
     instr : Union[str, Instruction] = NotImplemented
 
-    def size(self, pc: int) -> int:
+    def size(self, _: int) -> int:
         return self.len
 
     def formatted(self, pc: int) -> str:
         raise NotImplementedError
-    
+
     @staticmethod
     def raw_formatted(bs: bytes, comm: str, pc: int) -> str:
         t = '\t'
@@ -1102,6 +1136,7 @@ class Instr:
             # if len(bs)<Instr.ALIGN_WIDTH:
             #     t += '\b' * (Instr.ALIGN_WIDTH - len(bs))
         return '%s//%s%s' % (t, ('0x%08x ' % pc) if pc else ' ', comm)
+
 class RawInstr(Instr):
     bs: bytes
     def __init__(self, size: int, instr: str, bs: bytes):
@@ -1111,11 +1146,10 @@ class RawInstr(Instr):
 
     def formatted(self, _: int) -> str:
         return '\t' + self.instr
-    
+
     def raw_formatted(self, pc: int) -> str:
-        pass
-        # return Instr.raw_formatted(self.bs, self.instr, pc)
-        
+        return Instr.raw_formatted(self.bs, self.instr, pc)
+
 class IntInstr(Instr):
     comm: str
     func: Callable[[], int]
@@ -1126,15 +1160,18 @@ class IntInstr(Instr):
         self.comm = comments
 
     @property
+    def raw_bytes(self):
+        return self.func().to_bytes(self.len, 'little')
+
+    @property
     def instr(self) -> str:
         return Instruction.encode(self.func().to_bytes(self.len, 'little'), self.comm)
 
     def formatted(self, _: int) -> str:
         return '\t' + self.instr
-    
+
     def raw_formatted(self, pc: int) -> str:
-        pass
-        # return Instr.raw_formatted(self.func().to_bytes(self.len, 'little'), self.comm, pc)
+        return Instr.raw_formatted(self.func().to_bytes(self.len, 'little'), self.comm, pc)
 
 class X86Instr(Instr):
     def __init__(self, instr: Instruction):
@@ -1147,10 +1184,9 @@ class X86Instr(Instr):
 
     def formatted(self, _: int) -> str:
         return '\t' + self.instr.encoded
-    
+
     def raw_formatted(self, pc: int) -> str:
-        pass
-        # return Instr.raw_formatted(self.instr._raw_normal_instr(), str(self.instr), pc)
+        return Instr.raw_formatted(self.instr._raw_instr(), str(self.instr), pc)
 
 class LabelInstr(Instr):
     def __init__(self, name: str):
@@ -1162,10 +1198,9 @@ class LabelInstr(Instr):
             return self.instr + ':'
         else:
             return '_LB_%08x: // %s' % (hash(self.instr) & 0xffffffff, self.instr)
-        
+
     def raw_formatted(self, pc: int) -> str:
-        pass
-        # return Instr.raw_formatted(None, str(self.instr), pc)
+        return Instr.raw_formatted(None, str(self.instr), pc)
 
 class BranchInstr(Instr):
     def __init__(self, instr: Instruction):
@@ -1176,9 +1211,8 @@ class BranchInstr(Instr):
         return '\t' + self.instr.encoded
 
     def raw_formatted(self, pc: int) -> str:
-        pass
-        # return Instr.raw_formatted(self.instr._raw_branch_instr(), str(self.instr), pc)
-    
+        return Instr.raw_formatted(self.instr._raw_instr(), str(self.instr), pc)
+
 class CommentInstr(Instr):
     def __init__(self, text: str):
         self.len = 0
@@ -1188,9 +1222,8 @@ class CommentInstr(Instr):
         return '\t' + self.instr
 
     def raw_formatted(self, pc: int) -> str:
-        pass
-        # return  Instr.raw_formatted(None, str(self.instr), None)
-    
+        return  Instr.raw_formatted(None, str(self.instr), None)
+
 class AlignmentInstr(Instr):
     bits: int
     fill: int
@@ -1206,11 +1239,10 @@ class AlignmentInstr(Instr):
     def formatted(self, pc: int) -> str:
         buf = bytes([self.fill]) * self.size(pc)
         return '\t' + Instruction.encode(buf, '.p2align %d, 0x%02x' % (self.bits, self.fill))
-    
+
     def raw_formatted(self, pc: int) -> str:
-        pass
-        # buf = bytes([self.fill]) * self.size(pc)
-        # return Instr.raw_formatted(buf, '.p2align %d, 0x%02x' % (self.bits, self.fill), pc)
+        buf = bytes([self.fill]) * self.size(pc)
+        return Instr.raw_formatted(buf, '.p2align %d, 0x%02x' % (self.bits, self.fill), pc)
 
 REG_MAP = {
     'x0'  : ('MOVD'  , 'R0'),
@@ -1260,13 +1292,71 @@ class BasicBlock:
         self.jump = None
         self.jmptab = jmptab
         self.func = func
-            
+
     def __repr__(self):
         return '{BasicBlock %s}' % repr(self.name)
 
     @property
     def last(self) -> Optional[Instr]:
         return next((v for v in reversed(self.body) if not isinstance(v, CommentInstr)), None)
+
+    def if_all_IntInstr_then_2_RawInstr(self):
+        is_table = False
+        instr_size = 0
+        for instr in self.body:
+            if isinstance(instr, IntInstr):
+               if not is_table:
+                   instr_size = instr.len
+               is_table = True
+               if instr_size != instr.len:
+                   instr_size = 0
+               continue
+            if isinstance(instr, AlignmentInstr):
+               continue
+            if isinstance(instr, LabelInstr):
+               continue
+            # others
+            return
+
+        if not is_table:
+            return
+
+        # .long or .quad
+        if instr_size == 8 or instr_size == 4:
+            return
+
+        # All instrs are IntInstr, golang asm only suuport WORD and DWORD for arm. We need
+        # combine them as 4-bytes RawInstr and align block
+        nb = [] # new body
+        raw_buf = [];
+        comment = ''
+
+        # first element is LabelInstr
+        for i in range(1, len(self.body)):
+            if isinstance(self.body[i], AlignmentInstr):
+                if i != len(self.body) -1:
+                    raise RuntimeError("Not support p2algin in : %s" % self.name)
+                continue
+
+            raw_buf += self.body[i].raw_bytes
+            comment += '// ' + self.body[i].comm + '\n'
+
+        align_size = len(raw_buf) % 4
+        if align_size != 0:
+            raw_buf += int(0).to_bytes(4 - align_size, 'little')
+
+        if isinstance(self.body[0], LabelInstr):
+            nb.append(self.body[0])
+
+        for i in range(0, len(raw_buf), 4):
+            buf = raw_buf[i: i + 4]
+            nb.append(RawInstr(len(buf), Instruction.encode(buf), buf))
+
+        nb.append(CommentInstr(comment))
+
+        if isinstance(self.body[-1:-1], AlignmentInstr):
+            nb.append(self.body[-1:-1])
+        self.body = nb
 
     def size_of(self, pc: int) -> int:
         return functools.reduce(lambda p, v: p + v.size(pc + p), self.body, 0)
@@ -1292,6 +1382,7 @@ class CodeSection:
     labels : Dict[str, BasicBlock]
     jmptabs: Dict[str, List[BasicBlock]]
     funcs  : Dict[str, Pcsp]
+    bsmap_ : Dict[str, int]
 
     def __init__(self):
         self.dead   = False
@@ -1300,7 +1391,8 @@ class CodeSection:
         self.blocks = [BasicBlock.annonymous()]
         self.jmptabs = {}
         self.funcs = {}
-    
+        self.bsmap_ = {}
+
     @classmethod
     def _dfs_jump_first(cls, bb: BasicBlock, visited: Dict[BasicBlock, bool], hook: Callable[[BasicBlock], bool]) -> bool:
         if bb not in visited or not visited[bb]:
@@ -1312,10 +1404,10 @@ class CodeSection:
             return hook(bb)
         else:
             return True
-                
+
     def get_jmptab(self, name: str) -> List[BasicBlock]:
         return self.jmptabs.setdefault(name, [])
-    
+
     def get_block(self, name: str) -> BasicBlock:
         for block in self.blocks:
             if block.name == name:
@@ -1330,13 +1422,13 @@ class CodeSection:
         for block in self.blocks:
             yield from block.body
 
-    def _make(self, name: str, jmptab: bool = False, func: bool = False):    
+    def _make(self, name: str, jmptab: bool = False, func: bool = False):
         if func:
         #NOTICE: if it is a function, always set func to be True
             if (old := self.labels.get(name)) and (old.func != func):
                 old.func = True
         return self.labels.setdefault(name, BasicBlock(name, jmptab = jmptab, func = func))
-    
+
     def _next(self, link: BasicBlock):
         if self.dead:
             self.dead = False
@@ -1363,11 +1455,11 @@ class CodeSection:
 
     @staticmethod
     def _mk_align(v: int) -> int:
-        if v & 7 == 0:
+        if v & 15 == 0:
             return v
         else:
-            print('* warning: SP is not aligned with 8 bytes.', file = sys.stderr)
-            return (v + 7) & -8
+            print('* warning: SP is not aligned with 16 bytes.', file = sys.stderr)
+            return (v + 15) & -16
 
     @staticmethod
     def _is_spadj(ins: Instruction) -> bool:
@@ -1392,7 +1484,14 @@ class CodeSection:
             if block.name == name:
                 return size
             else:
-                size += block.size_of(size) + adj
+                # find block size from cache
+                v = self.bsmap_.get(block.name)
+                if v is not None:
+                    size += v + adj
+                else:
+                    block_size = block.size_of(size)
+                    size += block_size + adj
+                    self.bsmap_[block.name] = block_size
         else:
             raise SyntaxError('unresolved reference to name: ' + name)
 
@@ -1413,7 +1512,7 @@ class CodeSection:
     def _check_split(self, instr: Instruction):
         if instr.is_return:
             self.dead = True
-            
+
         elif instr.is_jmpq: # jmpq
             # backtrace jump table from current block (BFS)
             prevs = [self.block]
@@ -1424,23 +1523,26 @@ class CodeSection:
                     continue
                 else:
                     visited.add(curb)
-                    
+
                 # backtrace instructions
                 for ins in reversed(curb.body):
                     if isinstance(ins, X86Instr) and ins.instr.jmptab:
                         self._split(self._make(ins.instr.jmptab, jmptab = True))
                         return
-                    
+
                 if curb.prevs:
                     prevs.extend(curb.prevs)
-                    
+
         elif instr.is_branch_label:
-            if instr.is_invoke: # call
+            if instr.is_jmp:
+                self._kill(instr.label_name)
+            
+            elif instr.is_invoke: # call
                 fname = instr.label_name
                 self._split(self._make(fname, func = True))
-                
+
             else: # jeq, ja, jae ...
-                self._split(self._make(instr.label_name)) 
+                self._split(self._make(instr.label_name))
 
     def _trace_block(self, bb: BasicBlock, pcsp: Optional[Pcsp]) -> int:
         if (pcsp is not None):
@@ -1451,11 +1553,11 @@ class CodeSection:
                 # continue tracing, update the pcsp
                 # NOTICE: must mark pcsp at block entry because go only calculate delta value
                 pcsp.pc = self.get(bb.name)
-                if bb.func or pcsp.pc < pcsp.entry:  
+                if bb.func or pcsp.pc < pcsp.entry:
                     # new func
                     pcsp = Pcsp(pcsp.pc)
                     self.funcs[bb.name] = pcsp
-            
+
         if bb.maxsp == -1:
             ret = self._trace_nocache(bb, pcsp)
             return ret
@@ -1466,15 +1568,15 @@ class CodeSection:
 
     def _trace_nocache(self, bb: BasicBlock, pcsp: Optional[Pcsp]) -> int:
         bb.maxsp = -2
-        
+
         # ## FIXME:
         # if pcsp is None:
         #     pcsp = Pcsp(0)
-        
+
         # make a fake object just for reducing redundant checking
         if pcsp:
             pc0, sp0 = pcsp.pc, pcsp.sp
-            
+
         maxsp, term = self._trace_instructions(bb, pcsp)
 
         # this is a terminating block
@@ -1485,10 +1587,10 @@ class CodeSection:
         a, b = 0, 0
         if pcsp:
             pc, sp = pcsp.pc, pcsp.sp
-        
+
         if bb.jump:
             if bb.jump.jmptab:
-                cases = self.get_jmptab(bb.jump.name)                    
+                cases = self.get_jmptab(bb.jump.name)
                 for case in cases:
                     nsp = self._trace_block(case, pcsp)
                     if pcsp:
@@ -1499,13 +1601,13 @@ class CodeSection:
                 a = self._trace_block(bb.jump, pcsp)
                 if pcsp:
                     pcsp.pc, pcsp.sp = pc, sp
-            
-        if bb.next: 
+
+        if bb.next:
             b = self._trace_block(bb.next, pcsp)
-        
+
         if pcsp:
             pcsp.pc, pcsp.sp = pc0, sp0
-            
+
         # select the maximum stack depth
         bb.maxsp = maxsp + max(a, b)
         return bb.maxsp
@@ -1518,38 +1620,36 @@ class CodeSection:
         # scan every instruction
         for ins in bb.body:
             diff = 0
-            
+
             if isinstance(ins, X86Instr):
                 name = ins.instr.mnemonic
-                args = ins.instr.instr.operands
+                operands = ins.instr.instr.operands
 
                 # check for instructions
-                if name == 'retq':
+                if name == 'ret':
                     close = True
-                elif name == 'popq':
-                    diff = -8
-                elif name == 'pushq':
-                    diff = 8
-                elif name == 'addq' and self._is_spadj(ins.instr):
-                    diff = -self._mk_align(args[2])
-                elif name == 'subq' and self._is_spadj(ins.instr):
-                    diff = self._mk_align(args[2])
-                    
-                # FIXME: andq is usually used for aligment of memory address, we can't handle it correctly now
-                # elif name == 'andq' and self._is_spadj(ins.instr): 
-                #     diff = self._mk_align(max(-args[0].val - 8, 0))
-                
+                elif isinstance(operands[0], mcasm.mc.Register) and operands[0].name == 'SP':
+                    # print(ins.instr.asm_code)
+                    if name == 'add':
+                        diff = -self._mk_align(operands[2])
+                    elif name == 'sub':
+                        diff = self._mk_align(operands[2])
+                    elif name == 'stp':
+                        diff = -self._mk_align(operands[4] * 8)
+                    elif name == 'ldp':
+                        diff = -self._mk_align(operands[4] * 8)
+                    elif name == 'str':
+                        diff = -self._mk_align(operands[3])
+                    else:
+                        raise RuntimeError("An instruction adjsut sp but bot processed: %s" % ins.instr.asm_code)
+
                 cursp += diff
-                
-                #NOTICE: pcsp no need to update here
-                if name == 'callq':
-                    cursp += 8
-                        
+
                 # update the max stack depth
                 if cursp > maxsp:
                     maxsp = cursp
-            
-            # update pcsp   
+
+            # update pcsp
             if pcsp:
                 pcsp.update(ins.size(pcsp.pc), diff)
 
@@ -1591,7 +1691,7 @@ class CodeSection:
             raise SyntaxError('undefined function: ' + name)
         else:
             return self._trace_block(self.labels[name], None)
-        
+
     def pcsp(self, name: str, entry: int) -> int:
         if name not in self.labels:
             raise SyntaxError('undefined function: ' + name)
@@ -1599,7 +1699,7 @@ class CodeSection:
             pcsp = Pcsp(entry)
             self.labels[name].func = True
             return self._trace_block(self.labels[name], pcsp)
-        
+
     def debug(self, pos: int, inss: List[Instruction]):
         def inject(bb: BasicBlock) -> bool:
             if (not bb.func) and (bb.name not in self.funcs):
@@ -1608,7 +1708,7 @@ class CodeSection:
             if pos >= len(bb.body):
                 return
             for ins in inss:
-                bb.body.insert(pos, ins)  
+                bb.body.insert(pos, ins)
                 pos += 1
         visited = {}
         for _, bb in self.labels.items():
@@ -1649,8 +1749,12 @@ class Assembler:
         return Expression(v).eval(self._get)
 
     def _emit(self, v: bytes, cmd: str):
-        for i in range(0, len(v), 16):
-            self.code.emit(v[i:i + 16], '%s %d, %s' % (cmd, len(v[i:i + 16]), repr(v[i:i + 16])[1:]))
+        align_size = len(v) % 4
+        if align_size != 0:
+            v += int(0).to_bytes(4 - align_size, 'little')
+
+        for i in range(0, len(v), 4):
+            self.code.emit(v[i:i + 4], '%s %d, %s' % (cmd, len(v[i:i + 4]), repr(v[i:i + 16])[1:]))
 
     def _limit(self, v: int, a: int, b: int) -> int:
         if not (a <= v <= b):
@@ -1749,12 +1853,16 @@ class Assembler:
             '.file'                    : self._cmd_nop,
             '.type'                    : self._cmd_nop,
             '.p2align'                 : self._cmd_p2align,
+            '.align'                   : self._cmd_nop,
+            '.size'                    : self._cmd_nop,
             '.section'                 : self._cmd_nop,
             '.loh'                     : self._cmd_nop,
             '.data_region'             : self._cmd_nop,
             '.build_version'           : self._cmd_nop,
             '.end_data_region'         : self._cmd_nop,
             '.subsections_via_symbols' : self._cmd_nop,
+            # linux-gnu
+            '.xword'                   :self._cmd_nop,
         }
 
     @staticmethod
@@ -1780,12 +1888,57 @@ class Assembler:
         else:
             return line
 
-    def _parse(self, src: List[str]):
-        back_label_count = 0;
+    @staticmethod
+    def _replace_adrp_line(line: str) -> str:
+        if 'adrp' in line:
+            line = line.replace('adrp', 'adr').replace('@PAGE', '')
+        return line
+
+    @staticmethod
+    def _replace_adrp(src: List[str]) -> List[str]:
+        back_label_count = 0
         adrp_label_map = {}
+        new_src = []
+        for line in src:
+            line = Assembler._remove_comments(line)
+            line = line.strip()
+
+            if not line:
+                continue
+            # is instructions
+            if line[-1] != ':' and line[0] != '.':
+                instr = Instruction(line, back_label_count)
+                if instr.ADRP_label:
+                    back_label_count += 1
+                    new_src.append(instr.asm_code)
+                    new_src.append(instr.back_label + ':')
+                    if instr.text_label in adrp_label_map:
+                        adrp_label_map[instr.text_label] += [(instr.ADRP_label, instr.ADR_instr, instr.back_label)]
+                    else:
+                        adrp_label_map[instr.text_label] = [(instr.ADRP_label, instr.ADR_instr, instr.back_label)]
+                else:
+                    new_src.append(line)
+            else:
+                new_src.append(line)
+
+        nn_src = []
+
+        for line in new_src:
+            if line[-1] == ':': # is label
+                if line[:-1] in adrp_label_map:
+                    for item in adrp_label_map[line[:-1]]:
+                        nn_src.append(item[0] + ':')       # label that adrp will jump to
+                        nn_src.append(item[1])             # adr to get really symbol address
+                        nn_src.append('b ' + item[2])      # jump back to adrp next instruction
+            nn_src.append(line)
+
+        return nn_src
+
+    def _parse(self, src: List[str]):
+        # src = self._replace_adrp(o_src)
 
         for line in src:
-            line = self._remove_comments(line)
+            line = Assembler._remove_comments(line)
             line = line.strip()
 
             # skip empty lines
@@ -1794,28 +1947,13 @@ class Assembler:
 
             # labels, resolve the offset
             if line[-1] == ':':
-                if line[:-1] in adrp_label_map:
-                   for item in adrp_label_map[line[:-1]]:
-                       self.code.label(item[0])
-                       self.code.instr(Instruction(item[1]))
-                       self.code.instr(Instruction('b ' + item[2])) 
-                
                 self.code.label(line[:-1])
                 continue
 
             # instructions
             if line[0] != '.':
-                instr = Instruction(line, back_label_count)
-                self.code.instr(instr)
-
-                if instr.ADRP_label: # ADRP instruction
-                    back_label_count += 1
-                    self.code.label(instr.back_label)
-                    if instr.text_label in adrp_label_map:
-                        adrp_label_map[instr.text_label] += [(instr.ADRP_label, instr.ADR_instr, instr.back_label)]
-                    else:
-                        adrp_label_map[instr.text_label] = [(instr.ADRP_label, instr.ADR_instr, instr.back_label)]
-                    
+                line = self._replace_adrp_line(line)
+                self.code.instr(Instruction(line, 0))
                 continue
 
             # parse the command
@@ -1845,16 +1983,21 @@ class Assembler:
         label = instr.label_name
         if label is None:
             raise RuntimeError('cannnot found label name: %s' % instr.asm_code)
-        if instr.mnemonic == 'adr' and label == '.Ltmp0':
-            instr.set_label_offset(0)
+        if instr.mnemonic == 'adr' and label == 'Ltmp0':
+            instr.set_label_offset(-4)
         else:
             instr.set_label_offset(self.code.get(label)- rip - instr.size)
+
         return instr.size
 
     def _reloc_normal(self, instr: Instruction, rip: int) -> int:
         if instr.need_reloc:
             raise SyntaxError('unresolved instruction when relocation: ' + instr.asm_code)
         return instr.size
+
+    def _LE_4bytes_IntIntr_2_RawIntr(self):
+        for block in self.code.blocks:
+            block.if_all_IntInstr_then_2_RawInstr()
 
     def _declare(self, protos: PrototypeMap):
         if OUTPUT_RAW:
@@ -1866,6 +2009,18 @@ class Assembler:
     def _declare_body(self):
         self.out.append('TEXT ·%s(SB), NOSPLIT, $0' % STUB_NAME)
         self.out.append('\tNO_LOCAL_POINTERS')
+        self._LE_4bytes_IntIntr_2_RawIntr()
+        self._reloc()
+
+        # instruction buffer
+        pc = 0
+        ins = self.code.instrs
+
+        for v in ins:
+            self.out.append(('// +%d\n' % pc if WITH_OFFS else '') + v.formatted(pc))
+            pc += v.size(pc)
+
+    def _declare_body_raw(self):
         self._reloc()
 
         # instruction buffer
@@ -1874,55 +2029,59 @@ class Assembler:
 
         # dump every instruction
         for v in ins:
-            self.out.append(('// +%d\n' % pc if WITH_OFFS else '') + v.formatted(pc))
+            self.out.append(v.raw_formatted(pc))
             pc += v.size(pc)
-            
-    def _declare_body_raw(self):
-        pass
-        # self._reloc()
-
-        # # instruction buffer
-        # pc = 0
-        # ins = self.code.instrs
-
-        # # dump every instruction
-        # for v in ins:
-        #     self.out.append(v.raw_formatted(pc))
-        #     pc += v.size(pc)
 
     def _declare_function(self, name: str, proto: Prototype):
         offs = 0
         subr = name[1:]
         addr = self.code.get(subr)
         self.subr[subr] = addr
-        size = self.code.pcsp(subr, addr)        
+        size = self.code.pcsp(subr, addr)
+        m_size = size + 64
+        # rsp_sub_size = size + 16
 
         if OUTPUT_RAW:
             return
-        
+
         # function header and stack checking
         self.out.append('')
         # frame size is 16 to store x29 and x30
-        self.out.append('TEXT ·%s(SB), NOSPLIT, %d' % (name, proto.argspace))
+        # self.out.append('TEXT ·%s(SB), NOSPLIT | NOFRAME, $0-%d' % (name, proto.argspace))
+        self.out.append('TEXT ·%s(SB), $%d-%d' % (name, m_size, proto.argspace))
         self.out.append('\tNO_LOCAL_POINTERS')
-        
+
         # add stack check if needed
-        if size != 0:
-            self.out.append('')
-            self.out.append('_entry:')
-            self.out.append('\tMOVD 16(g), R16')
-            self.out.append('\tCMP  R16, RSP')
-            self.out.append('\tBLS  _stack_grow')
+        # if m_size != 0:
+        #     self.out.append('')
+        #     self.out.append('_entry:')
+        #     self.out.append('\tMOVD 16(g), R16')
+        #     if size > 0:
+        #      if size < (0x1 << 12) - 1:
+        #          self.out.append('\tSUB $%d, RSP, R17' % (m_size))
+        #      elif size < (0x1 << 16) - 1:
+        #          self.out.append('\tMOVD $%d, R17' % (m_size))
+        #          self.out.append('\tSUB R17, RSP, R17')
+        #      else:
+        #          raise RuntimeError('too large stack size: %d' % (m_size))
+        #      self.out.append('\tCMP  R16, R17')
+        #     else:
+        #      self.out.append('\tCMP R16, RSP')
+        #     self.out.append('\tBLS  _stack_grow')
 
         # function name
         self.out.append('')
         self.out.append('%s:' % subr)
 
+        # self.out.append('\tMOVD.W R30, -16(RSP)')
+        # self.out.append('\tMOVD R29, -8(RSP)')
+        # self.out.append('\tSUB $8, RSP, R29')
+
         # intialize all the arguments
         for arg in proto.args:
             offs += arg.size
             op, reg = REG_MAP[arg.creg.reg]
-            self.out.append('\t%s %s+%d(FP), $16-%s' % (op, arg.name, offs - arg.size, reg))
+            self.out.append('\t%s %s+%d(FP), %s' % (op, arg.name, offs - arg.size, reg))
 
         # the function starts at zero
         if addr == 0 and proto.retv is None:
@@ -1932,23 +2091,56 @@ class Assembler:
         # Go ASM completely ignores the offset of the JMP instruction,
         # so we need to use indirect jumps instead for tail-call elimination
         elif proto.retv is None:
-            raise RuntimeError("UNIMPLEMENT FUNC: %s" % name)
-            self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (STUB_NAME, addr, subr))
-            self.out.append('\tJMP AX')
+            # raise RuntimeError("UNIMPLEMENT FUNC: %s" % name)
+            print("%s return void." % name)
+            # self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (STUB_NAME, addr, subr))
+            # self.out.append('\tJMP AX')
+
+            # save LR(x30) and Frame Pointer(x29)
+
+            # self.out.append('\tADD $%d, RSP, RSP' % size)
+            # self.out.append('\tSTP.W (R29, R30), -16(RSP)')
+            # self.out.append('\tMOVD RSP, R29')
+            # self.out.append('\tSUB $16, RSP')
+            self.out.append('\tADD $%d, RSP' % (size + 32))
+            self.out.append('\tCALL ·%s+%d(SB)  // %s' % (STUB_NAME, addr, subr))
+            self.out.append('\tSUB $%d, RSP' % (size + 32))
+            # self.out.append('\tADD $16, RSP')
+            # self.out.append('\tLDP -8(RSP), (R29, R30)')
+            # self.out.append('\tADD $16, RSP')
+            # self.out.append('\tLDP.P 16(RSP), (R29, R30)')
+            # self.out.append('\tSUB $%d, RSP, RSP' % size)
+
+            # Restore LR and Frame Pointer
 
         # normal functions, call the real function, and return the result
         else:
+            # save LR(x30) and Frame Pointer(x29)
+
             # We need store return address manual in ARM
+            # self.out.append('\tSUB $16, RSP')
+            self.out.append('\tADD $%d, RSP' % (size + 32))
             self.out.append('\tCALL ·%s+%d(SB)  // %s' % (STUB_NAME, addr, subr))
+            self.out.append('\tSUB $%d, RSP' % (size + 32))
+            # self.out.append('\tADD $16, RSP')
+            # self.out.append('\tSUB $%d, RSP, RSP' % size)
+            
             self.out.append('\t%s, %s+%d(FP)' % (' '.join(REG_MAP[proto.retv.creg.reg]), proto.retv.name, offs))
-            self.out.append('\tRET')
+            
+            # Restore LR and Frame Pointer
+            # self.out.append('\tLDP -8(RSP), (R29, R30)')
+            # self.out.append('\tADD $16, RSP')
+
+        
+        self.out.append('\tRET')
 
         # add stack growing if needed
-        if size != 0:
-            self.out.append('')
-            self.out.append('_stack_grow:')
-            self.out.append('\tCALL runtime·morestack_noctxt<>(SB)')
-            self.out.append('\tJMP  _entry')
+        # if m_size != 0:
+        #     self.out.append('')
+        #     self.out.append('_stack_grow:')
+        #     self.out.append('\tMOVD R30, R3')
+        #     self.out.append('\tCALL runtime·morestack_noctxt<>(SB)')
+        #     self.out.append('\tJMP  _entry')
 
     def _declare_functions(self, protos: PrototypeMap):
         for name, proto in sorted(protos.items()):
@@ -1958,11 +2150,14 @@ class Assembler:
                 raise SyntaxError('function prototype must have a "_" prefix: ' + repr(name))
 
     def parse(self, src: List[str], proto: PrototypeMap):
-        # self.code.instr(Instruction('leaq -7(%rip), %rax'))
-        # self.code.instr(Instruction('movq %rax, 8(%rsp)'))
         self.code.instr(Instruction('adr x0, .'))
-        # self.code.instr(Instruction('str x16, [sp, #8]'))
         self.code.instr(Instruction('ret'))
+
+        # align 16 bytes
+        cmd = Command.parse(".p2align 4")
+        func = self._commands.get(cmd.cmd)
+        func(cmd.args)
+
         self._parse(src)
         self._declare(proto)
 
@@ -2025,43 +2220,38 @@ def make_subr_filename(name: str) -> str:
     else:
         return '%s_subr_%s.go' % ('_'.join(base[:-1]), base[-1])
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Convert llvm asm to golang asm.')
+    parser.add_argument('proto_file', type=str, help = 'The go file that declares go functions')
+    parser.add_argument('asm_file', type=str, nargs='+', help = 'The llvm assembly file')
+    parser.add_argument('-r', default=False, action='store_true', help = 'Ture: output as raw; default is False')
+    return parser.parse_args()
+
 def main():
     src = []
     asm = Assembler()
-    
-    
-    # check for arguments
-    if len(sys.argv) < 3:
-        print('* usage: %s [-r|-d] <output-file> <clang-asm> ...' % sys.argv[0], file = sys.stderr)
-        sys.exit(1)
+    args = parse_args()
 
     # check if optional flag is enabled
     global OUTPUT_RAW
     OUTPUT_RAW = False
-    if len(sys.argv) >= 4:
-        i = 0
-        while i<len(sys.argv):
-            flag = sys.argv[i]
-            if flag == '-r':
-                OUTPUT_RAW = True
-                for j in range(i, len(sys.argv)-1):
-                    sys.argv[j] = sys.argv[j + 1]  
-                sys.argv.pop()
-                continue
-            i += 1
-            
+    if args.r:
+        OUTPUT_RAW = True
+
+    proto_name = os.path.splitext(args.proto_file)[0]
+
     # parse the prototype
-    with open(os.path.splitext(sys.argv[1])[0] + '.go', 'r', newline = None) as fp:
+    with open(proto_name + '.go', 'r', newline = None) as fp:
         pkg, proto = PrototypeMap.parse(fp.read())
 
     # read all the sources, and combine them together
-    for fn in sys.argv[2:]:
+    for fn in args.asm_file:
         with open(fn, 'r', newline = None) as fp:
             src.extend(fp.read().splitlines())
 
     # convert the original sources
     if OUTPUT_RAW:
-        asm.out.append('// +build amd64')
+        asm.out.append('// +build arm64')
         asm.out.append('// Code generated by asm2asm, DO NOT EDIT.')
         asm.out.append('')
         asm.out.append('package %s' % pkg)
@@ -2076,25 +2266,24 @@ def main():
         asm.out.append('#include "funcdata.h"')
         asm.out.append('#include "textflag.h"')
         asm.out.append('')
-        
+
     asm.parse(src, proto)
 
     if OUTPUT_RAW:
-        asrc = os.path.splitext(sys.argv[1])[0]
-        asrc = asrc[:asrc.rfind('_')] + '_text_amd64.go'
+        asrc = proto_name[:proto_name.rfind('_')] + '_text_arm.go'
     else:
-        asrc = os.path.splitext(sys.argv[1])[0] + '.s'
-      
-    # save the converted result  
+        asrc = proto_name + '.s'
+
+    # save the converted result
     with open(asrc, 'w')  as fp:
         for line in asm.out:
             print(line, file = fp)
         if OUTPUT_RAW:
             print('}', file = fp)
-    
-        # calculate the subroutine stub file name
-    subr = make_subr_filename(sys.argv[1])
-    subr = os.path.join(os.path.dirname(sys.argv[1]), subr)
+
+    # calculate the subroutine stub file name
+    subr = make_subr_filename(args.proto_file)
+    subr = os.path.join(os.path.dirname(args.proto_file), subr)
 
     # save the compiled code stub
     with open(subr, 'w') as fp:
@@ -2102,15 +2291,15 @@ def main():
         print('// Code generated by asm2asm, DO NOT EDIT.', file = fp)
         print(file = fp)
         print('package %s' % pkg, file = fp)
-              
+
         # also save the actual function addresses if any
         if not asm.subr:
-            return 
-        
+            return
+
         if OUTPUT_RAW:
             print(file = fp)
             print('import (\n\t`github.com/bytedance/sonic/loader`\n)', file = fp)
-            
+
             # dump every entry for all functions
             print(file = fp)
             print('const (', file = fp)
@@ -2119,7 +2308,7 @@ def main():
                 if addr is not None:
                     print(f'    _entry_{name} = %d' % addr, file = fp)
             print(')', file = fp)
-            
+
             # dump max stack depth for all functions
             print(file = fp)
             print('const (', file = fp)
@@ -2137,7 +2326,7 @@ def main():
                     # print(f'after {name} optimize {pcsp}')
                     print(f'    _size_{name} = %d' % (pcsp.maxpc - pcsp.entry), file = fp)
             print(')', file = fp)
-            
+
             # dump every pcsp for all functions
             print(file = fp)
             print('var (', file = fp)
@@ -2145,7 +2334,7 @@ def main():
                 if pcsp is not None:
                     print(f'    _pcsp_{name} = %s' % pcsp, file = fp)
             print(')', file = fp)
-            
+
             # insert native entry info
             print(file = fp)
             print('var Funcs = []loader.CFunc{', file = fp)
@@ -2162,7 +2351,7 @@ def main():
             print('//go:noescape', file = fp)
             print('//goland:noinspection ALL', file = fp)
             print('func %s() uintptr' % STUB_NAME, file = fp)
-            
+
             # dump exported function entry for exported functions
             print(file = fp)
             print('var (', file = fp)
@@ -2184,7 +2373,7 @@ def main():
             for name in asm.subr:
                 print('    _ = _subr_%s' % name, file = fp)
             print(')', file = fp)
-            
+
             # dump every constant
             print(file = fp)
             print('const (', file = fp)
