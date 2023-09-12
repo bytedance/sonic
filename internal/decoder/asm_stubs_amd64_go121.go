@@ -81,7 +81,6 @@ func (self *_Assembler) WriteRecNotAX(i int, ptr obj.Addr, rec obj.Addr, saveDI 
     self.Emit("MOVQ", ptr, jit.Ptr(_R11, 0))
     self.Emit("MOVQ", rec, _AX)
     self.Emit("MOVQ", _AX, jit.Ptr(_R11, 8))
-    self.load(_R11)
     if saveAX {
         self.load(_AX, _R11)
     } else {

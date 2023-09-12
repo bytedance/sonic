@@ -61,8 +61,8 @@ type Node struct {
 // UnmarshalJSON is just an adapter to json.Unmarshaler.
 // If you want better performance, use Searcher.GetByPath() directly
 func (self *Node) UnmarshalJSON(data []byte) (err error) {
-    *self, err = NewSearcher(string(data)).GetByPath()
-    return 
+    *self = NewRaw(string(data))
+    return self.Check()
 }
 
 /** Node Type Accessor **/
@@ -844,6 +844,7 @@ func (self *Node) MapUseNode() (map[string]Node, error) {
 //     return self.toGenericObjectUsePair()
 // }
 
+//go:nocheckptr
 func (self *Node) unsafeMap() (*linkedPairs, error) {
     if err := self.skipAllKey(); err != nil {
         return nil, err
@@ -857,7 +858,8 @@ func (self *Node) unsafeMap() (*linkedPairs, error) {
 // SortKeys sorts children of a V_OBJECT node in ascending key-order.
 // If recurse is true, it recursively sorts children's children as long as a V_OBJECT node is found.
 func (self *Node) SortKeys(recurse bool) error {
-    if err := self.Check(); err != nil {
+    // check raw node first
+    if err := self.checkRaw(); err != nil {
         return err
     }
     if self.itype() == types.V_OBJECT {
@@ -865,7 +867,7 @@ func (self *Node) SortKeys(recurse bool) error {
     } else {
         var err error
         err2 := self.ForEach(func(path Sequence, node *Node) bool {
-            it := self.itype()
+            it := node.itype()
             if it == types.V_ARRAY || it == types.V_OBJECT {
                 err = node.SortKeys(recurse)
                 if err != nil {
