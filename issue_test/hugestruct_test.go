@@ -868,8 +868,31455 @@ type HugeStruct6 struct {
 	Field13 []*HugeStruct5     `json:"field_13,omitempty"`
 }
 
-func GetHugeStruct6() *HugeStruct6 {
-	ret := new(HugeStruct6)
+func newIntPtr(i int64) *int64 {
+	return &i
+}
 
-	return ret
+func GetHugeStruct0() *HugeStruct0 {
+	return &HugeStruct0{
+		Field0: map[string]*int64{
+			"a": nil,
+		},
+		Field1: nil,
+		Field2: []*int64{newIntPtr(1)},
+		Field3: map[string]*int64{
+			"a": nil,
+		},
+		Field4: []*int64{newIntPtr(1)},
+	}
+}
+
+func GetHugeStruct1() *HugeStruct1 {
+	return &HugeStruct1{
+		Field0: []*int32{},
+		Field1: []*string{},
+		Field2: []*int64{},
+		Field3: map[string]*int32{
+			"": nil,
+		},
+		Field4: []*bool{},
+		Field5: GetHugeStruct0(),
+		Field6: map[string]*int32{
+			"": nil,
+		},
+		Field7: map[string]*bool{
+			"": nil,
+		},
+		Field8:  []*bool{},
+		Field9:  map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field10: []*string{},
+		Field11: []*bool{},
+		Field12: []*bool{},
+		Field13: map[string]*int32{
+			"": nil,
+		},
+		Field14: map[string]*int32{
+			"": nil,
+		},
+		Field15: nil,
+		Field16: []*int64{},
+		Field17: []*bool{},
+		Field18: map[string]*int64{
+			"": nil,
+		},
+		Field19: []*int64{},
+		Field20: map[string]*string{
+			"": nil,
+		},
+		Field21: nil,
+		Field22: GetHugeStruct0(),
+		Field23: []*string{},
+		Field24: []*int64{},
+		Field25: []*string{},
+		Field26: []*bool{},
+		Field27: map[string]*int32{
+			"": nil,
+		},
+		Field28: GetHugeStruct0(),
+		Field29: map[string]*int32{
+			"": nil,
+		},
+		Field30: map[string]*bool{
+			"": nil,
+		},
+		Field31: map[string]*int32{
+			"": nil,
+		},
+		Field32: []*HugeStruct0{GetHugeStruct0()},
+		Field33: nil,
+		Field34: map[string]*bool{
+			"": nil,
+		},
+		Field35: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field36: GetHugeStruct0(),
+		Field37: nil,
+		Field38: []*HugeStruct0{GetHugeStruct0()},
+		Field39: []*bool{},
+		Field40: map[string]*string{
+			"": nil,
+		},
+		Field41: map[string]*int64{
+			"": nil,
+		},
+		Field42: map[string]*int32{
+			"": nil,
+		},
+		Field43: nil,
+		Field44: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field45: map[string]*int32{
+			"": nil,
+		},
+		Field46: GetHugeStruct0(),
+		Field47: nil,
+		Field48: GetHugeStruct0(),
+		Field49: nil,
+		Field50: map[string]*string{
+			"": nil,
+		},
+		Field51: map[string]*bool{
+			"": nil,
+		},
+		Field52: []*int64{},
+		Field53: map[string]*string{
+			"": nil,
+		},
+		Field54: []*int32{},
+		Field55: map[string]*int64{
+			"": nil,
+		},
+		Field56: map[string]*int32{
+			"": nil,
+		},
+		Field57: map[string]*string{
+			"": nil,
+		},
+		Field58: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field59: []*HugeStruct0{GetHugeStruct0()},
+		Field60: map[string]*string{
+			"": nil,
+		},
+		Field61: map[string]*bool{
+			"": nil,
+		},
+		Field62: map[string]*int64{
+			"": nil,
+		},
+		Field63: []*string{},
+		Field64: []*int64{},
+		Field65: map[string]*bool{
+			"": nil,
+		},
+		Field66: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field67: []*int64{},
+		Field68: map[string]*string{
+			"": nil,
+		},
+		Field69: GetHugeStruct0(),
+		Field70: []*bool{},
+		Field71: map[string]*int64{
+			"": nil,
+		},
+		Field72: nil,
+		Field73: map[string]*int32{
+			"": nil,
+		},
+		Field74: nil,
+		Field75: map[string]*int32{
+			"": nil,
+		},
+		Field76: map[string]*string{
+			"": nil,
+		},
+		Field77: []*string{},
+		Field78: nil,
+		Field79: map[string]*int64{
+			"": nil,
+		},
+		Field80: []*int64{},
+		Field81: map[string]*bool{
+			"": nil,
+		},
+		Field82: []*string{},
+		Field83: []*string{},
+		Field84: nil,
+		Field85: []*bool{},
+		Field86: []*HugeStruct0{GetHugeStruct0()},
+		Field87: GetHugeStruct0(),
+		Field88: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field89: []*int64{},
+		Field90: []*int32{},
+		Field91: GetHugeStruct0(),
+		Field92: []*bool{},
+		Field93: []*string{},
+		Field94: map[string]*int32{
+			"": nil,
+		},
+		Field95: nil,
+		Field96: nil,
+		Field97: map[string]*bool{
+			"": nil,
+		},
+		Field98: map[string]*int32{
+			"": nil,
+		},
+		Field99:  []*HugeStruct0{GetHugeStruct0()},
+		Field100: nil,
+		Field101: nil,
+		Field102: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field103: []*string{},
+		Field104: []*string{},
+		Field105: map[string]*bool{
+			"": nil,
+		},
+		Field106: []*string{},
+		Field107: []*int64{},
+		Field108: GetHugeStruct0(),
+		Field109: nil,
+		Field110: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field111: []*string{},
+		Field112: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field113: []*bool{},
+		Field114: []*bool{},
+		Field115: map[string]*string{
+			"": nil,
+		},
+		Field116: []*int64{},
+		Field117: []*string{},
+		Field118: map[string]*bool{
+			"": nil,
+		},
+		Field119: map[string]*string{
+			"": nil,
+		},
+		Field120: []*HugeStruct0{GetHugeStruct0()},
+		Field121: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field122: []*bool{},
+		Field123: nil,
+		Field124: []*int64{},
+		Field125: nil,
+		Field126: []*string{},
+		Field127: []*string{},
+		Field128: []*int32{},
+		Field129: []*bool{},
+		Field130: nil,
+		Field131: nil,
+		Field132: []*int32{},
+		Field133: []*int32{},
+		Field134: nil,
+		Field135: []*bool{},
+		Field136: nil,
+		Field137: []*int32{},
+		Field138: map[string]*int64{
+			"": nil,
+		},
+		Field139: map[string]*string{
+			"": nil,
+		},
+		Field140: map[string]*int64{
+			"": nil,
+		},
+		Field141: map[string]*int64{
+			"": nil,
+		},
+		Field142: []*int32{},
+		Field143: []*HugeStruct0{GetHugeStruct0()},
+		Field144: map[string]*int64{
+			"": nil,
+		},
+		Field145: []*string{},
+		Field146: map[string]*int64{
+			"": nil,
+		},
+		Field147: nil,
+		Field148: map[string]*string{
+			"": nil,
+		},
+		Field149: nil,
+		Field150: map[string]*int64{
+			"": nil,
+		},
+		Field151: map[string]*int64{
+			"": nil,
+		},
+		Field152: map[string]*int32{
+			"": nil,
+		},
+		Field153: []*int32{},
+		Field154: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field155: map[string]*string{
+			"": nil,
+		},
+		Field156: map[string]*int64{
+			"": nil,
+		},
+		Field157: []*int32{},
+		Field158: []*int32{},
+		Field159: nil,
+		Field160: GetHugeStruct0(),
+		Field161: []*bool{},
+		Field162: []*HugeStruct0{GetHugeStruct0()},
+		Field163: []*int32{},
+		Field164: map[string]*string{
+			"": nil,
+		},
+		Field165: []*bool{},
+		Field166: GetHugeStruct0(),
+		Field167: nil,
+		Field168: []*bool{},
+		Field169: map[string]*bool{
+			"": nil,
+		},
+		Field170: map[string]*bool{
+			"": nil,
+		},
+		Field171: GetHugeStruct0(),
+		Field172: map[string]*bool{
+			"": nil,
+		},
+		Field173: []*bool{},
+		Field174: map[string]*int64{
+			"": nil,
+		},
+		Field175: []*HugeStruct0{GetHugeStruct0()},
+		Field176: []*int32{},
+		Field177: []*int64{},
+		Field178: map[string]*int64{
+			"": nil,
+		},
+		Field179: []*int32{},
+		Field180: []*string{},
+		Field181: []*int32{},
+		Field182: map[string]*string{
+			"": nil,
+		},
+		Field183: []*int64{},
+		Field184: GetHugeStruct0(),
+		Field185: []*int32{},
+		Field186: nil,
+		Field187: GetHugeStruct0(),
+		Field188: []*HugeStruct0{GetHugeStruct0()},
+		Field189: nil,
+		Field190: []*int64{},
+		Field191: map[string]*int32{
+			"": nil,
+		},
+		Field192: []*HugeStruct0{GetHugeStruct0()},
+		Field193: []*HugeStruct0{GetHugeStruct0()},
+		Field194: GetHugeStruct0(),
+		Field195: []*bool{},
+		Field196: map[string]*bool{
+			"": nil,
+		},
+		Field197: []*bool{},
+		Field198: nil,
+		Field199: map[string]*int32{
+			"": nil,
+		},
+		Field200: map[string]*int64{
+			"": nil,
+		},
+		Field201: map[string]*string{
+			"": nil,
+		},
+		Field202: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field203: map[string]*int32{
+			"": nil,
+		},
+		Field204: nil,
+		Field205: map[string]*string{
+			"": nil,
+		},
+		Field206: []*HugeStruct0{GetHugeStruct0()},
+		Field207: []*HugeStruct0{GetHugeStruct0()},
+		Field208: nil,
+		Field209: GetHugeStruct0(),
+		Field210: map[string]*string{
+			"": nil,
+		},
+		Field211: map[string]*bool{
+			"": nil,
+		},
+		Field212: GetHugeStruct0(),
+		Field213: nil,
+		Field214: map[string]*bool{
+			"": nil,
+		},
+		Field215: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field216: []*HugeStruct0{GetHugeStruct0()},
+		Field217: map[string]*string{
+			"": nil,
+		},
+		Field218: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field219: map[string]*int64{
+			"": nil,
+		},
+		Field220: nil,
+		Field221: nil,
+		Field222: GetHugeStruct0(),
+		Field223: []*int64{},
+		Field224: []*bool{},
+		Field225: []*bool{},
+		Field226: map[string]*int64{
+			"": nil,
+		},
+		Field227: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field228: []*int64{},
+		Field229: map[string]*bool{
+			"": nil,
+		},
+		Field230: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field231: nil,
+		Field232: nil,
+		Field233: []*string{},
+		Field234: []*HugeStruct0{GetHugeStruct0()},
+		Field235: []*string{},
+		Field236: nil,
+		Field237: nil,
+		Field238: GetHugeStruct0(),
+		Field239: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field240: []*HugeStruct0{GetHugeStruct0()},
+		Field241: nil,
+		Field242: nil,
+		Field243: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field244: map[string]*bool{
+			"": nil,
+		},
+		Field245: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field246: []*int32{},
+		Field247: []*bool{},
+		Field248: []*string{},
+		Field249: nil,
+		Field250: []*int32{},
+		Field251: GetHugeStruct0(),
+		Field252: nil,
+		Field253: map[string]*string{
+			"": nil,
+		},
+		Field254: map[string]*string{
+			"": nil,
+		},
+		Field255: []*int32{},
+		Field256: nil,
+		Field257: nil,
+		Field258: map[string]*string{
+			"": nil,
+		},
+		Field259: map[string]*int32{
+			"": nil,
+		},
+		Field260: []*int64{},
+		Field261: []*int32{},
+		Field262: GetHugeStruct0(),
+		Field263: nil,
+		Field264: nil,
+		Field265: map[string]*bool{
+			"": nil,
+		},
+		Field266: nil,
+		Field267: []*int64{},
+		Field268: nil,
+		Field269: nil,
+		Field270: map[string]*int64{
+			"": nil,
+		},
+		Field271: map[string]*int64{
+			"": nil,
+		},
+		Field272: GetHugeStruct0(),
+		Field273: []*string{},
+		Field274: nil,
+		Field275: GetHugeStruct0(),
+		Field276: map[string]*bool{
+			"": nil,
+		},
+		Field277: GetHugeStruct0(),
+		Field278: nil,
+		Field279: map[string]*string{
+			"": nil,
+		},
+		Field280: nil,
+		Field281: nil,
+		Field282: nil,
+		Field283: nil,
+		Field284: GetHugeStruct0(),
+		Field285: map[string]*int64{
+			"": nil,
+		},
+		Field286: map[string]*bool{
+			"": nil,
+		},
+		Field287: map[string]*string{
+			"": nil,
+		},
+		Field288: nil,
+		Field289: nil,
+		Field290: nil,
+		Field291: []*int64{},
+		Field292: map[string]*string{
+			"": nil,
+		},
+		Field293: nil,
+		Field294: []*string{},
+		Field295: nil,
+		Field296: []*HugeStruct0{GetHugeStruct0()},
+		Field297: nil,
+		Field298: map[string]*int64{
+			"": nil,
+		},
+		Field299: map[string]*bool{
+			"": nil,
+		},
+		Field300: GetHugeStruct0(),
+		Field301: nil,
+		Field302: []*string{},
+		Field303: []*string{},
+		Field304: map[string]*string{
+			"": nil,
+		},
+		Field305: nil,
+		Field306: nil,
+		Field307: []*HugeStruct0{GetHugeStruct0()},
+		Field308: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field309: map[string]*int32{
+			"": nil,
+		},
+		Field310: []*HugeStruct0{GetHugeStruct0()},
+		Field311: nil,
+		Field312: []*bool{},
+		Field313: nil,
+		Field314: []*HugeStruct0{GetHugeStruct0()},
+		Field315: GetHugeStruct0(),
+		Field316: nil,
+		Field317: nil,
+		Field318: nil,
+		Field319: []*int32{},
+		Field320: nil,
+		Field321: []*HugeStruct0{GetHugeStruct0()},
+		Field322: nil,
+		Field323: nil,
+		Field324: []*HugeStruct0{GetHugeStruct0()},
+		Field325: nil,
+		Field326: []*int64{},
+		Field327: nil,
+		Field328: GetHugeStruct0(),
+		Field329: GetHugeStruct0(),
+		Field330: []*HugeStruct0{GetHugeStruct0()},
+		Field331: GetHugeStruct0(),
+		Field332: []*string{},
+		Field333: nil,
+		Field334: []*HugeStruct0{GetHugeStruct0()},
+		Field335: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field336: map[string]*bool{
+			"": nil,
+		},
+		Field337: []*int64{},
+		Field338: map[string]*bool{
+			"": nil,
+		},
+		Field339: GetHugeStruct0(),
+		Field340: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field341: []*bool{},
+		Field342: []*int64{},
+		Field343: []*int32{},
+		Field344: map[string]*bool{
+			"": nil,
+		},
+		Field345: map[string]*int64{
+			"": nil,
+		},
+		Field346: nil,
+		Field347: map[string]*bool{
+			"": nil,
+		},
+		Field348: map[string]*int32{
+			"": nil,
+		},
+		Field349: []*string{},
+		Field350: map[string]*int32{
+			"": nil,
+		},
+		Field351: nil,
+		Field352: []*int64{},
+		Field353: []*int64{},
+		Field354: nil,
+		Field355: map[string]*int32{
+			"": nil,
+		},
+		Field356: map[string]*bool{
+			"": nil,
+		},
+		Field357: []*int32{},
+		Field358: nil,
+		Field359: map[string]*int64{
+			"": nil,
+		},
+		Field360: nil,
+		Field361: map[string]*int64{
+			"": nil,
+		},
+		Field362: map[string]*int32{
+			"": nil,
+		},
+		Field363: []*int64{},
+		Field364: []*bool{},
+		Field365: nil,
+		Field366: map[string]*string{
+			"": nil,
+		},
+		Field367: map[string]*bool{
+			"": nil,
+		},
+		Field368: nil,
+		Field369: nil,
+		Field370: GetHugeStruct0(),
+		Field371: GetHugeStruct0(),
+		Field372: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field373: map[string]*bool{
+			"": nil,
+		},
+	}
+}
+
+func GetHugeStruct2() *HugeStruct2 {
+	return &HugeStruct2{
+		Field0: nil,
+		Field1: map[string]*int64{
+			"": nil,
+		},
+		Field2: nil,
+		Field3: []*int64{},
+		Field4: map[string]*int32{
+			"": nil,
+		},
+		Field5: map[string]*int32{
+			"": nil,
+		},
+		Field6: nil,
+		Field7: map[string]*int32{
+			"": nil,
+		},
+		Field8:  nil,
+		Field9:  []*HugeStruct1{},
+		Field10: nil,
+		Field11: map[string]*int64{
+			"": nil,
+		},
+		Field12: nil,
+		Field13: nil,
+		Field14: map[string]*HugeStruct1{
+			"": {
+				Field0: []*int32{},
+				Field1: []*string{},
+				Field2: []*int64{},
+				Field3: map[string]*int32{
+					"": nil,
+				},
+				Field4: []*bool{},
+				Field5: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field6: map[string]*int32{
+					"": nil,
+				},
+				Field7: map[string]*bool{
+					"": nil,
+				},
+				Field8: []*bool{},
+				Field9: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field10: []*string{},
+				Field11: []*bool{},
+				Field12: []*bool{},
+				Field13: map[string]*int32{
+					"": nil,
+				},
+				Field14: map[string]*int32{
+					"": nil,
+				},
+				Field15: nil,
+				Field16: []*int64{},
+				Field17: []*bool{},
+				Field18: map[string]*int64{
+					"": nil,
+				},
+				Field19: []*int64{},
+				Field20: map[string]*string{
+					"": nil,
+				},
+				Field21: nil,
+				Field22: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field23: []*string{},
+				Field24: []*int64{},
+				Field25: []*string{},
+				Field26: []*bool{},
+				Field27: map[string]*int32{
+					"": nil,
+				},
+				Field28: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field29: map[string]*int32{
+					"": nil,
+				},
+				Field30: map[string]*bool{
+					"": nil,
+				},
+				Field31: map[string]*int32{
+					"": nil,
+				},
+				Field32: []*HugeStruct0{GetHugeStruct0()},
+				Field33: nil,
+				Field34: map[string]*bool{
+					"": nil,
+				},
+				Field35: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field36: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field37: nil,
+				Field38: []*HugeStruct0{GetHugeStruct0()},
+				Field39: []*bool{},
+				Field40: map[string]*string{
+					"": nil,
+				},
+				Field41: map[string]*int64{
+					"": nil,
+				},
+				Field42: map[string]*int32{
+					"": nil,
+				},
+				Field43: nil,
+				Field44: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field45: map[string]*int32{
+					"": nil,
+				},
+				Field46: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field47: nil,
+				Field48: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field49: nil,
+				Field50: map[string]*string{
+					"": nil,
+				},
+				Field51: map[string]*bool{
+					"": nil,
+				},
+				Field52: []*int64{},
+				Field53: map[string]*string{
+					"": nil,
+				},
+				Field54: []*int32{},
+				Field55: map[string]*int64{
+					"": nil,
+				},
+				Field56: map[string]*int32{
+					"": nil,
+				},
+				Field57: map[string]*string{
+					"": nil,
+				},
+				Field58: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field59: []*HugeStruct0{GetHugeStruct0()},
+				Field60: map[string]*string{
+					"": nil,
+				},
+				Field61: map[string]*bool{
+					"": nil,
+				},
+				Field62: map[string]*int64{
+					"": nil,
+				},
+				Field63: []*string{},
+				Field64: []*int64{},
+				Field65: map[string]*bool{
+					"": nil,
+				},
+				Field66: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field67: []*int64{},
+				Field68: map[string]*string{
+					"": nil,
+				},
+				Field69: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field70: []*bool{},
+				Field71: map[string]*int64{
+					"": nil,
+				},
+				Field72: nil,
+				Field73: map[string]*int32{
+					"": nil,
+				},
+				Field74: nil,
+				Field75: map[string]*int32{
+					"": nil,
+				},
+				Field76: map[string]*string{
+					"": nil,
+				},
+				Field77: []*string{},
+				Field78: nil,
+				Field79: map[string]*int64{
+					"": nil,
+				},
+				Field80: []*int64{},
+				Field81: map[string]*bool{
+					"": nil,
+				},
+				Field82: []*string{},
+				Field83: []*string{},
+				Field84: nil,
+				Field85: []*bool{},
+				Field86: []*HugeStruct0{GetHugeStruct0()},
+				Field87: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field88: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field89: []*int64{},
+				Field90: []*int32{},
+				Field91: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field92: []*bool{},
+				Field93: []*string{},
+				Field94: map[string]*int32{
+					"": nil,
+				},
+				Field95: nil,
+				Field96: nil,
+				Field97: map[string]*bool{
+					"": nil,
+				},
+				Field98: map[string]*int32{
+					"": nil,
+				},
+				Field99:  []*HugeStruct0{GetHugeStruct0()},
+				Field100: nil,
+				Field101: nil,
+				Field102: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field103: []*string{},
+				Field104: []*string{},
+				Field105: map[string]*bool{
+					"": nil,
+				},
+				Field106: []*string{},
+				Field107: []*int64{},
+				Field108: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field109: nil,
+				Field110: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field111: []*string{},
+				Field112: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field113: []*bool{},
+				Field114: []*bool{},
+				Field115: map[string]*string{
+					"": nil,
+				},
+				Field116: []*int64{},
+				Field117: []*string{},
+				Field118: map[string]*bool{
+					"": nil,
+				},
+				Field119: map[string]*string{
+					"": nil,
+				},
+				Field120: []*HugeStruct0{GetHugeStruct0()},
+				Field121: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field122: []*bool{},
+				Field123: nil,
+				Field124: []*int64{},
+				Field125: nil,
+				Field126: []*string{},
+				Field127: []*string{},
+				Field128: []*int32{},
+				Field129: []*bool{},
+				Field130: nil,
+				Field131: nil,
+				Field132: []*int32{},
+				Field133: []*int32{},
+				Field134: nil,
+				Field135: []*bool{},
+				Field136: nil,
+				Field137: []*int32{},
+				Field138: map[string]*int64{
+					"": nil,
+				},
+				Field139: map[string]*string{
+					"": nil,
+				},
+				Field140: map[string]*int64{
+					"": nil,
+				},
+				Field141: map[string]*int64{
+					"": nil,
+				},
+				Field142: []*int32{},
+				Field143: []*HugeStruct0{GetHugeStruct0()},
+				Field144: map[string]*int64{
+					"": nil,
+				},
+				Field145: []*string{},
+				Field146: map[string]*int64{
+					"": nil,
+				},
+				Field147: nil,
+				Field148: map[string]*string{
+					"": nil,
+				},
+				Field149: nil,
+				Field150: map[string]*int64{
+					"": nil,
+				},
+				Field151: map[string]*int64{
+					"": nil,
+				},
+				Field152: map[string]*int32{
+					"": nil,
+				},
+				Field153: []*int32{},
+				Field154: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field155: map[string]*string{
+					"": nil,
+				},
+				Field156: map[string]*int64{
+					"": nil,
+				},
+				Field157: []*int32{},
+				Field158: []*int32{},
+				Field159: nil,
+				Field160: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field161: []*bool{},
+				Field162: []*HugeStruct0{GetHugeStruct0()},
+				Field163: []*int32{},
+				Field164: map[string]*string{
+					"": nil,
+				},
+				Field165: []*bool{},
+				Field166: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field167: nil,
+				Field168: []*bool{},
+				Field169: map[string]*bool{
+					"": nil,
+				},
+				Field170: map[string]*bool{
+					"": nil,
+				},
+				Field171: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field172: map[string]*bool{
+					"": nil,
+				},
+				Field173: []*bool{},
+				Field174: map[string]*int64{
+					"": nil,
+				},
+				Field175: []*HugeStruct0{GetHugeStruct0()},
+				Field176: []*int32{},
+				Field177: []*int64{},
+				Field178: map[string]*int64{
+					"": nil,
+				},
+				Field179: []*int32{},
+				Field180: []*string{},
+				Field181: []*int32{},
+				Field182: map[string]*string{
+					"": nil,
+				},
+				Field183: []*int64{},
+				Field184: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field185: []*int32{},
+				Field186: nil,
+				Field187: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field188: []*HugeStruct0{GetHugeStruct0()},
+				Field189: nil,
+				Field190: []*int64{},
+				Field191: map[string]*int32{
+					"": nil,
+				},
+				Field192: []*HugeStruct0{GetHugeStruct0()},
+				Field193: []*HugeStruct0{GetHugeStruct0()},
+				Field194: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field195: []*bool{},
+				Field196: map[string]*bool{
+					"": nil,
+				},
+				Field197: []*bool{},
+				Field198: nil,
+				Field199: map[string]*int32{
+					"": nil,
+				},
+				Field200: map[string]*int64{
+					"": nil,
+				},
+				Field201: map[string]*string{
+					"": nil,
+				},
+				Field202: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field203: map[string]*int32{
+					"": nil,
+				},
+				Field204: nil,
+				Field205: map[string]*string{
+					"": nil,
+				},
+				Field206: []*HugeStruct0{GetHugeStruct0()},
+				Field207: []*HugeStruct0{GetHugeStruct0()},
+				Field208: nil,
+				Field209: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field210: map[string]*string{
+					"": nil,
+				},
+				Field211: map[string]*bool{
+					"": nil,
+				},
+				Field212: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field213: nil,
+				Field214: map[string]*bool{
+					"": nil,
+				},
+				Field215: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field216: []*HugeStruct0{GetHugeStruct0()},
+				Field217: map[string]*string{
+					"": nil,
+				},
+				Field218: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field219: map[string]*int64{
+					"": nil,
+				},
+				Field220: nil,
+				Field221: nil,
+				Field222: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field223: []*int64{},
+				Field224: []*bool{},
+				Field225: []*bool{},
+				Field226: map[string]*int64{
+					"": nil,
+				},
+				Field227: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field228: []*int64{},
+				Field229: map[string]*bool{
+					"": nil,
+				},
+				Field230: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field231: nil,
+				Field232: nil,
+				Field233: []*string{},
+				Field234: []*HugeStruct0{GetHugeStruct0()},
+				Field235: []*string{},
+				Field236: nil,
+				Field237: nil,
+				Field238: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field239: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field240: []*HugeStruct0{GetHugeStruct0()},
+				Field241: nil,
+				Field242: nil,
+				Field243: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field244: map[string]*bool{
+					"": nil,
+				},
+				Field245: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field246: []*int32{},
+				Field247: []*bool{},
+				Field248: []*string{},
+				Field249: nil,
+				Field250: []*int32{},
+				Field251: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field252: nil,
+				Field253: map[string]*string{
+					"": nil,
+				},
+				Field254: map[string]*string{
+					"": nil,
+				},
+				Field255: []*int32{},
+				Field256: nil,
+				Field257: nil,
+				Field258: map[string]*string{
+					"": nil,
+				},
+				Field259: map[string]*int32{
+					"": nil,
+				},
+				Field260: []*int64{},
+				Field261: []*int32{},
+				Field262: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field263: nil,
+				Field264: nil,
+				Field265: map[string]*bool{
+					"": nil,
+				},
+				Field266: nil,
+				Field267: []*int64{},
+				Field268: nil,
+				Field269: nil,
+				Field270: map[string]*int64{
+					"": nil,
+				},
+				Field271: map[string]*int64{
+					"": nil,
+				},
+				Field272: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field273: []*string{},
+				Field274: nil,
+				Field275: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field276: map[string]*bool{
+					"": nil,
+				},
+				Field277: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field278: nil,
+				Field279: map[string]*string{
+					"": nil,
+				},
+				Field280: nil,
+				Field281: nil,
+				Field282: nil,
+				Field283: nil,
+				Field284: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field285: map[string]*int64{
+					"": nil,
+				},
+				Field286: map[string]*bool{
+					"": nil,
+				},
+				Field287: map[string]*string{
+					"": nil,
+				},
+				Field288: nil,
+				Field289: nil,
+				Field290: nil,
+				Field291: []*int64{},
+				Field292: map[string]*string{
+					"": nil,
+				},
+				Field293: nil,
+				Field294: []*string{},
+				Field295: nil,
+				Field296: []*HugeStruct0{GetHugeStruct0()},
+				Field297: nil,
+				Field298: map[string]*int64{
+					"": nil,
+				},
+				Field299: map[string]*bool{
+					"": nil,
+				},
+				Field300: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field301: nil,
+				Field302: []*string{},
+				Field303: []*string{},
+				Field304: map[string]*string{
+					"": nil,
+				},
+				Field305: nil,
+				Field306: nil,
+				Field307: []*HugeStruct0{GetHugeStruct0()},
+				Field308: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field309: map[string]*int32{
+					"": nil,
+				},
+				Field310: []*HugeStruct0{GetHugeStruct0()},
+				Field311: nil,
+				Field312: []*bool{},
+				Field313: nil,
+				Field314: []*HugeStruct0{GetHugeStruct0()},
+				Field315: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field316: nil,
+				Field317: nil,
+				Field318: nil,
+				Field319: []*int32{},
+				Field320: nil,
+				Field321: []*HugeStruct0{GetHugeStruct0()},
+				Field322: nil,
+				Field323: nil,
+				Field324: []*HugeStruct0{GetHugeStruct0()},
+				Field325: nil,
+				Field326: []*int64{},
+				Field327: nil,
+				Field328: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field329: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field330: []*HugeStruct0{GetHugeStruct0()},
+				Field331: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field332: []*string{},
+				Field333: nil,
+				Field334: []*HugeStruct0{GetHugeStruct0()},
+				Field335: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field336: map[string]*bool{
+					"": nil,
+				},
+				Field337: []*int64{},
+				Field338: map[string]*bool{
+					"": nil,
+				},
+				Field339: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field340: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field341: []*bool{},
+				Field342: []*int64{},
+				Field343: []*int32{},
+				Field344: map[string]*bool{
+					"": nil,
+				},
+				Field345: map[string]*int64{
+					"": nil,
+				},
+				Field346: nil,
+				Field347: map[string]*bool{
+					"": nil,
+				},
+				Field348: map[string]*int32{
+					"": nil,
+				},
+				Field349: []*string{},
+				Field350: map[string]*int32{
+					"": nil,
+				},
+				Field351: nil,
+				Field352: []*int64{},
+				Field353: []*int64{},
+				Field354: nil,
+				Field355: map[string]*int32{
+					"": nil,
+				},
+				Field356: map[string]*bool{
+					"": nil,
+				},
+				Field357: []*int32{},
+				Field358: nil,
+				Field359: map[string]*int64{
+					"": nil,
+				},
+				Field360: nil,
+				Field361: map[string]*int64{
+					"": nil,
+				},
+				Field362: map[string]*int32{
+					"": nil,
+				},
+				Field363: []*int64{},
+				Field364: []*bool{},
+				Field365: nil,
+				Field366: map[string]*string{
+					"": nil,
+				},
+				Field367: map[string]*bool{
+					"": nil,
+				},
+				Field368: nil,
+				Field369: nil,
+				Field370: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field371: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field372: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field373: map[string]*bool{
+					"": nil,
+				},
+			},
+		},
+		Field15: map[string]*int64{
+			"": nil,
+		},
+		Field16: map[string]*int32{
+			"": nil,
+		},
+		Field17: map[string]*int32{
+			"": nil,
+		},
+		Field18: []*int32{},
+		Field19: GetHugeStruct0(),
+		Field20: map[string]*int64{
+			"": nil,
+		},
+		Field21: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field22: []*int32{},
+		Field23: map[string]*int64{
+			"": nil,
+		},
+		Field24: map[string]*int64{
+			"": nil,
+		},
+		Field25: nil,
+		Field26: map[string]*string{
+			"": nil,
+		},
+		Field27: []*bool{},
+		Field28: nil,
+		Field29: []*string{},
+		Field30: []*HugeStruct0{GetHugeStruct0()},
+		Field31: []*int64{},
+		Field32: nil,
+		Field33: map[string]*string{
+			"": nil,
+		},
+		Field34: []*HugeStruct0{GetHugeStruct0()},
+		Field35: nil,
+		Field36: GetHugeStruct0(),
+		Field37: nil,
+		Field38: []*HugeStruct1{},
+		Field39: nil,
+		Field40: map[string]*string{
+			"": nil,
+		},
+		Field41: nil,
+		Field42: nil,
+		Field43: map[string]*int64{
+			"": nil,
+		},
+		Field44: map[string]*string{
+			"": nil,
+		},
+		Field45: map[string]*int32{
+			"": nil,
+		},
+		Field46: nil,
+		Field47: map[string]*int64{
+			"": nil,
+		},
+		Field48: nil,
+		Field49: []*HugeStruct1{},
+		Field50: nil,
+		Field51: []*int64{},
+		Field52: map[string]*int64{
+			"": nil,
+		},
+		Field53: nil,
+		Field54: map[string]*bool{
+			"": nil,
+		},
+		Field55: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field56: map[string]*int32{
+			"": nil,
+		},
+		Field57: map[string]*string{
+			"": nil,
+		},
+		Field58: []*int64{},
+		Field59: GetHugeStruct0(),
+		Field60: []*int64{},
+		Field61: map[string]*int64{
+			"": nil,
+		},
+		Field62: map[string]*HugeStruct1{
+			"": {
+				Field0: []*int32{},
+				Field1: []*string{},
+				Field2: []*int64{},
+				Field3: map[string]*int32{
+					"": nil,
+				},
+				Field4: []*bool{},
+				Field5: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field6: map[string]*int32{
+					"": nil,
+				},
+				Field7: map[string]*bool{
+					"": nil,
+				},
+				Field8: []*bool{},
+				Field9: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field10: []*string{},
+				Field11: []*bool{},
+				Field12: []*bool{},
+				Field13: map[string]*int32{
+					"": nil,
+				},
+				Field14: map[string]*int32{
+					"": nil,
+				},
+				Field15: nil,
+				Field16: []*int64{},
+				Field17: []*bool{},
+				Field18: map[string]*int64{
+					"": nil,
+				},
+				Field19: []*int64{},
+				Field20: map[string]*string{
+					"": nil,
+				},
+				Field21: nil,
+				Field22: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field23: []*string{},
+				Field24: []*int64{},
+				Field25: []*string{},
+				Field26: []*bool{},
+				Field27: map[string]*int32{
+					"": nil,
+				},
+				Field28: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field29: map[string]*int32{
+					"": nil,
+				},
+				Field30: map[string]*bool{
+					"": nil,
+				},
+				Field31: map[string]*int32{
+					"": nil,
+				},
+				Field32: []*HugeStruct0{GetHugeStruct0()},
+				Field33: nil,
+				Field34: map[string]*bool{
+					"": nil,
+				},
+				Field35: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field36: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field37: nil,
+				Field38: []*HugeStruct0{GetHugeStruct0()},
+				Field39: []*bool{},
+				Field40: map[string]*string{
+					"": nil,
+				},
+				Field41: map[string]*int64{
+					"": nil,
+				},
+				Field42: map[string]*int32{
+					"": nil,
+				},
+				Field43: nil,
+				Field44: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field45: map[string]*int32{
+					"": nil,
+				},
+				Field46: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field47: nil,
+				Field48: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field49: nil,
+				Field50: map[string]*string{
+					"": nil,
+				},
+				Field51: map[string]*bool{
+					"": nil,
+				},
+				Field52: []*int64{},
+				Field53: map[string]*string{
+					"": nil,
+				},
+				Field54: []*int32{},
+				Field55: map[string]*int64{
+					"": nil,
+				},
+				Field56: map[string]*int32{
+					"": nil,
+				},
+				Field57: map[string]*string{
+					"": nil,
+				},
+				Field58: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field59: []*HugeStruct0{GetHugeStruct0()},
+				Field60: map[string]*string{
+					"": nil,
+				},
+				Field61: map[string]*bool{
+					"": nil,
+				},
+				Field62: map[string]*int64{
+					"": nil,
+				},
+				Field63: []*string{},
+				Field64: []*int64{},
+				Field65: map[string]*bool{
+					"": nil,
+				},
+				Field66: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field67: []*int64{},
+				Field68: map[string]*string{
+					"": nil,
+				},
+				Field69: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field70: []*bool{},
+				Field71: map[string]*int64{
+					"": nil,
+				},
+				Field72: nil,
+				Field73: map[string]*int32{
+					"": nil,
+				},
+				Field74: nil,
+				Field75: map[string]*int32{
+					"": nil,
+				},
+				Field76: map[string]*string{
+					"": nil,
+				},
+				Field77: []*string{},
+				Field78: nil,
+				Field79: map[string]*int64{
+					"": nil,
+				},
+				Field80: []*int64{},
+				Field81: map[string]*bool{
+					"": nil,
+				},
+				Field82: []*string{},
+				Field83: []*string{},
+				Field84: nil,
+				Field85: []*bool{},
+				Field86: []*HugeStruct0{GetHugeStruct0()},
+				Field87: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field88: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field89: []*int64{},
+				Field90: []*int32{},
+				Field91: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field92: []*bool{},
+				Field93: []*string{},
+				Field94: map[string]*int32{
+					"": nil,
+				},
+				Field95: nil,
+				Field96: nil,
+				Field97: map[string]*bool{
+					"": nil,
+				},
+				Field98: map[string]*int32{
+					"": nil,
+				},
+				Field99:  []*HugeStruct0{GetHugeStruct0()},
+				Field100: nil,
+				Field101: nil,
+				Field102: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field103: []*string{},
+				Field104: []*string{},
+				Field105: map[string]*bool{
+					"": nil,
+				},
+				Field106: []*string{},
+				Field107: []*int64{},
+				Field108: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field109: nil,
+				Field110: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field111: []*string{},
+				Field112: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field113: []*bool{},
+				Field114: []*bool{},
+				Field115: map[string]*string{
+					"": nil,
+				},
+				Field116: []*int64{},
+				Field117: []*string{},
+				Field118: map[string]*bool{
+					"": nil,
+				},
+				Field119: map[string]*string{
+					"": nil,
+				},
+				Field120: []*HugeStruct0{GetHugeStruct0()},
+				Field121: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field122: []*bool{},
+				Field123: nil,
+				Field124: []*int64{},
+				Field125: nil,
+				Field126: []*string{},
+				Field127: []*string{},
+				Field128: []*int32{},
+				Field129: []*bool{},
+				Field130: nil,
+				Field131: nil,
+				Field132: []*int32{},
+				Field133: []*int32{},
+				Field134: nil,
+				Field135: []*bool{},
+				Field136: nil,
+				Field137: []*int32{},
+				Field138: map[string]*int64{
+					"": nil,
+				},
+				Field139: map[string]*string{
+					"": nil,
+				},
+				Field140: map[string]*int64{
+					"": nil,
+				},
+				Field141: map[string]*int64{
+					"": nil,
+				},
+				Field142: []*int32{},
+				Field143: []*HugeStruct0{GetHugeStruct0()},
+				Field144: map[string]*int64{
+					"": nil,
+				},
+				Field145: []*string{},
+				Field146: map[string]*int64{
+					"": nil,
+				},
+				Field147: nil,
+				Field148: map[string]*string{
+					"": nil,
+				},
+				Field149: nil,
+				Field150: map[string]*int64{
+					"": nil,
+				},
+				Field151: map[string]*int64{
+					"": nil,
+				},
+				Field152: map[string]*int32{
+					"": nil,
+				},
+				Field153: []*int32{},
+				Field154: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field155: map[string]*string{
+					"": nil,
+				},
+				Field156: map[string]*int64{
+					"": nil,
+				},
+				Field157: []*int32{},
+				Field158: []*int32{},
+				Field159: nil,
+				Field160: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field161: []*bool{},
+				Field162: []*HugeStruct0{GetHugeStruct0()},
+				Field163: []*int32{},
+				Field164: map[string]*string{
+					"": nil,
+				},
+				Field165: []*bool{},
+				Field166: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field167: nil,
+				Field168: []*bool{},
+				Field169: map[string]*bool{
+					"": nil,
+				},
+				Field170: map[string]*bool{
+					"": nil,
+				},
+				Field171: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field172: map[string]*bool{
+					"": nil,
+				},
+				Field173: []*bool{},
+				Field174: map[string]*int64{
+					"": nil,
+				},
+				Field175: []*HugeStruct0{GetHugeStruct0()},
+				Field176: []*int32{},
+				Field177: []*int64{},
+				Field178: map[string]*int64{
+					"": nil,
+				},
+				Field179: []*int32{},
+				Field180: []*string{},
+				Field181: []*int32{},
+				Field182: map[string]*string{
+					"": nil,
+				},
+				Field183: []*int64{},
+				Field184: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field185: []*int32{},
+				Field186: nil,
+				Field187: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field188: []*HugeStruct0{GetHugeStruct0()},
+				Field189: nil,
+				Field190: []*int64{},
+				Field191: map[string]*int32{
+					"": nil,
+				},
+				Field192: []*HugeStruct0{GetHugeStruct0()},
+				Field193: []*HugeStruct0{GetHugeStruct0()},
+				Field194: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field195: []*bool{},
+				Field196: map[string]*bool{
+					"": nil,
+				},
+				Field197: []*bool{},
+				Field198: nil,
+				Field199: map[string]*int32{
+					"": nil,
+				},
+				Field200: map[string]*int64{
+					"": nil,
+				},
+				Field201: map[string]*string{
+					"": nil,
+				},
+				Field202: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field203: map[string]*int32{
+					"": nil,
+				},
+				Field204: nil,
+				Field205: map[string]*string{
+					"": nil,
+				},
+				Field206: []*HugeStruct0{GetHugeStruct0()},
+				Field207: []*HugeStruct0{GetHugeStruct0()},
+				Field208: nil,
+				Field209: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field210: map[string]*string{
+					"": nil,
+				},
+				Field211: map[string]*bool{
+					"": nil,
+				},
+				Field212: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field213: nil,
+				Field214: map[string]*bool{
+					"": nil,
+				},
+				Field215: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field216: []*HugeStruct0{GetHugeStruct0()},
+				Field217: map[string]*string{
+					"": nil,
+				},
+				Field218: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field219: map[string]*int64{
+					"": nil,
+				},
+				Field220: nil,
+				Field221: nil,
+				Field222: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field223: []*int64{},
+				Field224: []*bool{},
+				Field225: []*bool{},
+				Field226: map[string]*int64{
+					"": nil,
+				},
+				Field227: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field228: []*int64{},
+				Field229: map[string]*bool{
+					"": nil,
+				},
+				Field230: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field231: nil,
+				Field232: nil,
+				Field233: []*string{},
+				Field234: []*HugeStruct0{GetHugeStruct0()},
+				Field235: []*string{},
+				Field236: nil,
+				Field237: nil,
+				Field238: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field239: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field240: []*HugeStruct0{GetHugeStruct0()},
+				Field241: nil,
+				Field242: nil,
+				Field243: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field244: map[string]*bool{
+					"": nil,
+				},
+				Field245: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field246: []*int32{},
+				Field247: []*bool{},
+				Field248: []*string{},
+				Field249: nil,
+				Field250: []*int32{},
+				Field251: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field252: nil,
+				Field253: map[string]*string{
+					"": nil,
+				},
+				Field254: map[string]*string{
+					"": nil,
+				},
+				Field255: []*int32{},
+				Field256: nil,
+				Field257: nil,
+				Field258: map[string]*string{
+					"": nil,
+				},
+				Field259: map[string]*int32{
+					"": nil,
+				},
+				Field260: []*int64{},
+				Field261: []*int32{},
+				Field262: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field263: nil,
+				Field264: nil,
+				Field265: map[string]*bool{
+					"": nil,
+				},
+				Field266: nil,
+				Field267: []*int64{},
+				Field268: nil,
+				Field269: nil,
+				Field270: map[string]*int64{
+					"": nil,
+				},
+				Field271: map[string]*int64{
+					"": nil,
+				},
+				Field272: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field273: []*string{},
+				Field274: nil,
+				Field275: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field276: map[string]*bool{
+					"": nil,
+				},
+				Field277: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field278: nil,
+				Field279: map[string]*string{
+					"": nil,
+				},
+				Field280: nil,
+				Field281: nil,
+				Field282: nil,
+				Field283: nil,
+				Field284: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field285: map[string]*int64{
+					"": nil,
+				},
+				Field286: map[string]*bool{
+					"": nil,
+				},
+				Field287: map[string]*string{
+					"": nil,
+				},
+				Field288: nil,
+				Field289: nil,
+				Field290: nil,
+				Field291: []*int64{},
+				Field292: map[string]*string{
+					"": nil,
+				},
+				Field293: nil,
+				Field294: []*string{},
+				Field295: nil,
+				Field296: []*HugeStruct0{GetHugeStruct0()},
+				Field297: nil,
+				Field298: map[string]*int64{
+					"": nil,
+				},
+				Field299: map[string]*bool{
+					"": nil,
+				},
+				Field300: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field301: nil,
+				Field302: []*string{},
+				Field303: []*string{},
+				Field304: map[string]*string{
+					"": nil,
+				},
+				Field305: nil,
+				Field306: nil,
+				Field307: []*HugeStruct0{GetHugeStruct0()},
+				Field308: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field309: map[string]*int32{
+					"": nil,
+				},
+				Field310: []*HugeStruct0{GetHugeStruct0()},
+				Field311: nil,
+				Field312: []*bool{},
+				Field313: nil,
+				Field314: []*HugeStruct0{GetHugeStruct0()},
+				Field315: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field316: nil,
+				Field317: nil,
+				Field318: nil,
+				Field319: []*int32{},
+				Field320: nil,
+				Field321: []*HugeStruct0{GetHugeStruct0()},
+				Field322: nil,
+				Field323: nil,
+				Field324: []*HugeStruct0{GetHugeStruct0()},
+				Field325: nil,
+				Field326: []*int64{},
+				Field327: nil,
+				Field328: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field329: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field330: []*HugeStruct0{GetHugeStruct0()},
+				Field331: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field332: []*string{},
+				Field333: nil,
+				Field334: []*HugeStruct0{GetHugeStruct0()},
+				Field335: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field336: map[string]*bool{
+					"": nil,
+				},
+				Field337: []*int64{},
+				Field338: map[string]*bool{
+					"": nil,
+				},
+				Field339: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field340: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field341: []*bool{},
+				Field342: []*int64{},
+				Field343: []*int32{},
+				Field344: map[string]*bool{
+					"": nil,
+				},
+				Field345: map[string]*int64{
+					"": nil,
+				},
+				Field346: nil,
+				Field347: map[string]*bool{
+					"": nil,
+				},
+				Field348: map[string]*int32{
+					"": nil,
+				},
+				Field349: []*string{},
+				Field350: map[string]*int32{
+					"": nil,
+				},
+				Field351: nil,
+				Field352: []*int64{},
+				Field353: []*int64{},
+				Field354: nil,
+				Field355: map[string]*int32{
+					"": nil,
+				},
+				Field356: map[string]*bool{
+					"": nil,
+				},
+				Field357: []*int32{},
+				Field358: nil,
+				Field359: map[string]*int64{
+					"": nil,
+				},
+				Field360: nil,
+				Field361: map[string]*int64{
+					"": nil,
+				},
+				Field362: map[string]*int32{
+					"": nil,
+				},
+				Field363: []*int64{},
+				Field364: []*bool{},
+				Field365: nil,
+				Field366: map[string]*string{
+					"": nil,
+				},
+				Field367: map[string]*bool{
+					"": nil,
+				},
+				Field368: nil,
+				Field369: nil,
+				Field370: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field371: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field372: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field373: map[string]*bool{
+					"": nil,
+				},
+			},
+		},
+		Field63: GetHugeStruct0(),
+		Field64: []*int32{},
+		Field65: []*HugeStruct0{GetHugeStruct0()},
+		Field66: nil,
+		Field67: []*int64{},
+		Field68: []*bool{},
+		Field69: nil,
+		Field70: nil,
+		Field71: nil,
+		Field72: map[string]*int32{
+			"": nil,
+		},
+		Field73: map[string]*int32{
+			"": nil,
+		},
+		Field74: map[string]*int32{
+			"": nil,
+		},
+		Field75: map[string]*bool{
+			"": nil,
+		},
+		Field76: nil,
+		Field77: []*int32{},
+		Field78: nil,
+		Field79: nil,
+		Field80: nil,
+		Field81: []*bool{},
+		Field82: map[string]*int64{
+			"": nil,
+		},
+		Field83: nil,
+		Field84: nil,
+		Field85: map[string]*int32{
+			"": nil,
+		},
+		Field86: nil,
+		Field87: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field88: []*int32{},
+		Field89: nil,
+		Field90: []*bool{},
+		Field91: []*bool{},
+		Field92: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field93: nil,
+		Field94: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field95: map[string]*int32{
+			"": nil,
+		},
+		Field96:  nil,
+		Field97:  []*HugeStruct0{GetHugeStruct0()},
+		Field98:  []*bool{},
+		Field99:  GetHugeStruct0(),
+		Field100: []*int32{},
+		Field101: nil,
+		Field102: map[string]*bool{
+			"": nil,
+		},
+		Field103: map[string]*bool{
+			"": nil,
+		},
+		Field104: []*string{},
+		Field105: map[string]*int32{
+			"": nil,
+		},
+		Field106: nil,
+		Field107: map[string]*HugeStruct1{
+			"": {
+				Field0: []*int32{},
+				Field1: []*string{},
+				Field2: []*int64{},
+				Field3: map[string]*int32{
+					"": nil,
+				},
+				Field4: []*bool{},
+				Field5: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field6: map[string]*int32{
+					"": nil,
+				},
+				Field7: map[string]*bool{
+					"": nil,
+				},
+				Field8: []*bool{},
+				Field9: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field10: []*string{},
+				Field11: []*bool{},
+				Field12: []*bool{},
+				Field13: map[string]*int32{
+					"": nil,
+				},
+				Field14: map[string]*int32{
+					"": nil,
+				},
+				Field15: nil,
+				Field16: []*int64{},
+				Field17: []*bool{},
+				Field18: map[string]*int64{
+					"": nil,
+				},
+				Field19: []*int64{},
+				Field20: map[string]*string{
+					"": nil,
+				},
+				Field21: nil,
+				Field22: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field23: []*string{},
+				Field24: []*int64{},
+				Field25: []*string{},
+				Field26: []*bool{},
+				Field27: map[string]*int32{
+					"": nil,
+				},
+				Field28: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field29: map[string]*int32{
+					"": nil,
+				},
+				Field30: map[string]*bool{
+					"": nil,
+				},
+				Field31: map[string]*int32{
+					"": nil,
+				},
+				Field32: []*HugeStruct0{GetHugeStruct0()},
+				Field33: nil,
+				Field34: map[string]*bool{
+					"": nil,
+				},
+				Field35: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field36: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field37: nil,
+				Field38: []*HugeStruct0{GetHugeStruct0()},
+				Field39: []*bool{},
+				Field40: map[string]*string{
+					"": nil,
+				},
+				Field41: map[string]*int64{
+					"": nil,
+				},
+				Field42: map[string]*int32{
+					"": nil,
+				},
+				Field43: nil,
+				Field44: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field45: map[string]*int32{
+					"": nil,
+				},
+				Field46: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field47: nil,
+				Field48: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field49: nil,
+				Field50: map[string]*string{
+					"": nil,
+				},
+				Field51: map[string]*bool{
+					"": nil,
+				},
+				Field52: []*int64{},
+				Field53: map[string]*string{
+					"": nil,
+				},
+				Field54: []*int32{},
+				Field55: map[string]*int64{
+					"": nil,
+				},
+				Field56: map[string]*int32{
+					"": nil,
+				},
+				Field57: map[string]*string{
+					"": nil,
+				},
+				Field58: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field59: []*HugeStruct0{GetHugeStruct0()},
+				Field60: map[string]*string{
+					"": nil,
+				},
+				Field61: map[string]*bool{
+					"": nil,
+				},
+				Field62: map[string]*int64{
+					"": nil,
+				},
+				Field63: []*string{},
+				Field64: []*int64{},
+				Field65: map[string]*bool{
+					"": nil,
+				},
+				Field66: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field67: []*int64{},
+				Field68: map[string]*string{
+					"": nil,
+				},
+				Field69: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field70: []*bool{},
+				Field71: map[string]*int64{
+					"": nil,
+				},
+				Field72: nil,
+				Field73: map[string]*int32{
+					"": nil,
+				},
+				Field74: nil,
+				Field75: map[string]*int32{
+					"": nil,
+				},
+				Field76: map[string]*string{
+					"": nil,
+				},
+				Field77: []*string{},
+				Field78: nil,
+				Field79: map[string]*int64{
+					"": nil,
+				},
+				Field80: []*int64{},
+				Field81: map[string]*bool{
+					"": nil,
+				},
+				Field82: []*string{},
+				Field83: []*string{},
+				Field84: nil,
+				Field85: []*bool{},
+				Field86: []*HugeStruct0{GetHugeStruct0()},
+				Field87: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field88: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field89: []*int64{},
+				Field90: []*int32{},
+				Field91: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field92: []*bool{},
+				Field93: []*string{},
+				Field94: map[string]*int32{
+					"": nil,
+				},
+				Field95: nil,
+				Field96: nil,
+				Field97: map[string]*bool{
+					"": nil,
+				},
+				Field98: map[string]*int32{
+					"": nil,
+				},
+				Field99:  []*HugeStruct0{GetHugeStruct0()},
+				Field100: nil,
+				Field101: nil,
+				Field102: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field103: []*string{},
+				Field104: []*string{},
+				Field105: map[string]*bool{
+					"": nil,
+				},
+				Field106: []*string{},
+				Field107: []*int64{},
+				Field108: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field109: nil,
+				Field110: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field111: []*string{},
+				Field112: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field113: []*bool{},
+				Field114: []*bool{},
+				Field115: map[string]*string{
+					"": nil,
+				},
+				Field116: []*int64{},
+				Field117: []*string{},
+				Field118: map[string]*bool{
+					"": nil,
+				},
+				Field119: map[string]*string{
+					"": nil,
+				},
+				Field120: []*HugeStruct0{GetHugeStruct0()},
+				Field121: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field122: []*bool{},
+				Field123: nil,
+				Field124: []*int64{},
+				Field125: nil,
+				Field126: []*string{},
+				Field127: []*string{},
+				Field128: []*int32{},
+				Field129: []*bool{},
+				Field130: nil,
+				Field131: nil,
+				Field132: []*int32{},
+				Field133: []*int32{},
+				Field134: nil,
+				Field135: []*bool{},
+				Field136: nil,
+				Field137: []*int32{},
+				Field138: map[string]*int64{
+					"": nil,
+				},
+				Field139: map[string]*string{
+					"": nil,
+				},
+				Field140: map[string]*int64{
+					"": nil,
+				},
+				Field141: map[string]*int64{
+					"": nil,
+				},
+				Field142: []*int32{},
+				Field143: []*HugeStruct0{GetHugeStruct0()},
+				Field144: map[string]*int64{
+					"": nil,
+				},
+				Field145: []*string{},
+				Field146: map[string]*int64{
+					"": nil,
+				},
+				Field147: nil,
+				Field148: map[string]*string{
+					"": nil,
+				},
+				Field149: nil,
+				Field150: map[string]*int64{
+					"": nil,
+				},
+				Field151: map[string]*int64{
+					"": nil,
+				},
+				Field152: map[string]*int32{
+					"": nil,
+				},
+				Field153: []*int32{},
+				Field154: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field155: map[string]*string{
+					"": nil,
+				},
+				Field156: map[string]*int64{
+					"": nil,
+				},
+				Field157: []*int32{},
+				Field158: []*int32{},
+				Field159: nil,
+				Field160: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field161: []*bool{},
+				Field162: []*HugeStruct0{GetHugeStruct0()},
+				Field163: []*int32{},
+				Field164: map[string]*string{
+					"": nil,
+				},
+				Field165: []*bool{},
+				Field166: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field167: nil,
+				Field168: []*bool{},
+				Field169: map[string]*bool{
+					"": nil,
+				},
+				Field170: map[string]*bool{
+					"": nil,
+				},
+				Field171: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field172: map[string]*bool{
+					"": nil,
+				},
+				Field173: []*bool{},
+				Field174: map[string]*int64{
+					"": nil,
+				},
+				Field175: []*HugeStruct0{GetHugeStruct0()},
+				Field176: []*int32{},
+				Field177: []*int64{},
+				Field178: map[string]*int64{
+					"": nil,
+				},
+				Field179: []*int32{},
+				Field180: []*string{},
+				Field181: []*int32{},
+				Field182: map[string]*string{
+					"": nil,
+				},
+				Field183: []*int64{},
+				Field184: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field185: []*int32{},
+				Field186: nil,
+				Field187: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field188: []*HugeStruct0{GetHugeStruct0()},
+				Field189: nil,
+				Field190: []*int64{},
+				Field191: map[string]*int32{
+					"": nil,
+				},
+				Field192: []*HugeStruct0{GetHugeStruct0()},
+				Field193: []*HugeStruct0{GetHugeStruct0()},
+				Field194: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field195: []*bool{},
+				Field196: map[string]*bool{
+					"": nil,
+				},
+				Field197: []*bool{},
+				Field198: nil,
+				Field199: map[string]*int32{
+					"": nil,
+				},
+				Field200: map[string]*int64{
+					"": nil,
+				},
+				Field201: map[string]*string{
+					"": nil,
+				},
+				Field202: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field203: map[string]*int32{
+					"": nil,
+				},
+				Field204: nil,
+				Field205: map[string]*string{
+					"": nil,
+				},
+				Field206: []*HugeStruct0{GetHugeStruct0()},
+				Field207: []*HugeStruct0{GetHugeStruct0()},
+				Field208: nil,
+				Field209: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field210: map[string]*string{
+					"": nil,
+				},
+				Field211: map[string]*bool{
+					"": nil,
+				},
+				Field212: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field213: nil,
+				Field214: map[string]*bool{
+					"": nil,
+				},
+				Field215: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field216: []*HugeStruct0{GetHugeStruct0()},
+				Field217: map[string]*string{
+					"": nil,
+				},
+				Field218: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field219: map[string]*int64{
+					"": nil,
+				},
+				Field220: nil,
+				Field221: nil,
+				Field222: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field223: []*int64{},
+				Field224: []*bool{},
+				Field225: []*bool{},
+				Field226: map[string]*int64{
+					"": nil,
+				},
+				Field227: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field228: []*int64{},
+				Field229: map[string]*bool{
+					"": nil,
+				},
+				Field230: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field231: nil,
+				Field232: nil,
+				Field233: []*string{},
+				Field234: []*HugeStruct0{GetHugeStruct0()},
+				Field235: []*string{},
+				Field236: nil,
+				Field237: nil,
+				Field238: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field239: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field240: []*HugeStruct0{GetHugeStruct0()},
+				Field241: nil,
+				Field242: nil,
+				Field243: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field244: map[string]*bool{
+					"": nil,
+				},
+				Field245: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field246: []*int32{},
+				Field247: []*bool{},
+				Field248: []*string{},
+				Field249: nil,
+				Field250: []*int32{},
+				Field251: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field252: nil,
+				Field253: map[string]*string{
+					"": nil,
+				},
+				Field254: map[string]*string{
+					"": nil,
+				},
+				Field255: []*int32{},
+				Field256: nil,
+				Field257: nil,
+				Field258: map[string]*string{
+					"": nil,
+				},
+				Field259: map[string]*int32{
+					"": nil,
+				},
+				Field260: []*int64{},
+				Field261: []*int32{},
+				Field262: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field263: nil,
+				Field264: nil,
+				Field265: map[string]*bool{
+					"": nil,
+				},
+				Field266: nil,
+				Field267: []*int64{},
+				Field268: nil,
+				Field269: nil,
+				Field270: map[string]*int64{
+					"": nil,
+				},
+				Field271: map[string]*int64{
+					"": nil,
+				},
+				Field272: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field273: []*string{},
+				Field274: nil,
+				Field275: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field276: map[string]*bool{
+					"": nil,
+				},
+				Field277: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field278: nil,
+				Field279: map[string]*string{
+					"": nil,
+				},
+				Field280: nil,
+				Field281: nil,
+				Field282: nil,
+				Field283: nil,
+				Field284: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field285: map[string]*int64{
+					"": nil,
+				},
+				Field286: map[string]*bool{
+					"": nil,
+				},
+				Field287: map[string]*string{
+					"": nil,
+				},
+				Field288: nil,
+				Field289: nil,
+				Field290: nil,
+				Field291: []*int64{},
+				Field292: map[string]*string{
+					"": nil,
+				},
+				Field293: nil,
+				Field294: []*string{},
+				Field295: nil,
+				Field296: []*HugeStruct0{GetHugeStruct0()},
+				Field297: nil,
+				Field298: map[string]*int64{
+					"": nil,
+				},
+				Field299: map[string]*bool{
+					"": nil,
+				},
+				Field300: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field301: nil,
+				Field302: []*string{},
+				Field303: []*string{},
+				Field304: map[string]*string{
+					"": nil,
+				},
+				Field305: nil,
+				Field306: nil,
+				Field307: []*HugeStruct0{GetHugeStruct0()},
+				Field308: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field309: map[string]*int32{
+					"": nil,
+				},
+				Field310: []*HugeStruct0{GetHugeStruct0()},
+				Field311: nil,
+				Field312: []*bool{},
+				Field313: nil,
+				Field314: []*HugeStruct0{GetHugeStruct0()},
+				Field315: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field316: nil,
+				Field317: nil,
+				Field318: nil,
+				Field319: []*int32{},
+				Field320: nil,
+				Field321: []*HugeStruct0{GetHugeStruct0()},
+				Field322: nil,
+				Field323: nil,
+				Field324: []*HugeStruct0{GetHugeStruct0()},
+				Field325: nil,
+				Field326: []*int64{},
+				Field327: nil,
+				Field328: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field329: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field330: []*HugeStruct0{GetHugeStruct0()},
+				Field331: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field332: []*string{},
+				Field333: nil,
+				Field334: []*HugeStruct0{GetHugeStruct0()},
+				Field335: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field336: map[string]*bool{
+					"": nil,
+				},
+				Field337: []*int64{},
+				Field338: map[string]*bool{
+					"": nil,
+				},
+				Field339: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field340: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field341: []*bool{},
+				Field342: []*int64{},
+				Field343: []*int32{},
+				Field344: map[string]*bool{
+					"": nil,
+				},
+				Field345: map[string]*int64{
+					"": nil,
+				},
+				Field346: nil,
+				Field347: map[string]*bool{
+					"": nil,
+				},
+				Field348: map[string]*int32{
+					"": nil,
+				},
+				Field349: []*string{},
+				Field350: map[string]*int32{
+					"": nil,
+				},
+				Field351: nil,
+				Field352: []*int64{},
+				Field353: []*int64{},
+				Field354: nil,
+				Field355: map[string]*int32{
+					"": nil,
+				},
+				Field356: map[string]*bool{
+					"": nil,
+				},
+				Field357: []*int32{},
+				Field358: nil,
+				Field359: map[string]*int64{
+					"": nil,
+				},
+				Field360: nil,
+				Field361: map[string]*int64{
+					"": nil,
+				},
+				Field362: map[string]*int32{
+					"": nil,
+				},
+				Field363: []*int64{},
+				Field364: []*bool{},
+				Field365: nil,
+				Field366: map[string]*string{
+					"": nil,
+				},
+				Field367: map[string]*bool{
+					"": nil,
+				},
+				Field368: nil,
+				Field369: nil,
+				Field370: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field371: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field372: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field373: map[string]*bool{
+					"": nil,
+				},
+			},
+		},
+		Field108: []*int32{},
+		Field109: []*int64{},
+		Field110: nil,
+		Field111: map[string]*bool{
+			"": nil,
+		},
+		Field112: []*int64{},
+		Field113: nil,
+		Field114: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field115: map[string]*int32{
+			"": nil,
+		},
+		Field116: []*string{},
+		Field117: []*int64{},
+		Field118: []*int32{},
+		Field119: nil,
+		Field120: map[string]*string{
+			"": nil,
+		},
+		Field121: map[string]*string{
+			"": nil,
+		},
+		Field122: []*string{},
+		Field123: map[string]*bool{
+			"": nil,
+		},
+		Field124: map[string]*string{
+			"": nil,
+		},
+		Field125: map[string]*int32{
+			"": nil,
+		},
+		Field126: GetHugeStruct0(),
+		Field127: nil,
+		Field128: []*int64{},
+		Field129: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field130: nil,
+		Field131: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field132: []*HugeStruct0{GetHugeStruct0()},
+		Field133: map[string]*int64{
+			"": nil,
+		},
+	}
+}
+
+func GetHugeStruc3() *HugeStruct3 {
+	return &HugeStruct3{
+		Field0: map[string]*int32{
+			"": nil,
+		},
+		Field1: nil,
+		Field2: map[string]*string{
+			"": nil,
+		},
+		Field3: []*bool{},
+		Field4: map[string]*string{
+			"": nil,
+		},
+		Field5: map[string]*string{
+			"": nil,
+		},
+		Field6: []*HugeStruct0{GetHugeStruct0()},
+		Field7: []*bool{},
+		Field8: []*int32{},
+		Field9: []*bool{},
+		Field10: map[string]*int64{
+			"": nil,
+		},
+		Field11: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field12: []*bool{},
+		Field13: []*bool{},
+		Field14: nil,
+		Field15: nil,
+		Field16: nil,
+		Field17: GetHugeStruct0(),
+		Field18: nil,
+		Field19: map[string]*int32{
+			"": nil,
+		},
+		Field20: map[string]*string{
+			"": nil,
+		},
+		Field21: map[string]*string{
+			"": nil,
+		},
+		Field22: nil,
+		Field23: []*string{},
+		Field24: []*bool{},
+		Field25: nil,
+		Field26: []*int64{},
+		Field27: nil,
+		Field28: []*int32{},
+		Field29: []*int64{},
+		Field30: []*bool{},
+		Field31: map[string]*HugeStruct1{
+			"": {
+				Field0: []*int32{},
+				Field1: []*string{},
+				Field2: []*int64{},
+				Field3: map[string]*int32{
+					"": nil,
+				},
+				Field4: []*bool{},
+				Field5: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field6: map[string]*int32{
+					"": nil,
+				},
+				Field7: map[string]*bool{
+					"": nil,
+				},
+				Field8: []*bool{},
+				Field9: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field10: []*string{},
+				Field11: []*bool{},
+				Field12: []*bool{},
+				Field13: map[string]*int32{
+					"": nil,
+				},
+				Field14: map[string]*int32{
+					"": nil,
+				},
+				Field15: nil,
+				Field16: []*int64{},
+				Field17: []*bool{},
+				Field18: map[string]*int64{
+					"": nil,
+				},
+				Field19: []*int64{},
+				Field20: map[string]*string{
+					"": nil,
+				},
+				Field21: nil,
+				Field22: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field23: []*string{},
+				Field24: []*int64{},
+				Field25: []*string{},
+				Field26: []*bool{},
+				Field27: map[string]*int32{
+					"": nil,
+				},
+				Field28: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field29: map[string]*int32{
+					"": nil,
+				},
+				Field30: map[string]*bool{
+					"": nil,
+				},
+				Field31: map[string]*int32{
+					"": nil,
+				},
+				Field32: []*HugeStruct0{GetHugeStruct0()},
+				Field33: nil,
+				Field34: map[string]*bool{
+					"": nil,
+				},
+				Field35: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field36: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field37: nil,
+				Field38: []*HugeStruct0{GetHugeStruct0()},
+				Field39: []*bool{},
+				Field40: map[string]*string{
+					"": nil,
+				},
+				Field41: map[string]*int64{
+					"": nil,
+				},
+				Field42: map[string]*int32{
+					"": nil,
+				},
+				Field43: nil,
+				Field44: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field45: map[string]*int32{
+					"": nil,
+				},
+				Field46: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field47: nil,
+				Field48: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field49: nil,
+				Field50: map[string]*string{
+					"": nil,
+				},
+				Field51: map[string]*bool{
+					"": nil,
+				},
+				Field52: []*int64{},
+				Field53: map[string]*string{
+					"": nil,
+				},
+				Field54: []*int32{},
+				Field55: map[string]*int64{
+					"": nil,
+				},
+				Field56: map[string]*int32{
+					"": nil,
+				},
+				Field57: map[string]*string{
+					"": nil,
+				},
+				Field58: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field59: []*HugeStruct0{GetHugeStruct0()},
+				Field60: map[string]*string{
+					"": nil,
+				},
+				Field61: map[string]*bool{
+					"": nil,
+				},
+				Field62: map[string]*int64{
+					"": nil,
+				},
+				Field63: []*string{},
+				Field64: []*int64{},
+				Field65: map[string]*bool{
+					"": nil,
+				},
+				Field66: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field67: []*int64{},
+				Field68: map[string]*string{
+					"": nil,
+				},
+				Field69: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field70: []*bool{},
+				Field71: map[string]*int64{
+					"": nil,
+				},
+				Field72: nil,
+				Field73: map[string]*int32{
+					"": nil,
+				},
+				Field74: nil,
+				Field75: map[string]*int32{
+					"": nil,
+				},
+				Field76: map[string]*string{
+					"": nil,
+				},
+				Field77: []*string{},
+				Field78: nil,
+				Field79: map[string]*int64{
+					"": nil,
+				},
+				Field80: []*int64{},
+				Field81: map[string]*bool{
+					"": nil,
+				},
+				Field82: []*string{},
+				Field83: []*string{},
+				Field84: nil,
+				Field85: []*bool{},
+				Field86: []*HugeStruct0{GetHugeStruct0()},
+				Field87: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field88: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field89: []*int64{},
+				Field90: []*int32{},
+				Field91: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field92: []*bool{},
+				Field93: []*string{},
+				Field94: map[string]*int32{
+					"": nil,
+				},
+				Field95: nil,
+				Field96: nil,
+				Field97: map[string]*bool{
+					"": nil,
+				},
+				Field98: map[string]*int32{
+					"": nil,
+				},
+				Field99:  []*HugeStruct0{GetHugeStruct0()},
+				Field100: nil,
+				Field101: nil,
+				Field102: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field103: []*string{},
+				Field104: []*string{},
+				Field105: map[string]*bool{
+					"": nil,
+				},
+				Field106: []*string{},
+				Field107: []*int64{},
+				Field108: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field109: nil,
+				Field110: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field111: []*string{},
+				Field112: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field113: []*bool{},
+				Field114: []*bool{},
+				Field115: map[string]*string{
+					"": nil,
+				},
+				Field116: []*int64{},
+				Field117: []*string{},
+				Field118: map[string]*bool{
+					"": nil,
+				},
+				Field119: map[string]*string{
+					"": nil,
+				},
+				Field120: []*HugeStruct0{GetHugeStruct0()},
+				Field121: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field122: []*bool{},
+				Field123: nil,
+				Field124: []*int64{},
+				Field125: nil,
+				Field126: []*string{},
+				Field127: []*string{},
+				Field128: []*int32{},
+				Field129: []*bool{},
+				Field130: nil,
+				Field131: nil,
+				Field132: []*int32{},
+				Field133: []*int32{},
+				Field134: nil,
+				Field135: []*bool{},
+				Field136: nil,
+				Field137: []*int32{},
+				Field138: map[string]*int64{
+					"": nil,
+				},
+				Field139: map[string]*string{
+					"": nil,
+				},
+				Field140: map[string]*int64{
+					"": nil,
+				},
+				Field141: map[string]*int64{
+					"": nil,
+				},
+				Field142: []*int32{},
+				Field143: []*HugeStruct0{GetHugeStruct0()},
+				Field144: map[string]*int64{
+					"": nil,
+				},
+				Field145: []*string{},
+				Field146: map[string]*int64{
+					"": nil,
+				},
+				Field147: nil,
+				Field148: map[string]*string{
+					"": nil,
+				},
+				Field149: nil,
+				Field150: map[string]*int64{
+					"": nil,
+				},
+				Field151: map[string]*int64{
+					"": nil,
+				},
+				Field152: map[string]*int32{
+					"": nil,
+				},
+				Field153: []*int32{},
+				Field154: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field155: map[string]*string{
+					"": nil,
+				},
+				Field156: map[string]*int64{
+					"": nil,
+				},
+				Field157: []*int32{},
+				Field158: []*int32{},
+				Field159: nil,
+				Field160: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field161: []*bool{},
+				Field162: []*HugeStruct0{GetHugeStruct0()},
+				Field163: []*int32{},
+				Field164: map[string]*string{
+					"": nil,
+				},
+				Field165: []*bool{},
+				Field166: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field167: nil,
+				Field168: []*bool{},
+				Field169: map[string]*bool{
+					"": nil,
+				},
+				Field170: map[string]*bool{
+					"": nil,
+				},
+				Field171: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field172: map[string]*bool{
+					"": nil,
+				},
+				Field173: []*bool{},
+				Field174: map[string]*int64{
+					"": nil,
+				},
+				Field175: []*HugeStruct0{GetHugeStruct0()},
+				Field176: []*int32{},
+				Field177: []*int64{},
+				Field178: map[string]*int64{
+					"": nil,
+				},
+				Field179: []*int32{},
+				Field180: []*string{},
+				Field181: []*int32{},
+				Field182: map[string]*string{
+					"": nil,
+				},
+				Field183: []*int64{},
+				Field184: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field185: []*int32{},
+				Field186: nil,
+				Field187: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field188: []*HugeStruct0{GetHugeStruct0()},
+				Field189: nil,
+				Field190: []*int64{},
+				Field191: map[string]*int32{
+					"": nil,
+				},
+				Field192: []*HugeStruct0{GetHugeStruct0()},
+				Field193: []*HugeStruct0{GetHugeStruct0()},
+				Field194: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field195: []*bool{},
+				Field196: map[string]*bool{
+					"": nil,
+				},
+				Field197: []*bool{},
+				Field198: nil,
+				Field199: map[string]*int32{
+					"": nil,
+				},
+				Field200: map[string]*int64{
+					"": nil,
+				},
+				Field201: map[string]*string{
+					"": nil,
+				},
+				Field202: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field203: map[string]*int32{
+					"": nil,
+				},
+				Field204: nil,
+				Field205: map[string]*string{
+					"": nil,
+				},
+				Field206: []*HugeStruct0{GetHugeStruct0()},
+				Field207: []*HugeStruct0{GetHugeStruct0()},
+				Field208: nil,
+				Field209: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field210: map[string]*string{
+					"": nil,
+				},
+				Field211: map[string]*bool{
+					"": nil,
+				},
+				Field212: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field213: nil,
+				Field214: map[string]*bool{
+					"": nil,
+				},
+				Field215: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field216: []*HugeStruct0{GetHugeStruct0()},
+				Field217: map[string]*string{
+					"": nil,
+				},
+				Field218: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field219: map[string]*int64{
+					"": nil,
+				},
+				Field220: nil,
+				Field221: nil,
+				Field222: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field223: []*int64{},
+				Field224: []*bool{},
+				Field225: []*bool{},
+				Field226: map[string]*int64{
+					"": nil,
+				},
+				Field227: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field228: []*int64{},
+				Field229: map[string]*bool{
+					"": nil,
+				},
+				Field230: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field231: nil,
+				Field232: nil,
+				Field233: []*string{},
+				Field234: []*HugeStruct0{GetHugeStruct0()},
+				Field235: []*string{},
+				Field236: nil,
+				Field237: nil,
+				Field238: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field239: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field240: []*HugeStruct0{GetHugeStruct0()},
+				Field241: nil,
+				Field242: nil,
+				Field243: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field244: map[string]*bool{
+					"": nil,
+				},
+				Field245: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field246: []*int32{},
+				Field247: []*bool{},
+				Field248: []*string{},
+				Field249: nil,
+				Field250: []*int32{},
+				Field251: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field252: nil,
+				Field253: map[string]*string{
+					"": nil,
+				},
+				Field254: map[string]*string{
+					"": nil,
+				},
+				Field255: []*int32{},
+				Field256: nil,
+				Field257: nil,
+				Field258: map[string]*string{
+					"": nil,
+				},
+				Field259: map[string]*int32{
+					"": nil,
+				},
+				Field260: []*int64{},
+				Field261: []*int32{},
+				Field262: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field263: nil,
+				Field264: nil,
+				Field265: map[string]*bool{
+					"": nil,
+				},
+				Field266: nil,
+				Field267: []*int64{},
+				Field268: nil,
+				Field269: nil,
+				Field270: map[string]*int64{
+					"": nil,
+				},
+				Field271: map[string]*int64{
+					"": nil,
+				},
+				Field272: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field273: []*string{},
+				Field274: nil,
+				Field275: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field276: map[string]*bool{
+					"": nil,
+				},
+				Field277: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field278: nil,
+				Field279: map[string]*string{
+					"": nil,
+				},
+				Field280: nil,
+				Field281: nil,
+				Field282: nil,
+				Field283: nil,
+				Field284: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field285: map[string]*int64{
+					"": nil,
+				},
+				Field286: map[string]*bool{
+					"": nil,
+				},
+				Field287: map[string]*string{
+					"": nil,
+				},
+				Field288: nil,
+				Field289: nil,
+				Field290: nil,
+				Field291: []*int64{},
+				Field292: map[string]*string{
+					"": nil,
+				},
+				Field293: nil,
+				Field294: []*string{},
+				Field295: nil,
+				Field296: []*HugeStruct0{GetHugeStruct0()},
+				Field297: nil,
+				Field298: map[string]*int64{
+					"": nil,
+				},
+				Field299: map[string]*bool{
+					"": nil,
+				},
+				Field300: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field301: nil,
+				Field302: []*string{},
+				Field303: []*string{},
+				Field304: map[string]*string{
+					"": nil,
+				},
+				Field305: nil,
+				Field306: nil,
+				Field307: []*HugeStruct0{GetHugeStruct0()},
+				Field308: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field309: map[string]*int32{
+					"": nil,
+				},
+				Field310: []*HugeStruct0{GetHugeStruct0()},
+				Field311: nil,
+				Field312: []*bool{},
+				Field313: nil,
+				Field314: []*HugeStruct0{GetHugeStruct0()},
+				Field315: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field316: nil,
+				Field317: nil,
+				Field318: nil,
+				Field319: []*int32{},
+				Field320: nil,
+				Field321: []*HugeStruct0{GetHugeStruct0()},
+				Field322: nil,
+				Field323: nil,
+				Field324: []*HugeStruct0{GetHugeStruct0()},
+				Field325: nil,
+				Field326: []*int64{},
+				Field327: nil,
+				Field328: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field329: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field330: []*HugeStruct0{GetHugeStruct0()},
+				Field331: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field332: []*string{},
+				Field333: nil,
+				Field334: []*HugeStruct0{GetHugeStruct0()},
+				Field335: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field336: map[string]*bool{
+					"": nil,
+				},
+				Field337: []*int64{},
+				Field338: map[string]*bool{
+					"": nil,
+				},
+				Field339: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field340: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field341: []*bool{},
+				Field342: []*int64{},
+				Field343: []*int32{},
+				Field344: map[string]*bool{
+					"": nil,
+				},
+				Field345: map[string]*int64{
+					"": nil,
+				},
+				Field346: nil,
+				Field347: map[string]*bool{
+					"": nil,
+				},
+				Field348: map[string]*int32{
+					"": nil,
+				},
+				Field349: []*string{},
+				Field350: map[string]*int32{
+					"": nil,
+				},
+				Field351: nil,
+				Field352: []*int64{},
+				Field353: []*int64{},
+				Field354: nil,
+				Field355: map[string]*int32{
+					"": nil,
+				},
+				Field356: map[string]*bool{
+					"": nil,
+				},
+				Field357: []*int32{},
+				Field358: nil,
+				Field359: map[string]*int64{
+					"": nil,
+				},
+				Field360: nil,
+				Field361: map[string]*int64{
+					"": nil,
+				},
+				Field362: map[string]*int32{
+					"": nil,
+				},
+				Field363: []*int64{},
+				Field364: []*bool{},
+				Field365: nil,
+				Field366: map[string]*string{
+					"": nil,
+				},
+				Field367: map[string]*bool{
+					"": nil,
+				},
+				Field368: nil,
+				Field369: nil,
+				Field370: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field371: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field372: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field373: map[string]*bool{
+					"": nil,
+				},
+			},
+		},
+		Field32: []*bool{},
+		Field33: map[string]*bool{
+			"": nil,
+		},
+		Field34: []*string{},
+		Field35: []*string{},
+		Field36: []*int32{},
+		Field37: nil,
+		Field38: map[string]*string{
+			"": nil,
+		},
+		Field39: []*string{},
+		Field40: []*bool{},
+		Field41: []*bool{},
+		Field42: map[string]*HugeStruct1{
+			"": {
+				Field0: []*int32{},
+				Field1: []*string{},
+				Field2: []*int64{},
+				Field3: map[string]*int32{
+					"": nil,
+				},
+				Field4: []*bool{},
+				Field5: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field6: map[string]*int32{
+					"": nil,
+				},
+				Field7: map[string]*bool{
+					"": nil,
+				},
+				Field8: []*bool{},
+				Field9: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field10: []*string{},
+				Field11: []*bool{},
+				Field12: []*bool{},
+				Field13: map[string]*int32{
+					"": nil,
+				},
+				Field14: map[string]*int32{
+					"": nil,
+				},
+				Field15: nil,
+				Field16: []*int64{},
+				Field17: []*bool{},
+				Field18: map[string]*int64{
+					"": nil,
+				},
+				Field19: []*int64{},
+				Field20: map[string]*string{
+					"": nil,
+				},
+				Field21: nil,
+				Field22: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field23: []*string{},
+				Field24: []*int64{},
+				Field25: []*string{},
+				Field26: []*bool{},
+				Field27: map[string]*int32{
+					"": nil,
+				},
+				Field28: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field29: map[string]*int32{
+					"": nil,
+				},
+				Field30: map[string]*bool{
+					"": nil,
+				},
+				Field31: map[string]*int32{
+					"": nil,
+				},
+				Field32: []*HugeStruct0{GetHugeStruct0()},
+				Field33: nil,
+				Field34: map[string]*bool{
+					"": nil,
+				},
+				Field35: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field36: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field37: nil,
+				Field38: []*HugeStruct0{GetHugeStruct0()},
+				Field39: []*bool{},
+				Field40: map[string]*string{
+					"": nil,
+				},
+				Field41: map[string]*int64{
+					"": nil,
+				},
+				Field42: map[string]*int32{
+					"": nil,
+				},
+				Field43: nil,
+				Field44: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field45: map[string]*int32{
+					"": nil,
+				},
+				Field46: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field47: nil,
+				Field48: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field49: nil,
+				Field50: map[string]*string{
+					"": nil,
+				},
+				Field51: map[string]*bool{
+					"": nil,
+				},
+				Field52: []*int64{},
+				Field53: map[string]*string{
+					"": nil,
+				},
+				Field54: []*int32{},
+				Field55: map[string]*int64{
+					"": nil,
+				},
+				Field56: map[string]*int32{
+					"": nil,
+				},
+				Field57: map[string]*string{
+					"": nil,
+				},
+				Field58: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field59: []*HugeStruct0{GetHugeStruct0()},
+				Field60: map[string]*string{
+					"": nil,
+				},
+				Field61: map[string]*bool{
+					"": nil,
+				},
+				Field62: map[string]*int64{
+					"": nil,
+				},
+				Field63: []*string{},
+				Field64: []*int64{},
+				Field65: map[string]*bool{
+					"": nil,
+				},
+				Field66: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field67: []*int64{},
+				Field68: map[string]*string{
+					"": nil,
+				},
+				Field69: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field70: []*bool{},
+				Field71: map[string]*int64{
+					"": nil,
+				},
+				Field72: nil,
+				Field73: map[string]*int32{
+					"": nil,
+				},
+				Field74: nil,
+				Field75: map[string]*int32{
+					"": nil,
+				},
+				Field76: map[string]*string{
+					"": nil,
+				},
+				Field77: []*string{},
+				Field78: nil,
+				Field79: map[string]*int64{
+					"": nil,
+				},
+				Field80: []*int64{},
+				Field81: map[string]*bool{
+					"": nil,
+				},
+				Field82: []*string{},
+				Field83: []*string{},
+				Field84: nil,
+				Field85: []*bool{},
+				Field86: []*HugeStruct0{GetHugeStruct0()},
+				Field87: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field88: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field89: []*int64{},
+				Field90: []*int32{},
+				Field91: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field92: []*bool{},
+				Field93: []*string{},
+				Field94: map[string]*int32{
+					"": nil,
+				},
+				Field95: nil,
+				Field96: nil,
+				Field97: map[string]*bool{
+					"": nil,
+				},
+				Field98: map[string]*int32{
+					"": nil,
+				},
+				Field99:  []*HugeStruct0{GetHugeStruct0()},
+				Field100: nil,
+				Field101: nil,
+				Field102: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field103: []*string{},
+				Field104: []*string{},
+				Field105: map[string]*bool{
+					"": nil,
+				},
+				Field106: []*string{},
+				Field107: []*int64{},
+				Field108: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field109: nil,
+				Field110: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field111: []*string{},
+				Field112: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field113: []*bool{},
+				Field114: []*bool{},
+				Field115: map[string]*string{
+					"": nil,
+				},
+				Field116: []*int64{},
+				Field117: []*string{},
+				Field118: map[string]*bool{
+					"": nil,
+				},
+				Field119: map[string]*string{
+					"": nil,
+				},
+				Field120: []*HugeStruct0{GetHugeStruct0()},
+				Field121: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field122: []*bool{},
+				Field123: nil,
+				Field124: []*int64{},
+				Field125: nil,
+				Field126: []*string{},
+				Field127: []*string{},
+				Field128: []*int32{},
+				Field129: []*bool{},
+				Field130: nil,
+				Field131: nil,
+				Field132: []*int32{},
+				Field133: []*int32{},
+				Field134: nil,
+				Field135: []*bool{},
+				Field136: nil,
+				Field137: []*int32{},
+				Field138: map[string]*int64{
+					"": nil,
+				},
+				Field139: map[string]*string{
+					"": nil,
+				},
+				Field140: map[string]*int64{
+					"": nil,
+				},
+				Field141: map[string]*int64{
+					"": nil,
+				},
+				Field142: []*int32{},
+				Field143: []*HugeStruct0{GetHugeStruct0()},
+				Field144: map[string]*int64{
+					"": nil,
+				},
+				Field145: []*string{},
+				Field146: map[string]*int64{
+					"": nil,
+				},
+				Field147: nil,
+				Field148: map[string]*string{
+					"": nil,
+				},
+				Field149: nil,
+				Field150: map[string]*int64{
+					"": nil,
+				},
+				Field151: map[string]*int64{
+					"": nil,
+				},
+				Field152: map[string]*int32{
+					"": nil,
+				},
+				Field153: []*int32{},
+				Field154: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field155: map[string]*string{
+					"": nil,
+				},
+				Field156: map[string]*int64{
+					"": nil,
+				},
+				Field157: []*int32{},
+				Field158: []*int32{},
+				Field159: nil,
+				Field160: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field161: []*bool{},
+				Field162: []*HugeStruct0{GetHugeStruct0()},
+				Field163: []*int32{},
+				Field164: map[string]*string{
+					"": nil,
+				},
+				Field165: []*bool{},
+				Field166: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field167: nil,
+				Field168: []*bool{},
+				Field169: map[string]*bool{
+					"": nil,
+				},
+				Field170: map[string]*bool{
+					"": nil,
+				},
+				Field171: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field172: map[string]*bool{
+					"": nil,
+				},
+				Field173: []*bool{},
+				Field174: map[string]*int64{
+					"": nil,
+				},
+				Field175: []*HugeStruct0{GetHugeStruct0()},
+				Field176: []*int32{},
+				Field177: []*int64{},
+				Field178: map[string]*int64{
+					"": nil,
+				},
+				Field179: []*int32{},
+				Field180: []*string{},
+				Field181: []*int32{},
+				Field182: map[string]*string{
+					"": nil,
+				},
+				Field183: []*int64{},
+				Field184: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field185: []*int32{},
+				Field186: nil,
+				Field187: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field188: []*HugeStruct0{GetHugeStruct0()},
+				Field189: nil,
+				Field190: []*int64{},
+				Field191: map[string]*int32{
+					"": nil,
+				},
+				Field192: []*HugeStruct0{GetHugeStruct0()},
+				Field193: []*HugeStruct0{GetHugeStruct0()},
+				Field194: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field195: []*bool{},
+				Field196: map[string]*bool{
+					"": nil,
+				},
+				Field197: []*bool{},
+				Field198: nil,
+				Field199: map[string]*int32{
+					"": nil,
+				},
+				Field200: map[string]*int64{
+					"": nil,
+				},
+				Field201: map[string]*string{
+					"": nil,
+				},
+				Field202: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field203: map[string]*int32{
+					"": nil,
+				},
+				Field204: nil,
+				Field205: map[string]*string{
+					"": nil,
+				},
+				Field206: []*HugeStruct0{GetHugeStruct0()},
+				Field207: []*HugeStruct0{GetHugeStruct0()},
+				Field208: nil,
+				Field209: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field210: map[string]*string{
+					"": nil,
+				},
+				Field211: map[string]*bool{
+					"": nil,
+				},
+				Field212: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field213: nil,
+				Field214: map[string]*bool{
+					"": nil,
+				},
+				Field215: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field216: []*HugeStruct0{GetHugeStruct0()},
+				Field217: map[string]*string{
+					"": nil,
+				},
+				Field218: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field219: map[string]*int64{
+					"": nil,
+				},
+				Field220: nil,
+				Field221: nil,
+				Field222: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field223: []*int64{},
+				Field224: []*bool{},
+				Field225: []*bool{},
+				Field226: map[string]*int64{
+					"": nil,
+				},
+				Field227: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field228: []*int64{},
+				Field229: map[string]*bool{
+					"": nil,
+				},
+				Field230: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field231: nil,
+				Field232: nil,
+				Field233: []*string{},
+				Field234: []*HugeStruct0{GetHugeStruct0()},
+				Field235: []*string{},
+				Field236: nil,
+				Field237: nil,
+				Field238: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field239: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field240: []*HugeStruct0{GetHugeStruct0()},
+				Field241: nil,
+				Field242: nil,
+				Field243: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field244: map[string]*bool{
+					"": nil,
+				},
+				Field245: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field246: []*int32{},
+				Field247: []*bool{},
+				Field248: []*string{},
+				Field249: nil,
+				Field250: []*int32{},
+				Field251: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field252: nil,
+				Field253: map[string]*string{
+					"": nil,
+				},
+				Field254: map[string]*string{
+					"": nil,
+				},
+				Field255: []*int32{},
+				Field256: nil,
+				Field257: nil,
+				Field258: map[string]*string{
+					"": nil,
+				},
+				Field259: map[string]*int32{
+					"": nil,
+				},
+				Field260: []*int64{},
+				Field261: []*int32{},
+				Field262: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field263: nil,
+				Field264: nil,
+				Field265: map[string]*bool{
+					"": nil,
+				},
+				Field266: nil,
+				Field267: []*int64{},
+				Field268: nil,
+				Field269: nil,
+				Field270: map[string]*int64{
+					"": nil,
+				},
+				Field271: map[string]*int64{
+					"": nil,
+				},
+				Field272: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field273: []*string{},
+				Field274: nil,
+				Field275: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field276: map[string]*bool{
+					"": nil,
+				},
+				Field277: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field278: nil,
+				Field279: map[string]*string{
+					"": nil,
+				},
+				Field280: nil,
+				Field281: nil,
+				Field282: nil,
+				Field283: nil,
+				Field284: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field285: map[string]*int64{
+					"": nil,
+				},
+				Field286: map[string]*bool{
+					"": nil,
+				},
+				Field287: map[string]*string{
+					"": nil,
+				},
+				Field288: nil,
+				Field289: nil,
+				Field290: nil,
+				Field291: []*int64{},
+				Field292: map[string]*string{
+					"": nil,
+				},
+				Field293: nil,
+				Field294: []*string{},
+				Field295: nil,
+				Field296: []*HugeStruct0{GetHugeStruct0()},
+				Field297: nil,
+				Field298: map[string]*int64{
+					"": nil,
+				},
+				Field299: map[string]*bool{
+					"": nil,
+				},
+				Field300: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field301: nil,
+				Field302: []*string{},
+				Field303: []*string{},
+				Field304: map[string]*string{
+					"": nil,
+				},
+				Field305: nil,
+				Field306: nil,
+				Field307: []*HugeStruct0{GetHugeStruct0()},
+				Field308: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field309: map[string]*int32{
+					"": nil,
+				},
+				Field310: []*HugeStruct0{GetHugeStruct0()},
+				Field311: nil,
+				Field312: []*bool{},
+				Field313: nil,
+				Field314: []*HugeStruct0{GetHugeStruct0()},
+				Field315: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field316: nil,
+				Field317: nil,
+				Field318: nil,
+				Field319: []*int32{},
+				Field320: nil,
+				Field321: []*HugeStruct0{GetHugeStruct0()},
+				Field322: nil,
+				Field323: nil,
+				Field324: []*HugeStruct0{GetHugeStruct0()},
+				Field325: nil,
+				Field326: []*int64{},
+				Field327: nil,
+				Field328: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field329: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field330: []*HugeStruct0{GetHugeStruct0()},
+				Field331: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field332: []*string{},
+				Field333: nil,
+				Field334: []*HugeStruct0{GetHugeStruct0()},
+				Field335: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field336: map[string]*bool{
+					"": nil,
+				},
+				Field337: []*int64{},
+				Field338: map[string]*bool{
+					"": nil,
+				},
+				Field339: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field340: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field341: []*bool{},
+				Field342: []*int64{},
+				Field343: []*int32{},
+				Field344: map[string]*bool{
+					"": nil,
+				},
+				Field345: map[string]*int64{
+					"": nil,
+				},
+				Field346: nil,
+				Field347: map[string]*bool{
+					"": nil,
+				},
+				Field348: map[string]*int32{
+					"": nil,
+				},
+				Field349: []*string{},
+				Field350: map[string]*int32{
+					"": nil,
+				},
+				Field351: nil,
+				Field352: []*int64{},
+				Field353: []*int64{},
+				Field354: nil,
+				Field355: map[string]*int32{
+					"": nil,
+				},
+				Field356: map[string]*bool{
+					"": nil,
+				},
+				Field357: []*int32{},
+				Field358: nil,
+				Field359: map[string]*int64{
+					"": nil,
+				},
+				Field360: nil,
+				Field361: map[string]*int64{
+					"": nil,
+				},
+				Field362: map[string]*int32{
+					"": nil,
+				},
+				Field363: []*int64{},
+				Field364: []*bool{},
+				Field365: nil,
+				Field366: map[string]*string{
+					"": nil,
+				},
+				Field367: map[string]*bool{
+					"": nil,
+				},
+				Field368: nil,
+				Field369: nil,
+				Field370: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field371: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field372: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field373: map[string]*bool{
+					"": nil,
+				},
+			},
+		},
+		Field43: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field44: nil,
+		Field45: []*string{},
+		Field46: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field47: map[string]*int64{
+			"": nil,
+		},
+		Field48: map[string]*HugeStruct2{
+			"": {
+				Field0: nil,
+				Field1: map[string]*int64{
+					"": nil,
+				},
+				Field2: nil,
+				Field3: []*int64{},
+				Field4: map[string]*int32{
+					"": nil,
+				},
+				Field5: map[string]*int32{
+					"": nil,
+				},
+				Field6: nil,
+				Field7: map[string]*int32{
+					"": nil,
+				},
+				Field8:  nil,
+				Field9:  []*HugeStruct1{},
+				Field10: nil,
+				Field11: map[string]*int64{
+					"": nil,
+				},
+				Field12: nil,
+				Field13: nil,
+				Field14: map[string]*HugeStruct1{
+					"": {
+						Field0: []*int32{},
+						Field1: []*string{},
+						Field2: []*int64{},
+						Field3: map[string]*int32{
+							"": nil,
+						},
+						Field4: []*bool{},
+						Field5: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field6: map[string]*int32{
+							"": nil,
+						},
+						Field7: map[string]*bool{
+							"": nil,
+						},
+						Field8: []*bool{},
+						Field9: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field10: []*string{},
+						Field11: []*bool{},
+						Field12: []*bool{},
+						Field13: map[string]*int32{
+							"": nil,
+						},
+						Field14: map[string]*int32{
+							"": nil,
+						},
+						Field15: nil,
+						Field16: []*int64{},
+						Field17: []*bool{},
+						Field18: map[string]*int64{
+							"": nil,
+						},
+						Field19: []*int64{},
+						Field20: map[string]*string{
+							"": nil,
+						},
+						Field21: nil,
+						Field22: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field23: []*string{},
+						Field24: []*int64{},
+						Field25: []*string{},
+						Field26: []*bool{},
+						Field27: map[string]*int32{
+							"": nil,
+						},
+						Field28: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field29: map[string]*int32{
+							"": nil,
+						},
+						Field30: map[string]*bool{
+							"": nil,
+						},
+						Field31: map[string]*int32{
+							"": nil,
+						},
+						Field32: []*HugeStruct0{GetHugeStruct0()},
+						Field33: nil,
+						Field34: map[string]*bool{
+							"": nil,
+						},
+						Field35: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field36: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field37: nil,
+						Field38: []*HugeStruct0{GetHugeStruct0()},
+						Field39: []*bool{},
+						Field40: map[string]*string{
+							"": nil,
+						},
+						Field41: map[string]*int64{
+							"": nil,
+						},
+						Field42: map[string]*int32{
+							"": nil,
+						},
+						Field43: nil,
+						Field44: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field45: map[string]*int32{
+							"": nil,
+						},
+						Field46: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field47: nil,
+						Field48: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field49: nil,
+						Field50: map[string]*string{
+							"": nil,
+						},
+						Field51: map[string]*bool{
+							"": nil,
+						},
+						Field52: []*int64{},
+						Field53: map[string]*string{
+							"": nil,
+						},
+						Field54: []*int32{},
+						Field55: map[string]*int64{
+							"": nil,
+						},
+						Field56: map[string]*int32{
+							"": nil,
+						},
+						Field57: map[string]*string{
+							"": nil,
+						},
+						Field58: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field59: []*HugeStruct0{GetHugeStruct0()},
+						Field60: map[string]*string{
+							"": nil,
+						},
+						Field61: map[string]*bool{
+							"": nil,
+						},
+						Field62: map[string]*int64{
+							"": nil,
+						},
+						Field63: []*string{},
+						Field64: []*int64{},
+						Field65: map[string]*bool{
+							"": nil,
+						},
+						Field66: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field67: []*int64{},
+						Field68: map[string]*string{
+							"": nil,
+						},
+						Field69: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field70: []*bool{},
+						Field71: map[string]*int64{
+							"": nil,
+						},
+						Field72: nil,
+						Field73: map[string]*int32{
+							"": nil,
+						},
+						Field74: nil,
+						Field75: map[string]*int32{
+							"": nil,
+						},
+						Field76: map[string]*string{
+							"": nil,
+						},
+						Field77: []*string{},
+						Field78: nil,
+						Field79: map[string]*int64{
+							"": nil,
+						},
+						Field80: []*int64{},
+						Field81: map[string]*bool{
+							"": nil,
+						},
+						Field82: []*string{},
+						Field83: []*string{},
+						Field84: nil,
+						Field85: []*bool{},
+						Field86: []*HugeStruct0{GetHugeStruct0()},
+						Field87: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field88: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field89: []*int64{},
+						Field90: []*int32{},
+						Field91: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field92: []*bool{},
+						Field93: []*string{},
+						Field94: map[string]*int32{
+							"": nil,
+						},
+						Field95: nil,
+						Field96: nil,
+						Field97: map[string]*bool{
+							"": nil,
+						},
+						Field98: map[string]*int32{
+							"": nil,
+						},
+						Field99:  []*HugeStruct0{GetHugeStruct0()},
+						Field100: nil,
+						Field101: nil,
+						Field102: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field103: []*string{},
+						Field104: []*string{},
+						Field105: map[string]*bool{
+							"": nil,
+						},
+						Field106: []*string{},
+						Field107: []*int64{},
+						Field108: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field109: nil,
+						Field110: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field111: []*string{},
+						Field112: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field113: []*bool{},
+						Field114: []*bool{},
+						Field115: map[string]*string{
+							"": nil,
+						},
+						Field116: []*int64{},
+						Field117: []*string{},
+						Field118: map[string]*bool{
+							"": nil,
+						},
+						Field119: map[string]*string{
+							"": nil,
+						},
+						Field120: []*HugeStruct0{GetHugeStruct0()},
+						Field121: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field122: []*bool{},
+						Field123: nil,
+						Field124: []*int64{},
+						Field125: nil,
+						Field126: []*string{},
+						Field127: []*string{},
+						Field128: []*int32{},
+						Field129: []*bool{},
+						Field130: nil,
+						Field131: nil,
+						Field132: []*int32{},
+						Field133: []*int32{},
+						Field134: nil,
+						Field135: []*bool{},
+						Field136: nil,
+						Field137: []*int32{},
+						Field138: map[string]*int64{
+							"": nil,
+						},
+						Field139: map[string]*string{
+							"": nil,
+						},
+						Field140: map[string]*int64{
+							"": nil,
+						},
+						Field141: map[string]*int64{
+							"": nil,
+						},
+						Field142: []*int32{},
+						Field143: []*HugeStruct0{GetHugeStruct0()},
+						Field144: map[string]*int64{
+							"": nil,
+						},
+						Field145: []*string{},
+						Field146: map[string]*int64{
+							"": nil,
+						},
+						Field147: nil,
+						Field148: map[string]*string{
+							"": nil,
+						},
+						Field149: nil,
+						Field150: map[string]*int64{
+							"": nil,
+						},
+						Field151: map[string]*int64{
+							"": nil,
+						},
+						Field152: map[string]*int32{
+							"": nil,
+						},
+						Field153: []*int32{},
+						Field154: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field155: map[string]*string{
+							"": nil,
+						},
+						Field156: map[string]*int64{
+							"": nil,
+						},
+						Field157: []*int32{},
+						Field158: []*int32{},
+						Field159: nil,
+						Field160: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field161: []*bool{},
+						Field162: []*HugeStruct0{GetHugeStruct0()},
+						Field163: []*int32{},
+						Field164: map[string]*string{
+							"": nil,
+						},
+						Field165: []*bool{},
+						Field166: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field167: nil,
+						Field168: []*bool{},
+						Field169: map[string]*bool{
+							"": nil,
+						},
+						Field170: map[string]*bool{
+							"": nil,
+						},
+						Field171: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field172: map[string]*bool{
+							"": nil,
+						},
+						Field173: []*bool{},
+						Field174: map[string]*int64{
+							"": nil,
+						},
+						Field175: []*HugeStruct0{GetHugeStruct0()},
+						Field176: []*int32{},
+						Field177: []*int64{},
+						Field178: map[string]*int64{
+							"": nil,
+						},
+						Field179: []*int32{},
+						Field180: []*string{},
+						Field181: []*int32{},
+						Field182: map[string]*string{
+							"": nil,
+						},
+						Field183: []*int64{},
+						Field184: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field185: []*int32{},
+						Field186: nil,
+						Field187: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field188: []*HugeStruct0{GetHugeStruct0()},
+						Field189: nil,
+						Field190: []*int64{},
+						Field191: map[string]*int32{
+							"": nil,
+						},
+						Field192: []*HugeStruct0{GetHugeStruct0()},
+						Field193: []*HugeStruct0{GetHugeStruct0()},
+						Field194: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field195: []*bool{},
+						Field196: map[string]*bool{
+							"": nil,
+						},
+						Field197: []*bool{},
+						Field198: nil,
+						Field199: map[string]*int32{
+							"": nil,
+						},
+						Field200: map[string]*int64{
+							"": nil,
+						},
+						Field201: map[string]*string{
+							"": nil,
+						},
+						Field202: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field203: map[string]*int32{
+							"": nil,
+						},
+						Field204: nil,
+						Field205: map[string]*string{
+							"": nil,
+						},
+						Field206: []*HugeStruct0{GetHugeStruct0()},
+						Field207: []*HugeStruct0{GetHugeStruct0()},
+						Field208: nil,
+						Field209: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field210: map[string]*string{
+							"": nil,
+						},
+						Field211: map[string]*bool{
+							"": nil,
+						},
+						Field212: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field213: nil,
+						Field214: map[string]*bool{
+							"": nil,
+						},
+						Field215: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field216: []*HugeStruct0{GetHugeStruct0()},
+						Field217: map[string]*string{
+							"": nil,
+						},
+						Field218: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field219: map[string]*int64{
+							"": nil,
+						},
+						Field220: nil,
+						Field221: nil,
+						Field222: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field223: []*int64{},
+						Field224: []*bool{},
+						Field225: []*bool{},
+						Field226: map[string]*int64{
+							"": nil,
+						},
+						Field227: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field228: []*int64{},
+						Field229: map[string]*bool{
+							"": nil,
+						},
+						Field230: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field231: nil,
+						Field232: nil,
+						Field233: []*string{},
+						Field234: []*HugeStruct0{GetHugeStruct0()},
+						Field235: []*string{},
+						Field236: nil,
+						Field237: nil,
+						Field238: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field239: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field240: []*HugeStruct0{GetHugeStruct0()},
+						Field241: nil,
+						Field242: nil,
+						Field243: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field244: map[string]*bool{
+							"": nil,
+						},
+						Field245: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field246: []*int32{},
+						Field247: []*bool{},
+						Field248: []*string{},
+						Field249: nil,
+						Field250: []*int32{},
+						Field251: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field252: nil,
+						Field253: map[string]*string{
+							"": nil,
+						},
+						Field254: map[string]*string{
+							"": nil,
+						},
+						Field255: []*int32{},
+						Field256: nil,
+						Field257: nil,
+						Field258: map[string]*string{
+							"": nil,
+						},
+						Field259: map[string]*int32{
+							"": nil,
+						},
+						Field260: []*int64{},
+						Field261: []*int32{},
+						Field262: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field263: nil,
+						Field264: nil,
+						Field265: map[string]*bool{
+							"": nil,
+						},
+						Field266: nil,
+						Field267: []*int64{},
+						Field268: nil,
+						Field269: nil,
+						Field270: map[string]*int64{
+							"": nil,
+						},
+						Field271: map[string]*int64{
+							"": nil,
+						},
+						Field272: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field273: []*string{},
+						Field274: nil,
+						Field275: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field276: map[string]*bool{
+							"": nil,
+						},
+						Field277: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field278: nil,
+						Field279: map[string]*string{
+							"": nil,
+						},
+						Field280: nil,
+						Field281: nil,
+						Field282: nil,
+						Field283: nil,
+						Field284: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field285: map[string]*int64{
+							"": nil,
+						},
+						Field286: map[string]*bool{
+							"": nil,
+						},
+						Field287: map[string]*string{
+							"": nil,
+						},
+						Field288: nil,
+						Field289: nil,
+						Field290: nil,
+						Field291: []*int64{},
+						Field292: map[string]*string{
+							"": nil,
+						},
+						Field293: nil,
+						Field294: []*string{},
+						Field295: nil,
+						Field296: []*HugeStruct0{GetHugeStruct0()},
+						Field297: nil,
+						Field298: map[string]*int64{
+							"": nil,
+						},
+						Field299: map[string]*bool{
+							"": nil,
+						},
+						Field300: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field301: nil,
+						Field302: []*string{},
+						Field303: []*string{},
+						Field304: map[string]*string{
+							"": nil,
+						},
+						Field305: nil,
+						Field306: nil,
+						Field307: []*HugeStruct0{GetHugeStruct0()},
+						Field308: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field309: map[string]*int32{
+							"": nil,
+						},
+						Field310: []*HugeStruct0{GetHugeStruct0()},
+						Field311: nil,
+						Field312: []*bool{},
+						Field313: nil,
+						Field314: []*HugeStruct0{GetHugeStruct0()},
+						Field315: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field316: nil,
+						Field317: nil,
+						Field318: nil,
+						Field319: []*int32{},
+						Field320: nil,
+						Field321: []*HugeStruct0{GetHugeStruct0()},
+						Field322: nil,
+						Field323: nil,
+						Field324: []*HugeStruct0{GetHugeStruct0()},
+						Field325: nil,
+						Field326: []*int64{},
+						Field327: nil,
+						Field328: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field329: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field330: []*HugeStruct0{GetHugeStruct0()},
+						Field331: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field332: []*string{},
+						Field333: nil,
+						Field334: []*HugeStruct0{GetHugeStruct0()},
+						Field335: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field336: map[string]*bool{
+							"": nil,
+						},
+						Field337: []*int64{},
+						Field338: map[string]*bool{
+							"": nil,
+						},
+						Field339: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field340: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field341: []*bool{},
+						Field342: []*int64{},
+						Field343: []*int32{},
+						Field344: map[string]*bool{
+							"": nil,
+						},
+						Field345: map[string]*int64{
+							"": nil,
+						},
+						Field346: nil,
+						Field347: map[string]*bool{
+							"": nil,
+						},
+						Field348: map[string]*int32{
+							"": nil,
+						},
+						Field349: []*string{},
+						Field350: map[string]*int32{
+							"": nil,
+						},
+						Field351: nil,
+						Field352: []*int64{},
+						Field353: []*int64{},
+						Field354: nil,
+						Field355: map[string]*int32{
+							"": nil,
+						},
+						Field356: map[string]*bool{
+							"": nil,
+						},
+						Field357: []*int32{},
+						Field358: nil,
+						Field359: map[string]*int64{
+							"": nil,
+						},
+						Field360: nil,
+						Field361: map[string]*int64{
+							"": nil,
+						},
+						Field362: map[string]*int32{
+							"": nil,
+						},
+						Field363: []*int64{},
+						Field364: []*bool{},
+						Field365: nil,
+						Field366: map[string]*string{
+							"": nil,
+						},
+						Field367: map[string]*bool{
+							"": nil,
+						},
+						Field368: nil,
+						Field369: nil,
+						Field370: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field371: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field372: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field373: map[string]*bool{
+							"": nil,
+						},
+					},
+				},
+				Field15: map[string]*int64{
+					"": nil,
+				},
+				Field16: map[string]*int32{
+					"": nil,
+				},
+				Field17: map[string]*int32{
+					"": nil,
+				},
+				Field18: []*int32{},
+				Field19: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field20: map[string]*int64{
+					"": nil,
+				},
+				Field21: &HugeStruct1{
+					Field0: []*int32{},
+					Field1: []*string{},
+					Field2: []*int64{},
+					Field3: map[string]*int32{
+						"": nil,
+					},
+					Field4: []*bool{},
+					Field5: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field6: map[string]*int32{
+						"": nil,
+					},
+					Field7: map[string]*bool{
+						"": nil,
+					},
+					Field8: []*bool{},
+					Field9: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field10: []*string{},
+					Field11: []*bool{},
+					Field12: []*bool{},
+					Field13: map[string]*int32{
+						"": nil,
+					},
+					Field14: map[string]*int32{
+						"": nil,
+					},
+					Field15: nil,
+					Field16: []*int64{},
+					Field17: []*bool{},
+					Field18: map[string]*int64{
+						"": nil,
+					},
+					Field19: []*int64{},
+					Field20: map[string]*string{
+						"": nil,
+					},
+					Field21: nil,
+					Field22: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field23: []*string{},
+					Field24: []*int64{},
+					Field25: []*string{},
+					Field26: []*bool{},
+					Field27: map[string]*int32{
+						"": nil,
+					},
+					Field28: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field29: map[string]*int32{
+						"": nil,
+					},
+					Field30: map[string]*bool{
+						"": nil,
+					},
+					Field31: map[string]*int32{
+						"": nil,
+					},
+					Field32: []*HugeStruct0{GetHugeStruct0()},
+					Field33: nil,
+					Field34: map[string]*bool{
+						"": nil,
+					},
+					Field35: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field36: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field37: nil,
+					Field38: []*HugeStruct0{GetHugeStruct0()},
+					Field39: []*bool{},
+					Field40: map[string]*string{
+						"": nil,
+					},
+					Field41: map[string]*int64{
+						"": nil,
+					},
+					Field42: map[string]*int32{
+						"": nil,
+					},
+					Field43: nil,
+					Field44: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field45: map[string]*int32{
+						"": nil,
+					},
+					Field46: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field47: nil,
+					Field48: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field49: nil,
+					Field50: map[string]*string{
+						"": nil,
+					},
+					Field51: map[string]*bool{
+						"": nil,
+					},
+					Field52: []*int64{},
+					Field53: map[string]*string{
+						"": nil,
+					},
+					Field54: []*int32{},
+					Field55: map[string]*int64{
+						"": nil,
+					},
+					Field56: map[string]*int32{
+						"": nil,
+					},
+					Field57: map[string]*string{
+						"": nil,
+					},
+					Field58: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field59: []*HugeStruct0{GetHugeStruct0()},
+					Field60: map[string]*string{
+						"": nil,
+					},
+					Field61: map[string]*bool{
+						"": nil,
+					},
+					Field62: map[string]*int64{
+						"": nil,
+					},
+					Field63: []*string{},
+					Field64: []*int64{},
+					Field65: map[string]*bool{
+						"": nil,
+					},
+					Field66: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field67: []*int64{},
+					Field68: map[string]*string{
+						"": nil,
+					},
+					Field69: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field70: []*bool{},
+					Field71: map[string]*int64{
+						"": nil,
+					},
+					Field72: nil,
+					Field73: map[string]*int32{
+						"": nil,
+					},
+					Field74: nil,
+					Field75: map[string]*int32{
+						"": nil,
+					},
+					Field76: map[string]*string{
+						"": nil,
+					},
+					Field77: []*string{},
+					Field78: nil,
+					Field79: map[string]*int64{
+						"": nil,
+					},
+					Field80: []*int64{},
+					Field81: map[string]*bool{
+						"": nil,
+					},
+					Field82: []*string{},
+					Field83: []*string{},
+					Field84: nil,
+					Field85: []*bool{},
+					Field86: []*HugeStruct0{GetHugeStruct0()},
+					Field87: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field88: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field89: []*int64{},
+					Field90: []*int32{},
+					Field91: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field92: []*bool{},
+					Field93: []*string{},
+					Field94: map[string]*int32{
+						"": nil,
+					},
+					Field95: nil,
+					Field96: nil,
+					Field97: map[string]*bool{
+						"": nil,
+					},
+					Field98: map[string]*int32{
+						"": nil,
+					},
+					Field99:  []*HugeStruct0{GetHugeStruct0()},
+					Field100: nil,
+					Field101: nil,
+					Field102: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field103: []*string{},
+					Field104: []*string{},
+					Field105: map[string]*bool{
+						"": nil,
+					},
+					Field106: []*string{},
+					Field107: []*int64{},
+					Field108: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field109: nil,
+					Field110: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field111: []*string{},
+					Field112: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field113: []*bool{},
+					Field114: []*bool{},
+					Field115: map[string]*string{
+						"": nil,
+					},
+					Field116: []*int64{},
+					Field117: []*string{},
+					Field118: map[string]*bool{
+						"": nil,
+					},
+					Field119: map[string]*string{
+						"": nil,
+					},
+					Field120: []*HugeStruct0{GetHugeStruct0()},
+					Field121: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field122: []*bool{},
+					Field123: nil,
+					Field124: []*int64{},
+					Field125: nil,
+					Field126: []*string{},
+					Field127: []*string{},
+					Field128: []*int32{},
+					Field129: []*bool{},
+					Field130: nil,
+					Field131: nil,
+					Field132: []*int32{},
+					Field133: []*int32{},
+					Field134: nil,
+					Field135: []*bool{},
+					Field136: nil,
+					Field137: []*int32{},
+					Field138: map[string]*int64{
+						"": nil,
+					},
+					Field139: map[string]*string{
+						"": nil,
+					},
+					Field140: map[string]*int64{
+						"": nil,
+					},
+					Field141: map[string]*int64{
+						"": nil,
+					},
+					Field142: []*int32{},
+					Field143: []*HugeStruct0{GetHugeStruct0()},
+					Field144: map[string]*int64{
+						"": nil,
+					},
+					Field145: []*string{},
+					Field146: map[string]*int64{
+						"": nil,
+					},
+					Field147: nil,
+					Field148: map[string]*string{
+						"": nil,
+					},
+					Field149: nil,
+					Field150: map[string]*int64{
+						"": nil,
+					},
+					Field151: map[string]*int64{
+						"": nil,
+					},
+					Field152: map[string]*int32{
+						"": nil,
+					},
+					Field153: []*int32{},
+					Field154: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field155: map[string]*string{
+						"": nil,
+					},
+					Field156: map[string]*int64{
+						"": nil,
+					},
+					Field157: []*int32{},
+					Field158: []*int32{},
+					Field159: nil,
+					Field160: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field161: []*bool{},
+					Field162: []*HugeStruct0{GetHugeStruct0()},
+					Field163: []*int32{},
+					Field164: map[string]*string{
+						"": nil,
+					},
+					Field165: []*bool{},
+					Field166: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field167: nil,
+					Field168: []*bool{},
+					Field169: map[string]*bool{
+						"": nil,
+					},
+					Field170: map[string]*bool{
+						"": nil,
+					},
+					Field171: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field172: map[string]*bool{
+						"": nil,
+					},
+					Field173: []*bool{},
+					Field174: map[string]*int64{
+						"": nil,
+					},
+					Field175: []*HugeStruct0{GetHugeStruct0()},
+					Field176: []*int32{},
+					Field177: []*int64{},
+					Field178: map[string]*int64{
+						"": nil,
+					},
+					Field179: []*int32{},
+					Field180: []*string{},
+					Field181: []*int32{},
+					Field182: map[string]*string{
+						"": nil,
+					},
+					Field183: []*int64{},
+					Field184: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field185: []*int32{},
+					Field186: nil,
+					Field187: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field188: []*HugeStruct0{GetHugeStruct0()},
+					Field189: nil,
+					Field190: []*int64{},
+					Field191: map[string]*int32{
+						"": nil,
+					},
+					Field192: []*HugeStruct0{GetHugeStruct0()},
+					Field193: []*HugeStruct0{GetHugeStruct0()},
+					Field194: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field195: []*bool{},
+					Field196: map[string]*bool{
+						"": nil,
+					},
+					Field197: []*bool{},
+					Field198: nil,
+					Field199: map[string]*int32{
+						"": nil,
+					},
+					Field200: map[string]*int64{
+						"": nil,
+					},
+					Field201: map[string]*string{
+						"": nil,
+					},
+					Field202: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field203: map[string]*int32{
+						"": nil,
+					},
+					Field204: nil,
+					Field205: map[string]*string{
+						"": nil,
+					},
+					Field206: []*HugeStruct0{GetHugeStruct0()},
+					Field207: []*HugeStruct0{GetHugeStruct0()},
+					Field208: nil,
+					Field209: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field210: map[string]*string{
+						"": nil,
+					},
+					Field211: map[string]*bool{
+						"": nil,
+					},
+					Field212: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field213: nil,
+					Field214: map[string]*bool{
+						"": nil,
+					},
+					Field215: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field216: []*HugeStruct0{GetHugeStruct0()},
+					Field217: map[string]*string{
+						"": nil,
+					},
+					Field218: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field219: map[string]*int64{
+						"": nil,
+					},
+					Field220: nil,
+					Field221: nil,
+					Field222: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field223: []*int64{},
+					Field224: []*bool{},
+					Field225: []*bool{},
+					Field226: map[string]*int64{
+						"": nil,
+					},
+					Field227: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field228: []*int64{},
+					Field229: map[string]*bool{
+						"": nil,
+					},
+					Field230: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field231: nil,
+					Field232: nil,
+					Field233: []*string{},
+					Field234: []*HugeStruct0{GetHugeStruct0()},
+					Field235: []*string{},
+					Field236: nil,
+					Field237: nil,
+					Field238: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field239: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field240: []*HugeStruct0{GetHugeStruct0()},
+					Field241: nil,
+					Field242: nil,
+					Field243: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field244: map[string]*bool{
+						"": nil,
+					},
+					Field245: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field246: []*int32{},
+					Field247: []*bool{},
+					Field248: []*string{},
+					Field249: nil,
+					Field250: []*int32{},
+					Field251: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field252: nil,
+					Field253: map[string]*string{
+						"": nil,
+					},
+					Field254: map[string]*string{
+						"": nil,
+					},
+					Field255: []*int32{},
+					Field256: nil,
+					Field257: nil,
+					Field258: map[string]*string{
+						"": nil,
+					},
+					Field259: map[string]*int32{
+						"": nil,
+					},
+					Field260: []*int64{},
+					Field261: []*int32{},
+					Field262: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field263: nil,
+					Field264: nil,
+					Field265: map[string]*bool{
+						"": nil,
+					},
+					Field266: nil,
+					Field267: []*int64{},
+					Field268: nil,
+					Field269: nil,
+					Field270: map[string]*int64{
+						"": nil,
+					},
+					Field271: map[string]*int64{
+						"": nil,
+					},
+					Field272: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field273: []*string{},
+					Field274: nil,
+					Field275: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field276: map[string]*bool{
+						"": nil,
+					},
+					Field277: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field278: nil,
+					Field279: map[string]*string{
+						"": nil,
+					},
+					Field280: nil,
+					Field281: nil,
+					Field282: nil,
+					Field283: nil,
+					Field284: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field285: map[string]*int64{
+						"": nil,
+					},
+					Field286: map[string]*bool{
+						"": nil,
+					},
+					Field287: map[string]*string{
+						"": nil,
+					},
+					Field288: nil,
+					Field289: nil,
+					Field290: nil,
+					Field291: []*int64{},
+					Field292: map[string]*string{
+						"": nil,
+					},
+					Field293: nil,
+					Field294: []*string{},
+					Field295: nil,
+					Field296: []*HugeStruct0{GetHugeStruct0()},
+					Field297: nil,
+					Field298: map[string]*int64{
+						"": nil,
+					},
+					Field299: map[string]*bool{
+						"": nil,
+					},
+					Field300: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field301: nil,
+					Field302: []*string{},
+					Field303: []*string{},
+					Field304: map[string]*string{
+						"": nil,
+					},
+					Field305: nil,
+					Field306: nil,
+					Field307: []*HugeStruct0{GetHugeStruct0()},
+					Field308: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field309: map[string]*int32{
+						"": nil,
+					},
+					Field310: []*HugeStruct0{GetHugeStruct0()},
+					Field311: nil,
+					Field312: []*bool{},
+					Field313: nil,
+					Field314: []*HugeStruct0{GetHugeStruct0()},
+					Field315: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field316: nil,
+					Field317: nil,
+					Field318: nil,
+					Field319: []*int32{},
+					Field320: nil,
+					Field321: []*HugeStruct0{GetHugeStruct0()},
+					Field322: nil,
+					Field323: nil,
+					Field324: []*HugeStruct0{GetHugeStruct0()},
+					Field325: nil,
+					Field326: []*int64{},
+					Field327: nil,
+					Field328: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field329: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field330: []*HugeStruct0{GetHugeStruct0()},
+					Field331: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field332: []*string{},
+					Field333: nil,
+					Field334: []*HugeStruct0{GetHugeStruct0()},
+					Field335: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field336: map[string]*bool{
+						"": nil,
+					},
+					Field337: []*int64{},
+					Field338: map[string]*bool{
+						"": nil,
+					},
+					Field339: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field340: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field341: []*bool{},
+					Field342: []*int64{},
+					Field343: []*int32{},
+					Field344: map[string]*bool{
+						"": nil,
+					},
+					Field345: map[string]*int64{
+						"": nil,
+					},
+					Field346: nil,
+					Field347: map[string]*bool{
+						"": nil,
+					},
+					Field348: map[string]*int32{
+						"": nil,
+					},
+					Field349: []*string{},
+					Field350: map[string]*int32{
+						"": nil,
+					},
+					Field351: nil,
+					Field352: []*int64{},
+					Field353: []*int64{},
+					Field354: nil,
+					Field355: map[string]*int32{
+						"": nil,
+					},
+					Field356: map[string]*bool{
+						"": nil,
+					},
+					Field357: []*int32{},
+					Field358: nil,
+					Field359: map[string]*int64{
+						"": nil,
+					},
+					Field360: nil,
+					Field361: map[string]*int64{
+						"": nil,
+					},
+					Field362: map[string]*int32{
+						"": nil,
+					},
+					Field363: []*int64{},
+					Field364: []*bool{},
+					Field365: nil,
+					Field366: map[string]*string{
+						"": nil,
+					},
+					Field367: map[string]*bool{
+						"": nil,
+					},
+					Field368: nil,
+					Field369: nil,
+					Field370: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field371: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field372: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field373: map[string]*bool{
+						"": nil,
+					},
+				},
+				Field22: []*int32{},
+				Field23: map[string]*int64{
+					"": nil,
+				},
+				Field24: map[string]*int64{
+					"": nil,
+				},
+				Field25: nil,
+				Field26: map[string]*string{
+					"": nil,
+				},
+				Field27: []*bool{},
+				Field28: nil,
+				Field29: []*string{},
+				Field30: []*HugeStruct0{GetHugeStruct0()},
+				Field31: []*int64{},
+				Field32: nil,
+				Field33: map[string]*string{
+					"": nil,
+				},
+				Field34: []*HugeStruct0{GetHugeStruct0()},
+				Field35: nil,
+				Field36: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field37: nil,
+				Field38: []*HugeStruct1{},
+				Field39: nil,
+				Field40: map[string]*string{
+					"": nil,
+				},
+				Field41: nil,
+				Field42: nil,
+				Field43: map[string]*int64{
+					"": nil,
+				},
+				Field44: map[string]*string{
+					"": nil,
+				},
+				Field45: map[string]*int32{
+					"": nil,
+				},
+				Field46: nil,
+				Field47: map[string]*int64{
+					"": nil,
+				},
+				Field48: nil,
+				Field49: []*HugeStruct1{},
+				Field50: nil,
+				Field51: []*int64{},
+				Field52: map[string]*int64{
+					"": nil,
+				},
+				Field53: nil,
+				Field54: map[string]*bool{
+					"": nil,
+				},
+				Field55: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field56: map[string]*int32{
+					"": nil,
+				},
+				Field57: map[string]*string{
+					"": nil,
+				},
+				Field58: []*int64{},
+				Field59: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field60: []*int64{},
+				Field61: map[string]*int64{
+					"": nil,
+				},
+				Field62: map[string]*HugeStruct1{
+					"": {
+						Field0: []*int32{},
+						Field1: []*string{},
+						Field2: []*int64{},
+						Field3: map[string]*int32{
+							"": nil,
+						},
+						Field4: []*bool{},
+						Field5: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field6: map[string]*int32{
+							"": nil,
+						},
+						Field7: map[string]*bool{
+							"": nil,
+						},
+						Field8: []*bool{},
+						Field9: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field10: []*string{},
+						Field11: []*bool{},
+						Field12: []*bool{},
+						Field13: map[string]*int32{
+							"": nil,
+						},
+						Field14: map[string]*int32{
+							"": nil,
+						},
+						Field15: nil,
+						Field16: []*int64{},
+						Field17: []*bool{},
+						Field18: map[string]*int64{
+							"": nil,
+						},
+						Field19: []*int64{},
+						Field20: map[string]*string{
+							"": nil,
+						},
+						Field21: nil,
+						Field22: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field23: []*string{},
+						Field24: []*int64{},
+						Field25: []*string{},
+						Field26: []*bool{},
+						Field27: map[string]*int32{
+							"": nil,
+						},
+						Field28: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field29: map[string]*int32{
+							"": nil,
+						},
+						Field30: map[string]*bool{
+							"": nil,
+						},
+						Field31: map[string]*int32{
+							"": nil,
+						},
+						Field32: []*HugeStruct0{GetHugeStruct0()},
+						Field33: nil,
+						Field34: map[string]*bool{
+							"": nil,
+						},
+						Field35: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field36: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field37: nil,
+						Field38: []*HugeStruct0{GetHugeStruct0()},
+						Field39: []*bool{},
+						Field40: map[string]*string{
+							"": nil,
+						},
+						Field41: map[string]*int64{
+							"": nil,
+						},
+						Field42: map[string]*int32{
+							"": nil,
+						},
+						Field43: nil,
+						Field44: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field45: map[string]*int32{
+							"": nil,
+						},
+						Field46: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field47: nil,
+						Field48: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field49: nil,
+						Field50: map[string]*string{
+							"": nil,
+						},
+						Field51: map[string]*bool{
+							"": nil,
+						},
+						Field52: []*int64{},
+						Field53: map[string]*string{
+							"": nil,
+						},
+						Field54: []*int32{},
+						Field55: map[string]*int64{
+							"": nil,
+						},
+						Field56: map[string]*int32{
+							"": nil,
+						},
+						Field57: map[string]*string{
+							"": nil,
+						},
+						Field58: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field59: []*HugeStruct0{GetHugeStruct0()},
+						Field60: map[string]*string{
+							"": nil,
+						},
+						Field61: map[string]*bool{
+							"": nil,
+						},
+						Field62: map[string]*int64{
+							"": nil,
+						},
+						Field63: []*string{},
+						Field64: []*int64{},
+						Field65: map[string]*bool{
+							"": nil,
+						},
+						Field66: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field67: []*int64{},
+						Field68: map[string]*string{
+							"": nil,
+						},
+						Field69: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field70: []*bool{},
+						Field71: map[string]*int64{
+							"": nil,
+						},
+						Field72: nil,
+						Field73: map[string]*int32{
+							"": nil,
+						},
+						Field74: nil,
+						Field75: map[string]*int32{
+							"": nil,
+						},
+						Field76: map[string]*string{
+							"": nil,
+						},
+						Field77: []*string{},
+						Field78: nil,
+						Field79: map[string]*int64{
+							"": nil,
+						},
+						Field80: []*int64{},
+						Field81: map[string]*bool{
+							"": nil,
+						},
+						Field82: []*string{},
+						Field83: []*string{},
+						Field84: nil,
+						Field85: []*bool{},
+						Field86: []*HugeStruct0{GetHugeStruct0()},
+						Field87: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field88: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field89: []*int64{},
+						Field90: []*int32{},
+						Field91: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field92: []*bool{},
+						Field93: []*string{},
+						Field94: map[string]*int32{
+							"": nil,
+						},
+						Field95: nil,
+						Field96: nil,
+						Field97: map[string]*bool{
+							"": nil,
+						},
+						Field98: map[string]*int32{
+							"": nil,
+						},
+						Field99:  []*HugeStruct0{GetHugeStruct0()},
+						Field100: nil,
+						Field101: nil,
+						Field102: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field103: []*string{},
+						Field104: []*string{},
+						Field105: map[string]*bool{
+							"": nil,
+						},
+						Field106: []*string{},
+						Field107: []*int64{},
+						Field108: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field109: nil,
+						Field110: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field111: []*string{},
+						Field112: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field113: []*bool{},
+						Field114: []*bool{},
+						Field115: map[string]*string{
+							"": nil,
+						},
+						Field116: []*int64{},
+						Field117: []*string{},
+						Field118: map[string]*bool{
+							"": nil,
+						},
+						Field119: map[string]*string{
+							"": nil,
+						},
+						Field120: []*HugeStruct0{GetHugeStruct0()},
+						Field121: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field122: []*bool{},
+						Field123: nil,
+						Field124: []*int64{},
+						Field125: nil,
+						Field126: []*string{},
+						Field127: []*string{},
+						Field128: []*int32{},
+						Field129: []*bool{},
+						Field130: nil,
+						Field131: nil,
+						Field132: []*int32{},
+						Field133: []*int32{},
+						Field134: nil,
+						Field135: []*bool{},
+						Field136: nil,
+						Field137: []*int32{},
+						Field138: map[string]*int64{
+							"": nil,
+						},
+						Field139: map[string]*string{
+							"": nil,
+						},
+						Field140: map[string]*int64{
+							"": nil,
+						},
+						Field141: map[string]*int64{
+							"": nil,
+						},
+						Field142: []*int32{},
+						Field143: []*HugeStruct0{GetHugeStruct0()},
+						Field144: map[string]*int64{
+							"": nil,
+						},
+						Field145: []*string{},
+						Field146: map[string]*int64{
+							"": nil,
+						},
+						Field147: nil,
+						Field148: map[string]*string{
+							"": nil,
+						},
+						Field149: nil,
+						Field150: map[string]*int64{
+							"": nil,
+						},
+						Field151: map[string]*int64{
+							"": nil,
+						},
+						Field152: map[string]*int32{
+							"": nil,
+						},
+						Field153: []*int32{},
+						Field154: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field155: map[string]*string{
+							"": nil,
+						},
+						Field156: map[string]*int64{
+							"": nil,
+						},
+						Field157: []*int32{},
+						Field158: []*int32{},
+						Field159: nil,
+						Field160: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field161: []*bool{},
+						Field162: []*HugeStruct0{GetHugeStruct0()},
+						Field163: []*int32{},
+						Field164: map[string]*string{
+							"": nil,
+						},
+						Field165: []*bool{},
+						Field166: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field167: nil,
+						Field168: []*bool{},
+						Field169: map[string]*bool{
+							"": nil,
+						},
+						Field170: map[string]*bool{
+							"": nil,
+						},
+						Field171: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field172: map[string]*bool{
+							"": nil,
+						},
+						Field173: []*bool{},
+						Field174: map[string]*int64{
+							"": nil,
+						},
+						Field175: []*HugeStruct0{GetHugeStruct0()},
+						Field176: []*int32{},
+						Field177: []*int64{},
+						Field178: map[string]*int64{
+							"": nil,
+						},
+						Field179: []*int32{},
+						Field180: []*string{},
+						Field181: []*int32{},
+						Field182: map[string]*string{
+							"": nil,
+						},
+						Field183: []*int64{},
+						Field184: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field185: []*int32{},
+						Field186: nil,
+						Field187: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field188: []*HugeStruct0{GetHugeStruct0()},
+						Field189: nil,
+						Field190: []*int64{},
+						Field191: map[string]*int32{
+							"": nil,
+						},
+						Field192: []*HugeStruct0{GetHugeStruct0()},
+						Field193: []*HugeStruct0{GetHugeStruct0()},
+						Field194: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field195: []*bool{},
+						Field196: map[string]*bool{
+							"": nil,
+						},
+						Field197: []*bool{},
+						Field198: nil,
+						Field199: map[string]*int32{
+							"": nil,
+						},
+						Field200: map[string]*int64{
+							"": nil,
+						},
+						Field201: map[string]*string{
+							"": nil,
+						},
+						Field202: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field203: map[string]*int32{
+							"": nil,
+						},
+						Field204: nil,
+						Field205: map[string]*string{
+							"": nil,
+						},
+						Field206: []*HugeStruct0{GetHugeStruct0()},
+						Field207: []*HugeStruct0{GetHugeStruct0()},
+						Field208: nil,
+						Field209: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field210: map[string]*string{
+							"": nil,
+						},
+						Field211: map[string]*bool{
+							"": nil,
+						},
+						Field212: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field213: nil,
+						Field214: map[string]*bool{
+							"": nil,
+						},
+						Field215: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field216: []*HugeStruct0{GetHugeStruct0()},
+						Field217: map[string]*string{
+							"": nil,
+						},
+						Field218: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field219: map[string]*int64{
+							"": nil,
+						},
+						Field220: nil,
+						Field221: nil,
+						Field222: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field223: []*int64{},
+						Field224: []*bool{},
+						Field225: []*bool{},
+						Field226: map[string]*int64{
+							"": nil,
+						},
+						Field227: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field228: []*int64{},
+						Field229: map[string]*bool{
+							"": nil,
+						},
+						Field230: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field231: nil,
+						Field232: nil,
+						Field233: []*string{},
+						Field234: []*HugeStruct0{GetHugeStruct0()},
+						Field235: []*string{},
+						Field236: nil,
+						Field237: nil,
+						Field238: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field239: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field240: []*HugeStruct0{GetHugeStruct0()},
+						Field241: nil,
+						Field242: nil,
+						Field243: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field244: map[string]*bool{
+							"": nil,
+						},
+						Field245: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field246: []*int32{},
+						Field247: []*bool{},
+						Field248: []*string{},
+						Field249: nil,
+						Field250: []*int32{},
+						Field251: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field252: nil,
+						Field253: map[string]*string{
+							"": nil,
+						},
+						Field254: map[string]*string{
+							"": nil,
+						},
+						Field255: []*int32{},
+						Field256: nil,
+						Field257: nil,
+						Field258: map[string]*string{
+							"": nil,
+						},
+						Field259: map[string]*int32{
+							"": nil,
+						},
+						Field260: []*int64{},
+						Field261: []*int32{},
+						Field262: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field263: nil,
+						Field264: nil,
+						Field265: map[string]*bool{
+							"": nil,
+						},
+						Field266: nil,
+						Field267: []*int64{},
+						Field268: nil,
+						Field269: nil,
+						Field270: map[string]*int64{
+							"": nil,
+						},
+						Field271: map[string]*int64{
+							"": nil,
+						},
+						Field272: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field273: []*string{},
+						Field274: nil,
+						Field275: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field276: map[string]*bool{
+							"": nil,
+						},
+						Field277: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field278: nil,
+						Field279: map[string]*string{
+							"": nil,
+						},
+						Field280: nil,
+						Field281: nil,
+						Field282: nil,
+						Field283: nil,
+						Field284: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field285: map[string]*int64{
+							"": nil,
+						},
+						Field286: map[string]*bool{
+							"": nil,
+						},
+						Field287: map[string]*string{
+							"": nil,
+						},
+						Field288: nil,
+						Field289: nil,
+						Field290: nil,
+						Field291: []*int64{},
+						Field292: map[string]*string{
+							"": nil,
+						},
+						Field293: nil,
+						Field294: []*string{},
+						Field295: nil,
+						Field296: []*HugeStruct0{GetHugeStruct0()},
+						Field297: nil,
+						Field298: map[string]*int64{
+							"": nil,
+						},
+						Field299: map[string]*bool{
+							"": nil,
+						},
+						Field300: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field301: nil,
+						Field302: []*string{},
+						Field303: []*string{},
+						Field304: map[string]*string{
+							"": nil,
+						},
+						Field305: nil,
+						Field306: nil,
+						Field307: []*HugeStruct0{GetHugeStruct0()},
+						Field308: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field309: map[string]*int32{
+							"": nil,
+						},
+						Field310: []*HugeStruct0{GetHugeStruct0()},
+						Field311: nil,
+						Field312: []*bool{},
+						Field313: nil,
+						Field314: []*HugeStruct0{GetHugeStruct0()},
+						Field315: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field316: nil,
+						Field317: nil,
+						Field318: nil,
+						Field319: []*int32{},
+						Field320: nil,
+						Field321: []*HugeStruct0{GetHugeStruct0()},
+						Field322: nil,
+						Field323: nil,
+						Field324: []*HugeStruct0{GetHugeStruct0()},
+						Field325: nil,
+						Field326: []*int64{},
+						Field327: nil,
+						Field328: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field329: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field330: []*HugeStruct0{GetHugeStruct0()},
+						Field331: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field332: []*string{},
+						Field333: nil,
+						Field334: []*HugeStruct0{GetHugeStruct0()},
+						Field335: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field336: map[string]*bool{
+							"": nil,
+						},
+						Field337: []*int64{},
+						Field338: map[string]*bool{
+							"": nil,
+						},
+						Field339: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field340: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field341: []*bool{},
+						Field342: []*int64{},
+						Field343: []*int32{},
+						Field344: map[string]*bool{
+							"": nil,
+						},
+						Field345: map[string]*int64{
+							"": nil,
+						},
+						Field346: nil,
+						Field347: map[string]*bool{
+							"": nil,
+						},
+						Field348: map[string]*int32{
+							"": nil,
+						},
+						Field349: []*string{},
+						Field350: map[string]*int32{
+							"": nil,
+						},
+						Field351: nil,
+						Field352: []*int64{},
+						Field353: []*int64{},
+						Field354: nil,
+						Field355: map[string]*int32{
+							"": nil,
+						},
+						Field356: map[string]*bool{
+							"": nil,
+						},
+						Field357: []*int32{},
+						Field358: nil,
+						Field359: map[string]*int64{
+							"": nil,
+						},
+						Field360: nil,
+						Field361: map[string]*int64{
+							"": nil,
+						},
+						Field362: map[string]*int32{
+							"": nil,
+						},
+						Field363: []*int64{},
+						Field364: []*bool{},
+						Field365: nil,
+						Field366: map[string]*string{
+							"": nil,
+						},
+						Field367: map[string]*bool{
+							"": nil,
+						},
+						Field368: nil,
+						Field369: nil,
+						Field370: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field371: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field372: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field373: map[string]*bool{
+							"": nil,
+						},
+					},
+				},
+				Field63: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field64: []*int32{},
+				Field65: []*HugeStruct0{GetHugeStruct0()},
+				Field66: nil,
+				Field67: []*int64{},
+				Field68: []*bool{},
+				Field69: nil,
+				Field70: nil,
+				Field71: nil,
+				Field72: map[string]*int32{
+					"": nil,
+				},
+				Field73: map[string]*int32{
+					"": nil,
+				},
+				Field74: map[string]*int32{
+					"": nil,
+				},
+				Field75: map[string]*bool{
+					"": nil,
+				},
+				Field76: nil,
+				Field77: []*int32{},
+				Field78: nil,
+				Field79: nil,
+				Field80: nil,
+				Field81: []*bool{},
+				Field82: map[string]*int64{
+					"": nil,
+				},
+				Field83: nil,
+				Field84: nil,
+				Field85: map[string]*int32{
+					"": nil,
+				},
+				Field86: nil,
+				Field87: &HugeStruct1{
+					Field0: []*int32{},
+					Field1: []*string{},
+					Field2: []*int64{},
+					Field3: map[string]*int32{
+						"": nil,
+					},
+					Field4: []*bool{},
+					Field5: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field6: map[string]*int32{
+						"": nil,
+					},
+					Field7: map[string]*bool{
+						"": nil,
+					},
+					Field8: []*bool{},
+					Field9: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field10: []*string{},
+					Field11: []*bool{},
+					Field12: []*bool{},
+					Field13: map[string]*int32{
+						"": nil,
+					},
+					Field14: map[string]*int32{
+						"": nil,
+					},
+					Field15: nil,
+					Field16: []*int64{},
+					Field17: []*bool{},
+					Field18: map[string]*int64{
+						"": nil,
+					},
+					Field19: []*int64{},
+					Field20: map[string]*string{
+						"": nil,
+					},
+					Field21: nil,
+					Field22: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field23: []*string{},
+					Field24: []*int64{},
+					Field25: []*string{},
+					Field26: []*bool{},
+					Field27: map[string]*int32{
+						"": nil,
+					},
+					Field28: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field29: map[string]*int32{
+						"": nil,
+					},
+					Field30: map[string]*bool{
+						"": nil,
+					},
+					Field31: map[string]*int32{
+						"": nil,
+					},
+					Field32: []*HugeStruct0{GetHugeStruct0()},
+					Field33: nil,
+					Field34: map[string]*bool{
+						"": nil,
+					},
+					Field35: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field36: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field37: nil,
+					Field38: []*HugeStruct0{GetHugeStruct0()},
+					Field39: []*bool{},
+					Field40: map[string]*string{
+						"": nil,
+					},
+					Field41: map[string]*int64{
+						"": nil,
+					},
+					Field42: map[string]*int32{
+						"": nil,
+					},
+					Field43: nil,
+					Field44: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field45: map[string]*int32{
+						"": nil,
+					},
+					Field46: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field47: nil,
+					Field48: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field49: nil,
+					Field50: map[string]*string{
+						"": nil,
+					},
+					Field51: map[string]*bool{
+						"": nil,
+					},
+					Field52: []*int64{},
+					Field53: map[string]*string{
+						"": nil,
+					},
+					Field54: []*int32{},
+					Field55: map[string]*int64{
+						"": nil,
+					},
+					Field56: map[string]*int32{
+						"": nil,
+					},
+					Field57: map[string]*string{
+						"": nil,
+					},
+					Field58: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field59: []*HugeStruct0{GetHugeStruct0()},
+					Field60: map[string]*string{
+						"": nil,
+					},
+					Field61: map[string]*bool{
+						"": nil,
+					},
+					Field62: map[string]*int64{
+						"": nil,
+					},
+					Field63: []*string{},
+					Field64: []*int64{},
+					Field65: map[string]*bool{
+						"": nil,
+					},
+					Field66: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field67: []*int64{},
+					Field68: map[string]*string{
+						"": nil,
+					},
+					Field69: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field70: []*bool{},
+					Field71: map[string]*int64{
+						"": nil,
+					},
+					Field72: nil,
+					Field73: map[string]*int32{
+						"": nil,
+					},
+					Field74: nil,
+					Field75: map[string]*int32{
+						"": nil,
+					},
+					Field76: map[string]*string{
+						"": nil,
+					},
+					Field77: []*string{},
+					Field78: nil,
+					Field79: map[string]*int64{
+						"": nil,
+					},
+					Field80: []*int64{},
+					Field81: map[string]*bool{
+						"": nil,
+					},
+					Field82: []*string{},
+					Field83: []*string{},
+					Field84: nil,
+					Field85: []*bool{},
+					Field86: []*HugeStruct0{GetHugeStruct0()},
+					Field87: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field88: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field89: []*int64{},
+					Field90: []*int32{},
+					Field91: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field92: []*bool{},
+					Field93: []*string{},
+					Field94: map[string]*int32{
+						"": nil,
+					},
+					Field95: nil,
+					Field96: nil,
+					Field97: map[string]*bool{
+						"": nil,
+					},
+					Field98: map[string]*int32{
+						"": nil,
+					},
+					Field99:  []*HugeStruct0{GetHugeStruct0()},
+					Field100: nil,
+					Field101: nil,
+					Field102: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field103: []*string{},
+					Field104: []*string{},
+					Field105: map[string]*bool{
+						"": nil,
+					},
+					Field106: []*string{},
+					Field107: []*int64{},
+					Field108: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field109: nil,
+					Field110: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field111: []*string{},
+					Field112: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field113: []*bool{},
+					Field114: []*bool{},
+					Field115: map[string]*string{
+						"": nil,
+					},
+					Field116: []*int64{},
+					Field117: []*string{},
+					Field118: map[string]*bool{
+						"": nil,
+					},
+					Field119: map[string]*string{
+						"": nil,
+					},
+					Field120: []*HugeStruct0{GetHugeStruct0()},
+					Field121: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field122: []*bool{},
+					Field123: nil,
+					Field124: []*int64{},
+					Field125: nil,
+					Field126: []*string{},
+					Field127: []*string{},
+					Field128: []*int32{},
+					Field129: []*bool{},
+					Field130: nil,
+					Field131: nil,
+					Field132: []*int32{},
+					Field133: []*int32{},
+					Field134: nil,
+					Field135: []*bool{},
+					Field136: nil,
+					Field137: []*int32{},
+					Field138: map[string]*int64{
+						"": nil,
+					},
+					Field139: map[string]*string{
+						"": nil,
+					},
+					Field140: map[string]*int64{
+						"": nil,
+					},
+					Field141: map[string]*int64{
+						"": nil,
+					},
+					Field142: []*int32{},
+					Field143: []*HugeStruct0{GetHugeStruct0()},
+					Field144: map[string]*int64{
+						"": nil,
+					},
+					Field145: []*string{},
+					Field146: map[string]*int64{
+						"": nil,
+					},
+					Field147: nil,
+					Field148: map[string]*string{
+						"": nil,
+					},
+					Field149: nil,
+					Field150: map[string]*int64{
+						"": nil,
+					},
+					Field151: map[string]*int64{
+						"": nil,
+					},
+					Field152: map[string]*int32{
+						"": nil,
+					},
+					Field153: []*int32{},
+					Field154: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field155: map[string]*string{
+						"": nil,
+					},
+					Field156: map[string]*int64{
+						"": nil,
+					},
+					Field157: []*int32{},
+					Field158: []*int32{},
+					Field159: nil,
+					Field160: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field161: []*bool{},
+					Field162: []*HugeStruct0{GetHugeStruct0()},
+					Field163: []*int32{},
+					Field164: map[string]*string{
+						"": nil,
+					},
+					Field165: []*bool{},
+					Field166: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field167: nil,
+					Field168: []*bool{},
+					Field169: map[string]*bool{
+						"": nil,
+					},
+					Field170: map[string]*bool{
+						"": nil,
+					},
+					Field171: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field172: map[string]*bool{
+						"": nil,
+					},
+					Field173: []*bool{},
+					Field174: map[string]*int64{
+						"": nil,
+					},
+					Field175: []*HugeStruct0{GetHugeStruct0()},
+					Field176: []*int32{},
+					Field177: []*int64{},
+					Field178: map[string]*int64{
+						"": nil,
+					},
+					Field179: []*int32{},
+					Field180: []*string{},
+					Field181: []*int32{},
+					Field182: map[string]*string{
+						"": nil,
+					},
+					Field183: []*int64{},
+					Field184: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field185: []*int32{},
+					Field186: nil,
+					Field187: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field188: []*HugeStruct0{GetHugeStruct0()},
+					Field189: nil,
+					Field190: []*int64{},
+					Field191: map[string]*int32{
+						"": nil,
+					},
+					Field192: []*HugeStruct0{GetHugeStruct0()},
+					Field193: []*HugeStruct0{GetHugeStruct0()},
+					Field194: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field195: []*bool{},
+					Field196: map[string]*bool{
+						"": nil,
+					},
+					Field197: []*bool{},
+					Field198: nil,
+					Field199: map[string]*int32{
+						"": nil,
+					},
+					Field200: map[string]*int64{
+						"": nil,
+					},
+					Field201: map[string]*string{
+						"": nil,
+					},
+					Field202: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field203: map[string]*int32{
+						"": nil,
+					},
+					Field204: nil,
+					Field205: map[string]*string{
+						"": nil,
+					},
+					Field206: []*HugeStruct0{GetHugeStruct0()},
+					Field207: []*HugeStruct0{GetHugeStruct0()},
+					Field208: nil,
+					Field209: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field210: map[string]*string{
+						"": nil,
+					},
+					Field211: map[string]*bool{
+						"": nil,
+					},
+					Field212: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field213: nil,
+					Field214: map[string]*bool{
+						"": nil,
+					},
+					Field215: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field216: []*HugeStruct0{GetHugeStruct0()},
+					Field217: map[string]*string{
+						"": nil,
+					},
+					Field218: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field219: map[string]*int64{
+						"": nil,
+					},
+					Field220: nil,
+					Field221: nil,
+					Field222: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field223: []*int64{},
+					Field224: []*bool{},
+					Field225: []*bool{},
+					Field226: map[string]*int64{
+						"": nil,
+					},
+					Field227: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field228: []*int64{},
+					Field229: map[string]*bool{
+						"": nil,
+					},
+					Field230: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field231: nil,
+					Field232: nil,
+					Field233: []*string{},
+					Field234: []*HugeStruct0{GetHugeStruct0()},
+					Field235: []*string{},
+					Field236: nil,
+					Field237: nil,
+					Field238: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field239: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field240: []*HugeStruct0{GetHugeStruct0()},
+					Field241: nil,
+					Field242: nil,
+					Field243: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field244: map[string]*bool{
+						"": nil,
+					},
+					Field245: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field246: []*int32{},
+					Field247: []*bool{},
+					Field248: []*string{},
+					Field249: nil,
+					Field250: []*int32{},
+					Field251: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field252: nil,
+					Field253: map[string]*string{
+						"": nil,
+					},
+					Field254: map[string]*string{
+						"": nil,
+					},
+					Field255: []*int32{},
+					Field256: nil,
+					Field257: nil,
+					Field258: map[string]*string{
+						"": nil,
+					},
+					Field259: map[string]*int32{
+						"": nil,
+					},
+					Field260: []*int64{},
+					Field261: []*int32{},
+					Field262: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field263: nil,
+					Field264: nil,
+					Field265: map[string]*bool{
+						"": nil,
+					},
+					Field266: nil,
+					Field267: []*int64{},
+					Field268: nil,
+					Field269: nil,
+					Field270: map[string]*int64{
+						"": nil,
+					},
+					Field271: map[string]*int64{
+						"": nil,
+					},
+					Field272: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field273: []*string{},
+					Field274: nil,
+					Field275: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field276: map[string]*bool{
+						"": nil,
+					},
+					Field277: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field278: nil,
+					Field279: map[string]*string{
+						"": nil,
+					},
+					Field280: nil,
+					Field281: nil,
+					Field282: nil,
+					Field283: nil,
+					Field284: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field285: map[string]*int64{
+						"": nil,
+					},
+					Field286: map[string]*bool{
+						"": nil,
+					},
+					Field287: map[string]*string{
+						"": nil,
+					},
+					Field288: nil,
+					Field289: nil,
+					Field290: nil,
+					Field291: []*int64{},
+					Field292: map[string]*string{
+						"": nil,
+					},
+					Field293: nil,
+					Field294: []*string{},
+					Field295: nil,
+					Field296: []*HugeStruct0{GetHugeStruct0()},
+					Field297: nil,
+					Field298: map[string]*int64{
+						"": nil,
+					},
+					Field299: map[string]*bool{
+						"": nil,
+					},
+					Field300: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field301: nil,
+					Field302: []*string{},
+					Field303: []*string{},
+					Field304: map[string]*string{
+						"": nil,
+					},
+					Field305: nil,
+					Field306: nil,
+					Field307: []*HugeStruct0{GetHugeStruct0()},
+					Field308: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field309: map[string]*int32{
+						"": nil,
+					},
+					Field310: []*HugeStruct0{GetHugeStruct0()},
+					Field311: nil,
+					Field312: []*bool{},
+					Field313: nil,
+					Field314: []*HugeStruct0{GetHugeStruct0()},
+					Field315: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field316: nil,
+					Field317: nil,
+					Field318: nil,
+					Field319: []*int32{},
+					Field320: nil,
+					Field321: []*HugeStruct0{GetHugeStruct0()},
+					Field322: nil,
+					Field323: nil,
+					Field324: []*HugeStruct0{GetHugeStruct0()},
+					Field325: nil,
+					Field326: []*int64{},
+					Field327: nil,
+					Field328: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field329: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field330: []*HugeStruct0{GetHugeStruct0()},
+					Field331: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field332: []*string{},
+					Field333: nil,
+					Field334: []*HugeStruct0{GetHugeStruct0()},
+					Field335: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field336: map[string]*bool{
+						"": nil,
+					},
+					Field337: []*int64{},
+					Field338: map[string]*bool{
+						"": nil,
+					},
+					Field339: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field340: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field341: []*bool{},
+					Field342: []*int64{},
+					Field343: []*int32{},
+					Field344: map[string]*bool{
+						"": nil,
+					},
+					Field345: map[string]*int64{
+						"": nil,
+					},
+					Field346: nil,
+					Field347: map[string]*bool{
+						"": nil,
+					},
+					Field348: map[string]*int32{
+						"": nil,
+					},
+					Field349: []*string{},
+					Field350: map[string]*int32{
+						"": nil,
+					},
+					Field351: nil,
+					Field352: []*int64{},
+					Field353: []*int64{},
+					Field354: nil,
+					Field355: map[string]*int32{
+						"": nil,
+					},
+					Field356: map[string]*bool{
+						"": nil,
+					},
+					Field357: []*int32{},
+					Field358: nil,
+					Field359: map[string]*int64{
+						"": nil,
+					},
+					Field360: nil,
+					Field361: map[string]*int64{
+						"": nil,
+					},
+					Field362: map[string]*int32{
+						"": nil,
+					},
+					Field363: []*int64{},
+					Field364: []*bool{},
+					Field365: nil,
+					Field366: map[string]*string{
+						"": nil,
+					},
+					Field367: map[string]*bool{
+						"": nil,
+					},
+					Field368: nil,
+					Field369: nil,
+					Field370: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field371: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field372: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field373: map[string]*bool{
+						"": nil,
+					},
+				},
+				Field88: []*int32{},
+				Field89: nil,
+				Field90: []*bool{},
+				Field91: []*bool{},
+				Field92: &HugeStruct1{
+					Field0: []*int32{},
+					Field1: []*string{},
+					Field2: []*int64{},
+					Field3: map[string]*int32{
+						"": nil,
+					},
+					Field4: []*bool{},
+					Field5: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field6: map[string]*int32{
+						"": nil,
+					},
+					Field7: map[string]*bool{
+						"": nil,
+					},
+					Field8: []*bool{},
+					Field9: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field10: []*string{},
+					Field11: []*bool{},
+					Field12: []*bool{},
+					Field13: map[string]*int32{
+						"": nil,
+					},
+					Field14: map[string]*int32{
+						"": nil,
+					},
+					Field15: nil,
+					Field16: []*int64{},
+					Field17: []*bool{},
+					Field18: map[string]*int64{
+						"": nil,
+					},
+					Field19: []*int64{},
+					Field20: map[string]*string{
+						"": nil,
+					},
+					Field21: nil,
+					Field22: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field23: []*string{},
+					Field24: []*int64{},
+					Field25: []*string{},
+					Field26: []*bool{},
+					Field27: map[string]*int32{
+						"": nil,
+					},
+					Field28: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field29: map[string]*int32{
+						"": nil,
+					},
+					Field30: map[string]*bool{
+						"": nil,
+					},
+					Field31: map[string]*int32{
+						"": nil,
+					},
+					Field32: []*HugeStruct0{GetHugeStruct0()},
+					Field33: nil,
+					Field34: map[string]*bool{
+						"": nil,
+					},
+					Field35: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field36: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field37: nil,
+					Field38: []*HugeStruct0{GetHugeStruct0()},
+					Field39: []*bool{},
+					Field40: map[string]*string{
+						"": nil,
+					},
+					Field41: map[string]*int64{
+						"": nil,
+					},
+					Field42: map[string]*int32{
+						"": nil,
+					},
+					Field43: nil,
+					Field44: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field45: map[string]*int32{
+						"": nil,
+					},
+					Field46: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field47: nil,
+					Field48: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field49: nil,
+					Field50: map[string]*string{
+						"": nil,
+					},
+					Field51: map[string]*bool{
+						"": nil,
+					},
+					Field52: []*int64{},
+					Field53: map[string]*string{
+						"": nil,
+					},
+					Field54: []*int32{},
+					Field55: map[string]*int64{
+						"": nil,
+					},
+					Field56: map[string]*int32{
+						"": nil,
+					},
+					Field57: map[string]*string{
+						"": nil,
+					},
+					Field58: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field59: []*HugeStruct0{GetHugeStruct0()},
+					Field60: map[string]*string{
+						"": nil,
+					},
+					Field61: map[string]*bool{
+						"": nil,
+					},
+					Field62: map[string]*int64{
+						"": nil,
+					},
+					Field63: []*string{},
+					Field64: []*int64{},
+					Field65: map[string]*bool{
+						"": nil,
+					},
+					Field66: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field67: []*int64{},
+					Field68: map[string]*string{
+						"": nil,
+					},
+					Field69: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field70: []*bool{},
+					Field71: map[string]*int64{
+						"": nil,
+					},
+					Field72: nil,
+					Field73: map[string]*int32{
+						"": nil,
+					},
+					Field74: nil,
+					Field75: map[string]*int32{
+						"": nil,
+					},
+					Field76: map[string]*string{
+						"": nil,
+					},
+					Field77: []*string{},
+					Field78: nil,
+					Field79: map[string]*int64{
+						"": nil,
+					},
+					Field80: []*int64{},
+					Field81: map[string]*bool{
+						"": nil,
+					},
+					Field82: []*string{},
+					Field83: []*string{},
+					Field84: nil,
+					Field85: []*bool{},
+					Field86: []*HugeStruct0{GetHugeStruct0()},
+					Field87: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field88: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field89: []*int64{},
+					Field90: []*int32{},
+					Field91: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field92: []*bool{},
+					Field93: []*string{},
+					Field94: map[string]*int32{
+						"": nil,
+					},
+					Field95: nil,
+					Field96: nil,
+					Field97: map[string]*bool{
+						"": nil,
+					},
+					Field98: map[string]*int32{
+						"": nil,
+					},
+					Field99:  []*HugeStruct0{GetHugeStruct0()},
+					Field100: nil,
+					Field101: nil,
+					Field102: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field103: []*string{},
+					Field104: []*string{},
+					Field105: map[string]*bool{
+						"": nil,
+					},
+					Field106: []*string{},
+					Field107: []*int64{},
+					Field108: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field109: nil,
+					Field110: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field111: []*string{},
+					Field112: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field113: []*bool{},
+					Field114: []*bool{},
+					Field115: map[string]*string{
+						"": nil,
+					},
+					Field116: []*int64{},
+					Field117: []*string{},
+					Field118: map[string]*bool{
+						"": nil,
+					},
+					Field119: map[string]*string{
+						"": nil,
+					},
+					Field120: []*HugeStruct0{GetHugeStruct0()},
+					Field121: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field122: []*bool{},
+					Field123: nil,
+					Field124: []*int64{},
+					Field125: nil,
+					Field126: []*string{},
+					Field127: []*string{},
+					Field128: []*int32{},
+					Field129: []*bool{},
+					Field130: nil,
+					Field131: nil,
+					Field132: []*int32{},
+					Field133: []*int32{},
+					Field134: nil,
+					Field135: []*bool{},
+					Field136: nil,
+					Field137: []*int32{},
+					Field138: map[string]*int64{
+						"": nil,
+					},
+					Field139: map[string]*string{
+						"": nil,
+					},
+					Field140: map[string]*int64{
+						"": nil,
+					},
+					Field141: map[string]*int64{
+						"": nil,
+					},
+					Field142: []*int32{},
+					Field143: []*HugeStruct0{GetHugeStruct0()},
+					Field144: map[string]*int64{
+						"": nil,
+					},
+					Field145: []*string{},
+					Field146: map[string]*int64{
+						"": nil,
+					},
+					Field147: nil,
+					Field148: map[string]*string{
+						"": nil,
+					},
+					Field149: nil,
+					Field150: map[string]*int64{
+						"": nil,
+					},
+					Field151: map[string]*int64{
+						"": nil,
+					},
+					Field152: map[string]*int32{
+						"": nil,
+					},
+					Field153: []*int32{},
+					Field154: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field155: map[string]*string{
+						"": nil,
+					},
+					Field156: map[string]*int64{
+						"": nil,
+					},
+					Field157: []*int32{},
+					Field158: []*int32{},
+					Field159: nil,
+					Field160: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field161: []*bool{},
+					Field162: []*HugeStruct0{GetHugeStruct0()},
+					Field163: []*int32{},
+					Field164: map[string]*string{
+						"": nil,
+					},
+					Field165: []*bool{},
+					Field166: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field167: nil,
+					Field168: []*bool{},
+					Field169: map[string]*bool{
+						"": nil,
+					},
+					Field170: map[string]*bool{
+						"": nil,
+					},
+					Field171: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field172: map[string]*bool{
+						"": nil,
+					},
+					Field173: []*bool{},
+					Field174: map[string]*int64{
+						"": nil,
+					},
+					Field175: []*HugeStruct0{GetHugeStruct0()},
+					Field176: []*int32{},
+					Field177: []*int64{},
+					Field178: map[string]*int64{
+						"": nil,
+					},
+					Field179: []*int32{},
+					Field180: []*string{},
+					Field181: []*int32{},
+					Field182: map[string]*string{
+						"": nil,
+					},
+					Field183: []*int64{},
+					Field184: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field185: []*int32{},
+					Field186: nil,
+					Field187: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field188: []*HugeStruct0{GetHugeStruct0()},
+					Field189: nil,
+					Field190: []*int64{},
+					Field191: map[string]*int32{
+						"": nil,
+					},
+					Field192: []*HugeStruct0{GetHugeStruct0()},
+					Field193: []*HugeStruct0{GetHugeStruct0()},
+					Field194: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field195: []*bool{},
+					Field196: map[string]*bool{
+						"": nil,
+					},
+					Field197: []*bool{},
+					Field198: nil,
+					Field199: map[string]*int32{
+						"": nil,
+					},
+					Field200: map[string]*int64{
+						"": nil,
+					},
+					Field201: map[string]*string{
+						"": nil,
+					},
+					Field202: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field203: map[string]*int32{
+						"": nil,
+					},
+					Field204: nil,
+					Field205: map[string]*string{
+						"": nil,
+					},
+					Field206: []*HugeStruct0{GetHugeStruct0()},
+					Field207: []*HugeStruct0{GetHugeStruct0()},
+					Field208: nil,
+					Field209: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field210: map[string]*string{
+						"": nil,
+					},
+					Field211: map[string]*bool{
+						"": nil,
+					},
+					Field212: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field213: nil,
+					Field214: map[string]*bool{
+						"": nil,
+					},
+					Field215: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field216: []*HugeStruct0{GetHugeStruct0()},
+					Field217: map[string]*string{
+						"": nil,
+					},
+					Field218: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field219: map[string]*int64{
+						"": nil,
+					},
+					Field220: nil,
+					Field221: nil,
+					Field222: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field223: []*int64{},
+					Field224: []*bool{},
+					Field225: []*bool{},
+					Field226: map[string]*int64{
+						"": nil,
+					},
+					Field227: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field228: []*int64{},
+					Field229: map[string]*bool{
+						"": nil,
+					},
+					Field230: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field231: nil,
+					Field232: nil,
+					Field233: []*string{},
+					Field234: []*HugeStruct0{GetHugeStruct0()},
+					Field235: []*string{},
+					Field236: nil,
+					Field237: nil,
+					Field238: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field239: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field240: []*HugeStruct0{GetHugeStruct0()},
+					Field241: nil,
+					Field242: nil,
+					Field243: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field244: map[string]*bool{
+						"": nil,
+					},
+					Field245: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field246: []*int32{},
+					Field247: []*bool{},
+					Field248: []*string{},
+					Field249: nil,
+					Field250: []*int32{},
+					Field251: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field252: nil,
+					Field253: map[string]*string{
+						"": nil,
+					},
+					Field254: map[string]*string{
+						"": nil,
+					},
+					Field255: []*int32{},
+					Field256: nil,
+					Field257: nil,
+					Field258: map[string]*string{
+						"": nil,
+					},
+					Field259: map[string]*int32{
+						"": nil,
+					},
+					Field260: []*int64{},
+					Field261: []*int32{},
+					Field262: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field263: nil,
+					Field264: nil,
+					Field265: map[string]*bool{
+						"": nil,
+					},
+					Field266: nil,
+					Field267: []*int64{},
+					Field268: nil,
+					Field269: nil,
+					Field270: map[string]*int64{
+						"": nil,
+					},
+					Field271: map[string]*int64{
+						"": nil,
+					},
+					Field272: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field273: []*string{},
+					Field274: nil,
+					Field275: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field276: map[string]*bool{
+						"": nil,
+					},
+					Field277: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field278: nil,
+					Field279: map[string]*string{
+						"": nil,
+					},
+					Field280: nil,
+					Field281: nil,
+					Field282: nil,
+					Field283: nil,
+					Field284: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field285: map[string]*int64{
+						"": nil,
+					},
+					Field286: map[string]*bool{
+						"": nil,
+					},
+					Field287: map[string]*string{
+						"": nil,
+					},
+					Field288: nil,
+					Field289: nil,
+					Field290: nil,
+					Field291: []*int64{},
+					Field292: map[string]*string{
+						"": nil,
+					},
+					Field293: nil,
+					Field294: []*string{},
+					Field295: nil,
+					Field296: []*HugeStruct0{GetHugeStruct0()},
+					Field297: nil,
+					Field298: map[string]*int64{
+						"": nil,
+					},
+					Field299: map[string]*bool{
+						"": nil,
+					},
+					Field300: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field301: nil,
+					Field302: []*string{},
+					Field303: []*string{},
+					Field304: map[string]*string{
+						"": nil,
+					},
+					Field305: nil,
+					Field306: nil,
+					Field307: []*HugeStruct0{GetHugeStruct0()},
+					Field308: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field309: map[string]*int32{
+						"": nil,
+					},
+					Field310: []*HugeStruct0{GetHugeStruct0()},
+					Field311: nil,
+					Field312: []*bool{},
+					Field313: nil,
+					Field314: []*HugeStruct0{GetHugeStruct0()},
+					Field315: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field316: nil,
+					Field317: nil,
+					Field318: nil,
+					Field319: []*int32{},
+					Field320: nil,
+					Field321: []*HugeStruct0{GetHugeStruct0()},
+					Field322: nil,
+					Field323: nil,
+					Field324: []*HugeStruct0{GetHugeStruct0()},
+					Field325: nil,
+					Field326: []*int64{},
+					Field327: nil,
+					Field328: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field329: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field330: []*HugeStruct0{GetHugeStruct0()},
+					Field331: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field332: []*string{},
+					Field333: nil,
+					Field334: []*HugeStruct0{GetHugeStruct0()},
+					Field335: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field336: map[string]*bool{
+						"": nil,
+					},
+					Field337: []*int64{},
+					Field338: map[string]*bool{
+						"": nil,
+					},
+					Field339: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field340: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field341: []*bool{},
+					Field342: []*int64{},
+					Field343: []*int32{},
+					Field344: map[string]*bool{
+						"": nil,
+					},
+					Field345: map[string]*int64{
+						"": nil,
+					},
+					Field346: nil,
+					Field347: map[string]*bool{
+						"": nil,
+					},
+					Field348: map[string]*int32{
+						"": nil,
+					},
+					Field349: []*string{},
+					Field350: map[string]*int32{
+						"": nil,
+					},
+					Field351: nil,
+					Field352: []*int64{},
+					Field353: []*int64{},
+					Field354: nil,
+					Field355: map[string]*int32{
+						"": nil,
+					},
+					Field356: map[string]*bool{
+						"": nil,
+					},
+					Field357: []*int32{},
+					Field358: nil,
+					Field359: map[string]*int64{
+						"": nil,
+					},
+					Field360: nil,
+					Field361: map[string]*int64{
+						"": nil,
+					},
+					Field362: map[string]*int32{
+						"": nil,
+					},
+					Field363: []*int64{},
+					Field364: []*bool{},
+					Field365: nil,
+					Field366: map[string]*string{
+						"": nil,
+					},
+					Field367: map[string]*bool{
+						"": nil,
+					},
+					Field368: nil,
+					Field369: nil,
+					Field370: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field371: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field372: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field373: map[string]*bool{
+						"": nil,
+					},
+				},
+				Field93: nil,
+				Field94: &HugeStruct1{
+					Field0: []*int32{},
+					Field1: []*string{},
+					Field2: []*int64{},
+					Field3: map[string]*int32{
+						"": nil,
+					},
+					Field4: []*bool{},
+					Field5: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field6: map[string]*int32{
+						"": nil,
+					},
+					Field7: map[string]*bool{
+						"": nil,
+					},
+					Field8: []*bool{},
+					Field9: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field10: []*string{},
+					Field11: []*bool{},
+					Field12: []*bool{},
+					Field13: map[string]*int32{
+						"": nil,
+					},
+					Field14: map[string]*int32{
+						"": nil,
+					},
+					Field15: nil,
+					Field16: []*int64{},
+					Field17: []*bool{},
+					Field18: map[string]*int64{
+						"": nil,
+					},
+					Field19: []*int64{},
+					Field20: map[string]*string{
+						"": nil,
+					},
+					Field21: nil,
+					Field22: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field23: []*string{},
+					Field24: []*int64{},
+					Field25: []*string{},
+					Field26: []*bool{},
+					Field27: map[string]*int32{
+						"": nil,
+					},
+					Field28: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field29: map[string]*int32{
+						"": nil,
+					},
+					Field30: map[string]*bool{
+						"": nil,
+					},
+					Field31: map[string]*int32{
+						"": nil,
+					},
+					Field32: []*HugeStruct0{GetHugeStruct0()},
+					Field33: nil,
+					Field34: map[string]*bool{
+						"": nil,
+					},
+					Field35: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field36: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field37: nil,
+					Field38: []*HugeStruct0{GetHugeStruct0()},
+					Field39: []*bool{},
+					Field40: map[string]*string{
+						"": nil,
+					},
+					Field41: map[string]*int64{
+						"": nil,
+					},
+					Field42: map[string]*int32{
+						"": nil,
+					},
+					Field43: nil,
+					Field44: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field45: map[string]*int32{
+						"": nil,
+					},
+					Field46: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field47: nil,
+					Field48: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field49: nil,
+					Field50: map[string]*string{
+						"": nil,
+					},
+					Field51: map[string]*bool{
+						"": nil,
+					},
+					Field52: []*int64{},
+					Field53: map[string]*string{
+						"": nil,
+					},
+					Field54: []*int32{},
+					Field55: map[string]*int64{
+						"": nil,
+					},
+					Field56: map[string]*int32{
+						"": nil,
+					},
+					Field57: map[string]*string{
+						"": nil,
+					},
+					Field58: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field59: []*HugeStruct0{GetHugeStruct0()},
+					Field60: map[string]*string{
+						"": nil,
+					},
+					Field61: map[string]*bool{
+						"": nil,
+					},
+					Field62: map[string]*int64{
+						"": nil,
+					},
+					Field63: []*string{},
+					Field64: []*int64{},
+					Field65: map[string]*bool{
+						"": nil,
+					},
+					Field66: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field67: []*int64{},
+					Field68: map[string]*string{
+						"": nil,
+					},
+					Field69: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field70: []*bool{},
+					Field71: map[string]*int64{
+						"": nil,
+					},
+					Field72: nil,
+					Field73: map[string]*int32{
+						"": nil,
+					},
+					Field74: nil,
+					Field75: map[string]*int32{
+						"": nil,
+					},
+					Field76: map[string]*string{
+						"": nil,
+					},
+					Field77: []*string{},
+					Field78: nil,
+					Field79: map[string]*int64{
+						"": nil,
+					},
+					Field80: []*int64{},
+					Field81: map[string]*bool{
+						"": nil,
+					},
+					Field82: []*string{},
+					Field83: []*string{},
+					Field84: nil,
+					Field85: []*bool{},
+					Field86: []*HugeStruct0{GetHugeStruct0()},
+					Field87: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field88: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field89: []*int64{},
+					Field90: []*int32{},
+					Field91: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field92: []*bool{},
+					Field93: []*string{},
+					Field94: map[string]*int32{
+						"": nil,
+					},
+					Field95: nil,
+					Field96: nil,
+					Field97: map[string]*bool{
+						"": nil,
+					},
+					Field98: map[string]*int32{
+						"": nil,
+					},
+					Field99:  []*HugeStruct0{GetHugeStruct0()},
+					Field100: nil,
+					Field101: nil,
+					Field102: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field103: []*string{},
+					Field104: []*string{},
+					Field105: map[string]*bool{
+						"": nil,
+					},
+					Field106: []*string{},
+					Field107: []*int64{},
+					Field108: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field109: nil,
+					Field110: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field111: []*string{},
+					Field112: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field113: []*bool{},
+					Field114: []*bool{},
+					Field115: map[string]*string{
+						"": nil,
+					},
+					Field116: []*int64{},
+					Field117: []*string{},
+					Field118: map[string]*bool{
+						"": nil,
+					},
+					Field119: map[string]*string{
+						"": nil,
+					},
+					Field120: []*HugeStruct0{GetHugeStruct0()},
+					Field121: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field122: []*bool{},
+					Field123: nil,
+					Field124: []*int64{},
+					Field125: nil,
+					Field126: []*string{},
+					Field127: []*string{},
+					Field128: []*int32{},
+					Field129: []*bool{},
+					Field130: nil,
+					Field131: nil,
+					Field132: []*int32{},
+					Field133: []*int32{},
+					Field134: nil,
+					Field135: []*bool{},
+					Field136: nil,
+					Field137: []*int32{},
+					Field138: map[string]*int64{
+						"": nil,
+					},
+					Field139: map[string]*string{
+						"": nil,
+					},
+					Field140: map[string]*int64{
+						"": nil,
+					},
+					Field141: map[string]*int64{
+						"": nil,
+					},
+					Field142: []*int32{},
+					Field143: []*HugeStruct0{GetHugeStruct0()},
+					Field144: map[string]*int64{
+						"": nil,
+					},
+					Field145: []*string{},
+					Field146: map[string]*int64{
+						"": nil,
+					},
+					Field147: nil,
+					Field148: map[string]*string{
+						"": nil,
+					},
+					Field149: nil,
+					Field150: map[string]*int64{
+						"": nil,
+					},
+					Field151: map[string]*int64{
+						"": nil,
+					},
+					Field152: map[string]*int32{
+						"": nil,
+					},
+					Field153: []*int32{},
+					Field154: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field155: map[string]*string{
+						"": nil,
+					},
+					Field156: map[string]*int64{
+						"": nil,
+					},
+					Field157: []*int32{},
+					Field158: []*int32{},
+					Field159: nil,
+					Field160: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field161: []*bool{},
+					Field162: []*HugeStruct0{GetHugeStruct0()},
+					Field163: []*int32{},
+					Field164: map[string]*string{
+						"": nil,
+					},
+					Field165: []*bool{},
+					Field166: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field167: nil,
+					Field168: []*bool{},
+					Field169: map[string]*bool{
+						"": nil,
+					},
+					Field170: map[string]*bool{
+						"": nil,
+					},
+					Field171: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field172: map[string]*bool{
+						"": nil,
+					},
+					Field173: []*bool{},
+					Field174: map[string]*int64{
+						"": nil,
+					},
+					Field175: []*HugeStruct0{GetHugeStruct0()},
+					Field176: []*int32{},
+					Field177: []*int64{},
+					Field178: map[string]*int64{
+						"": nil,
+					},
+					Field179: []*int32{},
+					Field180: []*string{},
+					Field181: []*int32{},
+					Field182: map[string]*string{
+						"": nil,
+					},
+					Field183: []*int64{},
+					Field184: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field185: []*int32{},
+					Field186: nil,
+					Field187: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field188: []*HugeStruct0{GetHugeStruct0()},
+					Field189: nil,
+					Field190: []*int64{},
+					Field191: map[string]*int32{
+						"": nil,
+					},
+					Field192: []*HugeStruct0{GetHugeStruct0()},
+					Field193: []*HugeStruct0{GetHugeStruct0()},
+					Field194: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field195: []*bool{},
+					Field196: map[string]*bool{
+						"": nil,
+					},
+					Field197: []*bool{},
+					Field198: nil,
+					Field199: map[string]*int32{
+						"": nil,
+					},
+					Field200: map[string]*int64{
+						"": nil,
+					},
+					Field201: map[string]*string{
+						"": nil,
+					},
+					Field202: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field203: map[string]*int32{
+						"": nil,
+					},
+					Field204: nil,
+					Field205: map[string]*string{
+						"": nil,
+					},
+					Field206: []*HugeStruct0{GetHugeStruct0()},
+					Field207: []*HugeStruct0{GetHugeStruct0()},
+					Field208: nil,
+					Field209: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field210: map[string]*string{
+						"": nil,
+					},
+					Field211: map[string]*bool{
+						"": nil,
+					},
+					Field212: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field213: nil,
+					Field214: map[string]*bool{
+						"": nil,
+					},
+					Field215: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field216: []*HugeStruct0{GetHugeStruct0()},
+					Field217: map[string]*string{
+						"": nil,
+					},
+					Field218: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field219: map[string]*int64{
+						"": nil,
+					},
+					Field220: nil,
+					Field221: nil,
+					Field222: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field223: []*int64{},
+					Field224: []*bool{},
+					Field225: []*bool{},
+					Field226: map[string]*int64{
+						"": nil,
+					},
+					Field227: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field228: []*int64{},
+					Field229: map[string]*bool{
+						"": nil,
+					},
+					Field230: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field231: nil,
+					Field232: nil,
+					Field233: []*string{},
+					Field234: []*HugeStruct0{GetHugeStruct0()},
+					Field235: []*string{},
+					Field236: nil,
+					Field237: nil,
+					Field238: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field239: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field240: []*HugeStruct0{GetHugeStruct0()},
+					Field241: nil,
+					Field242: nil,
+					Field243: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field244: map[string]*bool{
+						"": nil,
+					},
+					Field245: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field246: []*int32{},
+					Field247: []*bool{},
+					Field248: []*string{},
+					Field249: nil,
+					Field250: []*int32{},
+					Field251: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field252: nil,
+					Field253: map[string]*string{
+						"": nil,
+					},
+					Field254: map[string]*string{
+						"": nil,
+					},
+					Field255: []*int32{},
+					Field256: nil,
+					Field257: nil,
+					Field258: map[string]*string{
+						"": nil,
+					},
+					Field259: map[string]*int32{
+						"": nil,
+					},
+					Field260: []*int64{},
+					Field261: []*int32{},
+					Field262: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field263: nil,
+					Field264: nil,
+					Field265: map[string]*bool{
+						"": nil,
+					},
+					Field266: nil,
+					Field267: []*int64{},
+					Field268: nil,
+					Field269: nil,
+					Field270: map[string]*int64{
+						"": nil,
+					},
+					Field271: map[string]*int64{
+						"": nil,
+					},
+					Field272: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field273: []*string{},
+					Field274: nil,
+					Field275: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field276: map[string]*bool{
+						"": nil,
+					},
+					Field277: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field278: nil,
+					Field279: map[string]*string{
+						"": nil,
+					},
+					Field280: nil,
+					Field281: nil,
+					Field282: nil,
+					Field283: nil,
+					Field284: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field285: map[string]*int64{
+						"": nil,
+					},
+					Field286: map[string]*bool{
+						"": nil,
+					},
+					Field287: map[string]*string{
+						"": nil,
+					},
+					Field288: nil,
+					Field289: nil,
+					Field290: nil,
+					Field291: []*int64{},
+					Field292: map[string]*string{
+						"": nil,
+					},
+					Field293: nil,
+					Field294: []*string{},
+					Field295: nil,
+					Field296: []*HugeStruct0{GetHugeStruct0()},
+					Field297: nil,
+					Field298: map[string]*int64{
+						"": nil,
+					},
+					Field299: map[string]*bool{
+						"": nil,
+					},
+					Field300: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field301: nil,
+					Field302: []*string{},
+					Field303: []*string{},
+					Field304: map[string]*string{
+						"": nil,
+					},
+					Field305: nil,
+					Field306: nil,
+					Field307: []*HugeStruct0{GetHugeStruct0()},
+					Field308: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field309: map[string]*int32{
+						"": nil,
+					},
+					Field310: []*HugeStruct0{GetHugeStruct0()},
+					Field311: nil,
+					Field312: []*bool{},
+					Field313: nil,
+					Field314: []*HugeStruct0{GetHugeStruct0()},
+					Field315: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field316: nil,
+					Field317: nil,
+					Field318: nil,
+					Field319: []*int32{},
+					Field320: nil,
+					Field321: []*HugeStruct0{GetHugeStruct0()},
+					Field322: nil,
+					Field323: nil,
+					Field324: []*HugeStruct0{GetHugeStruct0()},
+					Field325: nil,
+					Field326: []*int64{},
+					Field327: nil,
+					Field328: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field329: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field330: []*HugeStruct0{GetHugeStruct0()},
+					Field331: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field332: []*string{},
+					Field333: nil,
+					Field334: []*HugeStruct0{GetHugeStruct0()},
+					Field335: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field336: map[string]*bool{
+						"": nil,
+					},
+					Field337: []*int64{},
+					Field338: map[string]*bool{
+						"": nil,
+					},
+					Field339: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field340: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field341: []*bool{},
+					Field342: []*int64{},
+					Field343: []*int32{},
+					Field344: map[string]*bool{
+						"": nil,
+					},
+					Field345: map[string]*int64{
+						"": nil,
+					},
+					Field346: nil,
+					Field347: map[string]*bool{
+						"": nil,
+					},
+					Field348: map[string]*int32{
+						"": nil,
+					},
+					Field349: []*string{},
+					Field350: map[string]*int32{
+						"": nil,
+					},
+					Field351: nil,
+					Field352: []*int64{},
+					Field353: []*int64{},
+					Field354: nil,
+					Field355: map[string]*int32{
+						"": nil,
+					},
+					Field356: map[string]*bool{
+						"": nil,
+					},
+					Field357: []*int32{},
+					Field358: nil,
+					Field359: map[string]*int64{
+						"": nil,
+					},
+					Field360: nil,
+					Field361: map[string]*int64{
+						"": nil,
+					},
+					Field362: map[string]*int32{
+						"": nil,
+					},
+					Field363: []*int64{},
+					Field364: []*bool{},
+					Field365: nil,
+					Field366: map[string]*string{
+						"": nil,
+					},
+					Field367: map[string]*bool{
+						"": nil,
+					},
+					Field368: nil,
+					Field369: nil,
+					Field370: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field371: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field372: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field373: map[string]*bool{
+						"": nil,
+					},
+				},
+				Field95: map[string]*int32{
+					"": nil,
+				},
+				Field96: nil,
+				Field97: []*HugeStruct0{GetHugeStruct0()},
+				Field98: []*bool{},
+				Field99: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field100: []*int32{},
+				Field101: nil,
+				Field102: map[string]*bool{
+					"": nil,
+				},
+				Field103: map[string]*bool{
+					"": nil,
+				},
+				Field104: []*string{},
+				Field105: map[string]*int32{
+					"": nil,
+				},
+				Field106: nil,
+				Field107: map[string]*HugeStruct1{
+					"": {
+						Field0: []*int32{},
+						Field1: []*string{},
+						Field2: []*int64{},
+						Field3: map[string]*int32{
+							"": nil,
+						},
+						Field4: []*bool{},
+						Field5: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field6: map[string]*int32{
+							"": nil,
+						},
+						Field7: map[string]*bool{
+							"": nil,
+						},
+						Field8: []*bool{},
+						Field9: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field10: []*string{},
+						Field11: []*bool{},
+						Field12: []*bool{},
+						Field13: map[string]*int32{
+							"": nil,
+						},
+						Field14: map[string]*int32{
+							"": nil,
+						},
+						Field15: nil,
+						Field16: []*int64{},
+						Field17: []*bool{},
+						Field18: map[string]*int64{
+							"": nil,
+						},
+						Field19: []*int64{},
+						Field20: map[string]*string{
+							"": nil,
+						},
+						Field21: nil,
+						Field22: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field23: []*string{},
+						Field24: []*int64{},
+						Field25: []*string{},
+						Field26: []*bool{},
+						Field27: map[string]*int32{
+							"": nil,
+						},
+						Field28: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field29: map[string]*int32{
+							"": nil,
+						},
+						Field30: map[string]*bool{
+							"": nil,
+						},
+						Field31: map[string]*int32{
+							"": nil,
+						},
+						Field32: []*HugeStruct0{GetHugeStruct0()},
+						Field33: nil,
+						Field34: map[string]*bool{
+							"": nil,
+						},
+						Field35: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field36: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field37: nil,
+						Field38: []*HugeStruct0{GetHugeStruct0()},
+						Field39: []*bool{},
+						Field40: map[string]*string{
+							"": nil,
+						},
+						Field41: map[string]*int64{
+							"": nil,
+						},
+						Field42: map[string]*int32{
+							"": nil,
+						},
+						Field43: nil,
+						Field44: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field45: map[string]*int32{
+							"": nil,
+						},
+						Field46: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field47: nil,
+						Field48: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field49: nil,
+						Field50: map[string]*string{
+							"": nil,
+						},
+						Field51: map[string]*bool{
+							"": nil,
+						},
+						Field52: []*int64{},
+						Field53: map[string]*string{
+							"": nil,
+						},
+						Field54: []*int32{},
+						Field55: map[string]*int64{
+							"": nil,
+						},
+						Field56: map[string]*int32{
+							"": nil,
+						},
+						Field57: map[string]*string{
+							"": nil,
+						},
+						Field58: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field59: []*HugeStruct0{GetHugeStruct0()},
+						Field60: map[string]*string{
+							"": nil,
+						},
+						Field61: map[string]*bool{
+							"": nil,
+						},
+						Field62: map[string]*int64{
+							"": nil,
+						},
+						Field63: []*string{},
+						Field64: []*int64{},
+						Field65: map[string]*bool{
+							"": nil,
+						},
+						Field66: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field67: []*int64{},
+						Field68: map[string]*string{
+							"": nil,
+						},
+						Field69: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field70: []*bool{},
+						Field71: map[string]*int64{
+							"": nil,
+						},
+						Field72: nil,
+						Field73: map[string]*int32{
+							"": nil,
+						},
+						Field74: nil,
+						Field75: map[string]*int32{
+							"": nil,
+						},
+						Field76: map[string]*string{
+							"": nil,
+						},
+						Field77: []*string{},
+						Field78: nil,
+						Field79: map[string]*int64{
+							"": nil,
+						},
+						Field80: []*int64{},
+						Field81: map[string]*bool{
+							"": nil,
+						},
+						Field82: []*string{},
+						Field83: []*string{},
+						Field84: nil,
+						Field85: []*bool{},
+						Field86: []*HugeStruct0{GetHugeStruct0()},
+						Field87: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field88: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field89: []*int64{},
+						Field90: []*int32{},
+						Field91: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field92: []*bool{},
+						Field93: []*string{},
+						Field94: map[string]*int32{
+							"": nil,
+						},
+						Field95: nil,
+						Field96: nil,
+						Field97: map[string]*bool{
+							"": nil,
+						},
+						Field98: map[string]*int32{
+							"": nil,
+						},
+						Field99:  []*HugeStruct0{GetHugeStruct0()},
+						Field100: nil,
+						Field101: nil,
+						Field102: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field103: []*string{},
+						Field104: []*string{},
+						Field105: map[string]*bool{
+							"": nil,
+						},
+						Field106: []*string{},
+						Field107: []*int64{},
+						Field108: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field109: nil,
+						Field110: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field111: []*string{},
+						Field112: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field113: []*bool{},
+						Field114: []*bool{},
+						Field115: map[string]*string{
+							"": nil,
+						},
+						Field116: []*int64{},
+						Field117: []*string{},
+						Field118: map[string]*bool{
+							"": nil,
+						},
+						Field119: map[string]*string{
+							"": nil,
+						},
+						Field120: []*HugeStruct0{GetHugeStruct0()},
+						Field121: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field122: []*bool{},
+						Field123: nil,
+						Field124: []*int64{},
+						Field125: nil,
+						Field126: []*string{},
+						Field127: []*string{},
+						Field128: []*int32{},
+						Field129: []*bool{},
+						Field130: nil,
+						Field131: nil,
+						Field132: []*int32{},
+						Field133: []*int32{},
+						Field134: nil,
+						Field135: []*bool{},
+						Field136: nil,
+						Field137: []*int32{},
+						Field138: map[string]*int64{
+							"": nil,
+						},
+						Field139: map[string]*string{
+							"": nil,
+						},
+						Field140: map[string]*int64{
+							"": nil,
+						},
+						Field141: map[string]*int64{
+							"": nil,
+						},
+						Field142: []*int32{},
+						Field143: []*HugeStruct0{GetHugeStruct0()},
+						Field144: map[string]*int64{
+							"": nil,
+						},
+						Field145: []*string{},
+						Field146: map[string]*int64{
+							"": nil,
+						},
+						Field147: nil,
+						Field148: map[string]*string{
+							"": nil,
+						},
+						Field149: nil,
+						Field150: map[string]*int64{
+							"": nil,
+						},
+						Field151: map[string]*int64{
+							"": nil,
+						},
+						Field152: map[string]*int32{
+							"": nil,
+						},
+						Field153: []*int32{},
+						Field154: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field155: map[string]*string{
+							"": nil,
+						},
+						Field156: map[string]*int64{
+							"": nil,
+						},
+						Field157: []*int32{},
+						Field158: []*int32{},
+						Field159: nil,
+						Field160: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field161: []*bool{},
+						Field162: []*HugeStruct0{GetHugeStruct0()},
+						Field163: []*int32{},
+						Field164: map[string]*string{
+							"": nil,
+						},
+						Field165: []*bool{},
+						Field166: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field167: nil,
+						Field168: []*bool{},
+						Field169: map[string]*bool{
+							"": nil,
+						},
+						Field170: map[string]*bool{
+							"": nil,
+						},
+						Field171: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field172: map[string]*bool{
+							"": nil,
+						},
+						Field173: []*bool{},
+						Field174: map[string]*int64{
+							"": nil,
+						},
+						Field175: []*HugeStruct0{GetHugeStruct0()},
+						Field176: []*int32{},
+						Field177: []*int64{},
+						Field178: map[string]*int64{
+							"": nil,
+						},
+						Field179: []*int32{},
+						Field180: []*string{},
+						Field181: []*int32{},
+						Field182: map[string]*string{
+							"": nil,
+						},
+						Field183: []*int64{},
+						Field184: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field185: []*int32{},
+						Field186: nil,
+						Field187: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field188: []*HugeStruct0{GetHugeStruct0()},
+						Field189: nil,
+						Field190: []*int64{},
+						Field191: map[string]*int32{
+							"": nil,
+						},
+						Field192: []*HugeStruct0{GetHugeStruct0()},
+						Field193: []*HugeStruct0{GetHugeStruct0()},
+						Field194: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field195: []*bool{},
+						Field196: map[string]*bool{
+							"": nil,
+						},
+						Field197: []*bool{},
+						Field198: nil,
+						Field199: map[string]*int32{
+							"": nil,
+						},
+						Field200: map[string]*int64{
+							"": nil,
+						},
+						Field201: map[string]*string{
+							"": nil,
+						},
+						Field202: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field203: map[string]*int32{
+							"": nil,
+						},
+						Field204: nil,
+						Field205: map[string]*string{
+							"": nil,
+						},
+						Field206: []*HugeStruct0{GetHugeStruct0()},
+						Field207: []*HugeStruct0{GetHugeStruct0()},
+						Field208: nil,
+						Field209: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field210: map[string]*string{
+							"": nil,
+						},
+						Field211: map[string]*bool{
+							"": nil,
+						},
+						Field212: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field213: nil,
+						Field214: map[string]*bool{
+							"": nil,
+						},
+						Field215: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field216: []*HugeStruct0{GetHugeStruct0()},
+						Field217: map[string]*string{
+							"": nil,
+						},
+						Field218: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field219: map[string]*int64{
+							"": nil,
+						},
+						Field220: nil,
+						Field221: nil,
+						Field222: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field223: []*int64{},
+						Field224: []*bool{},
+						Field225: []*bool{},
+						Field226: map[string]*int64{
+							"": nil,
+						},
+						Field227: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field228: []*int64{},
+						Field229: map[string]*bool{
+							"": nil,
+						},
+						Field230: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field231: nil,
+						Field232: nil,
+						Field233: []*string{},
+						Field234: []*HugeStruct0{GetHugeStruct0()},
+						Field235: []*string{},
+						Field236: nil,
+						Field237: nil,
+						Field238: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field239: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field240: []*HugeStruct0{GetHugeStruct0()},
+						Field241: nil,
+						Field242: nil,
+						Field243: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field244: map[string]*bool{
+							"": nil,
+						},
+						Field245: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field246: []*int32{},
+						Field247: []*bool{},
+						Field248: []*string{},
+						Field249: nil,
+						Field250: []*int32{},
+						Field251: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field252: nil,
+						Field253: map[string]*string{
+							"": nil,
+						},
+						Field254: map[string]*string{
+							"": nil,
+						},
+						Field255: []*int32{},
+						Field256: nil,
+						Field257: nil,
+						Field258: map[string]*string{
+							"": nil,
+						},
+						Field259: map[string]*int32{
+							"": nil,
+						},
+						Field260: []*int64{},
+						Field261: []*int32{},
+						Field262: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field263: nil,
+						Field264: nil,
+						Field265: map[string]*bool{
+							"": nil,
+						},
+						Field266: nil,
+						Field267: []*int64{},
+						Field268: nil,
+						Field269: nil,
+						Field270: map[string]*int64{
+							"": nil,
+						},
+						Field271: map[string]*int64{
+							"": nil,
+						},
+						Field272: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field273: []*string{},
+						Field274: nil,
+						Field275: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field276: map[string]*bool{
+							"": nil,
+						},
+						Field277: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field278: nil,
+						Field279: map[string]*string{
+							"": nil,
+						},
+						Field280: nil,
+						Field281: nil,
+						Field282: nil,
+						Field283: nil,
+						Field284: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field285: map[string]*int64{
+							"": nil,
+						},
+						Field286: map[string]*bool{
+							"": nil,
+						},
+						Field287: map[string]*string{
+							"": nil,
+						},
+						Field288: nil,
+						Field289: nil,
+						Field290: nil,
+						Field291: []*int64{},
+						Field292: map[string]*string{
+							"": nil,
+						},
+						Field293: nil,
+						Field294: []*string{},
+						Field295: nil,
+						Field296: []*HugeStruct0{GetHugeStruct0()},
+						Field297: nil,
+						Field298: map[string]*int64{
+							"": nil,
+						},
+						Field299: map[string]*bool{
+							"": nil,
+						},
+						Field300: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field301: nil,
+						Field302: []*string{},
+						Field303: []*string{},
+						Field304: map[string]*string{
+							"": nil,
+						},
+						Field305: nil,
+						Field306: nil,
+						Field307: []*HugeStruct0{GetHugeStruct0()},
+						Field308: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field309: map[string]*int32{
+							"": nil,
+						},
+						Field310: []*HugeStruct0{GetHugeStruct0()},
+						Field311: nil,
+						Field312: []*bool{},
+						Field313: nil,
+						Field314: []*HugeStruct0{GetHugeStruct0()},
+						Field315: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field316: nil,
+						Field317: nil,
+						Field318: nil,
+						Field319: []*int32{},
+						Field320: nil,
+						Field321: []*HugeStruct0{GetHugeStruct0()},
+						Field322: nil,
+						Field323: nil,
+						Field324: []*HugeStruct0{GetHugeStruct0()},
+						Field325: nil,
+						Field326: []*int64{},
+						Field327: nil,
+						Field328: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field329: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field330: []*HugeStruct0{GetHugeStruct0()},
+						Field331: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field332: []*string{},
+						Field333: nil,
+						Field334: []*HugeStruct0{GetHugeStruct0()},
+						Field335: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field336: map[string]*bool{
+							"": nil,
+						},
+						Field337: []*int64{},
+						Field338: map[string]*bool{
+							"": nil,
+						},
+						Field339: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field340: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field341: []*bool{},
+						Field342: []*int64{},
+						Field343: []*int32{},
+						Field344: map[string]*bool{
+							"": nil,
+						},
+						Field345: map[string]*int64{
+							"": nil,
+						},
+						Field346: nil,
+						Field347: map[string]*bool{
+							"": nil,
+						},
+						Field348: map[string]*int32{
+							"": nil,
+						},
+						Field349: []*string{},
+						Field350: map[string]*int32{
+							"": nil,
+						},
+						Field351: nil,
+						Field352: []*int64{},
+						Field353: []*int64{},
+						Field354: nil,
+						Field355: map[string]*int32{
+							"": nil,
+						},
+						Field356: map[string]*bool{
+							"": nil,
+						},
+						Field357: []*int32{},
+						Field358: nil,
+						Field359: map[string]*int64{
+							"": nil,
+						},
+						Field360: nil,
+						Field361: map[string]*int64{
+							"": nil,
+						},
+						Field362: map[string]*int32{
+							"": nil,
+						},
+						Field363: []*int64{},
+						Field364: []*bool{},
+						Field365: nil,
+						Field366: map[string]*string{
+							"": nil,
+						},
+						Field367: map[string]*bool{
+							"": nil,
+						},
+						Field368: nil,
+						Field369: nil,
+						Field370: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field371: &HugeStruct0{
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+						Field372: map[string]*HugeStruct0{
+							"": {
+								Field0: map[string]*int64{
+									"": nil,
+								},
+								Field1: nil,
+								Field2: []*int64{},
+								Field3: map[string]*int64{
+									"": nil,
+								},
+								Field4: []*int64{},
+							},
+						},
+						Field373: map[string]*bool{
+							"": nil,
+						},
+					},
+				},
+				Field108: []*int32{},
+				Field109: []*int64{},
+				Field110: nil,
+				Field111: map[string]*bool{
+					"": nil,
+				},
+				Field112: []*int64{},
+				Field113: nil,
+				Field114: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field115: map[string]*int32{
+					"": nil,
+				},
+				Field116: []*string{},
+				Field117: []*int64{},
+				Field118: []*int32{},
+				Field119: nil,
+				Field120: map[string]*string{
+					"": nil,
+				},
+				Field121: map[string]*string{
+					"": nil,
+				},
+				Field122: []*string{},
+				Field123: map[string]*bool{
+					"": nil,
+				},
+				Field124: map[string]*string{
+					"": nil,
+				},
+				Field125: map[string]*int32{
+					"": nil,
+				},
+				Field126: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field127: nil,
+				Field128: []*int64{},
+				Field129: &HugeStruct1{
+					Field0: []*int32{},
+					Field1: []*string{},
+					Field2: []*int64{},
+					Field3: map[string]*int32{
+						"": nil,
+					},
+					Field4: []*bool{},
+					Field5: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field6: map[string]*int32{
+						"": nil,
+					},
+					Field7: map[string]*bool{
+						"": nil,
+					},
+					Field8: []*bool{},
+					Field9: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field10: []*string{},
+					Field11: []*bool{},
+					Field12: []*bool{},
+					Field13: map[string]*int32{
+						"": nil,
+					},
+					Field14: map[string]*int32{
+						"": nil,
+					},
+					Field15: nil,
+					Field16: []*int64{},
+					Field17: []*bool{},
+					Field18: map[string]*int64{
+						"": nil,
+					},
+					Field19: []*int64{},
+					Field20: map[string]*string{
+						"": nil,
+					},
+					Field21: nil,
+					Field22: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field23: []*string{},
+					Field24: []*int64{},
+					Field25: []*string{},
+					Field26: []*bool{},
+					Field27: map[string]*int32{
+						"": nil,
+					},
+					Field28: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field29: map[string]*int32{
+						"": nil,
+					},
+					Field30: map[string]*bool{
+						"": nil,
+					},
+					Field31: map[string]*int32{
+						"": nil,
+					},
+					Field32: []*HugeStruct0{GetHugeStruct0()},
+					Field33: nil,
+					Field34: map[string]*bool{
+						"": nil,
+					},
+					Field35: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field36: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field37: nil,
+					Field38: []*HugeStruct0{GetHugeStruct0()},
+					Field39: []*bool{},
+					Field40: map[string]*string{
+						"": nil,
+					},
+					Field41: map[string]*int64{
+						"": nil,
+					},
+					Field42: map[string]*int32{
+						"": nil,
+					},
+					Field43: nil,
+					Field44: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field45: map[string]*int32{
+						"": nil,
+					},
+					Field46: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field47: nil,
+					Field48: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field49: nil,
+					Field50: map[string]*string{
+						"": nil,
+					},
+					Field51: map[string]*bool{
+						"": nil,
+					},
+					Field52: []*int64{},
+					Field53: map[string]*string{
+						"": nil,
+					},
+					Field54: []*int32{},
+					Field55: map[string]*int64{
+						"": nil,
+					},
+					Field56: map[string]*int32{
+						"": nil,
+					},
+					Field57: map[string]*string{
+						"": nil,
+					},
+					Field58: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field59: []*HugeStruct0{GetHugeStruct0()},
+					Field60: map[string]*string{
+						"": nil,
+					},
+					Field61: map[string]*bool{
+						"": nil,
+					},
+					Field62: map[string]*int64{
+						"": nil,
+					},
+					Field63: []*string{},
+					Field64: []*int64{},
+					Field65: map[string]*bool{
+						"": nil,
+					},
+					Field66: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field67: []*int64{},
+					Field68: map[string]*string{
+						"": nil,
+					},
+					Field69: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field70: []*bool{},
+					Field71: map[string]*int64{
+						"": nil,
+					},
+					Field72: nil,
+					Field73: map[string]*int32{
+						"": nil,
+					},
+					Field74: nil,
+					Field75: map[string]*int32{
+						"": nil,
+					},
+					Field76: map[string]*string{
+						"": nil,
+					},
+					Field77: []*string{},
+					Field78: nil,
+					Field79: map[string]*int64{
+						"": nil,
+					},
+					Field80: []*int64{},
+					Field81: map[string]*bool{
+						"": nil,
+					},
+					Field82: []*string{},
+					Field83: []*string{},
+					Field84: nil,
+					Field85: []*bool{},
+					Field86: []*HugeStruct0{GetHugeStruct0()},
+					Field87: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field88: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field89: []*int64{},
+					Field90: []*int32{},
+					Field91: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field92: []*bool{},
+					Field93: []*string{},
+					Field94: map[string]*int32{
+						"": nil,
+					},
+					Field95: nil,
+					Field96: nil,
+					Field97: map[string]*bool{
+						"": nil,
+					},
+					Field98: map[string]*int32{
+						"": nil,
+					},
+					Field99:  []*HugeStruct0{GetHugeStruct0()},
+					Field100: nil,
+					Field101: nil,
+					Field102: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field103: []*string{},
+					Field104: []*string{},
+					Field105: map[string]*bool{
+						"": nil,
+					},
+					Field106: []*string{},
+					Field107: []*int64{},
+					Field108: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field109: nil,
+					Field110: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field111: []*string{},
+					Field112: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field113: []*bool{},
+					Field114: []*bool{},
+					Field115: map[string]*string{
+						"": nil,
+					},
+					Field116: []*int64{},
+					Field117: []*string{},
+					Field118: map[string]*bool{
+						"": nil,
+					},
+					Field119: map[string]*string{
+						"": nil,
+					},
+					Field120: []*HugeStruct0{GetHugeStruct0()},
+					Field121: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field122: []*bool{},
+					Field123: nil,
+					Field124: []*int64{},
+					Field125: nil,
+					Field126: []*string{},
+					Field127: []*string{},
+					Field128: []*int32{},
+					Field129: []*bool{},
+					Field130: nil,
+					Field131: nil,
+					Field132: []*int32{},
+					Field133: []*int32{},
+					Field134: nil,
+					Field135: []*bool{},
+					Field136: nil,
+					Field137: []*int32{},
+					Field138: map[string]*int64{
+						"": nil,
+					},
+					Field139: map[string]*string{
+						"": nil,
+					},
+					Field140: map[string]*int64{
+						"": nil,
+					},
+					Field141: map[string]*int64{
+						"": nil,
+					},
+					Field142: []*int32{},
+					Field143: []*HugeStruct0{GetHugeStruct0()},
+					Field144: map[string]*int64{
+						"": nil,
+					},
+					Field145: []*string{},
+					Field146: map[string]*int64{
+						"": nil,
+					},
+					Field147: nil,
+					Field148: map[string]*string{
+						"": nil,
+					},
+					Field149: nil,
+					Field150: map[string]*int64{
+						"": nil,
+					},
+					Field151: map[string]*int64{
+						"": nil,
+					},
+					Field152: map[string]*int32{
+						"": nil,
+					},
+					Field153: []*int32{},
+					Field154: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field155: map[string]*string{
+						"": nil,
+					},
+					Field156: map[string]*int64{
+						"": nil,
+					},
+					Field157: []*int32{},
+					Field158: []*int32{},
+					Field159: nil,
+					Field160: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field161: []*bool{},
+					Field162: []*HugeStruct0{GetHugeStruct0()},
+					Field163: []*int32{},
+					Field164: map[string]*string{
+						"": nil,
+					},
+					Field165: []*bool{},
+					Field166: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field167: nil,
+					Field168: []*bool{},
+					Field169: map[string]*bool{
+						"": nil,
+					},
+					Field170: map[string]*bool{
+						"": nil,
+					},
+					Field171: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field172: map[string]*bool{
+						"": nil,
+					},
+					Field173: []*bool{},
+					Field174: map[string]*int64{
+						"": nil,
+					},
+					Field175: []*HugeStruct0{GetHugeStruct0()},
+					Field176: []*int32{},
+					Field177: []*int64{},
+					Field178: map[string]*int64{
+						"": nil,
+					},
+					Field179: []*int32{},
+					Field180: []*string{},
+					Field181: []*int32{},
+					Field182: map[string]*string{
+						"": nil,
+					},
+					Field183: []*int64{},
+					Field184: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field185: []*int32{},
+					Field186: nil,
+					Field187: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field188: []*HugeStruct0{GetHugeStruct0()},
+					Field189: nil,
+					Field190: []*int64{},
+					Field191: map[string]*int32{
+						"": nil,
+					},
+					Field192: []*HugeStruct0{GetHugeStruct0()},
+					Field193: []*HugeStruct0{GetHugeStruct0()},
+					Field194: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field195: []*bool{},
+					Field196: map[string]*bool{
+						"": nil,
+					},
+					Field197: []*bool{},
+					Field198: nil,
+					Field199: map[string]*int32{
+						"": nil,
+					},
+					Field200: map[string]*int64{
+						"": nil,
+					},
+					Field201: map[string]*string{
+						"": nil,
+					},
+					Field202: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field203: map[string]*int32{
+						"": nil,
+					},
+					Field204: nil,
+					Field205: map[string]*string{
+						"": nil,
+					},
+					Field206: []*HugeStruct0{GetHugeStruct0()},
+					Field207: []*HugeStruct0{GetHugeStruct0()},
+					Field208: nil,
+					Field209: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field210: map[string]*string{
+						"": nil,
+					},
+					Field211: map[string]*bool{
+						"": nil,
+					},
+					Field212: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field213: nil,
+					Field214: map[string]*bool{
+						"": nil,
+					},
+					Field215: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field216: []*HugeStruct0{GetHugeStruct0()},
+					Field217: map[string]*string{
+						"": nil,
+					},
+					Field218: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field219: map[string]*int64{
+						"": nil,
+					},
+					Field220: nil,
+					Field221: nil,
+					Field222: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field223: []*int64{},
+					Field224: []*bool{},
+					Field225: []*bool{},
+					Field226: map[string]*int64{
+						"": nil,
+					},
+					Field227: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field228: []*int64{},
+					Field229: map[string]*bool{
+						"": nil,
+					},
+					Field230: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field231: nil,
+					Field232: nil,
+					Field233: []*string{},
+					Field234: []*HugeStruct0{GetHugeStruct0()},
+					Field235: []*string{},
+					Field236: nil,
+					Field237: nil,
+					Field238: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field239: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field240: []*HugeStruct0{GetHugeStruct0()},
+					Field241: nil,
+					Field242: nil,
+					Field243: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field244: map[string]*bool{
+						"": nil,
+					},
+					Field245: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field246: []*int32{},
+					Field247: []*bool{},
+					Field248: []*string{},
+					Field249: nil,
+					Field250: []*int32{},
+					Field251: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field252: nil,
+					Field253: map[string]*string{
+						"": nil,
+					},
+					Field254: map[string]*string{
+						"": nil,
+					},
+					Field255: []*int32{},
+					Field256: nil,
+					Field257: nil,
+					Field258: map[string]*string{
+						"": nil,
+					},
+					Field259: map[string]*int32{
+						"": nil,
+					},
+					Field260: []*int64{},
+					Field261: []*int32{},
+					Field262: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field263: nil,
+					Field264: nil,
+					Field265: map[string]*bool{
+						"": nil,
+					},
+					Field266: nil,
+					Field267: []*int64{},
+					Field268: nil,
+					Field269: nil,
+					Field270: map[string]*int64{
+						"": nil,
+					},
+					Field271: map[string]*int64{
+						"": nil,
+					},
+					Field272: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field273: []*string{},
+					Field274: nil,
+					Field275: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field276: map[string]*bool{
+						"": nil,
+					},
+					Field277: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field278: nil,
+					Field279: map[string]*string{
+						"": nil,
+					},
+					Field280: nil,
+					Field281: nil,
+					Field282: nil,
+					Field283: nil,
+					Field284: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field285: map[string]*int64{
+						"": nil,
+					},
+					Field286: map[string]*bool{
+						"": nil,
+					},
+					Field287: map[string]*string{
+						"": nil,
+					},
+					Field288: nil,
+					Field289: nil,
+					Field290: nil,
+					Field291: []*int64{},
+					Field292: map[string]*string{
+						"": nil,
+					},
+					Field293: nil,
+					Field294: []*string{},
+					Field295: nil,
+					Field296: []*HugeStruct0{GetHugeStruct0()},
+					Field297: nil,
+					Field298: map[string]*int64{
+						"": nil,
+					},
+					Field299: map[string]*bool{
+						"": nil,
+					},
+					Field300: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field301: nil,
+					Field302: []*string{},
+					Field303: []*string{},
+					Field304: map[string]*string{
+						"": nil,
+					},
+					Field305: nil,
+					Field306: nil,
+					Field307: []*HugeStruct0{GetHugeStruct0()},
+					Field308: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field309: map[string]*int32{
+						"": nil,
+					},
+					Field310: []*HugeStruct0{GetHugeStruct0()},
+					Field311: nil,
+					Field312: []*bool{},
+					Field313: nil,
+					Field314: []*HugeStruct0{GetHugeStruct0()},
+					Field315: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field316: nil,
+					Field317: nil,
+					Field318: nil,
+					Field319: []*int32{},
+					Field320: nil,
+					Field321: []*HugeStruct0{GetHugeStruct0()},
+					Field322: nil,
+					Field323: nil,
+					Field324: []*HugeStruct0{GetHugeStruct0()},
+					Field325: nil,
+					Field326: []*int64{},
+					Field327: nil,
+					Field328: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field329: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field330: []*HugeStruct0{GetHugeStruct0()},
+					Field331: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field332: []*string{},
+					Field333: nil,
+					Field334: []*HugeStruct0{GetHugeStruct0()},
+					Field335: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field336: map[string]*bool{
+						"": nil,
+					},
+					Field337: []*int64{},
+					Field338: map[string]*bool{
+						"": nil,
+					},
+					Field339: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field340: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field341: []*bool{},
+					Field342: []*int64{},
+					Field343: []*int32{},
+					Field344: map[string]*bool{
+						"": nil,
+					},
+					Field345: map[string]*int64{
+						"": nil,
+					},
+					Field346: nil,
+					Field347: map[string]*bool{
+						"": nil,
+					},
+					Field348: map[string]*int32{
+						"": nil,
+					},
+					Field349: []*string{},
+					Field350: map[string]*int32{
+						"": nil,
+					},
+					Field351: nil,
+					Field352: []*int64{},
+					Field353: []*int64{},
+					Field354: nil,
+					Field355: map[string]*int32{
+						"": nil,
+					},
+					Field356: map[string]*bool{
+						"": nil,
+					},
+					Field357: []*int32{},
+					Field358: nil,
+					Field359: map[string]*int64{
+						"": nil,
+					},
+					Field360: nil,
+					Field361: map[string]*int64{
+						"": nil,
+					},
+					Field362: map[string]*int32{
+						"": nil,
+					},
+					Field363: []*int64{},
+					Field364: []*bool{},
+					Field365: nil,
+					Field366: map[string]*string{
+						"": nil,
+					},
+					Field367: map[string]*bool{
+						"": nil,
+					},
+					Field368: nil,
+					Field369: nil,
+					Field370: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field371: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field372: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field373: map[string]*bool{
+						"": nil,
+					},
+				},
+				Field130: nil,
+				Field131: &HugeStruct1{
+					Field0: []*int32{},
+					Field1: []*string{},
+					Field2: []*int64{},
+					Field3: map[string]*int32{
+						"": nil,
+					},
+					Field4: []*bool{},
+					Field5: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field6: map[string]*int32{
+						"": nil,
+					},
+					Field7: map[string]*bool{
+						"": nil,
+					},
+					Field8: []*bool{},
+					Field9: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field10: []*string{},
+					Field11: []*bool{},
+					Field12: []*bool{},
+					Field13: map[string]*int32{
+						"": nil,
+					},
+					Field14: map[string]*int32{
+						"": nil,
+					},
+					Field15: nil,
+					Field16: []*int64{},
+					Field17: []*bool{},
+					Field18: map[string]*int64{
+						"": nil,
+					},
+					Field19: []*int64{},
+					Field20: map[string]*string{
+						"": nil,
+					},
+					Field21: nil,
+					Field22: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field23: []*string{},
+					Field24: []*int64{},
+					Field25: []*string{},
+					Field26: []*bool{},
+					Field27: map[string]*int32{
+						"": nil,
+					},
+					Field28: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field29: map[string]*int32{
+						"": nil,
+					},
+					Field30: map[string]*bool{
+						"": nil,
+					},
+					Field31: map[string]*int32{
+						"": nil,
+					},
+					Field32: []*HugeStruct0{GetHugeStruct0()},
+					Field33: nil,
+					Field34: map[string]*bool{
+						"": nil,
+					},
+					Field35: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field36: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field37: nil,
+					Field38: []*HugeStruct0{GetHugeStruct0()},
+					Field39: []*bool{},
+					Field40: map[string]*string{
+						"": nil,
+					},
+					Field41: map[string]*int64{
+						"": nil,
+					},
+					Field42: map[string]*int32{
+						"": nil,
+					},
+					Field43: nil,
+					Field44: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field45: map[string]*int32{
+						"": nil,
+					},
+					Field46: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field47: nil,
+					Field48: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field49: nil,
+					Field50: map[string]*string{
+						"": nil,
+					},
+					Field51: map[string]*bool{
+						"": nil,
+					},
+					Field52: []*int64{},
+					Field53: map[string]*string{
+						"": nil,
+					},
+					Field54: []*int32{},
+					Field55: map[string]*int64{
+						"": nil,
+					},
+					Field56: map[string]*int32{
+						"": nil,
+					},
+					Field57: map[string]*string{
+						"": nil,
+					},
+					Field58: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field59: []*HugeStruct0{GetHugeStruct0()},
+					Field60: map[string]*string{
+						"": nil,
+					},
+					Field61: map[string]*bool{
+						"": nil,
+					},
+					Field62: map[string]*int64{
+						"": nil,
+					},
+					Field63: []*string{},
+					Field64: []*int64{},
+					Field65: map[string]*bool{
+						"": nil,
+					},
+					Field66: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field67: []*int64{},
+					Field68: map[string]*string{
+						"": nil,
+					},
+					Field69: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field70: []*bool{},
+					Field71: map[string]*int64{
+						"": nil,
+					},
+					Field72: nil,
+					Field73: map[string]*int32{
+						"": nil,
+					},
+					Field74: nil,
+					Field75: map[string]*int32{
+						"": nil,
+					},
+					Field76: map[string]*string{
+						"": nil,
+					},
+					Field77: []*string{},
+					Field78: nil,
+					Field79: map[string]*int64{
+						"": nil,
+					},
+					Field80: []*int64{},
+					Field81: map[string]*bool{
+						"": nil,
+					},
+					Field82: []*string{},
+					Field83: []*string{},
+					Field84: nil,
+					Field85: []*bool{},
+					Field86: []*HugeStruct0{GetHugeStruct0()},
+					Field87: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field88: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field89: []*int64{},
+					Field90: []*int32{},
+					Field91: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field92: []*bool{},
+					Field93: []*string{},
+					Field94: map[string]*int32{
+						"": nil,
+					},
+					Field95: nil,
+					Field96: nil,
+					Field97: map[string]*bool{
+						"": nil,
+					},
+					Field98: map[string]*int32{
+						"": nil,
+					},
+					Field99:  []*HugeStruct0{GetHugeStruct0()},
+					Field100: nil,
+					Field101: nil,
+					Field102: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field103: []*string{},
+					Field104: []*string{},
+					Field105: map[string]*bool{
+						"": nil,
+					},
+					Field106: []*string{},
+					Field107: []*int64{},
+					Field108: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field109: nil,
+					Field110: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field111: []*string{},
+					Field112: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field113: []*bool{},
+					Field114: []*bool{},
+					Field115: map[string]*string{
+						"": nil,
+					},
+					Field116: []*int64{},
+					Field117: []*string{},
+					Field118: map[string]*bool{
+						"": nil,
+					},
+					Field119: map[string]*string{
+						"": nil,
+					},
+					Field120: []*HugeStruct0{GetHugeStruct0()},
+					Field121: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field122: []*bool{},
+					Field123: nil,
+					Field124: []*int64{},
+					Field125: nil,
+					Field126: []*string{},
+					Field127: []*string{},
+					Field128: []*int32{},
+					Field129: []*bool{},
+					Field130: nil,
+					Field131: nil,
+					Field132: []*int32{},
+					Field133: []*int32{},
+					Field134: nil,
+					Field135: []*bool{},
+					Field136: nil,
+					Field137: []*int32{},
+					Field138: map[string]*int64{
+						"": nil,
+					},
+					Field139: map[string]*string{
+						"": nil,
+					},
+					Field140: map[string]*int64{
+						"": nil,
+					},
+					Field141: map[string]*int64{
+						"": nil,
+					},
+					Field142: []*int32{},
+					Field143: []*HugeStruct0{GetHugeStruct0()},
+					Field144: map[string]*int64{
+						"": nil,
+					},
+					Field145: []*string{},
+					Field146: map[string]*int64{
+						"": nil,
+					},
+					Field147: nil,
+					Field148: map[string]*string{
+						"": nil,
+					},
+					Field149: nil,
+					Field150: map[string]*int64{
+						"": nil,
+					},
+					Field151: map[string]*int64{
+						"": nil,
+					},
+					Field152: map[string]*int32{
+						"": nil,
+					},
+					Field153: []*int32{},
+					Field154: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field155: map[string]*string{
+						"": nil,
+					},
+					Field156: map[string]*int64{
+						"": nil,
+					},
+					Field157: []*int32{},
+					Field158: []*int32{},
+					Field159: nil,
+					Field160: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field161: []*bool{},
+					Field162: []*HugeStruct0{GetHugeStruct0()},
+					Field163: []*int32{},
+					Field164: map[string]*string{
+						"": nil,
+					},
+					Field165: []*bool{},
+					Field166: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field167: nil,
+					Field168: []*bool{},
+					Field169: map[string]*bool{
+						"": nil,
+					},
+					Field170: map[string]*bool{
+						"": nil,
+					},
+					Field171: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field172: map[string]*bool{
+						"": nil,
+					},
+					Field173: []*bool{},
+					Field174: map[string]*int64{
+						"": nil,
+					},
+					Field175: []*HugeStruct0{GetHugeStruct0()},
+					Field176: []*int32{},
+					Field177: []*int64{},
+					Field178: map[string]*int64{
+						"": nil,
+					},
+					Field179: []*int32{},
+					Field180: []*string{},
+					Field181: []*int32{},
+					Field182: map[string]*string{
+						"": nil,
+					},
+					Field183: []*int64{},
+					Field184: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field185: []*int32{},
+					Field186: nil,
+					Field187: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field188: []*HugeStruct0{GetHugeStruct0()},
+					Field189: nil,
+					Field190: []*int64{},
+					Field191: map[string]*int32{
+						"": nil,
+					},
+					Field192: []*HugeStruct0{GetHugeStruct0()},
+					Field193: []*HugeStruct0{GetHugeStruct0()},
+					Field194: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field195: []*bool{},
+					Field196: map[string]*bool{
+						"": nil,
+					},
+					Field197: []*bool{},
+					Field198: nil,
+					Field199: map[string]*int32{
+						"": nil,
+					},
+					Field200: map[string]*int64{
+						"": nil,
+					},
+					Field201: map[string]*string{
+						"": nil,
+					},
+					Field202: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field203: map[string]*int32{
+						"": nil,
+					},
+					Field204: nil,
+					Field205: map[string]*string{
+						"": nil,
+					},
+					Field206: []*HugeStruct0{GetHugeStruct0()},
+					Field207: []*HugeStruct0{GetHugeStruct0()},
+					Field208: nil,
+					Field209: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field210: map[string]*string{
+						"": nil,
+					},
+					Field211: map[string]*bool{
+						"": nil,
+					},
+					Field212: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field213: nil,
+					Field214: map[string]*bool{
+						"": nil,
+					},
+					Field215: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field216: []*HugeStruct0{GetHugeStruct0()},
+					Field217: map[string]*string{
+						"": nil,
+					},
+					Field218: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field219: map[string]*int64{
+						"": nil,
+					},
+					Field220: nil,
+					Field221: nil,
+					Field222: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field223: []*int64{},
+					Field224: []*bool{},
+					Field225: []*bool{},
+					Field226: map[string]*int64{
+						"": nil,
+					},
+					Field227: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field228: []*int64{},
+					Field229: map[string]*bool{
+						"": nil,
+					},
+					Field230: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field231: nil,
+					Field232: nil,
+					Field233: []*string{},
+					Field234: []*HugeStruct0{GetHugeStruct0()},
+					Field235: []*string{},
+					Field236: nil,
+					Field237: nil,
+					Field238: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field239: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field240: []*HugeStruct0{GetHugeStruct0()},
+					Field241: nil,
+					Field242: nil,
+					Field243: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field244: map[string]*bool{
+						"": nil,
+					},
+					Field245: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field246: []*int32{},
+					Field247: []*bool{},
+					Field248: []*string{},
+					Field249: nil,
+					Field250: []*int32{},
+					Field251: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field252: nil,
+					Field253: map[string]*string{
+						"": nil,
+					},
+					Field254: map[string]*string{
+						"": nil,
+					},
+					Field255: []*int32{},
+					Field256: nil,
+					Field257: nil,
+					Field258: map[string]*string{
+						"": nil,
+					},
+					Field259: map[string]*int32{
+						"": nil,
+					},
+					Field260: []*int64{},
+					Field261: []*int32{},
+					Field262: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field263: nil,
+					Field264: nil,
+					Field265: map[string]*bool{
+						"": nil,
+					},
+					Field266: nil,
+					Field267: []*int64{},
+					Field268: nil,
+					Field269: nil,
+					Field270: map[string]*int64{
+						"": nil,
+					},
+					Field271: map[string]*int64{
+						"": nil,
+					},
+					Field272: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field273: []*string{},
+					Field274: nil,
+					Field275: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field276: map[string]*bool{
+						"": nil,
+					},
+					Field277: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field278: nil,
+					Field279: map[string]*string{
+						"": nil,
+					},
+					Field280: nil,
+					Field281: nil,
+					Field282: nil,
+					Field283: nil,
+					Field284: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field285: map[string]*int64{
+						"": nil,
+					},
+					Field286: map[string]*bool{
+						"": nil,
+					},
+					Field287: map[string]*string{
+						"": nil,
+					},
+					Field288: nil,
+					Field289: nil,
+					Field290: nil,
+					Field291: []*int64{},
+					Field292: map[string]*string{
+						"": nil,
+					},
+					Field293: nil,
+					Field294: []*string{},
+					Field295: nil,
+					Field296: []*HugeStruct0{GetHugeStruct0()},
+					Field297: nil,
+					Field298: map[string]*int64{
+						"": nil,
+					},
+					Field299: map[string]*bool{
+						"": nil,
+					},
+					Field300: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field301: nil,
+					Field302: []*string{},
+					Field303: []*string{},
+					Field304: map[string]*string{
+						"": nil,
+					},
+					Field305: nil,
+					Field306: nil,
+					Field307: []*HugeStruct0{GetHugeStruct0()},
+					Field308: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field309: map[string]*int32{
+						"": nil,
+					},
+					Field310: []*HugeStruct0{GetHugeStruct0()},
+					Field311: nil,
+					Field312: []*bool{},
+					Field313: nil,
+					Field314: []*HugeStruct0{GetHugeStruct0()},
+					Field315: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field316: nil,
+					Field317: nil,
+					Field318: nil,
+					Field319: []*int32{},
+					Field320: nil,
+					Field321: []*HugeStruct0{GetHugeStruct0()},
+					Field322: nil,
+					Field323: nil,
+					Field324: []*HugeStruct0{GetHugeStruct0()},
+					Field325: nil,
+					Field326: []*int64{},
+					Field327: nil,
+					Field328: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field329: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field330: []*HugeStruct0{GetHugeStruct0()},
+					Field331: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field332: []*string{},
+					Field333: nil,
+					Field334: []*HugeStruct0{GetHugeStruct0()},
+					Field335: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field336: map[string]*bool{
+						"": nil,
+					},
+					Field337: []*int64{},
+					Field338: map[string]*bool{
+						"": nil,
+					},
+					Field339: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field340: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field341: []*bool{},
+					Field342: []*int64{},
+					Field343: []*int32{},
+					Field344: map[string]*bool{
+						"": nil,
+					},
+					Field345: map[string]*int64{
+						"": nil,
+					},
+					Field346: nil,
+					Field347: map[string]*bool{
+						"": nil,
+					},
+					Field348: map[string]*int32{
+						"": nil,
+					},
+					Field349: []*string{},
+					Field350: map[string]*int32{
+						"": nil,
+					},
+					Field351: nil,
+					Field352: []*int64{},
+					Field353: []*int64{},
+					Field354: nil,
+					Field355: map[string]*int32{
+						"": nil,
+					},
+					Field356: map[string]*bool{
+						"": nil,
+					},
+					Field357: []*int32{},
+					Field358: nil,
+					Field359: map[string]*int64{
+						"": nil,
+					},
+					Field360: nil,
+					Field361: map[string]*int64{
+						"": nil,
+					},
+					Field362: map[string]*int32{
+						"": nil,
+					},
+					Field363: []*int64{},
+					Field364: []*bool{},
+					Field365: nil,
+					Field366: map[string]*string{
+						"": nil,
+					},
+					Field367: map[string]*bool{
+						"": nil,
+					},
+					Field368: nil,
+					Field369: nil,
+					Field370: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field371: &HugeStruct0{
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+					Field372: map[string]*HugeStruct0{
+						"": {
+							Field0: map[string]*int64{
+								"": nil,
+							},
+							Field1: nil,
+							Field2: []*int64{},
+							Field3: map[string]*int64{
+								"": nil,
+							},
+							Field4: []*int64{},
+						},
+					},
+					Field373: map[string]*bool{
+						"": nil,
+					},
+				},
+				Field132: []*HugeStruct0{GetHugeStruct0()},
+				Field133: map[string]*int64{
+					"": nil,
+				},
+			},
+		},
+		Field49: []*bool{},
+		Field50: []*int64{},
+		Field51: map[string]*bool{
+			"": nil,
+		},
+		Field52: []*string{},
+		Field53: map[string]*int64{
+			"": nil,
+		},
+		Field54: map[string]*string{
+			"": nil,
+		},
+		Field55: map[string]*int64{
+			"": nil,
+		},
+		Field56: nil,
+		Field57: []*HugeStruct0{GetHugeStruct0()},
+		Field58: []*bool{},
+		Field59: nil,
+		Field60: nil,
+		Field61: map[string]*int32{
+			"": nil,
+		},
+		Field62: nil,
+		Field63: map[string]*int64{
+			"": nil,
+		},
+		Field64: map[string]*HugeStruct1{
+			"": {
+				Field0: []*int32{},
+				Field1: []*string{},
+				Field2: []*int64{},
+				Field3: map[string]*int32{
+					"": nil,
+				},
+				Field4: []*bool{},
+				Field5: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field6: map[string]*int32{
+					"": nil,
+				},
+				Field7: map[string]*bool{
+					"": nil,
+				},
+				Field8: []*bool{},
+				Field9: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field10: []*string{},
+				Field11: []*bool{},
+				Field12: []*bool{},
+				Field13: map[string]*int32{
+					"": nil,
+				},
+				Field14: map[string]*int32{
+					"": nil,
+				},
+				Field15: nil,
+				Field16: []*int64{},
+				Field17: []*bool{},
+				Field18: map[string]*int64{
+					"": nil,
+				},
+				Field19: []*int64{},
+				Field20: map[string]*string{
+					"": nil,
+				},
+				Field21: nil,
+				Field22: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field23: []*string{},
+				Field24: []*int64{},
+				Field25: []*string{},
+				Field26: []*bool{},
+				Field27: map[string]*int32{
+					"": nil,
+				},
+				Field28: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field29: map[string]*int32{
+					"": nil,
+				},
+				Field30: map[string]*bool{
+					"": nil,
+				},
+				Field31: map[string]*int32{
+					"": nil,
+				},
+				Field32: []*HugeStruct0{GetHugeStruct0()},
+				Field33: nil,
+				Field34: map[string]*bool{
+					"": nil,
+				},
+				Field35: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field36: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field37: nil,
+				Field38: []*HugeStruct0{GetHugeStruct0()},
+				Field39: []*bool{},
+				Field40: map[string]*string{
+					"": nil,
+				},
+				Field41: map[string]*int64{
+					"": nil,
+				},
+				Field42: map[string]*int32{
+					"": nil,
+				},
+				Field43: nil,
+				Field44: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field45: map[string]*int32{
+					"": nil,
+				},
+				Field46: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field47: nil,
+				Field48: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field49: nil,
+				Field50: map[string]*string{
+					"": nil,
+				},
+				Field51: map[string]*bool{
+					"": nil,
+				},
+				Field52: []*int64{},
+				Field53: map[string]*string{
+					"": nil,
+				},
+				Field54: []*int32{},
+				Field55: map[string]*int64{
+					"": nil,
+				},
+				Field56: map[string]*int32{
+					"": nil,
+				},
+				Field57: map[string]*string{
+					"": nil,
+				},
+				Field58: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field59: []*HugeStruct0{GetHugeStruct0()},
+				Field60: map[string]*string{
+					"": nil,
+				},
+				Field61: map[string]*bool{
+					"": nil,
+				},
+				Field62: map[string]*int64{
+					"": nil,
+				},
+				Field63: []*string{},
+				Field64: []*int64{},
+				Field65: map[string]*bool{
+					"": nil,
+				},
+				Field66: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field67: []*int64{},
+				Field68: map[string]*string{
+					"": nil,
+				},
+				Field69: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field70: []*bool{},
+				Field71: map[string]*int64{
+					"": nil,
+				},
+				Field72: nil,
+				Field73: map[string]*int32{
+					"": nil,
+				},
+				Field74: nil,
+				Field75: map[string]*int32{
+					"": nil,
+				},
+				Field76: map[string]*string{
+					"": nil,
+				},
+				Field77: []*string{},
+				Field78: nil,
+				Field79: map[string]*int64{
+					"": nil,
+				},
+				Field80: []*int64{},
+				Field81: map[string]*bool{
+					"": nil,
+				},
+				Field82: []*string{},
+				Field83: []*string{},
+				Field84: nil,
+				Field85: []*bool{},
+				Field86: []*HugeStruct0{GetHugeStruct0()},
+				Field87: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field88: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field89: []*int64{},
+				Field90: []*int32{},
+				Field91: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field92: []*bool{},
+				Field93: []*string{},
+				Field94: map[string]*int32{
+					"": nil,
+				},
+				Field95: nil,
+				Field96: nil,
+				Field97: map[string]*bool{
+					"": nil,
+				},
+				Field98: map[string]*int32{
+					"": nil,
+				},
+				Field99:  []*HugeStruct0{GetHugeStruct0()},
+				Field100: nil,
+				Field101: nil,
+				Field102: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field103: []*string{},
+				Field104: []*string{},
+				Field105: map[string]*bool{
+					"": nil,
+				},
+				Field106: []*string{},
+				Field107: []*int64{},
+				Field108: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field109: nil,
+				Field110: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field111: []*string{},
+				Field112: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field113: []*bool{},
+				Field114: []*bool{},
+				Field115: map[string]*string{
+					"": nil,
+				},
+				Field116: []*int64{},
+				Field117: []*string{},
+				Field118: map[string]*bool{
+					"": nil,
+				},
+				Field119: map[string]*string{
+					"": nil,
+				},
+				Field120: []*HugeStruct0{GetHugeStruct0()},
+				Field121: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field122: []*bool{},
+				Field123: nil,
+				Field124: []*int64{},
+				Field125: nil,
+				Field126: []*string{},
+				Field127: []*string{},
+				Field128: []*int32{},
+				Field129: []*bool{},
+				Field130: nil,
+				Field131: nil,
+				Field132: []*int32{},
+				Field133: []*int32{},
+				Field134: nil,
+				Field135: []*bool{},
+				Field136: nil,
+				Field137: []*int32{},
+				Field138: map[string]*int64{
+					"": nil,
+				},
+				Field139: map[string]*string{
+					"": nil,
+				},
+				Field140: map[string]*int64{
+					"": nil,
+				},
+				Field141: map[string]*int64{
+					"": nil,
+				},
+				Field142: []*int32{},
+				Field143: []*HugeStruct0{GetHugeStruct0()},
+				Field144: map[string]*int64{
+					"": nil,
+				},
+				Field145: []*string{},
+				Field146: map[string]*int64{
+					"": nil,
+				},
+				Field147: nil,
+				Field148: map[string]*string{
+					"": nil,
+				},
+				Field149: nil,
+				Field150: map[string]*int64{
+					"": nil,
+				},
+				Field151: map[string]*int64{
+					"": nil,
+				},
+				Field152: map[string]*int32{
+					"": nil,
+				},
+				Field153: []*int32{},
+				Field154: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field155: map[string]*string{
+					"": nil,
+				},
+				Field156: map[string]*int64{
+					"": nil,
+				},
+				Field157: []*int32{},
+				Field158: []*int32{},
+				Field159: nil,
+				Field160: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field161: []*bool{},
+				Field162: []*HugeStruct0{GetHugeStruct0()},
+				Field163: []*int32{},
+				Field164: map[string]*string{
+					"": nil,
+				},
+				Field165: []*bool{},
+				Field166: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field167: nil,
+				Field168: []*bool{},
+				Field169: map[string]*bool{
+					"": nil,
+				},
+				Field170: map[string]*bool{
+					"": nil,
+				},
+				Field171: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field172: map[string]*bool{
+					"": nil,
+				},
+				Field173: []*bool{},
+				Field174: map[string]*int64{
+					"": nil,
+				},
+				Field175: []*HugeStruct0{GetHugeStruct0()},
+				Field176: []*int32{},
+				Field177: []*int64{},
+				Field178: map[string]*int64{
+					"": nil,
+				},
+				Field179: []*int32{},
+				Field180: []*string{},
+				Field181: []*int32{},
+				Field182: map[string]*string{
+					"": nil,
+				},
+				Field183: []*int64{},
+				Field184: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field185: []*int32{},
+				Field186: nil,
+				Field187: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field188: []*HugeStruct0{GetHugeStruct0()},
+				Field189: nil,
+				Field190: []*int64{},
+				Field191: map[string]*int32{
+					"": nil,
+				},
+				Field192: []*HugeStruct0{GetHugeStruct0()},
+				Field193: []*HugeStruct0{GetHugeStruct0()},
+				Field194: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field195: []*bool{},
+				Field196: map[string]*bool{
+					"": nil,
+				},
+				Field197: []*bool{},
+				Field198: nil,
+				Field199: map[string]*int32{
+					"": nil,
+				},
+				Field200: map[string]*int64{
+					"": nil,
+				},
+				Field201: map[string]*string{
+					"": nil,
+				},
+				Field202: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field203: map[string]*int32{
+					"": nil,
+				},
+				Field204: nil,
+				Field205: map[string]*string{
+					"": nil,
+				},
+				Field206: []*HugeStruct0{GetHugeStruct0()},
+				Field207: []*HugeStruct0{GetHugeStruct0()},
+				Field208: nil,
+				Field209: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field210: map[string]*string{
+					"": nil,
+				},
+				Field211: map[string]*bool{
+					"": nil,
+				},
+				Field212: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field213: nil,
+				Field214: map[string]*bool{
+					"": nil,
+				},
+				Field215: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field216: []*HugeStruct0{GetHugeStruct0()},
+				Field217: map[string]*string{
+					"": nil,
+				},
+				Field218: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field219: map[string]*int64{
+					"": nil,
+				},
+				Field220: nil,
+				Field221: nil,
+				Field222: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field223: []*int64{},
+				Field224: []*bool{},
+				Field225: []*bool{},
+				Field226: map[string]*int64{
+					"": nil,
+				},
+				Field227: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field228: []*int64{},
+				Field229: map[string]*bool{
+					"": nil,
+				},
+				Field230: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field231: nil,
+				Field232: nil,
+				Field233: []*string{},
+				Field234: []*HugeStruct0{GetHugeStruct0()},
+				Field235: []*string{},
+				Field236: nil,
+				Field237: nil,
+				Field238: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field239: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field240: []*HugeStruct0{GetHugeStruct0()},
+				Field241: nil,
+				Field242: nil,
+				Field243: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field244: map[string]*bool{
+					"": nil,
+				},
+				Field245: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field246: []*int32{},
+				Field247: []*bool{},
+				Field248: []*string{},
+				Field249: nil,
+				Field250: []*int32{},
+				Field251: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field252: nil,
+				Field253: map[string]*string{
+					"": nil,
+				},
+				Field254: map[string]*string{
+					"": nil,
+				},
+				Field255: []*int32{},
+				Field256: nil,
+				Field257: nil,
+				Field258: map[string]*string{
+					"": nil,
+				},
+				Field259: map[string]*int32{
+					"": nil,
+				},
+				Field260: []*int64{},
+				Field261: []*int32{},
+				Field262: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field263: nil,
+				Field264: nil,
+				Field265: map[string]*bool{
+					"": nil,
+				},
+				Field266: nil,
+				Field267: []*int64{},
+				Field268: nil,
+				Field269: nil,
+				Field270: map[string]*int64{
+					"": nil,
+				},
+				Field271: map[string]*int64{
+					"": nil,
+				},
+				Field272: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field273: []*string{},
+				Field274: nil,
+				Field275: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field276: map[string]*bool{
+					"": nil,
+				},
+				Field277: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field278: nil,
+				Field279: map[string]*string{
+					"": nil,
+				},
+				Field280: nil,
+				Field281: nil,
+				Field282: nil,
+				Field283: nil,
+				Field284: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field285: map[string]*int64{
+					"": nil,
+				},
+				Field286: map[string]*bool{
+					"": nil,
+				},
+				Field287: map[string]*string{
+					"": nil,
+				},
+				Field288: nil,
+				Field289: nil,
+				Field290: nil,
+				Field291: []*int64{},
+				Field292: map[string]*string{
+					"": nil,
+				},
+				Field293: nil,
+				Field294: []*string{},
+				Field295: nil,
+				Field296: []*HugeStruct0{GetHugeStruct0()},
+				Field297: nil,
+				Field298: map[string]*int64{
+					"": nil,
+				},
+				Field299: map[string]*bool{
+					"": nil,
+				},
+				Field300: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field301: nil,
+				Field302: []*string{},
+				Field303: []*string{},
+				Field304: map[string]*string{
+					"": nil,
+				},
+				Field305: nil,
+				Field306: nil,
+				Field307: []*HugeStruct0{GetHugeStruct0()},
+				Field308: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field309: map[string]*int32{
+					"": nil,
+				},
+				Field310: []*HugeStruct0{GetHugeStruct0()},
+				Field311: nil,
+				Field312: []*bool{},
+				Field313: nil,
+				Field314: []*HugeStruct0{GetHugeStruct0()},
+				Field315: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field316: nil,
+				Field317: nil,
+				Field318: nil,
+				Field319: []*int32{},
+				Field320: nil,
+				Field321: []*HugeStruct0{GetHugeStruct0()},
+				Field322: nil,
+				Field323: nil,
+				Field324: []*HugeStruct0{GetHugeStruct0()},
+				Field325: nil,
+				Field326: []*int64{},
+				Field327: nil,
+				Field328: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field329: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field330: []*HugeStruct0{GetHugeStruct0()},
+				Field331: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field332: []*string{},
+				Field333: nil,
+				Field334: []*HugeStruct0{GetHugeStruct0()},
+				Field335: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field336: map[string]*bool{
+					"": nil,
+				},
+				Field337: []*int64{},
+				Field338: map[string]*bool{
+					"": nil,
+				},
+				Field339: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field340: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field341: []*bool{},
+				Field342: []*int64{},
+				Field343: []*int32{},
+				Field344: map[string]*bool{
+					"": nil,
+				},
+				Field345: map[string]*int64{
+					"": nil,
+				},
+				Field346: nil,
+				Field347: map[string]*bool{
+					"": nil,
+				},
+				Field348: map[string]*int32{
+					"": nil,
+				},
+				Field349: []*string{},
+				Field350: map[string]*int32{
+					"": nil,
+				},
+				Field351: nil,
+				Field352: []*int64{},
+				Field353: []*int64{},
+				Field354: nil,
+				Field355: map[string]*int32{
+					"": nil,
+				},
+				Field356: map[string]*bool{
+					"": nil,
+				},
+				Field357: []*int32{},
+				Field358: nil,
+				Field359: map[string]*int64{
+					"": nil,
+				},
+				Field360: nil,
+				Field361: map[string]*int64{
+					"": nil,
+				},
+				Field362: map[string]*int32{
+					"": nil,
+				},
+				Field363: []*int64{},
+				Field364: []*bool{},
+				Field365: nil,
+				Field366: map[string]*string{
+					"": nil,
+				},
+				Field367: map[string]*bool{
+					"": nil,
+				},
+				Field368: nil,
+				Field369: nil,
+				Field370: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field371: &HugeStruct0{
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+				Field372: map[string]*HugeStruct0{
+					"": {
+						Field0: map[string]*int64{
+							"": nil,
+						},
+						Field1: nil,
+						Field2: []*int64{},
+						Field3: map[string]*int64{
+							"": nil,
+						},
+						Field4: []*int64{},
+					},
+				},
+				Field373: map[string]*bool{
+					"": nil,
+				},
+			},
+		},
+		Field65: []*string{},
+		Field66: []*HugeStruct2{},
+		Field67: map[string]*bool{
+			"": nil,
+		},
+		Field68: []*bool{},
+		Field69: map[string]*int64{
+			"": nil,
+		},
+		Field70: []*int64{},
+		Field71: map[string]*int32{
+			"": nil,
+		},
+		Field72: []*int64{},
+		Field73: []*int32{},
+		Field74: []*bool{},
+		Field75: []*int64{},
+		Field76: map[string]*int64{
+			"": nil,
+		},
+		Field77: nil,
+		Field78: nil,
+		Field79: []*string{},
+		Field80: map[string]*bool{
+			"": nil,
+		},
+		Field81: map[string]*int64{
+			"": nil,
+		},
+		Field82: []*HugeStruct2{},
+		Field83: map[string]*string{
+			"": nil,
+		},
+		Field84: nil,
+		Field85: nil,
+		Field86: []*string{},
+		Field87: []*int64{},
+		Field88: []*int64{},
+		Field89: []*HugeStruct1{},
+		Field90: nil,
+		Field91: map[string]*bool{
+			"": nil,
+		},
+		Field92: GetHugeStruct0(),
+		Field93: []*bool{},
+		Field94: map[string]*string{
+			"": nil,
+		},
+		Field95: map[string]*int64{
+			"": nil,
+		},
+		Field96:  []*HugeStruct1{},
+		Field97:  []*int32{},
+		Field98:  []*int64{},
+		Field99:  nil,
+		Field100: []*string{},
+		Field101: map[string]*int64{
+			"": nil,
+		},
+		Field102: map[string]*string{
+			"": nil,
+		},
+		Field103: []*int32{},
+		Field104: map[string]*string{
+			"": nil,
+		},
+		Field105: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field106: []*int32{},
+		Field107: &HugeStruct1{
+			Field0: []*int32{},
+			Field1: []*string{},
+			Field2: []*int64{},
+			Field3: map[string]*int32{
+				"": nil,
+			},
+			Field4: []*bool{},
+			Field5: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field6: map[string]*int32{
+				"": nil,
+			},
+			Field7: map[string]*bool{
+				"": nil,
+			},
+			Field8: []*bool{},
+			Field9: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field10: []*string{},
+			Field11: []*bool{},
+			Field12: []*bool{},
+			Field13: map[string]*int32{
+				"": nil,
+			},
+			Field14: map[string]*int32{
+				"": nil,
+			},
+			Field15: nil,
+			Field16: []*int64{},
+			Field17: []*bool{},
+			Field18: map[string]*int64{
+				"": nil,
+			},
+			Field19: []*int64{},
+			Field20: map[string]*string{
+				"": nil,
+			},
+			Field21: nil,
+			Field22: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field23: []*string{},
+			Field24: []*int64{},
+			Field25: []*string{},
+			Field26: []*bool{},
+			Field27: map[string]*int32{
+				"": nil,
+			},
+			Field28: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field29: map[string]*int32{
+				"": nil,
+			},
+			Field30: map[string]*bool{
+				"": nil,
+			},
+			Field31: map[string]*int32{
+				"": nil,
+			},
+			Field32: []*HugeStruct0{GetHugeStruct0()},
+			Field33: nil,
+			Field34: map[string]*bool{
+				"": nil,
+			},
+			Field35: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field36: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field37: nil,
+			Field38: []*HugeStruct0{GetHugeStruct0()},
+			Field39: []*bool{},
+			Field40: map[string]*string{
+				"": nil,
+			},
+			Field41: map[string]*int64{
+				"": nil,
+			},
+			Field42: map[string]*int32{
+				"": nil,
+			},
+			Field43: nil,
+			Field44: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field45: map[string]*int32{
+				"": nil,
+			},
+			Field46: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field47: nil,
+			Field48: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field49: nil,
+			Field50: map[string]*string{
+				"": nil,
+			},
+			Field51: map[string]*bool{
+				"": nil,
+			},
+			Field52: []*int64{},
+			Field53: map[string]*string{
+				"": nil,
+			},
+			Field54: []*int32{},
+			Field55: map[string]*int64{
+				"": nil,
+			},
+			Field56: map[string]*int32{
+				"": nil,
+			},
+			Field57: map[string]*string{
+				"": nil,
+			},
+			Field58: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field59: []*HugeStruct0{GetHugeStruct0()},
+			Field60: map[string]*string{
+				"": nil,
+			},
+			Field61: map[string]*bool{
+				"": nil,
+			},
+			Field62: map[string]*int64{
+				"": nil,
+			},
+			Field63: []*string{},
+			Field64: []*int64{},
+			Field65: map[string]*bool{
+				"": nil,
+			},
+			Field66: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field67: []*int64{},
+			Field68: map[string]*string{
+				"": nil,
+			},
+			Field69: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field70: []*bool{},
+			Field71: map[string]*int64{
+				"": nil,
+			},
+			Field72: nil,
+			Field73: map[string]*int32{
+				"": nil,
+			},
+			Field74: nil,
+			Field75: map[string]*int32{
+				"": nil,
+			},
+			Field76: map[string]*string{
+				"": nil,
+			},
+			Field77: []*string{},
+			Field78: nil,
+			Field79: map[string]*int64{
+				"": nil,
+			},
+			Field80: []*int64{},
+			Field81: map[string]*bool{
+				"": nil,
+			},
+			Field82: []*string{},
+			Field83: []*string{},
+			Field84: nil,
+			Field85: []*bool{},
+			Field86: []*HugeStruct0{GetHugeStruct0()},
+			Field87: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field88: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field89: []*int64{},
+			Field90: []*int32{},
+			Field91: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field92: []*bool{},
+			Field93: []*string{},
+			Field94: map[string]*int32{
+				"": nil,
+			},
+			Field95: nil,
+			Field96: nil,
+			Field97: map[string]*bool{
+				"": nil,
+			},
+			Field98: map[string]*int32{
+				"": nil,
+			},
+			Field99:  []*HugeStruct0{GetHugeStruct0()},
+			Field100: nil,
+			Field101: nil,
+			Field102: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field103: []*string{},
+			Field104: []*string{},
+			Field105: map[string]*bool{
+				"": nil,
+			},
+			Field106: []*string{},
+			Field107: []*int64{},
+			Field108: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field109: nil,
+			Field110: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field111: []*string{},
+			Field112: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field113: []*bool{},
+			Field114: []*bool{},
+			Field115: map[string]*string{
+				"": nil,
+			},
+			Field116: []*int64{},
+			Field117: []*string{},
+			Field118: map[string]*bool{
+				"": nil,
+			},
+			Field119: map[string]*string{
+				"": nil,
+			},
+			Field120: []*HugeStruct0{GetHugeStruct0()},
+			Field121: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field122: []*bool{},
+			Field123: nil,
+			Field124: []*int64{},
+			Field125: nil,
+			Field126: []*string{},
+			Field127: []*string{},
+			Field128: []*int32{},
+			Field129: []*bool{},
+			Field130: nil,
+			Field131: nil,
+			Field132: []*int32{},
+			Field133: []*int32{},
+			Field134: nil,
+			Field135: []*bool{},
+			Field136: nil,
+			Field137: []*int32{},
+			Field138: map[string]*int64{
+				"": nil,
+			},
+			Field139: map[string]*string{
+				"": nil,
+			},
+			Field140: map[string]*int64{
+				"": nil,
+			},
+			Field141: map[string]*int64{
+				"": nil,
+			},
+			Field142: []*int32{},
+			Field143: []*HugeStruct0{GetHugeStruct0()},
+			Field144: map[string]*int64{
+				"": nil,
+			},
+			Field145: []*string{},
+			Field146: map[string]*int64{
+				"": nil,
+			},
+			Field147: nil,
+			Field148: map[string]*string{
+				"": nil,
+			},
+			Field149: nil,
+			Field150: map[string]*int64{
+				"": nil,
+			},
+			Field151: map[string]*int64{
+				"": nil,
+			},
+			Field152: map[string]*int32{
+				"": nil,
+			},
+			Field153: []*int32{},
+			Field154: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field155: map[string]*string{
+				"": nil,
+			},
+			Field156: map[string]*int64{
+				"": nil,
+			},
+			Field157: []*int32{},
+			Field158: []*int32{},
+			Field159: nil,
+			Field160: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field161: []*bool{},
+			Field162: []*HugeStruct0{GetHugeStruct0()},
+			Field163: []*int32{},
+			Field164: map[string]*string{
+				"": nil,
+			},
+			Field165: []*bool{},
+			Field166: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field167: nil,
+			Field168: []*bool{},
+			Field169: map[string]*bool{
+				"": nil,
+			},
+			Field170: map[string]*bool{
+				"": nil,
+			},
+			Field171: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field172: map[string]*bool{
+				"": nil,
+			},
+			Field173: []*bool{},
+			Field174: map[string]*int64{
+				"": nil,
+			},
+			Field175: []*HugeStruct0{GetHugeStruct0()},
+			Field176: []*int32{},
+			Field177: []*int64{},
+			Field178: map[string]*int64{
+				"": nil,
+			},
+			Field179: []*int32{},
+			Field180: []*string{},
+			Field181: []*int32{},
+			Field182: map[string]*string{
+				"": nil,
+			},
+			Field183: []*int64{},
+			Field184: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field185: []*int32{},
+			Field186: nil,
+			Field187: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field188: []*HugeStruct0{GetHugeStruct0()},
+			Field189: nil,
+			Field190: []*int64{},
+			Field191: map[string]*int32{
+				"": nil,
+			},
+			Field192: []*HugeStruct0{GetHugeStruct0()},
+			Field193: []*HugeStruct0{GetHugeStruct0()},
+			Field194: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field195: []*bool{},
+			Field196: map[string]*bool{
+				"": nil,
+			},
+			Field197: []*bool{},
+			Field198: nil,
+			Field199: map[string]*int32{
+				"": nil,
+			},
+			Field200: map[string]*int64{
+				"": nil,
+			},
+			Field201: map[string]*string{
+				"": nil,
+			},
+			Field202: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field203: map[string]*int32{
+				"": nil,
+			},
+			Field204: nil,
+			Field205: map[string]*string{
+				"": nil,
+			},
+			Field206: []*HugeStruct0{GetHugeStruct0()},
+			Field207: []*HugeStruct0{GetHugeStruct0()},
+			Field208: nil,
+			Field209: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field210: map[string]*string{
+				"": nil,
+			},
+			Field211: map[string]*bool{
+				"": nil,
+			},
+			Field212: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field213: nil,
+			Field214: map[string]*bool{
+				"": nil,
+			},
+			Field215: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field216: []*HugeStruct0{GetHugeStruct0()},
+			Field217: map[string]*string{
+				"": nil,
+			},
+			Field218: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field219: map[string]*int64{
+				"": nil,
+			},
+			Field220: nil,
+			Field221: nil,
+			Field222: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field223: []*int64{},
+			Field224: []*bool{},
+			Field225: []*bool{},
+			Field226: map[string]*int64{
+				"": nil,
+			},
+			Field227: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field228: []*int64{},
+			Field229: map[string]*bool{
+				"": nil,
+			},
+			Field230: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field231: nil,
+			Field232: nil,
+			Field233: []*string{},
+			Field234: []*HugeStruct0{GetHugeStruct0()},
+			Field235: []*string{},
+			Field236: nil,
+			Field237: nil,
+			Field238: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field239: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field240: []*HugeStruct0{GetHugeStruct0()},
+			Field241: nil,
+			Field242: nil,
+			Field243: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field244: map[string]*bool{
+				"": nil,
+			},
+			Field245: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field246: []*int32{},
+			Field247: []*bool{},
+			Field248: []*string{},
+			Field249: nil,
+			Field250: []*int32{},
+			Field251: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field252: nil,
+			Field253: map[string]*string{
+				"": nil,
+			},
+			Field254: map[string]*string{
+				"": nil,
+			},
+			Field255: []*int32{},
+			Field256: nil,
+			Field257: nil,
+			Field258: map[string]*string{
+				"": nil,
+			},
+			Field259: map[string]*int32{
+				"": nil,
+			},
+			Field260: []*int64{},
+			Field261: []*int32{},
+			Field262: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field263: nil,
+			Field264: nil,
+			Field265: map[string]*bool{
+				"": nil,
+			},
+			Field266: nil,
+			Field267: []*int64{},
+			Field268: nil,
+			Field269: nil,
+			Field270: map[string]*int64{
+				"": nil,
+			},
+			Field271: map[string]*int64{
+				"": nil,
+			},
+			Field272: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field273: []*string{},
+			Field274: nil,
+			Field275: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field276: map[string]*bool{
+				"": nil,
+			},
+			Field277: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field278: nil,
+			Field279: map[string]*string{
+				"": nil,
+			},
+			Field280: nil,
+			Field281: nil,
+			Field282: nil,
+			Field283: nil,
+			Field284: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field285: map[string]*int64{
+				"": nil,
+			},
+			Field286: map[string]*bool{
+				"": nil,
+			},
+			Field287: map[string]*string{
+				"": nil,
+			},
+			Field288: nil,
+			Field289: nil,
+			Field290: nil,
+			Field291: []*int64{},
+			Field292: map[string]*string{
+				"": nil,
+			},
+			Field293: nil,
+			Field294: []*string{},
+			Field295: nil,
+			Field296: []*HugeStruct0{GetHugeStruct0()},
+			Field297: nil,
+			Field298: map[string]*int64{
+				"": nil,
+			},
+			Field299: map[string]*bool{
+				"": nil,
+			},
+			Field300: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field301: nil,
+			Field302: []*string{},
+			Field303: []*string{},
+			Field304: map[string]*string{
+				"": nil,
+			},
+			Field305: nil,
+			Field306: nil,
+			Field307: []*HugeStruct0{GetHugeStruct0()},
+			Field308: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field309: map[string]*int32{
+				"": nil,
+			},
+			Field310: []*HugeStruct0{GetHugeStruct0()},
+			Field311: nil,
+			Field312: []*bool{},
+			Field313: nil,
+			Field314: []*HugeStruct0{GetHugeStruct0()},
+			Field315: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field316: nil,
+			Field317: nil,
+			Field318: nil,
+			Field319: []*int32{},
+			Field320: nil,
+			Field321: []*HugeStruct0{GetHugeStruct0()},
+			Field322: nil,
+			Field323: nil,
+			Field324: []*HugeStruct0{GetHugeStruct0()},
+			Field325: nil,
+			Field326: []*int64{},
+			Field327: nil,
+			Field328: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field329: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field330: []*HugeStruct0{GetHugeStruct0()},
+			Field331: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field332: []*string{},
+			Field333: nil,
+			Field334: []*HugeStruct0{GetHugeStruct0()},
+			Field335: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field336: map[string]*bool{
+				"": nil,
+			},
+			Field337: []*int64{},
+			Field338: map[string]*bool{
+				"": nil,
+			},
+			Field339: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field340: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field341: []*bool{},
+			Field342: []*int64{},
+			Field343: []*int32{},
+			Field344: map[string]*bool{
+				"": nil,
+			},
+			Field345: map[string]*int64{
+				"": nil,
+			},
+			Field346: nil,
+			Field347: map[string]*bool{
+				"": nil,
+			},
+			Field348: map[string]*int32{
+				"": nil,
+			},
+			Field349: []*string{},
+			Field350: map[string]*int32{
+				"": nil,
+			},
+			Field351: nil,
+			Field352: []*int64{},
+			Field353: []*int64{},
+			Field354: nil,
+			Field355: map[string]*int32{
+				"": nil,
+			},
+			Field356: map[string]*bool{
+				"": nil,
+			},
+			Field357: []*int32{},
+			Field358: nil,
+			Field359: map[string]*int64{
+				"": nil,
+			},
+			Field360: nil,
+			Field361: map[string]*int64{
+				"": nil,
+			},
+			Field362: map[string]*int32{
+				"": nil,
+			},
+			Field363: []*int64{},
+			Field364: []*bool{},
+			Field365: nil,
+			Field366: map[string]*string{
+				"": nil,
+			},
+			Field367: map[string]*bool{
+				"": nil,
+			},
+			Field368: nil,
+			Field369: nil,
+			Field370: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field371: &HugeStruct0{
+				Field0: map[string]*int64{
+					"": nil,
+				},
+				Field1: nil,
+				Field2: []*int64{},
+				Field3: map[string]*int64{
+					"": nil,
+				},
+				Field4: []*int64{},
+			},
+			Field372: map[string]*HugeStruct0{
+				"": {
+					Field0: map[string]*int64{
+						"": nil,
+					},
+					Field1: nil,
+					Field2: []*int64{},
+					Field3: map[string]*int64{
+						"": nil,
+					},
+					Field4: []*int64{},
+				},
+			},
+			Field373: map[string]*bool{
+				"": nil,
+			},
+		},
+		Field108: []*HugeStruct1{},
+		Field109: []*bool{},
+		Field110: []*int32{},
+		Field111: map[string]*string{
+			"": nil,
+		},
+		Field112: map[string]*HugeStruct0{"a": GetHugeStruct0()},
+		Field113: map[string]*int32{
+			"": nil,
+		},
+		Field114: []*bool{},
+		Field115: []*HugeStruct2{},
+		Field116: map[string]*bool{
+			"": nil,
+		},
+		Field117: map[string]*string{
+			"": nil,
+		},
+		Field118: nil,
+		Field119: nil,
+	}
+}
+
+func GetHugeStruct4() *HugeStruct4 {
+	return &HugeStruct4{
+		Field3:  GetHugeStruc3(),
+		Field25: GetHugeStruct2(),
+		Field30: map[string]*HugeStruct3{
+			"a": GetHugeStruc3(),
+		},
+		Field103: []*HugeStruct3{
+			GetHugeStruc3(),
+		},
+	}
+}
+
+func GetHugeStruct5() *HugeStruct5 {
+	return &HugeStruct5{
+		Field40: map[string]*HugeStruct4{
+			"a": GetHugeStruct4(),
+		},
+		Field47: []*HugeStruct4{
+			GetHugeStruct4(),
+		},
+	}
+}
+
+func GetHugeStruct6() *HugeStruct6 {
+	return &HugeStruct6{
+		Field2: GetHugeStruct4(),
+		Field4: GetHugeStruct5(),
+		Field13: []*HugeStruct5{
+			GetHugeStruct5(),
+		},
+	}
 }
