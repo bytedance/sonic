@@ -683,17 +683,6 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
 
     /* dereference all the way down */
     for et.Kind() == reflect.Ptr {
-        if et.Implements(jsonUnmarshalerType) {
-            p.rtt(_OP_unmarshal_p, et)
-            return
-        }
-
-        if et.Implements(encodingTextUnmarshalerType) {
-            p.add(_OP_lspace)
-            self.compileUnmarshalTextPtr(p, et)
-            return
-        }
-
         et = et.Elem()
         p.rtt(_OP_deref, et)
     }
