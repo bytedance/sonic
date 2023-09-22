@@ -17,10 +17,12 @@
 package issue_test
 
 import (
-    `testing`
-    `encoding/json`
-    `github.com/bytedance/sonic`
-    `github.com/stretchr/testify/require`
+	"encoding/json"
+	"testing"
+
+	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 type Foo struct {
@@ -45,6 +47,10 @@ func TestIssue379(t *testing.T) {
         },
         {
             data: `{"Name":"MyPtr"}`,
+            newf:  func() interface{} { ptr := &Foo{}; return &ptr },
+        },
+        {
+            data: `{"Name":"MyPtr"}`,
             newf:  func() interface{} { return MyPtr(&Foo{}) },
         },
         {
@@ -57,11 +63,15 @@ func TestIssue379(t *testing.T) {
         },
         {
             data: `null`,
+            newf:  func() interface{} { ptr := MyPtr(&Foo{}); return &ptr },
+        },
+        {
+            data: `null`,
             newf:  func() interface{} { return &Foo{} },
         },
         {
             data: `null`,
-            newf:  func() interface{} { ptr := MyPtr(&Foo{}); return &ptr },
+            newf:  func() interface{} { ptr := &Foo{}; return &ptr },
         },
         {
             data: `{"map":{"Name":"MyPtr"}}`,
@@ -89,11 +99,20 @@ func TestIssue379(t *testing.T) {
         },
     }
 
-    for _, tt := range tests {
+    for i, tt := range tests {
+        println(i)
+        // jv, sv := tt.newf(), tt.newf()
+        // jerr := json.Unmarshal([]byte(tt.data), jv)
+        // serr := sonic.Unmarshal([]byte(tt.data), sv)
+        // require.Equal(t, jv, sv)
+        // require.Equal(t, jerr, serr)
+
         jv, sv := tt.newf(), tt.newf()
-        jerr := json.Unmarshal([]byte(tt.data), jv)
-        serr := sonic.Unmarshal([]byte(tt.data), sv)
-        require.Equal(t, jv, sv)
+        jerr := json.Unmarshal([]byte(tt.data), &jv)
+        serr := sonic.Unmarshal([]byte(tt.data), &sv)
+        spew.Dump(jv)
+        spew.Dump(sv)
+        // require.Equal(t, jv, sv)
         require.Equal(t, jerr, serr)
     }
 }
