@@ -17,12 +17,12 @@
 package issue_test
 
 import (
-	"encoding/json"
-	"testing"
+    `encoding/json`
+    `testing`
 
-	"github.com/bytedance/sonic"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic`
+    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 type Foo struct {
@@ -30,6 +30,7 @@ type Foo struct {
 }
 
 func (f *Foo) UnmarshalJSON(data []byte) error {
+    println("UnmarshalJSON called!!!")
     f.Name = "Unmarshaler"
     return nil
 }
@@ -40,6 +41,7 @@ func TestIssue379(t *testing.T) {
     tests := []struct{
         data  string
         newf  func() interface{} 
+        equal func(exp, act interface{}) bool 
     } {
         {
             data: `{"Name":"MyPtr"}`,
@@ -64,6 +66,11 @@ func TestIssue379(t *testing.T) {
         {
             data: `null`,
             newf:  func() interface{} { ptr := MyPtr(&Foo{}); return &ptr },
+            equal: func(exp, act interface{}) bool {
+                isExpNil := exp == nil || *(exp.(*MyPtr)) == nil
+                isActNil := act == nil || *(act.(*MyPtr)) == nil
+                return isActNil == isExpNil
+            },
         },
         {
             data: `null`,
@@ -72,6 +79,11 @@ func TestIssue379(t *testing.T) {
         {
             data: `null`,
             newf:  func() interface{} { ptr := &Foo{}; return &ptr },
+            equal: func(exp, act interface{}) bool {
+                isExpNil := exp == nil || *(exp.(**Foo)) == nil 
+                isActNil := act == nil || *(act.(**Foo)) == nil 
+                return isActNil == isExpNil
+            },
         },
         {
             data: `{"map":{"Name":"MyPtr"}}`,
@@ -101,18 +113,20 @@ func TestIssue379(t *testing.T) {
 
     for i, tt := range tests {
         println(i)
-        // jv, sv := tt.newf(), tt.newf()
-        // jerr := json.Unmarshal([]byte(tt.data), jv)
-        // serr := sonic.Unmarshal([]byte(tt.data), sv)
-        // require.Equal(t, jv, sv)
-        // require.Equal(t, jerr, serr)
-
         jv, sv := tt.newf(), tt.newf()
-        jerr := json.Unmarshal([]byte(tt.data), &jv)
-        serr := sonic.Unmarshal([]byte(tt.data), &sv)
-        spew.Dump(jv)
-        spew.Dump(sv)
-        // require.Equal(t, jv, sv)
+        jerr := json.Unmarshal([]byte(tt.data), jv)
+        serr := sonic.Unmarshal([]byte(tt.data), sv)
+        require.Equal(t, jv, sv)
+        require.Equal(t, jerr, serr)
+
+        jv, sv = tt.newf(), tt.newf()
+        jerr = json.Unmarshal([]byte(tt.data), &jv)
+        serr = sonic.Unmarshal([]byte(tt.data), &sv)
+        if !assert.ObjectsAreEqual(jv, sv) {
+            if tt.equal == nil || !tt.equal(jv, sv) {
+                t.Fatal()
+            }
+        }
         require.Equal(t, jerr, serr)
     }
 }

@@ -560,7 +560,6 @@ func (self *_Compiler) checkMarshaler(p *_Program, vt reflect.Type) bool {
 }
 
 func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
-    println("[compileOne] vt", vt.String())
     /* check for recursive nesting */
     ok := self.tab[vt]
     if ok {
@@ -580,7 +579,6 @@ func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
-    println("[compileOps] vt", vt.String())
     switch vt.Kind() {
         case reflect.Bool      : self.compilePrimitive (vt, p, _OP_bool)
         case reflect.Int       : self.compilePrimitive (vt, p, _OP_int())
@@ -687,13 +685,11 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
 }
 
 func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
-    println("[compilePtr] vt:", et.String())
     i := p.pc()
     p.add(_OP_is_null)
 
     /* dereference all the way down */
     for et.Kind() == reflect.Ptr {
-        println("[compilePtr] et:", et.String())
         if self.checkMarshaler(p, et) {
             return
         }
