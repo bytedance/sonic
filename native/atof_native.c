@@ -318,7 +318,7 @@ static always_inline uint64_t rounded_integer(Decimal *d) {
     return n;
 }
 
-INLINE_ALL int decimal_to_f64(Decimal *d, double *val) {
+static always_inline int decimal_to_f64(Decimal *d, double *val) {
     int exp2 = 0;
     uint64_t mant = 0;
     uint64_t bits = 0;

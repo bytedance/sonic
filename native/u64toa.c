@@ -208,15 +208,16 @@ static always_inline int u64toa_xlarge_sse2(char *out, uint64_t val) {
     _mm_storeu_si128(as_m128p(&out[n]), v3);
     return n + 16;
 }
-
+#if !defined(BUILD_FOR_ARM)
 INLINE_ALL int i64toa(char *out, int64_t val) {
-    if (likely(val >= 0)) {
-        return u64toa(out, (uint64_t)val);
-    } else {
-        *out = '-';
-        return u64toa(out + 1, (uint64_t)(-val)) + 1;
-    }
+ if (likely(val >= 0)) {
+     return u64toa(out, (uint64_t)val);
+ } else {
+     *out = '-';
+     return u64toa(out + 1, (uint64_t)(-val)) + 1;
+ }
 }
+#endif
 
 INLINE_ALL int u64toa(char *out, uint64_t val) {
     if (likely(val < 10000)) {
