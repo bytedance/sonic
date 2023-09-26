@@ -1371,13 +1371,6 @@ INLINE_ALL long skip_one_1(const GoString *src, long *p, StateMachine *m, uint64
     return fsm_exec_1(m, src, p, flags);
 }
 
-INLINE_ALL long validate_one(const GoString *src, long *p, StateMachine *m) {
-    fsm_init(m, FSM_VAL);
-    return fsm_exec_1(m, src, p, MASK_VALIDATE_STRING);
-}
-
-/* Faster skip api for sonic.ast */
-
 static always_inline uint64_t get_maskx64(const char *s, char c) {
 #if USE_AVX2
     __m256i v0 = _mm256_loadu_si256((__m256i const *)s);
@@ -1605,7 +1598,7 @@ static always_inline long skip_string_fast(const GoString *src, long *p) {
     return -ERR_EOF;
 }
 
-INLINE_ALL long skip_one_fast(const GoString *src, long *p) {
+static always_inline long skip_one_fast_1(const GoString *src, long *p) {
     char c = advance_ns(src, p);
     /* set the start address */
     long vi = *p - 1;
@@ -1743,125 +1736,4 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
         }
     };
     return sp == end && kp == ke;
-}
-
-long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm) {
-    GoIface *ps = (GoIface*)(path->buf);
-    GoIface *pe = (GoIface*)(path->buf) + path->len;
-    char c = 0;
-    int64_t index;
-    long found;
-
-query:
-    /* to be safer for invalid json, use slower skip for the demanded fields */
-    if (ps == pe) {
-        return skip_one_1(src, p, sm, 0);
-    }
-
-    /* match type: should query key in object, query index in array */
-    c = advance_ns(src, p);
-    if (is_str(ps)) {
-        if (c != '{') {
-            goto err_inval;
-        }
-        goto skip_in_obj;
-    } else if (is_int(ps)) {
-        if (c != '[') {
-            goto err_inval;
-        }
-
-        index = get_int(ps);
-        if (index < 0) {
-            goto err_path;
-        }
-
-        goto skip_in_arr;
-    } else {
-        goto err_path;
-    }
-
-skip_in_obj:
-    c = advance_ns(src, p);
-    if (c == '}') {
-        goto not_found;
-    }
-    if (c != '"') {
-        goto err_inval;
-    }
-
-    /* parse the object key */
-    found = match_key(src, p, get_str(ps));
-    if (found < 0) {
-        return found; // parse string errors
-    }
-
-    /* value should after : */
-    c = advance_ns(src, p);
-    if (c != ':') {
-        goto err_inval;
-    }
-    if (found) {
-        ps++;
-        goto query;
-    }
-
-    /* skip the unknown fields */
-    skip_one_fast(src, p);
-    c = advance_ns(src, p);
-    if (c == '}') {
-        goto not_found;
-    }
-    if (c != ',') {
-        goto err_inval;
-    }
-    goto skip_in_obj;
-
-skip_in_arr:
-    /* check empty array */
-    c = advance_ns(src, p);
-    if (c == ']') {
-        goto not_found;
-    }
-    *p -= 1;
-
-    /* skip array elem one by one */
-    while (index-- > 0) {
-        skip_one_fast(src, p);
-        c = advance_ns(src, p);
-        if (c == ']') {
-            goto not_found;
-        }
-        if (c != ',') {
-            goto err_inval;
-        }
-    }
-    ps++;
-    goto query;
-
-not_found:
-    *p -= 1; // backward error position
-    return -ERR_NOT_FOUND;
-err_inval:
-    *p -= 1;
-    return -ERR_INVAL;
-err_path:
-    *p -= 1;
-    return -ERR_UNSUPPORT_TYPE;
-}
-
-// 
-long validate_utf8(const GoString *src, long *p, StateMachine *m) {
-    xassert(*p >= 0 && src->len > *p);
-    return validate_utf8_with_errors(src->buf, src->len, p, m);
-}
-
-// validate_utf8_fast returns zero if valid, otherwise, the error position.
-long validate_utf8_fast(const GoString *s) {
-#if USE_AVX2
-    /* fast path for valid utf8 */
-    if (validate_utf8_avx2(s) == 0) {
-        return 0;
-    }
-#endif
-    return validate_utf8_errors(s);
 }
