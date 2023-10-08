@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__validate_utf8_entry__(SB), $48
+TEXT ·__validate_utf8_entry__(SB), NOSPLIT, $48
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0x910103ff  // add sp, sp, #64

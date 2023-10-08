@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__skip_array_entry__(SB), $144
+TEXT ·__skip_array_entry__(SB), NOSPLIT, $144
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0x910283ff  // add sp, sp, #160
