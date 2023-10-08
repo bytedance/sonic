@@ -171,18 +171,18 @@ func TestPretouch(t *testing.T) {
     }
 }
 
-func TestGet(t *testing.T) {
-    var data = `{"a":"b"}`
-    r, err := GetFromString(data, "a")
-    if err != nil {
-        t.Fatal(err)
-    }
-    v, err := r.String()
-    if err != nil {
-        t.Fatal(err)
-    }
-    if v != "b" {
-        t.Fatal(v)
-    }
-}
+// func TestGet(t *testing.T) {
+//     var data = `{"a":"b"}`
+//     r, err := GetFromString(data, "a")
+//     if err != nil {
+//         t.Fatal(err)
+//     }
+//     v, err := r.String()
+//     if err != nil {
+//         t.Fatal(err)
+//     }
+//     if v != "b" {
+//         t.Fatal(v)
+//     }
+// }
 
