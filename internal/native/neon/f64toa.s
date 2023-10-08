@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__f64toa_entry__(SB), $32
+TEXT ·__f64toa_entry__(SB), NOSPLIT, $32
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0x9100c3ff  // add sp, sp, #48
@@ -1208,7 +1208,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	  // .p2align 3, 0x00
-_LB_5edf9c5b: // _pow10_ceil_sig.g
+_LB_1eec2be8: // _pow10_ceil_sig.g
 	WORD $0xbebcdc4f; WORD $0xff77b1fc  // .quad -38366372719436721
 	WORD $0x13bb0f7b; WORD $0x25e8e89c  // .quad 2731688931043774331
 	WORD $0xf73609b1; WORD $0x9faacf3d  // .quad -6941508010590729807
