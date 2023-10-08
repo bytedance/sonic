@@ -20,12 +20,6 @@
 
 package neon
 
-import (
-    `unsafe`
-
-    `github.com/bytedance/sonic/internal/native/types`
-)
-
 //go:nosplit
 func f32toa(out *byte, val float32) (ret int) {
     return __f32toa(out, val)

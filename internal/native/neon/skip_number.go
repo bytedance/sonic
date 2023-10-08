@@ -20,12 +20,6 @@
 
 package neon
 
-import (
-    // `unsafe`
-
-    `github.com/bytedance/sonic/internal/native/types`
-)
-
 //go:nosplit
 func skip_number(s *string, p *int) (ret int) {
     return __skip_number(s, p)
