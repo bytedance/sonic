@@ -26,6 +26,7 @@ import (
     `runtime/debug`
     `testing`
 
+    `github.com/bytedance/sonic/encoder`
     `github.com/stretchr/testify/require`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/stretchr/testify/assert`
