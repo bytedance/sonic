@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__get_by_path_entry__(SB), $208
+TEXT ·__get_by_path_entry__(SB), NOSPLIT, $208
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0x910383ff  // add sp, sp, #224

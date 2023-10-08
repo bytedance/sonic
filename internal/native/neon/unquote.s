@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__unquote_entry__(SB), $112
+TEXT ·__unquote_entry__(SB), NOSPLIT, $112
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0x910203ff  // add sp, sp, #128
