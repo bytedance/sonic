@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-ARCH			:= avx avx2 sse neon
+ARCH			:= avx avx2 sse
 TMP_DIR			:= output
 OUT_DIR			:= internal/native
 SRC_FILE		:= native/native.c
