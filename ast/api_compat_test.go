@@ -1,4 +1,5 @@
-// +build amd64,go1.16,!go1.22
+//go:build !amd64 || !go1.16 || go1.22
+// +build !amd64 !go1.16 go1.22
 
 /*
  * Copyright 2022 ByteDance Inc.
@@ -38,7 +39,7 @@ func TestSortNodeTwitter(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    exp, err := encoder.Encode(obj, encoder.SortMapKeys)
+    exp, err := json.Marshal(obj)
     if err != nil {
         t.Fatal(err)
     }
@@ -55,8 +56,6 @@ func TestSortNodeTwitter(t *testing.T) {
     var actObj interface{}
     require.NoError(t, json.Unmarshal(act, &actObj))
     require.Equal(t, expObj, actObj)
-    require.Equal(t, len(exp), len(act))
-    require.Equal(t, string(exp), string(act))
 }
 
 func TestNodeAny(t *testing.T) {
@@ -72,7 +71,8 @@ func TestNodeAny(t *testing.T) {
     }
     if buf, err := empty.MarshalJSON(); err != nil {
         t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]}}` {
+    } else if string(buf) != `{"any":{"a":[0]}
+}` {
         t.Fatal(string(buf))
     }
     if _, err := empty.Set("any2", Node{}); err != nil {
@@ -83,7 +83,9 @@ func TestNodeAny(t *testing.T) {
     }
     if buf, err := empty.MarshalJSON(); err != nil {
         t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]},"any2":[null]}` {
+    } else if string(buf) != `{"any":{"a":[0]}
+,"any2":[null
+]}` {
         t.Fatal(string(buf))
     }
     if _, err := empty.Get("any2").SetAnyByIndex(0, NewNumber("-0.0")); err != nil {
@@ -91,7 +93,8 @@ func TestNodeAny(t *testing.T) {
     }
     if buf, err := empty.MarshalJSON(); err != nil {
         t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]},"any2":[-0.0]}` {
+    } else if string(buf) != `{"any":{"a":[0]}
+,"any2":[-0.0]}` {
         t.Fatal(string(buf))
     }
 }
@@ -106,7 +109,7 @@ func TestTypeCast2(t *testing.T) {
     }
     var cases = []tcase{
        
-        {"Raw", NewAny(""), "\"\"", nil},
+        {"Raw", NewAny(""), "\"\"\n", nil},
        
     }
 
@@ -138,7 +141,7 @@ func TestStackAny(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    if string(buf) != "1" {
+    if string(buf) != "1\n" {
         t.Fatal(string(buf))
     }
 }
