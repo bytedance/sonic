@@ -1,4 +1,6 @@
-#include "native.h"
+
+#include <immintrin.h>
+#include <sys/types.h>
 
 /**
  * @brief uppercase to lowercase
