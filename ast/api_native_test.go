@@ -1,5 +1,4 @@
-//go:build !amd64 || !go1.16 || go1.22
-// +build !amd64 !go1.16 go1.22
+// +build amd64,go1.16,!go1.23 arm64,go1.20,!go1.23
 
 /*
  * Copyright 2022 ByteDance Inc.
@@ -27,8 +26,67 @@ import (
     `runtime/debug`
     `testing`
 
+    `github.com/bytedance/sonic/encoder`
     `github.com/stretchr/testify/require`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/stretchr/testify/assert`
 )
+
+func TestEncodeValue(t *testing.T) {
+    obj := new(_TwitterStruct)
+    if err := json.Unmarshal([]byte(_TwitterJson), obj); err != nil {
+        t.Fatal(err)
+    }
+    // buf, err := encoder.Encode(obj, encoder.EscapeHTML|encoder.SortMapKeys)
+    buf, err := json.Marshal(obj)
+    if err != nil {
+        t.Fatal(err)
+    }
+    quote, err := json.Marshal(_TwitterJson)
+    if err != nil {
+        t.Fatal(err)
+    }
+    type Case struct {
+        node Node
+        exp string
+        err bool
+    }
+    input := []Case{
+        {NewNull(), "null", false},
+        {NewBool(true), "true", false},
+        {NewBool(false), "false", false},
+        {NewNumber("0.0"), "0.0", false},
+        {NewString(""), `""`, false},
+        {NewString(`\"\"`), `"\\\"\\\""`, false},
+        {NewString(_TwitterJson), string(quote), false},
+        {NewArray([]Node{}), "[]", false},
+        {NewArray([]Node{NewString(""), NewNull()}), `["",null]`, false},
+        {NewArray([]Node{NewBool(true), NewString("true"), NewString("\t")}), `[true,"true","\t"]`, false},
+        {NewObject([]Pair{Pair{"a", NewNull()}, Pair{"b", NewNumber("0")}}), `{"a":null,"b":0}`, false},
+        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}),`{"\ta":"\t","\u0008b":"\u0008","\nb":"\n","\ra":"\r"}`, false},
+        {NewObject([]Pair{}), `{}`, false},
+        {NewObject([]Pair{Pair{Key: "", Value: NewNull()}}), `{"":null}`, false},
+        {NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, false},
+        {NewAny(obj), string(buf), false},
+        {NewRaw(`[{ }]`), "[{}]", false},
+        {Node{}, "", true},
+        {Node{t: types.ValueType(1)}, "", true},
+    }
+    for i, c := range input {
+        t.Log(i)
+        buf, err := json.Marshal(&c.node)
+        if c.err {
+            if err == nil {
+                t.Fatal(i)
+            }
+            continue
+        }
+        if err != nil {
+            t.Fatal(i, err)
+        }
+        assert.Equal(t, c.exp, string(buf))
+    }
+}
 
 func TestSortNodeTwitter(t *testing.T) {
     root, err := NewSearcher(_TwitterJson).GetByPath()
@@ -39,7 +97,7 @@ func TestSortNodeTwitter(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    exp, err := json.Marshal(obj)
+    exp, err := encoder.Encode(obj, encoder.SortMapKeys)
     if err != nil {
         t.Fatal(err)
     }
@@ -56,6 +114,8 @@ func TestSortNodeTwitter(t *testing.T) {
     var actObj interface{}
     require.NoError(t, json.Unmarshal(act, &actObj))
     require.Equal(t, expObj, actObj)
+    require.Equal(t, len(exp), len(act))
+    require.Equal(t, string(exp), string(act))
 }
 
 func TestNodeAny(t *testing.T) {
@@ -71,8 +131,7 @@ func TestNodeAny(t *testing.T) {
     }
     if buf, err := empty.MarshalJSON(); err != nil {
         t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]}
-}` {
+    } else if string(buf) != `{"any":{"a":[0]}}` {
         t.Fatal(string(buf))
     }
     if _, err := empty.Set("any2", Node{}); err != nil {
@@ -83,9 +142,7 @@ func TestNodeAny(t *testing.T) {
     }
     if buf, err := empty.MarshalJSON(); err != nil {
         t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]}
-,"any2":[null
-]}` {
+    } else if string(buf) != `{"any":{"a":[0]},"any2":[null]}` {
         t.Fatal(string(buf))
     }
     if _, err := empty.Get("any2").SetAnyByIndex(0, NewNumber("-0.0")); err != nil {
@@ -93,8 +150,7 @@ func TestNodeAny(t *testing.T) {
     }
     if buf, err := empty.MarshalJSON(); err != nil {
         t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]}
-,"any2":[-0.0]}` {
+    } else if string(buf) != `{"any":{"a":[0]},"any2":[-0.0]}` {
         t.Fatal(string(buf))
     }
 }
@@ -109,7 +165,7 @@ func TestTypeCast2(t *testing.T) {
     }
     var cases = []tcase{
        
-        {"Raw", NewAny(""), "\"\"\n", nil},
+        {"Raw", NewAny(""), "\"\"", nil},
        
     }
 
@@ -141,7 +197,7 @@ func TestStackAny(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    if string(buf) != "1\n" {
+    if string(buf) != "1" {
         t.Fatal(string(buf))
     }
 }
