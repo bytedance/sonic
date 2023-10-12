@@ -1,4 +1,4 @@
-// +build amd64,go1.16,!go1.23 arm64,go1.20,!go1.23
+// +build amd64,go1.16,!go1.23
 
 /*
  * Copyright 2022 ByteDance Inc.
@@ -164,9 +164,7 @@ func TestTypeCast2(t *testing.T) {
         err error
     }
     var cases = []tcase{
-       
         {"Raw", NewAny(""), "\"\"", nil},
-       
     }
 
     for i, c := range cases {

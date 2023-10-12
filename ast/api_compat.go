@@ -27,7 +27,7 @@
  )
  
  func init() {
-	 println("WARNING: sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
+	 println("WARNING:(ast) sonic only supports Go1.16~1.20 && CPU amd64, but your environment is not suitable")
  }
  
  func quote(buf *[]byte, val string) {
