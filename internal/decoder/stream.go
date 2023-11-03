@@ -62,23 +62,34 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
         return self.err
     }
 
-    var buf = self.buf[self.scanp:]
-    var p = 0
-    var recycle bool
+    // // copy remain bytes onto start for memory reusing...
+    // if self.scanp > 0 {
+    //     self.buf = append(self.buf[:0], self.buf[self.scanp:]...)
+    //     self.scanp = 0
+    // }
+    var mem = self.buf
+    buf := self.buf[self.scanp:]
+    self.scanp = 0
     if cap(buf) == 0 {
         buf = bufPool.Get().([]byte)
-        recycle = true
+        mem = buf
     }
+    println("buf 1:", mem)
     
+    var p = 0
     var first = true
     var repeat = true
+    var l int
 
 read_more:
     for {
-        l := len(buf)
-        realloc(&buf)
+        l = len(buf)
+        if realloc(&buf) {
+            mem = buf
+        }
         n, err := self.r.Read(buf[l:cap(buf)])
         buf = buf[:l+n]
+
         if err != nil {
             repeat = false
             if err == io.EOF {
@@ -94,9 +105,9 @@ read_more:
             break
         }
     }
-    first = false
 
-    l := len(buf)
+    l = len(buf)
+    first = false
     if l > 0 {
         self.Decoder.Reset(string(buf))
 
@@ -118,30 +129,21 @@ read_more:
 
         p = self.Decoder.Pos()
         self.scanned += int64(p)
-        self.scanp = 0
     }
     
+    println("buf 2:", buf, l, p)
     if l > p {
         // remain undecoded bytes, so copy them into self.buf
-        self.buf = append(self.buf[:0], buf[p:]...)
+        n := copy(buf, buf[p:])
+        self.buf = buf[:n]
+        println("buf 3:", self.buf, l, p)
     } else {
         self.buf = nil
-        recycle = true
+        mem = mem[:0]
+        bufPool.Put(mem)
     }
 
-    if recycle {
-        buf = buf[:0]
-        bufPool.Put(buf)
-    }
     return err
-}
-
-func (self StreamDecoder) repeatable(err error) bool {
-    if ee, ok := err.(SyntaxError); ok && 
-    (ee.Code == types.ERR_EOF || (ee.Code == types.ERR_INVALID_CHAR && self.i >= len(self.s)-1)) {
-        return true
-    }
-    return false
 }
 
 // InputOffset returns the input stream byte offset of the current decoder position. 
@@ -212,10 +214,11 @@ func (self *StreamDecoder) refill() error {
     return err
 }
 
-func realloc(buf *[]byte) {
+func realloc(buf *[]byte) bool {
     l := uint(len(*buf))
     c := uint(cap(*buf))
     if c - l <= c >> minLeftBufferShift {
+        println("realloc!")
         e := l+(l>>minLeftBufferShift)
         if e < option.DefaultDecoderBufferSize {
             e = option.DefaultDecoderBufferSize
@@ -223,6 +226,8 @@ func realloc(buf *[]byte) {
         tmp := make([]byte, l, e)
         copy(tmp, *buf)
         *buf = tmp
+        return true
     }
+    return false
 }
 
