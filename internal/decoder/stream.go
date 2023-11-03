@@ -17,13 +17,14 @@
 package decoder
 
 import (
-    `bytes`
-    `io`
-    `sync`
+	"bytes"
+	"io"
+	"sync"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/option`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
 )
 
 var (
@@ -58,92 +59,50 @@ func NewStreamDecoder(r io.Reader) *StreamDecoder {
 // Either io error from underlying io.Reader (except io.EOF) 
 // or syntax error from data will be recorded and stop subsequently decoding.
 func (self *StreamDecoder) Decode(val interface{}) (err error) {
-    if self.err != nil {
-        return self.err
-    }
-
-    // // copy remain bytes onto start for memory reusing...
-    // if self.scanp > 0 {
-    //     self.buf = append(self.buf[:0], self.buf[self.scanp:]...)
-    //     self.scanp = 0
-    // }
-    var mem = self.buf
-    buf := self.buf[self.scanp:]
-    self.scanp = 0
-    if cap(buf) == 0 {
-        buf = bufPool.Get().([]byte)
-        mem = buf
-    }
-    println("buf 1:", mem)
-    
-    var p = 0
-    var first = true
-    var repeat = true
-    var l int
-
-read_more:
-    for {
-        l = len(buf)
-        if realloc(&buf) {
-            mem = buf
-        }
-        n, err := self.r.Read(buf[l:cap(buf)])
-        buf = buf[:l+n]
-
-        if err != nil {
-            repeat = false
-            if err == io.EOF {
-                if len(buf) == 0 {
-                    return err
-                }
-                break
-            }
-            self.err = err
-            return err
-        }
-        if n > 0 || first {
-            break
-        }
-    }
-
-    l = len(buf)
-    first = false
-    if l > 0 {
-        self.Decoder.Reset(string(buf))
-
+    // read more data into buf
+    for self.More() {
+        var src = rt.Mem2Str(self.buf[self.scanp:])
         var x int
-        if ret := native.SkipOneFast(&self.s, &x); ret < 0 {
-            if repeat {
-                goto read_more
+        var s int
+        if s = native.SkipOneFast(&src, &x); s < 0 {
+            // mandatorily set buf full, trigger refill 
+            self.scanp = len(self.buf)
+            if self.More()  {
+                continue
             } else {
-                err = SyntaxError{x, self.s, types.ParsingError(-ret), ""}
+                err = SyntaxError{x, self.s, types.ParsingError(-s), ""}
                 self.err = err
                 return
             }
         }
+        s += self.scanp
+        x += self.scanp
 
+        // must copy string here for safety
+        self.Decoder.Reset(string(self.buf[s:x]))
         err = self.Decoder.Decode(val)
         if err != nil {
             self.err = err
+            return 
         }
 
-        p = self.Decoder.Pos()
-        self.scanned += int64(p)
-    }
-    
-    println("buf 2:", buf, l, p)
-    if l > p {
-        // remain undecoded bytes, so copy them into self.buf
-        n := copy(buf, buf[p:])
-        self.buf = buf[:n]
-        println("buf 3:", self.buf, l, p)
-    } else {
-        self.buf = nil
-        mem = mem[:0]
-        bufPool.Put(mem)
-    }
+        self.scanned += int64(x)
+        self.scanp = 0
 
-    return err
+        if len(self.buf) == x  {
+            // fully scan, thus we just recycle buffer
+            mem := self.buf
+            self.buf = nil
+            bufPool.Put(mem[:0])
+        } else {
+            n := copy(self.buf, self.buf[x:])
+            self.buf = self.buf[:n]
+        }   
+
+        break
+    }    
+
+    return self.err
 }
 
 // InputOffset returns the input stream byte offset of the current decoder position. 
@@ -167,6 +126,7 @@ func (self *StreamDecoder) More() bool {
     c, err := self.peek()
     return err == nil && c != ']' && c != '}'
 }
+
 
 func (self *StreamDecoder) peek() (byte, error) {
     var err error
@@ -217,6 +177,11 @@ func (self *StreamDecoder) refill() error {
 func realloc(buf *[]byte) bool {
     l := uint(len(*buf))
     c := uint(cap(*buf))
+    if c == 0 {
+        println("use pool!")
+       *buf = bufPool.Get().([]byte)
+       return true
+    }
     if c - l <= c >> minLeftBufferShift {
         println("realloc!")
         e := l+(l>>minLeftBufferShift)
