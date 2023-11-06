@@ -35,6 +35,7 @@ var (
     _Double_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"}` + strings.Repeat(" ", int(DefaultBufferSize)) + `{"11111":"` + strings.Repeat("2", int(DefaultBufferSize)) + `"}`     
     _Triple_JSON = `{"aaaaa":"` + strings.Repeat("b", int(DefaultBufferSize)) + `"}{ } {"11111":"` + 
     strings.Repeat("2", int(DefaultBufferSize))+`"} b {}`
+    _SMALL_JSON = `{"a":"b"} [1] {"c":"d"} [2]`
 )
 
 func TestStreamError(t *testing.T) {
@@ -250,6 +251,21 @@ func BenchmarkDecodeStream_Std(b *testing.B) {
             _ = dc.Decode(&v1)
         }
     })
+
+    b.Run("small", func (b *testing.B) {
+        var str = _SMALL_JSON
+        for i:=0; i<b.N; i++ {
+            var r1 = strings.NewReader(str)
+            var v1 interface{}
+            dc := json.NewDecoder(r1)
+            for dc.More() {
+                e := dc.Decode(&v1)
+                if e != nil {
+                    b.Fatal(e)
+                }
+            }
+        }
+    })
 }
 
 // func BenchmarkDecodeError_Sonic(b *testing.B) {
@@ -312,6 +328,22 @@ func BenchmarkDecodeStream_Sonic(b *testing.B) {
             var v1 map[string]interface{}
             dc := NewStreamDecoder(r1)
             _ = dc.Decode(&v1)
+        }
+    })
+
+    b.Run("small", func (b *testing.B) {
+        var str = _SMALL_JSON
+        for i:=0; i<b.N; i++ {
+            // println("one loop")
+            var r1 = strings.NewReader(str)
+            var v1 interface{}
+            dc := NewStreamDecoder(r1)
+            for dc.More() {
+                e := dc.Decode(&v1)
+                if e != nil {
+                    b.Fatal(e)
+                }
+            }
         }
     })
 }
