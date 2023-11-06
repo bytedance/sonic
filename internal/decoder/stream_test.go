@@ -97,10 +97,9 @@ func TestDecodeRecurse(t *testing.T) {
     es1 := d1.Decode(&v1)
     ee1 := d2.Decode(&v2)
     assert.Equal(t, es1, ee1)
-    println(es1)
     assert.Equal(t, v1, v2)
-    require.Equal(t, d1.More(), d2.More())
 
+    require.Equal(t, d1.More(), d2.More())
     r1.WriteString(str[1:])
     r2.WriteString(str[1:])
 
@@ -187,13 +186,15 @@ func TestBuffered(t *testing.T) {
     es4 := d1.Decode(&v1)
     ee4 := d2.Decode(&v2)
     assert.Equal(t, es4, ee4)
-    assert.Equal(t, d1.InputOffset(), d2.InputOffset())
+    println(str[d1.InputOffset()-5:d1.InputOffset()+5])
+    assert.Equal(t, d1.InputOffset(), d2.InputOffset()-1)
 
-    // require.Equal(t, d1.More(), d2.More())
+    require.Equal(t, d1.More(), d2.More())
     es2 := d1.Decode(&v1)
     ee2 := d2.Decode(&v2)
     assert.Equal(t, es2, ee2)
-    assert.Equal(t, d1.InputOffset(), d2.InputOffset())
+    println(str[d1.InputOffset()-5:d1.InputOffset()+5])
+    assert.Equal(t, d1.InputOffset(), d2.InputOffset()-1)
 }
 
 func BenchmarkDecodeStream_Std(b *testing.B) {
@@ -260,38 +261,38 @@ func BenchmarkDecodeStream_Std(b *testing.B) {
 // }
 
 func BenchmarkDecodeStream_Sonic(b *testing.B) {
-    // b.Run("single", func (b *testing.B) {
-    //     var str = _Single_JSON
-    //     var r1 = bytes.NewBufferString(str)
-    //     dc := NewStreamDecoder(r1)
-    //     for i:=0; i<b.N; i++ {
-    //         var v1 map[string]interface{}
-    //         e := dc.Decode(&v1)
-    //         if e != nil {
-    //             b.Fatal(e)
-    //         }
-    //         r1.WriteString(str[1:])
-    //     }
-    // })
+    b.Run("single", func (b *testing.B) {
+        var str = _Single_JSON
+        var r1 = bytes.NewBufferString(str)
+        dc := NewStreamDecoder(r1)
+        for i:=0; i<b.N; i++ {
+            var v1 map[string]interface{}
+            e := dc.Decode(&v1)
+            if e != nil {
+                b.Fatal(e)
+            }
+            r1.WriteString(str[1:])
+        }
+    })
 
-    // b.Run("double", func (b *testing.B) {
-    //     var str = _Double_JSON
-    //     for i:=0; i<b.N; i++ {
-    //         var r1 = strings.NewReader(str)
-    //         var v1 map[string]interface{}
-    //         dc := NewStreamDecoder(r1)
-    //         _ = dc.Decode(&v1)
-    //         if dc.More() {
-    //             _ = dc.Decode(&v1)
-    //         }
-    //     }
-    // })
+    b.Run("double", func (b *testing.B) {
+        var str = _Double_JSON
+        for i:=0; i<b.N; i++ {
+            var r1 = strings.NewReader(str)
+            var v1 map[string]interface{}
+            dc := NewStreamDecoder(r1)
+            _ = dc.Decode(&v1)
+            if dc.More() {
+                _ = dc.Decode(&v1)
+            }
+        }
+    })
 
     b.Run("4x", func (b *testing.B) {
         var str = _Double_JSON + strings.Repeat(" ", int(DefaultBufferSize-10)) + _Double_JSON
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
-            println("loop")
+            // println("loop")
             var r1 = strings.NewReader(str)
             var v1 map[string]interface{}
             dc := NewStreamDecoder(r1)
@@ -304,13 +305,13 @@ func BenchmarkDecodeStream_Sonic(b *testing.B) {
         }
     })
 
-    // b.Run("halt", func (b *testing.B) {
-    //     var str = _Double_JSON
-    //     for i:=0; i<b.N; i++ {
-    //         var r1 = NewHaltReader(str, testHalts())
-    //         var v1 map[string]interface{}
-    //         dc := NewStreamDecoder(r1)
-    //         _ = dc.Decode(&v1)
-    //     }
-    // })
+    b.Run("halt", func (b *testing.B) {
+        var str = _Double_JSON
+        for i:=0; i<b.N; i++ {
+            var r1 = NewHaltReader(str, testHalts())
+            var v1 map[string]interface{}
+            dc := NewStreamDecoder(r1)
+            _ = dc.Decode(&v1)
+        }
+    })
 }

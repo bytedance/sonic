@@ -28,7 +28,7 @@ import (
 )
 
 var (
-    minLeftBufferShift   uint = 1
+    minLeftBufferShift uint = 1
 )
 
 // StreamDecoder is the decoder context object for streaming input.
@@ -60,46 +60,59 @@ func NewStreamDecoder(r io.Reader) *StreamDecoder {
 // or syntax error from data will be recorded and stop subsequently decoding.
 func (self *StreamDecoder) Decode(val interface{}) (err error) {
     // read more data into buf
-    for self.More() {
-        var src = rt.Mem2Str(self.buf[self.scanp:])
-        var x int
-        var s int
-        if s = native.SkipOneFast(&src, &x); s < 0 {
-            // mandatorily set buf full, trigger refill 
-            self.scanp = len(self.buf)
-            if self.More()  {
-                continue
+    if self.More() {
+        // println(string(self.buf))
+        var s = self.scanp
+    try_skip:
+        var e = len(self.buf)
+        // println("s:", s, "e:", e, "scanned:",self.scanned, "scanp:",self.scanp, self.buf)
+        var src = rt.Mem2Str(self.buf[s:e])
+        // if len(src) > 5 {
+        //     println(src[:5], src[len(src)-5:])
+        // } else {
+        //     println(src)
+        // }
+        // try skip
+        var x = 0;
+        if y := native.SkipOneFast(&src, &x); y < 0 {
+            if self.readMore()  {
+                // println("more")
+                goto try_skip
             } else {
-                err = SyntaxError{x, self.s, types.ParsingError(-s), ""}
+                // println("no more")
+                err = SyntaxError{e, self.s, types.ParsingError(-s), ""}
                 self.err = err
                 return
             }
+        } else {
+            s = y + s
+            e = x + s
         }
-        s += self.scanp
-        x += self.scanp
-
+        
+        // println("decode: ", s, e)
         // must copy string here for safety
-        self.Decoder.Reset(string(self.buf[s:x]))
+        self.Decoder.Reset(string(self.buf[s:e]))
         err = self.Decoder.Decode(val)
         if err != nil {
             self.err = err
             return 
         }
 
-        self.scanned += int64(x)
-        self.scanp = 0
-
-        if len(self.buf) == x  {
-            // fully scan, thus we just recycle buffer
+        self.scanp = e
+        _, empty := self.scan()
+        if empty {
+            // no remain valid bytes, thus we just recycle buffer
             mem := self.buf
             self.buf = nil
             bufPool.Put(mem[:0])
         } else {
-            n := copy(self.buf, self.buf[x:])
+            // remain undecoded bytes, move them onto head
+            n := copy(self.buf, self.buf[self.scanp:])
             self.buf = self.buf[:n]
         }   
 
-        break
+        self.scanned += int64(self.scanp)
+        self.scanp = 0
     }    
 
     return self.err
@@ -108,6 +121,7 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
 // InputOffset returns the input stream byte offset of the current decoder position. 
 // The offset gives the location of the end of the most recently returned token and the beginning of the next token.
 func (self *StreamDecoder) InputOffset() int64 {
+    // println("input offset",self.scanned, self.scanp)
     return self.scanned + int64(self.scanp)
 }
 
@@ -127,27 +141,64 @@ func (self *StreamDecoder) More() bool {
     return err == nil && c != ']' && c != '}'
 }
 
+// More reports whether there is another element in the
+// current array or object being parsed.
+func (self *StreamDecoder) readMore() bool {
+    if self.err != nil {
+        return false
+    }
+
+    var err error
+    var n int
+    for {
+        // Grow buffer if not large enough.
+        l := len(self.buf)
+        realloc(&self.buf)
+
+        n, err = self.r.Read(self.buf[l:cap(self.buf)])
+        self.buf = self.buf[: l+n]
+
+        self.scanp = l
+        _, empty := self.scan()
+        if !empty {
+            return true
+        }
+
+        // buffer has been scanned, now report any error
+        if err != nil  {
+            self.err = err
+            return false
+        }
+    }
+}
+
 
 func (self *StreamDecoder) peek() (byte, error) {
     var err error
     for {
-        for i := self.scanp; i < len(self.buf); i++ {
-            c := self.buf[i]
-            if isSpace(c) {
-                continue
-            }
-            self.scanp = i
-            return c, nil
+        c, empty := self.scan()
+        if !empty {
+            return byte(c), nil
         }
         // buffer has been scanned, now report any error
         if err != nil {
-            if err != io.EOF {
-                self.err = err
-            }
+            self.err = err
             return 0, err
         }
         err = self.refill()
     }
+}
+
+func (self *StreamDecoder) scan() (byte, bool) {
+    for i := self.scanp; i < len(self.buf); i++ {
+        c := self.buf[i]
+        if isSpace(c) {
+            continue
+        }
+        self.scanp = i
+        return c, false
+    }
+    return 0, true
 }
 
 func isSpace(c byte) bool {
@@ -178,12 +229,12 @@ func realloc(buf *[]byte) bool {
     l := uint(len(*buf))
     c := uint(cap(*buf))
     if c == 0 {
-        println("use pool!")
+        // println("use pool!")
        *buf = bufPool.Get().([]byte)
        return true
     }
     if c - l <= c >> minLeftBufferShift {
-        println("realloc!")
+        // println("realloc!")
         e := l+(l>>minLeftBufferShift)
         if e < option.DefaultDecoderBufferSize {
             e = option.DefaultDecoderBufferSize
