@@ -791,6 +791,21 @@ func TestUnset(t *testing.T) {
     if entities.len() != 3 { 
         t.Fatal(entities.len())
     }
+
+    es, err := entities.Interface()
+    require.NoError(t, err)
+    require.Equal(t, map[string]interface{}{
+        "hashtags": []interface{}{
+            map[string]interface{}{
+                "text": "freebandnames",
+                "indices": []interface{}{
+                    float64(20), float64(34),
+                },
+            },
+        },
+        "user_mentions": []interface{}{},
+    },es)
+
     out, err := entities.MarshalJSON()
     require.NoError(t, err)
     println(string(out))
@@ -821,7 +836,6 @@ func TestUnset(t *testing.T) {
     if e.Exists() {
         t.Fatal()
     }
-  
 
     hashtags := entities.Get("hashtags").Index(0)
     hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
@@ -848,6 +862,11 @@ func TestUnset(t *testing.T) {
     if !exist || err != nil {
         t.Fatal()
     }
+
+    umses, err := ums.Interface()
+    require.NoError(t, err)
+    require.Equal(t, []interface{}{interface{}(nil), true},umses)
+
     v1, _ := ums.Index(0).Interface()
     v2, _ := ums.Index(1).Interface() // NOTICE: unseted index 1 still can be find here
     v3, _ := ums.Index(2).Interface()

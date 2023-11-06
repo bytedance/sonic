@@ -36,7 +36,8 @@ func NewStreamEncoder(w io.Writer) *StreamEncoder {
 
 // Encode encodes interface{} as JSON to io.Writer
 func (enc *StreamEncoder) Encode(val interface{}) (err error) {
-    out := newBytes()
+    buf := newBytes()
+    out := buf
 
     /* encode into the buffer */
     err = EncodeInto(&out, val, enc.Opts)
@@ -79,6 +80,6 @@ func (enc *StreamEncoder) Encode(val interface{}) (err error) {
     }
 
 free_bytes:
-    freeBytes(out)
+    freeBytes(buf)
     return err
 }

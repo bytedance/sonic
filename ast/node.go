@@ -1353,17 +1353,16 @@ func (self *Node) toGenericArray() ([]interface{}, error) {
     if nb == 0 {
         return []interface{}{}, nil
     }
-    ret := make([]interface{}, nb)
+    ret := make([]interface{}, 0, nb)
     
     /* convert each item */
-    var s = (*linkedNodes)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.Interface()
+    it := self.values()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.Interface()
         if err != nil {
             return nil, err
         }
-        ret[i] = x
+        ret = append(ret, vv)
     }
 
     /* all done */
@@ -1375,17 +1374,16 @@ func (self *Node) toGenericArrayUseNumber() ([]interface{}, error) {
     if nb == 0 {
         return []interface{}{}, nil
     }
-    ret := make([]interface{}, nb)
+    ret := make([]interface{}, 0, nb)
 
     /* convert each item */
-    var s = (*linkedNodes)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.InterfaceUseNumber()
+    it := self.values()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.InterfaceUseNumber()
         if err != nil {
             return nil, err
         }
-        ret[i] = x
+        ret = append(ret, vv)
     }
 
     /* all done */
@@ -1413,14 +1411,13 @@ func (self *Node) toGenericObject() (map[string]interface{}, error) {
     ret := make(map[string]interface{}, nb)
 
     /* convert each item */
-    var s = (*linkedPairs)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.Value.Interface()
+    it := self.properties()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.Value.Interface()
         if err != nil {
             return nil, err
         }
-        ret[p.Key] = x
+        ret[v.Key] = vv
     }
 
     /* all done */
@@ -1436,14 +1433,13 @@ func (self *Node) toGenericObjectUseNumber() (map[string]interface{}, error) {
     ret := make(map[string]interface{}, nb)
 
     /* convert each item */
-    var s = (*linkedPairs)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.Value.InterfaceUseNumber()
+    it := self.properties()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.Value.InterfaceUseNumber()
         if err != nil {
             return nil, err
         }
-        ret[p.Key] = x
+        ret[v.Key] = vv
     }
 
     /* all done */
