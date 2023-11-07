@@ -61,6 +61,7 @@ func fuzzMain(t *testing.T, data []byte) {
     if !json.Valid(data) {
         return
     }
+    fuzzStream(t, data)
     for i, typ := range []func() interface{}{
         func() interface{} { return new(interface{}) },
         func() interface{} { return new(map[string]interface{}) },

@@ -25,6 +25,7 @@ import (
 	`unicode/utf8`
 
 	`github.com/bytedance/sonic/encoder`
+	`github.com/bytedance/sonic/decoder`
 	`github.com/stretchr/testify/require`
 	// `github.com/davecgh/go-spew/spew`
 )
@@ -44,4 +45,41 @@ func fuzzHtmlEscape(t *testing.T, data []byte){
 	json.HTMLEscape(&jdst, data)
 	sdst = encoder.HTMLEscape(sdst, data)
 	require.Equalf(t, string(jdst.Bytes()), string(sdst), "different htmlescape results")
+}
+
+// data is random, check whether is panic
+func fuzzStream(t *testing.T, data []byte) {
+	r := bytes.NewBuffer(data)
+	dc := decoder.NewStreamDecoder(r)
+	dc.ValidateString()
+	r1 := bytes.NewBuffer(data)
+	dc1 := decoder.NewStreamDecoder(r1)
+
+	w := bytes.NewBuffer(nil)
+	ec := encoder.NewStreamEncoder(w)
+	ec.SetCompactMarshaler(true)
+	ec.SetValidateString(true)
+	ec.SetEscapeHTML(true)
+	ec.SortKeys()
+	w1 := bytes.NewBuffer(nil)
+	ec1 := encoder.NewStreamEncoder(w1)
+
+	for dc1.More() {
+		if !dc.More() {
+			t.Fatal()
+		}
+		var obj interface{}
+		err := dc.Decode(&obj)
+		var obj1 interface{}
+		err1 := dc1.Decode(&obj1)
+		require.Equal(t, err1 == nil, err == nil)
+		// require.Equal(t, obj, obj1)
+		if err1 != nil {
+			return
+		}
+
+		ee := ec.Encode(obj)
+		ee1 := ec1.Encode(obj1)
+		require.Equal(t, ee == nil, ee1 == nil)
+	}
 }
