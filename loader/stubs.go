@@ -17,7 +17,8 @@
 package loader
 
 import (
-    `sync`
+    `sync/atomic`
+    `unsafe`
     _ `unsafe`
 )
 
@@ -25,13 +26,22 @@ import (
 //goland:noinspection GoUnusedGlobalVariable
 var lastmoduledatap *moduledata
 
-var moduledataMux sync.Mutex
-
 func registerModule(mod *moduledata) {
-    moduledataMux.Lock()
-    lastmoduledatap.next = mod
-    lastmoduledatap = mod
-    moduledataMux.Unlock()
+load:
+    old := (*moduledata)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&lastmoduledatap))))
+    next := (*moduledata)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&old.next))))
+    // load and swap old.next
+    if !atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&old.next)), 
+        unsafe.Pointer(next), unsafe.Pointer(mod)){
+        goto load
+    }
+    // sucussefully exchange old.next, then load and swap lastmoduledatap
+    if !atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&lastmoduledatap)), 
+        unsafe.Pointer(old), unsafe.Pointer(mod)) {
+        // exchange fail, recover old.next...
+        atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&old.next)), unsafe.Pointer(next))
+        goto load
+    }
 }
 
 //go:linkname moduledataverify1 runtime.moduledataverify1

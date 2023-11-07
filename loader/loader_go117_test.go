@@ -23,6 +23,7 @@ import (
     `runtime`
     `runtime/debug`
     `strconv`
+    `sync`
     `testing`
     `unsafe`
 
@@ -30,33 +31,7 @@ import (
     `github.com/stretchr/testify/require`
 )
 
-func TestLoad(t *testing.T) {
-    // defer func() {
-    //     if r := recover(); r != nil {
-    //         runtime.GC()
-    //         if r != "hook1" {
-    //             t.Fatal("not right panic:" + r.(string))
-    //         }
-    //     } else {
-    //         t.Fatal("not panic")
-    //     }
-    // }()
-
-    var hstr string
-
-    type TestFunc func(i *int, hook func(i *int)) int
-    var hook = func(i *int) {
-        runtime.GC()
-        debug.FreeOSMemory()
-        hstr = ("hook" + strconv.Itoa(*i))
-        runtime.GC()
-        debug.FreeOSMemory()
-    }
-    // var f TestFunc = func(i *int, hook func(i *int)) int {
-    //     var t = *i
-    //     hook(i)
-    //     return t + *i
-    // }
+func makeFn() ([]byte, *Func) {
     bc := []byte {
         0x48, 0x83, 0xec, 0x18,         // (0x00) subq $24, %rsp
         0x48, 0x89, 0x6c, 0x24, 0x10,   // (0x04) movq %rbp, 16(%rsp)
@@ -119,7 +94,39 @@ func TestLoad(t *testing.T) {
     locals.AddField(false)
     fn.LocalsPointerMaps = locals.Build()
 
-    rets := Load(bc, []Func{fn}, "dummy_module", []string{"github.com/bytedance/sonic/dummy.go"})
+    return bc, &fn
+}
+
+func TestLoad(t *testing.T) {
+    // defer func() {
+    //     if r := recover(); r != nil {
+    //         runtime.GC()
+    //         if r != "hook1" {
+    //             t.Fatal("not right panic:" + r.(string))
+    //         }
+    //     } else {
+    //         t.Fatal("not panic")
+    //     }
+    // }()
+
+    var hstr string
+
+    type TestFunc func(i *int, hook func(i *int)) int
+    var hook = func(i *int) {
+        runtime.GC()
+        debug.FreeOSMemory()
+        hstr = ("hook" + strconv.Itoa(*i))
+        runtime.GC()
+        debug.FreeOSMemory()
+    }
+    // var f TestFunc = func(i *int, hook func(i *int)) int {
+    //     var t = *i
+    //     hook(i)
+    //     return t + *i
+    // }
+    
+    bc, fn := makeFn()
+    rets := Load(bc, []Func{*fn}, "dummy_module", []string{"github.com/bytedance/sonic/dummy.go"})
     println("func address ", *(*unsafe.Pointer)(rets[0]))
     // for k, _ := range moduleCache.m {
     //     spew.Dump(k)
@@ -136,4 +143,18 @@ func TestLoad(t *testing.T) {
     file, line := fi.FileLine(0)
     require.Equal(t, "github.com/bytedance/sonic/dummy.go", file)
     require.Equal(t, 0, line)
+}
+
+func TestLoaderRace(t *testing.T) {
+    N := 100
+    wg := sync.WaitGroup{}
+    for i:=0; i<N; i++ {
+        wg.Add(1)
+        go func(i int) {
+            defer wg.Done()
+            bc, fn := makeFn()
+            _ = Load(bc, []Func{*fn}, "dummy"+strconv.Itoa(i), []string{"github.com/bytedance/sonic/dummy"+strconv.Itoa(i)+".go"})
+        }(i)
+    }
+    wg.Wait()
 }
