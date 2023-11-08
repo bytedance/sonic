@@ -481,6 +481,7 @@ func (self *_Compiler) compileRec(p *_Program, sp int, vt reflect.Type, pv bool)
 }
 
 func (self *_Compiler) compileOps(p *_Program, sp int, vt reflect.Type) {
+    println("vt:", vt.String())
     switch vt.Kind() {
         case reflect.Bool      : p.add(_OP_bool)
         case reflect.Int       : p.add(_OP_int())
