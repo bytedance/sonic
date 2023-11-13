@@ -204,28 +204,6 @@ func (self *linkedPairs) Get(key string) (*Pair, int) {
     return nil, -1
 }
 
-func (self *linkedPairs) ToSlice(con []Pair) {
-    if len(con) < self.size {
-        return
-    }
-    i := self.size-1
-    a, b := i/_DEFAULT_NODE_CAP-1, i%_DEFAULT_NODE_CAP
-
-    if a < 0 {
-        copy(con, self.head[:b+1])
-        return
-    } else {
-        copy(con, self.head[:])
-        con = con[_DEFAULT_NODE_CAP:]
-    }
-
-    for i:=0; i<a; i++ {
-        copy(con, self.tail[i][:])
-        con = con[_DEFAULT_NODE_CAP:]
-    }
-    copy(con, self.tail[a][:b+1])
-}
-
 func (self *linkedPairs) ToMap(con map[string]Node) {
     for i:=0; i<self.size; i++ {
         n := self.At(i)

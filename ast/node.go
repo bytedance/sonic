@@ -1396,9 +1396,11 @@ func (self *Node) toGenericArrayUseNode() ([]Node, error) {
         return []Node{}, nil
     }
 
-    var s = (*linkedNodes)(self.p)
     var out = make([]Node, nb)
-    s.ToSlice(out)
+    it := self.values()
+    for v := it.next(); v != nil; v = it.next() {
+        out = append(out, *v)
+    }
 
     return out, nil
 }
@@ -1455,6 +1457,22 @@ func (self *Node) toGenericObjectUseNode() (map[string]Node, error) {
     var s = (*linkedPairs)(self.p)
     var out = make(map[string]Node, nb)
     s.ToMap(out)
+
+    /* all done */
+    return out, nil
+}
+
+func (self *Node) toGenericObjectUsePair() ([]Pair, error) {
+    var nb = self.len()
+    if nb == 0 {
+        return []Pair{}, nil
+    }
+
+    var out = make([]Pair, 0, nb)
+    it := self.properties()
+    for v := it.next(); v != nil; v = it.next() {
+        out = append(out, *v)
+    }
 
     /* all done */
     return out, nil
