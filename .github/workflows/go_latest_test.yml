@@ -25,5 +25,4 @@ jobs:
 
       - name: script
         run: |
-          sh ./scripts/go_latest.sh master
-
+          sh ./scripts/go_latest.sh go1.21.0

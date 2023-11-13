@@ -886,44 +886,44 @@ func TestUnset(t *testing.T) {
 
 }
 
-// func TestUnsafeNode(t *testing.T) {
-//     str, loop := getTestIteratorSample(_DEFAULT_NODE_CAP)
+func TestUnsafeNode(t *testing.T) {
+    str, loop := getTestIteratorSample(_DEFAULT_NODE_CAP)
 
-//     root, err := NewSearcher(str).GetByPath("array")
-//     if err != nil {
-//         t.Fatal(err)
-//     }
-//     a, _ := root.UnsafeArray()
-//     if len(a) != loop {
-//         t.Fatalf("exp:%v, got:%v", loop, len(a))
-//     }
-//     for i := int64(0); i<int64(loop); i++{
-//         in := a[i]
-//         x, _ := in.Int64()
-//         if x != i {
-//             t.Fatalf("exp:%v, got:%v", i, x)
-//         }
-//     }
+    root, err := NewSearcher(str).GetByPath("array")
+    if err != nil {
+        t.Fatal(err)
+    }
+    a, _ := root.UnsafeArray()
+    if len(a) != loop {
+        t.Fatalf("exp:%v, got:%v", loop, len(a))
+    }
+    for i := int64(0); i<int64(loop); i++{
+        in := a[i]
+        x, _ := in.Int64()
+        if x != i {
+            t.Fatalf("exp:%v, got:%v", i, x)
+        }
+    }
     
-//     root, err = NewSearcher(str).GetByPath("object")
-//     if err != nil {
-//         t.Fatal(err)
-//     }
-//     b, _ := root.UnsafeMap()
-//     if len(b) != loop {
-//         t.Fatalf("exp:%v, got:%v", loop, len(b))
-//     }
-//     for i := int64(0); i<int64(loop); i++ {
-//         k := `k`+strconv.Itoa(int(i))
-//         if k != b[i].Key {
-//             t.Fatalf("unexpected element: %#v", b[i])
-//         }
-//         x, _ := b[i].Value.Int64()
-//         if x != i {
-//             t.Fatalf("exp:%v, got:%v", i, x)
-//         }
-//     }
-// }
+    root, err = NewSearcher(str).GetByPath("object")
+    if err != nil {
+        t.Fatal(err)
+    }
+    b, _ := root.UnsafeMap()
+    if len(b) != loop {
+        t.Fatalf("exp:%v, got:%v", loop, len(b))
+    }
+    for i := int64(0); i<int64(loop); i++ {
+        k := `k`+strconv.Itoa(int(i))
+        if k != b[i].Key {
+            t.Fatalf("unexpected element: %#v", b[i])
+        }
+        x, _ := b[i].Value.Int64()
+        if x != i {
+            t.Fatalf("exp:%v, got:%v", i, x)
+        }
+    }
+}
 
 func TestUseNode(t *testing.T) {
     str, loop := getTestIteratorSample(_DEFAULT_NODE_CAP)

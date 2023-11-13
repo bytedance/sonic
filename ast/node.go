@@ -834,15 +834,15 @@ func (self *Node) MapUseNode() (map[string]Node, error) {
 // WARN: don't use it unless you know what you are doing
 //
 // Deprecated:  this API now returns copied nodes instead of directly reference, 
-// func (self *Node) UnsafeMap() ([]Pair, error) {
-//     if err := self.should(types.V_OBJECT, "an object"); err != nil {
-//         return nil, err
-//     }
-//     if err := self.skipAllKey(); err != nil {
-//         return nil, err
-//     }
-//     return self.toGenericObjectUsePair()
-// }
+func (self *Node) UnsafeMap() ([]Pair, error) {
+    if err := self.should(types.V_OBJECT, "an object"); err != nil {
+        return nil, err
+    }
+    if err := self.skipAllKey(); err != nil {
+        return nil, err
+    }
+    return self.toGenericObjectUsePair()
+}
 
 //go:nocheckptr
 func (self *Node) unsafeMap() (*linkedPairs, error) {
@@ -974,15 +974,15 @@ func (self *Node) ArrayUseNode() ([]Node, error) {
 //
 // Deprecated:  this API now returns copied nodes instead of directly reference, 
 // which has no difference with ArrayUseNode
-// func (self *Node) UnsafeArray() ([]Node, error) {
-//     if err := self.should(types.V_ARRAY, "an array"); err != nil {
-//         return nil, err
-//     }
-//     if err := self.skipAllIndex(); err != nil {
-//         return nil, err
-//     }
-//     return self.toGenericArrayUseNode()
-// }
+func (self *Node) UnsafeArray() ([]Node, error) {
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return nil, err
+    }
+    if err := self.skipAllIndex(); err != nil {
+        return nil, err
+    }
+    return self.toGenericArrayUseNode()
+}
 
 func (self *Node) unsafeArray() (*linkedNodes, error) {
     if err := self.skipAllIndex(); err != nil {
