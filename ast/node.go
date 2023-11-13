@@ -1396,7 +1396,7 @@ func (self *Node) toGenericArrayUseNode() ([]Node, error) {
         return []Node{}, nil
     }
 
-    var out = make([]Node, nb)
+    var out = make([]Node, 0, nb)
     it := self.values()
     for v := it.next(); v != nil; v = it.next() {
         out = append(out, *v)
