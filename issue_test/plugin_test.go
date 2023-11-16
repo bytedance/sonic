@@ -44,7 +44,7 @@ func buildPlugin() {
         Stderr: out,
     }
     if err := cmd0.Run(); err != nil {
-        panic(string(out.Bytes()))
+        panic(out.String())
     }
     out.Reset()
     bin, err := exec.LookPath("go")
@@ -58,7 +58,7 @@ func buildPlugin() {
         Stderr: out,
     }
     if err := cmd.Run(); err != nil {
-        panic(string(out.Bytes()))
+        panic(out.String())
     }
 }
 
