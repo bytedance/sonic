@@ -73,6 +73,9 @@ type Config struct {
     // NoValidateJSONMarshaler indicates that the encoder should not validate the output string
     // after encoding the JSONMarshaler to JSON.
     NoValidateJSONMarshaler       bool
+    
+    // NoEncoderNewline indicates that the encoder should not add a newline after every message
+    NoEncoderNewline bool
 }
  
 var (

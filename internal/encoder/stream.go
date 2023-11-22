@@ -55,7 +55,9 @@ func (enc *StreamEncoder) Encode(val interface{}) (err error) {
         }
 
         // according to standard library, terminate each value with a newline...
-        buf.WriteByte('\n')
+        if enc.Opts & NoEncoderNewline == 0 {
+            buf.WriteByte('\n')
+        }
 
         /* copy into io.Writer */
         _, err = io.Copy(enc.w, buf)
@@ -76,7 +78,9 @@ func (enc *StreamEncoder) Encode(val interface{}) (err error) {
         }
 
         // according to standard library, terminate each value with a newline...
-        enc.w.Write([]byte{'\n'})
+        if enc.Opts & NoEncoderNewline == 0 {
+            enc.w.Write([]byte{'\n'})
+        }
     }
 
 free_bytes:

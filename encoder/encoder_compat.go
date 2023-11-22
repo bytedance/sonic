@@ -42,6 +42,7 @@ const (
     bitNoNullSliceOrMap
     bitValidateString
     bitNoValidateJSONMarshaler
+    bitNoEncoderNewline
 
     // used for recursive compile
     bitPointerValue = 63
@@ -77,6 +78,9 @@ const (
     // NoValidateJSONMarshaler indicates that the encoder should not validate the output string
     // after encoding the JSONMarshaler to JSON.
     NoValidateJSONMarshaler Options = 1 << bitNoValidateJSONMarshaler
+
+    // NoEncoderNewline indicates that the encoder should not add a newline after every message
+    NoEncoderNewline Options = 1 << bitNoEncoderNewline
   
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
@@ -127,6 +131,15 @@ func (self *Encoder) SetNoValidateJSONMarshaler(f bool) {
         self.Opts |= NoValidateJSONMarshaler
     } else {
         self.Opts &= ^NoValidateJSONMarshaler
+    }
+}
+
+// SetNoEncoderNewline specifies if option NoEncoderNewline opens
+func (self *Encoder) SetNoEncoderNewline(f bool) {
+    if f {
+        self.Opts |= NoEncoderNewline
+    } else {
+        self.Opts &= ^NoEncoderNewline
     }
 }
 
