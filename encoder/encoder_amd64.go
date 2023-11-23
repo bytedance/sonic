@@ -63,6 +63,9 @@ const (
     // after encoding the JSONMarshaler to JSON.
     NoValidateJSONMarshaler Options = encoder.NoValidateJSONMarshaler
 
+    // NoEncoderNewline indicates that the encoder should not add a newline after every message
+    NoEncoderNewline Options = encoder.NoEncoderNewline
+
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = encoder.CompatibleWithStd
 )

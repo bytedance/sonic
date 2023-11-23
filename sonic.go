@@ -61,6 +61,9 @@ func (cfg Config) Froze() API {
     if cfg.NoValidateJSONMarshaler {
         api.encoderOpts |= encoder.NoValidateJSONMarshaler
     }
+    if cfg.NoEncoderNewline {
+        api.encoderOpts |= encoder.NoEncoderNewline
+    }
 
     // configure decoder options:
     if cfg.UseInt64 {
