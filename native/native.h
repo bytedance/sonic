@@ -151,5 +151,7 @@ long validate_utf8_fast(const GoString *src);
 
 long skip_one_fast(const GoString *src, long *p);
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm);
+
 long count_elems(const GoString *src, long *p);
+long count_elems2(const GoString *src, long *p);
 #endif

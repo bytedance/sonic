@@ -646,29 +646,82 @@ func Test_count_elems(t *testing.T) {
 		wantRet int
         wantP int
 	}{
-        {
+		{
             name: "0",
-            args: args{`}`, 0},
-            wantRet: -2,
-            wantP: 0,
-        },
-        {
-            name: "1",
-            args: args{`1}`, 0},
+            args: args{`{}`, 0},
             wantRet: 1,
             wantP: 2,
         },
+        {
+            name: "1",
+            args: args{`[1]`, 0},
+            wantRet: 1,
+            wantP: 3,
+        },
 		{
             name: "3",
-            args: args{`1,"2",false,null,true]`, 0},
+            args: args{`[1,"2",false,null,true]`, 0},
             wantRet: 5,
-            wantP: 22,
+            wantP: 23,
         },
-
+		{
+            name: "4",
+            args: args{`{"a":1,"b":[2,3]}`, 0},
+            wantRet: 3,
+            wantP: 17,
+        },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if gotRet := count_elems(&tt.args.s, &tt.args.p); gotRet != tt.wantRet {
+				t.Errorf("count_elems() = %v, want %v", gotRet, tt.wantRet)
+			}
+            if tt.args.p != tt.wantP {
+                t.Errorf("p = %v, want %v", tt.args.p, tt.wantP)
+            }
+		})
+	}
+}
+
+func Test_count_elems2(t *testing.T) {
+	type args struct {
+		s string
+		p int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantRet int
+        wantP int
+	}{
+        {
+            name: "0",
+            args: args{`{}`, 0},
+            wantRet: 1,
+            wantP: 2,
+        },
+        {
+            name: "1",
+            args: args{`[1]`, 0},
+            wantRet: 1,
+            wantP: 3,
+        },
+		{
+            name: "3",
+            args: args{`[1,"2",false,null,true]`, 0},
+            wantRet: 5,
+            wantP: 23,
+        },
+		{
+            name: "4",
+            args: args{`{"a":1,"b":[2,3]}`, 0},
+            wantRet: 3,
+            wantP: 17,
+        },
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotRet := count_elems2(&tt.args.s, &tt.args.p); gotRet != tt.wantRet {
 				t.Errorf("count_elems() = %v, want %v", gotRet, tt.wantRet)
 			}
             if tt.args.p != tt.wantP {
@@ -713,6 +766,46 @@ func BenchmarkCountElems(b *testing.B) {
         for i:=0; i<b.N; i++ {
             var p = 1
             _ = count_elems(&s, &p)
+        }
+    })
+}
+
+
+func BenchmarkCountElems2(b *testing.B) {
+    var maker = func(N int) string {
+        var s = `[`
+        for i :=0; i<N; i++ {
+           s += strconv.Itoa(i)
+           if i != N-1 {
+               s += ","
+           }
+       }
+       s += `]`
+       return s
+    }
+    
+    b.Run("1", func(b *testing.B) {
+        s := maker(1)
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            var p = 0
+            _ = count_elems2(&s, &p)
+        }
+    })
+    b.Run("10", func(b *testing.B) {
+        s := maker(10)
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            var p = 0
+            _ = count_elems2(&s, &p)
+        }
+    })
+    b.Run("100", func(b *testing.B) {
+        s := maker(100)
+        b.ResetTimer()
+        for i:=0; i<b.N; i++ {
+            var p = 0
+            _ = count_elems2(&s, &p)
         }
     })
 }
