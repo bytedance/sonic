@@ -17,6 +17,7 @@
 #include "native.h"
 #include "utf8.h"
 #include "utils.h"
+#include "test/xprintf.h"
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
@@ -1817,6 +1818,35 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
         }
     };
     return sp == end && kp == ke;
+}
+
+// search comma counts after object or array begins
+// notice: must ensure not empty (check ']' and '}') before use it
+long count_elems(const GoString *src, long *p) {
+    xprintf("[count_elems]");
+    char c = 0;
+    long ret = 0;
+    xprintf("[count_elems] %g\n%d", src, (int64_t)(*p));
+    do {
+        long s = skip_one_fast(src, p);
+        if (s < 0) {
+            return s;
+        }
+        c = advance_ns(src, p);
+        switch (c)
+        {
+        case ']':
+        case '}':
+            return ret + 1;
+        case ',':
+            ret += 1;
+            break;
+        default:
+            return -ERR_INVAL;
+        }
+    }while(*p < src->len);
+
+    return ret;
 }
 
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm) {

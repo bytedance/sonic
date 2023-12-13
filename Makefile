@@ -28,7 +28,7 @@ TMPL_avx2		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test recover_
 TMPL_sse 		:= fastint_amd64_test fastfloat_amd64_test native_amd64_test recover_amd64_test
 
 CFLAGS_avx		:= -msse -mno-sse4 -mavx -mpclmul -mno-avx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=0
-CFLAGS_avx2		:= -msse -mno-sse4 -mavx -mpclmul -mavx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=1 
+CFLAGS_avx2		:= -msse -mno-sse4 -mavx -mpclmul -mavx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=1
 CFLAGS_sse		:= -msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul
 
 CC_amd64		:= clang

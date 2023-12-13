@@ -71,6 +71,8 @@ var (
     __validate_utf8_fast func(s unsafe.Pointer)  (ret int)
 
     __fsm_exec func(m unsafe.Pointer, s unsafe.Pointer, p unsafe.Pointer, flags uint64) (ret int)
+
+    __count_elems func(s unsafe.Pointer, p unsafe.Pointer) int
 )
 
 //go:nosplit
@@ -186,4 +188,9 @@ func validate_utf8_fast(s *string)  (ret int) {
 //go:nosplit
 func fsm_exec(m *types.StateMachine, s *string, p *int, flags uint64) (ret int) {
     return __fsm_exec(rt.NoEscape(unsafe.Pointer(m)), rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), flags)
+}
+
+//go:nosplit
+func count_elems(s *string, p *int) (ret int) {
+    return __count_elems(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)))
 }

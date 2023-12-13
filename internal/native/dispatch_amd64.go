@@ -62,6 +62,7 @@ var (
     S_skip_array    uintptr
     S_skip_object   uintptr
     S_skip_number   uintptr
+    S_count_elems   uintptr
 )
 
 var (
@@ -96,6 +97,8 @@ var (
     __ValidateUTF8 func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) (ret int)
 
     __ValidateUTF8Fast func(s unsafe.Pointer) (ret int)
+
+    __CountElems func(s unsafe.Pointer, p unsafe.Pointer) int
 )
 
 //go:nosplit
@@ -163,6 +166,11 @@ func ValidateUTF8Fast(s *string) (ret int) {
     return __ValidateUTF8Fast(rt.NoEscape(unsafe.Pointer(s)))
 }
 
+//go:nosplit
+func CountElems(s *string, p *int) int {
+    return __CountElems(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)))
+}
+
 var stubs = []loader.GoC{
     {"_f64toa", &S_f64toa, &__F64toa},
     {"_f32toa", &S_f32toa, nil},
@@ -186,6 +194,7 @@ var stubs = []loader.GoC{
     {"_validate_one", &S_validate_one, &__ValidateOne},
     {"_validate_utf8", &S_validate_utf8, &__ValidateUTF8},
     {"_validate_utf8_fast", &S_validate_utf8_fast, &__ValidateUTF8Fast},
+    {"_count_elems", &S_count_elems, &__CountElems},
 }
 
 func useAVX() {
