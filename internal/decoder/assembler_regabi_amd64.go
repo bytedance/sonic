@@ -1648,7 +1648,20 @@ func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
     self.Emit("MOVQ" , jit.Ptr(_VP, 16), _BX)       // MOVQ    16(VP), BX
     self.Emit("TESTQ", _BX, _BX)                    // TESTQ   BX, BX
     self.Sjmp("JNZ"  , "_done_{n}")                 // JNZ     _done_{n}
-    self.Emit("MOVQ" , jit.Imm(_MinSlice), _CX)     // MOVQ    ${_MinSlice}, CX
+    if option.PredictContainerSize {
+        self.Emit("LEAQ", _ARG_s, _DI)      
+        self.Emit("SUBQ", jit.Imm(1), _IC)      
+        self.Emit("MOVQ", _IC, _ARG_ic)     
+        self.Emit("LEAQ", _ARG_ic, _SI)     
+        self.call_c(_F_count_elems)
+        self.Emit("ADDQ" , jit.Imm(1), _IC)     
+        self.Emit("TESTQ", _AX, _AX)
+        self.Sjmp("JS"   , _LB_parsing_error_v)    
+        self.Emit("MOVQ" , _AX, _CX) 
+        self.Emit("XORL" , _BX, _BX)       // MOVQ    16(VP), BX
+    } else {
+        self.Emit("MOVQ" , jit.Imm(_MinSlice), _CX)     // MOVQ    ${_MinSlice}, CX
+    }
     self.Emit("MOVQ" , _CX, jit.Ptr(_VP, 16))       // MOVQ    CX, 16(VP)
     self.Emit("MOVQ" , jit.Type(p.vt()), _AX)       // MOVQ    ${p.vt()}, DX
     self.call_go(_F_makeslice)                      // CALL_GO makeslice

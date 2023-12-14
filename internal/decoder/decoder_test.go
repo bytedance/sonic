@@ -127,16 +127,62 @@ func testMap(tt interface{}, limit int) {
     }
 }
 
-func TestPredict(t *testing.T) {
+func testSlice(tt interface{}, limit int) {
+    var maker = func(N int) string{ 
+        var s = `[`
+        for i :=0; i<N; i++ {
+            s += fmt.Sprintf(`%d`, i)
+            if i < N-1 {
+                s += `,`
+            }
+        }
+        return s + `]`
+    }
+    for x:=0; x<limit; {
+        if b, ok := tt.(*testing.B); ok {
+            b.Run("N="+strconv.Itoa(x), func(b *testing.B) {
+                var s = maker(x)
+                for i:=0; i<b.N; i++ {
+                    var obj []int
+                    _, _ = decode(s, &obj, false)
+                }
+            })
+        } else if t, ok := tt.(*testing.T); ok {
+            t.Run("N="+strconv.Itoa(x), func(t *testing.T) {
+                var obj []int
+                var s = maker(x)
+                _, err := decode(s, &obj, false)
+                if err != nil {
+                    b.Fatal(err)
+                }
+            })
+        }
+        if x == 0 {
+            x = 1
+        } else {
+            x *= 10
+        }
+    }
+}
+
+func TestPredictContSize(t *testing.T) {
     option.PredictContainerSize = true
-    testMap(t, 10)
+    t.Run("map", func(t *testing.T) {
+        testMap(t, 100)
+    })
+    t.Run("slice", func(t *testing.T) {
+        testSlice(t, 100)
+    })
     option.PredictContainerSize = false
 }
 
 func BenchmarkPredictContSize(b *testing.B) {
+    option.PredictContainerSize = true
     b.Run("map", func(b *testing.B) {
-        option.PredictContainerSize = true
         testMap(b, 1001)
+    })
+    b.Run("slice", func(b *testing.B) {
+        testSlice(b, 1001)
     })
     option.PredictContainerSize = false
 }
