@@ -683,7 +683,7 @@ func Test_count_elems(t *testing.T) {
 	}
 }
 
-func Test_count_elems2(t *testing.T) {
+func Test_count_elems_fast(t *testing.T) {
 	type args struct {
 		s string
 		p int
@@ -697,7 +697,7 @@ func Test_count_elems2(t *testing.T) {
         {
             name: "0",
             args: args{`{}`, 0},
-            wantRet: 1,
+            wantRet: 0,
             wantP: 2,
         },
         {
@@ -721,7 +721,7 @@ func Test_count_elems2(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotRet := count_elems2(&tt.args.s, &tt.args.p); gotRet != tt.wantRet {
+			if gotRet := count_elems_fast(&tt.args.s, &tt.args.p); gotRet != tt.wantRet {
 				t.Errorf("count_elems() = %v, want %v", gotRet, tt.wantRet)
 			}
             if tt.args.p != tt.wantP {
@@ -789,7 +789,7 @@ func BenchmarkCountElems2(b *testing.B) {
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
             var p = 0
-            _ = count_elems2(&s, &p)
+            _ = count_elems_fast(&s, &p)
         }
     })
     b.Run("10", func(b *testing.B) {
@@ -797,7 +797,7 @@ func BenchmarkCountElems2(b *testing.B) {
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
             var p = 0
-            _ = count_elems2(&s, &p)
+            _ = count_elems_fast(&s, &p)
         }
     })
     b.Run("100", func(b *testing.B) {
@@ -805,7 +805,7 @@ func BenchmarkCountElems2(b *testing.B) {
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
             var p = 0
-            _ = count_elems2(&s, &p)
+            _ = count_elems_fast(&s, &p)
         }
     })
 }

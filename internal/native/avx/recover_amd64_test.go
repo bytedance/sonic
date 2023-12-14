@@ -59,7 +59,7 @@ var stubs = []loader.GoC{
     {"_vstring", nil, &__vstring},
     {"_vunsigned", nil, &__vunsigned},
     {"_count_elems", nil, &__count_elems},
-    {"_count_elems2", nil, &__count_elems2},
+    {"_count_elems_fast", nil, &__count_elems_fast},
 }
 
 func TestMain(m *testing.M) {

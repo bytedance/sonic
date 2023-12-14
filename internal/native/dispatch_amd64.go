@@ -194,7 +194,7 @@ var stubs = []loader.GoC{
     {"_validate_one", &S_validate_one, &__ValidateOne},
     {"_validate_utf8", &S_validate_utf8, &__ValidateUTF8},
     {"_validate_utf8_fast", &S_validate_utf8_fast, &__ValidateUTF8Fast},
-    {"_count_elems2", &S_count_elems, &__CountElems},
+    {"_count_elems_fast", &S_count_elems, &__CountElems},
 }
 
 func useAVX() {

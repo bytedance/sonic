@@ -74,7 +74,7 @@ var (
 
     __count_elems func(s unsafe.Pointer, p unsafe.Pointer) int
 
-    __count_elems2 func(s unsafe.Pointer, p unsafe.Pointer) int
+    __count_elems_fast func(s unsafe.Pointer, p unsafe.Pointer) int
 )
 
 //go:nosplit
@@ -198,6 +198,6 @@ func count_elems(s *string, p *int) (ret int) {
 }
 
 //go:nosplit
-func count_elems2(s *string, p *int) (ret int) {
-    return __count_elems2(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)))
+func count_elems_fast(s *string, p *int) (ret int) {
+    return __count_elems_fast(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)))
 }

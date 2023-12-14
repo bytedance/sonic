@@ -1846,18 +1846,26 @@ long count_elems(const GoString *src, long *p) {
     return ret;
 }
 
-// search comma counts from object or array begins
-// notice: must ensure not empty (check ']' and '}') before use it
-long count_elems2(const GoString *src, long *p) {
+// count elems from object or array begins
+long count_elems_fast(const GoString *src, long *p) {
     long s = skip_one_fast(src, p);
     if (s < 0) {
         return s;
     }
     long ret = 1;
+    // Notice: estimate elems using ',', which is always no less than actual number
     for ( int i = s; i < *p; i++ ) {
-        char c = src->buf[i];
-        if (c == ',') {
+        if (src->buf[i] == ',') {
             ret += 1;
+        }
+    }
+    if (ret == 1) {
+        // ensure if it is empty
+        char c = src->buf[s];
+        long tmp = s+1;
+        char n = advance_ns(src, &tmp);
+        if ((c == '[' && n == ']') || (c == '{' && n == '}')) {
+            return 0;
         }
     }
     return ret;
