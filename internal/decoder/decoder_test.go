@@ -17,19 +17,22 @@
 package decoder
 
 import (
-    `encoding/json`
-    `runtime`
-    `runtime/debug`
-    `strings`
-    `sync`
-    `testing`
-    `time`
-    `reflect`
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"strings"
+	"sync"
+	"testing"
+	"time"
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -86,6 +89,57 @@ func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
 }
 
+func testMap(tt interface{}, limit int) {
+    var maker = func(N int) string{ 
+        var s = `{`
+        for i :=0; i<N; i++ {
+            s += fmt.Sprintf(`"%d":%d`, i, i)
+            if i < N-1 {
+                s += `,`
+            }
+        }
+        return s + `}`
+    }
+    for x:=0; x<limit; {
+        if b, ok := tt.(*testing.B); ok {
+            b.Run("N="+strconv.Itoa(x), func(b *testing.B) {
+                var s = maker(x)
+                for i:=0; i<b.N; i++ {
+                    var obj map[string]int
+                    _, _ = decode(s, &obj, false)
+                }
+            })
+        } else if t, ok := tt.(*testing.T); ok {
+            t.Run("N="+strconv.Itoa(x), func(t *testing.T) {
+                var obj map[string]int
+                var s = maker(x)
+                _, err := decode(s, &obj, false)
+                if err != nil {
+                    b.Fatal(err)
+                }
+            })
+        }
+        if x == 0 {
+            x = 1
+        } else {
+            x *= 10
+        }
+    }
+}
+
+func TestPredict(t *testing.T) {
+    option.PredictContainerSize = true
+    testMap(t, 10)
+    option.PredictContainerSize = false
+}
+
+func BenchmarkPredictContSize(b *testing.B) {
+    b.Run("map", func(b *testing.B) {
+        option.PredictContainerSize = true
+        testMap(b, 1001)
+    })
+    option.PredictContainerSize = false
+}
 
 func TestSkipMismatchTypeError(t *testing.T) {
     t.Run("struct", func(t *testing.T) {

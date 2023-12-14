@@ -80,6 +80,9 @@ func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 //go:linkname makemap_small runtime.makemap_small
 func makemap_small() unsafe.Pointer
 
+//go:linkname makemap runtime.makemap
+func makemap(t *rt.GoType, cap int) unsafe.Pointer
+
 //go:linkname mapassign runtime.mapassign
 //goland:noinspection GoUnusedParameter
 func mapassign(t *rt.GoMapType, h unsafe.Pointer, k unsafe.Pointer) unsafe.Pointer

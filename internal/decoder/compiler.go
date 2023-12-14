@@ -641,7 +641,7 @@ func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op
     p.tag(sp + 1)
     skip := self.checkIfSkip(p, vt, '{')
     p.add(_OP_save)
-    p.add(_OP_map_init)
+    p.rtt(_OP_map_init, vt)
     p.add(_OP_save)
     p.add(_OP_lspace)
     j := p.pc()

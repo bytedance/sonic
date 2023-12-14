@@ -42,6 +42,10 @@ var (
     // Default value(1) means `Pretouch()` will be recursively executed once,
     // if any nested struct is left (depth exceeds MaxInlineDepth)
     DefaultRecursiveDepth = 1
+
+    // enable predict the size of containers (array or object) for better speed of deserialization.
+    // WARNING: this may let sonic to consume more memory
+    PredictContainerSize bool
 )
 
 // DefaultCompileOptions set default compile options.

@@ -20,18 +20,19 @@
 package decoder
 
 import (
-    `encoding/json`
-    `fmt`
-    `math`
-    `reflect`
-    `unsafe`
+	"encoding/json"
+	"fmt"
+	"math"
+	"reflect"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/twitchyliquid64/golang-asm/obj`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 /** Register Allocations
@@ -868,6 +869,7 @@ func (self *_Assembler) range_unsigned_CX(i *rt.GoItab, t *rt.GoType, v uint64) 
 
 var (
     _F_unquote = jit.Imm(int64(native.S_unquote))
+    _F_count_elems = jit.Imm(int64(native.S_count_elems))
 )
 
 func (self *_Assembler) slice_from(p obj.Addr, d int64) {
@@ -1149,6 +1151,7 @@ var (
     _F_growslice        = jit.Func(growslice)
     _F_makeslice        = jit.Func(makeslice)
     _F_makemap_small    = jit.Func(makemap_small)
+    _F_makemap          = jit.Func(makemap)
     _F_mapassign_fast64 = jit.Func(mapassign_fast64)
 )
 
@@ -1480,11 +1483,33 @@ func (self *_Assembler) _asm_OP_is_null_quote(p *_Instr) {
     self.Link("_not_null_quote_{n}")                                    // _not_null_quote_{n}:
 }
 
-func (self *_Assembler) _asm_OP_map_init(_ *_Instr) {
+func (self *_Assembler) _asm_OP_map_init(p *_Instr) {
     self.Emit("MOVQ" , jit.Ptr(_VP, 0), _AX)    // MOVQ    (VP), AX
     self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
     self.Sjmp("JNZ"  , "_end_{n}")              // JNZ     _end_{n}
-    self.call_go(_F_makemap_small)              // CALL_GO makemap_small
+    if option.PredictContainerSize {         // OPT: estimate container size ahead
+        // fast-path: check '}' first
+        self.check_eof(1)
+        self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64('}')))   // CMPB    (IP)(IC), ${p.vb()}
+        self.Sjmp("JE"  , "_small_map_{n}")   
+        self.Emit("LEAQ", _ARG_s, _DI)      
+        self.Emit("SUBQ", jit.Imm(1), _IC)      
+        self.Emit("MOVQ", _IC, _ARG_ic)     
+        self.Emit("LEAQ", _ARG_ic, _SI)     
+        self.call_c(_F_count_elems)
+        self.Emit("ADDQ" , jit.Imm(1), _IC)     
+        self.Emit("TESTQ", _AX, _AX)
+        self.Sjmp("JS"   , _LB_parsing_error_v)    
+        self.Emit("MOVQ" , _AX, _BX)   
+        self.Emit("MOVQ" , jit.Type(p.vt()), _AX)
+        self.Emit("XORL" , _CX, _CX)   
+        self.call_go(_F_makemap)
+        self.Sjmp("JMP", "_end_{n}")
+        self.Link("_small_map_{n}")
+        self.call_go(_F_makemap_small)       
+    } else {
+        self.call_go(_F_makemap_small)              // CALL_GO makemap_small
+    }
     self.WritePtrAX(6, jit.Ptr(_VP, 0), false)    // MOVQ    AX, (VP)
     self.Link("_end_{n}")                       // _end_{n}:
     self.Emit("MOVQ" , _AX, _VP)                // MOVQ    AX, VP
