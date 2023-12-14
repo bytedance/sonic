@@ -17,7 +17,6 @@
 #include "native.h"
 #include "utf8.h"
 #include "utils.h"
-#include "test/xprintf.h"
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
@@ -1823,7 +1822,6 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
 // search comma counts after object or array begins
 // notice: must ensure not empty (check ']' and '}') before use it
 long count_elems(const GoString *src, long *p) {
-    xprintf("[count_elems]");
     char c = 0;
     long ret = 0;
     do {
@@ -1846,72 +1844,6 @@ long count_elems(const GoString *src, long *p) {
     }while(*p < src->len);
 
     return ret;
-}
-
-static always_inline size_t count_container_fast(const GoString *src, long *p, char lc, char rc) {
-    long nb = src->len - *p;
-    const char *s = src->buf + *p;
-
-    uint64_t prev_inquote = 0, prev_bs = 0;
-    uint64_t lbrace = 0, rbrace = 0;
-    size_t lnum = 0, rnum = 0, last_lnum = 0, cnum = 0;
-    uint64_t inquote = 0;
-
-    while (likely(nb >= 64)) {
-skip:
-        inquote = get_string_maskx64(s, &prev_inquote, &prev_bs);
-        lbrace = get_maskx64(s, lc) & ~inquote;
-        rbrace = get_maskx64(s, rc) & ~inquote;
-        // comma = get_maskx64(s, ',') & ~inquote;
-
-        /* traverse each right brace */
-        last_lnum = lnum;
-        while (rbrace > 0) {
-            uint64_t lbrace_first = (rbrace - 1) & lbrace;
-            lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
-            bool is_closed = lnum <= rnum;
-            if (is_closed) {
-                *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
-                // *p is out-of-bound access here
-                if (*p > src->len) {
-                    *p = src->len;
-                    return -ERR_EOF;
-                }
-                return cnum;
-            } else if (lnum == rnum + 1) {
-                // back to secondary level of the object/array
-                // comma &= rbrace; // eliminate left bits of first brace
-                // comma &= (1 << __builtin_ctzll(rbrace & (rbrace - 1))) - 1; // eliminate right bits of second brach
-                // if (__builtin_popcountll(comma) > 0) {
-                //     cnum += 1;
-                // }
-                long tmp = src->len - nb + __builtin_ctzll(rbrace) + 2;
-                if (tmp < src->len) {
-                    if (advance_ns(src, &tmp) == ',') {
-                        cnum += 1;
-                    }
-                }
-            }
-            rbrace &= (rbrace - 1); // clear the lowest right brace
-            rnum ++;
-            
-        }
-        lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
-        s += 64, nb -= 64;
-    }
-
-    if (nb <= 0) {
-        *p = src->len;
-        return -ERR_EOF;
-    }
-
-    char tbuf[64] = {0};
-    bool cross_page = vec_cross_page(s, 64);
-    if (cross_page) {
-        memcpy_p64(tbuf, s, nb);
-        s = tbuf;
-    }
-    goto skip;
 }
 
 // search comma counts from object or array begins
