@@ -337,15 +337,14 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)    // MOVQ ST.Vt[CX], AX
     self.Emit("BTQ" , _AX, _DX)                             // BTQ  AX, DX
     self.Sjmp("JNC" , "_invalid_char")                      // JNC  _invalid_char
-
-    /* check if empty */
-    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
-    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
-    self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(']')))   // CMPB    (IP)(IC), ${p.vb()}
-    self.Sjmp("JE"  , "_decode_V_ARRAY_END")   
-
     /* create a new array */
     if option.PredictContainerSize {
+        println("[predict]")
+        /* check if empty */
+        self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+        self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
+        self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(']')))   // CMPB    (IP)(IC), ${p.vb()}
+        self.Sjmp("JE"  , "_decode_V_ARRAY_END")   
         self.Emit("MOVQ", _IP, _DI)      
         self.Emit("MOVQ", _IL, _SI)
         self.Emit("SUBQ", jit.Imm(1), _IC)      
@@ -353,7 +352,7 @@ func (self *_ValueDecoder) compile() {
         self.call_c(_F_count_elems2)
         self.Emit("ADDQ" , jit.Imm(1), _IC)     
         self.Emit("TESTQ", _AX, _AX)
-        self.Sjmp("JS"   , _LB_parsing_error_v)    
+        self.Sjmp("JS"   , "_invalid_char")    
         self.Emit("MOVQ" , _AX, _CX) 
     } else {
         self.Emit("MOVQ", jit.Imm(_A_init_cap), _CX)                // MOVQ    _A_init_cap, CX
@@ -738,10 +737,12 @@ func (self *_ValueDecoder) compile() {
 }
 
 /** Generic Decoder **/
+var _subr_decode_value uintptr
 
-var (
+func init() {
+    option.PredictContainerSize = true
     _subr_decode_value = new(_ValueDecoder).build()
-)
+}
 
 //go:nosplit
 func invalid_vtype(vt types.ValueType) {

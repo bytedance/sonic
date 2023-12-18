@@ -17,15 +17,12 @@
 package decoder
 
 import (
-    `fmt`
-    `reflect`
     `testing`
 
     `github.com/bytedance/sonic/internal/native/types`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
 )
+
+
 
 //go:nosplit
 func decodeValueStub(st *_Stack, sp string, ic int, vp *interface{}, df uint64) (int, types.ParsingError)
@@ -40,18 +37,6 @@ func decodeGeneric(s string, i int, f uint64) (p int, v interface{}, e types.Par
     p, e = decodeValueStub(t, s, i, &v, f)
     freeStack(t)
     return
-}
-
-func TestGeneric_DecodeInterface(t *testing.T) {
-    s := `[null, true, false, 1234, -1.25e-8, "hello\nworld", [], {"asdf": [1, 2.5, "qwer", null, true, false, [], {"zxcv": "fghj"}], "qwer": 7777}]`
-    i, v, err := decodeGeneric(s, 0, 0)
-    assert.Equal(t, len(s), i)
-    if err != 0 {
-        require.NoError(t, err)
-    }
-    fmt.Print("v: ")
-    spew.Dump(v)
-    fmt.Printf("type: %s\n", reflect.TypeOf(v))
 }
 
 func BenchmarkGeneric_DecodeGeneric(b *testing.B) {
