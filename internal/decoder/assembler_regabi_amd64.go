@@ -71,10 +71,11 @@ const (
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
     _FP_locals = 144    // 144 bytes for local variables
+    _FP_debug  = 128   // for debug
 )
 
 const (
-    _FP_offs = _FP_fargs + _FP_saves + _FP_locals
+    _FP_offs = _FP_fargs + _FP_saves + _FP_locals + _FP_debug
     _FP_size = _FP_offs + 8     // 8 bytes for the parent frame pointer
     _FP_base = _FP_size + 8     // 8 bytes for the return address
 )
@@ -1163,7 +1164,7 @@ var (
 
 var (
     _F_b64decode   = jit.Imm(int64(_subr__b64decode))
-    _F_decodeValue = jit.Imm(int64(_subr_decode_value))
+    _F_decodeValue obj.Addr
 )
 
 var (

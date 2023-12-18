@@ -31,6 +31,15 @@ import (
 	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
+/** Generic Decoder **/
+var _subr_decode_value uintptr
+
+func init() {
+    option.PredictContainerSize = true
+    _subr_decode_value = new(_ValueDecoder).build()
+    _F_decodeValue = jit.Imm(int64(_subr_decode_value))
+}
+
 /** Crucial Registers:
  *
  *      ST(R13) && 0(SP) : ro, decoder stack
@@ -50,7 +59,7 @@ const (
 )
 
 const (
-    _VD_offs = _VD_fargs + _VD_saves + _VD_locals
+    _VD_offs = _VD_fargs + _VD_saves + _VD_locals + _FP_debug
     _VD_size = _VD_offs + 8     // 8 bytes for the parent frame pointer
 )
 
@@ -69,7 +78,7 @@ var (
 )
 
 var (
-    _VAR_R9 = jit.Ptr(_SP, _VD_fargs + _VD_saves + 56)
+    _VAR_tmp = jit.Ptr(_SP, _VD_fargs + _VD_saves + 56) // for tmp local var
 )
 type _ValueDecoder struct {
     jit.BaseAssembler
@@ -337,6 +346,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)    // MOVQ ST.Vt[CX], AX
     self.Emit("BTQ" , _AX, _DX)                             // BTQ  AX, DX
     self.Sjmp("JNC" , "_invalid_char")                      // JNC  _invalid_char
+   
     /* create a new array */
     if option.PredictContainerSize {
         println("[predict]")
@@ -344,7 +354,7 @@ func (self *_ValueDecoder) compile() {
         self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
         self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
         self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(']')))   // CMPB    (IP)(IC), ${p.vb()}
-        self.Sjmp("JE"  , "_decode_V_ARRAY_END")   
+        self.Sjmp("JE"  , "_empty_array")   
         self.Emit("MOVQ", _IP, _DI)      
         self.Emit("MOVQ", _IL, _SI)
         self.Emit("SUBQ", jit.Imm(1), _IC)      
@@ -352,18 +362,24 @@ func (self *_ValueDecoder) compile() {
         self.call_c(_F_count_elems2)
         self.Emit("ADDQ" , jit.Imm(1), _IC)     
         self.Emit("TESTQ", _AX, _AX)
-        self.Sjmp("JS"   , "_invalid_char")    
+        self.Sjmp("JS"   , "_invalid_char")   
+        self.Emit("ADDQ", jit.Imm(1), _AX) // in case of < _A_init_len
         self.Emit("MOVQ" , _AX, _CX) 
+        self.Sjmp("JMP", "_init_array")
+        self.Link("_empty_array")
+        self.Emit("MOVQ", jit.Imm(_A_init_len), _CX)                          // MOVQ    _A_init_cap, CX
     } else {
         self.Emit("MOVQ", jit.Imm(_A_init_cap), _CX)                // MOVQ    _A_init_cap, CX
     }
-    self.Emit("MOVQ", _T_eface, _AX)                                  // MOVQ    _T_eface, AX
+    self.Link("_init_array")
+    self.Emit("MOVQ", _CX, _VAR_tmp)
+    self.Emit("MOVQ", _T_eface, _AX)                            // MOVQ    _T_eface, AX
     self.Emit("MOVQ", jit.Imm(_A_init_len), _BX)                // MOVQ    _A_init_len, BX
     self.call_go(_F_makeslice)                                  // CALL_GO runtime.makeslice
 
     /* pack into an interface */
+    self.Emit("MOVQ", _VAR_tmp, _CX)
     self.Emit("MOVQ", jit.Imm(_A_init_len), _BX)                // MOVQ    _A_init_len, BX
-    self.Emit("MOVQ", jit.Imm(_A_init_cap), _CX)                // MOVQ    _A_init_cap, CX
     self.call_go(_F_convTslice)                                 // CALL_GO runtime.convTslice
     self.Emit("MOVQ", _AX, _R8)                                 // MOVQ    AX, R8
 
@@ -488,9 +504,9 @@ func (self *_ValueDecoder) compile() {
     self.Emit("SHLQ" , jit.Imm(types.B_UNICODE_REPLACE), _R8)   // SHLQ  ${types.B_UNICODE_REPLACE}, R8
 
     /* unquote the string, with R9 been preserved */
-    self.Emit("MOVQ", _R9, _VAR_R9)             // SAVE R9
+    self.Emit("MOVQ", _R9, _VAR_tmp)             // SAVE R9
     self.call_c(_F_unquote)                     // CALL unquote
-    self.Emit("MOVQ", _VAR_R9, _R9)             // LOAD R9
+    self.Emit("MOVQ", _VAR_tmp, _R9)             // LOAD R9
 
     /* check for errors */
     self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
@@ -613,7 +629,7 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", jit.Ptr(_SI, 8), _SI)                     // MOVQ 8(SI), SI
     self.Emit("MOVQ", _DX, jit.Sib(_ST, _CX, 8, _ST_Vp - 8))    // MOVQ DX, ST.Vp[CX - 1]
     self.Emit("MOVQ", _DX, jit.Sib(_ST, _CX, 8, _ST_Vp))        // MOVQ DX, ST.Vp[CX]
-    self.Emit("MOVQ", _DX, jit.Ptr(_SI, 8))                     // MOVQ DX, 8(SI)
+    self.Emit("MOVQ", _DX, jit.Ptr(_SI, 8))                     // set slice length 0
     self.Sjmp("JMP" , "_next")                                  // JMP  _next
 
     /** V_OBJECT_END **/
@@ -734,14 +750,6 @@ func (self *_ValueDecoder) compile() {
             self.Byte(0x00, 0x00, 0x00, 0x00)
         }
     }
-}
-
-/** Generic Decoder **/
-var _subr_decode_value uintptr
-
-func init() {
-    option.PredictContainerSize = true
-    _subr_decode_value = new(_ValueDecoder).build()
 }
 
 //go:nosplit
