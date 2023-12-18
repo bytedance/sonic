@@ -17,11 +17,26 @@
 package decoder
 
 import (
-    `testing`
+	"fmt"
+	"reflect"
+	"testing"
 
-    `github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/assert"
 )
 
+func TestGeneric_DecodeInterface(t *testing.T) {
+    s := `[ [ ], { }, null, true, false, 1234, -1.25e-8, "hello\nworld", {"asdf": [1, 2.5, [], {}, "qwer", null, true, false, {"zxcv": "fghj"}], "qwer": 7777}]`
+    i, v, err := decodeGeneric(s, 0, 0)
+    assert.Equal(t, len(s), i)
+    if err != 0 {
+        assert.NoError(t, err)
+    }
+    fmt.Print("v: ")
+    spew.Dump(v)
+    fmt.Printf("type: %s\n", reflect.TypeOf(v))
+}
 
 
 //go:nosplit

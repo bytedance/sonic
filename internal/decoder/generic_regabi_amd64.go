@@ -349,7 +349,6 @@ func (self *_ValueDecoder) compile() {
    
     /* create a new array */
     if option.PredictContainerSize {
-        println("[predict]")
         /* check if empty */
         self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
         self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
@@ -365,13 +364,15 @@ func (self *_ValueDecoder) compile() {
         self.Sjmp("JS"   , "_invalid_char")   
         self.Emit("ADDQ", jit.Imm(1), _AX) // in case of < _A_init_len
         self.Emit("MOVQ" , _AX, _CX) 
-        self.Sjmp("JMP", "_init_array")
+        self.Sjmp("JMP", "_init_arr")
         self.Link("_empty_array")
         self.Emit("MOVQ", jit.Imm(_A_init_len), _CX)                          // MOVQ    _A_init_cap, CX
     } else {
         self.Emit("MOVQ", jit.Imm(_A_init_cap), _CX)                // MOVQ    _A_init_cap, CX
     }
-    self.Link("_init_array")
+
+    /* init arr state */
+    self.Link("_init_arr")
     self.Emit("MOVQ", _CX, _VAR_tmp)
     self.Emit("MOVQ", _T_eface, _AX)                            // MOVQ    _T_eface, AX
     self.Emit("MOVQ", jit.Imm(_A_init_len), _BX)                // MOVQ    _A_init_len, BX
@@ -408,7 +409,35 @@ func (self *_ValueDecoder) compile() {
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vt), _AX)                // MOVQ    ST.Vt[CX], AX
     self.Emit("BTQ" , _AX, _DX)                                         // BTQ     AX, DX
     self.Sjmp("JNC" , "_invalid_char")                                  // JNC     _invalid_char
-    self.call_go(_F_makemap_small)                                      // CALL_GO runtime.makemap_small
+    
+    /* make a new map */
+    if option.PredictContainerSize {
+        /* check if empty */
+        self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+        self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
+        self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64('}')))   // CMPB    (IP)(IC), ${p.vb()}
+        self.Sjmp("JE"  , "_empty_object")   
+        self.Emit("MOVQ", _IP, _DI)      
+        self.Emit("MOVQ", _IL, _SI)
+        self.Emit("SUBQ", jit.Imm(1), _IC)      
+        self.Emit("MOVQ", _IC, _DX)       
+        self.call_c(_F_count_elems2)
+        self.Emit("ADDQ" , jit.Imm(1), _IC)     
+        self.Emit("TESTQ", _AX, _AX)
+        self.Sjmp("JS"   , "_invalid_char")   
+        self.Emit("MOVQ" , _AX, _BX)   
+        self.Emit("MOVQ" , _T_map, _AX)
+        self.Emit("XORL" , _CX, _CX)   
+        self.call_go(_F_makemap)
+        self.Sjmp("JMP", "_init_obj")
+        self.Link("_empty_object")
+        self.call_go(_F_makemap_small)                          // MOVQ    _A_init_cap, CX
+    } else {
+        self.call_go(_F_makemap_small)                                      // CALL_GO runtime.makemap_small
+    }
+
+    /* init obj state */
+    self.Link("_init_obj")
     self.Emit("MOVQ", jit.Ptr(_ST, _ST_Sp), _CX)                        // MOVQ    ST.Sp, CX
     self.Emit("MOVQ", jit.Imm(_S_obj_0), jit.Sib(_ST, _CX, 8, _ST_Vt))    // MOVQ    _S_obj_0, ST.Vt[CX]
     self.Emit("MOVQ", jit.Sib(_ST, _CX, 8, _ST_Vp), _SI)                // MOVQ    ST.Vp[CX], SI

@@ -19,33 +19,17 @@ package decoder
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"reflect"
 	"testing"
+    "reflect"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/caching"
 	"github.com/bytedance/sonic/internal/jit"
-	"github.com/bytedance/sonic/option"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestGeneric_DecodeInterface(t *testing.T) {
-    s := `[ [ ], null, true, false, 1234, -1.25e-8, "hello\nworld", {"asdf": [1, 2.5, [], "qwer", null, true, false, {"zxcv": "fghj"}], "qwer": 7777}]`
-    i, v, err := decodeGeneric(s, 0, 0)
-    assert.Equal(t, len(s), i)
-    if err != 0 {
-        require.NoError(t, err)
-    }
-    fmt.Print("v: ")
-    spew.Dump(v)
-    fmt.Printf("type: %s\n", reflect.TypeOf(v))
-    option.PredictContainerSize = false
-}
 
 var utextVar []byte
 type UtextValue int
@@ -422,7 +406,7 @@ func TestAssembler_OpCode(t *testing.T) {
     }, {
         key: "_OP_map_init",
         ins: []_Instr{newInsOp(_OP_map_init)},
-        src: "",
+        src: "}",
         vfn: func(_ int, v interface{}) { require.NotNil(t, v); assert.NotNil(t, v.(map[string]int)) },
         val: new(map[string]int),
     }, {
@@ -530,11 +514,11 @@ func TestAssembler_OpCode(t *testing.T) {
     },{
         key: "_OP_slice_init",
         ins: []_Instr{newInsVt(_OP_slice_init, reflect.TypeOf(0))},
-        src: "",
+        src: "]",
         vfn: func(_ int, v interface{}) {
             require.NotNil(t, v)
             assert.Equal(t, 0, len(v.([]int)))
-            assert.Equal(t, _MinSlice, cap(v.([]int)))
+            assert.Equal(t, 0, cap(v.([]int)))
         },
         val: new([]int),
     }, {
