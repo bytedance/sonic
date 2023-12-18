@@ -34,6 +34,7 @@ func TestGeneric_DecodeInterface(t *testing.T) {
         assert.NoError(t, err)
     }
     fmt.Print("v: ")
+    
     spew.Dump(v)
     fmt.Printf("type: %s\n", reflect.TypeOf(v))
 }
