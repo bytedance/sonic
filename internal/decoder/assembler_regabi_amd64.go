@@ -870,6 +870,7 @@ func (self *_Assembler) range_unsigned_CX(i *rt.GoItab, t *rt.GoType, v uint64) 
 var (
     _F_unquote = jit.Imm(int64(native.S_unquote))
     _F_count_elems = jit.Imm(int64(native.S_count_elems))
+    _F_count_elems2 = jit.Imm(int64(native.S_count_elems2))
 )
 
 func (self *_Assembler) slice_from(p obj.Addr, d int64) {

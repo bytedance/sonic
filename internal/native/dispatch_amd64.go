@@ -63,6 +63,7 @@ var (
     S_skip_object   uintptr
     S_skip_number   uintptr
     S_count_elems   uintptr
+    S_count_elems2   uintptr
 )
 
 var (
@@ -195,6 +196,7 @@ var stubs = []loader.GoC{
     {"_validate_utf8", &S_validate_utf8, &__ValidateUTF8},
     {"_validate_utf8_fast", &S_validate_utf8_fast, &__ValidateUTF8Fast},
     {"_count_elems_fast", &S_count_elems, &__CountElems},
+    {"_count_elems_fast2", &S_count_elems2, nil},
 }
 
 func useAVX() {

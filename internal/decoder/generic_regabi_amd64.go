@@ -1,3 +1,4 @@
+//go:build go1.17 && !go1.22
 // +build go1.17,!go1.22
 
 /*
@@ -19,14 +20,15 @@
 package decoder
 
 import (
-    `encoding/json`
-    `fmt`
-    `reflect`
+	"encoding/json"
+	"fmt"
+	"reflect"
 
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/twitchyliquid64/golang-asm/obj`
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/option"
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 /** Crucial Registers:
@@ -240,9 +242,9 @@ func (self *_ValueDecoder) compile() {
     self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
     self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
     self.Emit("MOVBQZX", jit.Sib(_IP, _IC, 1, 0), _AX)  // MOVBQZX (IP)(IC), AX
-    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
     self.Emit("CMPQ"   , _AX, jit.Imm(' '))             // CMPQ    AX, $' '
     self.Sjmp("JA"     , "_decode_fast")                // JA      _decode_fast
+    self.Emit("MOVQ"   , jit.Imm(_BM_space), _DX)       // MOVQ    _BM_space, DX
     self.Emit("BTQ"    , _AX, _DX)                      // BTQ     _AX, _DX
     self.Sjmp("JNC"    , "_decode_fast")                // JNC     _decode_fast
     self.Emit("ADDQ"   , jit.Imm(1), _IC)               // ADDQ    $1, IC
@@ -336,10 +338,28 @@ func (self *_ValueDecoder) compile() {
     self.Emit("BTQ" , _AX, _DX)                             // BTQ  AX, DX
     self.Sjmp("JNC" , "_invalid_char")                      // JNC  _invalid_char
 
+    /* check if empty */
+    self.Emit("CMPQ"   , _IC, _IL)                      // CMPQ    IC, IL
+    self.Sjmp("JAE"    , "_decode_V_EOF")               // JAE     _decode_V_EOF
+    self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(']')))   // CMPB    (IP)(IC), ${p.vb()}
+    self.Sjmp("JE"  , "_decode_V_ARRAY_END")   
+
     /* create a new array */
-    self.Emit("MOVQ", _T_eface, _AX)                            // MOVQ    _T_eface, AX
+    if option.PredictContainerSize {
+        self.Emit("MOVQ", _IP, _DI)      
+        self.Emit("MOVQ", _IL, _SI)
+        self.Emit("SUBQ", jit.Imm(1), _IC)      
+        self.Emit("MOVQ", _IC, _DX)       
+        self.call_c(_F_count_elems2)
+        self.Emit("ADDQ" , jit.Imm(1), _IC)     
+        self.Emit("TESTQ", _AX, _AX)
+        self.Sjmp("JS"   , _LB_parsing_error_v)    
+        self.Emit("MOVQ" , _AX, _CX) 
+    } else {
+        self.Emit("MOVQ", jit.Imm(_A_init_cap), _CX)                // MOVQ    _A_init_cap, CX
+    }
+    self.Emit("MOVQ", _T_eface, _AX)                                  // MOVQ    _T_eface, AX
     self.Emit("MOVQ", jit.Imm(_A_init_len), _BX)                // MOVQ    _A_init_len, BX
-    self.Emit("MOVQ", jit.Imm(_A_init_cap), _CX)                // MOVQ    _A_init_cap, CX
     self.call_go(_F_makeslice)                                  // CALL_GO runtime.makeslice
 
     /* pack into an interface */

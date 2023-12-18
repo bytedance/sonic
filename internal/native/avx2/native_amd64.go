@@ -77,6 +77,8 @@ var (
     __count_elems func(s unsafe.Pointer, p unsafe.Pointer) int
 
     __count_elems_fast func(s unsafe.Pointer, p unsafe.Pointer) int
+
+    __count_elems_fast2 func(s unsafe.Pointer, l int, p int) int
 )
 
 //go:nosplit

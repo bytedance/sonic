@@ -1871,6 +1871,34 @@ long count_elems_fast(const GoString *src, long *p) {
     return ret;
 }
 
+// count elems from object or array begins
+long count_elems_fast2(const char *sp, size_t l, long index) {
+    GoString src;
+    src.buf = sp;
+    src.len = l;
+    long s = skip_one_fast(&src, &index);
+    if (s < 0) {
+        return s;
+    }
+    long ret = 1;
+    // Notice: estimate elems using ',', which is always no less than actual number
+    for ( int i = s; i < index; i++ ) {
+        if (src.buf[i] == ',') {
+            ret += 1;
+        }
+    }
+    if (ret == 1) {
+        // ensure if it is empty
+        char c = src.buf[s];
+        long tmp = s+1;
+        char n = advance_ns(&src, &tmp);
+        if ((c == '[' && n == ']') || (c == '{' && n == '}')) {
+            return 0;
+        }
+    }
+    return ret;
+}
+
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm) {
     GoIface *ps = (GoIface*)(path->buf);
     GoIface *pe = (GoIface*)(path->buf) + path->len;
