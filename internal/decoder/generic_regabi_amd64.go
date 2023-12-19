@@ -35,7 +35,6 @@ import (
 var _subr_decode_value uintptr
 
 func init() {
-    option.PredictContainerSize = true
     _subr_decode_value = new(_ValueDecoder).build()
     _F_decodeValue = jit.Imm(int64(_subr_decode_value))
 }

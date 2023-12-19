@@ -27,7 +27,6 @@ import (
 	"github.com/bytedance/sonic/internal/jit"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -113,9 +112,9 @@ func testOpCode(t *testing.T, ops *testOps) {
     f := a.Load()
     i, e := f(ops.src, ops.pos, rt.UnpackEface(ops.val).Value, k, ops.opt, "", nil)
     if ops.err != nil {
-        assert.EqualError(t, e, ops.err.Error())
+        require.EqualError(t, e, ops.err.Error())
     } else {
-        assert.NoError(t, e)
+        require.NoError(t, e)
         if ops.vfn != nil {
             if ops.val == nil {
                 ops.vfn(i, nil)
@@ -124,9 +123,9 @@ func testOpCode(t *testing.T, ops *testOps) {
             }
         } else {
             if ops.val == nil {
-                assert.Nil(t, ops.exp)
+                require.Nil(t, ops.exp)
             } else {
-                assert.Equal(t, ops.exp, reflect.Indirect(reflect.ValueOf(ops.val)).Interface())
+                require.Equal(t, ops.exp, reflect.Indirect(reflect.ValueOf(ops.val)).Interface())
             }
         }
     }
@@ -243,7 +242,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_bool/false_pos",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "false",
-        vfn: func(i int, v interface{}) { require.False(t, v.(bool)); assert.Equal(t, 5, i) },
+        vfn: func(i int, v interface{}) { require.False(t, v.(bool)); require.Equal(t, 5, i) },
         val: new(bool),
     }, {
         key: "_OP_bool/error_eof_1",
@@ -401,13 +400,13 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_deref",
         ins: []_Instr{newInsVt(_OP_deref, reflect.TypeOf(0))},
         src: "",
-        vfn: func(_ int, v interface{}) { require.NotNil(t, v); assert.NotNil(t, v.(*int)) },
+        vfn: func(_ int, v interface{}) { require.NotNil(t, v); require.NotNil(t, v.(*int)) },
         val: new(*int),
     }, {
         key: "_OP_map_init",
         ins: []_Instr{newInsOp(_OP_map_init)},
         src: "}",
-        vfn: func(_ int, v interface{}) { require.NotNil(t, v); assert.NotNil(t, v.(map[string]int)) },
+        vfn: func(_ int, v interface{}) { require.NotNil(t, v); require.NotNil(t, v.(map[string]int)) },
         val: new(map[string]int),
     }, {
         key: "_OP_map_key_i8",
@@ -476,11 +475,11 @@ func TestAssembler_OpCode(t *testing.T) {
         src: `foo"`,
         vfn: func(_ int, v interface{}) {
             m := v.(map[UtextValue]int)
-            assert.Equal(t, 1, len(m))
+            require.Equal(t, 1, len(m))
             for k := range m {
-                assert.Equal(t, UtextValue(0), k)
+                require.Equal(t, UtextValue(0), k)
             }
-            assert.Equal(t, []byte("foo"), utextVar)
+            require.Equal(t, []byte("foo"), utextVar)
         },
         val: map[UtextValue]int{},
     }, 
@@ -490,9 +489,9 @@ func TestAssembler_OpCode(t *testing.T) {
         src: `foo"`,
         vfn: func(_ int, v interface{}) {
             m := v.(map[*UtextStruct]int)
-            assert.Equal(t, 1, len(m))
+            require.Equal(t, 1, len(m))
             for k := range m {
-                assert.Equal(t, "foo", k.V)
+                require.Equal(t, "foo", k.V)
             }
         },
         val: map[*UtextStruct]int{},
@@ -509,16 +508,16 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsOp(_OP_array_skip)},
         src: `[1,2.0,true,false,null,"asdf",{"qwer":[1,2,3,4]}]`,
         pos: 1,
-        vfn: func(i int, _ interface{}) { assert.Equal(t, 49, i) },
+        vfn: func(i int, _ interface{}) { require.Equal(t, 49, i) },
         val: nil,
     },{
         key: "_OP_slice_init",
         ins: []_Instr{newInsVt(_OP_slice_init, reflect.TypeOf(0))},
-        src: "]",
+        src: "",
         vfn: func(_ int, v interface{}) {
             require.NotNil(t, v)
-            assert.Equal(t, 0, len(v.([]int)))
-            assert.Equal(t, 0, cap(v.([]int)))
+            require.Equal(t, 0, len(v.([]int)))
+            require.Equal(t, _MinSlice, cap(v.([]int)))
         },
         val: new([]int),
     }, {
@@ -532,13 +531,13 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsOp(_OP_object_skip)},
         src: `{"zxcv":[1,2.0],"asdf":[true,false,null,"asdf",{"qwer":345}]}`,
         pos: 1,
-        vfn: func(i int, _ interface{}) { assert.Equal(t, 61, i) },
+        vfn: func(i int, _ interface{}) { require.Equal(t, 61, i) },
         val: nil,
     }, {
         key: "_OP_object_next",
         ins: []_Instr{newInsOp(_OP_object_next)},
         src: `{"asdf":[1,2.0,true,false,null,"asdf",{"qwer":345}]}`,
-        vfn: func(i int, _ interface{}) { assert.Equal(t, 52, i) },
+        vfn: func(i int, _ interface{}) { require.Equal(t, 52, i) },
         val: nil,
     }, {
         key: "_OP_struct_field",
@@ -590,7 +589,7 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsVt(_OP_unmarshal, reflect.TypeOf(UjsonValue(0)))},
         src: `{"asdf":[1,2.0,true,false,null,"asdf",{"qwer":345}]}`,
         vfn: func(_ int, v interface{}) {
-            assert.Equal(t, []byte(`{"asdf":[1,2.0,true,false,null,"asdf",{"qwer":345}]}`), ujsonVar)
+            require.Equal(t, []byte(`{"asdf":[1,2.0,true,false,null,"asdf",{"qwer":345}]}`), ujsonVar)
         },
         val: new(UjsonValue),
     }, {
@@ -610,7 +609,7 @@ func TestAssembler_OpCode(t *testing.T) {
         ins: []_Instr{newInsVt(_OP_unmarshal_text, reflect.TypeOf(UtextValue(0)))},
         src: `hello\n\r\tworld"`,
         vfn: func(_ int, v interface{}) {
-            assert.Equal(t, []byte("hello\n\r\tworld"), utextVar)
+            require.Equal(t, []byte("hello\n\r\tworld"), utextVar)
         },
         val: new(UtextValue),
     }, {
@@ -629,7 +628,7 @@ func TestAssembler_OpCode(t *testing.T) {
         key: "_OP_lspace",
         ins: []_Instr{newInsOp(_OP_lspace)},
         src: " \t\r\na",
-        vfn: func(i int, _ interface{}) { assert.Equal(t, 4, i) },
+        vfn: func(i int, _ interface{}) { require.Equal(t, 4, i) },
         val: nil,
     }, {
         key: "_OP_lspace/error",
@@ -649,7 +648,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "a",
         err: SyntaxError{Src: `a`, Pos: 0, Code: types.ERR_INVALID_CHAR},
         val: nil,
-    }, {
+    }, 
+    {
         key: "_OP_switch",
         ins: []_Instr{
             newInsVi(_OP_dbg_set_sr, 1),
@@ -692,8 +692,8 @@ func TestAssembler_DecodeStruct(t *testing.T) {
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
-    assert.Equal(t, len(s), pos)
-    assert.Equal(t, JsonStruct{
+    require.Equal(t, len(s), pos)
+    require.Equal(t, JsonStruct{
         A: 123,
         B: "asdf",
         C: map[string]int{"qwer": 4567},
@@ -704,7 +704,7 @@ func TestAssembler_DecodeStruct(t *testing.T) {
 func TestAssembler_PrologueAndEpilogue(t *testing.T) {
     a := newAssembler(nil)
     _, e := a.Load()("", 0, nil, nil, 0, "", nil)
-    assert.Nil(t, e)
+    require.Nil(t, e)
 }
 
 type Tx struct {
@@ -721,8 +721,8 @@ func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
-    assert.Equal(t, len(s), pos)
-    assert.Equal(t, Tx{}, v)
+    require.Equal(t, len(s), pos)
+    require.Equal(t, Tx{}, v)
 }
 
 func TestAssembler_DecodeByteSlice_Bin(t *testing.T) {
@@ -735,8 +735,8 @@ func TestAssembler_DecodeByteSlice_Bin(t *testing.T) {
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
-    assert.Equal(t, len(s), pos)
-    assert.Equal(t, []byte("hello, world"), v)
+    require.Equal(t, len(s), pos)
+    require.Equal(t, []byte("hello, world"), v)
 }
 
 func TestAssembler_DecodeByteSlice_List(t *testing.T) {
@@ -749,6 +749,6 @@ func TestAssembler_DecodeByteSlice_List(t *testing.T) {
     f := a.Load()
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     require.NoError(t, err)
-    assert.Equal(t, len(s), pos)
-    assert.Equal(t, []byte("hello, world"), v)
+    require.Equal(t, len(s), pos)
+    require.Equal(t, []byte("hello, world"), v)
 }
