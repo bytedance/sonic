@@ -12,16 +12,15 @@ const (
     _entry__skip_one_fast = 25968
     _entry__advance_ns = 16928
     _entry__count_elems_fast = 29072
-    _entry__count_elems_fast2 = 29552
-    _entry__f32toa = 35776
+    _entry__f32toa = 35296
     _entry__f64toa = 320
-    _entry__format_significand = 40000
+    _entry__format_significand = 39520
     _entry__format_integer = 3168
     _entry__fsm_exec = 21072
     _entry__advance_string = 17664
-    _entry__advance_string_default = 41440
+    _entry__advance_string_default = 40960
     _entry__do_skip_number = 23696
-    _entry__get_by_path = 30016
+    _entry__get_by_path = 29536
     _entry__html_escape = 10560
     _entry__i64toa = 3600
     _entry__u64toa = 3712
@@ -33,15 +32,15 @@ const (
     _entry__skip_one = 25552
     _entry__unquote = 7888
     _entry__validate_one = 25600
-    _entry__validate_utf8 = 32192
-    _entry__validate_utf8_fast = 33136
+    _entry__validate_utf8 = 31712
+    _entry__validate_utf8_fast = 32656
     _entry__value = 15376
     _entry__vnumber = 18800
     _entry__atof_eisel_lemire64 = 12624
     _entry__atof_native = 14768
     _entry__decimal_to_f64 = 13056
-    _entry__right_shift = 40960
-    _entry__left_shift = 40464
+    _entry__right_shift = 40480
+    _entry__left_shift = 39984
     _entry__vsigned = 20352
     _entry__vstring = 17424
     _entry__vunsigned = 20672
@@ -51,8 +50,7 @@ const (
     _stack__count_elems = 224
     _stack__skip_one_fast = 184
     _stack__advance_ns = 8
-    _stack__count_elems_fast = 224
-    _stack__count_elems_fast2 = 256
+    _stack__count_elems_fast = 256
     _stack__f32toa = 48
     _stack__f64toa = 80
     _stack__format_significand = 24
@@ -91,8 +89,7 @@ const (
     _size__count_elems = 144
     _size__skip_one_fast = 2428
     _size__advance_ns = 496
-    _size__count_elems_fast = 448
-    _size__count_elems_fast2 = 464
+    _size__count_elems_fast = 464
     _size__f32toa = 3392
     _size__f64toa = 2848
     _size__format_significand = 464
@@ -166,17 +163,6 @@ var (
         {486, 0},
     }
     _pcsp__count_elems_fast = [][2]uint32{
-        {1, 0},
-        {4, 8},
-        {6, 16},
-        {7, 24},
-        {426, 40},
-        {430, 24},
-        {431, 16},
-        {433, 8},
-        {438, 0},
-    }
-    _pcsp__count_elems_fast2 = [][2]uint32{
         {1, 0},
         {4, 8},
         {6, 16},
@@ -627,7 +613,6 @@ var Funcs = []loader.CFunc{
     {"_skip_one_fast", _entry__skip_one_fast, _size__skip_one_fast, _stack__skip_one_fast, _pcsp__skip_one_fast},
     {"_advance_ns", _entry__advance_ns, _size__advance_ns, _stack__advance_ns, _pcsp__advance_ns},
     {"_count_elems_fast", _entry__count_elems_fast, _size__count_elems_fast, _stack__count_elems_fast, _pcsp__count_elems_fast},
-    {"_count_elems_fast2", _entry__count_elems_fast2, _size__count_elems_fast2, _stack__count_elems_fast2, _pcsp__count_elems_fast2},
     {"_f32toa", _entry__f32toa, _size__f32toa, _stack__f32toa, _pcsp__f32toa},
     {"_f64toa", _entry__f64toa, _size__f64toa, _stack__f64toa, _pcsp__f64toa},
     {"_format_significand", _entry__format_significand, _size__format_significand, _stack__format_significand, _pcsp__format_significand},

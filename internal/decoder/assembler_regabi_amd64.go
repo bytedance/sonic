@@ -71,7 +71,6 @@ const (
     _FP_fargs  = 80     // 80 bytes for passing arguments to other Go functions
     _FP_saves  = 48     // 48 bytes for saving the registers before CALL instructions
     _FP_locals = 144    // 144 bytes for local variables
-    _FP_debug  = 128   // for debug
 )
 
 const (
@@ -871,7 +870,6 @@ func (self *_Assembler) range_unsigned_CX(i *rt.GoItab, t *rt.GoType, v uint64) 
 var (
     _F_unquote = jit.Imm(int64(native.S_unquote))
     _F_count_elems = jit.Imm(int64(native.S_count_elems))
-    _F_count_elems2 = jit.Imm(int64(native.S_count_elems2))
 )
 
 func (self *_Assembler) slice_from(p obj.Addr, d int64) {
@@ -1494,10 +1492,10 @@ func (self *_Assembler) _asm_OP_map_init(p *_Instr) {
         self.check_eof(1)
         self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64('}')))   // CMPB    (IP)(IC), ${p.vb()}
         self.Sjmp("JE"  , "_small_map_{n}")   
-        self.Emit("LEAQ", _ARG_s, _DI)      
+        self.Emit("MOVQ", _IP, _DI)      
+        self.Emit("MOVQ", _IL, _SI)
         self.Emit("SUBQ", jit.Imm(1), _IC)      
-        self.Emit("MOVQ", _IC, _ARG_ic)     
-        self.Emit("LEAQ", _ARG_ic, _SI)     
+        self.Emit("MOVQ", _IC, _DX)       
         self.call_c(_F_count_elems)
         self.Emit("ADDQ" , jit.Imm(1), _IC)     
         self.Emit("TESTQ", _AX, _AX)
@@ -1652,9 +1650,10 @@ func (self *_Assembler) _asm_OP_slice_init(p *_Instr) {
     self.Sjmp("JNZ"  , "_done_{n}")                 // JNZ     _done_{n}
     if option.PredictContainerSize {
         self.Emit("LEAQ", _ARG_s, _DI)      
+        self.Emit("MOVQ", _IP, _DI)      
+        self.Emit("MOVQ", _IL, _SI)
         self.Emit("SUBQ", jit.Imm(1), _IC)      
-        self.Emit("MOVQ", _IC, _ARG_ic)     
-        self.Emit("LEAQ", _ARG_ic, _SI)     
+        self.Emit("MOVQ", _IC, _DX)       
         self.call_c(_F_count_elems)
         self.Emit("ADDQ" , jit.Imm(1), _IC)     
         self.Emit("TESTQ", _AX, _AX)

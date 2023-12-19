@@ -60,7 +60,6 @@ var stubs = []loader.GoC{
     {"_vunsigned", nil, &__vunsigned},
     {"_count_elems", nil, &__count_elems},
     {"_count_elems_fast", nil, &__count_elems_fast},
-    {"_count_elems_fast2", nil, &__count_elems_fast2},
 }
 
 func TestMain(m *testing.M) {
@@ -699,4 +698,15 @@ func TestRecover_validate_utf8_fast(t *testing.T) {
 		}
 	}()
 	_ = validate_utf8_fast(nil)
+}
+
+func TestRecover_count_elem_fast(t *testing.T) {
+	defer func() {
+		if r := recover(); r!= nil {
+			t.Log("recover: ", r)
+		} else {
+			t.Fatal("no panic")
+		}
+	}()
+	_ = count_elems_fast(nil, 1, 0)
 }

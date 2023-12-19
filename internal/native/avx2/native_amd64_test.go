@@ -692,41 +692,33 @@ func Test_count_elems_fast(t *testing.T) {
 		name    string
 		args    args
 		wantRet int
-        wantP int
 	}{
         {
             name: "0",
             args: args{`{}`, 0},
             wantRet: 0,
-            wantP: 2,
         },
         {
             name: "1",
             args: args{`[1]`, 0},
             wantRet: 1,
-            wantP: 3,
         },
 		{
             name: "3",
             args: args{`[1,"2",false,null,true]`, 0},
             wantRet: 5,
-            wantP: 23,
         },
 		{
             name: "4",
             args: args{`{"a":1,"b":[2,3]}`, 0},
             wantRet: 3,
-            wantP: 17,
         },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotRet := count_elems_fast(&tt.args.s, &tt.args.p); gotRet != tt.wantRet {
+			if gotRet := count_elems_fast((*byte)(rt.IndexChar(tt.args.s, 0)), len(tt.args.s), tt.args.p); gotRet != tt.wantRet {
 				t.Errorf("count_elems() = %v, want %v", gotRet, tt.wantRet)
 			}
-            if tt.args.p != tt.wantP {
-                t.Errorf("p = %v, want %v", tt.args.p, tt.wantP)
-            }
 		})
 	}
 }
@@ -789,7 +781,7 @@ func BenchmarkCountElems2(b *testing.B) {
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
             var p = 0
-            _ = count_elems_fast(&s, &p)
+            _ = count_elems_fast((*byte)(rt.IndexChar(s, 0)), len(s), p)
         }
     })
     b.Run("10", func(b *testing.B) {
@@ -797,7 +789,7 @@ func BenchmarkCountElems2(b *testing.B) {
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
             var p = 0
-            _ = count_elems_fast(&s, &p)
+            _ = count_elems_fast((*byte)(rt.IndexChar(s, 0)), len(s), p)
         }
     })
     b.Run("100", func(b *testing.B) {
@@ -805,7 +797,7 @@ func BenchmarkCountElems2(b *testing.B) {
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
             var p = 0
-            _ = count_elems_fast(&s, &p)
+            _ = count_elems_fast((*byte)(rt.IndexChar(s, 0)), len(s), p)
         }
     })
 }

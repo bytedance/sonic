@@ -153,6 +153,5 @@ long skip_one_fast(const GoString *src, long *p);
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm);
 
 long count_elems(const GoString *src, long *p);
-long count_elems_fast(const GoString *src, long *p);
-long count_elems_fast2(const char *sp, size_t l, long index);
+long count_elems_fast(const char *sp, size_t l, long index);
 #endif
