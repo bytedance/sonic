@@ -36,7 +36,7 @@ var (
 
 const _FP_debug  = 0   //NOTICE: for debug = 8*len(_REG_debug)
 
-var  _REG_debug = []obj.Addr { _ST, _VP, _IP, _IL, _IC, _ET, _EP, _AX, _BX, _CX, _DX, _DI, _SI, _R8, _R9, jit.Reg("R10")}
+var  _REG_debug = []obj.Addr { _ST, _VP, _IP, _IL, _IC, _ET, _EP, _AX, jit.Reg("BX"), _CX, _DX, _DI, _SI, _R8, _R9, jit.Reg("R10")}
 
 var (
     _Instr_End _Instr = newInsOp(_OP_nil_1)
@@ -223,13 +223,13 @@ func printptr(i int, ptr uintptr) {
 func (self *_Assembler) print_ptr(i int, ptr obj.Addr, lea bool) {
     self.dsave(_REG_debug...)
     if lea {
-        self.Emit("LEAQ", ptr, _BX)
+        self.Emit("LEAQ", ptr, jit.Reg("BX"))
     } else {
-        self.Emit("MOVQ", ptr, _BX)
+        self.Emit("MOVQ", ptr, jit.Reg("BX"))
     }
 
     self.Emit("MOVQ", jit.Imm(int64(i)), _AX)
-    self.Emit("MOVQ", _BX, jit.Ptr(_SP, 8))
+    self.Emit("MOVQ", jit.Reg("BX"), jit.Ptr(_SP, 8))
     self.dcall(_F_printptr)  
     self.dload(_REG_debug...)
 }
@@ -237,13 +237,13 @@ func (self *_Assembler) print_ptr(i int, ptr obj.Addr, lea bool) {
 func (self *_ValueDecoder) print_ptr(i int, ptr obj.Addr, lea bool) {
     self.dsave(_REG_debug...)
     if lea {
-        self.Emit("LEAQ", ptr, _BX)
+        self.Emit("LEAQ", ptr, jit.Reg("BX"))
     } else {
-        self.Emit("MOVQ", ptr, _BX)
+        self.Emit("MOVQ", ptr, jit.Reg("BX"))
     }
 
     self.Emit("MOVQ", jit.Imm(int64(i)), _AX)
-    self.Emit("MOVQ", _BX, jit.Ptr(_SP, 8))
+    self.Emit("MOVQ", jit.Reg("BX"), jit.Ptr(_SP, 8))
     self.dcall(_F_printptr)  
     self.dload(_REG_debug...)
 }
