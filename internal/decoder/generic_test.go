@@ -84,6 +84,16 @@ func BenchmarkGeneric_Parallel_DecodeGeneric(b *testing.B) {
     })
 }
 
+func BenchmarkDecoder_Generic_Sonic(b *testing.B) {
+    var w interface{}
+    _, _ = decode(TwitterJson, &w, true)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v interface{}
+        _, _ = decode(TwitterJson, &v, true)
+    }
+}
 
 func BenchmarkDecoder_Generic_Sonic_Fast(b *testing.B) {
     var w interface{}

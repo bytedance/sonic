@@ -1500,6 +1500,7 @@ func (self *_Assembler) _asm_OP_map_init(p *_Instr) {
         self.Emit("ADDQ" , jit.Imm(1), _IC)     
         self.Emit("TESTQ", _AX, _AX)
         self.Sjmp("JS"   , _LB_parsing_error_v)    
+        self.Sjmp("JZ"   , "_small_map_{n}")    
         self.Emit("MOVQ" , _AX, _BX)   
         self.Emit("MOVQ" , jit.Type(p.vt()), _AX)
         self.Emit("XORL" , _CX, _CX)   

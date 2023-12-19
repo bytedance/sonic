@@ -494,17 +494,6 @@ func TestDecoder_MapWithIndirectElement(t *testing.T) {
     assert.Equal(t, [129]byte{1, 2, 3, 4, 5}, v[""].A)
 }
 
-func BenchmarkDecoder_Generic_Sonic(b *testing.B) {
-    var w interface{}
-    _, _ = decode(TwitterJson, &w, true)
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        var v interface{}
-        _, _ = decode(TwitterJson, &v, true)
-    }
-}
-
 func BenchmarkDecoder_Binding_Sonic(b *testing.B) {
     var w TwitterStruct
     _, _ = decode(TwitterJson, &w, true)

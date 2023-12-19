@@ -424,6 +424,7 @@ func (self *_ValueDecoder) compile() {
         self.Emit("ADDQ" , jit.Imm(1), _IC)     
         self.Emit("TESTQ", _AX, _AX)
         self.Sjmp("JS"   , "_invalid_char")   
+        self.Sjmp("JZ"   , "_empty_object") 
         self.Emit("MOVQ" , _AX, _BX)   
         self.Emit("MOVQ" , _T_map, _AX)
         self.Emit("XORL" , _CX, _CX)   
