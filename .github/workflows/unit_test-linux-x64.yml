@@ -39,7 +39,7 @@ jobs:
       
       - name: option.PredictContainerSize
         run: |
-          SONIC_ENABLE_PCS=1 go test -run ^(TestGeneric_DecodeInterface|TestDecoder_Generic)$ github.com/bytedance/sonic/internal/decoder
+          SONIC_ENABLE_PCS=1 go test -run '^(TestGeneric_DecodeInterface|TestDecoder_Generic)$' github.com/bytedance/sonic/internal/decoder
       
       - name: Codecov
         run: bash <(curl -s https://codecov.io/bash)
