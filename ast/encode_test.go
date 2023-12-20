@@ -150,6 +150,36 @@ func TestEncodeNode(t *testing.T) {
     }
 }
 
+type SortableNode struct {
+    sorted bool
+	*Node
+}
+
+func (j *SortableNode) UnmarshalJSON(data []byte) (error) {
+    j.Node = new(Node)
+	return j.Node.UnmarshalJSON(data)
+}
+
+func (j *SortableNode) MarshalJSON() ([]byte, error) {
+    if !j.sorted {
+        j.Node.SortKeys(true)
+        j.sorted = true
+    }
+	return j.Node.MarshalJSON()
+}
+
+func TestMarshalSort(t *testing.T) {
+    var data = `{"d":3,"a":{"c":1,"b":2},"e":null}`
+    var obj map[string]*SortableNode
+    require.NoError(t, json.Unmarshal([]byte(data), &obj))
+    out, err := json.Marshal(obj)
+    require.NoError(t, err)
+    require.Equal(t, `{"a":{"b":2,"c":1},"d":3,"e":null}`, string(out))
+    out, err = json.Marshal(obj)
+    require.NoError(t, err)
+    require.Equal(t, `{"a":{"b":2,"c":1},"d":3,"e":null}`, string(out))
+}
+
 func BenchmarkEncodeRaw_Sonic(b *testing.B) {
     data := _TwitterJson
     root, e := NewSearcher(data).GetByPath()

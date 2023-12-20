@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 ByteDance Inc.
+ * Copyright 2023 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package rt
+package issue_test
 
-const (
-    MinInt48 int64 = -(1 << 47)
-    MaxInt48 int64 = +(1 << 47) - 1
+import (
+    `testing`
+
+    `github.com/bytedance/sonic/ast`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/stretchr/testify/assert`
 )
 
-func PackInt(v int) uint64 {
-    if u := uint64(v); int64(v) < MinInt48 || int64(v) > MaxInt48 {
-        panic("int48 out of range")
-    } else {
-        return ((u >> 63) << 47) | (u & 0x00007fffffffffff)
-    }
-}
-
-func UnpackInt(v uint64) int {
-    v &= 0x0000ffffffffffff
-    v |= (v >> 47) * (0xffff << 48)
-    return int(v)
+func TestRandomData(t *testing.T) {
+    number := "  222222222"
+    node, code := ast.NewParser(number[:3]).Parse()
+    assert.Equal(t, code, types.ParsingError(0x0))
+    out, err := node.String()
+    assert.Equal(t, out, "2")
+    assert.NoError(t, err)
 }

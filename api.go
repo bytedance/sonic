@@ -68,7 +68,14 @@ type Config struct {
 
     // ValidateString indicates decoder and encoder to valid string values: decoder will return errors 
     // when unescaped control chars(\u0000-\u001f) in the string value of JSON.
-    ValidateString                    bool
+    ValidateString                bool
+
+    // NoValidateJSONMarshaler indicates that the encoder should not validate the output string
+    // after encoding the JSONMarshaler to JSON.
+    NoValidateJSONMarshaler       bool
+    
+    // NoEncoderNewline indicates that the encoder should not add a newline after every message
+    NoEncoderNewline bool
 }
  
 var (
@@ -87,6 +94,7 @@ var (
     // ConfigFastest is the fastest config of APIs, aiming at speed.
     ConfigFastest = Config{
         NoQuoteTextMarshaler: true,
+        NoValidateJSONMarshaler: true,
     }.Froze()
 )
  

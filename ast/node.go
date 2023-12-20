@@ -61,8 +61,8 @@ type Node struct {
 // UnmarshalJSON is just an adapter to json.Unmarshaler.
 // If you want better performance, use Searcher.GetByPath() directly
 func (self *Node) UnmarshalJSON(data []byte) (err error) {
-    *self, err = NewSearcher(string(data)).GetByPath()
-    return 
+    *self = NewRaw(string(data))
+    return self.Check()
 }
 
 /** Node Type Accessor **/
@@ -844,6 +844,7 @@ func (self *Node) MapUseNode() (map[string]Node, error) {
 //     return self.toGenericObjectUsePair()
 // }
 
+//go:nocheckptr
 func (self *Node) unsafeMap() (*linkedPairs, error) {
     if err := self.skipAllKey(); err != nil {
         return nil, err
@@ -857,7 +858,8 @@ func (self *Node) unsafeMap() (*linkedPairs, error) {
 // SortKeys sorts children of a V_OBJECT node in ascending key-order.
 // If recurse is true, it recursively sorts children's children as long as a V_OBJECT node is found.
 func (self *Node) SortKeys(recurse bool) error {
-    if err := self.Check(); err != nil {
+    // check raw node first
+    if err := self.checkRaw(); err != nil {
         return err
     }
     if self.itype() == types.V_OBJECT {
@@ -865,7 +867,7 @@ func (self *Node) SortKeys(recurse bool) error {
     } else {
         var err error
         err2 := self.ForEach(func(path Sequence, node *Node) bool {
-            it := self.itype()
+            it := node.itype()
             if it == types.V_ARRAY || it == types.V_OBJECT {
                 err = node.SortKeys(recurse)
                 if err != nil {
@@ -1351,17 +1353,16 @@ func (self *Node) toGenericArray() ([]interface{}, error) {
     if nb == 0 {
         return []interface{}{}, nil
     }
-    ret := make([]interface{}, nb)
+    ret := make([]interface{}, 0, nb)
     
     /* convert each item */
-    var s = (*linkedNodes)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.Interface()
+    it := self.values()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.Interface()
         if err != nil {
             return nil, err
         }
-        ret[i] = x
+        ret = append(ret, vv)
     }
 
     /* all done */
@@ -1373,17 +1374,16 @@ func (self *Node) toGenericArrayUseNumber() ([]interface{}, error) {
     if nb == 0 {
         return []interface{}{}, nil
     }
-    ret := make([]interface{}, nb)
+    ret := make([]interface{}, 0, nb)
 
     /* convert each item */
-    var s = (*linkedNodes)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.InterfaceUseNumber()
+    it := self.values()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.InterfaceUseNumber()
         if err != nil {
             return nil, err
         }
-        ret[i] = x
+        ret = append(ret, vv)
     }
 
     /* all done */
@@ -1411,14 +1411,13 @@ func (self *Node) toGenericObject() (map[string]interface{}, error) {
     ret := make(map[string]interface{}, nb)
 
     /* convert each item */
-    var s = (*linkedPairs)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.Value.Interface()
+    it := self.properties()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.Value.Interface()
         if err != nil {
             return nil, err
         }
-        ret[p.Key] = x
+        ret[v.Key] = vv
     }
 
     /* all done */
@@ -1434,14 +1433,13 @@ func (self *Node) toGenericObjectUseNumber() (map[string]interface{}, error) {
     ret := make(map[string]interface{}, nb)
 
     /* convert each item */
-    var s = (*linkedPairs)(self.p)
-    for i := 0; i < nb; i++ {
-        p := s.At(i)
-        x, err := p.Value.InterfaceUseNumber()
+    it := self.properties()
+    for v := it.next(); v != nil; v = it.next() {
+        vv, err := v.Value.InterfaceUseNumber()
         if err != nil {
             return nil, err
         }
-        ret[p.Key] = x
+        ret[v.Key] = vv
     }
 
     /* all done */
