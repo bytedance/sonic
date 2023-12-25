@@ -1,5 +1,5 @@
-//go:build unix
-// +build unix
+//go:build !windows
+// +build !windows
 
 /**
  * Copyright 2023 ByteDance Inc.
