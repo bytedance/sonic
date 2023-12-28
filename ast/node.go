@@ -534,10 +534,12 @@ func (self *Node) Set(key string, node Node) (bool, error) {
     if err := node.Check(); err != nil {
         return false, err 
     }
-
+    
     if self.t == _V_NONE || self.t == types.V_NULL {
         *self = NewObject([]Pair{{key, node}})
         return false, nil
+    } else if self.itype() != types.V_OBJECT {
+        return false, ErrUnsupportType
     }
 
     p := self.Get(key)

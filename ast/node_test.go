@@ -1204,6 +1204,11 @@ func TestNodeGetByPath(t *testing.T) {
 }
 
 func TestNodeSet(t *testing.T) {
+    arr := NewRaw(`[]`)
+    ex, ee := arr.Set("a", NewNumber("-1"))
+    if ex || ee == nil {
+        t.Fatal()
+    }
     empty := Node{}
     err := empty.Add(Node{})
     if err != nil {
