@@ -627,7 +627,7 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
     it := self.itype()
     if it == types.V_ARRAY {
         p = self.Index(index)
-    }else if it == types.V_OBJECT {
+    } else if it == types.V_OBJECT {
         if err := self.checkRaw(); err != nil {
             return false, err
         }
@@ -1174,6 +1174,19 @@ func (self *Node) nodeAt(i int) *Node {
         p = &stack.v
     } else {
         p = (*linkedNodes)(self.p)
+        if l := p.Len(); l != self.len() {
+            // some nodes got unset, iterate to skip them
+            for j:=0; j<l; j++ {
+                v := p.At(j)
+                if v.Exists() {
+                    i--
+                }
+                if i < 0 {
+                    return v
+                }
+            }
+            return nil
+        } 
     }
     return p.At(i)
 }
@@ -1185,6 +1198,19 @@ func (self *Node) pairAt(i int) *Pair {
         p = &stack.v
     } else {
         p = (*linkedPairs)(self.p)
+        if l := p.Len(); l != self.len() {
+            // some nodes got unset, iterate to skip them
+            for j:=0; j<l; j++ {
+                v := p.At(j)
+                if v != nil && v.Value.Exists() {
+                    i--
+                }
+                if i < 0 {
+                    return v
+                }
+            }
+           return nil
+       } 
     }
     return p.At(i)
 }
@@ -1336,8 +1362,8 @@ func (self *Node) removeNode(i int) {
         return
     }
     *node = Node{}
-    // NOTICE: for consistency with linkedNodes, we DOSEN'T reduce size here
-    // self.l--
+    // NOTICE: not be consistent with linkedNode.Len()
+    self.l--
 }
 
 func (self *Node) removePair(i int) {
@@ -1346,8 +1372,8 @@ func (self *Node) removePair(i int) {
         return
     }
     *last = Pair{}
-    // NOTICE: for consistency with linkedNodes, we DOSEN'T reduce size here
-    // self.l--
+    // NOTICE: should be consistent with linkedPair.Len()
+    self.l--
 }
 
 func (self *Node) toGenericArray() ([]interface{}, error) {

@@ -43,6 +43,21 @@ func (self *linkedNodes) Len() int {
     return self.size 
 }
 
+func (self *linkedNodes) Get(i int) (*Node) {
+    if self == nil {
+        return nil
+    }
+    if i >= 0 && i<self.size && i < _DEFAULT_NODE_CAP {
+        return &self.head[i]
+    } else if i >= _DEFAULT_NODE_CAP && i<self.size  {
+        a, b := i/_DEFAULT_NODE_CAP-1, i%_DEFAULT_NODE_CAP
+        if a < len(self.tail) {
+            return &self.tail[a][b]
+        }
+    }
+    return nil
+}
+
 func (self *linkedNodes) At(i int) (*Node) {
     if self == nil {
         return nil

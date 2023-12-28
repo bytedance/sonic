@@ -840,7 +840,7 @@ func TestUnset(t *testing.T) {
     hashtags := entities.Get("hashtags").Index(0)
     hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
     exist, err = hashtags.Unset("indices") // NOTICE: Unset() won't change node.Len() here
-    if !exist || err != nil || hashtags.len() != 3 {
+    if !exist || err != nil || hashtags.len() != 2 {
         t.Fatal(hashtags.len())
     }
     y, _ := hashtags.Get("text").String()
