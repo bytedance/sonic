@@ -780,7 +780,7 @@ func TestUnset(t *testing.T) {
     if !entities.Exists() || entities.Check() != nil {
         t.Fatal(entities.Check().Error())
     }
-    exist, err := entities.Unset("urls") // NOTICE: Unset() won't change node.Len() here
+    exist, err := entities.Unset("urls") 
     if !exist || err != nil {
         t.Fatal()
     }
@@ -788,7 +788,7 @@ func TestUnset(t *testing.T) {
     if e.Exists() {
         t.Fatal()
     }
-    if entities.len() != 3 { 
+    if entities.len() != 2 { 
         t.Fatal(entities.len())
     }
 
@@ -828,14 +828,8 @@ func TestUnset(t *testing.T) {
     require.Equal(t, 
 `{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[],"urls":"a"}`, buf.String())
 
-    exist, err = entities.UnsetByIndex(entities.len()-1)
-    if !exist || err != nil {
-        t.Fatal()
-    }
-    e = entities.Get("urls")
-    if e.Exists() {
-        t.Fatal()
-    }
+    // reload entities
+    *entities = NewRaw(string(out))
 
     hashtags := entities.Get("hashtags").Index(0)
     hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
@@ -851,21 +845,35 @@ func TestUnset(t *testing.T) {
         t.Fatal()
     }
 
-    ums := entities.Get("user_mentions")
-    ums.Add(NewNull())
-    ums.Add(NewBool(true))
-    ums.Add(NewBool(false))
-    if ums.len() != 3 {
-        t.Fatal()
-    }
-    exist, err = ums.UnsetByIndex(2)
+    entities.Load()
+    exist, err = entities.UnsetByIndex(entities.len()-1)
     if !exist || err != nil {
         t.Fatal()
     }
+    if entities.len() != 2 { 
+        t.Fatal(entities.len())
+    }
+    e = entities.Index(entities.len())
+    if e.Exists() {
+        t.Fatal()
+    }
+    
 
+    ums := entities.Get("user_mentions")
+    ums.Add(NewNull())
+    ums.Add(NewBool(false))
+    ums.Add(NewBool(true))
+    if ums.len() != 3 {
+        t.Fatal()
+    }
+    exist, err = ums.UnsetByIndex(1)
+    if !exist || err != nil {
+        t.Fatal()
+    }
+    require.Equal(t, 2, ums.len())
     umses, err := ums.Interface()
     require.NoError(t, err)
-    require.Equal(t, []interface{}{interface{}(nil), true},umses)
+    require.Equal(t, []interface{}{interface{}(nil), true}, umses)
 
     v1, _ := ums.Index(0).Interface()
     v2, _ := ums.Index(1).Interface() // NOTICE: unseted index 1 still can be find here

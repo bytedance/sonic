@@ -573,13 +573,16 @@ func (self *Node) Unset(key string) (bool, error) {
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return false, err
     }
+    // NOTICE: must get acurate length before deduct
+    if err := self.skipAllKey(); err != nil {
+        return false, err
+    }
     p, i := self.skipKey(key)
     if !p.Exists() {
         return false, nil
     } else if err := p.Check(); err != nil {
         return false, err
     }
-    
     self.removePair(i)
     return true, nil
 }
@@ -619,16 +622,21 @@ func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
 // UnsetByIndex remove the node of given index
 // WARN: After conducting `UnsetXX()`, the node's length WON'T change
 func (self *Node) UnsetByIndex(index int) (bool, error) {
-    if err := self.Check(); err != nil {
+    if err := self.checkRaw(); err != nil {
         return false, err
     }
 
     var p *Node
     it := self.itype()
+
     if it == types.V_ARRAY {
-        p = self.Index(index)
+        if err := self.skipAllIndex(); err != nil {
+            return false, err
+        }    
+        p = self.skipIndex(index)
+
     } else if it == types.V_OBJECT {
-        if err := self.checkRaw(); err != nil {
+        if err := self.skipAllKey(); err != nil {
             return false, err
         }
         pr := self.skipIndexPair(index)
@@ -636,6 +644,7 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
            return false, ErrNotExist
         }
         p = &pr.Value
+
     } else {
         return false, ErrUnsupportType
     }

@@ -231,7 +231,7 @@ func TestExist(t *testing.T) {
         if path.Key != nil && *path.Key == "a" {
             t.Fatal()
         }
-        if path.Index == 1 {
+        if path.Index == 0 {
             if *path.Key != "b" {
                 t.Fatal()
             }
@@ -247,7 +247,7 @@ func TestExist(t *testing.T) {
             })
         }
 
-        if path.Index == 2 {
+        if path.Index == 1 {
             if *path.Key != "c" {
                 t.Fatal()
             }
