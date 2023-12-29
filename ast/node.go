@@ -751,7 +751,6 @@ func (self *Node) Move(dst, src int) error {
 
     // check if any unset node exists
     if l :=  s.Len(); self.len() != l {
-        println("unset", dst, src)
         di, si := dst, src
         // find real pos of src and dst
         for i := 0; i < l; i++ {
@@ -771,7 +770,6 @@ func (self *Node) Move(dst, src int) error {
                 break
             }
         }
-        println("unset2", dst, src)
     }
 
     s.MoveOne(src, dst)
