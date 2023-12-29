@@ -491,7 +491,6 @@ func (self *Node) StrictFloat64() (float64, error) {
 
 // Len returns children count of a array|object|string node
 // WARN: For partially loaded node, it also works but only counts the parsed children
-// WARN: For ARRAY|OBJECT nodes which has been conducted `UnsetXX()`, its length WON'T change
 func (self *Node) Len() (int, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
@@ -567,8 +566,7 @@ func (self *Node) SetAny(key string, val interface{}) (bool, error) {
     return self.Set(key, NewAny(val))
 }
 
-// Unset RESET the node of given key under object parent, and reports if the key has existed.
-// WARN: After conducting `UnsetXX()`, the node's length WON'T change
+// Unset REMOVE (soft) the node of given key under object parent, and reports if the key has existed.
 func (self *Node) Unset(key string) (bool, error) {
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return false, err
@@ -619,8 +617,7 @@ func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
     return self.SetByIndex(index, NewAny(val))
 }
 
-// UnsetByIndex remove the node of given index
-// WARN: After conducting `UnsetXX()`, the node's length WON'T change
+// UnsetByIndex REOMVE (soft) the node of given index
 func (self *Node) UnsetByIndex(index int) (bool, error) {
     if err := self.checkRaw(); err != nil {
         return false, err
@@ -732,8 +729,6 @@ func (self *Node) Get(key string) *Node {
 
 // Index indexies node at given idx,
 // node type CAN be either V_OBJECT or V_ARRAY
-// WARN: After conducting `UnsetXX()`, the node's length WON'T change,
-// thus its children's indexing WON'T change too
 func (self *Node) Index(idx int) *Node {
     if err := self.checkRaw(); err != nil {
         return unwrapError(err)
@@ -757,8 +752,6 @@ func (self *Node) Index(idx int) *Node {
 
 // IndexPair indexies pair at given idx,
 // node type MUST be either V_OBJECT
-// WARN: After conducting `UnsetXX()`, the node's length WON'T change,
-// thus its children's indexing WON'T change too
 func (self *Node) IndexPair(idx int) *Pair {
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil
