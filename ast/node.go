@@ -549,7 +549,7 @@ func (self *Node) Set(key string, node Node) (bool, error) {
             *self = newObject(new(linkedPairs))
         }
         s := (*linkedPairs)(self.p)
-        s.Add(Pair{key, node})
+        s.Push(Pair{key, node})
         self.l++
         return false, nil
 
@@ -678,11 +678,40 @@ func (self *Node) Add(node Node) error {
         return err
     }
 
-    s.Add(node)
+    s.Push(node)
     self.l++
     return nil
 }
 
+// Pop remove the last child of the V_Array node.
+func (self *Node) Pop() error {
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return err
+    }
+
+    s, err := self.unsafeArray()
+    if err != nil {
+        return err
+    }
+
+    s.Pop()
+    self.l--
+    return nil
+}
+
+func (self *Node) Move(src, dst int) error {
+    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+        return err
+    }
+
+    s, err := self.unsafeArray()
+    if err != nil {
+        return err
+    }
+
+    s.MoveOne(src, dst)
+    return nil
+}
 
 // SetAny wraps val with V_ANY node, and Add() the node.
 func (self *Node) AddAny(val interface{}) error {
