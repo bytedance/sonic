@@ -617,7 +617,10 @@ func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
     return self.SetByIndex(index, NewAny(val))
 }
 
-// UnsetByIndex REOMVE (soft) the node of given index
+// UnsetByIndex REOMVE (soft) the node of given index.
+//
+// Deprecated: this will change index of elements, which is a dangerous action. 
+// Use Unset() for object or Pop() for array instead
 func (self *Node) UnsetByIndex(index int) (bool, error) {
     if err := self.checkRaw(); err != nil {
         return false, err
@@ -699,6 +702,7 @@ func (self *Node) Pop() error {
     return nil
 }
 
+// Move moves the child at src index to dst index. 
 func (self *Node) Move(src, dst int) error {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return err
@@ -1405,6 +1409,7 @@ func (self *Node) removePair(i int) {
     *last = Pair{}
     // NOTICE: should be consistent with linkedPair.Len()
     self.l--
+    if self.
 }
 
 func (self *Node) toGenericArray() ([]interface{}, error) {
