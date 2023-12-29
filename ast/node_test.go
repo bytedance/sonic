@@ -769,125 +769,124 @@ func TestIndex(t *testing.T) {
 }
 
 func TestUnset(t *testing.T) {
-    root, derr := NewParser(_TwitterJson).Parse()
-    if derr != 0 {
-        t.Fatalf("decode failed: %v", derr.Error())
-    }
-    entities := root.GetByPath("statuses", 0, "entities")
-    if !entities.Exists() || entities.Check() != nil {
-        t.Fatal(entities.Check().Error())
-    }
-    exist, err := entities.Unset("urls") 
-    if !exist || err != nil {
-        t.Fatal()
-    }
-    e := entities.Get("urls")
-    if e.Exists() {
-        t.Fatal()
-    }
-    if entities.len() != 2 { 
-        t.Fatal(entities.len())
-    }
+	root, derr := NewParser(_TwitterJson).Parse()
+	if derr != 0 {
+		t.Fatalf("decode failed: %v", derr.Error())
+	}
+	entities := root.GetByPath("statuses", 0, "entities")
+	if !entities.Exists() || entities.Check() != nil {
+		t.Fatal(entities.Check().Error())
+	}
+	exist, err := entities.Unset("urls")
+	if !exist || err != nil {
+		t.Fatal()
+	}
+	e := entities.Get("urls")
+	if e.Exists() {
+		t.Fatal()
+	}
+	if entities.len() != 2 {
+		t.Fatal(entities.len())
+	}
 
-    es, err := entities.Interface()
-    require.NoError(t, err)
-    require.Equal(t, map[string]interface{}{
-        "hashtags": []interface{}{
-            map[string]interface{}{
-                "text": "freebandnames",
-                "indices": []interface{}{
-                    float64(20), float64(34),
-                },
-            },
-        },
-        "user_mentions": []interface{}{},
-    },es)
+	es, err := entities.Interface()
+	require.NoError(t, err)
+	require.Equal(t, map[string]interface{}{
+		"hashtags": []interface{}{
+			map[string]interface{}{
+				"text": "freebandnames",
+				"indices": []interface{}{
+					float64(20), float64(34),
+				},
+			},
+		},
+		"user_mentions": []interface{}{},
+	}, es)
 
-    out, err := entities.MarshalJSON()
-    require.NoError(t, err)
-    println(string(out))
-    buf := bytes.NewBuffer(nil)
-    require.NoError(t, json.Compact(buf, out))
-    require.Equal(t, 
-`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[]}`, buf.String())
+	out, err := entities.MarshalJSON()
+	require.NoError(t, err)
+	println(string(out))
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, json.Compact(buf, out))
+	require.Equal(t,
+		`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[]}`, buf.String())
 
-    entities.Set("urls", NewString("a"))
-    e = entities.Get("urls")
-    x, _ := e.String()
-    if !e.Exists() || x != "a" {
-        t.Fatal()
-    }
+	entities.Set("urls", NewString("a"))
+	e = entities.Get("urls")
+	x, _ := e.String()
+	if !e.Exists() || x != "a" {
+		t.Fatal()
+	}
 
-    out, err = entities.MarshalJSON()
-    require.NoError(t, err)
-    buf = bytes.NewBuffer(nil)
-    json.Compact(buf, out)
-    require.Equal(t, 
-`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[],"urls":"a"}`, buf.String())
+	out, err = entities.MarshalJSON()
+	require.NoError(t, err)
+	buf = bytes.NewBuffer(nil)
+	json.Compact(buf, out)
+	require.Equal(t,
+		`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[],"urls":"a"}`, buf.String())
 
-    // reload entities
-    *entities = NewRaw(string(out))
+	// reload entities
+	*entities = NewRaw(string(out))
 
-    hashtags := entities.Get("hashtags").Index(0)
-    hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
-    exist, err = hashtags.Unset("indices") // NOTICE: Unset() won't change node.Len() here
-    if !exist || err != nil || hashtags.len() != 2 {
-        t.Fatal(hashtags.len())
-    }
-    y, _ := hashtags.Get("text").String()
-    if y != "freebandnames" {
-        t.Fatal()
-    }
-    if hashtags.Get("text2").Type() != V_OBJECT {
-        t.Fatal()
-    }
+	hashtags := entities.Get("hashtags").Index(0)
+	hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
+	exist, err = hashtags.Unset("indices") // NOTICE: Unset() won't change node.Len() here
+	if !exist || err != nil || hashtags.len() != 2 {
+		t.Fatal(hashtags.len())
+	}
+	y, _ := hashtags.Get("text").String()
+	if y != "freebandnames" {
+		t.Fatal()
+	}
+	if hashtags.Get("text2").Type() != V_OBJECT {
+		t.Fatal()
+	}
 
-    entities.Load()
-    exist, err = entities.UnsetByIndex(entities.len()-1)
-    if !exist || err != nil {
-        t.Fatal()
-    }
-    if entities.len() != 2 { 
-        t.Fatal(entities.len())
-    }
-    e = entities.Index(entities.len())
-    if e.Exists() {
-        t.Fatal()
-    }
-    
+	entities.Load()
+	exist, err = entities.UnsetByIndex(entities.len() - 1)
+	if !exist || err != nil {
+		t.Fatal()
+	}
+	if entities.len() != 2 {
+		t.Fatal(entities.len())
+	}
+	e = entities.Index(entities.len())
+	if e.Exists() {
+		t.Fatal()
+	}
 
-    ums := entities.Get("user_mentions")
-    ums.Add(NewNull())
-    ums.Add(NewBool(false))
-    ums.Add(NewBool(true))
-    if ums.len() != 3 {
-        t.Fatal()
-    }
-    exist, err = ums.UnsetByIndex(1)
-    if !exist || err != nil {
-        t.Fatal()
-    }
-    require.Equal(t, 2, ums.len())
-    umses, err := ums.Interface()
-    require.NoError(t, err)
-    require.Equal(t, []interface{}{interface{}(nil), true}, umses)
+	ums := entities.Get("user_mentions")
+	ums.Add(NewNull())
+	ums.Add(NewBool(false))
+	ums.Add(NewBool(true))
+	if ums.len() != 3 {
+		t.Fatal()
+	}
+	exist, err = ums.UnsetByIndex(1)
+	if !exist || err != nil {
+		t.Fatal()
+	}
+	require.Equal(t, 2, ums.len())
+	umses, err := ums.Interface()
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{interface{}(nil), true}, umses)
 
-    v1, _ := ums.Index(0).Interface()
-    v2, _ := ums.Index(1).Interface() // NOTICE: unseted index 1 still can be find here
-    v3, _ := ums.Index(2).Interface()
-    if v1 != nil {
-        t.Fatal()
-    } 
-    if v2 != true {
-        t.Fatal()
-    } 
-    if v3 != nil {
-        t.Fatal()
-    }
-    out, err = entities.MarshalJSON()
-    require.NoError(t, err)
-    require.Equal(t, 
-`{"hashtags":[{"text":"freebandnames","text2":{}}],"user_mentions":[null,true]}`, string(out))
+	v1, _ := ums.Index(0).Interface()
+	v2, _ := ums.Index(1).Interface() // NOTICE: unseted index 1 still can be find here
+	v3, _ := ums.Index(2).Interface()
+	if v1 != nil {
+		t.Fatal()
+	}
+	if v2 != true {
+		t.Fatal()
+	}
+	if v3 != nil {
+		t.Fatal()
+	}
+	out, err = entities.MarshalJSON()
+	require.NoError(t, err)
+	require.Equal(t,
+		`{"hashtags":[{"text":"freebandnames","text2":{}}],"user_mentions":[null,true]}`, string(out))
 
 }
 
@@ -1816,55 +1815,145 @@ func BenchmarkMapAdd(b *testing.B) {
 }
 
 func TestNode_Move(t *testing.T) {
+	var us = NewRaw(`["a","1","b","c"]`)
+	if ex, e := us.UnsetByIndex(1); !ex || e != nil {
+		t.Fail()
+	}
+	var us2 = NewRaw(`["a","b","c","1"]`)
+	if ex, e := us2.UnsetByIndex(3); !ex || e != nil {
+		t.Fail()
+	}
 	tests := []struct {
 		name    string
-		in      Node 
-        src int
-        dst int
-        out     Node
+		in      Node
+		src     int
+		dst     int
+		out     Node
 		wantErr bool
 	}{
 		{
-            name:    "over index",
-            in:      NewArray([]Node{}),
-            src: 0,
-            dst: 1,
-            out:     NewArray([]Node{}),
-            wantErr: false,
-        },
-        {
-            name:    "equal index",
-            in:      NewArray([]Node{NewBool(true)}),
-            src: 0,
-            dst: 0,
-            out:     NewArray([]Node{NewBool(true)}),
-            wantErr: false,
-        },
-        {
-            name:    "forward",
-            in:      NewArray([]Node{NewString("a"), NewString("b"), NewString("c")}),
-            src: 0,
-            dst: 2,
-            out:     NewArray([]Node{NewString("b"), NewString("c"), NewString("a")}),
-            wantErr: false,
-        },
-        {
-            name:    "backward",
-            in:      NewArray([]Node{NewString("a"), NewString("b"), NewString("c")}),
-            src: 2,
-            dst: 0,
-            out:     NewArray([]Node{NewString("c"), NewString("a"), NewString("b")}),
-            wantErr: false,
-        },
+			name:    "over index",
+			in:      NewArray([]Node{}),
+			src:     0,
+			dst:     1,
+			out:     NewArray([]Node{}),
+			wantErr: false,
+		},
+		{
+			name:    "equal index",
+			in:      NewArray([]Node{NewBool(true)}),
+			src:     0,
+			dst:     0,
+			out:     NewArray([]Node{NewBool(true)}),
+			wantErr: false,
+		},
+		{
+			name:    "forward",
+			in:      NewArray([]Node{NewString("a"), NewString("b"), NewString("c")}),
+			src:     0,
+			dst:     2,
+			out:     NewArray([]Node{NewString("b"), NewString("c"), NewString("a")}),
+			wantErr: false,
+		},
+		{
+			name:    "backward",
+			in:      NewArray([]Node{NewString("a"), NewString("b"), NewString("c")}),
+			src:     2,
+			dst:     0,
+			out:     NewArray([]Node{NewString("c"), NewString("a"), NewString("b")}),
+			wantErr: false,
+		},
+		{
+			name:    "lazy",
+			in:      NewRaw(`["a","b","c"]`),
+			src:     2,
+			dst:     0,
+			out:     NewArray([]Node{NewString("c"), NewString("a"), NewString("b")}),
+			wantErr: false,
+		},
+		{
+			name:    "unset back",
+			in:      us,
+			src:     2,
+			dst:     0,
+			out:     NewArray([]Node{NewString("c"), NewString("a"), NewString("b")}),
+			wantErr: false,
+		},
+		{
+			name:    "unset forward",
+			in:      us2,
+			src:     0,
+			dst:     2,
+			out:     NewArray([]Node{NewString("b"), NewString("c"), NewString("a")}),
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.in.Move(tt.src, tt.dst)
-            require.NoError(t, err)
-            ej, _ := tt.out.MarshalJSON()
-            aj, _ := tt.in.MarshalJSON()
-            require.Equal(t, string(ej), string(aj))
+			err := tt.in.Move(tt.dst, tt.src)
+			require.NoError(t, err)
+			ej, _ := tt.out.MarshalJSON()
+			aj, _ := tt.in.MarshalJSON()
+			require.Equal(t, string(ej), string(aj))
 		})
 	}
 
+}
+
+func TestNode_Pop(t *testing.T) {
+	var us = NewRaw(`[1,2,3]`)
+	if ex, e := us.UnsetByIndex(0); !ex || e != nil {
+		t.Fail()
+	}
+	var us2 = NewRaw(`[1,2,3]`)
+	if ex, e := us2.UnsetByIndex(2); !ex || e != nil {
+		t.Fail()
+	}
+	tests := []struct {
+		name  string
+		in  Node
+		out Node
+		wantErr bool
+	}{
+		{
+			name:  "empty",
+			in:    NewArray([]Node{}),
+			out:   NewArray([]Node{}),
+			wantErr: false,
+		},
+		{
+			name:  "one",
+			in:    NewArray([]Node{NewString("a")}),
+			out:   NewArray([]Node{}),
+			wantErr: false,
+		},
+		{
+			name:  "raw",
+			in:    NewRaw(`[1]`),
+			out:   NewArray([]Node{}),
+			wantErr: false,
+		},
+		{
+			name:  "unset head",
+			in:    us,
+			out:   NewRaw(`[2]`),
+			wantErr: false,
+		},
+		{
+			name:  "unset tail",
+			in:    us2,
+			out:   NewRaw(`[1]`),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.in.Pop(); (err != nil) != tt.wantErr {
+				t.Errorf("Node.Pop() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			ej, _ := tt.out.MarshalJSON()
+			aj, _ := tt.in.MarshalJSON()
+			require.Equal(t, string(ej), string(aj))
+		})
+	}
 }

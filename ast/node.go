@@ -619,8 +619,8 @@ func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
 
 // UnsetByIndex REOMVE (soft) the node of given index.
 //
-// Deprecated: this will change index of elements, which is a dangerous action. 
-// Use Unset() for object or Pop() for array instead
+// WARN: this will change address of elements, which is a dangerous action.
+// Use Unset() for object or Pop() for array instead.
 func (self *Node) UnsetByIndex(index int) (bool, error) {
     if err := self.checkRaw(); err != nil {
         return false, err
@@ -696,14 +696,27 @@ func (self *Node) Pop() error {
     if err != nil {
         return err
     }
-
-    s.Pop()
-    self.l--
+    // remove first unset node
+    for i := s.Len()-1; i >= 0; i-- {
+        if s.At(i).Exists() {
+            if i == s.Len()-1 {
+                s.Pop()
+            } else {
+                // not the last one, just set it to unset
+                s.Set(i, Node{})
+            }
+            self.l--
+            break
+        }
+    }
     return nil
 }
 
-// Move moves the child at src index to dst index. 
-func (self *Node) Move(src, dst int) error {
+// Move moves the child at src index to dst index,
+// meanwhile slides sliblings from src+1 to dst.
+// 
+// WARN: this will change address of elements, which is a dangerous action.
+func (self *Node) Move(dst, src int) error {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return err
     }
@@ -711,6 +724,31 @@ func (self *Node) Move(src, dst int) error {
     s, err := self.unsafeArray()
     if err != nil {
         return err
+    }
+
+    // check if any unset node exists
+    if l :=  s.Len(); self.len() != l {
+        println("unset", dst, src)
+        di, si := dst, src
+        // find real pos of src and dst
+        for i := 0; i < l; i++ {
+            if s.At(i).Exists() {
+                di--
+                si--
+            }
+            if di == -1 {
+                dst = i
+                di--
+            } 
+            if si == -1 {
+                src = i
+                si--
+            }
+            if di == -2 && si == -2 {
+                break
+            }
+        }
+        println("unset2", dst, src)
     }
 
     s.MoveOne(src, dst)
@@ -1409,7 +1447,6 @@ func (self *Node) removePair(i int) {
     *last = Pair{}
     // NOTICE: should be consistent with linkedPair.Len()
     self.l--
-    if self.
 }
 
 func (self *Node) toGenericArray() ([]interface{}, error) {
