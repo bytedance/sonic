@@ -43,21 +43,6 @@ func (self *linkedNodes) Len() int {
     return self.size 
 }
 
-func (self *linkedNodes) Get(i int) (*Node) {
-    if self == nil {
-        return nil
-    }
-    if i >= 0 && i<self.size && i < _DEFAULT_NODE_CAP {
-        return &self.head[i]
-    } else if i >= _DEFAULT_NODE_CAP && i<self.size  {
-        a, b := i/_DEFAULT_NODE_CAP-1, i%_DEFAULT_NODE_CAP
-        if a < len(self.tail) {
-            return &self.tail[a][b]
-        }
-    }
-    return nil
-}
-
 func (self *linkedNodes) At(i int) (*Node) {
     if self == nil {
         return nil
@@ -102,6 +87,14 @@ func (self *linkedNodes) Pop() {
         return
     }
     self.Set(self.size-1, Node{})
+    self.size--
+}
+
+func (self *linkedPairs) Pop() {
+    if self == nil || self.size == 0 {
+        return
+    }
+    self.Set(self.size-1, Pair{})
     self.size--
 }
 
@@ -238,38 +231,6 @@ func (self *linkedPairs) At(i int) *Pair {
 
 func (self *linkedPairs) Push(v Pair) {
     self.Set(self.size, v)
-}
-
-func (self *linkedPairs) MoveOne(source int,  target int) {
-    if source == target {
-        return
-    }
-    if source < 0 || source >= self.size || target < 0 || target >= self.size {
-        return
-    }
-    // reserve source
-    n := *self.At(source)
-    if source < target {
-        // move every element (source,target] one step back
-        for i:=source; i<target; i++ {
-            *self.At(i) = *self.At(i+1)
-        } 
-    } else {
-        // move every element [target,source) one step forward
-        for i:=source; i>target; i-- {
-            *self.At(i) = *self.At(i-1)
-        }
-    } 
-    // set target
-    *self.At(target) = n
-}
-
-func (self *linkedPairs) Pop() {
-    if self == nil || self.size == 0 {
-        return
-    }
-    self.Set(self.size-1, Pair{})
-    self.size--
 }
 
 func (self *linkedPairs) Set(i int, v Pair) {

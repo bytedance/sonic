@@ -617,7 +617,7 @@ func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
     return self.SetByIndex(index, NewAny(val))
 }
 
-// UnsetByIndex REOMVE (soft) the node of given index.
+// UnsetByIndex REOMVE (softly) the node of given index.
 //
 // WARN: this will change address of elements, which is a dangerous action.
 // Use Unset() for object or Pop() for array instead.
@@ -632,19 +632,17 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
     if it == types.V_ARRAY {
         if err := self.skipAllIndex(); err != nil {
             return false, err
-        }    
-        p = self.skipIndex(index)
-
+        }
+        p = self.nodeAt(index)
     } else if it == types.V_OBJECT {
         if err := self.skipAllKey(); err != nil {
             return false, err
         }
-        pr := self.skipIndexPair(index)
+        pr := self.pairAt(index)
         if pr == nil {
            return false, ErrNotExist
         }
         p = &pr.Value
-
     } else {
         return false, ErrUnsupportType
     }
@@ -653,6 +651,12 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
         return false, ErrNotExist
     }
 
+    // last elem
+    if index == self.len() - 1 {
+        return true, self.Pop()
+    }
+
+    // not last elem, self.len() change but linked-chunk not change
     if it == types.V_ARRAY {
         self.removeNode(index)
     }else if it == types.V_OBJECT {
@@ -676,39 +680,58 @@ func (self *Node) Add(node Node) error {
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return err
     }
+
     s, err := self.unsafeArray()
     if err != nil {
         return err
     }
 
+    // Notice: array won't have unset node in tail
     s.Push(node)
     self.l++
     return nil
 }
 
-// Pop remove the last child of the V_Array node.
+// Pop remove the last child of the V_Array or V_Object node.
 func (self *Node) Pop() error {
-    if err := self.should(types.V_ARRAY, "an array"); err != nil {
+    if err := self.checkRaw(); err != nil {
         return err
     }
 
-    s, err := self.unsafeArray()
-    if err != nil {
-        return err
-    }
-    // remove first unset node
-    for i := s.Len()-1; i >= 0; i-- {
-        if s.At(i).Exists() {
-            if i == s.Len()-1 {
-                s.Pop()
-            } else {
-                // not the last one, just set it to unset
-                s.Set(i, Node{})
-            }
-            self.l--
-            break
+    if it := self.itype(); it == types.V_ARRAY {
+        s, err := self.unsafeArray()
+        if err != nil {
+            return err
         }
+        // remove tail unset nodes
+        for i := s.Len()-1; i >= 0; i-- {
+            if s.At(i).Exists() {
+                s.Pop()
+                self.l--
+                break
+            }
+            s.Pop()
+        }
+
+    } else if it == types.V_OBJECT {
+        s, err := self.unsafeMap()
+        if err != nil {
+            return err
+        }
+        // remove tail unset nodes
+        for i := s.Len()-1; i >= 0; i-- {
+            if p := s.At(i); p != nil && p.Value.Exists() {
+                s.Pop()
+                self.l--
+                break
+            }
+            s.Pop()
+        }
+
+    } else {
+        return ErrUnsupportType
     }
+
     return nil
 }
 
