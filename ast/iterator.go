@@ -122,7 +122,7 @@ next_start:
     } else {
         n := self.p.pairAt(self.i)
         self.i++
-        if !n.Value.Exists() {
+        if n == nil || !n.Value.Exists() {
             goto next_start
         }
         return n

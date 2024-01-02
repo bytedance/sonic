@@ -33,7 +33,6 @@ import (
     `github.com/stretchr/testify/require`
 )
 
-
 func TestNodeSortKeys(t *testing.T) {
     var src = `{"b":1,"a":2,"c":3}`
     root, err := NewSearcher(src).GetByPath()
@@ -90,7 +89,7 @@ func BenchmarkNodeSortKeys(b *testing.B) {
     if err := root.LoadAll(); err != nil {
         b.Fatal(err)
     }
-    
+
     b.Run("single", func(b *testing.B) {
         r := root.Get("statuses")
         if r.Check() != nil {
@@ -98,14 +97,14 @@ func BenchmarkNodeSortKeys(b *testing.B) {
         }
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
-        for i:=0; i<b.N; i++ {
+        for i := 0; i < b.N; i++ {
             _ = root.SortKeys(false)
         }
     })
     b.Run("recurse", func(b *testing.B) {
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
-        for i:=0; i<b.N; i++ {
+        for i := 0; i < b.N; i++ {
             _ = root.SortKeys(true)
         }
     })
@@ -246,7 +245,7 @@ func TestIndexOrGet(t *testing.T) {
         t.Fatal(a)
     }
     a = root.IndexOrGet(0, "c")
-    if a.Valid()  {
+    if a.Valid() {
         t.Fatal(a)
     }
 }
@@ -254,9 +253,9 @@ func TestIndexOrGet(t *testing.T) {
 func TestTypeCast(t *testing.T) {
     type tcase struct {
         method string
-        node Node
-        exp interface{}
-        err error
+        node   Node
+        exp    interface{}
+        err    error
     }
     var nonEmptyErr error = errors.New("")
     a1 := NewAny(1)
@@ -274,16 +273,16 @@ func TestTypeCast(t *testing.T) {
         {"InterfaceUseNumber", NewAny(1), 1, nil},
         {"InterfaceUseNumber", NewNumber("1"), json.Number("1"), nil},
         {"Map", Node{}, map[string]interface{}(nil), ErrUnsupportType},
-        {"Map", NewAny(map[string]Node{"a":NewNumber("1")}), map[string]interface{}(nil), ErrUnsupportType},
-        {"Map", NewAny(map[string]interface{}{"a":1}), map[string]interface{}{"a":1}, nil},
-        {"Map", NewObject([]Pair{{"a",NewNumber("1")}}), map[string]interface{}{"a":float64(1.0)}, nil},
+        {"Map", NewAny(map[string]Node{"a": NewNumber("1")}), map[string]interface{}(nil), ErrUnsupportType},
+        {"Map", NewAny(map[string]interface{}{"a": 1}), map[string]interface{}{"a": 1}, nil},
+        {"Map", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]interface{}{"a": float64(1.0)}, nil},
         {"MapUseNode", Node{}, map[string]Node(nil), ErrUnsupportType},
-        {"MapUseNode", NewAny(map[string]interface{}{"a":1}), map[string]Node(nil), ErrUnsupportType},
-        {"MapUseNode", NewAny(map[string]Node{"a":NewNumber("1")}), map[string]Node{"a":NewNumber("1")}, nil},
-        {"MapUseNode", NewObject([]Pair{{"a",NewNumber("1")}}), map[string]Node{"a":NewNumber("1")}, nil},
+        {"MapUseNode", NewAny(map[string]interface{}{"a": 1}), map[string]Node(nil), ErrUnsupportType},
+        {"MapUseNode", NewAny(map[string]Node{"a": NewNumber("1")}), map[string]Node{"a": NewNumber("1")}, nil},
+        {"MapUseNode", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]Node{"a": NewNumber("1")}, nil},
         {"MapUseNumber", Node{}, map[string]interface{}(nil), ErrUnsupportType},
-        {"MapUseNumber", NewAny(map[string]interface{}{"a":1}), map[string]interface{}{"a":1}, nil},
-        {"MapUseNumber", NewObject([]Pair{{"a",NewNumber("1")}}), map[string]interface{}{"a":json.Number("1")}, nil},
+        {"MapUseNumber", NewAny(map[string]interface{}{"a": 1}), map[string]interface{}{"a": 1}, nil},
+        {"MapUseNumber", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]interface{}{"a": json.Number("1")}, nil},
         {"Array", Node{}, []interface{}(nil), ErrUnsupportType},
         {"Array", NewAny([]interface{}{1}), []interface{}{1}, nil},
         {"Array", NewArray([]Node{NewNumber("1")}), []interface{}{float64(1.0)}, nil},
@@ -496,16 +495,16 @@ func TestTypeCast(t *testing.T) {
         {"Cap", NewAny(0), 0, ErrUnsupportType},
         {"Cap", NewNull(), 0, nil},
         {"Cap", NewRaw(`[1]`), _DEFAULT_NODE_CAP, nil},
-        {"Cap", NewObject([]Pair{{"",NewNull()}}), _DEFAULT_NODE_CAP, nil},
+        {"Cap", NewObject([]Pair{{"", NewNull()}}), _DEFAULT_NODE_CAP, nil},
         {"Cap", NewRaw(`{"a":1}`), _DEFAULT_NODE_CAP, nil},
     }
     lazyArray.skipAllIndex()
     lazyObject.skipAllKey()
-    cases = append(cases, 
+    cases = append(cases,
         tcase{"Len", lazyArray, 17, nil},
         tcase{"Len", lazyObject, 17, nil},
-        tcase{"Cap", lazyArray, _DEFAULT_NODE_CAP*3, nil},
-        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*3, nil},
+        tcase{"Cap", lazyArray, _DEFAULT_NODE_CAP * 3, nil},
+        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP * 3, nil},
     )
 
     for i, c := range cases {
@@ -519,12 +518,12 @@ func TestTypeCast(t *testing.T) {
         if !reflect.DeepEqual(rets[0].Interface(), c.exp) {
             t.Error(i, rets[0].Interface(), c.exp)
         }
-        v := rets[1].Interface();
+        v := rets[1].Interface()
         if c.err == nonEmptyErr {
             if reflect.ValueOf(v).IsNil() {
                 t.Error(i, v)
             }
-        } else if  v != c.err {
+        } else if v != c.err {
             t.Error(i, v)
         }
     }
@@ -689,7 +688,7 @@ func TestCheckError_Empty(t *testing.T) {
     if !empty.Valid() || empty.Check() != nil || empty.Error() != "" {
         t.Fatal()
     }
- 
+
     n := newRawNode("[hello]", types.V_ARRAY)
     n.parseRaw(false)
     if n.Check() != nil {
@@ -704,7 +703,6 @@ func TestCheckError_Empty(t *testing.T) {
     if n.Error() != newSyntaxError(p.syntaxError(x)).Error() {
         t.Fatal(n.Check())
     }
-
 
     s, err := NewParser(`{"a":{}, "b":talse, "c":{}}`).Parse()
     if err != 0 {
@@ -736,7 +734,7 @@ func TestCheckError_Empty(t *testing.T) {
     }
     d := a.Get("d").Get("")
     if d.Check() == nil {
-        t.Fatal(d) 
+        t.Fatal(d)
     }
     exist, e = a.Set("e", newRawNode("[}", types.V_ARRAY))
     if e != nil {
@@ -749,7 +747,6 @@ func TestCheckError_Empty(t *testing.T) {
     if d.Check() == nil {
         t.Fatal(d)
     }
-
 
     it, e := root.Interface()
     if e == nil {
@@ -780,7 +777,7 @@ func TestUnset(t *testing.T) {
     if !entities.Exists() || entities.Check() != nil {
         t.Fatal(entities.Check().Error())
     }
-    exist, err := entities.Unset("urls") // NOTICE: Unset() won't change node.Len() here
+    exist, err := entities.Unset("urls")
     if !exist || err != nil {
         t.Fatal()
     }
@@ -788,7 +785,7 @@ func TestUnset(t *testing.T) {
     if e.Exists() {
         t.Fatal()
     }
-    if entities.len() != 3 { 
+    if entities.len() != 2 {
         t.Fatal(entities.len())
     }
 
@@ -804,15 +801,15 @@ func TestUnset(t *testing.T) {
             },
         },
         "user_mentions": []interface{}{},
-    },es)
+    }, es)
 
     out, err := entities.MarshalJSON()
     require.NoError(t, err)
     println(string(out))
     buf := bytes.NewBuffer(nil)
     require.NoError(t, json.Compact(buf, out))
-    require.Equal(t, 
-`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[]}`, buf.String())
+    require.Equal(t,
+        `{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[]}`, buf.String())
 
     entities.Set("urls", NewString("a"))
     e = entities.Get("urls")
@@ -825,22 +822,16 @@ func TestUnset(t *testing.T) {
     require.NoError(t, err)
     buf = bytes.NewBuffer(nil)
     json.Compact(buf, out)
-    require.Equal(t, 
-`{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[],"urls":"a"}`, buf.String())
+    require.Equal(t,
+        `{"hashtags":[{"text":"freebandnames","indices":[20,34]}],"user_mentions":[],"urls":"a"}`, buf.String())
 
-    exist, err = entities.UnsetByIndex(entities.len()-1)
-    if !exist || err != nil {
-        t.Fatal()
-    }
-    e = entities.Get("urls")
-    if e.Exists() {
-        t.Fatal()
-    }
+    // reload entities
+    *entities = NewRaw(string(out))
 
     hashtags := entities.Get("hashtags").Index(0)
     hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
     exist, err = hashtags.Unset("indices") // NOTICE: Unset() won't change node.Len() here
-    if !exist || err != nil || hashtags.len() != 3 {
+    if !exist || err != nil || hashtags.len() != 2 {
         t.Fatal(hashtags.len())
     }
     y, _ := hashtags.Get("text").String()
@@ -851,38 +842,51 @@ func TestUnset(t *testing.T) {
         t.Fatal()
     }
 
-    ums := entities.Get("user_mentions")
-    ums.Add(NewNull())
-    ums.Add(NewBool(true))
-    ums.Add(NewBool(false))
-    if ums.len() != 3 {
-        t.Fatal()
-    }
-    exist, err = ums.UnsetByIndex(2)
+    entities.Load()
+    exist, err = entities.UnsetByIndex(entities.len() - 1)
     if !exist || err != nil {
         t.Fatal()
     }
+    if entities.len() != 2 {
+        t.Fatal(entities.len())
+    }
+    e = entities.Index(entities.len())
+    if e.Exists() {
+        t.Fatal()
+    }
 
+    ums := entities.Get("user_mentions")
+    ums.Add(NewNull())
+    ums.Add(NewBool(false))
+    ums.Add(NewBool(true))
+    if ums.len() != 3 {
+        t.Fatal()
+    }
+    exist, err = ums.UnsetByIndex(1)
+    if !exist || err != nil {
+        t.Fatal()
+    }
+    require.Equal(t, 2, ums.len())
     umses, err := ums.Interface()
     require.NoError(t, err)
-    require.Equal(t, []interface{}{interface{}(nil), true},umses)
+    require.Equal(t, []interface{}{interface{}(nil), true}, umses)
 
     v1, _ := ums.Index(0).Interface()
     v2, _ := ums.Index(1).Interface() // NOTICE: unseted index 1 still can be find here
     v3, _ := ums.Index(2).Interface()
     if v1 != nil {
         t.Fatal()
-    } 
+    }
     if v2 != true {
         t.Fatal()
-    } 
+    }
     if v3 != nil {
         t.Fatal()
     }
     out, err = entities.MarshalJSON()
     require.NoError(t, err)
-    require.Equal(t, 
-`{"hashtags":[{"text":"freebandnames","text2":{}}],"user_mentions":[null,true]}`, string(out))
+    require.Equal(t,
+        `{"hashtags":[{"text":"freebandnames","text2":{}}],"user_mentions":[null,true]}`, string(out))
 
 }
 
@@ -904,7 +908,7 @@ func TestUnset(t *testing.T) {
 //             t.Fatalf("exp:%v, got:%v", i, x)
 //         }
 //     }
-    
+
 //     root, err = NewSearcher(str).GetByPath("object")
 //     if err != nil {
 //         t.Fatal(err)
@@ -944,7 +948,7 @@ func TestUseNode(t *testing.T) {
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
-    for i := int64(0); i<int64(loop); i++{
+    for i := int64(0); i < int64(loop); i++ {
         in := a[i]
         a, _ := in.Int64()
         if a != i {
@@ -961,14 +965,14 @@ func TestUseNode(t *testing.T) {
     if len(a) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(a))
     }
-    for i := int64(0); i<int64(loop); i++{
+    for i := int64(0); i < int64(loop); i++ {
         in := a[i]
         a, _ := in.Int64()
         if a != i {
             t.Fatalf("exp:%v, got:%v", i, a)
         }
     }
-    
+
     root, err = NewSearcher(str).GetByPath("object")
     if err != nil {
         t.Fatal(err)
@@ -977,8 +981,8 @@ func TestUseNode(t *testing.T) {
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
-    for i := int64(0); i<int64(loop); i++ {
-        k := `k`+strconv.Itoa(int(i))
+    for i := int64(0); i < int64(loop); i++ {
+        k := `k` + strconv.Itoa(int(i))
         xn, ok := b[k]
         if !ok {
             t.Fatalf("unexpected element: %#v", xn)
@@ -988,7 +992,7 @@ func TestUseNode(t *testing.T) {
             t.Fatalf("exp:%v, got:%v", i, a)
         }
     }
-    
+
     root, err = NewSearcher(str).GetByPath("object")
     if err != nil {
         t.Fatal(err)
@@ -998,8 +1002,8 @@ func TestUseNode(t *testing.T) {
     if len(b) != loop {
         t.Fatalf("exp:%v, got:%v", loop, len(b))
     }
-    for i := int64(0); i<int64(loop); i++ {
-        k := `k`+strconv.Itoa(int(i))
+    for i := int64(0); i < int64(loop); i++ {
+        k := `k` + strconv.Itoa(int(i))
         xn, ok := b[k]
         if !ok {
             t.Fatalf("unexpected element: %#v", xn)
@@ -1054,17 +1058,17 @@ func TestMap(t *testing.T) {
     }
     m, _ := node.Map()
     assert.Equal(t, m, map[string]interface{}{
-        "a": float64(0),    
-        "b": float64(1),    
+        "a": float64(0),
+        "b": float64(1),
         "c": -1.2,
         "d": -1.2e-10,
     })
     m1, _ := node.MapUseNumber()
     assert.Equal(t, m1, map[string]interface{}{
-        "a": json.Number("-0"),    
-        "b": json.Number("1"),    
-        "c": json.Number("-1.2"),    
-        "d": json.Number("-1.2e-10"),    
+        "a": json.Number("-0"),
+        "b": json.Number("1"),
+        "c": json.Number("-1.2"),
+        "d": json.Number("-1.2e-10"),
     })
 }
 
@@ -1075,17 +1079,17 @@ func TestArray(t *testing.T) {
     }
     m, _ := node.Array()
     assert.Equal(t, m, []interface{}{
-        float64(0),    
+        float64(0),
         float64(1),
         -1.2,
         -1.2e-10,
     })
     m1, _ := node.ArrayUseNumber()
     assert.Equal(t, m1, []interface{}{
-        json.Number("-0"),    
-        json.Number("1"),    
-        json.Number("-1.2"),    
-        json.Number("-1.2e-10"),    
+        json.Number("-0"),
+        json.Number("1"),
+        json.Number("-1.2"),
+        json.Number("-1.2e-10"),
     })
 }
 
@@ -1258,12 +1262,12 @@ func TestNodeSet(t *testing.T) {
     if n, e := empty.Index(0).Get("a").Int64(); e != nil || n != -1 {
         t.Fatal(n, e)
     }
-    
+
     root, derr := NewParser(_TwitterJson).Parse()
     if derr != 0 {
         t.Fatalf("decode failed: %v", derr.Error())
     }
-    app,_ := NewParser("111").Parse()
+    app, _ := NewParser("111").Parse()
     root.GetByPath("statuses", 3).Set("id_str", app)
     val, _ := root.GetByPath("statuses", 3, "id_str").Int64()
     if val != 111 {
@@ -1290,7 +1294,7 @@ func TestNodeSet(t *testing.T) {
 
 func TestNodeAny(t *testing.T) {
     empty := Node{}
-    _,err := empty.SetAny("any", map[string]interface{}{"a": []int{0}})
+    _, err := empty.SetAny("any", map[string]interface{}{"a": []int{0}})
     if err != nil {
         t.Fatal(err)
     }
@@ -1333,7 +1337,7 @@ func TestNodeSetByIndex(t *testing.T) {
     app, _ := NewParser("111").Parse()
     st := root.GetByPath("statuses")
     st.SetByIndex(0, app)
-    st = root.GetByPath("statuses") 
+    st = root.GetByPath("statuses")
     val := st.Index(0)
     x, _ := val.Int64()
     if x != 111 {
@@ -1385,7 +1389,7 @@ func BenchmarkLoadNode(b *testing.B) {
     b.Run("Interface()", func(b *testing.B) {
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
-        for i:=0; i<b.N; i++ {
+        for i := 0; i < b.N; i++ {
             root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
             if err != nil {
                 b.Fatal(err)
@@ -1397,7 +1401,7 @@ func BenchmarkLoadNode(b *testing.B) {
     b.Run("LoadAll()", func(b *testing.B) {
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
-        for i:=0; i<b.N; i++ {
+        for i := 0; i < b.N; i++ {
             root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
             if err != nil {
                 b.Fatal(err)
@@ -1409,7 +1413,7 @@ func BenchmarkLoadNode(b *testing.B) {
     b.Run("InterfaceUseNode()", func(b *testing.B) {
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
-        for i:=0; i<b.N; i++ {
+        for i := 0; i < b.N; i++ {
             root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
             if err != nil {
                 b.Fatal(err)
@@ -1421,7 +1425,7 @@ func BenchmarkLoadNode(b *testing.B) {
     b.Run("Load()", func(b *testing.B) {
         b.SetBytes(int64(len(_TwitterJson)))
         b.ResetTimer()
-        for i:=0; i<b.N; i++ {
+        for i := 0; i < b.N; i++ {
             root, err := NewSearcher(_TwitterJson).GetByPath("statuses", 0)
             if err != nil {
                 b.Fatal(err)
@@ -1553,7 +1557,7 @@ func BenchmarkStructIndex(b *testing.B) {
 }
 
 func BenchmarkSliceIndex(b *testing.B) {
-    var obj = []Node{Node{},Node{},Node{},Node{},Node{}}
+    var obj = []Node{Node{}, Node{}, Node{}, Node{}, Node{}}
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _ = obj[2]
@@ -1561,12 +1565,12 @@ func BenchmarkSliceIndex(b *testing.B) {
 }
 
 func BenchmarkMapIndex(b *testing.B) {
-    var obj = map[string]interface{}{"test1":Node{}, "test2":Node{}, "test3":Node{}, "test4":Node{}, "test5":Node{}}
+    var obj = map[string]interface{}{"test1": Node{}, "test2": Node{}, "test3": Node{}, "test4": Node{}, "test5": Node{}}
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         for k := range obj {
             if k == "test3" {
-                break 
+                break
             }
         }
     }
@@ -1580,7 +1584,7 @@ func BenchmarkNodeGet(b *testing.B) {
         b.Fatalf("decode failed: %v", derr.Error())
     }
     node := root.Get("statuses").Index(3).Get("entities").Get("hashtags").Index(0)
-    for i:=0; i<N; i++ {
+    for i := 0; i < N; i++ {
         node.Set("test"+strconv.Itoa(i), NewNumber(strconv.Itoa(i)))
     }
 
@@ -1597,7 +1601,7 @@ func BenchmarkSliceGet(b *testing.B) {
     for i := 0; i < b.N; i++ {
         for _, k := range obj {
             if k == str {
-                break 
+                break
             }
         }
     }
@@ -1777,7 +1781,7 @@ func BenchmarkSliceUnsetByIndex(b *testing.B) {
     m, _ := node.Array()
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        for i:=3; i<5; i++ {
+        for i := 3; i < 5; i++ {
             m[i-1] = m[i]
         }
     }
@@ -1807,5 +1811,149 @@ func BenchmarkMapAdd(b *testing.B) {
     for i := 0; i < b.N; i++ {
         node := map[string]Node{}
         node["test3"] = n
+    }
+}
+
+func TestNode_Move(t *testing.T) {
+    var us = NewRaw(`["a","1","b","c"]`)
+    if ex, e := us.UnsetByIndex(1); !ex || e != nil {
+        t.Fail()
+    }
+    var us2 = NewRaw(`["a","b","c","1"]`)
+    if ex, e := us2.UnsetByIndex(3); !ex || e != nil {
+        t.Fail()
+    }
+    tests := []struct {
+        name    string
+        in      Node
+        src     int
+        dst     int
+        out     Node
+        wantErr bool
+    }{
+        {
+            name:    "over index",
+            in:      NewArray([]Node{}),
+            src:     0,
+            dst:     1,
+            out:     NewArray([]Node{}),
+            wantErr: false,
+        },
+        {
+            name:    "equal index",
+            in:      NewArray([]Node{NewBool(true)}),
+            src:     0,
+            dst:     0,
+            out:     NewArray([]Node{NewBool(true)}),
+            wantErr: false,
+        },
+        {
+            name:    "forward",
+            in:      NewArray([]Node{NewString("a"), NewString("b"), NewString("c")}),
+            src:     0,
+            dst:     2,
+            out:     NewArray([]Node{NewString("b"), NewString("c"), NewString("a")}),
+            wantErr: false,
+        },
+        {
+            name:    "backward",
+            in:      NewArray([]Node{NewString("a"), NewString("b"), NewString("c")}),
+            src:     2,
+            dst:     0,
+            out:     NewArray([]Node{NewString("c"), NewString("a"), NewString("b")}),
+            wantErr: false,
+        },
+        {
+            name:    "lazy",
+            in:      NewRaw(`["a","b","c"]`),
+            src:     2,
+            dst:     0,
+            out:     NewArray([]Node{NewString("c"), NewString("a"), NewString("b")}),
+            wantErr: false,
+        },
+        {
+            name:    "unset back",
+            in:      us,
+            src:     2,
+            dst:     0,
+            out:     NewArray([]Node{NewString("c"), NewString("a"), NewString("b")}),
+            wantErr: false,
+        },
+        {
+            name:    "unset forward",
+            in:      us2,
+            src:     0,
+            dst:     2,
+            out:     NewArray([]Node{NewString("b"), NewString("c"), NewString("a")}),
+            wantErr: false,
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := tt.in.Move(tt.dst, tt.src)
+            require.NoError(t, err)
+            ej, _ := tt.out.MarshalJSON()
+            aj, _ := tt.in.MarshalJSON()
+            require.Equal(t, string(ej), string(aj))
+        })
+    }
+
+}
+
+func TestNode_Pop(t *testing.T) {
+    var us = NewRaw(`[1,2,3]`)
+    if ex, e := us.UnsetByIndex(0); !ex || e != nil {
+        t.Fail()
+    }
+    var us2 = NewRaw(`[1,2,3]`)
+    if ex, e := us2.UnsetByIndex(2); !ex || e != nil {
+        t.Fail()
+    }
+    tests := []struct {
+        name  string
+        in  Node
+        out Node
+        wantErr bool
+    }{
+        {
+            name:  "empty",
+            in:    NewArray([]Node{}),
+            out:   NewArray([]Node{}),
+            wantErr: false,
+        },
+        {
+            name:  "one",
+            in:    NewArray([]Node{NewString("a")}),
+            out:   NewArray([]Node{}),
+            wantErr: false,
+        },
+        {
+            name:  "raw",
+            in:    NewRaw(`[1]`),
+            out:   NewArray([]Node{}),
+            wantErr: false,
+        },
+        {
+            name:  "unset head",
+            in:    us,
+            out:   NewRaw(`[2]`),
+            wantErr: false,
+        },
+        {
+            name:  "unset tail",
+            in:    us2,
+            out:   NewRaw(`[1]`),
+            wantErr: false,
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if err := tt.in.Pop(); (err != nil) != tt.wantErr {
+                t.Errorf("Node.Pop() error = %v, wantErr %v", err, tt.wantErr)
+            }
+            ej, _ := tt.out.MarshalJSON()
+            aj, _ := tt.in.MarshalJSON()
+            require.Equal(t, string(ej), string(aj))
+        })
     }
 }
