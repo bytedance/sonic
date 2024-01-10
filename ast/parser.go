@@ -322,6 +322,73 @@ func (self *Parser) Parse() (Node, types.ParsingError) {
     }
 }
 
+func (self *Parser) key() (string, types.ParsingError) {
+    var njs types.JsonState
+    var err types.ParsingError
+
+    /* decode the key */
+     if njs = self.decodeValue(); njs.Vt != types.V_STRING {
+        return "", types.ERR_INVALID_CHAR
+    }
+
+    /* extract the key */
+    idx := self.p - 1
+    key := self.s[njs.Iv:idx]
+
+    /* check for escape sequence */
+    if njs.Ep != -1 {
+        if key, err = unquote(key); err != 0 {
+            return "", err
+        }
+    }
+
+    /* expect a ':' delimiter */
+    if err = self.delim(); err != 0 {
+        return "", err
+    }
+    return key, 0
+}
+
+func (self *Parser) objectBegin() (bool, types.ParsingError) {
+    ns := len(self.s)
+    if err := self.object(); err != 0 {
+        return false, err
+    }
+
+    /* check for EOF */
+    if self.p = self.lspace(self.p); self.p >= ns {
+        return false, types.ERR_EOF
+    }
+
+    /* check for empty object */
+    if self.s[self.p] == '}' {
+        self.p++
+        return true, 0
+    }
+
+    return false, 0
+}
+
+func (self *Parser) objectEnd() (bool, types.ParsingError) {
+    /* check for EOF */
+    self.p = self.lspace(self.p)
+    if self.p >= len(self.s) {
+        return false, types.ERR_EOF
+    }
+    
+    /* check for the next character */
+    switch self.s[self.p] {
+    case ',':
+        self.p++
+        return false, 0
+    case '}':
+        self.p++
+        return true, 0
+    default:
+        return false, types.ERR_INVALID_CHAR
+    }
+}
+
 func (self *Parser) searchKey(match string) types.ParsingError {
     ns := len(self.s)
     if err := self.object(); err != 0 {
@@ -391,6 +458,46 @@ func (self *Parser) searchKey(match string) types.ParsingError {
             return types.ERR_INVALID_CHAR
         }
     }
+}
+
+func (self *Parser) arrayBegin() (bool, types.ParsingError) {
+    ns := len(self.s)
+    if err := self.array(); err != 0 {
+        return false, err
+    }
+
+    /* check for EOF */
+    if self.p = self.lspace(self.p); self.p >= ns {
+        return false, types.ERR_EOF
+    }
+
+    /* check for empty array */
+    if self.s[self.p] == ']' {
+        self.p++
+        return true, 0
+    }
+
+    return false, 0
+}
+
+func (self *Parser) arrayEnd() (bool, types.ParsingError) {
+    /* check for EOF */
+    self.p = self.lspace(self.p)
+    if self.p >= len(self.s) {
+        return false, types.ERR_EOF
+    }
+
+    /* check for the next character */
+    switch self.s[self.p] {
+    case ',':
+        self.p++
+        return false, 0
+    case ']':
+        self.p++
+        return true, 0
+    default:
+        return false, types.ERR_INVALID_CHAR
+    } 
 }
 
 func (self *Parser) searchIndex(idx int) types.ParsingError {
