@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 // RawNode represents a raw json value or error
@@ -98,6 +99,224 @@ func (self RawNode) Get(key string) RawNode {
 		return errRawNode(p.ExportError(e))
 	}
     return rawNode(self.js[s:p.p])
+}
+
+func (self *RawNode) Set(key string, val RawNode) (bool, error) {
+	if val.Check() != nil {
+		return false, val
+	}
+	if self.Check() != nil {
+		return false, self
+	}
+	if self.t != V_OBJECT {
+		return false, ErrUnsupportType
+	}
+
+	in := val.js
+	exist := true
+
+    p := NewParserObj(self.js)
+	s, e := p.getByPath(key)
+	if e != 0 {
+		if e == _ERR_NOT_FOUND {
+			exist = false
+		} else {
+			return false, p.ExportError(e)
+		}
+	}
+	
+	var b []byte
+	// at least size is left + val + right
+	n := len(in)+s+(len(self.js)-p.p)
+
+	if !exist {
+		// not exist, need write "key":
+		var s = p.p-1 // _ERR_NOT_FOUND stop at ']'
+		for ; s>=0 && isSpace(self.js[s]); s-- {}
+		if self.js[s] == '{' {
+			b = make([]byte, 0, 3+len(key)+n)
+			b = append(b, self.js[:s+1]...)
+		} else {
+			// not empty, no need ','
+			b = make([]byte, 0, 4+len(key)+n)
+			b = append(b, self.js[:s+1]...)
+			b = append(b, ","...)
+		}
+		quote(&b, key)
+		b = append(b, ":"...)
+	} else {
+		// exist
+		// canInplace := len(in) <= (p.p - s)
+		// if inplace == 1 && canInplace {
+		// 	// join and shrink old string
+		// 	b := rt.Str2Mem(self.js)
+		// 	copy(b[s:], in)
+		// 	copy(b[s+len(in):], b[p.p:])
+		// 	self.js = rt.Mem2Str(b[:n])
+		// 	return exist, nil
+		// } else if inplace == 2 && canInplace {
+		// 	// join and trucate old string
+		// 	b := rt.Str2Mem(self.js)
+		// 	copy(b[s:], in)
+		// 	rt.WriteChar(&b[s+len(in)], (p.p - s) - len(in), ' ')
+		// 	return exist, nil
+		// }
+		// slow path: allocate new string
+		b = make([]byte, 0, n)
+		b = append(b, self.js[:s]...)
+	}
+
+	// write val
+	b = append(b, in...)
+	b = append(b, self.js[p.p:]...)
+	self.js = rt.Mem2Str(b)
+
+	return exist, nil
+}
+
+func (self *RawNode) Unset(key string) (bool, error) {
+	if self.Check() != nil {
+		return false, self
+	}
+	if self.t != V_OBJECT {
+		return false, ErrUnsupportType
+	}
+
+    p := NewParserObj(self.js)
+	// start pos of "key"
+	s, e := p.searchKey(key)
+	if e != 0 {
+		if e == _ERR_NOT_FOUND {
+			return false, nil
+		} else {
+			return false, p.ExportError(e)
+		}
+	}
+
+	// end pos of val
+	_, e = p.skipFast()
+	if e != 0 {
+		return true, p.ExportError(e)
+	}
+
+	// trailling ',' or '}'
+	end, e := p.objectEnd()
+	if e != 0 {
+		return true, p.ExportError(e)
+	}
+	if end {
+		p.p--
+	}
+	
+	var b []byte
+	d := (p.p-s)
+	// if inplace == 0 { 
+		// allocate new string
+		b = make([]byte, len(self.js)-d)
+		copy(b, self.js[:s])
+		copy(b[s:], self.js[p.p:])
+	// } else if inplace == 1 { 
+	// 	// shrink string
+	// 	b = rt.Str2Mem(self.js)
+	// 	copy(b[s:], b[p.p:])
+	// 	b = b[:len(b)-d]
+	// } else {
+	// 	// trucate string
+	// 	b = rt.Str2Mem(self.js)
+	// 	rt.WriteChar(&b[s], d, ' ')
+	// }
+
+	self.js = rt.Mem2Str(b)
+	return true, nil
+}
+
+func (self *RawNode) SetByIndex(id int, val RawNode) (bool, error) {
+	if val.Check() != nil {
+		return false, val
+	}
+	if self.Check() != nil {
+		return false, self
+	}
+	if self.t != V_ARRAY {
+		return false, ErrUnsupportType
+	}
+
+	in := val.js
+	exist := true
+
+	// try search from raw
+    p := NewParserObj(self.js)
+	s, e := p.getByPath(id)
+	if e != 0 {
+		if e == _ERR_NOT_FOUND {
+			exist = false
+		} else {
+			return false, p.ExportError(e)
+		}
+	}
+	
+	var b []byte
+	// at least size is left + val + right
+	n := len(in)+s+(len(self.js)-p.p)
+	if !exist {
+		// not exist, need write "key":
+		var s = p.p-1 // _ERR_NOT_FOUND stop at ']'
+		for ; s>=0 && isSpace(self.js[s]); s-- {}
+		if self.js[s] == '[' {
+			b = make([]byte, 0, n)
+			b = append(b, self.js[:s+1]...)
+		} else {
+			// the container is not empty, need ','
+			b = make([]byte, 0, 1+n)
+			b = append(b, self.js[:s+1]...)
+			b = append(b, ","...)
+		}
+	} else {
+		b = make([]byte, 0, n)
+		b = append(b, self.js[:s]...)
+	}
+
+	// write val
+	b = append(b, in...)
+	b = append(b, self.js[p.p:]...)
+	self.js = rt.Mem2Str(b)
+
+	return exist, nil
+}
+
+func (self *RawNode) UnsetByIndex(id int) (bool, error) {
+	if self.Check() != nil {
+		return false, self
+	}
+	if self.t != V_ARRAY {
+		return false, ErrUnsupportType
+	}
+
+	// try search from raw
+    p := NewParserObj(self.js)
+	s, e := p.getByPath(id)
+	if e != 0 {
+		if e == _ERR_NOT_FOUND {
+			return false, nil
+		} else {
+			return false, p.ExportError(e)
+		}
+	}
+	
+	// trailling ',' or ']'
+	end, e := p.arrayEnd()
+	if e != 0 {
+		return true, p.ExportError(e)
+	}
+	if end {
+		p.p--
+	}
+	
+	b := make([]byte, len(self.js)-(p.p-s))
+	copy(b, self.js[:s])
+	copy(b[s:], self.js[p.p:])
+	self.js = rt.Mem2Str(b)
+	return true, nil
 }
 
 // Index indexies node at given idx
@@ -238,6 +457,9 @@ func (self RawNode) String() (string, error) {
 // ArrayUseNode copys both parsed and non-parsed chidren nodes, 
 // and indexes them by original order
 func (self RawNode) ArrayUseNode() (ret []RawNode, err error) {
+	if self.t != V_ARRAY {
+		return nil, ErrUnsupportType
+	}
 	ret = make([]RawNode, 0, _DEFAULT_NODE_CAP)
 	err = self.ForEachElem(func(i int, node RawNode) bool {
 		ret = append(ret, node)
@@ -255,6 +477,9 @@ func (self RawNode) Array() (ret []interface{}, err error) {
 // ObjectUseNode scans both parsed and non-parsed chidren nodes, 
 // and map them by their keys
 func (self RawNode) MapUseNode() (ret []RawPair, err error) {
+	if self.t != V_OBJECT {
+		return nil, ErrUnsupportType
+	}
 	ret = make([]RawPair, 0, _DEFAULT_NODE_CAP)
 	err = self.ForEachKV(func(key string, node RawNode) bool {
 		ret = append(ret, RawPair{key, node})
@@ -265,6 +490,9 @@ func (self RawNode) MapUseNode() (ret []RawPair, err error) {
 
 // Map loads all keys of an object node
 func (self RawNode) Map() (ret map[string]interface{}, err error) {
+	if self.t != V_OBJECT {
+		return nil, ErrUnsupportType
+	}
 	node := NewRaw(self.js)
 	return node.Map()
 }

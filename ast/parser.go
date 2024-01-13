@@ -389,62 +389,66 @@ func (self *Parser) objectEnd() (bool, types.ParsingError) {
     }
 }
 
-func (self *Parser) searchKey(match string) types.ParsingError {
+func (self *Parser) searchKey(match string) (int, types.ParsingError) {
     ns := len(self.s)
+    keyPos := -1
+    
     if err := self.object(); err != 0 {
-        return err
+        return keyPos, err
     }
 
     /* check for EOF */
     if self.p = self.lspace(self.p); self.p >= ns {
-        return types.ERR_EOF
+        return keyPos, types.ERR_EOF
     }
 
     /* check for empty object */
     if self.s[self.p] == '}' {
-        self.p++
-        return _ERR_NOT_FOUND
+        return keyPos, _ERR_NOT_FOUND
     }
 
     var njs types.JsonState
     var err types.ParsingError
+    
+
     /* decode each pair */
     for {
 
         /* decode the key */
         if njs = self.decodeValue(); njs.Vt != types.V_STRING {
-            return types.ERR_INVALID_CHAR
+            return keyPos, types.ERR_INVALID_CHAR
         }
 
         /* extract the key */
         idx := self.p - 1
         key := self.s[njs.Iv:idx]
-
+        keyPos = int(njs.Iv - 1)
+        
         /* check for escape sequence */
         if njs.Ep != -1 {
             if key, err = unquote(key); err != 0 {
-                return err
+                return keyPos, err
             }
         }
 
         /* expect a ':' delimiter */
         if err = self.delim(); err != 0 {
-            return err
+            return keyPos, err
         }
 
         /* skip value */
         if key != match {
             if _, err = self.skipFast(); err != 0 {
-                return err
+                return keyPos, err
             }
         } else {
-            return 0
+            return keyPos, 0
         }
 
         /* check for EOF */
         self.p = self.lspace(self.p)
         if self.p >= ns {
-            return types.ERR_EOF
+            return keyPos, types.ERR_EOF
         }
 
         /* check for the next character */
@@ -452,10 +456,9 @@ func (self *Parser) searchKey(match string) types.ParsingError {
         case ',':
             self.p++
         case '}':
-            self.p++
-            return _ERR_NOT_FOUND
+            return keyPos, _ERR_NOT_FOUND
         default:
-            return types.ERR_INVALID_CHAR
+            return keyPos, types.ERR_INVALID_CHAR
         }
     }
 }
@@ -513,7 +516,6 @@ func (self *Parser) searchIndex(idx int) types.ParsingError {
 
     /* check for empty array */
     if self.s[self.p] == ']' {
-        self.p++
         return _ERR_NOT_FOUND
     }
 
@@ -537,7 +539,6 @@ func (self *Parser) searchIndex(idx int) types.ParsingError {
         case ',':
             self.p++
         case ']':
-            self.p++
             return _ERR_NOT_FOUND
         default:
             return types.ERR_INVALID_CHAR

@@ -17,8 +17,8 @@
 package rt
 
 import (
-    `unsafe`
-    `reflect`
+	`reflect`
+	`unsafe`
 )
 
 //go:nosplit
@@ -122,4 +122,12 @@ func StrFrom(p unsafe.Pointer, n int64) (s string) {
 func NoEscape(p unsafe.Pointer) unsafe.Pointer {
     x := uintptr(p)
     return unsafe.Pointer(x ^ 0)
+}
+
+func WriteChar(b *byte, n int, c byte) {
+    //TODO: use simde
+    for i:=0; i<n; i++ {
+        *b = c
+        b = (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(b))+1))
+    }
 }

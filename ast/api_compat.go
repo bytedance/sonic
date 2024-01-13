@@ -120,7 +120,7 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
                 return self.p, err
             }
         } else if key, ok := p.(string); ok {
-            if err := self.searchKey(key); err != 0 {
+            if _, err := self.searchKey(key); err != 0 {
                 return self.p, err
             }
         } else {

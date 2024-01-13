@@ -161,6 +161,246 @@ func TestConcurrentGetByPath(t *testing.T) {
 	wg.Wait()
 }
 
+func TestRawNode_Set(t *testing.T) {
+	tests := []struct{
+		name string
+		js string
+		key interface{}
+		val RawNode
+		exist bool
+		err string
+		out string
+	}{
+		{
+			name: "exist object",
+			js: `{"a":1}`,
+			key: "a",
+			val: NewRawNode(`2`),
+			exist: true,
+			err: "",
+			out: `{"a":2}`,
+		},
+		{
+			name: "not-exist object space",
+			js: `{"b":1 }`,
+			key: "a",
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `{"b":1,"a":2}`,
+		},
+		{
+			name: "not-exist object",
+			js: `{"b":1}`,
+			key: "a",
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `{"b":1,"a":2}`,
+		},
+		{
+			name: "empty object",
+			js: `{}`,
+			key: "a",
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `{"a":2}`,
+		},
+		{
+			name: "empty object space",
+			js: `{ }`,
+			key: "a",
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `{"a":2}`,
+		},
+		{
+			name: "exist array",
+			js: `[1]`,
+			key: 0,
+			val: NewRawNode(`2`),
+			exist: true,
+			err: "",
+			out: `[2]`,
+		},
+		{
+			name: "not exist array",
+			js: `[1]`,
+			key: 1,
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `[1,2]`,
+		},
+		{
+			name: "not exist array over",
+			js: `[1 ]`,
+			key: 99,
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `[1,2]`,
+		},
+		{
+			name: "empty array",
+			js: `[]`,
+			key: 1,
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `[2]`,
+		},
+		{
+			name: "empty array space",
+			js: `[ ]`,
+			key: 1,
+			val: NewRawNode(`2`),
+			exist: false,
+			err: "",
+			out: `[2]`,
+		},
+	}
+	for _, c := range tests {
+		println(c.name)
+		root := NewRawNode(c.js)
+		var exist bool
+		var err error
+		if key, ok:= c.key.(string); ok{
+			exist, err = root.Set(key, c.val)
+		} else if id, ok := c.key.(int); ok {
+			exist, err = root.SetByIndex(id, c.val)
+		}
+		if exist != c.exist {
+			t.Fatal()
+		}
+		if err != nil && err.Error() != c.err {
+			t.Fatal()
+		}
+		if out, err := root.Raw(); err != nil {
+			t.Fatal()
+		} else if out != c.out {
+			t.Fatal()
+		}
+	}
+}
+
+func TestRawNode_Unset(t *testing.T) {
+	tests := []struct{
+		name string
+		js string
+		key interface{}
+		exist bool
+		err string
+		out string
+	}{
+		{
+			name: "exist object",
+			js: `{"a":1}`,
+			key: "a",
+			exist: true,
+			err: "",
+			out: `{}`,
+		},
+		{
+			name: "exist object space",
+			js: `{ "a":1 }`,
+			key: "a",
+			exist: true,
+			err: "",
+			out: `{ }`,
+		},
+		{
+			name: "exist object comma",
+			js: `{ "a":1 , "b":2 }`,
+			key: "a",
+			exist: true,
+			err: "",
+			out: `{  "b":2 }`,
+		},
+		{
+			name: "empty object",
+			js: `{ }`,
+			key: "a",
+			exist: false,
+			err: "",
+			out: `{ }`,
+		},
+		{
+			name: "not-exist object",
+			js: `{"b":1}`,
+			key: "a",
+			exist: false,
+			err: "",
+			out: `{"b":1}`,
+		},
+		{
+			name: "exist array",
+			js: `[1]`,
+			key: 0,
+			exist: true,
+			err: "",
+			out: `[]`,
+		},
+		{
+			name: "exist array space",
+			js: `[ 1 ]`,
+			key: 0,
+			exist: true,
+			err: "",
+			out: `[ ]`,
+		},
+		{
+			name: "exist array comma",
+			js: `[ 1, 2 ]`,
+			key: 0,
+			exist: true,
+			err: "",
+			out: `[  2 ]`,
+		},
+		{
+			name: "not exist array",
+			js: `[1]`,
+			key: 1,
+			exist: false,
+			err: "",
+			out: `[1]`,
+		},
+		{
+			name: "empty array",
+			js: `[ ]`,
+			key: 0,
+			exist: false,
+			err: "",
+			out: `[ ]`,
+		},
+	}
+
+	for _, c := range tests {
+		println(c.name)
+		root := NewRawNode(c.js)
+		var exist bool
+		var err error
+		if key, ok:= c.key.(string); ok{
+			exist, err = root.Unset(key)
+		} else if id, ok := c.key.(int); ok {
+			exist, err = root.UnsetByIndex(id)
+		}
+		if exist != c.exist {
+			t.Fatal()
+		}
+		if err != nil && err.Error() != c.err {
+			t.Fatal(err.Error())
+		}
+		if out, err := root.Raw(); err != nil {
+			t.Fatal()
+		} else {
+			require.Equal(t, c.out, out)
+		}
+	}
+}
+
 func BenchmarkNodesGetByPath_ReuseNode(b *testing.B) {
 	b.Run("Node", func(b *testing.B) {
 		root, derr := NewParser(_TwitterJson).Parse()
