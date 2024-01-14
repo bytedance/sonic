@@ -482,13 +482,13 @@ func (self Value) Array() (ret []interface{}, err error) {
 
 // ObjectUseNode scans both parsed and non-parsed chidren nodes, 
 // and map them by their keys
-func (self Value) MapUseNode() (ret []RawPair, err error) {
+func (self Value) MapUseNode() (ret []KeyVal, err error) {
 	if self.t != V_OBJECT {
 		return nil, ErrUnsupportType
 	}
-	ret = make([]RawPair, 0, _DEFAULT_NODE_CAP)
+	ret = make([]KeyVal, 0, _DEFAULT_NODE_CAP)
 	err = self.ForEachKV(func(key string, node Value) bool {
-		ret = append(ret, RawPair{key, node})
+		ret = append(ret, KeyVal{key, node})
 		return true
 	})
     return ret, err
@@ -607,8 +607,8 @@ func (self Value) ForEachElem(sc func(i int, node Value) bool) error {
     }
 }
 
-// RawPair is a pair of key and value (RawNode)
-type RawPair struct {
+// KeyVal is a pair of key and value (RawNode)
+type KeyVal struct {
     Key   string
     Value Value
 }
