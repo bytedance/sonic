@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"fmt"
+	"reflect"
 	"sync"
 	"testing"
 
@@ -9,6 +11,36 @@ import (
 )
 
 var concurrency = 1000
+
+func TestValAPI(t *testing.T) {
+    var cases = []struct {
+        method string
+        js     string
+        exp    []interface{}
+    }{
+		{"Len", `""`, []interface{}{0}},
+		{"Len", `"a"`, []interface{}{1}},
+		{"Len", `1`, []interface{}{-1}},
+		{"Len", `true`, []interface{}{-1}},
+		{"Len", `null`, []interface{}{-1}},
+		{"Len", `[]`, []interface{}{0}},
+		{"Len", `[1]`, []interface{}{1}},
+		{"Len", `[ 1 , 2 ]`, []interface{}{2}},
+		{"Len", `{}`, []interface{}{0}},
+		{"Len", `{"a":1}`, []interface{}{1}},
+		{"Len", `{ "a" : 1, "b" : [1] }`, []interface{}{2}},
+	}
+	for i, c := range cases {
+        fmt.Println(i, c)
+		node := NewValue(c.js)
+		rt := reflect.ValueOf(&node)
+		m := rt.MethodByName(c.method)
+        rets := m.Call([]reflect.Value{})
+		for i, v := range c.exp {
+			require.Equal(t, v, rets[i].Interface())
+		}
+	}
+}
 
 func TestForEachRaw(t *testing.T) {
     val := _TwitterJson
@@ -278,7 +310,7 @@ func TestRawNode_Set(t *testing.T) {
 		if err != nil && err.Error() != c.err {
 			t.Fatal()
 		}
-		if out, err := root.Raw(); err != nil {
+		if out := root.Raw(); err != nil {
 			t.Fatal()
 		} else if out != c.out {
 			t.Fatal()
@@ -393,7 +425,7 @@ func TestRawNode_Unset(t *testing.T) {
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err.Error())
 		}
-		if out, err := root.Raw(); err != nil {
+		if out := root.Raw(); err != nil {
 			t.Fatal()
 		} else {
 			require.Equal(t, c.out, out)

@@ -70,6 +70,79 @@ func (self Value) Check() error {
 	return nil
 }
 
+func errRawNode(err error) Value {
+	return Value{t: V_ERROR, js: err.Error()}
+}
+
+// Len returns children count of a array|object|string node
+//
+// WARN: this calculation consumes much CPU time
+func (self Value) Len() int {
+	switch self.t {
+	case V_STRING:
+		return len(self.js) - 2
+	case V_ARRAY:
+		c, _ := self.count_elems()
+		return c
+	case V_OBJECT:
+		c, _ := self.count_kvs()
+		return c
+	default:
+		return -1
+	}
+}
+
+func (self Value) count_elems() (int, types.ParsingError) {
+	p := NewParserObj(self.js)
+	if empty, e := p.arrayBegin(); e != 0 {
+		return -1, e
+	} else if empty {
+		return 0, 0
+	}
+
+	i := 0
+	for  {
+		if _, e := p.skipFast(); e != 0 {
+			return -1, e
+		}
+		i++
+		if end, e := p.arrayEnd(); e != 0 {
+			return -1, e
+		} else if end {
+			return i, 0
+		}
+	}
+}
+
+func (self Value) count_kvs() (int, types.ParsingError) {
+	p := NewParserObj(self.js)
+	if empty, e := p.objectBegin(); e != 0 {
+		return -1, e
+	} else if empty {
+		return 0, 0
+	}
+
+	i := 0
+	for  {
+		if _, e := p.skipFast(); e != 0 {
+			return -1, e
+		}
+		if e := p.delim(); e != 0 {
+            return -1, e
+        }
+		if _, e := p.skipFast(); e != 0 {
+			return -1, e
+		}
+		i++
+		if end, e := p.objectEnd(); e != 0 {
+			return -1, e
+		} else if end {
+			return i, 0
+		}
+	}
+}
+
+
 // GetByPath load given path on demands,
 // which only ensure nodes before this path got parsed
 func (self Value) GetByPath(path ...interface{}) Value {
@@ -83,11 +156,6 @@ func (self Value) GetByPath(path ...interface{}) Value {
 	}
     return rawNode(self.js[s:p.p])
 }
-
-func errRawNode(err error) Value {
-	return Value{t: V_ERROR, js: err.Error()}
-}
-
 
 // Get loads given key of an object node on demands
 func (self Value) Get(key string) Value {
@@ -387,7 +455,16 @@ func (self Value) str() string {
 }
 
 // Raw returns json representation of the node
-func (self Value) Raw() (string, error) {
+// If it's invalid json, return empty string
+func (self Value) Raw() (string) {
+    if e := self.Check(); e != nil {
+        return ""
+    }
+    return self.js
+}
+
+// StrictRaw returns json representation of the node
+func (self Value) StrictRaw() (string, error) {
     if e := self.Check(); e != nil {
         return "", e
     }
@@ -504,9 +581,8 @@ func (self Value) String() (string, error) {
 	} 
 }
 
-// ArrayUseNode copys both parsed and non-parsed chidren nodes, 
-// and indexes them by original order
-func (self Value) ArrayUseNode() (ret []Value, err error) {
+// Array returns children of a V_ARRAY val, in original order
+func (self Value) Array() (ret []Value, err error) {
 	if self.t != V_ARRAY {
 		return nil, ErrUnsupportType
 	}
@@ -518,33 +594,45 @@ func (self Value) ArrayUseNode() (ret []Value, err error) {
     return ret, err
 }
 
-// Array loads all indexes of an array node
-func (self Value) Array() (ret []interface{}, err error) {
-	node := NewRaw(self.js)
-	return node.Array()
+// AppendArray appends children of the V_ARRAY val to buf
+func (self Value) AppendArray(buf *[]Value) (err error) {
+	if self.t != V_ARRAY {
+		return ErrUnsupportType
+	}
+	if *buf == nil {
+		*buf = make([]Value, 0, _DEFAULT_NODE_CAP)
+	}
+    return self.ForEachElem(func(i int, node Value) bool {
+		*buf = append(*buf, node)
+		return true
+	})
 }
 
-// ObjectUseNode scans both parsed and non-parsed chidren nodes, 
-// and map them by their keys
-func (self Value) MapUseNode() (ret []KeyVal, err error) {
+// Object returns children of the V_OBJECT val, without order
+func (self Value) Map() (ret map[string]Value, err error) {
 	if self.t != V_OBJECT {
 		return nil, ErrUnsupportType
 	}
-	ret = make([]KeyVal, 0, _DEFAULT_NODE_CAP)
+	ret = make(map[string]Value, _DEFAULT_NODE_CAP)
 	err = self.ForEachKV(func(key string, node Value) bool {
-		ret = append(ret, KeyVal{key, node})
+		ret[key] = node
 		return true
 	})
     return ret, err
 }
 
-// Map loads all keys of an object node
-func (self Value) Map() (ret map[string]interface{}, err error) {
+// AppendMap appends children of the V_OBJECT val to buf, in original order
+func (self Value) AppendMap(buf *map[string]Value) (err error) {
 	if self.t != V_OBJECT {
-		return nil, ErrUnsupportType
+		return ErrUnsupportType
 	}
-	node := NewRaw(self.js)
-	return node.Map()
+	if *buf == nil {
+		*buf = make(map[string]Value, _DEFAULT_NODE_CAP)
+	}
+    return self.ForEachKV(func(key string, node Value) bool {
+		(*buf)[key] = node
+		return true
+	})
 }
 
 // Interface loads all children under all pathes from this node,
@@ -556,9 +644,11 @@ func (self Value) Interface() (interface{}, error) {
 	}
 	switch self.itype() {
 	case types.V_OBJECT:
-		return self.Map()
+		node := NewRaw(self.js)
+		return node.Map()
 	case types.V_ARRAY:
-		return self.Array()
+		node := NewRaw(self.js)
+		return node.Array()
 	case types.V_STRING:
 		return self.str(), nil
 	case _V_NUMBER:
@@ -648,10 +738,4 @@ func (self Value) ForEachElem(sc func(i int, node Value) bool) error {
     default:
         return ErrUnsupportType
     }
-}
-
-// KeyVal is a pair of key and value (RawNode)
-type KeyVal struct {
-    Key   string
-    Value Value
 }
