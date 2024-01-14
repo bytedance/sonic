@@ -12,7 +12,7 @@ var concurrency = 1000
 
 func TestForEachRaw(t *testing.T) {
     val := _TwitterJson
-    node, err := NewSearcher(val).GetRawByPath()
+    node, err := NewSearcher(val).GetValueByPath()
     require.Nil(t, err)
     nodes := []Value{}
 
@@ -52,10 +52,10 @@ func TestForEachRaw(t *testing.T) {
 }
 
 func TestRawNode(t *testing.T) {
-	_, err := NewSearcher(` { ] `).GetRawByPath()
+	_, err := NewSearcher(` { ] `).GetValueByPath()
 	require.Error(t, err)
 	d1 := ` {"a":1,"b":[1,1,1],"c":{"d":1,"e":1,"f":1},"d":"{\"你好\":\"hello\"}"} `
-	root, err := NewSearcher(d1).GetRawByPath()
+	root, err := NewSearcher(d1).GetValueByPath()
 	require.NoError(t, err)
 	v1, err := root.GetByPath("a").Int64()
 	require.NoError(t, err)
@@ -81,7 +81,7 @@ func TestRawNode(t *testing.T) {
 }
 
 func TestConcurrentGetByPath(t *testing.T) {
-	cont, err := NewSearcher(`{"b":[1,1,1],"c":{"d":1,"e":1,"f":1},"a":1}`).GetRawByPath()
+	cont, err := NewSearcher(`{"b":[1,1,1],"c":{"d":1,"e":1,"f":1},"a":1}`).GetValueByPath()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -450,7 +450,7 @@ func BenchmarkGetOneNode(b *testing.B) {
     b.Run("RawNode", func(b *testing.B) {
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
-			_, _ = s.GetRawByPath("statuses", 3, "entities", "hashtags", 0, "text")
+			_, _ = s.GetValueByPath("statuses", 3, "entities", "hashtags", 0, "text")
 		}
     })
 }

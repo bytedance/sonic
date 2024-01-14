@@ -16,7 +16,11 @@
 
 package ast
 
-import "github.com/bytedance/sonic/internal/native/types"
+import (
+	"errors"
+
+	"github.com/bytedance/sonic/internal/native/types"
+)
 
 type Searcher struct {
     parser Parser
@@ -53,4 +57,26 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
         return Node{}, self.parser.ExportError(err)
     }
     return newRawNode(self.parser.s[start:self.parser.p], t), nil
+}
+
+// GetValueByPath
+func (self Searcher) GetValueByPath(path ...interface{}) (Value, error) {
+	if self.parser.s == "" {
+		err := errors.New("empty input")
+		return errRawNode(err), err
+	}
+
+    self.parser.p = 0
+    s, err := self.parser.getByPath(path...)
+    if err != 0 {
+		e := self.parser.ExportError(err)
+        return errRawNode(e), e
+    }
+
+    t := switchRawType(self.parser.s[s])
+    if t == _V_NONE {
+		e := self.parser.ExportError(err)
+        return errRawNode(e), e 
+    }
+    return Value{int(t), self.parser.s[s:self.parser.p]}, nil
 }

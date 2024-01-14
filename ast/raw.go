@@ -70,7 +70,6 @@ func (self Value) Check() error {
 	return nil
 }
 
-
 // GetByPath load given path on demands,
 // which only ensure nodes before this path got parsed
 func (self Value) GetByPath(path ...interface{}) Value {
@@ -182,6 +181,10 @@ func (self *Value) Unset(key string) (bool, error) {
 	if self.Check() != nil {
 		return false, self
 	}
+
+	if self.t == V_NULL {
+		*self = rawNode(`{}`)
+	}
 	if self.t != V_OBJECT {
 		return false, ErrUnsupportType
 	}
@@ -235,6 +238,7 @@ func (self *Value) Unset(key string) (bool, error) {
 }
 
 // SetByIndex sets the node of given index, and reports if the key has existed.
+// If the index is out range of self's children, it will be ADD to the last
 func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	if val.Check() != nil {
 		return false, val
@@ -242,13 +246,15 @@ func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	if self.Check() != nil {
 		return false, self
 	}
+
+	if self.t == V_NULL {
+		*self = rawNode(`[]`)
+	}
 	if self.t != V_ARRAY {
 		return false, ErrUnsupportType
 	}
 
-	in := val.js
 	exist := true
-
 	// try search from raw
     p := NewParserObj(self.js)
 	s, e := p.getByPath(id)
@@ -262,7 +268,7 @@ func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	
 	var b []byte
 	// at least size is left + val + right
-	n := len(in)+s+(len(self.js)-p.p)
+	n := len(val.js)+s+(len(self.js)-p.p)
 	if !exist {
 		// not exist, need write "key":
 		var s = p.p-1 // _ERR_NOT_FOUND stop at ']'
@@ -282,11 +288,49 @@ func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	}
 
 	// write val
-	b = append(b, in...)
+	b = append(b, val.js...)
 	b = append(b, self.js[p.p:]...)
 	self.js = rt.Mem2Str(b)
 
 	return exist, nil
+}
+
+// Add appends the given node under self.
+func (self *Value) Add(val Value) error {
+	if val.Check() != nil {
+		return val
+	}
+	if self.Check() != nil {
+		return self
+	}
+
+	if self.t == V_NULL {
+		*self = rawNode(`[]`)
+	}
+	if self.t != V_ARRAY {
+		return ErrUnsupportType
+	}
+
+	var s = len(self.js)-1 //  start before ']'
+	for ; s>=0 && isSpace(self.js[s]); s-- {}
+
+	var b []byte
+	// at least size is left + val + right
+	n := s+1+len(val.js)+1
+	if self.js[s] == '[' {
+		b = make([]byte, 0, n)
+		b = append(b, self.js[:s+1]...)
+	} else {
+		// the container is not empty, need ','
+		b = make([]byte, 0, 1+n)
+		b = append(b, self.js[:s+1]...)
+		b = append(b, ","...)
+	}
+
+	b = append(b, val.js...)
+	b = append(b, "]"...)
+	self.js = rt.Mem2Str(b)
+	return nil
 }
 
 // UnsetByIndex REOMVE the node of given index.
@@ -530,7 +574,6 @@ func (self Value) Interface() (interface{}, error) {
 	}
 }
 
-
 // ForEach scans one V_OBJECT node's children from JSON head to tail
 func (self Value) ForEachKV(sc func(key string, node Value) bool) error {
 	if e := self.Check(); e != nil {
@@ -611,26 +654,4 @@ func (self Value) ForEachElem(sc func(i int, node Value) bool) error {
 type KeyVal struct {
     Key   string
     Value Value
-}
-
-// GetRawByPath
-func (self Searcher) GetRawByPath(path ...interface{}) (Value, error) {
-	if self.parser.s == "" {
-		err := errors.New("empty input")
-		return errRawNode(err), err
-	}
-
-    self.parser.p = 0
-    s, err := self.parser.getByPath(path...)
-    if err != 0 {
-		e := self.parser.ExportError(err)
-        return errRawNode(e), e
-    }
-
-    t := switchRawType(self.parser.s[s])
-    if t == _V_NONE {
-		e := self.parser.ExportError(err)
-        return errRawNode(e), e 
-    }
-    return Value{int(t), self.parser.s[s:self.parser.p]}, nil
 }
