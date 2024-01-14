@@ -9,22 +9,23 @@ import (
 	"github.com/bytedance/sonic/internal/rt"
 )
 
-// RawNode represents a raw json value or error
-type RawNode struct {
+// Value represents a raw json value or error
+type Value struct {
 	t  int
 	js string
 }
 
-func NewRawNode(js string) RawNode {
-	s := NewParser(js).lspace(0)
-	if s > len(js) {
-		return errRawNode(types.ERR_EOF)
+func NewValue(js string) Value {
+	p := NewParser(js)
+	s, e := p.skip()
+	if e != 0 {
+		return errRawNode(p.ExportError(e))
 	}
-	return rawNode(js[s:])
+	return rawNode(js[s:p.p])
 }
 
-func rawNode(js string) RawNode {
-	return RawNode{
+func rawNode(js string) Value {
+	return Value{
 		t: int(switchRawType(js[0])),
 		js: js,
 	}
@@ -33,6 +34,7 @@ func rawNode(js string) RawNode {
 // Type returns json type represented by the node
 // It will be one of belows:
 //    V_NONE   = 0 (empty node)
+//    V_ERROR  = 1 (something wrong)
 //    V_NULL   = 2 (json value `null`)
 //    V_TRUE   = 3 (json value `true`)
 //    V_FALSE  = 4 (json value `false`)
@@ -40,20 +42,20 @@ func rawNode(js string) RawNode {
 //    V_OBJECT = 6 (json value object)
 //    V_STRING = 7 (json value string)
 //    V_NUMBER = 33 (json value number )
-func (self RawNode) Type() int {
+func (self Value) Type() int {
 	return self.t
 }
 
-func (self RawNode) Exists() bool {
+func (self Value) Exists() bool {
 	return self.t != 0 && self.t != V_ERROR
 }
 
-func (self RawNode) itype() types.ValueType {
+func (self Value) itype() types.ValueType {
 	return types.ValueType(self.t)
 }
 
 // Error returns error message if the node is invalid
-func (self RawNode) Error() string {
+func (self Value) Error() string {
 	if self.t == V_ERROR {
 		return self.js
 	}
@@ -61,7 +63,7 @@ func (self RawNode) Error() string {
 }
 
 // Check checks if the node itself is valid, and return
-func (self RawNode) Check() error {
+func (self Value) Check() error {
 	if self.t == V_ERROR {
 		return errors.New(self.js)
 	}
@@ -71,7 +73,7 @@ func (self RawNode) Check() error {
 
 // GetByPath load given path on demands,
 // which only ensure nodes before this path got parsed
-func (self RawNode) GetByPath(path ...interface{}) RawNode {
+func (self Value) GetByPath(path ...interface{}) Value {
 	if self.Check() != nil {
 		return self
 	}
@@ -83,13 +85,13 @@ func (self RawNode) GetByPath(path ...interface{}) RawNode {
     return rawNode(self.js[s:p.p])
 }
 
-func errRawNode(err error) RawNode {
-	return RawNode{t: V_ERROR, js: err.Error()}
+func errRawNode(err error) Value {
+	return Value{t: V_ERROR, js: err.Error()}
 }
 
 
 // Get loads given key of an object node on demands
-func (self RawNode) Get(key string) RawNode {
+func (self Value) Get(key string) Value {
 	if self.Check() != nil {
 		return self
 	}
@@ -101,7 +103,8 @@ func (self RawNode) Get(key string) RawNode {
     return rawNode(self.js[s:p.p])
 }
 
-func (self *RawNode) Set(key string, val RawNode) (bool, error) {
+// Set sets the node of given key under self, and reports if the key has existed.
+func (self *Value) Set(key string, val Value) (bool, error) {
 	if val.Check() != nil {
 		return false, val
 	}
@@ -174,7 +177,8 @@ func (self *RawNode) Set(key string, val RawNode) (bool, error) {
 	return exist, nil
 }
 
-func (self *RawNode) Unset(key string) (bool, error) {
+// Unset REMOVE the node of given key under object parent, and reports if the key has existed.
+func (self *Value) Unset(key string) (bool, error) {
 	if self.Check() != nil {
 		return false, self
 	}
@@ -230,7 +234,8 @@ func (self *RawNode) Unset(key string) (bool, error) {
 	return true, nil
 }
 
-func (self *RawNode) SetByIndex(id int, val RawNode) (bool, error) {
+// SetByIndex sets the node of given index, and reports if the key has existed.
+func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	if val.Check() != nil {
 		return false, val
 	}
@@ -284,7 +289,8 @@ func (self *RawNode) SetByIndex(id int, val RawNode) (bool, error) {
 	return exist, nil
 }
 
-func (self *RawNode) UnsetByIndex(id int) (bool, error) {
+// UnsetByIndex REOMVE the node of given index.
+func (self *Value) UnsetByIndex(id int) (bool, error) {
 	if self.Check() != nil {
 		return false, self
 	}
@@ -320,7 +326,7 @@ func (self *RawNode) UnsetByIndex(id int) (bool, error) {
 }
 
 // Index indexies node at given idx
-func (self RawNode) Index(idx int) RawNode {
+func (self Value) Index(idx int) Value {
 	if self.Check() != nil {
 		return self
 	}
@@ -332,12 +338,12 @@ func (self RawNode) Index(idx int) RawNode {
     return rawNode(self.js[s:p.p])
 }
 
-func (self RawNode) str() string {
+func (self Value) str() string {
 	return self.js[1:len(self.js)-1]
 }
 
 // Raw returns json representation of the node
-func (self RawNode) Raw() (string, error) {
+func (self Value) Raw() (string, error) {
     if e := self.Check(); e != nil {
         return "", e
     }
@@ -346,7 +352,7 @@ func (self RawNode) Raw() (string, error) {
 
 // Bool returns bool value represented by this node, 
 // including types.V_TRUE|V_FALSE|V_NUMBER|V_STRING|V_ANY|V_NULL
-func (self RawNode) Bool() (bool, error) {
+func (self Value) Bool() (bool, error) {
 	if e := self.Check(); e != nil {
 		return false, e
 	}
@@ -367,7 +373,7 @@ func (self RawNode) Bool() (bool, error) {
 
 // Int64 casts the node to int64 value, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_STRING
-func (self RawNode) Int64() (int64, error) {
+func (self Value) Int64() (int64, error) {
 	if e := self.Check(); e != nil {
 		return 0, e
 	}
@@ -388,7 +394,7 @@ func (self RawNode) Int64() (int64, error) {
 
 // Float64 cast node to float64, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL
-func (self RawNode) Float64() (float64, error) {
+func (self Value) Float64() (float64, error) {
 	if e := self.Check(); e != nil {
 		return 0, e
 	}
@@ -409,7 +415,7 @@ func (self RawNode) Float64() (float64, error) {
 
 // Number casts node to float64, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL,
-func (self RawNode) Number() (json.Number, error) {
+func (self Value) Number() (json.Number, error) {
 	if e := self.Check(); e != nil {
 		return "", e
 	}
@@ -430,7 +436,7 @@ func (self RawNode) Number() (json.Number, error) {
 
 // String cast node to string, 
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL
-func (self RawNode) String() (string, error) {
+func (self Value) String() (string, error) {
 	if e := self.Check(); e != nil {
 		return "", e
 	}
@@ -456,12 +462,12 @@ func (self RawNode) String() (string, error) {
 
 // ArrayUseNode copys both parsed and non-parsed chidren nodes, 
 // and indexes them by original order
-func (self RawNode) ArrayUseNode() (ret []RawNode, err error) {
+func (self Value) ArrayUseNode() (ret []Value, err error) {
 	if self.t != V_ARRAY {
 		return nil, ErrUnsupportType
 	}
-	ret = make([]RawNode, 0, _DEFAULT_NODE_CAP)
-	err = self.ForEachElem(func(i int, node RawNode) bool {
+	ret = make([]Value, 0, _DEFAULT_NODE_CAP)
+	err = self.ForEachElem(func(i int, node Value) bool {
 		ret = append(ret, node)
 		return true
 	})
@@ -469,19 +475,19 @@ func (self RawNode) ArrayUseNode() (ret []RawNode, err error) {
 }
 
 // Array loads all indexes of an array node
-func (self RawNode) Array() (ret []interface{}, err error) {
+func (self Value) Array() (ret []interface{}, err error) {
 	node := NewRaw(self.js)
 	return node.Array()
 }
 
 // ObjectUseNode scans both parsed and non-parsed chidren nodes, 
 // and map them by their keys
-func (self RawNode) MapUseNode() (ret []RawPair, err error) {
+func (self Value) MapUseNode() (ret []RawPair, err error) {
 	if self.t != V_OBJECT {
 		return nil, ErrUnsupportType
 	}
 	ret = make([]RawPair, 0, _DEFAULT_NODE_CAP)
-	err = self.ForEachKV(func(key string, node RawNode) bool {
+	err = self.ForEachKV(func(key string, node Value) bool {
 		ret = append(ret, RawPair{key, node})
 		return true
 	})
@@ -489,7 +495,7 @@ func (self RawNode) MapUseNode() (ret []RawPair, err error) {
 }
 
 // Map loads all keys of an object node
-func (self RawNode) Map() (ret map[string]interface{}, err error) {
+func (self Value) Map() (ret map[string]interface{}, err error) {
 	if self.t != V_OBJECT {
 		return nil, ErrUnsupportType
 	}
@@ -500,7 +506,7 @@ func (self RawNode) Map() (ret map[string]interface{}, err error) {
 // Interface loads all children under all pathes from this node,
 // and converts itself as generic type.
 // WARN: all numberic nodes are casted to float64
-func (self RawNode) Interface() (interface{}, error) {
+func (self Value) Interface() (interface{}, error) {
 	if e := self.Check(); e != nil {
 		return nil, e
 	}
@@ -526,7 +532,7 @@ func (self RawNode) Interface() (interface{}, error) {
 
 
 // ForEach scans one V_OBJECT node's children from JSON head to tail
-func (self RawNode) ForEachKV(sc func(key string, node RawNode) bool) error {
+func (self Value) ForEachKV(sc func(key string, node Value) bool) error {
 	if e := self.Check(); e != nil {
 		return e
 	}
@@ -566,7 +572,7 @@ func (self RawNode) ForEachKV(sc func(key string, node RawNode) bool) error {
 }
 
 // ForEach scans one V_OBJECT node's children from JSON head to tail
-func (self RawNode) ForEachElem(sc func(i int, node RawNode) bool) error {
+func (self Value) ForEachElem(sc func(i int, node Value) bool) error {
 	if e := self.Check(); e != nil {
 		return e
 	}
@@ -604,11 +610,11 @@ func (self RawNode) ForEachElem(sc func(i int, node RawNode) bool) error {
 // RawPair is a pair of key and value (RawNode)
 type RawPair struct {
     Key   string
-    Value RawNode
+    Value Value
 }
 
 // GetRawByPath
-func (self Searcher) GetRawByPath(path ...interface{}) (RawNode, error) {
+func (self Searcher) GetRawByPath(path ...interface{}) (Value, error) {
 	if self.parser.s == "" {
 		err := errors.New("empty input")
 		return errRawNode(err), err
@@ -626,5 +632,5 @@ func (self Searcher) GetRawByPath(path ...interface{}) (RawNode, error) {
 		e := self.parser.ExportError(err)
         return errRawNode(e), e 
     }
-    return RawNode{int(t), self.parser.s[s:self.parser.p]}, nil
+    return Value{int(t), self.parser.s[s:self.parser.p]}, nil
 }

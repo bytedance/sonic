@@ -21,7 +21,6 @@ package ast
 import (
     `encoding/base64`
     `encoding/json`
-    `fmt`
 
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
@@ -86,31 +85,6 @@ func (self *Node) encodeInterface(buf *[]byte) error {
     }
     *buf = append(*buf, out...)
     return nil
-}
-
-func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
-    self.parser.p = 0
-
-    start, err := self.parser.getByPath(path...)
-    if err != 0 {
-        return Node{}, err
-    }
-    
-    if _, err = self.parser.skip(); err != 0 {
-        return Node{}, self.parser.ExportError(err)
-    }
-
-    ns := len(self.parser.s)
-    if self.parser.p > ns || start >= ns || start>=self.parser.p {
-        return Node{}, fmt.Errorf("skip %d char out of json boundary", start)
-    }
-
-    t := switchRawType(self.parser.s[start])
-    if t == _V_NONE {
-        return Node{}, self.parser.ExportError(err)
-    }
-
-    return newRawNode(self.parser.s[start:self.parser.p], t), nil
 }
 
 func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {

@@ -14,11 +14,11 @@ func TestForEachRaw(t *testing.T) {
     val := _TwitterJson
     node, err := NewSearcher(val).GetRawByPath()
     require.Nil(t, err)
-    nodes := []RawNode{}
+    nodes := []Value{}
 
-	var dfs func(key string, node RawNode) bool
-	var dfs2 func(i int, node RawNode) bool
-	dfs = func(key string, node RawNode) bool {
+	var dfs func(key string, node Value) bool
+	var dfs2 func(i int, node Value) bool
+	dfs = func(key string, node Value) bool {
         if node.Type() == V_OBJECT  {
         	if err := node.ForEachKV(dfs); err != nil {
 				panic(err)
@@ -32,7 +32,7 @@ func TestForEachRaw(t *testing.T) {
 		nodes = append(nodes, node)
 		return true
     }
-	dfs2 = func(i int, node RawNode) bool {
+	dfs2 = func(i int, node Value) bool {
 		if node.Type() == V_OBJECT  {
         	if err := node.ForEachKV(dfs); err != nil {
 				panic(err)
@@ -166,7 +166,7 @@ func TestRawNode_Set(t *testing.T) {
 		name string
 		js string
 		key interface{}
-		val RawNode
+		val Value
 		exist bool
 		err string
 		out string
@@ -175,7 +175,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "exist object",
 			js: `{"a":1}`,
 			key: "a",
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: true,
 			err: "",
 			out: `{"a":2}`,
@@ -184,7 +184,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "not-exist object space",
 			js: `{"b":1 }`,
 			key: "a",
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `{"b":1,"a":2}`,
@@ -193,7 +193,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "not-exist object",
 			js: `{"b":1}`,
 			key: "a",
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `{"b":1,"a":2}`,
@@ -202,7 +202,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "empty object",
 			js: `{}`,
 			key: "a",
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `{"a":2}`,
@@ -211,7 +211,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "empty object space",
 			js: `{ }`,
 			key: "a",
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `{"a":2}`,
@@ -220,7 +220,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "exist array",
 			js: `[1]`,
 			key: 0,
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: true,
 			err: "",
 			out: `[2]`,
@@ -229,7 +229,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "not exist array",
 			js: `[1]`,
 			key: 1,
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `[1,2]`,
@@ -238,7 +238,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "not exist array over",
 			js: `[1 ]`,
 			key: 99,
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `[1,2]`,
@@ -247,7 +247,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "empty array",
 			js: `[]`,
 			key: 1,
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `[2]`,
@@ -256,7 +256,7 @@ func TestRawNode_Set(t *testing.T) {
 			name: "empty array space",
 			js: `[ ]`,
 			key: 1,
-			val: NewRawNode(`2`),
+			val: NewValue(`2`),
 			exist: false,
 			err: "",
 			out: `[2]`,
@@ -264,7 +264,7 @@ func TestRawNode_Set(t *testing.T) {
 	}
 	for _, c := range tests {
 		println(c.name)
-		root := NewRawNode(c.js)
+		root := NewValue(c.js)
 		var exist bool
 		var err error
 		if key, ok:= c.key.(string); ok{
@@ -379,7 +379,7 @@ func TestRawNode_Unset(t *testing.T) {
 
 	for _, c := range tests {
 		println(c.name)
-		root := NewRawNode(c.js)
+		root := NewValue(c.js)
 		var exist bool
 		var err error
 		if key, ok:= c.key.(string); ok{
@@ -414,7 +414,7 @@ func BenchmarkNodesGetByPath_ReuseNode(b *testing.B) {
 		}
     })
     b.Run("RawNode", func(b *testing.B) {
-		cont := RawNode{js: _TwitterJson}
+		cont := Value{js: _TwitterJson}
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
@@ -433,7 +433,7 @@ func BenchmarkNodesGetByPath_NewNode(b *testing.B) {
     b.Run("RawNode", func(b *testing.B) {
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
-			cont := RawNode{js: _TwitterJson}
+			cont := Value{js: _TwitterJson}
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		}
     })
