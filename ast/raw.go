@@ -3,6 +3,7 @@ package ast
 import (
 	"encoding/json"
 	"errors"
+	"sort"
 	"strconv"
 
 	"github.com/bytedance/sonic/internal/native/types"
@@ -182,13 +183,15 @@ func (self Value) GetMany(kvs []KeyVal) error {
 	if self.t != V_OBJECT {
 		return ErrUnsupportType
 	}
-	if e := self.getMany(kvs); e != 0 {
+	if e := self.getMany(kvs, func(i, s, e int) {
+		kvs[i].Val = rawNode(self.js[s:e])
+	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
 	}
 	return nil
 }
 
-func (self Value) getMany(kvs []KeyVal) types.ParsingError {
+func (self Value) getMany(kvs []KeyVal, hook func (i, s, e int)) types.ParsingError {
     p := NewParserObj(self.js)
 	if empty, e := p.objectBegin(); e != 0 {
 		return e
@@ -208,7 +211,7 @@ func (self Value) getMany(kvs []KeyVal) types.ParsingError {
 		}
 		for i, kv := range kvs {
 			if kv.Key == key {
-				kvs[i].Val = rawNode(self.js[s:p.p])
+				hook(i, s, p.p)
 				count--
 				break
 			}
@@ -252,13 +255,15 @@ func (self Value) IndexMany(ids []IndexVal) error {
 	if self.t != V_ARRAY {
 		return ErrUnsupportType
 	}
-	if e := self.indexMany(ids); e != 0 {
+	if e := self.indexMany(ids, func(i, s, e int) {
+		ids[i].Val = rawNode(self.js[s:e])
+	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
 	}
 	return nil
 }
 
-func (self Value) indexMany(ids []IndexVal) types.ParsingError {
+func (self Value) indexMany(ids []IndexVal, hook func(i, s, e int)) types.ParsingError {
     p := NewParserObj(self.js)
 	if empty, e := p.arrayBegin(); e != 0 {
 		return e
@@ -275,7 +280,7 @@ func (self Value) indexMany(ids []IndexVal) types.ParsingError {
 		}
 		for j, kv := range ids {
 			if kv.Index == i {
-				ids[j].Val = rawNode(self.js[s:p.p])
+				hook(j, s, p.p)
 				count--
 				break
 			}
@@ -289,6 +294,115 @@ func (self Value) indexMany(ids []IndexVal) types.ParsingError {
 	}
 
 	return 0
+}
+
+type point struct {
+	i int
+	s int
+	e int
+}
+
+type points []point 
+
+func (ps points) Less(i, j int) bool {
+	return ps[i].s < ps[j].s
+}
+
+func (ps points) Swap(i, j int) {
+	ps[i], ps[j] = ps[j], ps[i]
+}
+
+func (ps points) Len() int {
+	return len(ps)
+}
+
+// SetMany retries kvs in the V_OBJECT value, 
+// and replace (exist) or insert (not-exist) key with correpsonding value
+//
+// WARN: kvs shouldn't contains any repeated key, otherwise the repeated key will be regarded as new key and insert
+func (self *Value) SetMany(kvs []KeyVal) error {
+	if self.Check() != nil {
+		return self
+	}
+	if self.t != V_OBJECT {
+		return ErrUnsupportType
+	}
+	if len(kvs) == 0 {
+		return nil
+	}
+
+	var points = make(points, len(kvs))
+	var size = len(self.js)
+
+	// collect replace points
+	if e := self.getMany(kvs, func(i, s, e int) {
+		size += len(kvs[i].Val.js) - (e - s)
+		points[i] = point{i, s, e}
+	}); e != 0 {
+		return NewParserObj(self.js).ExportError(e)
+	}
+
+	// collect insert ponts
+	for i, r := range points {
+		if r.s == 0 {
+			points[i].i = i
+			size += len(kvs[i].Val.js) + 4 + len(kvs[i].Key)
+		}
+	}
+	
+	b := make([]byte, 0, size)
+
+	// write replace points
+	sort.Stable(points)
+	s := 0
+	replaced := false
+	for i, r := range points {
+		if r.s == 0 {
+			continue
+		}
+		replaced = true
+		// write left
+		b = append(b, self.js[s:r.s]...)
+		// write new val
+		b = append(b, kvs[r.i].Val.js...)
+		if i < len(points) - 1 {
+			s = points[i+1].s
+		} else {
+			// not write '}'
+			s = len(self.js)-1
+		}
+		// write right
+		b = append(b, self.js[r.e:s]...)
+	}
+
+	s = len(self.js) - 2
+	if !replaced {
+		b = append(b, self.js[:s+1]...)
+	}
+	for ; s>=0 && isSpace(self.js[s]); s-- {}
+	empty := self.js[s] == '{'
+
+	// write insert points
+	for _, r := range points {
+		if r.s != 0 {
+			continue
+		}
+		// write last ','
+		if !empty {
+			b = append(b, ","...)
+		}
+		empty = false
+		// write key
+		quote(&b, kvs[r.i].Key)
+		b = append(b, ":"...)
+		// write new val
+		b = append(b, kvs[r.i].Val.js...)
+	}
+	
+	b = append(b, "}"...)
+
+	self.js = rt.Mem2Str(b)
+	return nil
 }
 
 // Set sets the node of given key under self, and reports if the key has existed.
@@ -483,6 +597,91 @@ func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 
 	return exist, nil
 }
+
+// SetManyByIndex retries ids in the V_ARRAY value, 
+// and replace (exist) or insert (not-exist) id with correpsonding value
+func (self *Value) SetManyByIndex(ids []IndexVal) error {
+	if self.Check() != nil {
+		return self
+	}
+	if self.t != V_ARRAY {
+		return ErrUnsupportType
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+
+	var points = make(points, len(ids))
+	var size = len(self.js)
+
+	// collect replace points
+	if e := self.indexMany(ids, func(i, s, e int) {
+		size += len(ids[i].Val.js) - (e - s)
+		points[i] = point{i, s, e}
+	}); e != 0 {
+		return NewParserObj(self.js).ExportError(e)
+	}
+
+	// collect insert ponts
+	for i, r := range points {
+		if r.s == 0 {
+			points[i].i = i
+			size += len(ids[i].Val.js) + 1
+		}
+	}
+	
+	b := make([]byte, 0, size)
+
+	// write replace points
+	sort.Stable(points)
+	s := 0
+	replaced := false
+	for i, r := range points {
+		if r.s == 0 {
+			continue
+		}
+		replaced = true
+		// write left
+		b = append(b, self.js[s:r.s]...)
+		// write new val
+		b = append(b, ids[r.i].Val.js...)
+		if i < len(points) - 1 {
+			s = points[i+1].s
+		} else {
+			// not write '}'
+			s = len(self.js)-1
+		}
+		// write right
+		b = append(b, self.js[r.e:s]...)
+	}
+
+	s = len(self.js) - 2
+	if !replaced {
+		b = append(b, self.js[:s+1]...)
+	}
+	for ; s>=0 && isSpace(self.js[s]); s-- {}
+	empty := self.js[s] == '['
+
+	// write insert points
+	for _, r := range points {
+		if r.s != 0 {
+			continue
+		}
+		// write last ','
+		if !empty {
+			b = append(b, ","...)
+		}
+		empty = false
+		// write new val
+		b = append(b, ids[r.i].Val.js...)
+	}
+	
+	b = append(b, "]"...)
+
+	self.js = rt.Mem2Str(b)
+	return nil
+}
+
 
 // Add appends the given node under self.
 func (self *Value) Add(val Value) error {

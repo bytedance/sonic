@@ -6,7 +6,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,11 +82,53 @@ func TestGetMany(t *testing.T) {
 			err = node.IndexMany(cp)
 			require.Equal(t, ids, cp)
 		}
-		
 		if err != nil && c.err.Error() != err.Error() {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestSetMany(t *testing.T) {
+	var cases = []struct{
+		name string
+		js string
+		kvs interface{}
+		exp string
+		err string
+	}{
+		{"replace 1", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}}, `{ "a" : 11 , "b" : 2 }`, ""},
+		{"replace 2", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}, {"b", rawNode(`22`)}}, `{ "a" : 11 , "b" : 22 }`, ""},
+		{"replace repeated", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}, {"a", rawNode(`22`)}}, `{ "a" : 11 , "b" : 2 ,"a":22}`, ""},
+		{"insert empty", `{ } `, []KeyVal{{"c", rawNode(`33`)}}, `{ "c":33}`, ""},
+		{"insert repeated", `{ } `, []KeyVal{{"c", rawNode(`33`)}, {"c", rawNode(`33`)}}, `{ "c":33,"c":33}`, ""},
+		{"insert 1", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"c", rawNode(`33`)}}, `{ "a" : 1 , "b" : 2 ,"c":33}`, ""},
+		{"insert 2", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"c", rawNode(`33`)},{"d", rawNode(`44`)}}, `{ "a" : 1 , "b" : 2 ,"c":33,"d":44}`, ""},
+		{"replace 1, insert 1", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}, {"c", rawNode(`33`)}}, `{ "a" : 11 , "b" : 2 ,"c":33}`, ""},
 		
+		{"replace 1", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}}, `[ 11 , 2 ]`, ""},
+		{"replace 2", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}, {0, rawNode(`22`)}}, `[ 11 , 2 ,22]`, ""},
+		{"replace repeated", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}, {1, rawNode(`22`)}}, `[ 11 , 22 ]`, ""},
+		{"insert empty", `[ ] `, []IndexVal{{2, rawNode(`33`)}}, `[ 33]`, ""},
+		{"insert 1", `[ 1 , 2 ] `, []IndexVal{{2, rawNode(`33`)}}, `[ 1 , 2 ,33]`, ""},
+		{"insert 2", `[ 1 , 2 ] `, []IndexVal{{2, rawNode(`33`)},{3, rawNode(`44`)}}, `[ 1 , 2 ,33,44]`, ""},
+		{"insert repeated", `[ 1 , 2 ] `, []IndexVal{{2, rawNode(`33`)},{2, rawNode(`44`)}}, `[ 1 , 2 ,33,44]`, ""},
+		{"replace 1, insert 1", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}, {2, rawNode(`33`)}}, `[ 11 , 2 ,33]`, ""},
+	}
+
+	for i, c := range cases {
+		println(i, c.name)
+		node := NewValue(c.js)
+		var err error
+		if kvs, ok := c.kvs.([]KeyVal); ok {
+			err = node.SetMany(kvs)
+			require.Equal(t, c.exp, node.Raw())
+		} else  if ids, ok := c.kvs.([]IndexVal); ok {
+			err = node.SetManyByIndex(ids)
+			require.Equal(t, c.exp, node.Raw())
+		}
+		if err != nil && c.err != err.Error() {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -128,7 +169,7 @@ func TestForEachRaw(t *testing.T) {
 		return true
 	}
 	
-    node.ForEachKV(dfs)
+    require.NoError(t, node.ForEachKV(dfs))
     require.NotEmpty(t, nodes)
 }
 
@@ -169,69 +210,36 @@ func TestConcurrentGetByPath(t *testing.T) {
 	c := make(chan struct{}, 7)
 	wg := sync.WaitGroup{}
 
+	var helper = func(ps ...interface{}){
+		wg.Add(1)
+		defer wg.Done()
+		<-c
+		v := cont.GetByPath(ps...)
+		require.NoError(t, v.Check())
+		vv, _ := v.Int64()
+		require.Equal(t, int64(1), vv)
+	}
 	for i := 0; i < concurrency; i++ {
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			<-c
-			v := cont.GetByPath("b", 1)
-			require.NoError(t, v.Check())
-			vv, _ := v.Int64()
-			require.Equal(t, int64(1), vv)
+			helper("b", 1)
 		}()
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			<-c
-			v := cont.GetByPath("b", 0)
-			require.NoError(t, v.Check())
-			vv, _ := v.Int64()
-			require.Equal(t, int64(1), vv)
+			helper("b", 0)
 		}()
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			<-c
-			v := cont.GetByPath("b", 2)
-			require.NoError(t, v.Check())
-			vv, _ := v.Int64()
-			require.Equal(t, int64(1), vv)
+			helper("b", 2)
 		}()
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			<-c
-			v := cont.GetByPath("c", "d")
-			require.NoError(t, v.Check())
-			vv, _ := v.Int64()
-			require.Equal(t, int64(1), vv)
+			helper("c", "d")
 		}()
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			<-c
-			v := cont.GetByPath("c", "f")
-			require.NoError(t, v.Check())
-			vv, _ := v.Int64()
-			require.Equal(t, int64(1), vv)
+			helper("c", "f")
 		}()
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			<-c
-			v := cont.GetByPath("c", "e")
-			require.NoError(t, v.Check())
-			vv, _ := v.Int64()
-			require.Equal(t, int64(1), vv)
+			helper("c", "f")
 		}()
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			<-c
-			v := cont.GetByPath("a")
-			require.NoError(t, v.Check())
-			vv, _ := v.Int64()
-			require.Equal(t, int64(1), vv)
+			helper("a")
 		}()
 	}
 
@@ -482,20 +490,17 @@ func TestRawNode_Unset(t *testing.T) {
 	}
 }
 
-func BenchmarkNodesGetByPath_ReuseNode(b *testing.B) {
+func BenchmarkGetByPath_ReuseNode(b *testing.B) {
 	b.Run("Node", func(b *testing.B) {
-		root, derr := NewParser(_TwitterJson).Parse()
-		if derr != 0 {
-			b.Fatalf("decode failed: %v", derr.Error())
-		}
+		root := NewRaw(_TwitterJson)
 		_, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
 			_, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		}
     })
-    b.Run("RawNode", func(b *testing.B) {
-		cont := Value{js: _TwitterJson}
+    b.Run("Value", func(b *testing.B) {
+		cont := NewValue(_TwitterJson)
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
@@ -507,31 +512,15 @@ func BenchmarkNodesGetByPath_NewNode(b *testing.B) {
 	b.Run("Node", func(b *testing.B) {
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
-			root := newRawNode(_TwitterJson, types.V_OBJECT)
+			root := NewRaw(_TwitterJson)
 			_, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		}
     })
-    b.Run("RawNode", func(b *testing.B) {
+    b.Run("Value", func(b *testing.B) {
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
-			cont := Value{js: _TwitterJson}
+			cont := NewValue(_TwitterJson)
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
-		}
-    })
-}
-
-func BenchmarkGetOneNode(b *testing.B) {
-	s := NewSearcher(_TwitterJson)
-	b.Run("Node", func(b *testing.B) {
-		b.ResetTimer()
-        for i:=0; i<b.N; i++ {
-			_, _ = s.GetByPath("statuses", 3, "entities", "hashtags", 0, "text")
-		}
-    })
-    b.Run("RawNode", func(b *testing.B) {
-		b.ResetTimer()
-        for i:=0; i<b.N; i++ {
-			_, _ = s.GetValueByPath("statuses", 3, "entities", "hashtags", 0, "text")
 		}
     })
 }
