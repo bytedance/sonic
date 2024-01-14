@@ -124,12 +124,9 @@ func (self Value) count_kvs() (int, types.ParsingError) {
 
 	i := 0
 	for  {
-		if _, e := p.skipFast(); e != 0 {
+		if _, e := p.key(); e != 0 {
 			return -1, e
 		}
-		if e := p.delim(); e != 0 {
-            return -1, e
-        }
 		if _, e := p.skipFast(); e != 0 {
 			return -1, e
 		}
@@ -141,7 +138,6 @@ func (self Value) count_kvs() (int, types.ParsingError) {
 		}
 	}
 }
-
 
 // GetByPath load given path on demands,
 // which only ensure nodes before this path got parsed
@@ -168,6 +164,131 @@ func (self Value) Get(key string) Value {
 		return errRawNode(p.ExportError(e))
 	}
     return rawNode(self.js[s:p.p])
+}
+
+// KeyVal is a pair of string key and json Value
+type KeyVal struct {
+	Key string
+	Val Value
+}
+
+// GetMany retrieves all the keys in kvs and set found Value at correpsonding index
+//
+// WARN: kvs shouldn't contains any repeated key, otherwise only first-occured key will be given value
+func (self Value) GetMany(kvs []KeyVal) error {
+	if self.Check() != nil {
+		return self
+	}
+	if self.t != V_OBJECT {
+		return ErrUnsupportType
+	}
+	if e := self.getMany(kvs); e != 0 {
+		return NewParserObj(self.js).ExportError(e)
+	}
+	return nil
+}
+
+func (self Value) getMany(kvs []KeyVal) types.ParsingError {
+    p := NewParserObj(self.js)
+	if empty, e := p.objectBegin(); e != 0 {
+		return e
+	} else if empty {
+		return 0
+	}
+
+	count := len(kvs)
+	for count > 0 {
+		key, e := p.key()
+		if e != 0 {
+			return e
+		}
+		s, e := p.skipFast()
+		if e != 0 {
+			return e
+		}
+		for i, kv := range kvs {
+			if kv.Key == key {
+				kvs[i].Val = rawNode(self.js[s:p.p])
+				count--
+				break
+			}
+		}
+		if end, e := p.objectEnd(); e != 0 {
+			return e
+		} else if end {
+			break
+		}
+	}
+
+	return 0
+}
+
+// Index indexies node at given idx
+func (self Value) Index(idx int) Value {
+	if self.Check() != nil {
+		return self
+	}
+	p := NewParserObj(self.js)
+	s, e := p.getByPath(idx)
+	if e != 0 {
+		return errRawNode(p.ExportError(e))
+	}
+    return rawNode(self.js[s:p.p])
+}
+
+// IndexVal
+type IndexVal struct {
+	Index int
+	Val Value
+}
+
+// GetMany retrieves all the keys in kvs and set found Value at correpsonding index
+//
+// WARN: ids shouldn't contains any repeated index, otherwise only first-occured id will be given value
+func (self Value) IndexMany(ids []IndexVal) error {
+	if self.Check() != nil {
+		return self
+	}
+	if self.t != V_ARRAY {
+		return ErrUnsupportType
+	}
+	if e := self.indexMany(ids); e != 0 {
+		return NewParserObj(self.js).ExportError(e)
+	}
+	return nil
+}
+
+func (self Value) indexMany(ids []IndexVal) types.ParsingError {
+    p := NewParserObj(self.js)
+	if empty, e := p.arrayBegin(); e != 0 {
+		return e
+	} else if empty {
+		return 0
+	}
+
+	count := len(ids)
+	i := 0
+	for count > 0 {
+		s, e := p.skipFast()
+		if e != 0 {
+			return e
+		}
+		for j, kv := range ids {
+			if kv.Index == i {
+				ids[j].Val = rawNode(self.js[s:p.p])
+				count--
+				break
+			}
+		}
+		if end, e := p.arrayEnd(); e != 0 {
+			return e
+		} else if end {
+			break
+		}
+		i++
+	}
+
+	return 0
 }
 
 // Set sets the node of given key under self, and reports if the key has existed.
@@ -437,19 +558,6 @@ func (self *Value) UnsetByIndex(id int) (bool, error) {
 	return true, nil
 }
 
-// Index indexies node at given idx
-func (self Value) Index(idx int) Value {
-	if self.Check() != nil {
-		return self
-	}
-	p := NewParserObj(self.js)
-	s, e := p.getByPath(idx)
-	if e != 0 {
-		return errRawNode(p.ExportError(e))
-	}
-    return rawNode(self.js[s:p.p])
-}
-
 func (self Value) str() string {
 	return self.js[1:len(self.js)-1]
 }
@@ -581,21 +689,8 @@ func (self Value) String() (string, error) {
 	} 
 }
 
-// Array returns children of a V_ARRAY val, in original order
-func (self Value) Array() (ret []Value, err error) {
-	if self.t != V_ARRAY {
-		return nil, ErrUnsupportType
-	}
-	ret = make([]Value, 0, _DEFAULT_NODE_CAP)
-	err = self.ForEachElem(func(i int, node Value) bool {
-		ret = append(ret, node)
-		return true
-	})
-    return ret, err
-}
-
-// AppendArray appends children of the V_ARRAY val to buf
-func (self Value) AppendArray(buf *[]Value) (err error) {
+// Array appends children of the V_ARRAY to buf, in original order
+func (self Value) Array(buf *[]Value) (err error) {
 	if self.t != V_ARRAY {
 		return ErrUnsupportType
 	}
@@ -608,21 +703,8 @@ func (self Value) AppendArray(buf *[]Value) (err error) {
 	})
 }
 
-// Object returns children of the V_OBJECT val, without order
-func (self Value) Map() (ret map[string]Value, err error) {
-	if self.t != V_OBJECT {
-		return nil, ErrUnsupportType
-	}
-	ret = make(map[string]Value, _DEFAULT_NODE_CAP)
-	err = self.ForEachKV(func(key string, node Value) bool {
-		ret[key] = node
-		return true
-	})
-    return ret, err
-}
-
-// AppendMap appends children of the V_OBJECT val to buf, in original order
-func (self Value) AppendMap(buf *map[string]Value) (err error) {
+// Map appends children of the V_OBJECT to buf
+func (self Value) Map(buf *map[string]Value) (err error) {
 	if self.t != V_OBJECT {
 		return ErrUnsupportType
 	}
@@ -631,6 +713,20 @@ func (self Value) AppendMap(buf *map[string]Value) (err error) {
 	}
     return self.ForEachKV(func(key string, node Value) bool {
 		(*buf)[key] = node
+		return true
+	})
+}
+
+// Map appends children of the V_OBJECT to buf, in original array
+func (self Value) MapAsSlice(buf *[]KeyVal) (err error) {
+	if self.t != V_OBJECT {
+		return ErrUnsupportType
+	}
+	if *buf == nil {
+		*buf = make([]KeyVal, 0, _DEFAULT_NODE_CAP)
+	}
+    return self.ForEachKV(func(key string, node Value) bool {
+		*buf = append(*buf, KeyVal{key, node})
 		return true
 	})
 }

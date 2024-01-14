@@ -409,7 +409,6 @@ func (self *Parser) searchKey(match string) (int, types.ParsingError) {
 
     var njs types.JsonState
     var err types.ParsingError
-    
 
     /* decode each pair */
     for {
@@ -751,7 +750,7 @@ func (self *Parser) decodeNumber(decode bool) {
 }
 
 // ExportError converts types.ParsingError to std Error
-func (self *Parser) ExportError(err types.ParsingError) error {
+func (self Parser) ExportError(err types.ParsingError) error {
     if err == _ERR_NOT_FOUND {
         return ErrNotExist
     }

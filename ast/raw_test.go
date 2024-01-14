@@ -42,6 +42,55 @@ func TestValAPI(t *testing.T) {
 	}
 }
 
+func TestGetMany(t *testing.T) {
+	var cases = []struct {
+		name string
+        js   string
+		kvs  interface{} // []KeyVal or []IndexVal
+		err  error
+    }{
+		{"Get fail", `{}`, []KeyVal{{"b", Value{}}}, nil},
+		{"Get 0", `{"a":1, "b":2, "c":3}`, []KeyVal{}, nil},
+		{"Get 1", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}}, nil},
+		{"Get 2", `{"a":1, "b":2, "c":3}`, []KeyVal{{"a", rawNode(`1`)}, {"c", rawNode(`3`)}}, nil},
+		{"Get 2", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"a", rawNode(`1`)}}, nil},
+		{"Get 3", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"a", rawNode(`1`)}}, nil},
+		{"Get 3", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"d", Value{}}, {"a", rawNode(`1`)}}, nil},
+		{"Index fail", `[]`, []IndexVal{{1, Value{}}}, nil},
+		{"Index 0", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}}, nil},
+		{"Index 1", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}}, nil},
+		{"Index 2", `[1 , 2, 3 ]`, []IndexVal{{0, rawNode(`1`)}, {2, rawNode(`3`)}}, nil},
+		{"Index 2", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}, {0, rawNode(`1`)}}, nil},
+		{"Index 3", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}, {2, rawNode(`3`)}, {0, rawNode(`1`)}}, nil},
+		{"Index 3", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}, {2, rawNode(`3`)}, {3, Value{}}, {0, rawNode(`1`)}}, nil},
+	}
+	for i, c := range cases {
+        fmt.Println(i, c)
+		node := NewValue(c.js)
+		var err error
+		if kvs, ok := c.kvs.([]KeyVal); ok {
+			cp := make([]KeyVal, 0)
+			for _, kv := range kvs {
+				cp = append(cp, KeyVal{kv.Key, Value{}})
+			}
+			err = node.GetMany(cp)
+			require.Equal(t, kvs, cp)
+		} else  if ids, ok := c.kvs.([]IndexVal); ok {
+			cp := make([]IndexVal, 0)
+			for _, kv := range ids {
+				cp = append(cp, IndexVal{kv.Index, Value{}})
+			}
+			err = node.IndexMany(cp)
+			require.Equal(t, ids, cp)
+		}
+		
+		if err != nil && c.err.Error() != err.Error() {
+			t.Fatal(err)
+		}
+		
+	}
+}
+
 func TestForEachRaw(t *testing.T) {
     val := _TwitterJson
     node, err := NewSearcher(val).GetValueByPath()
