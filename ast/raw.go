@@ -183,7 +183,7 @@ func (self Value) GetMany(keys []string, vals []Value) error {
 	if self.t != V_OBJECT {
 		return ErrUnsupportType
 	}
-	if e := self.getMany(keys, func(i, s, e int) {
+	if e := self.getMany(keys, false, func(i, s, e int) {
 		vals[i] = rawNode(self.js[s:e])
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
@@ -191,7 +191,7 @@ func (self Value) GetMany(keys []string, vals []Value) error {
 	return nil
 }
 
-func (self Value) getMany(kvs []string, hook func (i, s, e int)) types.ParsingError {
+func (self Value) getMany(kvs []string, delete bool, hook func (i, s, e int))types.ParsingError {
     p := NewParserObj(self.js)
 	if empty, e := p.objectBegin(); e != 0 {
 		return e
@@ -201,25 +201,40 @@ func (self Value) getMany(kvs []string, hook func (i, s, e int)) types.ParsingEr
 
 	count := len(kvs)
 	for count > 0 {
-		key, e := p.key()
-		if e != 0 {
-			return e
+		ks := p.p
+		key, err := p.key()
+		if err != 0 {
+			return err
 		}
-		s, e := p.skipFast()
-		if e != 0 {
-			return e
+		s, err := p.skipFast()
+		if err != 0 {
+			return err
 		}
+
+		var found = -1
 		for i, kv := range kvs {
 			if kv == key {
-				hook(i, s, p.p)
+				if !delete {
+					hook(i, s, p.p)
+				} else {
+					found = i
+				}
 				count--
 				break
 			}
 		}
+
 		if end, e := p.objectEnd(); e != 0 {
 			return e
 		} else if end {
+			if found != -1 {
+				hook(found, ks, p.p-1)
+			}
 			break
+		}
+
+		if found != -1 {
+			hook(found, ks, p.p)
 		}
 	}
 
@@ -249,7 +264,7 @@ func (self Value) IndexMany(ids []int, vals []Value) error {
 	if self.t != V_ARRAY {
 		return ErrUnsupportType
 	}
-	if e := self.indexMany(ids, func(i, s, e int) {
+	if e := self.indexMany(ids, false, func(i, s, e int) {
 		vals[i] = rawNode(self.js[s:e])
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
@@ -257,7 +272,7 @@ func (self Value) IndexMany(ids []int, vals []Value) error {
 	return nil
 }
 
-func (self Value) indexMany(ids []int, hook func(i, s, e int)) types.ParsingError {
+func (self Value) indexMany(ids []int, delete bool, hook func(i, s, e int)) types.ParsingError {
     p := NewParserObj(self.js)
 	if empty, e := p.arrayBegin(); e != 0 {
 		return e
@@ -272,9 +287,14 @@ func (self Value) indexMany(ids []int, hook func(i, s, e int)) types.ParsingErro
 		if e != 0 {
 			return e
 		}
+
+		var found = -1
 		for j, id := range ids {
 			if id == i {
-				hook(j, s, p.p)
+				if !delete {
+					hook(j, s, p.p)
+				}
+				found = j
 				count--
 				break
 			}
@@ -282,7 +302,13 @@ func (self Value) indexMany(ids []int, hook func(i, s, e int)) types.ParsingErro
 		if end, e := p.arrayEnd(); e != 0 {
 			return e
 		} else if end {
+			if found != -1 && delete {
+				hook(found, s, p.p-1)
+			}
 			break
+		}
+		if found != -1 && delete {
+			hook(found, s, p.p)
 		}
 		i++
 	}
@@ -329,7 +355,7 @@ func (self *Value) SetMany(keys []string, vals []Value) error {
 	var size = len(self.js)
 
 	// collect replace points
-	if e := self.getMany(keys, func(i, s, e int) {
+	if e := self.getMany(keys, false, func(i, s, e int) {
 		size += len(vals[i].js) - (e - s)
 		points[i] = point{i, s, e}
 	}); e != 0 {
@@ -473,67 +499,6 @@ func (self *Value) Set(key string, val Value) (bool, error) {
 	return exist, nil
 }
 
-// Unset REMOVE the node of given key under object parent, and reports if the key has existed.
-func (self *Value) Unset(key string) (bool, error) {
-	if self.Check() != nil {
-		return false, self
-	}
-
-	if self.t == V_NULL {
-		*self = rawNode(`{}`)
-	}
-	if self.t != V_OBJECT {
-		return false, ErrUnsupportType
-	}
-
-    p := NewParserObj(self.js)
-	// start pos of "key"
-	s, e := p.searchKey(key)
-	if e != 0 {
-		if e == _ERR_NOT_FOUND {
-			return false, nil
-		} else {
-			return false, p.ExportError(e)
-		}
-	}
-
-	// end pos of val
-	_, e = p.skipFast()
-	if e != 0 {
-		return true, p.ExportError(e)
-	}
-
-	// trailling ',' or '}'
-	end, e := p.objectEnd()
-	if e != 0 {
-		return true, p.ExportError(e)
-	}
-	if end {
-		p.p--
-	}
-	
-	var b []byte
-	d := (p.p-s)
-	// if inplace == 0 { 
-		// allocate new string
-		b = make([]byte, len(self.js)-d)
-		copy(b, self.js[:s])
-		copy(b[s:], self.js[p.p:])
-	// } else if inplace == 1 { 
-	// 	// shrink string
-	// 	b = rt.Str2Mem(self.js)
-	// 	copy(b[s:], b[p.p:])
-	// 	b = b[:len(b)-d]
-	// } else {
-	// 	// trucate string
-	// 	b = rt.Str2Mem(self.js)
-	// 	rt.WriteChar(&b[s], d, ' ')
-	// }
-
-	self.js = rt.Mem2Str(b)
-	return true, nil
-}
-
 // SetByIndex sets the node of given index, and reports if the key has existed.
 // If the index is out range of self's children, it will be ADD to the last
 func (self *Value) SetByIndex(id int, val Value) (bool, error) {
@@ -609,7 +574,7 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) error {
 	var size = len(self.js)
 
 	// collect replace points
-	if e := self.indexMany(ids, func(i, s, e int) {
+	if e := self.indexMany(ids, false, func(i, s, e int) {
 		size += len(vals[i].js) - (e - s)
 		points[i] = point{i, s, e}
 	}); e != 0 {
@@ -715,40 +680,173 @@ func (self *Value) Add(val Value) error {
 	return nil
 }
 
-// UnsetByIndex REOMVE the node of given index.
-func (self *Value) UnsetByIndex(id int) (bool, error) {
+// Add appends the given node under self.
+func (self *Value) AddMany(vals []Value) error {
 	if self.Check() != nil {
-		return false, self
+		return self
+	}
+	if len(vals) == 0 {
+		return nil
+	}
+	if self.t == V_NULL {
+		*self = rawNode(`[]`)
 	}
 	if self.t != V_ARRAY {
-		return false, ErrUnsupportType
+		return ErrUnsupportType
 	}
 
-	// try search from raw
-    p := NewParserObj(self.js)
-	s, e := p.getByPath(id)
-	if e != 0 {
-		if e == _ERR_NOT_FOUND {
-			return false, nil
-		} else {
-			return false, p.ExportError(e)
+	n := len(self.js)
+	for _, v := range vals {
+		n += len(v.js) + 1
+	}
+	b := make([]byte, 0, n)
+
+	s := len(self.js)-2 //  start before ']'
+	for ; s>=0 && isSpace(self.js[s]); s-- {}
+	b = append(b, self.js[:s+1]...)
+	empty := self.js[s] == '['
+
+	for _, val := range vals {
+		if !empty {
+			b = append(b, ","...)
 		}
+		empty = false
+		b = append(b, val.js...)
 	}
 	
-	// trailling ',' or ']'
-	end, e := p.arrayEnd()
-	if e != 0 {
-		return true, p.ExportError(e)
-	}
-	if end {
-		p.p--
-	}
-	
-	b := make([]byte, len(self.js)-(p.p-s))
-	copy(b, self.js[:s])
-	copy(b[s:], self.js[p.p:])
+	b = append(b, "]"...)
 	self.js = rt.Mem2Str(b)
-	return true, nil
+	return nil
+}
+
+// Unset REMOVE the node of given key under object parent, and reports if the key has existed.
+func (self *Value) Unset(key string) (bool, error) {
+	n := len(self.js)
+	err := self.UnsetMany([]string{key})
+	return n != len(self.js), err
+}
+
+// UnsetMany REMOVE existing key and corresponding value of given keys.
+func (self *Value) UnsetMany(keys []string) (error) {
+	if self.Check() != nil {
+		return self
+	}
+	if self.t == V_NULL {
+		return nil
+	}
+	if self.t != V_OBJECT {
+		return ErrUnsupportType
+	}
+
+	points := make(points, len(keys))
+	size := len(self.js)
+	replaced := false
+	if err := self.getMany(keys, true, func(i, s, e int) {
+		points[i] = point{i, s, e}
+		size -= (e - s)
+		replaced = true
+	}); err != 0 {
+		return NewParserObj(self.js).ExportError(err)
+	}
+	if !replaced {
+		return nil
+	}
+
+	b := make([]byte, 0, size)
+	// write replace points
+	sort.Stable(points)
+	s := 0
+	for i, r := range points {
+		if r.s == 0 {
+			continue
+		}
+
+		// write left
+		b = append(b, self.js[s:r.s]...)
+
+		// write right
+		if i < len(points) - 1 {
+			s = points[i+1].s
+		} else {
+			s = len(self.js)
+		}
+		b = append(b, self.js[r.e:s]...)
+	}
+
+	// check if any redundant ','
+	for s = len(b)-2; s>=0 && isSpace(b[s]); s-- {}
+	if b[s] == ',' {
+		copy(b[s:], b[s+1:])
+		b = b[:len(b)-1]
+	}
+	
+	self.js = rt.Mem2Str(b)
+	return nil
+}
+
+// UnsetByIndex REOMVE the node of given index.
+func (self *Value) UnsetByIndex(id int) (bool, error) {
+	n := len(self.js)
+	err := self.UnsetManyByIndex([]int{id})
+	return n != len(self.js), err
+}
+
+// UnsetMany REMOVE existing id and corresponding value of given keys.
+func (self *Value) UnsetManyByIndex(ids []int) (error) {
+	if self.Check() != nil {
+		return self
+	}
+	if self.t == V_NULL {
+		return nil
+	}
+	if self.t != V_ARRAY {
+		return ErrUnsupportType
+	}
+
+	points := make(points, len(ids))
+	size := len(self.js)
+	replaced := false
+
+	if err := self.indexMany(ids, true, func(i, s, e int) {
+		points[i] = point{i, s, e}
+		size -= (e - s)
+		replaced = true
+	}); err != 0 {
+		return NewParserObj(self.js).ExportError(err)
+	}
+
+	if !replaced {
+		return nil
+	}
+
+	b := make([]byte, 0, size)
+	// write replace points
+	sort.Stable(points)
+	s := 0
+	for i, r := range points {
+		if r.s == 0 {
+			continue
+		}
+		// write left
+		b = append(b, self.js[s:r.s]...)
+		if i < len(points) - 1 {
+			s = points[i+1].s
+		} else {
+			s = len(self.js)
+		}
+		// write right
+		b = append(b, self.js[r.e:s]...)
+	}
+	
+	// check if any redundant ','
+	for s = len(b)-2; s>=0 && isSpace(b[s]); s-- {}
+	if b[s] == ',' {
+		copy(b[s:], b[s+1:])
+		b = b[:len(b)-1]
+	}
+
+	self.js = rt.Mem2Str(b)
+	return nil
 }
 
 func (self Value) str() string {

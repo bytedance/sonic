@@ -408,86 +408,16 @@ func TestRawNode_Unset(t *testing.T) {
 		err string
 		out string
 	}{
-		{
-			name: "exist object",
-			js: `{"a":1}`,
-			key: "a",
-			exist: true,
-			err: "",
-			out: `{}`,
-		},
-		{
-			name: "exist object space",
-			js: `{ "a":1 }`,
-			key: "a",
-			exist: true,
-			err: "",
-			out: `{ }`,
-		},
-		{
-			name: "exist object comma",
-			js: `{ "a":1 , "b":2 }`,
-			key: "a",
-			exist: true,
-			err: "",
-			out: `{  "b":2 }`,
-		},
-		{
-			name: "empty object",
-			js: `{ }`,
-			key: "a",
-			exist: false,
-			err: "",
-			out: `{ }`,
-		},
-		{
-			name: "not-exist object",
-			js: `{"b":1}`,
-			key: "a",
-			exist: false,
-			err: "",
-			out: `{"b":1}`,
-		},
-		{
-			name: "exist array",
-			js: `[1]`,
-			key: 0,
-			exist: true,
-			err: "",
-			out: `[]`,
-		},
-		{
-			name: "exist array space",
-			js: `[ 1 ]`,
-			key: 0,
-			exist: true,
-			err: "",
-			out: `[ ]`,
-		},
-		{
-			name: "exist array comma",
-			js: `[ 1, 2 ]`,
-			key: 0,
-			exist: true,
-			err: "",
-			out: `[  2 ]`,
-		},
-		{
-			name: "not exist array",
-			js: `[1]`,
-			key: 1,
-			exist: false,
-			err: "",
-			out: `[1]`,
-		},
-		{
-			name: "empty array",
-			js: `[ ]`,
-			key: 0,
-			exist: false,
-			err: "",
-			out: `[ ]`,
-		},
+		{"exist object",`{"a":1}`,"a",true,"",`{}`},
+		{"exist object space",`{ "a":1 }`,"a",true, "",`{ }`},
+		{"exist object comma",`{ "a":1 , "b":2 }`,"a",true, "",`{  "b":2 }`},
+		{"empty object",`{ }`,"a",false, "",`{ }`},
+		{"not-exist object",`{"b":1}`,"a",false, "",`{"b":1}`},
+		{"exist array",`[1]`,0,true, "",`[]`},
+		{"exist array space",`[ 1 ]`,0,true, "",`[ ]`},
+		{"exist array comma",`[ 1, 2 ]`,0,true, "",`[  2 ]`},
+		{"not exist array",`[1]`,1,false, "",`[1]`},
+		{"empty array",`[ ]`,0,false, "",`[ ]`},
 	}
 
 	for _, c := range tests {
@@ -500,9 +430,62 @@ func TestRawNode_Unset(t *testing.T) {
 		} else if id, ok := c.key.(int); ok {
 			exist, err = root.UnsetByIndex(id)
 		}
+
+		if err != nil && err.Error() != c.err {
+			t.Fatal(err.Error())
+		}
+		if out := root.Raw(); err != nil {
+			t.Fatal()
+		} else {
+			require.Equal(t, c.out, out)
+		}
 		if exist != c.exist {
 			t.Fatal()
 		}
+	}
+}
+
+func TestRawNode_UnsetMany(t *testing.T) {
+	tests := []struct{
+		name string
+		js string
+		key interface{}
+		err string
+		out string
+	}{
+		{"empty object",`{ }`,[]string{"a","c"}, "",`{ }`},
+		{"1-1 object",`{"a":1}`,[]string{"a"}, "",`{}`},
+		{"1-2 object",`{"a":1}`,[]string{"a","c"}, "",`{}`},
+		{"2-1 object",`{"a":1,"c":3}`,[]string{"a"},"",`{"c":3}`},
+		{"2-1 object",`{"a":1,"c":3}`,[]string{"c"},"",`{"a":1}`},
+		{"2-2 object",`{"a":1,"c":3}`,[]string{"a","c"},"",`{}`},
+		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"a","c"},"",`{"b":2}`},
+		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"a","b"},"",`{"c":3}`},
+		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"b","c"}, "",`{"a":1}`},
+		{"3-3 object",`{"a":1,"b":2,"c":3}`,[]string{"a","b","c"}, "",`{}`},
+
+		{"empty object",`[ ]`,[]int{0, 2}, "",`[ ]`},
+		{"1-1 object",`[1]`,[]int{0}, "",`[]`},
+		{"1-2 object",`[1]`,[]int{0,1}, "",`[]`},
+		{"2-1 object",`[1,2]`,[]int{0},"",`[2]`},
+		{"2-1 object",`[1,2]`,[]int{1},"",`[1]`},
+		{"2-2 object",`[1,2]`,[]int{0,1},"",`[]`},
+		{"3-2 object",`[1,2,3]`,[]int{0,2},"",`[2]`},
+		{"3-2 object",`[1,2,3]`,[]int{0,1},"",`[3]`},
+		{"3-2 object",`[1,2,3]`,[]int{1,2}, "",`[1]`},
+		{"3-3 object",`[1,2,3]`,[]int{0,1,2}, "",`[]`},
+	}
+
+	for _, c := range tests {
+		println(c.name)
+		root := NewValue(c.js)
+		var err error
+		if keys, ok := c.key.([]string); ok{
+			err = root.UnsetMany(keys)
+		} else if ids, ok := c.key.([]int); ok {
+			err = root.UnsetManyByIndex(ids)
+		}
+
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err.Error())
 		}
