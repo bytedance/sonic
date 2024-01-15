@@ -293,21 +293,23 @@ func (self Value) indexMany(ids []int, delete bool, hook func(i, s, e int)) type
 			if id == i {
 				if !delete {
 					hook(j, s, p.p)
+				} else {
+					found = j
 				}
-				found = j
 				count--
 				break
 			}
 		}
+
 		if end, e := p.arrayEnd(); e != 0 {
 			return e
 		} else if end {
-			if found != -1 && delete {
+			if found != -1 {
 				hook(found, s, p.p-1)
 			}
 			break
 		}
-		if found != -1 && delete {
+		if found != -1 {
 			hook(found, s, p.p)
 		}
 		i++
@@ -336,30 +338,40 @@ func (ps points) Len() int {
 	return len(ps)
 }
 
+// Set sets the node of given key under self, and reports if the key has existed.
+func (self *Value) Set(key string, val Value) (bool, error) {
+	return self.SetMany([]string{key}, []Value{val})
+}
+
 // SetMany retries kvs in the V_OBJECT value, 
 // and replace (exist) or insert (not-exist) key with correpsonding value
 //
 // WARN: kvs shouldn't contains any repeated key, otherwise the repeated key will be regarded as new key and insert
-func (self *Value) SetMany(keys []string, vals []Value) error {
+func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 	if self.Check() != nil {
-		return self
-	}
-	if self.t != V_OBJECT {
-		return ErrUnsupportType
+		return false, self
 	}
 	if len(keys) == 0 {
-		return nil
+		return false, nil
+	}
+	if self.t == V_NULL {
+		*self = rawNode(`[]`)
+	}
+	if self.t != V_OBJECT {
+		return false, ErrUnsupportType
 	}
 
 	var points = make(points, len(keys))
 	var size = len(self.js)
+	var exist = false
 
 	// collect replace points
 	if e := self.getMany(keys, false, func(i, s, e int) {
 		size += len(vals[i].js) - (e - s)
 		points[i] = point{i, s, e}
+		exist = true
 	}); e != 0 {
-		return NewParserObj(self.js).ExportError(e)
+		return exist, NewParserObj(self.js).ExportError(e)
 	}
 
 	// collect insert ponts
@@ -375,12 +387,10 @@ func (self *Value) SetMany(keys []string, vals []Value) error {
 	// write replace points
 	sort.Stable(points)
 	s := 0
-	replaced := false
 	for i, r := range points {
 		if r.s == 0 {
 			continue
 		}
-		replaced = true
 		// write left
 		b = append(b, self.js[s:r.s]...)
 		// write new val
@@ -396,7 +406,7 @@ func (self *Value) SetMany(keys []string, vals []Value) error {
 	}
 
 	s = len(self.js) - 2
-	if !replaced {
+	if !exist {
 		b = append(b, self.js[:s+1]...)
 	}
 	for ; s>=0 && isSpace(self.js[s]); s-- {}
@@ -422,93 +432,24 @@ func (self *Value) SetMany(keys []string, vals []Value) error {
 	b = append(b, "}"...)
 
 	self.js = rt.Mem2Str(b)
-	return nil
-}
-
-// Set sets the node of given key under self, and reports if the key has existed.
-func (self *Value) Set(key string, val Value) (bool, error) {
-	if val.Check() != nil {
-		return false, val
-	}
-	if self.Check() != nil {
-		return false, self
-	}
-	if self.t != V_OBJECT {
-		return false, ErrUnsupportType
-	}
-
-	in := val.js
-	exist := true
-
-    p := NewParserObj(self.js)
-	s, e := p.getByPath(key)
-	if e != 0 {
-		if e == _ERR_NOT_FOUND {
-			exist = false
-		} else {
-			return false, p.ExportError(e)
-		}
-	}
-	
-	var b []byte
-	// at least size is left + val + right
-	n := len(in)+s+(len(self.js)-p.p)
-
-	if !exist {
-		// not exist, need write "key":
-		var s = p.p-1 // _ERR_NOT_FOUND stop at ']'
-		for ; s>=0 && isSpace(self.js[s]); s-- {}
-		if self.js[s] == '{' {
-			b = make([]byte, 0, 3+len(key)+n)
-			b = append(b, self.js[:s+1]...)
-		} else {
-			// not empty, no need ','
-			b = make([]byte, 0, 4+len(key)+n)
-			b = append(b, self.js[:s+1]...)
-			b = append(b, ","...)
-		}
-		quote(&b, key)
-		b = append(b, ":"...)
-	} else {
-		// exist
-		// canInplace := len(in) <= (p.p - s)
-		// if inplace == 1 && canInplace {
-		// 	// join and shrink old string
-		// 	b := rt.Str2Mem(self.js)
-		// 	copy(b[s:], in)
-		// 	copy(b[s+len(in):], b[p.p:])
-		// 	self.js = rt.Mem2Str(b[:n])
-		// 	return exist, nil
-		// } else if inplace == 2 && canInplace {
-		// 	// join and trucate old string
-		// 	b := rt.Str2Mem(self.js)
-		// 	copy(b[s:], in)
-		// 	rt.WriteChar(&b[s+len(in)], (p.p - s) - len(in), ' ')
-		// 	return exist, nil
-		// }
-		// slow path: allocate new string
-		b = make([]byte, 0, n)
-		b = append(b, self.js[:s]...)
-	}
-
-	// write val
-	b = append(b, in...)
-	b = append(b, self.js[p.p:]...)
-	self.js = rt.Mem2Str(b)
-
 	return exist, nil
 }
 
 // SetByIndex sets the node of given index, and reports if the key has existed.
 // If the index is out range of self's children, it will be ADD to the last
 func (self *Value) SetByIndex(id int, val Value) (bool, error) {
-	if val.Check() != nil {
-		return false, val
-	}
+	return self.SetManyByIndex([]int{id}, []Value{val})
+}
+
+// SetManyByIndex retries ids in the V_ARRAY value, 
+// and replace (exist) or insert (not-exist) id of ids with correpsonding value of vals
+func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	if self.Check() != nil {
 		return false, self
 	}
-
+	if len(ids) == 0 {
+		return false, nil
+	}
 	if self.t == V_NULL {
 		*self = rawNode(`[]`)
 	}
@@ -516,69 +457,17 @@ func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 		return false, ErrUnsupportType
 	}
 
-	exist := true
-	// try search from raw
-    p := NewParserObj(self.js)
-	s, e := p.getByPath(id)
-	if e != 0 {
-		if e == _ERR_NOT_FOUND {
-			exist = false
-		} else {
-			return false, p.ExportError(e)
-		}
-	}
-	
-	var b []byte
-	// at least size is left + val + right
-	n := len(val.js)+s+(len(self.js)-p.p)
-	if !exist {
-		// not exist, need write "key":
-		var s = p.p-1 // _ERR_NOT_FOUND stop at ']'
-		for ; s>=0 && isSpace(self.js[s]); s-- {}
-		if self.js[s] == '[' {
-			b = make([]byte, 0, n)
-			b = append(b, self.js[:s+1]...)
-		} else {
-			// the container is not empty, need ','
-			b = make([]byte, 0, 1+n)
-			b = append(b, self.js[:s+1]...)
-			b = append(b, ","...)
-		}
-	} else {
-		b = make([]byte, 0, n)
-		b = append(b, self.js[:s]...)
-	}
-
-	// write val
-	b = append(b, val.js...)
-	b = append(b, self.js[p.p:]...)
-	self.js = rt.Mem2Str(b)
-
-	return exist, nil
-}
-
-// SetManyByIndex retries ids in the V_ARRAY value, 
-// and replace (exist) or insert (not-exist) id of ids with correpsonding value of vals
-func (self *Value) SetManyByIndex(ids []int, vals []Value) error {
-	if self.Check() != nil {
-		return self
-	}
-	if self.t != V_ARRAY {
-		return ErrUnsupportType
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-
 	var points = make(points, len(ids))
 	var size = len(self.js)
+	var exist = false
 
 	// collect replace points
 	if e := self.indexMany(ids, false, func(i, s, e int) {
 		size += len(vals[i].js) - (e - s)
 		points[i] = point{i, s, e}
+		exist = true
 	}); e != 0 {
-		return NewParserObj(self.js).ExportError(e)
+		return exist, NewParserObj(self.js).ExportError(e)
 	}
 
 	// collect insert ponts
@@ -594,12 +483,10 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) error {
 	// write replace points
 	sort.Stable(points)
 	s := 0
-	replaced := false
 	for i, r := range points {
 		if r.s == 0 {
 			continue
 		}
-		replaced = true
 		// write left
 		b = append(b, self.js[s:r.s]...)
 		// write new val
@@ -615,7 +502,7 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) error {
 	}
 
 	s = len(self.js) - 2
-	if !replaced {
+	if !exist {
 		b = append(b, self.js[:s+1]...)
 	}
 	for ; s>=0 && isSpace(self.js[s]); s-- {}
@@ -638,46 +525,13 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) error {
 	b = append(b, "]"...)
 
 	self.js = rt.Mem2Str(b)
-	return nil
+	return exist, nil
 }
 
 
 // Add appends the given node under self.
 func (self *Value) Add(val Value) error {
-	if val.Check() != nil {
-		return val
-	}
-	if self.Check() != nil {
-		return self
-	}
-
-	if self.t == V_NULL {
-		*self = rawNode(`[]`)
-	}
-	if self.t != V_ARRAY {
-		return ErrUnsupportType
-	}
-
-	var s = len(self.js)-1 //  start before ']'
-	for ; s>=0 && isSpace(self.js[s]); s-- {}
-
-	var b []byte
-	// at least size is left + val + right
-	n := s+1+len(val.js)+1
-	if self.js[s] == '[' {
-		b = make([]byte, 0, n)
-		b = append(b, self.js[:s+1]...)
-	} else {
-		// the container is not empty, need ','
-		b = make([]byte, 0, 1+n)
-		b = append(b, self.js[:s+1]...)
-		b = append(b, ","...)
-	}
-
-	b = append(b, val.js...)
-	b = append(b, "]"...)
-	self.js = rt.Mem2Str(b)
-	return nil
+	return self.AddMany([]Value{val})
 }
 
 // Add appends the given node under self.

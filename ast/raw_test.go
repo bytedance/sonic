@@ -138,7 +138,7 @@ func TestSetMany(t *testing.T) {
 				keys = append(keys, kv.Key)
 				vals = append(vals, kv.Val)
 			}
-			err = node.SetMany(keys, vals)
+			_, err = node.SetMany(keys, vals)
 			require.Equal(t, c.exp, node.Raw())
 		} else  if ids, ok := c.kvs.([]IndexVal); ok {
 			keys := []int{}
@@ -147,7 +147,7 @@ func TestSetMany(t *testing.T) {
 				keys = append(keys, kv.Index)
 				vals = append(vals, kv.Val)
 			}
-			err = node.SetManyByIndex(keys, vals)
+			_, err = node.SetManyByIndex(keys, vals)
 			require.Equal(t, c.exp, node.Raw())
 		}
 		if err != nil && c.err != err.Error() {
@@ -284,96 +284,14 @@ func TestRawNode_Set(t *testing.T) {
 		err string
 		out string
 	}{
-		{
-			name: "exist object",
-			js: `{"a":1}`,
-			key: "a",
-			val: NewValue(`2`),
-			exist: true,
-			err: "",
-			out: `{"a":2}`,
-		},
-		{
-			name: "not-exist object space",
-			js: `{"b":1 }`,
-			key: "a",
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `{"b":1,"a":2}`,
-		},
-		{
-			name: "not-exist object",
-			js: `{"b":1}`,
-			key: "a",
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `{"b":1,"a":2}`,
-		},
-		{
-			name: "empty object",
-			js: `{}`,
-			key: "a",
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `{"a":2}`,
-		},
-		{
-			name: "empty object space",
-			js: `{ }`,
-			key: "a",
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `{"a":2}`,
-		},
-		{
-			name: "exist array",
-			js: `[1]`,
-			key: 0,
-			val: NewValue(`2`),
-			exist: true,
-			err: "",
-			out: `[2]`,
-		},
-		{
-			name: "not exist array",
-			js: `[1]`,
-			key: 1,
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `[1,2]`,
-		},
-		{
-			name: "not exist array over",
-			js: `[1 ]`,
-			key: 99,
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `[1,2]`,
-		},
-		{
-			name: "empty array",
-			js: `[]`,
-			key: 1,
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `[2]`,
-		},
-		{
-			name: "empty array space",
-			js: `[ ]`,
-			key: 1,
-			val: NewValue(`2`),
-			exist: false,
-			err: "",
-			out: `[2]`,
-		},
+		{"exist object",`{"a":1}`,"a",NewValue(`2`),true,"",`{"a":2}`},
+		{"not-exist object space",`{"b":1}`,"a",NewValue(`2`),false,"",`{"b":1,"a":2}`},
+		{"not-exist object",`{"b":1}`,"a",NewValue(`2`),false,"",`{"b":1,"a":2}`},
+		{"empty object",`{}`,"a",NewValue(`2`),false,"",`{"a":2}`},
+		{"exist array",`[1]`,0,NewValue(`2`),true,"",`[2]`},
+		{"not exist array",`[1]`,1,NewValue(`2`),false,"",`[1,2]`},
+		{"not exist array over",`[1]`,99,NewValue(`2`),false,"",`[1,2]`},
+		{"empty array",`[]`,1,NewValue(`2`),false,"",`[2]`},
 	}
 	for _, c := range tests {
 		println(c.name)
@@ -393,8 +311,8 @@ func TestRawNode_Set(t *testing.T) {
 		}
 		if out := root.Raw(); err != nil {
 			t.Fatal()
-		} else if out != c.out {
-			t.Fatal()
+		} else {
+			require.Equal(t, c.out, out)
 		}
 	}
 }
