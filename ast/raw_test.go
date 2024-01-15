@@ -41,6 +41,12 @@ func TestValAPI(t *testing.T) {
 	}
 }
 
+// IndexVal
+type IndexVal struct {
+	Index int
+	Val Value
+}
+
 func TestGetMany(t *testing.T) {
 	var cases = []struct {
 		name string
@@ -48,13 +54,13 @@ func TestGetMany(t *testing.T) {
 		kvs  interface{} // []KeyVal or []IndexVal
 		err  error
     }{
-		{"Get fail", `{}`, []KeyVal{{"b", Value{}}}, nil},
-		{"Get 0", `{"a":1, "b":2, "c":3}`, []KeyVal{}, nil},
-		{"Get 1", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}}, nil},
-		{"Get 2", `{"a":1, "b":2, "c":3}`, []KeyVal{{"a", rawNode(`1`)}, {"c", rawNode(`3`)}}, nil},
-		{"Get 2", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"a", rawNode(`1`)}}, nil},
-		{"Get 3", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"a", rawNode(`1`)}}, nil},
-		{"Get 3", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"d", Value{}}, {"a", rawNode(`1`)}}, nil},
+		{"Get fail", `{}`, []keyVal{{"b", Value{}}}, nil},
+		{"Get 0", `{"a":1, "b":2, "c":3}`, []keyVal{}, nil},
+		{"Get 1", `{"a":1, "b":2, "c":3}`, []keyVal{{"b", rawNode(`2`)}}, nil},
+		{"Get 2", `{"a":1, "b":2, "c":3}`, []keyVal{{"a", rawNode(`1`)}, {"c", rawNode(`3`)}}, nil},
+		{"Get 2", `{"a":1, "b":2, "c":3}`, []keyVal{{"b", rawNode(`2`)}, {"a", rawNode(`1`)}}, nil},
+		{"Get 3", `{"a":1, "b":2, "c":3}`, []keyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"a", rawNode(`1`)}}, nil},
+		{"Get 3", `{"a":1, "b":2, "c":3}`, []keyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"d", Value{}}, {"a", rawNode(`1`)}}, nil},
 		{"Index fail", `[]`, []IndexVal{{1, Value{}}}, nil},
 		{"Index 0", `[1, 2, 3]`, []IndexVal{{1, rawNode(`2`)}}, nil},
 		{"Index 1", `[1, 2, 3]`, []IndexVal{{1, rawNode(`2`)}}, nil},
@@ -67,20 +73,26 @@ func TestGetMany(t *testing.T) {
         fmt.Println(i, c)
 		node := NewValue(c.js)
 		var err error
-		if kvs, ok := c.kvs.([]KeyVal); ok {
-			cp := make([]KeyVal, 0)
+		if kvs, ok := c.kvs.([]keyVal); ok {
+			keys := []string{}
+			vals := []Value{}
 			for _, kv := range kvs {
-				cp = append(cp, KeyVal{kv.Key, Value{}})
+				keys = append(keys, kv.Key)
+				vals = append(vals, kv.Val)
 			}
-			err = node.GetMany(cp)
-			require.Equal(t, kvs, cp)
+			act := make([]Value, len(keys))
+			err = node.GetMany(keys, act)
+			require.Equal(t, vals, act)
 		} else  if ids, ok := c.kvs.([]IndexVal); ok {
-			cp := make([]IndexVal, 0)
+			keys := []int{}
+			vals := []Value{}
 			for _, kv := range ids {
-				cp = append(cp, IndexVal{kv.Index, Value{}})
+				keys = append(keys, kv.Index)
+				vals = append(vals, kv.Val)
 			}
-			err = node.IndexMany(cp)
-			require.Equal(t, ids, cp)
+			act := make([]Value, len(keys))
+			err = node.IndexMany(keys, act)
+			require.Equal(t, vals, act)
 		}
 		if err != nil && c.err.Error() != err.Error() {
 			t.Fatal(err)
@@ -96,14 +108,14 @@ func TestSetMany(t *testing.T) {
 		exp string
 		err string
 	}{
-		{"replace 1", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}}, `{ "a" : 11, "b" : 2}`, ""},
-		{"replace 2", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}, {"b", rawNode(`22`)}}, `{ "a" : 11, "b" : 22}`, ""},
-		{"replace repeated", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}, {"a", rawNode(`22`)}}, `{ "a" : 11, "b" : 2,"a":22}`, ""},
-		{"insert empty", `{ } `, []KeyVal{{"c", rawNode(`33`)}}, `{ "c":33}`, ""},
-		{"insert repeated", `{ } `, []KeyVal{{"c", rawNode(`33`)}, {"c", rawNode(`33`)}}, `{ "c":33,"c":33}`, ""},
-		{"insert 1", `{ "a" : 1, "b" : 2} `, []KeyVal{{"c", rawNode(`33`)}}, `{ "a" : 1, "b" : 2,"c":33}`, ""},
-		{"insert 2", `{ "a" : 1, "b" : 2} `, []KeyVal{{"c", rawNode(`33`)},{"d", rawNode(`44`)}}, `{ "a" : 1, "b" : 2,"c":33,"d":44}`, ""},
-		{"replace 1, insert 1", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}, {"c", rawNode(`33`)}}, `{ "a" : 11, "b" : 2,"c":33}`, ""},
+		{"replace 1", `{ "a" : 1, "b" : 2} `, []keyVal{{"a", rawNode(`11`)}}, `{ "a" : 11, "b" : 2}`, ""},
+		{"replace 2", `{ "a" : 1, "b" : 2} `, []keyVal{{"a", rawNode(`11`)}, {"b", rawNode(`22`)}}, `{ "a" : 11, "b" : 22}`, ""},
+		{"replace repeated", `{ "a" : 1, "b" : 2} `, []keyVal{{"a", rawNode(`11`)}, {"a", rawNode(`22`)}}, `{ "a" : 11, "b" : 2,"a":22}`, ""},
+		{"insert empty", `{ } `, []keyVal{{"c", rawNode(`33`)}}, `{ "c":33}`, ""},
+		{"insert repeated", `{ } `, []keyVal{{"c", rawNode(`33`)}, {"c", rawNode(`33`)}}, `{ "c":33,"c":33}`, ""},
+		{"insert 1", `{ "a" : 1, "b" : 2} `, []keyVal{{"c", rawNode(`33`)}}, `{ "a" : 1, "b" : 2,"c":33}`, ""},
+		{"insert 2", `{ "a" : 1, "b" : 2} `, []keyVal{{"c", rawNode(`33`)},{"d", rawNode(`44`)}}, `{ "a" : 1, "b" : 2,"c":33,"d":44}`, ""},
+		{"replace 1, insert 1", `{ "a" : 1, "b" : 2} `, []keyVal{{"a", rawNode(`11`)}, {"c", rawNode(`33`)}}, `{ "a" : 11, "b" : 2,"c":33}`, ""},
 		
 		{"replace 1", `[ 1, 2] `, []IndexVal{{0, rawNode(`11`)}}, `[ 11, 2]`, ""},
 		{"replace 2", `[ 1, 2] `, []IndexVal{{0, rawNode(`11`)}, {0, rawNode(`22`)}}, `[ 11, 2,22]`, ""},
@@ -119,11 +131,23 @@ func TestSetMany(t *testing.T) {
 		println(i, c.name)
 		node := NewValue(c.js)
 		var err error
-		if kvs, ok := c.kvs.([]KeyVal); ok {
-			err = node.SetMany(kvs)
+		if kvs, ok := c.kvs.([]keyVal); ok {
+			keys := []string{}
+			vals := []Value{}
+			for _, kv := range kvs {
+				keys = append(keys, kv.Key)
+				vals = append(vals, kv.Val)
+			}
+			err = node.SetMany(keys, vals)
 			require.Equal(t, c.exp, node.Raw())
 		} else  if ids, ok := c.kvs.([]IndexVal); ok {
-			err = node.SetManyByIndex(ids)
+			keys := []int{}
+			vals := []Value{}
+			for _, kv := range ids {
+				keys = append(keys, kv.Index)
+				vals = append(vals, kv.Val)
+			}
+			err = node.SetManyByIndex(keys, vals)
 			require.Equal(t, c.exp, node.Raw())
 		}
 		if err != nil && c.err != err.Error() {

@@ -167,8 +167,8 @@ func (self Value) Get(key string) Value {
     return rawNode(self.js[s:p.p])
 }
 
-// KeyVal is a pair of string key and json Value
-type KeyVal struct {
+// keyVal is a pair of string key and json Value
+type keyVal struct {
 	Key string
 	Val Value
 }
@@ -176,22 +176,22 @@ type KeyVal struct {
 // GetMany retrieves all the keys in kvs and set found Value at correpsonding index
 //
 // WARN: kvs shouldn't contains any repeated key, otherwise only first-occured key will be given value
-func (self Value) GetMany(kvs []KeyVal) error {
+func (self Value) GetMany(keys []string, vals []Value) error {
 	if self.Check() != nil {
 		return self
 	}
 	if self.t != V_OBJECT {
 		return ErrUnsupportType
 	}
-	if e := self.getMany(kvs, func(i, s, e int) {
-		kvs[i].Val = rawNode(self.js[s:e])
+	if e := self.getMany(keys, func(i, s, e int) {
+		vals[i] = rawNode(self.js[s:e])
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
 	}
 	return nil
 }
 
-func (self Value) getMany(kvs []KeyVal, hook func (i, s, e int)) types.ParsingError {
+func (self Value) getMany(kvs []string, hook func (i, s, e int)) types.ParsingError {
     p := NewParserObj(self.js)
 	if empty, e := p.objectBegin(); e != 0 {
 		return e
@@ -210,7 +210,7 @@ func (self Value) getMany(kvs []KeyVal, hook func (i, s, e int)) types.ParsingEr
 			return e
 		}
 		for i, kv := range kvs {
-			if kv.Key == key {
+			if kv == key {
 				hook(i, s, p.p)
 				count--
 				break
@@ -239,16 +239,10 @@ func (self Value) Index(idx int) Value {
     return rawNode(self.js[s:p.p])
 }
 
-// IndexVal
-type IndexVal struct {
-	Index int
-	Val Value
-}
-
-// GetMany retrieves all the keys in kvs and set found Value at correpsonding index
+// GetMany retrieves all the indexes in ids and set found Value at correpsonding index of vals
 //
 // WARN: ids shouldn't contains any repeated index, otherwise only first-occured id will be given value
-func (self Value) IndexMany(ids []IndexVal) error {
+func (self Value) IndexMany(ids []int, vals []Value) error {
 	if self.Check() != nil {
 		return self
 	}
@@ -256,14 +250,14 @@ func (self Value) IndexMany(ids []IndexVal) error {
 		return ErrUnsupportType
 	}
 	if e := self.indexMany(ids, func(i, s, e int) {
-		ids[i].Val = rawNode(self.js[s:e])
+		vals[i] = rawNode(self.js[s:e])
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
 	}
 	return nil
 }
 
-func (self Value) indexMany(ids []IndexVal, hook func(i, s, e int)) types.ParsingError {
+func (self Value) indexMany(ids []int, hook func(i, s, e int)) types.ParsingError {
     p := NewParserObj(self.js)
 	if empty, e := p.arrayBegin(); e != 0 {
 		return e
@@ -278,8 +272,8 @@ func (self Value) indexMany(ids []IndexVal, hook func(i, s, e int)) types.Parsin
 		if e != 0 {
 			return e
 		}
-		for j, kv := range ids {
-			if kv.Index == i {
+		for j, id := range ids {
+			if id == i {
 				hook(j, s, p.p)
 				count--
 				break
@@ -320,23 +314,23 @@ func (ps points) Len() int {
 // and replace (exist) or insert (not-exist) key with correpsonding value
 //
 // WARN: kvs shouldn't contains any repeated key, otherwise the repeated key will be regarded as new key and insert
-func (self *Value) SetMany(kvs []KeyVal) error {
+func (self *Value) SetMany(keys []string, vals []Value) error {
 	if self.Check() != nil {
 		return self
 	}
 	if self.t != V_OBJECT {
 		return ErrUnsupportType
 	}
-	if len(kvs) == 0 {
+	if len(keys) == 0 {
 		return nil
 	}
 
-	var points = make(points, len(kvs))
+	var points = make(points, len(keys))
 	var size = len(self.js)
 
 	// collect replace points
-	if e := self.getMany(kvs, func(i, s, e int) {
-		size += len(kvs[i].Val.js) - (e - s)
+	if e := self.getMany(keys, func(i, s, e int) {
+		size += len(vals[i].js) - (e - s)
 		points[i] = point{i, s, e}
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
@@ -346,7 +340,7 @@ func (self *Value) SetMany(kvs []KeyVal) error {
 	for i, r := range points {
 		if r.s == 0 {
 			points[i].i = i
-			size += len(kvs[i].Val.js) + 4 + len(kvs[i].Key)
+			size += len(vals[i].js) + 4 + len(keys[i])
 		}
 	}
 	
@@ -364,7 +358,7 @@ func (self *Value) SetMany(kvs []KeyVal) error {
 		// write left
 		b = append(b, self.js[s:r.s]...)
 		// write new val
-		b = append(b, kvs[r.i].Val.js...)
+		b = append(b, vals[r.i].js...)
 		if i < len(points) - 1 {
 			s = points[i+1].s
 		} else {
@@ -393,10 +387,10 @@ func (self *Value) SetMany(kvs []KeyVal) error {
 		}
 		empty = false
 		// write key
-		quote(&b, kvs[r.i].Key)
+		quote(&b, keys[r.i])
 		b = append(b, ":"...)
 		// write new val
-		b = append(b, kvs[r.i].Val.js...)
+		b = append(b, vals[r.i].js...)
 	}
 	
 	b = append(b, "}"...)
@@ -599,8 +593,8 @@ func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 }
 
 // SetManyByIndex retries ids in the V_ARRAY value, 
-// and replace (exist) or insert (not-exist) id with correpsonding value
-func (self *Value) SetManyByIndex(ids []IndexVal) error {
+// and replace (exist) or insert (not-exist) id of ids with correpsonding value of vals
+func (self *Value) SetManyByIndex(ids []int, vals []Value) error {
 	if self.Check() != nil {
 		return self
 	}
@@ -616,7 +610,7 @@ func (self *Value) SetManyByIndex(ids []IndexVal) error {
 
 	// collect replace points
 	if e := self.indexMany(ids, func(i, s, e int) {
-		size += len(ids[i].Val.js) - (e - s)
+		size += len(vals[i].js) - (e - s)
 		points[i] = point{i, s, e}
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
@@ -626,7 +620,7 @@ func (self *Value) SetManyByIndex(ids []IndexVal) error {
 	for i, r := range points {
 		if r.s == 0 {
 			points[i].i = i
-			size += len(ids[i].Val.js) + 1
+			size += len(vals[i].js) + 1
 		}
 	}
 	
@@ -644,7 +638,7 @@ func (self *Value) SetManyByIndex(ids []IndexVal) error {
 		// write left
 		b = append(b, self.js[s:r.s]...)
 		// write new val
-		b = append(b, ids[r.i].Val.js...)
+		b = append(b, vals[r.i].js...)
 		if i < len(points) - 1 {
 			s = points[i+1].s
 		} else {
@@ -673,7 +667,7 @@ func (self *Value) SetManyByIndex(ids []IndexVal) error {
 		}
 		empty = false
 		// write new val
-		b = append(b, ids[r.i].Val.js...)
+		b = append(b, vals[r.i].js...)
 	}
 	
 	b = append(b, "]"...)
@@ -917,15 +911,15 @@ func (self Value) Map(buf *map[string]Value) (err error) {
 }
 
 // Map appends children of the V_OBJECT to buf, in original array
-func (self Value) MapAsSlice(buf *[]KeyVal) (err error) {
+func (self Value) MapAsSlice(buf *[]keyVal) (err error) {
 	if self.t != V_OBJECT {
 		return ErrUnsupportType
 	}
 	if *buf == nil {
-		*buf = make([]KeyVal, 0, _DEFAULT_NODE_CAP)
+		*buf = make([]keyVal, 0, _DEFAULT_NODE_CAP)
 	}
     return self.ForEachKV(func(key string, node Value) bool {
-		*buf = append(*buf, KeyVal{key, node})
+		*buf = append(*buf, keyVal{key, node})
 		return true
 	})
 }
