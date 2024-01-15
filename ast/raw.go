@@ -154,6 +154,105 @@ func (self Value) GetByPath(path ...interface{}) Value {
     return rawNode(self.js[s:p.p])
 }
 
+// GetByPath load given path on demands,
+// which only ensure nodes before this path got parsed
+func (self *Value) SetByPath(val Value, path ...interface{}) error {
+	if self.Check() != nil {
+		return self
+	}
+	if val.Check() != nil {
+		return val
+	}
+
+	p := NewParserObj(self.js)
+	var err types.ParsingError
+	var idx int
+
+	for i, k := range path {
+        if id, ok := k.(int); ok && id >= 0 {
+            if err = p.searchIndex(id); err != 0 {
+				if err != _ERR_NOT_FOUND {
+                	return errRawNode(p.ExportError(err))
+				}
+				idx = i
+				break
+            }
+        } else if key, ok := k.(string); ok {
+            if _, err = p.searchKey(key); err != 0 {
+				if err != _ERR_NOT_FOUND {
+                	return errRawNode(p.ExportError(err))
+				}
+				idx = i
+				break
+            }
+        } else {
+            panic("path must be either int(>=0) or string")
+        }
+    }
+
+	var b []byte
+	if err == 0 {
+		// found, just skip and replace
+		s, err := p.skip()
+		if err != 0 {
+			return errRawNode(p.ExportError(err))
+		}
+		size := len(self.js) + len(val.js) - (p.p-s)
+		b = make([]byte, 0, size)
+		b = append(b, self.js[:s]...)
+		b = append(b, val.js...)
+	} else {
+		// not found, stop at end of idx's parent
+		s := p.p-1
+		for ; s>=0 && isSpace(self.js[s]); s-- {}
+		empty := (self.js[s] == '[' || self.js[s] == '{')
+		size := len(self.js) + len(val.js) + 8*(len(path)-idx)
+		b = make([]byte, 0, size)
+		s = s+1
+		b = append(b, self.js[:s]...)
+		if !empty {
+			b = append(b, ","...)
+		}
+		b = appendPathValue(b, path[idx:], val)
+	}
+
+	b = append(b, self.js[p.p:]...)
+	self.js = rt.Mem2Str(b)
+	return nil
+}
+
+// [2,"a"] - 1  => {"a":1} 
+// ["a",2] - 1  => "a":[1]
+func appendPathValue(b []byte, path []interface{}, val Value) []byte {
+	for i, k := range path {
+		if key, ok := k.(string); ok {
+			quote(&b, key)
+			b = append(b, ":"...)
+		}
+		if i == len(path) - 1 {
+			b = append(b, val.js...)
+			break
+		}
+		n := path[i+1]
+		if _, ok := n.(int); ok {
+			b = append(b, "["...)
+		} else if _, ok := n.(string); ok {
+			b = append(b, `{`...)
+		} else {
+            panic("path must be either int(>=0) or string")
+        }
+	}
+	for i := len(path)-1; i>=1; i-- {
+		k := path[i]
+		if _, ok := k.(int); ok {
+			b = append(b, "]"...)
+		} else if _, ok := k.(string); ok {
+			b = append(b, `}`...)
+		}
+	}
+	return b
+}
+
 // Get loads given key of an object node on demands
 func (self Value) Get(key string) Value {
 	if self.Check() != nil {

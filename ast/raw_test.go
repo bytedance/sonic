@@ -317,6 +317,42 @@ func TestRawNode_Set(t *testing.T) {
 	}
 }
 
+func TestRawNode_SetByPath(t *testing.T) {
+	tests := []struct{
+		name string
+		js string
+		paths []interface{}
+		val Value
+		err string
+		out string
+	}{
+		{"exist object",`{"a":1}`,[]interface{}{"a"},NewValue(`2`),"",`{"a":2}`},
+		{"not-exist object",`{"b":1}`,[]interface{}{"a"},NewValue(`2`),"",`{"b":1,"a":2}`},
+		{"empty object",`{}`,[]interface{}{"a"},NewValue(`2`),"",`{"a":2}`},
+		{"empty object 2",`{}`,[]interface{}{"a",1},NewValue(`2`),"",`{"a":[2]}`},
+		{"empty object 3",`{}`,[]interface{}{"a",1,"a"},NewValue(`2`),"",`{"a":[{"a":2}]}`},
+		{"exist array",`[1]`,[]interface{}{0},NewValue(`2`),"",`[2]`},
+		{"not exist array",`[1]`,[]interface{}{1},NewValue(`2`),"",`[1,2]`},
+		{"empty array",`[]`,[]interface{}{1},NewValue(`2`),"",`[2]`},
+		{"empty array 2",`[]`,[]interface{}{1,1},NewValue(`2`),"",`[[2]]`},
+		{"empty array 3",`[]`,[]interface{}{1,"a",1},NewValue(`2`),"",`[{"a":[2]}]`},
+		{"empty array 3",`[]`,[]interface{}{1,"a","a"},NewValue(`2`),"",`[{"a":{"a":2}}]`},
+	}
+	for _, c := range tests {
+		println(c.name)
+		root := NewValue(c.js)
+		err := root.SetByPath(c.val, c.paths...)
+		if err != nil && err.Error() != c.err {
+			t.Fatal(err)
+		}
+		if out := root.Raw(); err != nil {
+			t.Fatal()
+		} else {
+			require.Equal(t, c.out, out)
+		}
+	}
+}
+
 func TestRawNode_Unset(t *testing.T) {
 	tests := []struct{
 		name string
