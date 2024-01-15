@@ -56,12 +56,12 @@ func TestGetMany(t *testing.T) {
 		{"Get 3", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"a", rawNode(`1`)}}, nil},
 		{"Get 3", `{"a":1, "b":2, "c":3}`, []KeyVal{{"b", rawNode(`2`)}, {"c", rawNode(`3`)}, {"d", Value{}}, {"a", rawNode(`1`)}}, nil},
 		{"Index fail", `[]`, []IndexVal{{1, Value{}}}, nil},
-		{"Index 0", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}}, nil},
-		{"Index 1", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}}, nil},
-		{"Index 2", `[1 , 2, 3 ]`, []IndexVal{{0, rawNode(`1`)}, {2, rawNode(`3`)}}, nil},
-		{"Index 2", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}, {0, rawNode(`1`)}}, nil},
-		{"Index 3", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}, {2, rawNode(`3`)}, {0, rawNode(`1`)}}, nil},
-		{"Index 3", `[1 , 2, 3 ]`, []IndexVal{{1, rawNode(`2`)}, {2, rawNode(`3`)}, {3, Value{}}, {0, rawNode(`1`)}}, nil},
+		{"Index 0", `[1, 2, 3]`, []IndexVal{{1, rawNode(`2`)}}, nil},
+		{"Index 1", `[1, 2, 3]`, []IndexVal{{1, rawNode(`2`)}}, nil},
+		{"Index 2", `[1, 2, 3]`, []IndexVal{{0, rawNode(`1`)}, {2, rawNode(`3`)}}, nil},
+		{"Index 2", `[1, 2, 3]`, []IndexVal{{1, rawNode(`2`)}, {0, rawNode(`1`)}}, nil},
+		{"Index 3", `[1, 2, 3]`, []IndexVal{{1, rawNode(`2`)}, {2, rawNode(`3`)}, {0, rawNode(`1`)}}, nil},
+		{"Index 3", `[1, 2, 3]`, []IndexVal{{1, rawNode(`2`)}, {2, rawNode(`3`)}, {3, Value{}}, {0, rawNode(`1`)}}, nil},
 	}
 	for i, c := range cases {
         fmt.Println(i, c)
@@ -96,23 +96,23 @@ func TestSetMany(t *testing.T) {
 		exp string
 		err string
 	}{
-		{"replace 1", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}}, `{ "a" : 11 , "b" : 2 }`, ""},
-		{"replace 2", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}, {"b", rawNode(`22`)}}, `{ "a" : 11 , "b" : 22 }`, ""},
-		{"replace repeated", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}, {"a", rawNode(`22`)}}, `{ "a" : 11 , "b" : 2 ,"a":22}`, ""},
+		{"replace 1", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}}, `{ "a" : 11, "b" : 2}`, ""},
+		{"replace 2", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}, {"b", rawNode(`22`)}}, `{ "a" : 11, "b" : 22}`, ""},
+		{"replace repeated", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}, {"a", rawNode(`22`)}}, `{ "a" : 11, "b" : 2,"a":22}`, ""},
 		{"insert empty", `{ } `, []KeyVal{{"c", rawNode(`33`)}}, `{ "c":33}`, ""},
 		{"insert repeated", `{ } `, []KeyVal{{"c", rawNode(`33`)}, {"c", rawNode(`33`)}}, `{ "c":33,"c":33}`, ""},
-		{"insert 1", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"c", rawNode(`33`)}}, `{ "a" : 1 , "b" : 2 ,"c":33}`, ""},
-		{"insert 2", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"c", rawNode(`33`)},{"d", rawNode(`44`)}}, `{ "a" : 1 , "b" : 2 ,"c":33,"d":44}`, ""},
-		{"replace 1, insert 1", `{ "a" : 1 , "b" : 2 } `, []KeyVal{{"a", rawNode(`11`)}, {"c", rawNode(`33`)}}, `{ "a" : 11 , "b" : 2 ,"c":33}`, ""},
+		{"insert 1", `{ "a" : 1, "b" : 2} `, []KeyVal{{"c", rawNode(`33`)}}, `{ "a" : 1, "b" : 2,"c":33}`, ""},
+		{"insert 2", `{ "a" : 1, "b" : 2} `, []KeyVal{{"c", rawNode(`33`)},{"d", rawNode(`44`)}}, `{ "a" : 1, "b" : 2,"c":33,"d":44}`, ""},
+		{"replace 1, insert 1", `{ "a" : 1, "b" : 2} `, []KeyVal{{"a", rawNode(`11`)}, {"c", rawNode(`33`)}}, `{ "a" : 11, "b" : 2,"c":33}`, ""},
 		
-		{"replace 1", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}}, `[ 11 , 2 ]`, ""},
-		{"replace 2", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}, {0, rawNode(`22`)}}, `[ 11 , 2 ,22]`, ""},
-		{"replace repeated", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}, {1, rawNode(`22`)}}, `[ 11 , 22 ]`, ""},
+		{"replace 1", `[ 1, 2] `, []IndexVal{{0, rawNode(`11`)}}, `[ 11, 2]`, ""},
+		{"replace 2", `[ 1, 2] `, []IndexVal{{0, rawNode(`11`)}, {0, rawNode(`22`)}}, `[ 11, 2,22]`, ""},
+		{"replace repeated", `[ 1, 2] `, []IndexVal{{0, rawNode(`11`)}, {1, rawNode(`22`)}}, `[ 11, 22]`, ""},
 		{"insert empty", `[ ] `, []IndexVal{{2, rawNode(`33`)}}, `[ 33]`, ""},
-		{"insert 1", `[ 1 , 2 ] `, []IndexVal{{2, rawNode(`33`)}}, `[ 1 , 2 ,33]`, ""},
-		{"insert 2", `[ 1 , 2 ] `, []IndexVal{{2, rawNode(`33`)},{3, rawNode(`44`)}}, `[ 1 , 2 ,33,44]`, ""},
-		{"insert repeated", `[ 1 , 2 ] `, []IndexVal{{2, rawNode(`33`)},{2, rawNode(`44`)}}, `[ 1 , 2 ,33,44]`, ""},
-		{"replace 1, insert 1", `[ 1 , 2 ] `, []IndexVal{{0, rawNode(`11`)}, {2, rawNode(`33`)}}, `[ 11 , 2 ,33]`, ""},
+		{"insert 1", `[ 1, 2] `, []IndexVal{{2, rawNode(`33`)}}, `[ 1, 2,33]`, ""},
+		{"insert 2", `[ 1, 2] `, []IndexVal{{2, rawNode(`33`)},{3, rawNode(`44`)}}, `[ 1, 2,33,44]`, ""},
+		{"insert repeated", `[ 1, 2] `, []IndexVal{{2, rawNode(`33`)},{2, rawNode(`44`)}}, `[ 1, 2,33,44]`, ""},
+		{"replace 1, insert 1", `[ 1, 2] `, []IndexVal{{0, rawNode(`11`)}, {2, rawNode(`33`)}}, `[ 11, 2,33]`, ""},
 	}
 
 	for i, c := range cases {
