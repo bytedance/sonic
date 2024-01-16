@@ -1090,7 +1090,14 @@ func (self Value) Number() (json.Number, error) {
         case V_NULL    : return json.Number("0"), nil
         case V_TRUE    : return json.Number("1"), nil
         case V_FALSE   : return json.Number("0"), nil
-        case V_STRING  : return json.Number(self.str()), nil
+        case V_STRING  : 
+			if _, err := self.toInt64(); err == nil {
+				return self.toNumber(), nil
+			} else if _, err := self.toFloat64(); err == nil {
+				return self.toNumber(), nil
+			} else {
+				return json.Number(""), err
+			}
         case V_NUMBER  : return json.Number(self.js), nil
         default              : return "",ErrUnsupportType
     } 
