@@ -29,6 +29,12 @@ func NewValueJSON(json string) Value {
 
 // NewValue converts a go primitive object to Value
 func NewValue(val interface{}) Value {
+	if v, ok := val.(Value); ok {
+		return v
+	}
+	if v, ok := val.(*Value); ok {
+		return *v
+	}
 	js, err := encoder.Encode(val, 0)
 	if err != nil {
 		return errRawNode(err)
@@ -166,12 +172,18 @@ func (self Value) GetByPath(path ...interface{}) Value {
     return value(self.js[s:p.p])
 }
 
+// SetAnyByPath set value on given path and create nodes on the json if not exist
+func (self *Value) SetAnyByPath(val interface{}, path ...interface{}) (bool, error) {
+	return self.SetByPath(NewValue(val), path...)
+}
+
 // SetByPath set value on given path and create nodes on the json if not exist
 func (self *Value) SetByPath(val Value, path ...interface{}) (bool, error) {
 	exist := false
 	if self.Check() != nil {
 		return exist, self
 	}
+
 	if val.Check() != nil {
 		return exist, val
 	}
@@ -511,6 +523,12 @@ func (ps points) Len() int {
 
 // Set sets the node of given key under self, and insert new value if not exist.
 // It reports if the key has existed.
+func (self *Value) SetAny(key string, val interface{}) (bool, error) {
+	return self.SetMany([]string{key}, []Value{NewValue(val)})
+}
+
+// Set sets the node of given key under self, and insert new value if not exist.
+// It reports if the key has existed.
 func (self *Value) Set(key string, val Value) (bool, error) {
 	return self.SetMany([]string{key}, []Value{val})
 }
@@ -605,6 +623,13 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 
 	self.js = rt.Mem2Str(b)
 	return exist, nil
+}
+
+// SetByIndex sets the node of given index and insert new value if not exist.
+// If the index is out range of self's children, it will be ADD to the last
+// and reports if the key has existed.
+func (self *Value) SetAnyByIndex(id int, val interface{}) (bool, error) {
+	return self.SetByIndex(id, NewValue(val))
 }
 
 // SetByIndex sets the node of given index and insert new value if not exist.
@@ -748,21 +773,19 @@ func (self *Value) AddMany(vals []Value) error {
 
 // Unset REMOVE the node of given key under object parent, and reports if the key has existed.
 func (self *Value) Unset(key string) (bool, error) {
-	n := len(self.js)
-	err := self.UnsetMany([]string{key})
-	return n != len(self.js), err
+	return self.UnsetMany([]string{key})
 }
 
 // UnsetMany REMOVE existing key and corresponding value of given keys.
-func (self *Value) UnsetMany(keys []string) (error) {
+func (self *Value) UnsetMany(keys []string) (bool, error) {
 	if self.Check() != nil {
-		return self
+		return false, self
 	}
 	if self.t == V_NULL {
-		return nil
+		return false, nil
 	}
 	if self.t != V_OBJECT {
-		return ErrUnsupportType
+		return false, ErrUnsupportType
 	}
 
 	points := make(points, len(keys))
@@ -773,10 +796,10 @@ func (self *Value) UnsetMany(keys []string) (error) {
 		size -= (e - s)
 		replaced = true
 	}); err != 0 {
-		return NewParserObj(self.js).ExportError(err)
+		return replaced, NewParserObj(self.js).ExportError(err)
 	}
 	if !replaced {
-		return nil
+		return replaced, nil
 	}
 
 	b := make([]byte, 0, size)
@@ -808,7 +831,7 @@ func (self *Value) UnsetMany(keys []string) (error) {
 	}
 	
 	self.js = rt.Mem2Str(b)
-	return nil
+	return replaced, nil
 }
 
 // UnsetByIndex REOMVE the node of given index.
