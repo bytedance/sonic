@@ -17,54 +17,54 @@
 package benchmark_test
 
 import (
-	"fmt"
-	"math"
+	// "fmt"
+	// "math"
 	"testing"
 
-	"github.com/buger/jsonparser"
+	// "github.com/buger/jsonparser"
 	"github.com/bytedance/sonic/ast"
-	jsoniter "github.com/json-iterator/go"
+	// jsoniter "github.com/json-iterator/go"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
 
-func BenchmarkGetOne_Gjson(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    for i := 0; i < b.N; i++ {
-        ast := gjson.Get(TwitterJson, "statuses.3.id")
-        node := ast.Int()
-        if node != 249279667666817024 {
-            b.Fail()
-        }
-    }
-}
+// func BenchmarkGetOne_Gjson(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     for i := 0; i < b.N; i++ {
+//         ast := gjson.Get(TwitterJson, "statuses.3.id")
+//         node := ast.Int()
+//         if node != 249279667666817024 {
+//             b.Fail()
+//         }
+//     }
+// }
 
-func BenchmarkGetOne_Jsoniter(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    data := []byte(TwitterJson)
-    for i := 0; i < b.N; i++ {
-        ast := jsoniter.Get(data, "statuses", 3, "id")
-        node := ast.ToInt()
-        if node != 249279667666817024 {
-            b.Fail()
-        }
-    }
-}
+// func BenchmarkGetOne_Jsoniter(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     data := []byte(TwitterJson)
+//     for i := 0; i < b.N; i++ {
+//         ast := jsoniter.Get(data, "statuses", 3, "id")
+//         node := ast.ToInt()
+//         if node != 249279667666817024 {
+//             b.Fail()
+//         }
+//     }
+// }
 
-func BenchmarkGetOne_Sonic(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    ast := ast.NewSearcher(TwitterJson)
-    for i := 0; i < b.N; i++ {
-        node, err := ast.GetByPath("statuses", 3, "id")
-        if err != nil {
-            b.Fatal(err)
-        }
-        x, _ := node.Int64()
-        if x != 249279667666817024 {
-            b.Fatal(node.Interface())
-        }
-    }
-}
+// func BenchmarkGetOne_Sonic(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     ast := ast.NewSearcher(TwitterJson)
+//     for i := 0; i < b.N; i++ {
+//         node, err := ast.GetByPath("statuses", 3, "id")
+//         if err != nil {
+//             b.Fatal(err)
+//         }
+//         x, _ := node.Int64()
+//         if x != 249279667666817024 {
+//             b.Fatal(node.Interface())
+//         }
+//     }
+// }
 
 func BenchmarkGet(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
@@ -98,7 +98,7 @@ func BenchmarkGet(b *testing.B) {
     })
 }
 
-func BenchmarkNodeGet(b *testing.B) {
+func BenchmarkSubGet(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     b.Run("gjson", func(b *testing.B) {
         for i := 0; i < b.N; i++ {
@@ -131,7 +131,7 @@ func BenchmarkNodeGet(b *testing.B) {
     })
 }
 
-func BenchmarkNodeGetMany(b *testing.B) {
+func BenchmarkGetMany(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     b.Run("gjson", func(b *testing.B) {
         for i := 0; i < b.N; i++ {
@@ -204,7 +204,7 @@ func TestSetNotExist(t *testing.T) {
     println(js)
 }
 
-func BenchmarkNodeSetMany(b *testing.B) {
+func BenchmarkSetMany(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     b.Run("sjson", func(b *testing.B) {
         for i := 0; i < b.N; i++ {
@@ -280,143 +280,143 @@ func BenchmarkSet(b *testing.B) {
     })
 }
 
-func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    b.RunParallel(func(pb *testing.PB) {
-        ast := ast.NewSearcher(TwitterJson)
-        for pb.Next() {
-            node, err := ast.GetByPath("statuses", 3, "id")
-            if err != nil {
-                b.Fatal(err)
-            }
-            x, _ := node.Int64()
-            if x != 249279667666817024 {
-                b.Fatal(node.Interface())
-            }
-        }
-    })
-}
+// func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     b.RunParallel(func(pb *testing.PB) {
+//         ast := ast.NewSearcher(TwitterJson)
+//         for pb.Next() {
+//             node, err := ast.GetByPath("statuses", 3, "id")
+//             if err != nil {
+//                 b.Fatal(err)
+//             }
+//             x, _ := node.Int64()
+//             if x != 249279667666817024 {
+//                 b.Fatal(node.Interface())
+//             }
+//         }
+//     })
+// }
 
-func BenchmarkGetOne_Parallel_Gjson(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            ast := gjson.Get(TwitterJson, "statuses.3.id")
-            node := ast.Int()
-            if node != 249279667666817024 {
-                b.Fail()
-            }
-        }
-    })
-}
+// func BenchmarkGetOne_Parallel_Gjson(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     b.RunParallel(func(pb *testing.PB) {
+//         for pb.Next() {
+//             ast := gjson.Get(TwitterJson, "statuses.3.id")
+//             node := ast.Int()
+//             if node != 249279667666817024 {
+//                 b.Fail()
+//             }
+//         }
+//     })
+// }
 
-func BenchmarkGetOne_Parallel_Jsoniter(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    data := []byte(TwitterJson)
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            ast := jsoniter.Get(data, "statuses", 3, "id")
-            node := ast.ToInt()
-            if node != 249279667666817024 {
-                b.Fail()
-            }
-        }
-    })
-}
+// func BenchmarkGetOne_Parallel_Jsoniter(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     data := []byte(TwitterJson)
+//     b.RunParallel(func(pb *testing.PB) {
+//         for pb.Next() {
+//             ast := jsoniter.Get(data, "statuses", 3, "id")
+//             node := ast.ToInt()
+//             if node != 249279667666817024 {
+//                 b.Fail()
+//             }
+//         }
+//     })
+// }
 
-func BenchmarkSetOne_Sjson(b *testing.B) {
-    path := fmt.Sprintf("%s.%d.%s", "statuses", 3, "id")
-    _, err := sjson.Set(TwitterJson, path, math.MaxInt32)
-    if err != nil {
-        b.Fatal(err)
-    }
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ReportAllocs()
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        sjson.Set(TwitterJson, path, math.MaxInt32)
-    }
-}
+// func BenchmarkSetOne_Sjson(b *testing.B) {
+//     path := fmt.Sprintf("%s.%d.%s", "statuses", 3, "id")
+//     _, err := sjson.Set(TwitterJson, path, math.MaxInt32)
+//     if err != nil {
+//         b.Fatal(err)
+//     }
+//     b.SetBytes(int64(len(TwitterJson)))
+//     b.ReportAllocs()
+//     b.ResetTimer()
+//     for i := 0; i < b.N; i++ {
+//         sjson.Set(TwitterJson, path, math.MaxInt32)
+//     }
+// }
 
-func BenchmarkSetOne_Jsoniter(b *testing.B) {
-    data := []byte(TwitterJson)
-    node, ok := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
-    if !ok {
-        b.Fatal(node)
-    }
+// func BenchmarkSetOne_Jsoniter(b *testing.B) {
+//     data := []byte(TwitterJson)
+//     node, ok := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
+//     if !ok {
+//         b.Fatal(node)
+//     }
 
-    b.SetBytes(int64(len(data)))
-    b.ReportAllocs()
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        node, _ := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
-        node["id"] = math.MaxInt32
-    }
-}
+//     b.SetBytes(int64(len(data)))
+//     b.ReportAllocs()
+//     b.ResetTimer()
+//     for i := 0; i < b.N; i++ {
+//         node, _ := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
+//         node["id"] = math.MaxInt32
+//     }
+// }
 
-func BenchmarkSetOne_Parallel_Sjson(b *testing.B) {
-    path := fmt.Sprintf("%s.%d.%s", "statuses", 3, "id")
-    _, err := sjson.Set(TwitterJson, path, math.MaxInt32)
-    if err != nil {
-        b.Fatal(err)
-    }
-    b.SetBytes(int64(len(TwitterJson)))
-    b.ReportAllocs()
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            sjson.Set(TwitterJson, path, math.MaxInt32)
-        }
-    })
-}
+// func BenchmarkSetOne_Parallel_Sjson(b *testing.B) {
+//     path := fmt.Sprintf("%s.%d.%s", "statuses", 3, "id")
+//     _, err := sjson.Set(TwitterJson, path, math.MaxInt32)
+//     if err != nil {
+//         b.Fatal(err)
+//     }
+//     b.SetBytes(int64(len(TwitterJson)))
+//     b.ReportAllocs()
+//     b.ResetTimer()
+//     b.RunParallel(func(pb *testing.PB) {
+//         for pb.Next() {
+//             sjson.Set(TwitterJson, path, math.MaxInt32)
+//         }
+//     })
+// }
 
-func BenchmarkSetOne_Parallel_Jsoniter(b *testing.B) {
-    data := []byte(TwitterJson)
-    node, ok := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
-    if !ok {
-        b.Fatal(node)
-    }
+// func BenchmarkSetOne_Parallel_Jsoniter(b *testing.B) {
+//     data := []byte(TwitterJson)
+//     node, ok := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
+//     if !ok {
+//         b.Fatal(node)
+//     }
 
-    b.SetBytes(int64(len(data)))
-    b.ReportAllocs()
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            node, _ := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
-            node["id"] = math.MaxInt32
-        }
-    })
-}
-
-
-func BenchmarkGetByKeys_Sonic(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    ast := ast.NewSearcher(TwitterJson)
-    const _count = 4
-    for i := 0; i < b.N; i++ {
-        node, err := ast.GetByPath("search_metadata", "count")
-        if err != nil {
-            b.Fatal(err)
-        }
-        x, _ := node.Int64()
-        if x != _count {
-            b.Fatal(node.Interface())
-        }
-    }
-}
+//     b.SetBytes(int64(len(data)))
+//     b.ReportAllocs()
+//     b.ResetTimer()
+//     b.RunParallel(func(pb *testing.PB) {
+//         for pb.Next() {
+//             node, _ := jsoniter.Get(data, "statuses", 3).GetInterface().(map[string]interface{})
+//             node["id"] = math.MaxInt32
+//         }
+//     })
+// }
 
 
-func BenchmarkGetByKeys_JsonParser(b *testing.B) {
-    b.SetBytes(int64(len(TwitterJson)))
-    data := []byte(TwitterJson)
-    const _count = 4
-    for i := 0; i < b.N; i++ {
-        value, err := jsonparser.GetInt(data, "search_metadata", "count")
-        if err != nil {
-            b.Fatal(err)
-        }
-        if value != _count {
-            b.Fatal(value)
-        }
-    }
-}
+// func BenchmarkGetByKeys_Sonic(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     ast := ast.NewSearcher(TwitterJson)
+//     const _count = 4
+//     for i := 0; i < b.N; i++ {
+//         node, err := ast.GetByPath("search_metadata", "count")
+//         if err != nil {
+//             b.Fatal(err)
+//         }
+//         x, _ := node.Int64()
+//         if x != _count {
+//             b.Fatal(node.Interface())
+//         }
+//     }
+// }
+
+
+// func BenchmarkGetByKeys_JsonParser(b *testing.B) {
+//     b.SetBytes(int64(len(TwitterJson)))
+//     data := []byte(TwitterJson)
+//     const _count = 4
+//     for i := 0; i < b.N; i++ {
+//         value, err := jsonparser.GetInt(data, "search_metadata", "count")
+//         if err != nil {
+//             b.Fatal(err)
+//         }
+//         if value != _count {
+//             b.Fatal(value)
+//         }
+//     }
+// }

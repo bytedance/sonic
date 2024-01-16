@@ -17,6 +17,7 @@ type Value struct {
 	js string
 }
 
+// NewValueJSON converts a json to Value
 func NewValueJSON(json string) Value {
 	p := NewParser(json)
 	s, e := p.skip()
@@ -25,6 +26,8 @@ func NewValueJSON(json string) Value {
 	}
 	return value(json[s:p.p])
 }
+
+// NewValue converts a go primitive object to Value
 func NewValue(val interface{}) Value {
 	js, err := encoder.Encode(val, 0)
 	if err != nil {
@@ -55,6 +58,7 @@ func (self Value) Type() int {
 	return self.t
 }
 
+// Exists tells if the nodes exists (including V_NULL)
 func (self Value) Exists() bool {
 	return self.t != 0 && self.t != V_ERROR
 }
