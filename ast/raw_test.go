@@ -448,42 +448,44 @@ func TestRawNode_UnsetMany(t *testing.T) {
 		name string
 		js string
 		key interface{}
+		exist bool
 		err string
 		out string
 	}{
-		{"empty object",`{ }`,[]string{"a","c"}, "",`{ }`},
-		{"1-1 object",`{"a":1}`,[]string{"a"}, "",`{}`},
-		{"1-2 object",`{"a":1}`,[]string{"a","c"}, "",`{}`},
-		{"2-1 object",`{"a":1,"c":3}`,[]string{"a"},"",`{"c":3}`},
-		{"2-1 object",`{"a":1,"c":3}`,[]string{"c"},"",`{"a":1}`},
-		{"2-2 object",`{"a":1,"c":3}`,[]string{"a","c"},"",`{}`},
-		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"a","c"},"",`{"b":2}`},
-		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"a","b"},"",`{"c":3}`},
-		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"b","c"}, "",`{"a":1}`},
-		{"3-3 object",`{"a":1,"b":2,"c":3}`,[]string{"a","b","c"}, "",`{}`},
+		{"empty object",`{ }`,[]string{"a","c"},false, "",`{ }`},
+		{"1-1 object",`{"a":1}`,[]string{"a"},true, "",`{}`},
+		{"1-2 object",`{"a":1}`,[]string{"a","c"},true, "",`{}`},
+		{"2-1 object",`{"a":1,"c":3}`,[]string{"a"},true,"",`{"c":3}`},
+		{"2-1 object",`{"a":1,"c":3}`,[]string{"c"},true,"",`{"a":1}`},
+		{"2-2 object",`{"a":1,"c":3}`,[]string{"a","c"},true,"",`{}`},
+		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"a","c"},true,"",`{"b":2}`},
+		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"a","b"},true,"",`{"c":3}`},
+		{"3-2 object",`{"a":1,"b":2,"c":3}`,[]string{"b","c"},true, "",`{"a":1}`},
+		{"3-3 object",`{"a":1,"b":2,"c":3}`,[]string{"a","b","c"},true, "",`{}`},
 
-		{"empty object",`[ ]`,[]int{0, 2}, "",`[ ]`},
-		{"1-1 object",`[1]`,[]int{0}, "",`[]`},
-		{"1-2 object",`[1]`,[]int{0,1}, "",`[]`},
-		{"2-1 object",`[1,2]`,[]int{0},"",`[2]`},
-		{"2-1 object",`[1,2]`,[]int{1},"",`[1]`},
-		{"2-2 object",`[1,2]`,[]int{0,1},"",`[]`},
-		{"3-2 object",`[1,2,3]`,[]int{0,2},"",`[2]`},
-		{"3-2 object",`[1,2,3]`,[]int{0,1},"",`[3]`},
-		{"3-2 object",`[1,2,3]`,[]int{1,2}, "",`[1]`},
-		{"3-3 object",`[1,2,3]`,[]int{0,1,2}, "",`[]`},
+		{"empty array",`[ ]`,[]int{0, 2},false, "",`[ ]`},
+		{"1-1 array",`[1]`,[]int{0},true, "",`[]`},
+		{"1-2 array",`[1]`,[]int{0,1},true, "",`[]`},
+		{"2-1 array",`[1,2]`,[]int{0},true,"",`[2]`},
+		{"2-1 array",`[1,2]`,[]int{1},true,"",`[1]`},
+		{"2-2 array",`[1,2]`,[]int{0,1},true,"",`[]`},
+		{"3-2 array",`[1,2,3]`,[]int{0,2},true,"",`[2]`},
+		{"3-2 array",`[1,2,3]`,[]int{0,1},true,"",`[3]`},
+		{"3-2 array",`[1,2,3]`,[]int{1,2},true, "",`[1]`},
+		{"3-3 array",`[1,2,3]`,[]int{0,1,2},true, "",`[]`},
 	}
 
 	for _, c := range tests {
 		println(c.name)
 		root := NewValueJSON(c.js)
 		var err error
+		var exist bool
 		if keys, ok := c.key.([]string); ok{
-			err = root.UnsetMany(keys)
+			exist, err = root.UnsetMany(keys)
 		} else if ids, ok := c.key.([]int); ok {
-			err = root.UnsetManyByIndex(ids)
+			exist, err = root.UnsetManyByIndex(ids)
 		}
-
+		require.Equal(t, c.exist, exist)
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err.Error())
 		}

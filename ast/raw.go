@@ -836,21 +836,19 @@ func (self *Value) UnsetMany(keys []string) (bool, error) {
 
 // UnsetByIndex REOMVE the node of given index.
 func (self *Value) UnsetByIndex(id int) (bool, error) {
-	n := len(self.js)
-	err := self.UnsetManyByIndex([]int{id})
-	return n != len(self.js), err
+	return self.UnsetManyByIndex([]int{id})
 }
 
 // UnsetMany REMOVE existing id and corresponding value of given keys.
-func (self *Value) UnsetManyByIndex(ids []int) (error) {
+func (self *Value) UnsetManyByIndex(ids []int) (bool, error) {
 	if self.Check() != nil {
-		return self
+		return false, self
 	}
 	if self.t == V_NULL {
-		return nil
+		return false, nil
 	}
 	if self.t != V_ARRAY {
-		return ErrUnsupportType
+		return false, ErrUnsupportType
 	}
 
 	points := make(points, len(ids))
@@ -862,11 +860,11 @@ func (self *Value) UnsetManyByIndex(ids []int) (error) {
 		size -= (e - s)
 		replaced = true
 	}); err != 0 {
-		return NewParserObj(self.js).ExportError(err)
+		return replaced, NewParserObj(self.js).ExportError(err)
 	}
 
 	if !replaced {
-		return nil
+		return replaced, nil
 	}
 
 	b := make([]byte, 0, size)
@@ -896,7 +894,7 @@ func (self *Value) UnsetManyByIndex(ids []int) (error) {
 	}
 
 	self.js = rt.Mem2Str(b)
-	return nil
+	return replaced, nil
 }
 
 func (self Value) str() string {
