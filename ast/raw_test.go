@@ -31,7 +31,7 @@ func TestValAPI(t *testing.T) {
 	}
 	for i, c := range cases {
         fmt.Println(i, c)
-		node := NewValue(c.js)
+		node := NewValueJSON(c.js)
 		rt := reflect.ValueOf(&node)
 		m := rt.MethodByName(c.method)
         rets := m.Call([]reflect.Value{})
@@ -71,7 +71,7 @@ func TestGetMany(t *testing.T) {
 	}
 	for i, c := range cases {
         fmt.Println(i, c)
-		node := NewValue(c.js)
+		node := NewValueJSON(c.js)
 		var err error
 		if kvs, ok := c.kvs.([]keyVal); ok {
 			keys := []string{}
@@ -129,7 +129,7 @@ func TestSetMany(t *testing.T) {
 
 	for i, c := range cases {
 		println(i, c.name)
-		node := NewValue(c.js)
+		node := NewValueJSON(c.js)
 		var err error
 		if kvs, ok := c.kvs.([]keyVal); ok {
 			keys := []string{}
@@ -284,18 +284,18 @@ func TestRawNode_Set(t *testing.T) {
 		err string
 		out string
 	}{
-		{"exist object",`{"a":1}`,"a",NewValue(`2`),true,"",`{"a":2}`},
-		{"not-exist object space",`{"b":1}`,"a",NewValue(`2`),false,"",`{"b":1,"a":2}`},
-		{"not-exist object",`{"b":1}`,"a",NewValue(`2`),false,"",`{"b":1,"a":2}`},
-		{"empty object",`{}`,"a",NewValue(`2`),false,"",`{"a":2}`},
-		{"exist array",`[1]`,0,NewValue(`2`),true,"",`[2]`},
-		{"not exist array",`[1]`,1,NewValue(`2`),false,"",`[1,2]`},
-		{"not exist array over",`[1]`,99,NewValue(`2`),false,"",`[1,2]`},
-		{"empty array",`[]`,1,NewValue(`2`),false,"",`[2]`},
+		{"exist object",`{"a":1}`,"a",NewValueJSON(`2`),true,"",`{"a":2}`},
+		{"not-exist object space",`{"b":1}`,"a",NewValueJSON(`2`),false,"",`{"b":1,"a":2}`},
+		{"not-exist object",`{"b":1}`,"a",NewValueJSON(`2`),false,"",`{"b":1,"a":2}`},
+		{"empty object",`{}`,"a",NewValueJSON(`2`),false,"",`{"a":2}`},
+		{"exist array",`[1]`,0,NewValueJSON(`2`),true,"",`[2]`},
+		{"not exist array",`[1]`,1,NewValueJSON(`2`),false,"",`[1,2]`},
+		{"not exist array over",`[1]`,99,NewValueJSON(`2`),false,"",`[1,2]`},
+		{"empty array",`[]`,1,NewValueJSON(`2`),false,"",`[2]`},
 	}
 	for _, c := range tests {
 		println(c.name)
-		root := NewValue(c.js)
+		root := NewValueJSON(c.js)
 		var exist bool
 		var err error
 		if key, ok:= c.key.(string); ok{
@@ -327,21 +327,21 @@ func TestRawNode_SetByPath(t *testing.T) {
 		err string
 		out string
 	}{
-		{"exist object",`{"a":1}`,[]interface{}{"a"},NewValue(`2`),true,"",`{"a":2}`},
-		{"not-exist object",`{"b":1}`,[]interface{}{"a"},NewValue(`2`),false,"",`{"b":1,"a":2}`},
-		{"empty object",`{}`,[]interface{}{"a"},NewValue(`2`),false,"",`{"a":2}`},
-		{"empty object 2",`{}`,[]interface{}{"a",1},NewValue(`2`),false,"",`{"a":[2]}`},
-		{"empty object 3",`{}`,[]interface{}{"a",1,"a"},NewValue(`2`),false,"",`{"a":[{"a":2}]}`},
-		{"exist array",`[1]`,[]interface{}{0},NewValue(`2`),true,"",`[2]`},
-		{"not exist array",`[1]`,[]interface{}{1},NewValue(`2`),false,"",`[1,2]`},
-		{"empty array",`[]`,[]interface{}{1},NewValue(`2`),false,"",`[2]`},
-		{"empty array 2",`[]`,[]interface{}{1,1},NewValue(`2`),false,"",`[[2]]`},
-		{"empty array 3",`[]`,[]interface{}{1,"a",1},NewValue(`2`),false,"",`[{"a":[2]}]`},
-		{"empty array 3",`[]`,[]interface{}{1,"a","a"},NewValue(`2`),false,"",`[{"a":{"a":2}}]`},
+		{"exist object",`{"a":1}`,[]interface{}{"a"},NewValueJSON(`2`),true,"",`{"a":2}`},
+		{"not-exist object",`{"b":1}`,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"b":1,"a":2}`},
+		{"empty object",`{}`,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"a":2}`},
+		{"empty object 2",`{}`,[]interface{}{"a",1},NewValueJSON(`2`),false,"",`{"a":[2]}`},
+		{"empty object 3",`{}`,[]interface{}{"a",1,"a"},NewValueJSON(`2`),false,"",`{"a":[{"a":2}]}`},
+		{"exist array",`[1]`,[]interface{}{0},NewValueJSON(`2`),true,"",`[2]`},
+		{"not exist array",`[1]`,[]interface{}{1},NewValueJSON(`2`),false,"",`[1,2]`},
+		{"empty array",`[]`,[]interface{}{1},NewValueJSON(`2`),false,"",`[2]`},
+		{"empty array 2",`[]`,[]interface{}{1,1},NewValueJSON(`2`),false,"",`[[2]]`},
+		{"empty array 3",`[]`,[]interface{}{1,"a",1},NewValueJSON(`2`),false,"",`[{"a":[2]}]`},
+		{"empty array 3",`[]`,[]interface{}{1,"a","a"},NewValueJSON(`2`),false,"",`[{"a":{"a":2}}]`},
 	}
 	for _, c := range tests {
 		println(c.name)
-		root := NewValue(c.js)
+		root := NewValueJSON(c.js)
 		exist, err := root.SetByPath(c.val, c.paths...)
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err)
@@ -383,7 +383,7 @@ func TestRawNode_UnsetByPath(t *testing.T) {
 	}
 	for _, c := range tests {
 		println(c.name)
-		root := NewValue(c.js)
+		root := NewValueJSON(c.js)
 		exist, err := root.UnsetByPath(c.paths...)
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err)
@@ -420,7 +420,7 @@ func TestRawNode_Unset(t *testing.T) {
 
 	for _, c := range tests {
 		println(c.name)
-		root := NewValue(c.js)
+		root := NewValueJSON(c.js)
 		var exist bool
 		var err error
 		if key, ok:= c.key.(string); ok{
@@ -476,7 +476,7 @@ func TestRawNode_UnsetMany(t *testing.T) {
 
 	for _, c := range tests {
 		println(c.name)
-		root := NewValue(c.js)
+		root := NewValueJSON(c.js)
 		var err error
 		if keys, ok := c.key.([]string); ok{
 			err = root.UnsetMany(keys)
@@ -505,7 +505,7 @@ func BenchmarkGetByPath_ReuseNode(b *testing.B) {
 		}
     })
     b.Run("Value", func(b *testing.B) {
-		cont := NewValue(_TwitterJson)
+		cont := NewValueJSON(_TwitterJson)
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
@@ -524,7 +524,7 @@ func BenchmarkNodesGetByPath_NewNode(b *testing.B) {
     b.Run("Value", func(b *testing.B) {
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
-			cont := NewValue(_TwitterJson)
+			cont := NewValueJSON(_TwitterJson)
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		}
     })

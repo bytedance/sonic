@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/bytedance/sonic/encoder"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
 )
@@ -16,13 +17,20 @@ type Value struct {
 	js string
 }
 
-func NewValue(json string) Value {
+func NewValueJSON(json string) Value {
 	p := NewParser(json)
 	s, e := p.skip()
 	if e != 0 {
 		return errRawNode(p.ExportError(e))
 	}
 	return value(json[s:p.p])
+}
+func NewValue(val interface{}) Value {
+	js, err := encoder.Encode(val, 0)
+	if err != nil {
+		return errRawNode(err)
+	}
+	return value(rt.Mem2Str(js))
 }
 
 func value(js string) Value {

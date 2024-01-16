@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type Searcher struct {
@@ -60,7 +61,7 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
 }
 
 // GetValueByPath
-func (self Searcher) GetValueByPath(path ...interface{}) (Value, error) {
+func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
 	if self.parser.s == "" {
 		err := errors.New("empty input")
 		return errRawNode(err), err
@@ -79,4 +80,37 @@ func (self Searcher) GetValueByPath(path ...interface{}) (Value, error) {
         return errRawNode(e), e 
     }
     return Value{int(t), self.parser.s[s:self.parser.p]}, nil
+}
+
+// GetValueByPath
+func (self *Searcher) SetValueByPath(val Value, path ...interface{}) (string, error) {
+	if self.parser.s == "" {
+		err := errors.New("empty input")
+		return self.parser.s, err
+	}
+
+    self.parser.p = 0
+    s, err := self.parser.getByPath(path...)
+
+    if err != 0 {
+        if err != _ERR_NOT_FOUND {
+            e := self.parser.ExportError(err)
+            return self.parser.s, e
+        } else {
+            // not exist, slow path
+            n := value(self.parser.s)
+            if  _, err := n.SetByPath(val, path...); err != nil {
+                return self.parser.s, err
+            }
+            return n.js, nil
+        }
+    }
+
+    // exist, fast-path replace
+    e := self.parser.p
+    b := make([]byte, 0, len(self.parser.s)+len(val.js)-(e-s))
+    b = append(b, self.parser.s[:s]...)
+    b = append(b, val.js...)
+    b = append(b, self.parser.s[e:]...)
+    return rt.Mem2Str(b), nil
 }
