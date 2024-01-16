@@ -23,10 +23,12 @@ import (
 	"github.com/bytedance/sonic/internal/rt"
 )
 
+// Searcher used to skip and search json values
 type Searcher struct {
     parser Parser
 }
 
+// NewSearcher
 func NewSearcher(str string) *Searcher {
     return &Searcher{
         parser: Parser{
@@ -36,6 +38,7 @@ func NewSearcher(str string) *Searcher {
     }
 }
 
+// GetByPath searches in the json and located a Node at path
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     var err types.ParsingError
     var start int
@@ -60,7 +63,7 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     return newRawNode(self.parser.s[start:self.parser.p], t), nil
 }
 
-// GetValueByPath
+// GetValueByPath searches in the json and located a Value at path
 func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
 	if self.parser.s == "" {
 		err := errors.New("empty input")
@@ -82,7 +85,8 @@ func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
     return Value{int(t), self.parser.s[s:self.parser.p]}, nil
 }
 
-// GetValueByPath
+// SetValueByPath searches and relpace a value at path.
+// if path not exist, it will insert new json value
 func (self *Searcher) SetValueByPath(val Value, path ...interface{}) (string, error) {
 	if self.parser.s == "" {
 		err := errors.New("empty input")
