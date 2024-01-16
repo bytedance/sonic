@@ -12,6 +12,10 @@ import (
 )
 
 // Value represents a raw json value or error
+// It's safe to concurrently read Value
+//
+// Notice: passing a Value equals to pass-by-value, 
+// which measn any moditification on passed Value won't affect the origin one
 type Value struct {
 	t  int
 	js string
