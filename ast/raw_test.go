@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -497,6 +498,49 @@ func TestRawNode_UnsetMany(t *testing.T) {
 	}
 }
 
+func TestValue_Add_Pop(t *testing.T) {
+	tests := []struct{
+		name string
+		js string
+		adds []interface{}
+		pops int
+		err string
+		out string
+	}{
+		{"empty+1-0", `[]`, []interface{}{1}, 0, "", `[1]`},
+		{"empty+1-1", `[]`, []interface{}{1}, 1, "", `[]`},
+		{"empty+1-2", `[]`, []interface{}{1}, 2, "", `[]`},
+		{"empty+2-0", `[]`, []interface{}{1,2}, 0, "", `[1,2]`},
+		{"empty+2-1", `[]`, []interface{}{1,2}, 1, "", `[1]`},
+		{"1+1-0", `[0]`, []interface{}{1}, 0, "", `[0,1]`},
+		{"1+1-1", `[0]`, []interface{}{1}, 1, "", `[0]`},
+		{"1+1-2", `[0]`, []interface{}{1}, 2, "", `[]`},
+		{"1+2-0", `[0]`, []interface{}{1,2}, 0, "", `[0,1,2]`},
+		{"1+2-1", `[0]`, []interface{}{1,2}, 1, "", `[0,1]`},
+	}
+	for _, c := range tests {
+		println(c.name)
+		root := NewValueJSON(c.js)
+		vals := []Value{}
+		for i, val := range c.adds {
+			vals = append(vals, NewValue(val))
+			println("add", i)
+			if err := root.AddAny(val); err != nil {
+				t.Fatal(err)
+			}
+			println(root.js)
+			if err := root.Pop(); err != nil {
+				t.Fatal(err)
+			}
+			println(root.js)
+		}
+		require.Equal(t, c.js, root.js)
+		require.NoError(t, root.AddMany(vals))
+		require.NoError(t, root.PopMany(c.pops))
+		require.Equal(t, c.out, root.js)
+	}
+}
+
 func BenchmarkGetByPath_ReuseNode(b *testing.B) {
 	b.Run("Node", func(b *testing.B) {
 		root := NewRaw(_TwitterJson)
@@ -519,14 +563,14 @@ func BenchmarkNodesGetByPath_NewNode(b *testing.B) {
 	b.Run("Node", func(b *testing.B) {
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
-			root := NewRaw(_TwitterJson)
+			root := newRawNode(_TwitterJson, types.V_OBJECT)
 			_, _ = root.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		}
     })
     b.Run("Value", func(b *testing.B) {
 		b.ResetTimer()
         for i:=0; i<b.N; i++ {
-			cont := NewValueJSON(_TwitterJson)
+			cont := value(_TwitterJson)
 			_, _ = cont.GetByPath("statuses", 3, "entities", "hashtags", 0, "text").String()
 		}
     })

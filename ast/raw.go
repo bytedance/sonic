@@ -5,16 +5,18 @@ import (
 	"errors"
 	"sort"
 	"strconv"
+	"sync"
 
 	"github.com/bytedance/sonic/encoder"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
+	"github.com/davecgh/go-spew/spew"
 )
 
 // Value represents a raw json value or error
 // It's safe to concurrently read Value
 //
-// Notice: passing a Value equals to pass-by-value, 
+// Notice: passing a Value equals to pass-by-value,
 // which measn any moditification on passed Value won't affect the origin one
 type Value struct {
 	t  int
@@ -730,6 +732,10 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	return exist, nil
 }
 
+// Add appends the given node under self.
+func (self *Value) AddAny(val interface{}) error {
+	return self.AddMany([]Value{NewValue(val)})
+}
 
 // Add appends the given node under self.
 func (self *Value) Add(val Value) error {
@@ -759,9 +765,9 @@ func (self *Value) AddMany(vals []Value) error {
 
 	s := len(self.js)-2 //  start before ']'
 	for ; s>=0 && isSpace(self.js[s]); s-- {}
-	b = append(b, self.js[:s+1]...)
 	empty := self.js[s] == '['
 
+	b = append(b, self.js[:s+1]...)
 	for _, val := range vals {
 		if !empty {
 			b = append(b, ","...)
@@ -769,7 +775,73 @@ func (self *Value) AddMany(vals []Value) error {
 		empty = false
 		b = append(b, val.js...)
 	}
+	b = append(b, "]"...)
+	self.js = rt.Mem2Str(b)
+	return nil
+}
+
+// Pop pops at most 1 trailling elements in the array.
+func (self *Value) Pop() error {
+	return self.PopMany(1)
+}
+
+var intsPool = sync.Pool{
+	New: func() interface{} {
+		return []int{}
+	},
+}
+
+// PopMany pops at most n trailling elements in the array.
+func (self *Value) PopMany(n int) error {
+	if self.Check() != nil {
+		return self
+	}
+	if n == 0 {
+		return nil
+	}
+	if self.t == V_NULL {
+		return nil
+	}
+	if self.t != V_ARRAY {
+		return ErrUnsupportType
+	}
+	if n < 0 {
+		*self = value(`[]`)
+		return nil
+	}
+
+	p := NewParserObj(self.js)
+	if empty, e := p.arrayBegin(); e != 0 {
+		return e
+	} else if empty {
+		return nil
+	}
+
+	ends := intsPool.Get().([]int)
+	ends = ends[:0]
+	for {
+		_, e := p.skipFast()
+		if e != 0 {
+			return e
+		}
+		ends = append(ends, p.p)
+		if end, e := p.arrayEnd(); e != 0 {
+			return e
+		} else if end {
+			break
+		}
+	}
 	
+	spew.Dump(ends)
+	i := len(ends) - n
+	s := 1
+	if i > 0 {
+		s = ends[i-1]
+	}
+	intsPool.Put(ends)
+	
+	b := make([]byte, 0, s+1)
+	b = append(b, self.js[:s]...)
 	b = append(b, "]"...)
 	self.js = rt.Mem2Str(b)
 	return nil
