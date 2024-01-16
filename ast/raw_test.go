@@ -323,25 +323,26 @@ func TestRawNode_SetByPath(t *testing.T) {
 		js string
 		paths []interface{}
 		val Value
+		exist bool
 		err string
 		out string
 	}{
-		{"exist object",`{"a":1}`,[]interface{}{"a"},NewValue(`2`),"",`{"a":2}`},
-		{"not-exist object",`{"b":1}`,[]interface{}{"a"},NewValue(`2`),"",`{"b":1,"a":2}`},
-		{"empty object",`{}`,[]interface{}{"a"},NewValue(`2`),"",`{"a":2}`},
-		{"empty object 2",`{}`,[]interface{}{"a",1},NewValue(`2`),"",`{"a":[2]}`},
-		{"empty object 3",`{}`,[]interface{}{"a",1,"a"},NewValue(`2`),"",`{"a":[{"a":2}]}`},
-		{"exist array",`[1]`,[]interface{}{0},NewValue(`2`),"",`[2]`},
-		{"not exist array",`[1]`,[]interface{}{1},NewValue(`2`),"",`[1,2]`},
-		{"empty array",`[]`,[]interface{}{1},NewValue(`2`),"",`[2]`},
-		{"empty array 2",`[]`,[]interface{}{1,1},NewValue(`2`),"",`[[2]]`},
-		{"empty array 3",`[]`,[]interface{}{1,"a",1},NewValue(`2`),"",`[{"a":[2]}]`},
-		{"empty array 3",`[]`,[]interface{}{1,"a","a"},NewValue(`2`),"",`[{"a":{"a":2}}]`},
+		{"exist object",`{"a":1}`,[]interface{}{"a"},NewValue(`2`),true,"",`{"a":2}`},
+		{"not-exist object",`{"b":1}`,[]interface{}{"a"},NewValue(`2`),false,"",`{"b":1,"a":2}`},
+		{"empty object",`{}`,[]interface{}{"a"},NewValue(`2`),false,"",`{"a":2}`},
+		{"empty object 2",`{}`,[]interface{}{"a",1},NewValue(`2`),false,"",`{"a":[2]}`},
+		{"empty object 3",`{}`,[]interface{}{"a",1,"a"},NewValue(`2`),false,"",`{"a":[{"a":2}]}`},
+		{"exist array",`[1]`,[]interface{}{0},NewValue(`2`),true,"",`[2]`},
+		{"not exist array",`[1]`,[]interface{}{1},NewValue(`2`),false,"",`[1,2]`},
+		{"empty array",`[]`,[]interface{}{1},NewValue(`2`),false,"",`[2]`},
+		{"empty array 2",`[]`,[]interface{}{1,1},NewValue(`2`),false,"",`[[2]]`},
+		{"empty array 3",`[]`,[]interface{}{1,"a",1},NewValue(`2`),false,"",`[{"a":[2]}]`},
+		{"empty array 3",`[]`,[]interface{}{1,"a","a"},NewValue(`2`),false,"",`[{"a":{"a":2}}]`},
 	}
 	for _, c := range tests {
 		println(c.name)
 		root := NewValue(c.js)
-		err := root.SetByPath(c.val, c.paths...)
+		exist, err := root.SetByPath(c.val, c.paths...)
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err)
 		}
@@ -350,6 +351,49 @@ func TestRawNode_SetByPath(t *testing.T) {
 		} else {
 			require.Equal(t, c.out, out)
 		}
+		require.Equal(t, c.exist, exist)
+	}
+}
+
+func TestRawNode_UnsetByPath(t *testing.T) {
+	tests := []struct{
+		name string
+		js string
+		paths []interface{}
+		exist bool
+		err string
+		out string
+	}{
+		{"exist object",`{"a":1}`,[]interface{}{"a"},true,"",`{}`},
+		{"exist object",`{"a":1,"b":2,"c":3}`,[]interface{}{"a"},true,"",`{"b":2,"c":3}`},
+		{"exist object",`{"a":1,"b":2,"c":3}`,[]interface{}{"b"},true,"",`{"a":1,"c":3}`},
+		{"exist object",`{"a":1,"b":2,"c":3}`,[]interface{}{"c"},true,"",`{"a":1,"b":2}`},
+		{"not-exist object",`{"b":1}`,[]interface{}{"a"},false,"",`{"b":1}`},
+		{"empty object",`{}`,[]interface{}{"a"},false,"",`{}`},
+		{"exist object 2",`{"a":{"a":1}}`,[]interface{}{"a","a"},true,"",`{"a":{}}`},
+		{"exist object 2",`[{"a":1}]`,[]interface{}{0,"a"},true,"",`[{}]`},
+		
+		{"not exist array",`[1]`,[]interface{}{1},false,"",`[1]`},
+		{"empty array",`[]`,[]interface{}{1},false,"",`[]`},
+		{"exist array",`[[1,2,3]]`,[]interface{}{0,0},true,"",`[[2,3]]`},
+		{"exist array",`[[1,2,3]]`,[]interface{}{0,1},true,"",`[[1,3]]`},
+		{"exist array",`[[1,2,3]]`,[]interface{}{0,2},true,"",`[[1,2]]`},
+		{"exist array 2",`[[1]]`,[]interface{}{0,0},true,"",`[[]]`},
+		{"exist array 2",`{"a":[1]}`,[]interface{}{"a",0},true,"",`{"a":[]}`},
+	}
+	for _, c := range tests {
+		println(c.name)
+		root := NewValue(c.js)
+		exist, err := root.UnsetByPath(c.paths...)
+		if err != nil && err.Error() != c.err {
+			t.Fatal(err)
+		}
+		if out := root.Raw(); err != nil {
+			t.Fatal()
+		} else {
+			require.Equal(t, c.out, out)
+		}
+		require.Equal(t, c.exist, exist)
 	}
 }
 

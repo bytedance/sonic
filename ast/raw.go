@@ -154,14 +154,14 @@ func (self Value) GetByPath(path ...interface{}) Value {
     return rawNode(self.js[s:p.p])
 }
 
-// GetByPath load given path on demands,
-// which only ensure nodes before this path got parsed
-func (self *Value) SetByPath(val Value, path ...interface{}) error {
+// SetByPath set value on given path and create nodes on the json if not exist
+func (self *Value) SetByPath(val Value, path ...interface{}) (bool, error) {
+	exist := false
 	if self.Check() != nil {
-		return self
+		return exist, self
 	}
 	if val.Check() != nil {
-		return val
+		return exist, val
 	}
 
 	p := NewParserObj(self.js)
@@ -170,9 +170,9 @@ func (self *Value) SetByPath(val Value, path ...interface{}) error {
 
 	for i, k := range path {
         if id, ok := k.(int); ok && id >= 0 {
-            if err = p.searchIndex(id); err != 0 {
+            if _, err = p.searchIndex(id); err != 0 {
 				if err != _ERR_NOT_FOUND {
-                	return errRawNode(p.ExportError(err))
+                	return exist, errRawNode(p.ExportError(err))
 				}
 				idx = i
 				break
@@ -180,7 +180,7 @@ func (self *Value) SetByPath(val Value, path ...interface{}) error {
         } else if key, ok := k.(string); ok {
             if _, err = p.searchKey(key); err != 0 {
 				if err != _ERR_NOT_FOUND {
-                	return errRawNode(p.ExportError(err))
+                	return exist, errRawNode(p.ExportError(err))
 				}
 				idx = i
 				break
@@ -192,10 +192,11 @@ func (self *Value) SetByPath(val Value, path ...interface{}) error {
 
 	var b []byte
 	if err == 0 {
+		exist = true
 		// found, just skip and replace
-		s, err := p.skip()
+		s, err := p.skipFast()
 		if err != 0 {
-			return errRawNode(p.ExportError(err))
+			return exist, errRawNode(p.ExportError(err))
 		}
 		size := len(self.js) + len(val.js) - (p.p-s)
 		b = make([]byte, 0, size)
@@ -213,16 +214,17 @@ func (self *Value) SetByPath(val Value, path ...interface{}) error {
 		if !empty {
 			b = append(b, ","...)
 		}
+		// creat new nodes on path
 		b = appendPathValue(b, path[idx:], val)
 	}
 
 	b = append(b, self.js[p.p:]...)
 	self.js = rt.Mem2Str(b)
-	return nil
+	return exist, nil
 }
 
-// [2,"a"] - 1  => {"a":1} 
-// ["a",2] - 1  => "a":[1]
+// [2,"a"],1 => {"a":1} 
+// ["a",2],1  => "a":[1]
 func appendPathValue(b []byte, path []interface{}, val Value) []byte {
 	for i, k := range path {
 		if key, ok := k.(string); ok {
@@ -251,6 +253,64 @@ func appendPathValue(b []byte, path []interface{}, val Value) []byte {
 		}
 	}
 	return b
+}
+
+// UnsetByPath delete value on given path.
+func (self *Value) UnsetByPath(path ...interface{}) (bool, error) {
+	if self.Check() != nil {
+		return false, self
+	}
+
+	p := NewParserObj(self.js)
+	var err types.ParsingError
+	var comma = -1
+
+	for _, k := range path {
+        if id, ok := k.(int); ok && id >= 0 {
+            if comma, err = p.searchIndex(id); err != 0 {
+				if err == _ERR_NOT_FOUND {
+                	return false, nil
+				}
+				return false, p.ExportError(err)
+            }
+        } else if key, ok := k.(string); ok {
+            if comma, err = p.searchKey(key); err != 0 {
+				if err == _ERR_NOT_FOUND {
+                	return false, nil
+				}
+				return false, p.ExportError(err)
+            }
+        } else {
+            panic("path must be either int(>=0) or string")
+        }
+    }
+
+	var b []byte
+	s, err := p.skipFast()
+	if err != 0 {
+		return true, errRawNode(p.ExportError(err))
+	}
+	if comma != -1 {
+		s = comma
+	}
+	
+	e := p.p
+	println(string(self.js[s]))
+	if self.js[s] != ',' { // first elem
+		// check if trailling ','
+		p.p = p.lspace(p.p)
+		println(string(self.js[p.p]))
+		if p.p < len(self.js) && self.js[p.p] == ',' {
+			e = p.p+1
+		}
+	}
+
+	size := len(self.js) - (e-s)
+	b = make([]byte, 0, size)
+	b = append(b, self.js[:s]...)
+	b = append(b, self.js[e:]...)
+	self.js = rt.Mem2Str(b)
+	return true, nil
 }
 
 // Get loads given key of an object node on demands
@@ -437,7 +497,8 @@ func (ps points) Len() int {
 	return len(ps)
 }
 
-// Set sets the node of given key under self, and reports if the key has existed.
+// Set sets the node of given key under self, and insert new value if not exist.
+// It reports if the key has existed.
 func (self *Value) Set(key string, val Value) (bool, error) {
 	return self.SetMany([]string{key}, []Value{val})
 }
@@ -534,8 +595,9 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 	return exist, nil
 }
 
-// SetByIndex sets the node of given index, and reports if the key has existed.
+// SetByIndex sets the node of given index and insert new value if not exist.
 // If the index is out range of self's children, it will be ADD to the last
+// and reports if the key has existed.
 func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	return self.SetManyByIndex([]int{id}, []Value{val})
 }

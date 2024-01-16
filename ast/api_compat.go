@@ -90,7 +90,7 @@ func (self *Node) encodeInterface(buf *[]byte) error {
 func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     for _, p := range path {
         if idx, ok := p.(int); ok && idx >= 0 {
-            if err := self.searchIndex(idx); err != 0 {
+            if _, err := self.searchIndex(idx); err != 0 {
                 return self.p, err
             }
         } else if key, ok := p.(string); ok {

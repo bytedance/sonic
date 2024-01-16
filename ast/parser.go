@@ -391,21 +391,22 @@ func (self *Parser) objectEnd() (bool, types.ParsingError) {
 
 func (self *Parser) searchKey(match string) (int, types.ParsingError) {
     ns := len(self.s)
-    keyPos := -1
+    comma := -1
     
     if err := self.object(); err != 0 {
-        return keyPos, err
+        return comma, err
     }
 
     /* check for EOF */
     if self.p = self.lspace(self.p); self.p >= ns {
-        return keyPos, types.ERR_EOF
+        return comma, types.ERR_EOF
     }
 
     /* check for empty object */
     if self.s[self.p] == '}' {
-        return keyPos, _ERR_NOT_FOUND
+        return comma, _ERR_NOT_FOUND
     }
+    comma = self.p
 
     var njs types.JsonState
     var err types.ParsingError
@@ -415,49 +416,49 @@ func (self *Parser) searchKey(match string) (int, types.ParsingError) {
 
         /* decode the key */
         if njs = self.decodeValue(); njs.Vt != types.V_STRING {
-            return keyPos, types.ERR_INVALID_CHAR
+            return comma, types.ERR_INVALID_CHAR
         }
 
         /* extract the key */
         idx := self.p - 1
         key := self.s[njs.Iv:idx]
-        keyPos = int(njs.Iv - 1)
         
         /* check for escape sequence */
         if njs.Ep != -1 {
             if key, err = unquote(key); err != 0 {
-                return keyPos, err
+                return comma, err
             }
         }
 
         /* expect a ':' delimiter */
         if err = self.delim(); err != 0 {
-            return keyPos, err
+            return comma, err
         }
 
         /* skip value */
         if key != match {
             if _, err = self.skipFast(); err != 0 {
-                return keyPos, err
+                return comma, err
             }
         } else {
-            return keyPos, 0
+            return comma, 0
         }
 
         /* check for EOF */
         self.p = self.lspace(self.p)
         if self.p >= ns {
-            return keyPos, types.ERR_EOF
+            return comma, types.ERR_EOF
         }
 
         /* check for the next character */
         switch self.s[self.p] {
         case ',':
+            comma = self.p
             self.p++
         case '}':
-            return keyPos, _ERR_NOT_FOUND
+            return comma, _ERR_NOT_FOUND
         default:
-            return keyPos, types.ERR_INVALID_CHAR
+            return comma, types.ERR_INVALID_CHAR
         }
     }
 }
@@ -502,21 +503,23 @@ func (self *Parser) arrayEnd() (bool, types.ParsingError) {
     } 
 }
 
-func (self *Parser) searchIndex(idx int) types.ParsingError {
+func (self *Parser) searchIndex(idx int) (int, types.ParsingError) {
+    comma := -1
     ns := len(self.s)
     if err := self.array(); err != 0 {
-        return err
+        return comma, err
     }
 
     /* check for EOF */
     if self.p = self.lspace(self.p); self.p >= ns {
-        return types.ERR_EOF
+        return comma, types.ERR_EOF
     }
 
     /* check for empty array */
     if self.s[self.p] == ']' {
-        return _ERR_NOT_FOUND
+        return comma, _ERR_NOT_FOUND
     }
+    comma = self.p
 
     var err types.ParsingError
     /* allocate array space and parse every element */
@@ -524,27 +527,28 @@ func (self *Parser) searchIndex(idx int) types.ParsingError {
 
         /* decode the value */
         if _, err = self.skipFast(); err != 0 {
-            return err
+            return comma, err
         }
 
         /* check for EOF */
         self.p = self.lspace(self.p)
         if self.p >= ns {
-            return types.ERR_EOF
+            return comma, types.ERR_EOF
         }
 
         /* check for the next character */
         switch self.s[self.p] {
         case ',':
+            comma = self.p
             self.p++
         case ']':
-            return _ERR_NOT_FOUND
+            return comma, _ERR_NOT_FOUND
         default:
-            return types.ERR_INVALID_CHAR
+            return comma, types.ERR_INVALID_CHAR
         }
     }
 
-    return 0
+    return comma, 0
 }
 
 func (self *Node) skipNextNode() *Node {
