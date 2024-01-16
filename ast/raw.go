@@ -2,10 +2,8 @@ package ast
 
 import (
 	"encoding/json"
-	"errors"
 	"sort"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/bytedance/sonic/encoder"
@@ -90,7 +88,7 @@ func (self Value) Error() string {
 // Check checks if the node itself is valid, and return
 func (self Value) Check() error {
 	if self.t == V_ERROR {
-		return errors.New(self.js)
+		return self
 	}
 	return nil
 }
@@ -102,18 +100,22 @@ func errRawNode(err error) Value {
 // Len returns children count of a array|object|string node
 //
 // WARN: this calculation consumes much CPU time
-func (self Value) Len() int {
+func (self Value) Len() (int, error) {
 	switch self.t {
 	case V_STRING:
-		return len(self.js) - 2
+		str, e := self.toString()
+		if e != 0 {
+			return -1, e
+		}
+		return len(str), nil
 	case V_ARRAY:
 		c, _ := self.count_elems()
-		return c
+		return c, nil
 	case V_OBJECT:
 		c, _ := self.count_kvs()
-		return c
+		return c, nil
 	default:
-		return -1
+		return -1, ErrUnsupportType
 	}
 }
 
@@ -325,11 +327,9 @@ func (self *Value) UnsetByPath(path ...interface{}) (bool, error) {
 	}
 	
 	e := p.p
-	println(string(self.js[s]))
 	if self.js[s] != ',' { // first elem
 		// check if trailling ','
 		p.p = p.lspace(p.p)
-		println(string(self.js[p.p]))
 		if p.p < len(self.js) && self.js[p.p] == ',' {
 			e = p.p+1
 		}
@@ -970,17 +970,12 @@ func (self Value) str() string {
 	return self.js[1:len(self.js)-1]
 }
 
-// Raw returns json representation of the node
-// If it's invalid json, return empty string
-func (self Value) Raw() (string) {
-    if e := self.Check(); e != nil {
-        return ""
-    }
-    return self.js
+func (self Value) raw() string {
+	return self.js
 }
 
-// StrictRaw returns json representation of the node
-func (self Value) StrictRaw() (string, error) {
+// Raw returns json representation of the node
+func (self Value) Raw() (string, error) {
     if e := self.Check(); e != nil {
         return "", e
     }
@@ -1008,10 +1003,25 @@ func (self Value) toNumber() json.Number {
 }
 
 func (self Value) toString() (string, types.ParsingError) {
-    if strings.Contains(self.js, "\\") {
-		return unquote(self.js)
-	} else {
-		return self.str(), 0
+    p := NewParserObj(self.js)
+	switch val := p.decodeValue(); val.Vt {
+		case types.V_STRING  :
+			/* fast path: no escape sequence */
+			if val.Ep == -1 {
+				return self.str(), 0
+			}
+
+			/* unquote the string */
+			s := p.s[val.Iv:p.p - 1]
+			out, err := unquote(s)
+
+			/* check for errors */
+			if err != 0 {
+				return "", err
+			} else {
+				return out, 0
+			}
+		default: return "", _ERR_UNSUPPORT_TYPE
 	}
 }
 

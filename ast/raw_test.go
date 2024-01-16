@@ -1,50 +1,225 @@
 package ast
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"sync"
 	"testing"
 
 	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/require"
 )
 
 var concurrency = 1000
 
-func TestValAPI(t *testing.T) {
+func TestCast(t *testing.T) {
+	v, err := strconv.ParseInt("1.1", 0, 0)
+	spew.Dump(v, err)
+}
+
+func TestValueAPI(t *testing.T) {
+	var nonEmptyErr error = errors.New("")
+
     var cases = []struct {
         method string
-        js     string
-        exp    []interface{}
+        js     Node
+        exp    interface{}
+		err error
     }{
-		{"Len", `""`, []interface{}{0}},
-		{"Len", `"a"`, []interface{}{1}},
-		{"Len", `1`, []interface{}{-1}},
-		{"Len", `true`, []interface{}{-1}},
-		{"Len", `null`, []interface{}{-1}},
-		{"Len", `[]`, []interface{}{0}},
-		{"Len", `[1]`, []interface{}{1}},
-		{"Len", `[ 1 , 2 ]`, []interface{}{2}},
-		{"Len", `{}`, []interface{}{0}},
-		{"Len", `{"a":1}`, []interface{}{1}},
-		{"Len", `{ "a" : 1, "b" : [1] }`, []interface{}{2}},
+		{"Len", NewAny(""), 0, nil},
+		{"Len", NewAny("a"), 1,nil},
+		{"Len", NewAny(1), -1, ErrUnsupportType},
+		{"Len", NewAny(true), -1,ErrUnsupportType},
+		{"Len", NewAny(nil), -1,ErrUnsupportType},
+		{"Len", NewAny([]int{}), 0,nil},
+		{"Len", NewAny([]int{1}), 1,nil},
+		{"Len", NewAny([]int{1,2}), 2,nil},
+		{"Len", NewAny(map[string]string{}), 0,nil},
+		{"Len", NewAny(map[string]int{"a":1}), 1,nil},
+		{"Len", NewAny(map[string]int{"a":1,"b":2}), 2,nil},
+
+		{"Bool", Node{}, false, nonEmptyErr},
+        {"Bool", NewAny(true), true, nil},
+        {"Bool", NewAny(false), false, nil},
+        {"Bool", NewAny(int(0)), false, nil},
+        {"Bool", NewAny(int8(1)), true, nil},
+        {"Bool", NewAny(int16(1)), true, nil},
+        {"Bool", NewAny(int32(1)), true, nil},
+        {"Bool", NewAny(int64(1)), true, nil},
+        {"Bool", NewAny(uint(1)), true, nil},
+        {"Bool", NewAny(uint16(1)), true, nil},
+        {"Bool", NewAny(uint32(1)), true, nil},
+        {"Bool", NewAny(uint64(1)), true, nil},
+        {"Bool", NewAny(float64(0)), false, nil},
+        {"Bool", NewAny(float32(1)), true, nil},
+        {"Bool", NewAny(float64(1)), true, nil},
+        {"Bool", NewAny(json.Number("0")), false, nil},
+        {"Bool", NewAny(json.Number("1")), true, nil},
+        {"Bool", NewAny(json.Number("1.1")), true, nil},
+        {"Bool", NewAny(json.Number("+x1.1")), false, nonEmptyErr},
+        {"Bool", NewAny(string("0")), false, nil},
+        {"Bool", NewAny(string("t")), true, nil},
+        {"Bool", NewAny([]byte{0}), false, nonEmptyErr},
+        {"Bool", NewRaw("true"), true, nil},
+        {"Bool", NewRaw("false"), false, nil},
+        {"Bool", NewRaw("null"), false, nil},
+        {"Bool", NewString(`true`), true, nil},
+        {"Bool", NewString(`false`), false, nil},
+        {"Bool", NewString(``), false, nonEmptyErr},
+        {"Bool", NewNumber("2"), true, nil},
+        {"Bool", NewNumber("-2.1"), true, nil},
+        {"Bool", NewNumber("-x-2.1"), false, nonEmptyErr},
+
+		{"Int64", NewRaw("true"), int64(1), nil},
+        {"Int64", NewRaw("false"), int64(0), nil},
+        {"Int64", NewRaw("\"1\""), int64(1), nil},
+        {"Int64", NewRaw("\"1.1\""), int64(0), nonEmptyErr},
+        {"Int64", NewRaw("\"1.0\""), int64(0), nonEmptyErr},
+        {"Int64", NewNumber("+x.0"), int64(0), nonEmptyErr},
+        {"Int64", NewAny(false), int64(0), nil},
+        {"Int64", NewAny(true), int64(1), nil},
+        {"Int64", NewAny(int(1)), int64(1), nil},
+        {"Int64", NewAny(int8(1)), int64(1), nil},
+        {"Int64", NewAny(int16(1)), int64(1), nil},
+        {"Int64", NewAny(int32(1)), int64(1), nil},
+        {"Int64", NewAny(int64(1)), int64(1), nil},
+        {"Int64", NewAny(uint(1)), int64(1), nil},
+        {"Int64", NewAny(uint8(1)), int64(1), nil},
+        {"Int64", NewAny(uint32(1)), int64(1), nil},
+        {"Int64", NewAny(uint64(1)), int64(1), nil},
+        {"Int64", NewAny(float32(1)), int64(1), nil},
+        {"Int64", NewAny(float64(1)), int64(1), nil},
+        {"Int64", NewAny("1"), int64(1), nil},
+        {"Int64", NewAny("1.1"), int64(0), nonEmptyErr},
+        {"Int64", NewAny("+1x.1"), int64(0), nonEmptyErr},
+        {"Int64", NewAny(json.Number("1")), int64(1), nil},
+        {"Int64", NewAny(json.Number("1.1")), int64(0), nonEmptyErr},
+        {"Int64", NewAny(json.Number("+1x.1")), int64(0), nonEmptyErr},
+        {"Int64", NewAny([]byte{0}), int64(0), nonEmptyErr},
+        {"Int64", Node{}, int64(0), nonEmptyErr},
+        {"Int64", NewRaw("0"), int64(0), nil},
+        {"Int64", NewRaw("null"), int64(0), nil},
+
+		{"Float64", NewRaw("true"), float64(1), nil},
+        {"Float64", NewRaw("false"), float64(0), nil},
+        {"Float64", NewRaw("\"1.0\""), float64(1.0), nil},
+        {"Float64", NewRaw("\"xx\""), float64(0), nonEmptyErr},
+        {"Float64", Node{}, float64(0), nonEmptyErr},
+        {"Float64", NewAny(false), float64(0), nil},
+        {"Float64", NewAny(true), float64(1), nil},
+        {"Float64", NewAny(int(1)), float64(1), nil},
+        {"Float64", NewAny(int8(1)), float64(1), nil},
+        {"Float64", NewAny(int16(1)), float64(1), nil},
+        {"Float64", NewAny(int32(1)), float64(1), nil},
+        {"Float64", NewAny(int64(1)), float64(1), nil},
+        {"Float64", NewAny(uint(1)), float64(1), nil},
+        {"Float64", NewAny(uint8(1)), float64(1), nil},
+        {"Float64", NewAny(uint32(1)), float64(1), nil},
+        {"Float64", NewAny(uint64(1)), float64(1), nil},
+        {"Float64", NewAny(float32(1)), float64(1), nil},
+        {"Float64", NewAny(float64(1)), float64(1), nil},
+        {"Float64", NewAny("1.1"), float64(1.1), nil},
+        {"Float64", NewAny("+1x.1"), float64(0), nonEmptyErr},
+        {"Float64", NewAny(json.Number("0")), float64(0), nil},
+        {"Float64", NewAny(json.Number("x")), float64(0), nonEmptyErr},
+        {"Float64", NewAny([]byte{0}), float64(0), nonEmptyErr},
+        {"Float64", NewRaw("0.0"), float64(0.0), nil},
+        {"Float64", NewRaw("1"), float64(1.0), nil},
+        {"Float64", NewRaw("null"), float64(0.0), nil},
+      
+		{"Number", Node{}, json.Number(""), nonEmptyErr},
+        {"Number", NewAny(false), json.Number("0"), nil},
+        {"Number", NewAny(true), json.Number("1"), nil},
+        {"Number", NewAny(int(1)), json.Number("1"), nil},
+        {"Number", NewAny(int8(1)), json.Number("1"), nil},
+        {"Number", NewAny(int16(1)), json.Number("1"), nil},
+        {"Number", NewAny(int32(1)), json.Number("1"), nil},
+        {"Number", NewAny(int64(1)), json.Number("1"), nil},
+        {"Number", NewAny(uint(1)), json.Number("1"), nil},
+        {"Number", NewAny(uint8(1)), json.Number("1"), nil},
+        {"Number", NewAny(uint32(1)), json.Number("1"), nil},
+        {"Number", NewAny(uint64(1)), json.Number("1"), nil},
+        {"Number", NewAny(float32(1)), json.Number("1"), nil},
+        {"Number", NewAny(float64(1)), json.Number("1"), nil},
+        {"Number", NewAny("1.1"), json.Number("1.1"), nil},
+        {"Number", NewAny("+1x.1"), json.Number(""), nonEmptyErr},
+        {"Number", NewAny(json.Number("0")), json.Number("0"), nil},
+        {"Number", NewAny(json.Number("x")), json.Number("x"), nil},
+        {"Number", NewAny(json.Number("+1x.1")), json.Number("+1x.1"), nil},
+        {"Number", NewAny([]byte{0}), json.Number(""), nonEmptyErr},
+        {"Number", NewRaw("x"), json.Number(""), nonEmptyErr},
+        {"Number", NewRaw("0.0"), json.Number("0.0"), nil},
+        {"Number", NewRaw("\"1\""), json.Number("1"), nil},
+        {"Number", NewRaw("\"1.1\""), json.Number("1.1"), nil},
+        {"Number", NewRaw("\"0.x0\""), json.Number(""), nonEmptyErr},
+        {"Number", NewRaw("{]"), json.Number(""), nonEmptyErr},
+        {"Number", NewRaw("true"), json.Number("1"), nil},
+        {"Number", NewRaw("false"), json.Number("0"), nil},
+        {"Number", NewRaw("null"), json.Number("0"), nil},
+
+		{"String", Node{}, "", nonEmptyErr},
+        {"String", NewAny(`\u263a`), `\u263a`, nil},
+        {"String", NewRaw(`"\u263a"`), `☺`, nil},
+        {"String", NewString(`\u263a`), `\u263a`, nil},
+        {"String", NewRaw(`0.0`), "0.0", nil},
+        {"String", NewRaw(`true`), "true", nil},
+        {"String", NewRaw(`false`), "false", nil},
+        {"String", NewRaw(`null`), "", nil},
+        {"String", NewAny(false), "false", nil},
+        {"String", NewAny(true), "true", nil},
+        {"String", NewAny(int(1)), "1", nil},
+        {"String", NewAny(int8(1)), "1", nil},
+        {"String", NewAny(int16(1)), "1", nil},
+        {"String", NewAny(int32(1)), "1", nil},
+        {"String", NewAny(int64(1)), "1", nil},
+        {"String", NewAny(uint(1)), "1", nil},
+        {"String", NewAny(uint8(1)), "1", nil},
+        {"String", NewAny(uint32(1)), "1", nil},
+        {"String", NewAny(uint64(1)), "1", nil},
+        {"String", NewAny(float32(1)), "1", nil},
+        {"String", NewAny(float64(1)), "1", nil},
+        {"String", NewAny("1.1"), "1.1", nil},
+        {"String", NewAny("+1x.1"), "+1x.1", nil},
+        {"String", NewAny(json.Number("0")), ("0"), nil},
+        {"String", NewAny(json.Number("x")), ("x"), nil},
+        {"String", NewAny([]byte{0}), (""), nonEmptyErr},
 	}
 	for i, c := range cases {
-        fmt.Println(i, c)
-		node := NewValueJSON(c.js)
+        fmt.Println(i)
+		node := NewValue(&c.js)
+		println(node.js, node.t)
 		rt := reflect.ValueOf(&node)
 		m := rt.MethodByName(c.method)
         rets := m.Call([]reflect.Value{})
-		for i, v := range c.exp {
-			require.Equal(t, v, rets[i].Interface())
-		}
+		if len(rets) != 2 {
+            t.Fatal(i, rets)
+        }
+        if !reflect.DeepEqual(rets[0].Interface(), c.exp) {
+            t.Fatal(i, c.exp, "::", rets[0].Interface())
+        }
+        v := rets[1].Interface()
+        if c.err == nonEmptyErr {
+            if rets[1].IsNil() {
+                t.Fatal(i, v)
+            }
+        } else if v != c.err {
+            t.Fatal(i, v)
+        }
 	}
 }
 
 // IndexVal
 type IndexVal struct {
 	Index int
+	Val Value
+}
+
+type keyVal struct {
+	Key string
 	Val Value
 }
 
@@ -140,7 +315,7 @@ func TestSetMany(t *testing.T) {
 				vals = append(vals, kv.Val)
 			}
 			_, err = node.SetMany(keys, vals)
-			require.Equal(t, c.exp, node.Raw())
+			require.Equal(t, c.exp, node.raw())
 		} else  if ids, ok := c.kvs.([]IndexVal); ok {
 			keys := []int{}
 			vals := []Value{}
@@ -149,7 +324,7 @@ func TestSetMany(t *testing.T) {
 				vals = append(vals, kv.Val)
 			}
 			_, err = node.SetManyByIndex(keys, vals)
-			require.Equal(t, c.exp, node.Raw())
+			require.Equal(t, c.exp, node.raw())
 		}
 		if err != nil && c.err != err.Error() {
 			t.Fatal(err)
@@ -310,7 +485,7 @@ func TestRawNode_Set(t *testing.T) {
 		if err != nil && err.Error() != c.err {
 			t.Fatal()
 		}
-		if out := root.Raw(); err != nil {
+		if out := root.raw(); err != nil {
 			t.Fatal()
 		} else {
 			require.Equal(t, c.out, out)
@@ -347,7 +522,7 @@ func TestRawNode_SetByPath(t *testing.T) {
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err)
 		}
-		if out := root.Raw(); err != nil {
+		if out := root.raw(); err != nil {
 			t.Fatal()
 		} else {
 			require.Equal(t, c.out, out)
@@ -389,7 +564,7 @@ func TestRawNode_UnsetByPath(t *testing.T) {
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err)
 		}
-		if out := root.Raw(); err != nil {
+		if out := root.raw(); err != nil {
 			t.Fatal()
 		} else {
 			require.Equal(t, c.out, out)
@@ -433,7 +608,7 @@ func TestRawNode_Unset(t *testing.T) {
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err.Error())
 		}
-		if out := root.Raw(); err != nil {
+		if out := root.raw(); err != nil {
 			t.Fatal()
 		} else {
 			require.Equal(t, c.out, out)
@@ -490,7 +665,7 @@ func TestRawNode_UnsetMany(t *testing.T) {
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err.Error())
 		}
-		if out := root.Raw(); err != nil {
+		if out := root.raw(); err != nil {
 			t.Fatal()
 		} else {
 			require.Equal(t, c.out, out)
