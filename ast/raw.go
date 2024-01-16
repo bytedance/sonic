@@ -10,7 +10,6 @@ import (
 	"github.com/bytedance/sonic/encoder"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
-	"github.com/davecgh/go-spew/spew"
 )
 
 // Value represents a raw json value or error
@@ -832,7 +831,6 @@ func (self *Value) PopMany(n int) error {
 		}
 	}
 	
-	spew.Dump(ends)
 	i := len(ends) - n
 	s := 1
 	if i > 0 {
