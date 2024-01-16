@@ -193,6 +193,27 @@ func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
 }
 
+// Get searches the given path from json,
+// and returns its representing ast.Value.
+//
+// Each path arg must be integer or string:
+//     - Integer is target index(>=0), means searching current value as array.
+//     - String is target key, means searching current value as object.
+//
+// 
+// Note, the api expects the json is well-formed at least,
+// otherwise it may return unexpected result.
+func GetValue(src []byte, path ...interface{}) (ast.Value, error) {
+    return GetValueFromString(string(src), path...)
+}
+
+
+// GetValueFromString is same with GetValue except src is string,
+// which can reduce unnecessary memory copy.
+func GetValueFromString(src string, path ...interface{}) (ast.Value, error) {
+    return ast.NewSearcher(src).GetValueByPath(path...)
+}
+
 // Valid reports whether data is a valid JSON encoding.
 func Valid(data []byte) bool {
     return ConfigDefault.Valid(data)

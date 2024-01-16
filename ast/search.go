@@ -67,20 +67,20 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
 func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
 	if self.parser.s == "" {
 		err := errors.New("empty input")
-		return errRawNode(err), err
+		return errValue(err), err
 	}
 
     self.parser.p = 0
     s, err := self.parser.getByPath(path...)
     if err != 0 {
 		e := self.parser.ExportError(err)
-        return errRawNode(e), e
+        return errValue(e), e
     }
 
     t := switchRawType(self.parser.s[s])
     if t == _V_NONE {
 		e := self.parser.ExportError(err)
-        return errRawNode(e), e 
+        return errValue(e), e 
     }
     return Value{int(t), self.parser.s[s:self.parser.p]}, nil
 }

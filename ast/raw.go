@@ -26,7 +26,7 @@ func NewValueJSON(json string) Value {
 	p := NewParser(json)
 	s, e := p.skip()
 	if e != 0 {
-		return errRawNode(p.ExportError(e))
+		return errValue(p.ExportError(e))
 	}
 	return value(json[s:p.p])
 }
@@ -41,29 +41,35 @@ func NewValue(val interface{}) Value {
 	}
 	js, err := encoder.Encode(val, 0)
 	if err != nil {
-		return errRawNode(err)
+		return errValue(err)
 	}
 	return value(rt.Mem2Str(js))
 }
 
+// NewErrorValue wraps error as V_ERROR
+func NewErrorValue(err error) Value {
+	return errValue(err)
+}
+
 func value(js string) Value {
 	return Value{
-		t: int(switchRawType(js[0])),
+		t:  int(switchRawType(js[0])),
 		js: js,
 	}
 }
 
 // Type returns json type represented by the node
 // It will be one of belows:
-//    V_NONE   = 0 (empty node)
-//    V_ERROR  = 1 (something wrong)
-//    V_NULL   = 2 (json value `null`)
-//    V_TRUE   = 3 (json value `true`)
-//    V_FALSE  = 4 (json value `false`)
-//    V_ARRAY  = 5 (json value array)
-//    V_OBJECT = 6 (json value object)
-//    V_STRING = 7 (json value string)
-//    V_NUMBER = 33 (json value number )
+//
+//	V_NONE   = 0 (empty node)
+//	V_ERROR  = 1 (something wrong)
+//	V_NULL   = 2 (json value `null`)
+//	V_TRUE   = 3 (json value `true`)
+//	V_FALSE  = 4 (json value `false`)
+//	V_ARRAY  = 5 (json value array)
+//	V_OBJECT = 6 (json value object)
+//	V_STRING = 7 (json value string)
+//	V_NUMBER = 33 (json value number )
 func (self Value) Type() int {
 	return self.t
 }
@@ -71,6 +77,25 @@ func (self Value) Type() int {
 // Exists tells if the nodes exists (including V_NULL)
 func (self Value) Exists() bool {
 	return self.t != 0 && self.t != V_ERROR
+}
+
+// MarshalJSON for encoding/json.Marshaler
+func (self Value) MarshalJSON() ([]byte, error) {
+	js, err := self.Raw()
+	if err != nil {
+		return nil, err
+	}
+	return rt.Str2Mem(js), nil
+}
+
+// UnmarshalJSON for encoding/json.Unmarshaler
+func (self *Value) UnmarshalJSON(in []byte) error {
+	n := NewValueJSON(rt.Mem2Str(in))
+	if err := n.Check(); err != nil {
+		return err
+	}
+	*self = n
+	return nil
 }
 
 func (self Value) itype() types.ValueType {
@@ -81,6 +106,8 @@ func (self Value) itype() types.ValueType {
 func (self Value) Error() string {
 	if self.t == V_ERROR {
 		return self.js
+	} else if self.t == 0 {
+		return ErrNotExist.Error()
 	}
 	return ""
 }
@@ -89,11 +116,13 @@ func (self Value) Error() string {
 func (self Value) Check() error {
 	if self.t == V_ERROR {
 		return self
+	} else if self.t == 0 {
+		return ErrNotExist
 	}
 	return nil
 }
 
-func errRawNode(err error) Value {
+func errValue(err error) Value {
 	return Value{t: V_ERROR, js: err.Error()}
 }
 
@@ -104,7 +133,7 @@ func (self Value) Len() (int, error) {
 	switch self.t {
 	case V_STRING:
 		str, e := self.toString()
-		if e != 0 {
+		if e != nil {
 			return -1, e
 		}
 		return len(str), nil
@@ -128,7 +157,7 @@ func (self Value) count_elems() (int, types.ParsingError) {
 	}
 
 	i := 0
-	for  {
+	for {
 		if _, e := p.skipFast(); e != 0 {
 			return -1, e
 		}
@@ -150,7 +179,7 @@ func (self Value) count_kvs() (int, types.ParsingError) {
 	}
 
 	i := 0
-	for  {
+	for {
 		if _, e := p.key(); e != 0 {
 			return -1, e
 		}
@@ -175,9 +204,9 @@ func (self Value) GetByPath(path ...interface{}) Value {
 	p := NewParserObj(self.js)
 	s, e := p.getByPath(path...)
 	if e != 0 {
-		return errRawNode(p.ExportError(e))
+		return errValue(p.ExportError(e))
 	}
-    return value(self.js[s:p.p])
+	return value(self.js[s:p.p])
 }
 
 // SetAnyByPath set value on given path and create nodes on the json if not exist
@@ -201,26 +230,26 @@ func (self *Value) SetByPath(val Value, path ...interface{}) (bool, error) {
 	var idx int
 
 	for i, k := range path {
-        if id, ok := k.(int); ok && id >= 0 {
-            if _, err = p.searchIndex(id); err != 0 {
+		if id, ok := k.(int); ok && id >= 0 {
+			if _, err = p.searchIndex(id); err != 0 {
 				if err != _ERR_NOT_FOUND {
-                	return exist, errRawNode(p.ExportError(err))
+					return exist, p.ExportError(err)
 				}
 				idx = i
 				break
-            }
-        } else if key, ok := k.(string); ok {
-            if _, err = p.searchKey(key); err != 0 {
+			}
+		} else if key, ok := k.(string); ok {
+			if _, err = p.searchKey(key); err != 0 {
 				if err != _ERR_NOT_FOUND {
-                	return exist, errRawNode(p.ExportError(err))
+					return exist, p.ExportError(err)
 				}
 				idx = i
 				break
-            }
-        } else {
-            panic("path must be either int(>=0) or string")
-        }
-    }
+			}
+		} else {
+			return false, ErrInvalidPath
+		}
+	}
 
 	var b []byte
 	if err == 0 {
@@ -228,26 +257,31 @@ func (self *Value) SetByPath(val Value, path ...interface{}) (bool, error) {
 		// found, just skip and replace
 		s, err := p.skipFast()
 		if err != 0 {
-			return exist, errRawNode(p.ExportError(err))
+			return exist, p.ExportError(err)
 		}
-		size := len(self.js) + len(val.js) - (p.p-s)
+		size := len(self.js) + len(val.js) - (p.p - s)
 		b = make([]byte, 0, size)
 		b = append(b, self.js[:s]...)
 		b = append(b, val.js...)
 	} else {
 		// not found, stop at end of idx's parent
-		s := p.p-1
-		for ; s>=0 && isSpace(self.js[s]); s-- {}
+		s := p.p - 1
+		for ; s >= 0 && isSpace(self.js[s]); s-- {
+		}
 		empty := (self.js[s] == '[' || self.js[s] == '{')
 		size := len(self.js) + len(val.js) + 8*(len(path)-idx)
 		b = make([]byte, 0, size)
-		s = s+1
+		s = s + 1
 		b = append(b, self.js[:s]...)
 		if !empty {
 			b = append(b, ","...)
 		}
 		// creat new nodes on path
-		b = appendPathValue(b, path[idx:], val)
+		var err error
+		b, err = appendPathValue(b, path[idx:], val)
+		if err != nil {
+			return exist, err
+		}
 	}
 
 	b = append(b, self.js[p.p:]...)
@@ -255,15 +289,15 @@ func (self *Value) SetByPath(val Value, path ...interface{}) (bool, error) {
 	return exist, nil
 }
 
-// [2,"a"],1 => {"a":1} 
+// [2,"a"],1 => {"a":1}
 // ["a",2],1  => "a":[1]
-func appendPathValue(b []byte, path []interface{}, val Value) []byte {
+func appendPathValue(b []byte, path []interface{}, val Value) ([]byte, error) {
 	for i, k := range path {
 		if key, ok := k.(string); ok {
 			quote(&b, key)
 			b = append(b, ":"...)
 		}
-		if i == len(path) - 1 {
+		if i == len(path)-1 {
 			b = append(b, val.js...)
 			break
 		}
@@ -273,10 +307,10 @@ func appendPathValue(b []byte, path []interface{}, val Value) []byte {
 		} else if _, ok := n.(string); ok {
 			b = append(b, `{`...)
 		} else {
-            panic("path must be either int(>=0) or string")
-        }
+			return nil, ErrInvalidPath
+		}
 	}
-	for i := len(path)-1; i>=1; i-- {
+	for i := len(path) - 1; i >= 1; i-- {
 		k := path[i]
 		if _, ok := k.(int); ok {
 			b = append(b, "]"...)
@@ -284,7 +318,7 @@ func appendPathValue(b []byte, path []interface{}, val Value) []byte {
 			b = append(b, `}`...)
 		}
 	}
-	return b
+	return b, nil
 }
 
 // UnsetByPath delete value on given path.
@@ -298,44 +332,44 @@ func (self *Value) UnsetByPath(path ...interface{}) (bool, error) {
 	var comma = -1
 
 	for _, k := range path {
-        if id, ok := k.(int); ok && id >= 0 {
-            if comma, err = p.searchIndex(id); err != 0 {
+		if id, ok := k.(int); ok && id >= 0 {
+			if comma, err = p.searchIndex(id); err != 0 {
 				if err == _ERR_NOT_FOUND {
-                	return false, nil
+					return false, nil
 				}
 				return false, p.ExportError(err)
-            }
-        } else if key, ok := k.(string); ok {
-            if comma, err = p.searchKey(key); err != 0 {
+			}
+		} else if key, ok := k.(string); ok {
+			if comma, err = p.searchKey(key); err != 0 {
 				if err == _ERR_NOT_FOUND {
-                	return false, nil
+					return false, nil
 				}
 				return false, p.ExportError(err)
-            }
-        } else {
-            panic("path must be either int(>=0) or string")
-        }
-    }
+			}
+		} else {
+			return false, ErrInvalidPath
+		}
+	}
 
 	var b []byte
 	s, err := p.skipFast()
 	if err != 0 {
-		return true, errRawNode(p.ExportError(err))
+		return true, p.ExportError(err)
 	}
 	if comma != -1 {
 		s = comma
 	}
-	
+
 	e := p.p
 	if self.js[s] != ',' { // first elem
 		// check if trailling ','
 		p.p = p.lspace(p.p)
 		if p.p < len(self.js) && self.js[p.p] == ',' {
-			e = p.p+1
+			e = p.p + 1
 		}
 	}
 
-	size := len(self.js) - (e-s)
+	size := len(self.js) - (e - s)
 	b = make([]byte, 0, size)
 	b = append(b, self.js[:s]...)
 	b = append(b, self.js[e:]...)
@@ -348,12 +382,12 @@ func (self Value) Get(key string) Value {
 	if self.Check() != nil {
 		return self
 	}
-    p := NewParserObj(self.js)
+	p := NewParserObj(self.js)
 	s, e := p.getByPath(key)
 	if e != 0 {
-		return errRawNode(p.ExportError(e))
+		return errValue(p.ExportError(e))
 	}
-    return value(self.js[s:p.p])
+	return value(self.js[s:p.p])
 }
 
 // GetMany retrieves all the keys in kvs and set found Value at correpsonding index
@@ -374,8 +408,8 @@ func (self Value) GetMany(keys []string, vals []Value) error {
 	return nil
 }
 
-func (self Value) getMany(kvs []string, delete bool, hook func (i, s, e int))types.ParsingError {
-    p := NewParserObj(self.js)
+func (self Value) getMany(kvs []string, delete bool, hook func(i, s, e int)) types.ParsingError {
+	p := NewParserObj(self.js)
 	if empty, e := p.objectBegin(); e != 0 {
 		return e
 	} else if empty {
@@ -432,9 +466,9 @@ func (self Value) Index(idx int) Value {
 	p := NewParserObj(self.js)
 	s, e := p.getByPath(idx)
 	if e != 0 {
-		return errRawNode(p.ExportError(e))
+		return errValue(p.ExportError(e))
 	}
-    return value(self.js[s:p.p])
+	return value(self.js[s:p.p])
 }
 
 // GetMany retrieves all the indexes in ids and set found Value at correpsonding index of vals
@@ -456,7 +490,7 @@ func (self Value) IndexMany(ids []int, vals []Value) error {
 }
 
 func (self Value) indexMany(ids []int, delete bool, hook func(i, s, e int)) types.ParsingError {
-    p := NewParserObj(self.js)
+	p := NewParserObj(self.js)
 	if empty, e := p.arrayBegin(); e != 0 {
 		return e
 	} else if empty {
@@ -507,7 +541,7 @@ type point struct {
 	e int
 }
 
-type points []point 
+type points []point
 
 func (ps points) Less(i, j int) bool {
 	return ps[i].s < ps[j].s
@@ -533,7 +567,7 @@ func (self *Value) Set(key string, val Value) (bool, error) {
 	return self.SetMany([]string{key}, []Value{val})
 }
 
-// SetMany retries kvs in the V_OBJECT value, 
+// SetMany retries kvs in the V_OBJECT value,
 // and replace (exist) or insert (not-exist) key with correpsonding value
 //
 // WARN: kvs shouldn't contains any repeated key, otherwise the repeated key will be regarded as new key and insert
@@ -571,7 +605,7 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 			size += len(vals[i].js) + 4 + len(keys[i])
 		}
 	}
-	
+
 	b := make([]byte, 0, size)
 
 	// write replace points
@@ -585,11 +619,11 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 		b = append(b, self.js[s:r.s]...)
 		// write new val
 		b = append(b, vals[r.i].js...)
-		if i < len(points) - 1 {
+		if i < len(points)-1 {
 			s = points[i+1].s
 		} else {
 			// not write '}'
-			s = len(self.js)-1
+			s = len(self.js) - 1
 		}
 		// write right
 		b = append(b, self.js[r.e:s]...)
@@ -599,7 +633,8 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 	if !exist {
 		b = append(b, self.js[:s+1]...)
 	}
-	for ; s>=0 && isSpace(self.js[s]); s-- {}
+	for ; s >= 0 && isSpace(self.js[s]); s-- {
+	}
 	empty := self.js[s] == '{'
 
 	// write insert points
@@ -618,7 +653,7 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 		// write new val
 		b = append(b, vals[r.i].js...)
 	}
-	
+
 	b = append(b, "}"...)
 
 	self.js = rt.Mem2Str(b)
@@ -639,7 +674,7 @@ func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	return self.SetManyByIndex([]int{id}, []Value{val})
 }
 
-// SetManyByIndex retries ids in the V_ARRAY value, 
+// SetManyByIndex retries ids in the V_ARRAY value,
 // and replace (exist) or insert (not-exist) id of ids with correpsonding value of vals
 func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	if self.Check() != nil {
@@ -675,7 +710,7 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 			size += len(vals[i].js) + 1
 		}
 	}
-	
+
 	b := make([]byte, 0, size)
 
 	// write replace points
@@ -689,11 +724,11 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 		b = append(b, self.js[s:r.s]...)
 		// write new val
 		b = append(b, vals[r.i].js...)
-		if i < len(points) - 1 {
+		if i < len(points)-1 {
 			s = points[i+1].s
 		} else {
 			// not write '}'
-			s = len(self.js)-1
+			s = len(self.js) - 1
 		}
 		// write right
 		b = append(b, self.js[r.e:s]...)
@@ -703,7 +738,8 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	if !exist {
 		b = append(b, self.js[:s+1]...)
 	}
-	for ; s>=0 && isSpace(self.js[s]); s-- {}
+	for ; s >= 0 && isSpace(self.js[s]); s-- {
+	}
 	empty := self.js[s] == '['
 
 	// write insert points
@@ -719,7 +755,7 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 		// write new val
 		b = append(b, vals[r.i].js...)
 	}
-	
+
 	b = append(b, "]"...)
 
 	self.js = rt.Mem2Str(b)
@@ -757,8 +793,9 @@ func (self *Value) AddMany(vals []Value) error {
 	}
 	b := make([]byte, 0, n)
 
-	s := len(self.js)-2 //  start before ']'
-	for ; s>=0 && isSpace(self.js[s]); s-- {}
+	s := len(self.js) - 2 //  start before ']'
+	for ; s >= 0 && isSpace(self.js[s]); s-- {
+	}
 	empty := self.js[s] == '['
 
 	b = append(b, self.js[:s+1]...)
@@ -806,7 +843,7 @@ func (self *Value) PopMany(n int) error {
 
 	p := NewParserObj(self.js)
 	if empty, e := p.arrayBegin(); e != 0 {
-		return e
+		return p.ExportError(e)
 	} else if empty {
 		return nil
 	}
@@ -816,23 +853,23 @@ func (self *Value) PopMany(n int) error {
 	for {
 		_, e := p.skipFast()
 		if e != 0 {
-			return e
+			return p.ExportError(e)
 		}
 		ends = append(ends, p.p)
 		if end, e := p.arrayEnd(); e != 0 {
-			return e
+			return p.ExportError(e)
 		} else if end {
 			break
 		}
 	}
-	
+
 	i := len(ends) - n
 	s := 1
 	if i > 0 {
 		s = ends[i-1]
 	}
 	intsPool.Put(ends)
-	
+
 	b := make([]byte, 0, s+1)
 	b = append(b, self.js[:s]...)
 	b = append(b, "]"...)
@@ -884,7 +921,7 @@ func (self *Value) UnsetMany(keys []string) (bool, error) {
 		b = append(b, self.js[s:r.s]...)
 
 		// write right
-		if i < len(points) - 1 {
+		if i < len(points)-1 {
 			s = points[i+1].s
 		} else {
 			s = len(self.js)
@@ -893,12 +930,13 @@ func (self *Value) UnsetMany(keys []string) (bool, error) {
 	}
 
 	// check if any redundant ','
-	for s = len(b)-2; s>=0 && isSpace(b[s]); s-- {}
+	for s = len(b) - 2; s >= 0 && isSpace(b[s]); s-- {
+	}
 	if b[s] == ',' {
 		copy(b[s:], b[s+1:])
 		b = b[:len(b)-1]
 	}
-	
+
 	self.js = rt.Mem2Str(b)
 	return replaced, nil
 }
@@ -946,7 +984,7 @@ func (self *Value) UnsetManyByIndex(ids []int) (bool, error) {
 		}
 		// write left
 		b = append(b, self.js[s:r.s]...)
-		if i < len(points) - 1 {
+		if i < len(points)-1 {
 			s = points[i+1].s
 		} else {
 			s = len(self.js)
@@ -954,9 +992,10 @@ func (self *Value) UnsetManyByIndex(ids []int) (bool, error) {
 		// write right
 		b = append(b, self.js[r.e:s]...)
 	}
-	
+
 	// check if any redundant ','
-	for s = len(b)-2; s>=0 && isSpace(b[s]); s-- {}
+	for s = len(b) - 2; s >= 0 && isSpace(b[s]); s-- {
+	}
 	if b[s] == ',' {
 		copy(b[s:], b[s+1:])
 		b = b[:len(b)-1]
@@ -967,7 +1006,7 @@ func (self *Value) UnsetManyByIndex(ids []int) (bool, error) {
 }
 
 func (self Value) str() string {
-	return self.js[1:len(self.js)-1]
+	return self.js[1 : len(self.js)-1]
 }
 
 func (self Value) raw() string {
@@ -976,147 +1015,176 @@ func (self Value) raw() string {
 
 // Raw returns json representation of the node
 func (self Value) Raw() (string, error) {
-    if e := self.Check(); e != nil {
-        return "", e
-    }
-    return self.js, nil
+	if e := self.Check(); e != nil {
+		return "", e
+	}
+	return self.js, nil
 }
 
 func (self Value) toInt64() (int64, error) {
-    ret,err := self.toNumber().Int64()
-    if err != nil {
-        return 0, err
-    }
-    return ret, nil
+	ret, err := self.toNumber().Int64()
+	if err != nil {
+		return 0, err
+	}
+	return ret, nil
 }
 
 func (self Value) toFloat64() (float64, error) {
-    ret, err := self.toNumber().Float64()
-    if err != nil {
-        return 0, err
-    }
-    return ret, nil
+	ret, err := self.toNumber().Float64()
+	if err != nil {
+		return 0, err
+	}
+	return ret, nil
 }
 
 func (self Value) toNumber() json.Number {
-    return json.Number(self.js)
+	return json.Number(self.js)
 }
 
-func (self Value) toString() (string, types.ParsingError) {
-    p := NewParserObj(self.js)
+func (self Value) toString() (string, error) {
+	p := NewParserObj(self.js)
 	switch val := p.decodeValue(); val.Vt {
-		case types.V_STRING  :
-			/* fast path: no escape sequence */
-			if val.Ep == -1 {
-				return self.str(), 0
-			}
+	case types.V_STRING:
+		/* fast path: no escape sequence */
+		if val.Ep == -1 {
+			return self.str(), nil
+		}
 
-			/* unquote the string */
-			s := p.s[val.Iv:p.p - 1]
-			out, err := unquote(s)
+		/* unquote the string */
+		s := p.s[val.Iv : p.p-1]
+		out, err := unquote(s)
 
-			/* check for errors */
-			if err != 0 {
-				return "", err
-			} else {
-				return out, 0
-			}
-		default: return "", _ERR_UNSUPPORT_TYPE
+		/* check for errors */
+		if err != 0 {
+			return "", p.ExportError(err)
+		} else {
+			return out, nil
+		}
+	default:
+		return "", _ERR_UNSUPPORT_TYPE
 	}
 }
 
-// Bool returns bool value represented by this node, 
+// Bool returns bool value represented by this node,
 // including types.V_TRUE|V_FALSE|V_NUMBER|V_STRING|V_ANY|V_NULL
 func (self Value) Bool() (bool, error) {
 	if e := self.Check(); e != nil {
 		return false, e
 	}
 	switch self.t {
-        case V_NULL    : return false, nil
-        case V_TRUE    : return true, nil
-        case V_FALSE   : return false, nil
-        case V_STRING  : return strconv.ParseBool(self.str())
-        case V_NUMBER  :
-			if i, err := self.toInt64(); err == nil {
-                return i != 0, nil
-            } else if f, err := self.toFloat64(); err == nil {
-                return f != 0, nil
-            } else {
-                return false, err
-            }
-        default              : return false, ErrUnsupportType
-    } 
+	case V_NULL:
+		return false, nil
+	case V_TRUE:
+		return true, nil
+	case V_FALSE:
+		return false, nil
+	case V_STRING:
+		return strconv.ParseBool(self.str())
+	case V_NUMBER:
+		if i, err := self.toInt64(); err == nil {
+			return i != 0, nil
+		} else if f, err := self.toFloat64(); err == nil {
+			return f != 0, nil
+		} else {
+			return false, err
+		}
+	default:
+		return false, ErrUnsupportType
+	}
 }
 
-// Int64 casts the node to int64 value, 
+// Int64 casts the node to int64 value,
 // including V_NUMBER|V_TRUE|V_FALSE|V_STRING
 func (self Value) Int64() (int64, error) {
 	if e := self.Check(); e != nil {
 		return 0, e
 	}
 	switch self.t {
-        case V_NULL    : return 0, nil
-        case V_TRUE    : return 1, nil
-        case V_FALSE   : return 0, nil
-        case V_STRING  : return json.Number(self.str()).Int64()
-		case V_NUMBER  : return self.toInt64()
-        default              : return 0, ErrUnsupportType
-    } 
+	case V_NULL:
+		return 0, nil
+	case V_TRUE:
+		return 1, nil
+	case V_FALSE:
+		return 0, nil
+	case V_STRING:
+		return json.Number(self.str()).Int64()
+	case V_NUMBER:
+		return self.toInt64()
+	default:
+		return 0, ErrUnsupportType
+	}
 }
 
-// Float64 cast node to float64, 
+// Float64 cast node to float64,
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL
 func (self Value) Float64() (float64, error) {
 	if e := self.Check(); e != nil {
 		return 0, e
 	}
 	switch self.t {
-        case V_NULL    : return 0.0, nil
-        case V_TRUE    : return 1.0, nil
-        case V_FALSE   : return 0.0, nil
-        case V_STRING  : return json.Number(self.str()).Float64()
-        case V_NUMBER  : return self.toFloat64()
-        default              : return 0, ErrUnsupportType
-    } 
+	case V_NULL:
+		return 0.0, nil
+	case V_TRUE:
+		return 1.0, nil
+	case V_FALSE:
+		return 0.0, nil
+	case V_STRING:
+		return json.Number(self.str()).Float64()
+	case V_NUMBER:
+		return self.toFloat64()
+	default:
+		return 0, ErrUnsupportType
+	}
 }
 
-// Number casts node to float64, 
+// Number casts node to float64,
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL,
 func (self Value) Number() (json.Number, error) {
 	if e := self.Check(); e != nil {
 		return "", e
 	}
 	switch self.t {
-        case V_NULL    : return json.Number("0"), nil
-        case V_TRUE    : return json.Number("1"), nil
-        case V_FALSE   : return json.Number("0"), nil
-        case V_STRING  : 
-			if _, err := self.toInt64(); err == nil {
-				return self.toNumber(), nil
-			} else if _, err := self.toFloat64(); err == nil {
-				return self.toNumber(), nil
-			} else {
-				return json.Number(""), err
-			}
-        case V_NUMBER  : return json.Number(self.js), nil
-        default              : return "",ErrUnsupportType
-    } 
+	case V_NULL:
+		return json.Number("0"), nil
+	case V_TRUE:
+		return json.Number("1"), nil
+	case V_FALSE:
+		return json.Number("0"), nil
+	case V_STRING:
+		if _, err := self.toInt64(); err == nil {
+			return self.toNumber(), nil
+		} else if _, err := self.toFloat64(); err == nil {
+			return self.toNumber(), nil
+		} else {
+			return json.Number(""), err
+		}
+	case V_NUMBER:
+		return json.Number(self.js), nil
+	default:
+		return "", ErrUnsupportType
+	}
 }
 
-// String cast node to string, 
+// String cast node to string,
 // including V_NUMBER|V_TRUE|V_FALSE|V_ANY|V_STRING|V_NULL
 func (self Value) String() (string, error) {
 	if e := self.Check(); e != nil {
 		return "", e
 	}
-	switch self.t{
-		case V_NULL    : return "", nil
-		case V_TRUE    : return "true", nil
-		case V_FALSE   : return "false", nil
-		case V_STRING  : return self.toString()
-		case V_NUMBER  : return self.js, nil
-		default        : return "", ErrUnsupportType
-	} 
+	switch self.t {
+	case V_NULL:
+		return "", nil
+	case V_TRUE:
+		return "true", nil
+	case V_FALSE:
+		return "false", nil
+	case V_STRING:
+		return self.toString()
+	case V_NUMBER:
+		return self.js, nil
+	default:
+		return "", ErrUnsupportType
+	}
 }
 
 // Array appends children of the V_ARRAY to buf, in original order
@@ -1127,7 +1195,7 @@ func (self Value) Array(buf *[]Value) (err error) {
 	if *buf == nil {
 		*buf = make([]Value, 0, _DEFAULT_NODE_CAP)
 	}
-    return self.ForEachElem(func(i int, node Value) bool {
+	return self.ForEachElem(func(i int, node Value) bool {
 		*buf = append(*buf, node)
 		return true
 	})
@@ -1141,7 +1209,7 @@ func (self Value) Map(buf *map[string]Value) (err error) {
 	if *buf == nil {
 		*buf = make(map[string]Value, _DEFAULT_NODE_CAP)
 	}
-    return self.ForEachKV(func(key string, node Value) bool {
+	return self.ForEachKV(func(key string, node Value) bool {
 		(*buf)[key] = node
 		return true
 	})
@@ -1158,7 +1226,7 @@ func (self Value) MapAsSlice(keys *[]string, vals *[]Value) (err error) {
 	if *vals == nil {
 		*vals = make([]Value, 0, _DEFAULT_NODE_CAP)
 	}
-    return self.ForEachKV(func(key string, node Value) bool {
+	return self.ForEachKV(func(key string, node Value) bool {
 		*keys = append(*keys, key)
 		*vals = append(*vals, node)
 		return true
@@ -1199,39 +1267,39 @@ func (self Value) ForEachKV(sc func(key string, node Value) bool) error {
 	if e := self.Check(); e != nil {
 		return e
 	}
-    switch self.itype() {
+	switch self.itype() {
 	case types.V_OBJECT:
 
 		p := NewParser(self.js)
 		if empty, err := p.objectBegin(); err != 0 {
-			return err
+			return p.ExportError(err)
 		} else if empty {
 			return nil
-		} 
+		}
 
 		for {
 			k, e := p.key()
 			if e != 0 {
-				return e
+				return p.ExportError(e)
 			}
 			s, e := p.skipFast()
 			if e != 0 {
-				return e
+				return p.ExportError(e)
 			}
 			n := value(self.js[s:p.p])
 			if !sc(k, n) {
 				return nil
 			}
 			if end, e := p.objectEnd(); e != 0 {
-				return e
+				return p.ExportError(e)
 			} else if end {
 				return nil
 			}
 		}
-		
-    default:
-        return ErrUnsupportType
-    }
+
+	default:
+		return ErrUnsupportType
+	}
 }
 
 // ForEach scans one V_OBJECT node's children from JSON head to tail
@@ -1239,20 +1307,20 @@ func (self Value) ForEachElem(sc func(i int, node Value) bool) error {
 	if e := self.Check(); e != nil {
 		return e
 	}
-    switch self.itype() {
-    case types.V_ARRAY:
+	switch self.itype() {
+	case types.V_ARRAY:
 		p := NewParser(self.js)
 		if empty, err := p.arrayBegin(); err != 0 {
-			return err
+			return p.ExportError(err)
 		} else if empty {
 			return nil
-		} 
+		}
 
 		i := 0
 		for {
 			s, e := p.skipFast()
 			if e != 0 {
-				return e
+				return p.ExportError(e)
 			}
 			n := value(self.js[s:p.p])
 			if !sc(i, n) {
@@ -1260,12 +1328,12 @@ func (self Value) ForEachElem(sc func(i int, node Value) bool) error {
 			}
 			i++
 			if end, e := p.arrayEnd(); e != 0 {
-				return e
+				return p.ExportError(e)
 			} else if end {
 				return nil
 			}
 		}
-    default:
-        return ErrUnsupportType
-    }
+	default:
+		return ErrUnsupportType
+	}
 }
