@@ -16,16 +16,16 @@ type Value struct {
 	js string
 }
 
-func NewValue(js string) Value {
-	p := NewParser(js)
+func NewValue(json string) Value {
+	p := NewParser(json)
 	s, e := p.skip()
 	if e != 0 {
 		return errRawNode(p.ExportError(e))
 	}
-	return rawNode(js[s:p.p])
+	return value(json[s:p.p])
 }
 
-func rawNode(js string) Value {
+func value(js string) Value {
 	return Value{
 		t: int(switchRawType(js[0])),
 		js: js,
@@ -151,7 +151,7 @@ func (self Value) GetByPath(path ...interface{}) Value {
 	if e != 0 {
 		return errRawNode(p.ExportError(e))
 	}
-    return rawNode(self.js[s:p.p])
+    return value(self.js[s:p.p])
 }
 
 // SetByPath set value on given path and create nodes on the json if not exist
@@ -323,7 +323,7 @@ func (self Value) Get(key string) Value {
 	if e != 0 {
 		return errRawNode(p.ExportError(e))
 	}
-    return rawNode(self.js[s:p.p])
+    return value(self.js[s:p.p])
 }
 
 // keyVal is a pair of string key and json Value
@@ -343,7 +343,7 @@ func (self Value) GetMany(keys []string, vals []Value) error {
 		return ErrUnsupportType
 	}
 	if e := self.getMany(keys, false, func(i, s, e int) {
-		vals[i] = rawNode(self.js[s:e])
+		vals[i] = value(self.js[s:e])
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
 	}
@@ -410,7 +410,7 @@ func (self Value) Index(idx int) Value {
 	if e != 0 {
 		return errRawNode(p.ExportError(e))
 	}
-    return rawNode(self.js[s:p.p])
+    return value(self.js[s:p.p])
 }
 
 // GetMany retrieves all the indexes in ids and set found Value at correpsonding index of vals
@@ -424,7 +424,7 @@ func (self Value) IndexMany(ids []int, vals []Value) error {
 		return ErrUnsupportType
 	}
 	if e := self.indexMany(ids, false, func(i, s, e int) {
-		vals[i] = rawNode(self.js[s:e])
+		vals[i] = value(self.js[s:e])
 	}); e != 0 {
 		return NewParserObj(self.js).ExportError(e)
 	}
@@ -515,7 +515,7 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 		return false, nil
 	}
 	if self.t == V_NULL {
-		*self = rawNode(`[]`)
+		*self = value(`[]`)
 	}
 	if self.t != V_OBJECT {
 		return false, ErrUnsupportType
@@ -612,7 +612,7 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 		return false, nil
 	}
 	if self.t == V_NULL {
-		*self = rawNode(`[]`)
+		*self = value(`[]`)
 	}
 	if self.t != V_ARRAY {
 		return false, ErrUnsupportType
@@ -704,7 +704,7 @@ func (self *Value) AddMany(vals []Value) error {
 		return nil
 	}
 	if self.t == V_NULL {
-		*self = rawNode(`[]`)
+		*self = value(`[]`)
 	}
 	if self.t != V_ARRAY {
 		return ErrUnsupportType
@@ -1090,7 +1090,7 @@ func (self Value) ForEachKV(sc func(key string, node Value) bool) error {
 			if e != 0 {
 				return e
 			}
-			n := rawNode(self.js[s:p.p])
+			n := value(self.js[s:p.p])
 			if !sc(k, n) {
 				return nil
 			}
@@ -1126,7 +1126,7 @@ func (self Value) ForEachElem(sc func(i int, node Value) bool) error {
 			if e != 0 {
 				return e
 			}
-			n := rawNode(self.js[s:p.p])
+			n := value(self.js[s:p.p])
 			if !sc(i, n) {
 				return nil
 			}
