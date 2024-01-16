@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/bytedance/sonic/encoder"
@@ -353,12 +354,6 @@ func (self Value) Get(key string) Value {
 		return errRawNode(p.ExportError(e))
 	}
     return value(self.js[s:p.p])
-}
-
-// keyVal is a pair of string key and json Value
-type keyVal struct {
-	Key string
-	Val Value
 }
 
 // GetMany retrieves all the keys in kvs and set found Value at correpsonding index
@@ -992,24 +987,54 @@ func (self Value) StrictRaw() (string, error) {
     return self.js, nil
 }
 
+func (self Value) toInt64() (int64, error) {
+    ret,err := self.toNumber().Int64()
+    if err != nil {
+        return 0, err
+    }
+    return ret, nil
+}
+
+func (self Value) toFloat64() (float64, error) {
+    ret, err := self.toNumber().Float64()
+    if err != nil {
+        return 0, err
+    }
+    return ret, nil
+}
+
+func (self Value) toNumber() json.Number {
+    return json.Number(self.js)
+}
+
+func (self Value) toString() (string, types.ParsingError) {
+    if strings.Contains(self.js, "\\") {
+		return unquote(self.js)
+	} else {
+		return self.str(), 0
+	}
+}
+
 // Bool returns bool value represented by this node, 
 // including types.V_TRUE|V_FALSE|V_NUMBER|V_STRING|V_ANY|V_NULL
 func (self Value) Bool() (bool, error) {
 	if e := self.Check(); e != nil {
 		return false, e
 	}
-	p := NewParserObj(self.js)
-	p.decodeNumber(true)
-	val := p.decodeValue()
-	p.decodeNumber(false)
-	switch val.Vt {
-        case types.V_NULL    : return false, nil
-        case types.V_TRUE    : return true, nil
-        case types.V_FALSE   : return false, nil
-        case types.V_STRING  : return strconv.ParseBool(self.str())
-        case types.V_DOUBLE  : return val.Dv == 0, nil
-        case types.V_INTEGER : return val.Iv == 0, nil
-        default              : return false, types.ParsingError(-val.Vt)
+	switch self.t {
+        case V_NULL    : return false, nil
+        case V_TRUE    : return true, nil
+        case V_FALSE   : return false, nil
+        case V_STRING  : return strconv.ParseBool(self.str())
+        case V_NUMBER  :
+			if i, err := self.toInt64(); err == nil {
+                return i != 0, nil
+            } else if f, err := self.toFloat64(); err == nil {
+                return f != 0, nil
+            } else {
+                return false, err
+            }
+        default              : return false, ErrUnsupportType
     } 
 }
 
@@ -1019,18 +1044,13 @@ func (self Value) Int64() (int64, error) {
 	if e := self.Check(); e != nil {
 		return 0, e
 	}
-	p := NewParserObj(self.js)
-	p.decodeNumber(true)
-	val := p.decodeValue()
-	p.decodeNumber(false)
-	switch val.Vt {
-        case types.V_NULL    : return 0, nil
-        case types.V_TRUE    : return 1, nil
-        case types.V_FALSE   : return 0, nil
-        case types.V_STRING  : return json.Number(self.str()).Int64()
-        case types.V_DOUBLE  : return int64(val.Dv), nil
-        case types.V_INTEGER : return int64(val.Iv), nil
-        default              : return 0, types.ParsingError(-val.Vt)
+	switch self.t {
+        case V_NULL    : return 0, nil
+        case V_TRUE    : return 1, nil
+        case V_FALSE   : return 0, nil
+        case V_STRING  : return json.Number(self.str()).Int64()
+		case V_NUMBER  : return self.toInt64()
+        default              : return 0, ErrUnsupportType
     } 
 }
 
@@ -1040,18 +1060,13 @@ func (self Value) Float64() (float64, error) {
 	if e := self.Check(); e != nil {
 		return 0, e
 	}
-	p := NewParserObj(self.js)
-	p.decodeNumber(true)
-	val := p.decodeValue()
-	p.decodeNumber(false)
-	switch val.Vt {
-        case types.V_NULL    : return 0, nil
-        case types.V_TRUE    : return 1, nil
-        case types.V_FALSE   : return 0, nil
-        case types.V_STRING  : return json.Number(self.str()).Float64()
-        case types.V_DOUBLE  : return float64(val.Dv), nil
-        case types.V_INTEGER : return float64(val.Iv), nil
-        default              : return 0, types.ParsingError(-val.Vt)
+	switch self.t {
+        case V_NULL    : return 0.0, nil
+        case V_TRUE    : return 1.0, nil
+        case V_FALSE   : return 0.0, nil
+        case V_STRING  : return json.Number(self.str()).Float64()
+        case V_NUMBER  : return self.toFloat64()
+        default              : return 0, ErrUnsupportType
     } 
 }
 
@@ -1061,18 +1076,13 @@ func (self Value) Number() (json.Number, error) {
 	if e := self.Check(); e != nil {
 		return "", e
 	}
-	p := NewParserObj(self.js)
-	p.decodeNumber(true)
-	val := p.decodeValue()
-	p.decodeNumber(false)
-	switch val.Vt {
-        case types.V_NULL    : return json.Number("0"), nil
-        case types.V_TRUE    : return json.Number("1"), nil
-        case types.V_FALSE   : return json.Number("0"), nil
-        case types.V_STRING  : return json.Number(self.str()), nil
-        case types.V_DOUBLE  : return json.Number(self.js), nil
-        case types.V_INTEGER : return json.Number(self.js), nil
-        default              : return "", types.ParsingError(-val.Vt)
+	switch self.t {
+        case V_NULL    : return json.Number("0"), nil
+        case V_TRUE    : return json.Number("1"), nil
+        case V_FALSE   : return json.Number("0"), nil
+        case V_STRING  : return json.Number(self.str()), nil
+        case V_NUMBER  : return json.Number(self.js), nil
+        default              : return "",ErrUnsupportType
     } 
 }
 
@@ -1082,23 +1092,13 @@ func (self Value) String() (string, error) {
 	if e := self.Check(); e != nil {
 		return "", e
 	}
-	p := NewParserObj(self.js)
-	p.decodeNumber(true)
-	val := p.decodeValue()
-	p.decodeNumber(false)
-	switch val.Vt {
-		case types.V_NULL    : return "", nil
-		case types.V_TRUE    : return "true", nil
-		case types.V_FALSE   : return "false", nil
-		case types.V_STRING  : 
-			n, e := p.decodeString(val.Iv, val.Ep)
-			if e != 0 {
-				return "", p.ExportError(e)
-			}
-			return n.toString(), nil
-		case types.V_DOUBLE  : return strconv.FormatFloat(val.Dv, 'g', -1, 64), nil
-		case types.V_INTEGER : return strconv.FormatInt(val.Iv, 10), nil
-		default              : return "", types.ParsingError(-val.Vt)
+	switch self.t{
+		case V_NULL    : return "", nil
+		case V_TRUE    : return "true", nil
+		case V_FALSE   : return "false", nil
+		case V_STRING  : return self.toString()
+		case V_NUMBER  : return self.js, nil
+		default        : return "", ErrUnsupportType
 	} 
 }
 
@@ -1131,15 +1131,19 @@ func (self Value) Map(buf *map[string]Value) (err error) {
 }
 
 // Map appends children of the V_OBJECT to buf, in original array
-func (self Value) MapAsSlice(buf *[]keyVal) (err error) {
+func (self Value) MapAsSlice(keys *[]string, vals *[]Value) (err error) {
 	if self.t != V_OBJECT {
 		return ErrUnsupportType
 	}
-	if *buf == nil {
-		*buf = make([]keyVal, 0, _DEFAULT_NODE_CAP)
+	if *keys == nil {
+		*keys = make([]string, 0, _DEFAULT_NODE_CAP)
+	}
+	if *vals == nil {
+		*vals = make([]Value, 0, _DEFAULT_NODE_CAP)
 	}
     return self.ForEachKV(func(key string, node Value) bool {
-		*buf = append(*buf, keyVal{key, node})
+		*keys = append(*keys, key)
+		*vals = append(*vals, node)
 		return true
 	})
 }
