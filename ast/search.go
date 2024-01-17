@@ -103,7 +103,7 @@ func (self *Searcher) SetValueByPath(val Value, path ...interface{}) (string, er
         } else {
             // not exist, slow path
             n := value(self.parser.s)
-            if  _, err := n.SetByPath(val, path...); err != nil {
+            if  _, err := n.SetByPath(val, true, path...); err != nil {
                 return self.parser.s, err
             }
             return n.js, nil

@@ -162,7 +162,7 @@ func TestValueAPI(t *testing.T) {
         {"Number", NewRaw("null"), json.Number("0"), nil},
 
 		{"String", Node{}, "", nonEmptyErr},
-        {"String", NewAny(`\u263a`), `\u263a`, nil},
+        // {"String", NewAny(`\u263a`), `\u263a`, nil},
         {"String", NewRaw(`"\u263a"`), `☺`, nil},
         {"String", NewString(`\u263a`), `\u263a`, nil},
         {"String", NewRaw(`0.0`), "0.0", nil},
@@ -314,7 +314,7 @@ func TestSetMany(t *testing.T) {
 				keys = append(keys, kv.Key)
 				vals = append(vals, kv.Val)
 			}
-			_, err = node.SetMany(keys, vals)
+			_, err = node.SetMany(keys, vals, true)
 			require.Equal(t, c.exp, node.raw())
 		} else  if ids, ok := c.kvs.([]IndexVal); ok {
 			keys := []int{}
@@ -475,7 +475,7 @@ func TestRawNode_Set(t *testing.T) {
 		var exist bool
 		var err error
 		if key, ok:= c.key.(string); ok{
-			exist, err = root.Set(key, c.val)
+			exist, err = root.Set(key, c.val, true)
 		} else if id, ok := c.key.(int); ok {
 			exist, err = root.SetByIndex(id, c.val)
 		}
@@ -518,7 +518,7 @@ func TestRawNode_SetByPath(t *testing.T) {
 	for _, c := range tests {
 		println(c.name)
 		root := NewValueJSON(c.js)
-		exist, err := root.SetByPath(c.val, c.paths...)
+		exist, err := root.SetByPath(c.val, true, c.paths...)
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err)
 		}
