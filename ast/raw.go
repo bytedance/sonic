@@ -21,7 +21,7 @@ type Value struct {
 	js string
 }
 
-// NewValueJSON converts a json to Value
+// NewValueJSON converts a json string to Value
 func NewValueJSON(json string) Value {
 	p := NewParser(json)
 	s, e := p.skip()
@@ -29,6 +29,17 @@ func NewValueJSON(json string) Value {
 		return errValue(p.ExportError(e))
 	}
 	return value(json[s:p.p])
+}
+
+// NewValueJSON converts a json bytes to Value
+func NewValueJSONBytes(json []byte) Value {
+	js := rt.Mem2Str(json)
+	p := NewParser(js)
+	s, e := p.skip()
+	if e != 0 {
+		return errValue(p.ExportError(e))
+	}
+	return value(js[s:p.p])
 }
 
 // NewValue converts a go primitive object to Value
