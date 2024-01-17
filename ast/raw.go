@@ -226,7 +226,8 @@ func (self *Value) SetAnyByPath(val interface{}, allowInsert bool, path ...inter
 }
 
 // SetByPath set value on given path and create nodes on the json if not exist
-func (self *Value) SetByPath(val Value, allowInsert bool, path ...interface{}) (bool, error) {
+// allowAppend controls if append val to V_ARRAY node if the path index is out of its range
+func (self *Value) SetByPath(val Value, allowAppend bool, path ...interface{}) (bool, error) {
 	exist := false
 	if self.Check() != nil {
 		return exist, self
@@ -240,20 +241,6 @@ func (self *Value) SetByPath(val Value, allowInsert bool, path ...interface{}) (
 	var err types.ParsingError
 	var idx int
 
-	if !allowInsert {
-		//fast path
-		s, e := p.getByPath(path...)
-		if e != 0 {
-			return false, p.ExportError(e)
-		}
-		b := make([]byte, 0, len(self.js) + len(val.js) - (p.p - s))
-		b = append(b, self.js[:s]...)
-		b = append(b, val.js...)
-		b = append(b, self.js[p.p:]...)
-		self.js = rt.Mem2Str(b)
-		return exist, nil
-	}
-
 	for i, k := range path {
 		if id, ok := k.(int); ok && id >= 0 {
 			if _, err = p.searchIndex(id); err != 0 {
@@ -265,6 +252,9 @@ func (self *Value) SetByPath(val Value, allowInsert bool, path ...interface{}) (
 			}
 		} else if key, ok := k.(string); ok {
 			if _, err = p.searchKey(key); err != 0 {
+				if !allowAppend {
+					return false, p.ExportError(err)
+				}
 				if err != _ERR_NOT_FOUND {
 					return exist, p.ExportError(err)
 				}
@@ -583,20 +573,20 @@ func (ps points) Len() int {
 // Set sets the node of given key under self, and insert new value if not exist.
 // It reports if the key has existed.
 func (self *Value) SetAny(key string, val interface{}, allowInsert bool) (bool, error) {
-	return self.SetMany([]string{key}, []Value{NewValue(val)}, allowInsert)
+	return self.SetMany([]string{key}, []Value{NewValue(val)})
 }
 
 // Set sets the node of given key under self, and insert new value if not exist.
 // It reports if the key has existed.
 func (self *Value) Set(key string, val Value, allowInsert bool) (bool, error) {
-	return self.SetMany([]string{key}, []Value{val}, allowInsert)
+	return self.SetMany([]string{key}, []Value{val})
 }
 
 // SetMany retries kvs in the V_OBJECT value,
 // and replace (exist) or insert (not-exist) key with correpsonding value
 //
 // WARN: kvs shouldn't contains any repeated key, otherwise the repeated key will be regarded as new key and insert
-func (self *Value) SetMany(keys []string, vals []Value, allowInsert bool) (bool, error) {
+func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 	if self.Check() != nil {
 		return false, self
 	}
@@ -654,31 +644,29 @@ func (self *Value) SetMany(keys []string, vals []Value, allowInsert bool) (bool,
 		b = append(b, self.js[r.e:s]...)
 	}
 
-	if allowInsert {
-		s = len(self.js) - 2
-		if !exist {
-			b = append(b, self.js[:s+1]...)
+	s = len(self.js) - 2
+	if !exist {
+		b = append(b, self.js[:s+1]...)
+	}
+	for ; s >= 0 && isSpace(self.js[s]); s-- {
+	}
+	empty := self.js[s] == '{'
+
+	// write insert points
+	for _, r := range points {
+		if r.s != 0 {
+			continue
 		}
-		for ; s >= 0 && isSpace(self.js[s]); s-- {
+		// write last ','
+		if !empty {
+			b = append(b, ","...)
 		}
-		empty := self.js[s] == '{'
-	
-		// write insert points
-		for _, r := range points {
-			if r.s != 0 {
-				continue
-			}
-			// write last ','
-			if !empty {
-				b = append(b, ","...)
-			}
-			empty = false
-			// write key
-			quote(&b, keys[r.i])
-			b = append(b, ":"...)
-			// write new val
-			b = append(b, vals[r.i].js...)
-		}
+		empty = false
+		// write key
+		quote(&b, keys[r.i])
+		b = append(b, ":"...)
+		// write new val
+		b = append(b, vals[r.i].js...)
 	}
 
 	b = append(b, "}"...)
@@ -686,22 +674,18 @@ func (self *Value) SetMany(keys []string, vals []Value, allowInsert bool) (bool,
 	return exist, nil
 }
 
-// SetByIndex sets the node of given index and insert new value if not exist.
-// If the index is out range of self's children, it will be ADD to the last
-// and reports if the key has existed.
+// SetByIndex replaces the node of given index.
 func (self *Value) SetAnyByIndex(id int, val interface{}) (bool, error) {
 	return self.SetByIndex(id, NewValue(val))
 }
 
-// SetByIndex sets the node of given index and insert new value if not exist.
-// If the index is out range of self's children, it will be ADD to the last
-// and reports if the key has existed.
+// SetByIndex replaces the node of given index.
 func (self *Value) SetByIndex(id int, val Value) (bool, error) {
 	return self.SetManyByIndex([]int{id}, []Value{val})
 }
 
 // SetManyByIndex retries ids in the V_ARRAY value,
-// and replace (exist) or insert (not-exist) id of ids with correpsonding value of vals
+// and replace existed ids with correpsonding value of vals
 func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	if self.Check() != nil {
 		return false, self
@@ -728,6 +712,9 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	}); e != 0 {
 		return exist, NewParserObj(self.js).ExportError(e)
 	}
+	if !exist {
+		return false, ErrNotExist
+	}
 
 	// collect insert ponts
 	for i, r := range points {
@@ -738,12 +725,13 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	}
 
 	b := make([]byte, 0, size)
-
 	// write replace points
 	sort.Stable(points)
 	s := 0
+	notExist := false
 	for i, r := range points {
 		if r.s == 0 {
+			notExist = true
 			continue
 		}
 		// write left
@@ -753,39 +741,43 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 		if i < len(points)-1 {
 			s = points[i+1].s
 		} else {
-			// not write '}'
-			s = len(self.js) - 1
+			s = len(self.js) 
 		}
 		// write right
 		b = append(b, self.js[r.e:s]...)
 	}
 
-	s = len(self.js) - 2
-	if !exist {
-		b = append(b, self.js[:s+1]...)
-	}
-	for ; s >= 0 && isSpace(self.js[s]); s-- {
-	}
-	empty := self.js[s] == '['
+	// if allowAppend {
+	// 	s = len(self.js) - 2
+	// 	if !exist {
+	// 		b = append(b, self.js[:s+1]...)
+	// 	}
+	// 	for ; s >= 0 && isSpace(self.js[s]); s-- {
+	// 	}
+	// 	empty := self.js[s] == '['
 
-	// write insert points
-	for _, r := range points {
-		if r.s != 0 {
-			continue
-		}
-		// write last ','
-		if !empty {
-			b = append(b, ","...)
-		}
-		empty = false
-		// write new val
-		b = append(b, vals[r.i].js...)
-	}
-
-	b = append(b, "]"...)
+	// 	// write insert points
+	// 	for _, r := range points {
+	// 		if r.s != 0 {
+	// 			continue
+	// 		}
+	// 		// write last ','
+	// 		if !empty {
+	// 			b = append(b, ","...)
+	// 		}
+	// 		empty = false
+	// 		// write new val
+	// 		b = append(b, vals[r.i].js...)
+	// 	}
+	// }
+	// b = append(b, "]"...)
 
 	self.js = rt.Mem2Str(b)
-	return exist, nil
+	if notExist {
+		return exist, ErrNotExist
+	} else {
+		return exist, nil
+	}
 }
 
 // Add appends the given node under self.

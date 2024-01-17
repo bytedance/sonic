@@ -294,13 +294,13 @@ func TestSetMany(t *testing.T) {
 		{"replace 1, insert 1", `{ "a" : 1, "b" : 2} `, []keyVal{{"a", value(`11`)}, {"c", value(`33`)}}, `{ "a" : 11, "b" : 2,"c":33}`, ""},
 		
 		{"replace 1", `[ 1, 2] `, []IndexVal{{0, value(`11`)}}, `[ 11, 2]`, ""},
-		{"replace 2", `[ 1, 2] `, []IndexVal{{0, value(`11`)}, {0, value(`22`)}}, `[ 11, 2,22]`, ""},
+		{"replace 2", `[ 1, 2] `, []IndexVal{{0, value(`11`)}, {0, value(`22`)}}, `[ 11, 2]`, "value not exists"},
 		{"replace repeated", `[ 1, 2] `, []IndexVal{{0, value(`11`)}, {1, value(`22`)}}, `[ 11, 22]`, ""},
-		{"insert empty", `[ ] `, []IndexVal{{2, value(`33`)}}, `[ 33]`, ""},
-		{"insert 1", `[ 1, 2] `, []IndexVal{{2, value(`33`)}}, `[ 1, 2,33]`, ""},
-		{"insert 2", `[ 1, 2] `, []IndexVal{{2, value(`33`)},{3, value(`44`)}}, `[ 1, 2,33,44]`, ""},
-		{"insert repeated", `[ 1, 2] `, []IndexVal{{2, value(`33`)},{2, value(`44`)}}, `[ 1, 2,33,44]`, ""},
-		{"replace 1, insert 1", `[ 1, 2] `, []IndexVal{{0, value(`11`)}, {2, value(`33`)}}, `[ 11, 2,33]`, ""},
+		{"insert empty", `[ ] `, []IndexVal{{2, value(`33`)}}, `[ ]`, "value not exists"},
+		{"insert 1", `[ 1, 2] `, []IndexVal{{2, value(`33`)}}, `[ 1, 2]`, "value not exists"},
+		{"insert 2", `[ 1, 2] `, []IndexVal{{2, value(`33`)},{3, value(`44`)}}, `[ 1, 2]`, "value not exists"},
+		{"insert repeated", `[ 1, 2] `, []IndexVal{{2, value(`33`)},{2, value(`44`)}}, `[ 1, 2]`, "value not exists"},
+		{"replace 1, insert 1", `[ 1, 2] `, []IndexVal{{0, value(`11`)}, {2, value(`33`)}}, `[ 11, 2]`, "value not exists"},
 	}
 
 	for i, c := range cases {
@@ -314,7 +314,7 @@ func TestSetMany(t *testing.T) {
 				keys = append(keys, kv.Key)
 				vals = append(vals, kv.Val)
 			}
-			_, err = node.SetMany(keys, vals, true)
+			_, err = node.SetMany(keys, vals)
 			require.Equal(t, c.exp, node.raw())
 		} else  if ids, ok := c.kvs.([]IndexVal); ok {
 			keys := []int{}
@@ -465,9 +465,9 @@ func TestRawNode_Set(t *testing.T) {
 		{"not-exist object",`{"b":1}`,"a",NewValueJSON(`2`),false,"",`{"b":1,"a":2}`},
 		{"empty object",`{}`,"a",NewValueJSON(`2`),false,"",`{"a":2}`},
 		{"exist array",`[1]`,0,NewValueJSON(`2`),true,"",`[2]`},
-		{"not exist array",`[1]`,1,NewValueJSON(`2`),false,"",`[1,2]`},
-		{"not exist array over",`[1]`,99,NewValueJSON(`2`),false,"",`[1,2]`},
-		{"empty array",`[]`,1,NewValueJSON(`2`),false,"",`[2]`},
+		{"not exist array",`[1]`,1,NewValueJSON(`2`),false,"value not exists",`[1]`},
+		{"not exist array over",`[1]`,99,NewValueJSON(`2`),false,"value not exists",`[1]`},
+		{"empty array",`[]`,1,NewValueJSON(`2`),false,"value not exists",`[]`},
 	}
 	for _, c := range tests {
 		println(c.name)
@@ -483,13 +483,9 @@ func TestRawNode_Set(t *testing.T) {
 			t.Fatal()
 		}
 		if err != nil && err.Error() != c.err {
-			t.Fatal()
+			t.Fatal(err)
 		}
-		if out := root.raw(); err != nil {
-			t.Fatal()
-		} else {
-			require.Equal(t, c.out, out)
-		}
+		require.Equal(t, c.out, root.raw())
 	}
 }
 
