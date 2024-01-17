@@ -17,9 +17,10 @@
 package sonic
 
 import (
-    `io`
+	"io"
 
-    `github.com/bytedance/sonic/ast`
+	"github.com/bytedance/sonic/ast"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 // Config is a combination of sonic/encoder.Options and sonic/decoder.Options
@@ -191,6 +192,21 @@ func Get(src []byte, path ...interface{}) (ast.Node, error) {
 // which can reduce unnecessary memory copy.
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
+}
+
+// Set write val to src according to path and return new json
+func Set(src []byte, val interface{}, path ...interface{}) ([]byte, error) {
+    s, err := ast.NewSearcher(rt.Mem2Str(src)).SetValueByPath(ast.NewValue(val), path...)
+    if err != nil {
+        return nil, err
+    }
+    return rt.Str2Mem(s), nil
+}
+
+// SetFromString is same with Set except src is string,
+// which can reduce unnecessary memory copy.
+func SetFromString(src string, val interface{}, path ...interface{}) (string, error) {
+    return ast.NewSearcher(src).SetValueByPath(ast.NewValue(val), path...)
 }
 
 // Get searches the given path from json,
