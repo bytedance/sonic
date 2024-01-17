@@ -232,7 +232,6 @@ func (self *Value) SetByPath(val Value, allowAppend bool, path ...interface{}) (
 	if self.Check() != nil {
 		return exist, self
 	}
-
 	if val.Check() != nil {
 		return exist, val
 	}
@@ -244,6 +243,9 @@ func (self *Value) SetByPath(val Value, allowAppend bool, path ...interface{}) (
 	for i, k := range path {
 		if id, ok := k.(int); ok && id >= 0 {
 			if _, err = p.searchIndex(id); err != 0 {
+				if !allowAppend {
+					return false, p.ExportError(err)
+				}
 				if err != _ERR_NOT_FOUND {
 					return exist, p.ExportError(err)
 				}
@@ -252,9 +254,6 @@ func (self *Value) SetByPath(val Value, allowAppend bool, path ...interface{}) (
 			}
 		} else if key, ok := k.(string); ok {
 			if _, err = p.searchKey(key); err != 0 {
-				if !allowAppend {
-					return false, p.ExportError(err)
-				}
 				if err != _ERR_NOT_FOUND {
 					return exist, p.ExportError(err)
 				}

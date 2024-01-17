@@ -493,36 +493,35 @@ func TestRawNode_SetByPath(t *testing.T) {
 	tests := []struct{
 		name string
 		js string
+		allowInsert bool
 		paths []interface{}
 		val Value
 		exist bool
 		err string
 		out string
 	}{
-		{"exist object",`{"a":1}`,[]interface{}{"a"},NewValueJSON(`2`),true,"",`{"a":2}`},
-		{"not-exist object",`{"b":1}`,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"b":1,"a":2}`},
-		{"empty object",`{}`,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"a":2}`},
-		{"empty object 2",`{}`,[]interface{}{"a",1},NewValueJSON(`2`),false,"",`{"a":[2]}`},
-		{"empty object 3",`{}`,[]interface{}{"a",1,"a"},NewValueJSON(`2`),false,"",`{"a":[{"a":2}]}`},
-		{"exist array",`[1]`,[]interface{}{0},NewValueJSON(`2`),true,"",`[2]`},
-		{"not exist array",`[1]`,[]interface{}{1},NewValueJSON(`2`),false,"",`[1,2]`},
-		{"empty array",`[]`,[]interface{}{1},NewValueJSON(`2`),false,"",`[2]`},
-		{"empty array 2",`[]`,[]interface{}{1,1},NewValueJSON(`2`),false,"",`[[2]]`},
-		{"empty array 3",`[]`,[]interface{}{1,"a",1},NewValueJSON(`2`),false,"",`[{"a":[2]}]`},
-		{"empty array 3",`[]`,[]interface{}{1,"a","a"},NewValueJSON(`2`),false,"",`[{"a":{"a":2}}]`},
+		{"exist object",`{"a":1}`,true,[]interface{}{"a"},NewValueJSON(`2`),true,"",`{"a":2}`},
+		{"not-exist object",`{"b":1}`,true,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"b":1,"a":2}`},
+		{"empty object",`{}`,true,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"a":2}`},
+		{"empty object 2",`{}`,true,[]interface{}{"a",1},NewValueJSON(`2`),false,"",`{"a":[2]}`},
+		{"empty object 3",`{}`,true,[]interface{}{"a",1,"a"},NewValueJSON(`2`),false,"",`{"a":[{"a":2}]}`},
+		{"exist array",`[1]`,true,[]interface{}{0},NewValueJSON(`2`),true,"",`[2]`},
+		{"not exist array",`[1]`,true,[]interface{}{1},NewValueJSON(`2`),false,"",`[1,2]`},
+		{"not exist array",`[1]`,false,[]interface{}{1},NewValueJSON(`2`),false,"value not exists",`[1]`},
+		{"empty array",`[]`,true,[]interface{}{1},NewValueJSON(`2`),false,"",`[2]`},
+		{"empty array",`[]`,false,[]interface{}{1},NewValueJSON(`2`),false,"value not exists",`[]`},
+		{"empty array 2",`[]`,true,[]interface{}{1,1},NewValueJSON(`2`),false,"",`[[2]]`},
+		{"empty array 3",`[]`,true,[]interface{}{1,"a",1},NewValueJSON(`2`),false,"",`[{"a":[2]}]`},
+		{"empty array 3",`[]`,true,[]interface{}{1,"a","a"},NewValueJSON(`2`),false,"",`[{"a":{"a":2}}]`},
 	}
 	for _, c := range tests {
 		println(c.name)
 		root := NewValueJSON(c.js)
-		exist, err := root.SetByPath(c.val, true, c.paths...)
+		exist, err := root.SetByPath(c.val, c.allowInsert, c.paths...)
 		if err != nil && err.Error() != c.err {
 			t.Fatal(err)
 		}
-		if out := root.raw(); err != nil {
-			t.Fatal()
-		} else {
-			require.Equal(t, c.out, out)
-		}
+		require.Equal(t, c.out, root.raw())
 		require.Equal(t, c.exist, exist)
 	}
 }
