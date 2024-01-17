@@ -185,7 +185,7 @@ func UnmarshalString(buf string, val interface{}) error {
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(string(src), path...)
+    return GetFromString(rt.Mem2Str(src), path...)
 }
 
 // GetFromString is same with Get except src is string,
@@ -220,7 +220,7 @@ func SetFromString(src string, val interface{}, path ...interface{}) (string, er
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
 func GetValue(src []byte, path ...interface{}) (ast.Value, error) {
-    return GetValueFromString(string(src), path...)
+    return GetValueFromString(rt.Mem2Str(src), path...)
 }
 
 
