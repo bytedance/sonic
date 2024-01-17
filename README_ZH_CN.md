@@ -10,6 +10,9 @@
 - Linux / MacOS / Windows（需要 Go1.17 以上）
 - Amd64 架构
 
+## 接口
+详见 [go.dev](https://pkg.go.dev/github.com/bytedance/sonic)
+
 ## 特色
 
 - 运行时对象绑定，无需代码生成
