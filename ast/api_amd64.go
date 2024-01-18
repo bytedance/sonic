@@ -153,5 +153,7 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     if t == _V_NONE {
         return Node{}, self.parser.ExportError(err)
     }
-    return newRawNode(self.parser.s[start:self.parser.p], t), nil
+
+    raw := rt.Mem2Str([]byte(self.parser.s[start:self.parser.p]))
+    return newRawNode(raw, t), nil
 }

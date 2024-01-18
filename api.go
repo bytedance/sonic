@@ -20,6 +20,7 @@ import (
     `io`
 
     `github.com/bytedance/sonic/ast`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 // Config is a combination of sonic/encoder.Options and sonic/decoder.Options
@@ -184,7 +185,7 @@ func UnmarshalString(buf string, val interface{}) error {
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(string(src), path...)
+    return GetFromString(rt.Mem2Str(src), path...)
 }
 
 // GetFromString is same with Get except src is string,
