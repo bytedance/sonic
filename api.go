@@ -175,8 +175,7 @@ func UnmarshalString(buf string, val interface{}) error {
 }
 
 // Get searches the given path from json,
-// and returns its a ast.Node representing partial json.
-// The returned json **Refers** to src json.
+// and returns a ast.Node representing partial json.
 //
 // Each path arg must be integer or string:
 //     - Integer is target index(>=0), means searching current node as array.
@@ -185,22 +184,14 @@ func UnmarshalString(buf string, val interface{}) error {
 // 
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
-//
-// Deprecated: This api comsumes a lot memory, and caching the returned node may cause OOM.
-// Consider use GetCopy() when src is big,
-// or GetFromString()/GetCopyFromString() if the src type is string.
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(string(src), path...)
-}
-
-// GetCopy is same with Get except returned node's underlying json is by copy instead of reference,
-func GetCopy(src string, path ...interface{}) (ast.Node, error) {
-    return ast.NewSearcher(src).GetByPathCopy(path...)
+    return GetCopyFromString(rt.Mem2Str(src), path...)
 }
 
 // GetFromString is same with Get except src is string.
 //
-// WARN: caching the returned node may cause OOM when src is big,
+// WARN: caching the returned node may cause OOM.
+// If src is big, consider use GetCopyFromString.
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
 }
