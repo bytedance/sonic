@@ -131,29 +131,3 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     }
     return start, 0
 }
-
-func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
-    var err types.ParsingError
-    var start int
-
-    self.parser.p = 0
-    start, err = self.parser.getByPath(path...)
-    if err != 0 {
-        // for compatibility with old version
-        if err == types.ERR_NOT_FOUND {
-            return Node{}, ErrNotExist
-        }
-        if err == types.ERR_UNSUPPORT_TYPE {
-            panic("path must be either int(>=0) or string")
-        }
-        return Node{}, self.parser.syntaxError(err)
-    }
-
-    t := switchRawType(self.parser.s[start])
-    if t == _V_NONE {
-        return Node{}, self.parser.ExportError(err)
-    }
-
-    raw := rt.Mem2Str([]byte(self.parser.s[start:self.parser.p]))
-    return newRawNode(raw, t), nil
-}

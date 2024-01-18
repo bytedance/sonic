@@ -194,7 +194,20 @@ func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
 }
 
+// GetFromStringNoCopy is same with Get except it won't copy located json from src.
+// It is faster than Get, meanwhile consumes more memory.
+//
+// WARN: caching the returned node may cause OOM when src is extremely big.
+func GetFromStringNoCopy(src string, path ...interface{}) (ast.Node, error) {
+    return ast.NewSearcher(src).GetByPathNoCopy(path...)
+}
+
 // Valid reports whether data is a valid JSON encoding.
 func Valid(data []byte) bool {
     return ConfigDefault.Valid(data)
+}
+
+// Valid reports whether data is a valid JSON encoding.
+func ValidString(data string) bool {
+    return ConfigDefault.Valid(rt.Str2Mem(data))
 }
