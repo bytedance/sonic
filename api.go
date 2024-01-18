@@ -182,7 +182,7 @@ func UnmarshalString(buf string, val interface{}) error {
 //     - String is target key, means searching current node as object.
 //
 // 
-// Note, the api expects the json is well-formed at least,
+// Notice: It expects the src json is **Well-formed** and **Immutable** when calling,
 // otherwise it may return unexpected result.
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
     return GetCopyFromString(rt.Mem2Str(src), path...)
