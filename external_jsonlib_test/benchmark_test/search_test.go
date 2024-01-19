@@ -131,6 +131,39 @@ func BenchmarkNodeGet(b *testing.B) {
     })
 }
 
+func BenchmarkSubGet(b *testing.B) {
+    b.SetBytes(int64(len(TwitterJson)))
+    b.Run("gjson", func(b *testing.B) {
+        node := gjson.Get(TwitterJson, "statuses")
+        for i := 0; i < b.N; i++ {
+            v := node.Get("3").Get("id").Int()
+            if v != 249279667666817024 {
+                b.Fail()
+            }
+        }
+    })
+    b.Run("Node", func(b *testing.B) {
+            s := ast.NewSearcher(TwitterJson)
+            n, _ := s.GetByPath("statuses")
+        for i := 0; i < b.N; i++ {
+            x, _ := n.Index(3).Get("id").Int64()
+            if x != 249279667666817024 {
+                b.Fatal(n.Interface())
+            }
+        }
+    })
+    b.Run("Value", func(b *testing.B) {
+            s := ast.NewSearcher(TwitterJson)
+            n, _ := s.GetValueByPath("statuses")
+        for i := 0; i < b.N; i++ {
+            x, _ := n.Index(3).Get("id").Int64()
+            if x != 249279667666817024 {
+                b.Fatal(n.Interface())
+            }
+        }
+    })
+}
+
 func BenchmarkNodeGetMany(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     b.Run("gjson", func(b *testing.B) {
