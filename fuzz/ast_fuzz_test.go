@@ -28,7 +28,7 @@ import (
 
 // data is random, check whether is panic
 func fuzzAst(t *testing.T, data []byte) {
-	sonic.Get(data)
+	sonic.GetFromString(string(data))
 }
 
 func fuzzASTGetFromObject(t *testing.T, data []byte, m map[string]interface{}) {
