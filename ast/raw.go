@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/bytedance/sonic/decoder"
 	"github.com/bytedance/sonic/encoder"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
@@ -1085,7 +1086,6 @@ func (self Value) Bool() (bool, error) {
 	case V_STRING:
 		return strconv.ParseBool(self.str())
 	case V_NUMBER:
-		println("number")
 		if i, err := self.toInt64(); err == nil {
 			return i != 0, nil
 		} else if f, err := self.toFloat64(); err == nil {
@@ -1238,29 +1238,65 @@ func (self Value) MapAsSlice(keys *[]string, vals *[]Value) (err error) {
 }
 
 // Interface loads all children under all pathes from this node,
-// and converts itself as generic type.
-// WARN: all numberic nodes are casted to float64
+// and converts itself as generic type (like encoding/json).
+// It's behavior is same with default behavior of sonic/decoder
 func (self Value) Interface() (interface{}, error) {
 	if e := self.Check(); e != nil {
 		return nil, e
 	}
-	switch self.itype() {
-	case types.V_OBJECT:
-		node := NewRaw(self.js)
-		return node.Map()
-	case types.V_ARRAY:
-		node := NewRaw(self.js)
-		return node.Array()
-	case types.V_STRING:
-		return self.str(), nil
-	case _V_NUMBER:
-		return self.Float64()
-	case types.V_TRUE:
-		return true, nil
-	case types.V_FALSE:
-		return false, nil
-	case types.V_NULL:
+	var ret interface{}
+	err := decoder.NewDecoder(self.js).Decode(&ret)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// Interface loads all children under all pathes from this node,
+// and converts itself as generic type.
+// It's behavior depends on decoder.Options
+func (self Value) InterfaceUseOption(opts decoder.Options) (interface{}, error) {
+	if e := self.Check(); e != nil {
+		return nil, e
+	}
+	var ret interface{}
+	dc := decoder.NewDecoder(self.js)
+	dc.SetOptions(opts)
+	err := dc.Decode(&ret)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// Interface loads all children under all pathes from this node,
+// and converts itself as scalar type (like encoding/json), or nested value types:
+//   - V_ARRAY: []Value
+//   - V_OBJECT: map[string]Value
+// It's behavior depends on decoder.Options
+func (self Value) InterfaceUseNode() (interface{}, error) {
+	if e := self.Check(); e != nil {
+		return nil, e
+	}
+	switch self.t {
+	case V_NULL:
 		return nil, nil
+	case V_TRUE:
+		return true, nil
+	case V_FALSE:
+		return false, nil
+	case V_NUMBER:
+		return self.toFloat64()
+	case V_STRING:
+		return self.toString()
+	case V_ARRAY:
+		ret := make([]Value, 0, _DEFAULT_NODE_CAP)
+		err := self.Array(&ret)
+		return ret, err
+	case V_OBJECT:
+		ret := make(map[string]Value, _DEFAULT_NODE_CAP)
+		err := self.Map(&ret)
+		return ret, err
 	default:
 		return nil, ErrUnsupportType
 	}
