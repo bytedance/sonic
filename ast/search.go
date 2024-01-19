@@ -34,12 +34,12 @@ func NewSearcher(str string) *Searcher {
     }
 }
 
-// GetByPathCopy search in depth from top json and returns a Copy node at the path location
+// GetByPathCopy search in depth from top json and returns a **Copied** json node at the path location
 func (self *Searcher) GetByPathCopy(path ...interface{}) (Node, error) {
     return self.getByPath(true, path...)
 }
 
-// GetByPathNoCopy search in depth from top json and returns a Reference node at the path location
+// GetByPathNoCopy search in depth from top json and returns a **Referenced** json node at the path location
 //
 // WARN: this search directly refer partial json from top json, which has faster speed,
 // may consumes more memory.
