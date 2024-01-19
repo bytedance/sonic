@@ -53,16 +53,16 @@ func TestCorpus(t *testing.T) {
 var target = sonic.ConfigStd
 
 func fuzzMain(t *testing.T, data []byte) {
-    // fuzzValidate(t, data)
-    // fuzzHtmlEscape(t, data)
+    fuzzValidate(t, data)
+    fuzzHtmlEscape(t, data)
     // fuzz ast get api, should not panic here.
     fuzzAst(t, data)
     // Only fuzz the validate json here.
     if !json.Valid(data) {
         return
     }
-    // fuzzStream(t, data)
-    for _, typ := range []func() interface{}{
+    fuzzStream(t, data)
+    for i, typ := range []func() interface{}{
         func() interface{} { return new(interface{}) },
         func() interface{} { return new(map[string]interface{}) },
         func() interface{} { return new([]interface{}) },
@@ -90,33 +90,33 @@ func fuzzMain(t *testing.T, data []byte) {
         require.NoError(t, serr, dump(v, jout, jerr, sout, serr))
         require.NoError(t, jerr, dump(v, jout, jerr, sout, serr))
 
-        // {
-        //     sv, jv = typ(), typ()
-        //     serr := target.Unmarshal(sout, sv)
-        //     jerr := json.Unmarshal(jout, jv)
-        //     require.Equalf(t, serr != nil, jerr != nil, dump(data, jv, jerr, sv, serr))
-        //     if jerr != nil {
-        //         continue
-        //     }
-        //     require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
-        // }
+        {
+            sv, jv = typ(), typ()
+            serr := target.Unmarshal(sout, sv)
+            jerr := json.Unmarshal(jout, jv)
+            require.Equalf(t, serr != nil, jerr != nil, dump(data, jv, jerr, sv, serr))
+            if jerr != nil {
+                continue
+            }
+            require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+        }
 
-        // // fuzz ast MarshalJSON API
-        // if i == 0 {
-        //     root, aerr := sonic.Get(data)
-        //     require.Equal(t, aerr, nil)
-        //     aerr = root.LoadAll()
-        //     require.Equal(t, aerr, nil, dump(data, jv, jerr, root, aerr))
-        //     aout, aerr := root.MarshalJSON()
-        //     require.Equal(t, aerr, nil)
-        //     sv = typ()
-        //     serr := json.Unmarshal(aout, sv)
-        //     require.Equal(t, serr, nil)
-        //     require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
-        // }
+        // fuzz ast MarshalJSON API
+        if i == 0 {
+            root, aerr := sonic.Get(data)
+            require.Equal(t, aerr, nil)
+            aerr = root.LoadAll()
+            require.Equal(t, aerr, nil, dump(data, jv, jerr, root, aerr))
+            aout, aerr := root.MarshalJSON()
+            require.Equal(t, aerr, nil)
+            sv = typ()
+            serr := json.Unmarshal(aout, sv)
+            require.Equal(t, serr, nil)
+            require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+        }
 
         if m, ok := sv.(*map[string]interface{}); ok {
-            // fuzzDynamicStruct(t, jout, *m)
+            fuzzDynamicStruct(t, jout, *m)
             fuzzASTGetFromObject(t, jout, *m)
         }
         if a, ok := sv.(*[]interface{}); ok {
