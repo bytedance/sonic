@@ -286,6 +286,14 @@ println(string(buf) == string(exp)) // true
 - iteration: `Values()`, `Properties()`, `ForEach()`, `SortKeys()`
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
+### Ast.Value
+Due to `ast.Node`'s **transversely-lazy-load** design, it is not effecient enough for read-once-for-each-path case, and it ** CANNOT be read concurrently**. If your business has such scenario, you can use `ast.Value` -- a more robust encapsulation of raw JSON message. 
+
+#### APIs
+Most of its APIs are same with `ast.Node`'s, including both `Get` and `Set`. Besides:
+- It provide `GetMany` \ `SetMany` to read or write multiple values once, in order to **reduce the overhead of repeatedly visiting path**.
+
+
 ### Ast.Visitor
 Sonic provides an advanced API for fully parsing JSON into non-standard types (neither `struct` not `map[string]interface{}`) without using any intermediate representation (`ast.Node` or `interface{}`). For example, you might have the following types which are like `interface{}` but actually not `interface{}`:
 ```go
