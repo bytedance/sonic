@@ -191,12 +191,13 @@ func Get(src []byte, path ...interface{}) (ast.Node, error) {
 // GetFromString is same with Get except src is string.
 //
 // WARN: caching the returned node may cause OOM.
-// If src is big, consider use GetCopyFromString.
+// If your src is big, consider use GetCopyFromString.
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
 }
 
-// GetCopyFromString is same with Get except src is string, and it won't copy located json from src.
+// GetCopyFromString is same with Get except src is string, 
+// and it will **COPY** located partial json from src, in oder to reduce memory usage.
 func GetCopyFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPathCopy(path...)
 }
