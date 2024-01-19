@@ -675,6 +675,38 @@ func TestRawNode_UnsetMany(t *testing.T) {
 	}
 }
 
+func TestValue_Add(t *testing.T) {
+	tests := []struct{
+		name string
+		js string
+		adds []interface{}
+		from int
+		err string
+		out string
+	}{
+		{"empty +1", `[]`, []interface{}{1}, 0, "", `[1]`},
+		{"empty +1", `[]`, []interface{}{1}, 1, "", `[1]`},
+		{"empty +1", `[]`, []interface{}{1}, -1, "", `[1]`},
+		{"1+1", `[0]`, []interface{}{1}, 0, "", `[1,0]`},
+		{"1+1", `[0]`, []interface{}{1}, 1, "", `[0,1]`},
+		{"1+1", `[0]`, []interface{}{1}, -1, "", `[0,1]`},
+		{"2+1", `[-1,0]`, []interface{}{1}, 0, "", `[1,-1,0]`},
+		{"2+1", `[-1,0]`, []interface{}{1}, 1, "", `[-1,1,0]`},
+		{"2+1", `[-1,0]`, []interface{}{1}, 2, "", `[-1,0,1]`},
+		{"2+1", `[-1,0]`, []interface{}{1}, -1, "", `[-1,0,1]`},
+	}
+	for _, c := range tests {
+		println(c.name)
+		root := NewValueJSON(c.js)
+		vals := []Value{}
+		for _, val := range c.adds {
+			vals = append(vals, NewValue(val))
+		}
+		require.NoError(t, root.AddMany(c.from, vals))
+		require.Equal(t, c.out, root.js)
+	}
+}
+
 func TestValue_Add_Pop(t *testing.T) {
 	tests := []struct{
 		name string
@@ -692,6 +724,7 @@ func TestValue_Add_Pop(t *testing.T) {
 		{"1+1-0", `[0]`, []interface{}{1}, 0, "", `[0,1]`},
 		{"1+1-1", `[0]`, []interface{}{1}, 1, "", `[0]`},
 		{"1+1-2", `[0]`, []interface{}{1}, 2, "", `[]`},
+		{"1+1-3", `[0]`, []interface{}{1}, 3, "", `[]`},
 		{"1+2-0", `[0]`, []interface{}{1,2}, 0, "", `[0,1,2]`},
 		{"1+2-1", `[0]`, []interface{}{1,2}, 1, "", `[0,1]`},
 	}
@@ -702,7 +735,7 @@ func TestValue_Add_Pop(t *testing.T) {
 		for i, val := range c.adds {
 			vals = append(vals, NewValue(val))
 			println("add", i)
-			if err := root.AddAny(val); err != nil {
+			if err := root.AddAny(-1, val); err != nil {
 				t.Fatal(err)
 			}
 			println(root.js)
@@ -712,7 +745,7 @@ func TestValue_Add_Pop(t *testing.T) {
 			println(root.js)
 		}
 		require.Equal(t, c.js, root.js)
-		require.NoError(t, root.AddMany(vals))
+		require.NoError(t, root.AddMany(-1, vals))
 		require.NoError(t, root.PopMany(c.pops))
 		require.Equal(t, c.out, root.js)
 	}

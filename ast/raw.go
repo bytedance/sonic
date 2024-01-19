@@ -780,18 +780,18 @@ func (self *Value) SetManyByIndex(ids []int, vals []Value) (bool, error) {
 	}
 }
 
-// Add appends the given node under self.
-func (self *Value) AddAny(val interface{}) error {
-	return self.AddMany([]Value{NewValue(val)})
+// Add inserts single val into the left of the node at `from` (-1 means last)
+func (self *Value) AddAny(from int, val interface{}) error {
+	return self.AddMany(from, []Value{NewValue(val)})
 }
 
-// Add appends the given node under self.
-func (self *Value) Add(val Value) error {
-	return self.AddMany([]Value{val})
+// Add inserts single val into the left of the node at `from` (-1 means last)
+func (self *Value) Add(from int, val Value) error {
+	return self.AddMany(from, []Value{val})
 }
 
-// Add appends the given node under self.
-func (self *Value) AddMany(vals []Value) error {
+// Add inserts multiple vals into the left of the node at `from` (-1 means last)
+func (self *Value) AddMany(from int, vals []Value) error {
 	if self.Check() != nil {
 		return self
 	}
@@ -805,26 +805,46 @@ func (self *Value) AddMany(vals []Value) error {
 		return ErrUnsupportType
 	}
 
+	e := 1 // from == 0
+	if from > 0 {
+		p := NewParserObj(self.js)
+		_, err := p.searchIndex(from)
+		if err != 0 {
+			if err == _ERR_NOT_FOUND {
+				e = len(self.js) - 1 //  end before ']'
+			} else {
+				return p.ExportError(err)
+			}
+		} else {
+			e = p.p
+		}
+	} else if from < 0 {
+		e = len(self.js) - 1
+	}
+
 	n := len(self.js)
 	for _, v := range vals {
 		n += len(v.js) + 1
 	}
 	b := make([]byte, 0, n)
 
-	s := len(self.js) - 2 //  start before ']'
-	for ; s >= 0 && isSpace(self.js[s]); s-- {
-	}
-	empty := self.js[s] == '['
+	lastComma := self.js[e] != ']'
+	s := e - 1
+	for ;s>=0 && isSpace(self.js[s]); s++ {}
+	firstComma := self.js[s] != ',' && self.js[s] != '['
 
-	b = append(b, self.js[:s+1]...)
-	for _, val := range vals {
-		if !empty {
+	b = append(b, self.js[:e]...)
+	for i, val := range vals {
+		if i == 0 && firstComma {
 			b = append(b, ","...)
 		}
-		empty = false
 		b = append(b, val.js...)
+		if i < len(vals)-1 || lastComma {
+			b = append(b, ","...)
+		}
 	}
-	b = append(b, "]"...)
+	b = append(b, self.js[e:]...)
+
 	self.js = rt.Mem2Str(b)
 	return nil
 }
@@ -840,7 +860,7 @@ var intsPool = sync.Pool{
 	},
 }
 
-// PopMany pops at most n trailling elements in the array.
+// PopMany pops at most n trailling elements in the array. -1 means clears all
 func (self *Value) PopMany(n int) error {
 	if self.Check() != nil {
 		return self
