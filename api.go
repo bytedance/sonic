@@ -209,6 +209,16 @@ func SetFromString(src string, val interface{}, path ...interface{}) (string, er
     return ast.NewSearcher(src).SetValueByPath(ast.NewValue(val), path...)
 }
 
+// Delete remove val to src according to path and return new json
+func Delete(src []byte, path ...interface{}) (string, error) {
+    return ast.NewSearcher(rt.Mem2Str(src)).DeleteByPath(path...)
+}
+
+// Delete remove val to src according to path and return new json
+func DeleteFromString(src string, path ...interface{}) (string, error) {
+    return ast.NewSearcher(src).DeleteByPath(path...)
+}
+
 // Get searches the given path from json,
 // and returns its representing ast.Value.
 //

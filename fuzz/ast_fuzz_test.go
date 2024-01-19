@@ -1,3 +1,4 @@
+//go:build go1.18
 // +build go1.18
 
 /*
@@ -19,27 +20,37 @@
 package sonic_fuzz
 
 import (
-	`testing`
-	`fmt`
-	`github.com/bytedance/sonic`
-	`github.com/stretchr/testify/require`
-	`github.com/davecgh/go-spew/spew`
+	"fmt"
+	"testing"
+
+	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 // data is random, check whether is panic
 func fuzzAst(t *testing.T, data []byte) {
-	sonic.Get(data)
+	sonic.GetValueFromString(string(data))
 }
 
-func fuzzASTGetFromObject(t *testing.T, data []byte, m map[string]interface{}) {
+
+func fuzzASTGetFromObject(t *testing.T, v []byte, m map[string]interface{}) {
+	data := string(v)
 	for k, expv := range(m) {
 		msg := fmt.Sprintf("Data:\n%s\nKey:\n%s\n", spew.Sdump(&data), spew.Sdump(&k))
-		node, err := sonic.Get(data, k)
+		node, err := sonic.GetValueFromString(data, k)
 		require.NoErrorf(t, err, "error in ast get key\n%s", msg)
 		v, err := node.Interface()
 		require.NoErrorf(t, err, "error in node convert\n%s", msg)
-		require.Equalf(t, v, expv, "error in node equal\n%sGot:\n%s\nExp:\n%s\n", 
-			msg, spew.Sdump(v), spew.Sdump(expv))
+		require.Equalf(t, v, expv, "error in node equal\n%sGot:\n%s\nExp:\n%s\n",msg, spew.Sdump(v), spew.Sdump(expv))
+		nj, err := sonic.DeleteFromString(data, k)
+		require.NoErrorf(t, err, "error in node delete\n%s", msg)
+		nj, err = sonic.SetFromString(nj, expv, k)
+		require.NoErrorf(t, err, "error in node set\n%s", msg)
+		nn, _ := sonic.GetValueFromString(nj)
+		nv, err := nn.Interface()
+		require.NoErrorf(t, err, "error in node set\n%s", msg)
+		require.Equal(t, m, nv)
 	}
 }
 
@@ -47,13 +58,13 @@ func fuzzASTGetFromArray(t *testing.T, data []byte, a []interface{}) {
 	i := 0
 	for ; i < len(a); i++ {
 		msg := fmt.Sprintf("Data:\n%s\nIndex:\n%d\n", spew.Sdump(data), i)
-		node, err := sonic.Get(data, i)
+		node, err := sonic.GetValue(data, i)
 		require.NoErrorf(t, err, "error in ast get index\n%s", msg)
 		v, err := node.Interface()
 		require.NoErrorf(t, err, "error in node convert\n%s", msg)
 		require.Equalf(t, v, a[i], "error in node equal\n%sGot:\n%s\nExp:\n%s\n", 
 			msg, spew.Sdump(v), spew.Sdump(a[i]))
 	}
-	_, err := sonic.Get(data, i)
+	_, err := sonic.GetValue(data, i)
 	require.Errorf(t, err, "no error in ast get out of range\nData:\n%s\n", spew.Sdump(data))
 }

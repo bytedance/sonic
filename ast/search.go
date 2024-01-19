@@ -118,3 +118,19 @@ func (self *Searcher) SetValueByPath(val Value, path ...interface{}) (string, er
     b = append(b, self.parser.s[e:]...)
     return rt.Mem2Str(b), nil
 }
+
+
+// DeleteByPath searches and remove a value at path.
+func (self *Searcher) DeleteByPath(path ...interface{}) (string, error) {
+    if self.parser.s == "" {
+		err := errors.New("empty input")
+		return self.parser.s, err
+	}
+    
+	// not exist, slow path
+    n := value(self.parser.s)
+    if  _, err := n.UnsetByPath(path...); err != nil {
+        return self.parser.s, err
+    }
+    return n.js, nil
+}
