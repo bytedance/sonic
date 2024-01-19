@@ -1039,23 +1039,11 @@ func (self Value) Raw() (string, error) {
 }
 
 func (self Value) toInt64() (int64, error) {
-	ret, err := self.toNumber().Int64()
-	if err != nil {
-		return 0, err
-	}
-	return ret, nil
+	return json.Number(self.js).Int64()
 }
 
 func (self Value) toFloat64() (float64, error) {
-	ret, err := self.toNumber().Float64()
-	if err != nil {
-		return 0, err
-	}
-	return ret, nil
-}
-
-func (self Value) toNumber() json.Number {
-	return json.Number(self.js)
+	return json.Number(self.js).Float64()
 }
 
 func (self Value) toString() (string, error) {
@@ -1068,8 +1056,7 @@ func (self Value) toString() (string, error) {
 		}
 
 		/* unquote the string */
-		s := p.s[val.Iv : p.p-1]
-		out, err := unquote(s)
+		out, err := unquote(p.s[val.Iv : p.p-1])
 
 		/* check for errors */
 		if err != 0 {
@@ -1098,6 +1085,7 @@ func (self Value) Bool() (bool, error) {
 	case V_STRING:
 		return strconv.ParseBool(self.str())
 	case V_NUMBER:
+		println("number")
 		if i, err := self.toInt64(); err == nil {
 			return i != 0, nil
 		} else if f, err := self.toFloat64(); err == nil {
@@ -1168,10 +1156,9 @@ func (self Value) Number() (json.Number, error) {
 	case V_FALSE:
 		return json.Number("0"), nil
 	case V_STRING:
-		if _, err := self.toInt64(); err == nil {
-			return self.toNumber(), nil
-		} else if _, err := self.toFloat64(); err == nil {
-			return self.toNumber(), nil
+		num := json.Number(self.str())
+		if _, err := num.Float64(); err == nil {
+			return num, nil
 		} else {
 			return json.Number(""), err
 		}

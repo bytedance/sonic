@@ -8,13 +8,13 @@ import (
 )
 
 const (
-    _entry__f32toa = 31104
+    _entry__f32toa = 31168
     _entry__f64toa = 192
-    _entry__format_significand = 35280
+    _entry__format_significand = 35344
     _entry__format_integer = 3040
     _entry__fsm_exec = 17920
     _entry__advance_string = 14320
-    _entry__advance_string_default = 36672
+    _entry__advance_string_default = 36736
     _entry__do_skip_number = 20528
     _entry__get_by_path = 25696
     _entry__skip_one_fast = 22176
@@ -29,15 +29,15 @@ const (
     _entry__skip_one = 21952
     _entry__unquote = 6576
     _entry__validate_one = 22000
-    _entry__validate_utf8 = 29856
-    _entry__validate_utf8_fast = 30528
+    _entry__validate_utf8 = 29904
+    _entry__validate_utf8_fast = 30576
     _entry__value = 12320
     _entry__vnumber = 15648
     _entry__atof_eisel_lemire64 = 10160
     _entry__atof_native = 11712
     _entry__decimal_to_f64 = 10528
-    _entry__right_shift = 36240
-    _entry__left_shift = 35744
+    _entry__right_shift = 36304
+    _entry__left_shift = 35808
     _entry__vsigned = 17200
     _entry__vstring = 14144
     _entry__vunsigned = 17520
@@ -88,7 +88,7 @@ const (
     _size__advance_string = 1280
     _size__advance_string_default = 944
     _size__do_skip_number = 924
-    _size__get_by_path = 4160
+    _size__get_by_path = 4208
     _size__skip_one_fast = 3016
     _size__html_escape = 1248
     _size__i64toa = 48
@@ -102,7 +102,7 @@ const (
     _size__unquote = 2272
     _size__validate_one = 48
     _size__validate_utf8 = 672
-    _size__validate_utf8_fast = 544
+    _size__validate_utf8_fast = 560
     _size__value = 1308
     _size__vnumber = 1552
     _size__atof_eisel_lemire64 = 368
@@ -247,15 +247,15 @@ var (
         {10, 32},
         {12, 40},
         {13, 48},
-        {4031, 104},
-        {4035, 48},
-        {4036, 40},
-        {4038, 32},
-        {4040, 24},
-        {4042, 16},
-        {4044, 8},
-        {4045, 0},
-        {4149, 104},
+        {4012, 104},
+        {4016, 48},
+        {4017, 40},
+        {4019, 32},
+        {4021, 24},
+        {4023, 16},
+        {4025, 8},
+        {4026, 0},
+        {4194, 104},
     }
     _pcsp__skip_one_fast = [][2]uint32{
         {1, 0},

@@ -41,7 +41,6 @@ func TestValueAPI(t *testing.T) {
 		{"Len", NewAny(map[string]string{}), 0,nil},
 		{"Len", NewAny(map[string]int{"a":1}), 1,nil},
 		{"Len", NewAny(map[string]int{"a":1,"b":2}), 2,nil},
-
 		{"Bool", Node{}, false, nonEmptyErr},
         {"Bool", NewAny(true), true, nil},
         {"Bool", NewAny(false), false, nil},
@@ -73,7 +72,6 @@ func TestValueAPI(t *testing.T) {
         {"Bool", NewNumber("2"), true, nil},
         {"Bool", NewNumber("-2.1"), true, nil},
         {"Bool", NewNumber("-x-2.1"), false, nonEmptyErr},
-
 		{"Int64", NewRaw("true"), int64(1), nil},
         {"Int64", NewRaw("false"), int64(0), nil},
         {"Int64", NewRaw("\"1\""), int64(1), nil},
@@ -103,7 +101,6 @@ func TestValueAPI(t *testing.T) {
         {"Int64", Node{}, int64(0), nonEmptyErr},
         {"Int64", NewRaw("0"), int64(0), nil},
         {"Int64", NewRaw("null"), int64(0), nil},
-
 		{"Float64", NewRaw("true"), float64(1), nil},
         {"Float64", NewRaw("false"), float64(0), nil},
         {"Float64", NewRaw("\"1.0\""), float64(1.0), nil},
@@ -130,7 +127,6 @@ func TestValueAPI(t *testing.T) {
         {"Float64", NewRaw("0.0"), float64(0.0), nil},
         {"Float64", NewRaw("1"), float64(1.0), nil},
         {"Float64", NewRaw("null"), float64(0.0), nil},
-      
 		{"Number", Node{}, json.Number(""), nonEmptyErr},
         {"Number", NewAny(false), json.Number("0"), nil},
         {"Number", NewAny(true), json.Number("1"), nil},
@@ -148,8 +144,8 @@ func TestValueAPI(t *testing.T) {
         {"Number", NewAny("1.1"), json.Number("1.1"), nil},
         {"Number", NewAny("+1x.1"), json.Number(""), nonEmptyErr},
         {"Number", NewAny(json.Number("0")), json.Number("0"), nil},
-        {"Number", NewAny(json.Number("x")), json.Number("x"), nil},
-        {"Number", NewAny(json.Number("+1x.1")), json.Number("+1x.1"), nil},
+        {"Number", NewAny(json.Number("x")), json.Number(""), nonEmptyErr},
+        {"Number", NewAny(json.Number("+1x.1")), json.Number(""), nonEmptyErr},
         {"Number", NewAny([]byte{0}), json.Number(""), nonEmptyErr},
         {"Number", NewRaw("x"), json.Number(""), nonEmptyErr},
         {"Number", NewRaw("0.0"), json.Number("0.0"), nil},
@@ -160,9 +156,8 @@ func TestValueAPI(t *testing.T) {
         {"Number", NewRaw("true"), json.Number("1"), nil},
         {"Number", NewRaw("false"), json.Number("0"), nil},
         {"Number", NewRaw("null"), json.Number("0"), nil},
-
 		{"String", Node{}, "", nonEmptyErr},
-        // {"String", NewAny(`\u263a`), `\u263a`, nil},
+        {"String", NewAny(`\u263a`), `\u263a`, nil},
         {"String", NewRaw(`"\u263a"`), `☺`, nil},
         {"String", NewString(`\u263a`), `\u263a`, nil},
         {"String", NewRaw(`0.0`), "0.0", nil},
@@ -185,8 +180,8 @@ func TestValueAPI(t *testing.T) {
         {"String", NewAny("1.1"), "1.1", nil},
         {"String", NewAny("+1x.1"), "+1x.1", nil},
         {"String", NewAny(json.Number("0")), ("0"), nil},
-        {"String", NewAny(json.Number("x")), ("x"), nil},
-        {"String", NewAny([]byte{0}), (""), nonEmptyErr},
+        {"String", NewAny(json.Number("x")), (""), nonEmptyErr},
+        {"String", NewAny([]byte{0}), "AA==", nil},
 	}
 	for i, c := range cases {
         fmt.Println(i)
