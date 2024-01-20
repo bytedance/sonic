@@ -68,8 +68,6 @@ var (
 
     __get_by_path func(s unsafe.Pointer, p unsafe.Pointer, path unsafe.Pointer, m unsafe.Pointer) (ret int)
 
-    __get_by_path_no_validate func(s unsafe.Pointer, p unsafe.Pointer, path unsafe.Pointer) (ret int)
-
     __validate_utf8 func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) (ret int)
 
     __validate_utf8_fast func(s unsafe.Pointer)  (ret int)
@@ -175,11 +173,6 @@ func validate_one(s *string, p *int, m *types.StateMachine) (ret int) {
 //go:nosplit
 func get_by_path(s *string, p *int, path *[]interface{}, m *types.StateMachine) (ret int) {
     return __get_by_path(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(path)), rt.NoEscape(unsafe.Pointer(m)))
-}
-
-//go:nosplit
-func get_by_path_no_validate(s *string, p *int, path *[]interface{}) (ret int) {
-    return __get_by_path_no_validate(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(path)))
 }
 
 //go:nosplit

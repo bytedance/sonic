@@ -1819,10 +1819,6 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
     return sp == end && kp == ke;
 }
 
-long get_by_path_no_validate(const GoString *src, long *p, const GoSlice *path) {
-    return get_by_path(src, p, path, NULL);
-}
-
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm) {
     GoIface *ps = (GoIface*)(path->buf);
     GoIface *pe = (GoIface*)(path->buf) + path->len;

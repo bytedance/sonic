@@ -39,7 +39,6 @@ var stubs = []loader.GoC{
     {"_f64toa", nil, &__f64toa},
     {"_fsm_exec", nil, &__fsm_exec},
     {"_get_by_path", nil, &__get_by_path},
-    {"_get_by_path_no_validate", nil, &__get_by_path_no_validate},
     {"_html_escape", nil, &__html_escape},
     {"_i64toa", nil, &__i64toa},
     {"_lspace", nil, &__lspace},

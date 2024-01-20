@@ -16,9 +16,8 @@ const (
     _entry__advance_string = 14320
     _entry__advance_string_default = 36736
     _entry__do_skip_number = 20528
-    _entry__get_by_path = 25712
+    _entry__get_by_path = 25696
     _entry__skip_one_fast = 22176
-    _entry__get_by_path_no_validate = 25696
     _entry__html_escape = 8912
     _entry__i64toa = 3472
     _entry__u64toa = 3584
@@ -30,8 +29,8 @@ const (
     _entry__skip_one = 21952
     _entry__unquote = 6576
     _entry__validate_one = 22000
-    _entry__validate_utf8 = 29920
-    _entry__validate_utf8_fast = 30592
+    _entry__validate_utf8 = 29904
+    _entry__validate_utf8_fast = 30576
     _entry__value = 12320
     _entry__vnumber = 15648
     _entry__atof_eisel_lemire64 = 10160
@@ -55,7 +54,6 @@ const (
     _stack__do_skip_number = 48
     _stack__get_by_path = 280
     _stack__skip_one_fast = 176
-    _stack__get_by_path_no_validate = 288
     _stack__html_escape = 72
     _stack__i64toa = 16
     _stack__u64toa = 8
@@ -92,7 +90,6 @@ const (
     _size__do_skip_number = 924
     _size__get_by_path = 4208
     _size__skip_one_fast = 3016
-    _size__get_by_path_no_validate = 16
     _size__html_escape = 1248
     _size__i64toa = 48
     _size__u64toa = 1232
@@ -105,7 +102,7 @@ const (
     _size__unquote = 2272
     _size__validate_one = 48
     _size__validate_utf8 = 672
-    _size__validate_utf8_fast = 544
+    _size__validate_utf8_fast = 560
     _size__value = 1308
     _size__vnumber = 1552
     _size__atof_eisel_lemire64 = 368
@@ -276,11 +273,6 @@ var (
         {667, 136},
         {671, 128},
         {3016, 176},
-    }
-    _pcsp__get_by_path_no_validate = [][2]uint32{
-        {1, 0},
-        {6, 8},
-        {12, 0},
     }
     _pcsp__html_escape = [][2]uint32{
         {1, 0},
@@ -589,7 +581,6 @@ var Funcs = []loader.CFunc{
     {"_do_skip_number", _entry__do_skip_number, _size__do_skip_number, _stack__do_skip_number, _pcsp__do_skip_number},
     {"_get_by_path", _entry__get_by_path, _size__get_by_path, _stack__get_by_path, _pcsp__get_by_path},
     {"_skip_one_fast", _entry__skip_one_fast, _size__skip_one_fast, _stack__skip_one_fast, _pcsp__skip_one_fast},
-    {"_get_by_path_no_validate", _entry__get_by_path_no_validate, _size__get_by_path_no_validate, _stack__get_by_path_no_validate, _pcsp__get_by_path_no_validate},
     {"_html_escape", _entry__html_escape, _size__html_escape, _stack__html_escape, _pcsp__html_escape},
     {"_i64toa", _entry__i64toa, _size__i64toa, _stack__i64toa, _pcsp__i64toa},
     {"_u64toa", _entry__u64toa, _size__u64toa, _stack__u64toa, _pcsp__u64toa},

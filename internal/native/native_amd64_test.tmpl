@@ -619,12 +619,12 @@ func TestNative_GetByPathNoValidate(t *testing.T) {
     s := `{"asdf": [null, true, false, 1, 2.0, -3, {"a"}]}, 1234.5`
     p := 0
     path := []interface{}{"asdf", 4}
-    ret := get_by_path_no_validate(&s, &p, &path)
+    ret := get_by_path(&s, &p, &path, nil)
     assert.Equal(t, strings.Index(s, "2.0"), ret)
     p = 0
     path = []interface{}{"asdf", 6}
-    ret = get_by_path_no_validate(&s, &p, &path)
-    assert.Equal(t, strings.Index(s, `{"a"}`), ret)
+    ret = get_by_path(&s, &p, &path, nil)
+    assert.Equal(t, strings.Index(s, `{"a"}`), ret, nil)
 }
 
 func BenchmarkNative_SkipOneFast(b *testing.B) {
@@ -654,6 +654,6 @@ func BenchmarkNative_GetByPathNoValidate(b *testing.B) {
         s := `{"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
         p := 0
         path := []interface{}{"asdf", 3}
-        _ = get_by_path_no_validate(&s, &p, &path)
+        _ = get_by_path(&s, &p, &path, nil)
     }
 }
