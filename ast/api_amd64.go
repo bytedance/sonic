@@ -146,20 +146,21 @@ func decodeString(src string, pos int) (ret int, v string) {
     p.p = pos
 	switch val := p.decodeValue(); val.Vt {
 	case types.V_STRING:
+        str := p.s[val.Iv : p.p-1]
 		/* fast path: no escape sequence */
 		if val.Ep == -1 {
-			return self.str(), nil
+			return p.p, str
 		}
 		/* unquote the string */
-		out, err := unquote(p.s[val.Iv : p.p-1])
+		out, err := unquote(str)
 		/* check for errors */
 		if err != 0 {
-			return -err, ""
+			return -int(err), ""
 		} else {
 			return p.p, out
 		}
 	default:
-		return -_ERR_UNSUPPORT_TYPE, ""
+		return -int(_ERR_UNSUPPORT_TYPE), ""
 	}
 }
 
@@ -173,7 +174,7 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
     case types.V_INTEGER:
         return p.p, val.Iv, nil
     default:
-        return -_ERR_UNSUPPORT_TYPE, 0, ""
+        return -int(_ERR_UNSUPPORT_TYPE), 0, nil
     }
 }
 
@@ -189,6 +190,6 @@ func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
     case types.V_INTEGER:
         return p.p, float64(val.Iv), nil
     default:
-        return -_ERR_UNSUPPORT_TYPE, 0, ""
+        return -int(_ERR_UNSUPPORT_TYPE), 0, nil
     }
 }
