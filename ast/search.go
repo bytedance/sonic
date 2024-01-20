@@ -25,6 +25,8 @@ import (
 
 // Searcher used to skip and search json values
 type Searcher struct {
+    noValidate bool
+    copy bool
     parser Parser
 }
 
@@ -38,13 +40,27 @@ func NewSearcher(str string) *Searcher {
     }
 }
 
+// Validate enables or disables Validate the result JSON
+func (self *Searcher) Validate(enable bool) {
+    self.noValidate = !enable
+}
+
+// Copy enables or disables Copy the result JSON
+func (self *Searcher) Copy(enable bool) {
+    self.copy = enable
+}
+
 // GetByPath searches in the json and located a Node at path
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     var err types.ParsingError
     var start int
 
     self.parser.p = 0
-    start, err = self.parser.getByPath(path...)
+    if self.noValidate {
+        start, err = self.parser.getByPathNoValidate(path...)
+    } else {
+        start, err = self.parser.getByPath(path...)
+    }
     if err != 0 {
         // for compatibility with old version
         if err == types.ERR_NOT_FOUND {
@@ -60,7 +76,14 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     if t == _V_NONE {
         return Node{}, self.parser.ExportError(err)
     }
-    return newRawNode(self.parser.s[start:self.parser.p], t), nil
+
+    var raw string
+    if self.copy {
+        raw = rt.Mem2Str([]byte(self.parser.s[start:self.parser.p]))
+    } else {
+        raw = self.parser.s[start:self.parser.p]
+    }
+    return newRawNode(raw, t), nil
 }
 
 // GetValueByPath searches in the json and located a Value at path
@@ -71,7 +94,13 @@ func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
 	}
 
     self.parser.p = 0
-    s, err := self.parser.getByPath(path...)
+    var s int
+    var err types.ParsingError
+    if self.noValidate {
+        s, err = self.parser.getByPathNoValidate(path...)
+    } else {
+        s, err = self.parser.getByPath(path...)
+    }
     if err != 0 {
 		e := self.parser.ExportError(err)
         return errValue(e), e
@@ -82,7 +111,14 @@ func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
 		e := self.parser.ExportError(err)
         return errValue(e), e 
     }
-    return Value{int(t), self.parser.s[s:self.parser.p]}, nil
+
+    var raw string
+    if self.copy {
+        raw = rt.Mem2Str([]byte(self.parser.s[s:self.parser.p]))
+    } else {
+        raw = self.parser.s[s:self.parser.p]
+    }
+    return Value{int(t), raw}, nil
 }
 
 // SetValueByPath searches and relpace a value at path.
@@ -94,7 +130,7 @@ func (self *Searcher) SetValueByPath(val Value, path ...interface{}) (string, er
 	}
 
     self.parser.p = 0
-    s, err := self.parser.getByPath(path...)
+    s, err := self.parser.getByPathNoValidate(path...)
 
     if err != 0 {
         if err != _ERR_NOT_FOUND {

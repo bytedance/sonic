@@ -214,7 +214,7 @@ func (self Value) GetByPath(path ...interface{}) Value {
 		return self
 	}
 	p := NewParserObj(self.js)
-	s, e := p.getByPath(path...)
+	s, e := p.getByPathNoValidate(path...)
 	if e != 0 {
 		return errValue(p.ExportError(e))
 	}
@@ -398,7 +398,7 @@ func (self Value) Get(key string) Value {
 		return self
 	}
 	p := NewParserObj(self.js)
-	s, e := p.getByPath(key)
+	s, e := p.getByPathNoValidate(key)
 	if e != 0 {
 		return errValue(p.ExportError(e))
 	}
@@ -479,7 +479,7 @@ func (self Value) Index(idx int) Value {
 		return self
 	}
 	p := NewParserObj(self.js)
-	s, e := p.getByPath(idx)
+	s, e := p.getByPathNoValidate(idx)
 	if e != 0 {
 		return errValue(p.ExportError(e))
 	}

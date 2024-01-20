@@ -219,6 +219,12 @@ func DeleteFromString(src string, path ...interface{}) (string, error) {
     return ast.NewSearcher(src).DeleteByPath(path...)
 }
 
+// GetOptions
+type GetOptions struct {
+    Copy bool // if copy returned JSON to reduce memory usage
+    Validate bool // if validate returned JSON for safty
+}
+
 // Get searches the given path from json,
 // and returns its representing ast.Value.
 //
@@ -229,16 +235,18 @@ func DeleteFromString(src string, path ...interface{}) (string, error) {
 // 
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
-func GetValue(src []byte, path ...interface{}) (ast.Value, error) {
-    return GetValueFromString(rt.Mem2Str(src), path...)
+func GetValue(opts GetOptions, src []byte, path ...interface{}) (ast.Value, error) {
+    return GetValueFromString(opts, rt.Mem2Str(src), path...)
 }
-
 
 // GetValueFromString is same with GetValue except src is string,
-// which can reduce unnecessary memory copy.
-func GetValueFromString(src string, path ...interface{}) (ast.Value, error) {
-    return ast.NewSearcher(src).GetValueByPath(path...)
+func GetValueFromString(opts GetOptions, src string, path ...interface{}) (ast.Value, error) {
+    s := ast.NewSearcher(src)
+    s.Validate(opts.Validate)
+    s.Copy(opts.Validate)
+    return s.GetValueByPath(path...)
 }
+
 
 // Valid reports whether data is a valid JSON encoding.
 func Valid(data []byte) bool {

@@ -131,3 +131,12 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     }
     return start, 0
 }
+
+func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ParsingError) {
+    start := native.GetByPath(&self.s, &self.p, &path, nil)
+    runtime.KeepAlive(path)
+    if start < 0 {
+        return self.p, types.ParsingError(-start)
+    }
+    return start, 0
+}
