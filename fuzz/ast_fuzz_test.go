@@ -31,15 +31,18 @@ import (
 
 // data is random, check whether is panic
 func fuzzAst(t *testing.T, data []byte) {
-	sonic.GetValueFromString(string(data))
+	GetFromString(string(data))
 }
 
+func GetFromString(json string, path ...interface{}) (ast.Value, error) {
+	return sonic.SearchOptions{}.GetFromString(json)
+}
 
 func fuzzASTGetFromObject(t *testing.T, v []byte, m map[string]interface{}) {
 	data := string(v)
 	for k, expv := range(m) {
 		msg := fmt.Sprintf("Data:\n%s\nKey:\n%s\n", spew.Sdump(&data), spew.Sdump(&k))
-		node, err := sonic.GetValueFromString(data, k)
+		node, err := GetFromString(data, k)
 		require.NoErrorf(t, err, "error in ast get key\n%s", msg)
 		v, err := node.Interface()
 		require.NoErrorf(t, err, "error in node convert\n%s", msg)
@@ -48,7 +51,7 @@ func fuzzASTGetFromObject(t *testing.T, v []byte, m map[string]interface{}) {
 		require.NoErrorf(t, err, "error in node delete\n%s", msg)
 		nj, err = sonic.SetFromString(nj, expv, k)
 		require.NoErrorf(t, err, "error in node set\n%s", msg)
-		nn, _ := sonic.GetValueFromString(nj)
+		nn, _ := GetFromString(nj)
 		nv, err := nn.Interface()
 		require.NoErrorf(t, err, "error in node set\n%s", msg)
 		require.Equalf(t, m, nv, msg)
@@ -60,7 +63,7 @@ func fuzzASTGetFromArray(t *testing.T, v []byte, a []interface{}) {
 	data := string(v)
 	for ; i < len(a); i++ {
 		msg := fmt.Sprintf("Data:\n%s\nIndex:\n%d\n", spew.Sdump(data), i)
-		node, err := sonic.GetValueFromString(data, i)
+		node, err := GetFromString(data, i)
 		require.NoErrorf(t, err, "error in ast get index\n%s", msg)
 		v, err := node.Interface()
 		require.NoErrorf(t, err, "error in node convert\n%s", msg)
@@ -74,6 +77,6 @@ func fuzzASTGetFromArray(t *testing.T, v []byte, a []interface{}) {
 		require.NoErrorf(t, err, "error in node set\n%s", msg)
 		require.Equalf(t, a, nv, msg)
 	}
-	_, err := sonic.GetValueFromString(data, i)
+	_, err := GetFromString(data, i)
 	require.Errorf(t, err, "no error in ast get out of range\nData:\n%s\n", spew.Sdump(data))
 }
