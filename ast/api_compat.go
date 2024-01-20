@@ -107,3 +107,7 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     }
     return start, 0
 }
+
+func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ParsingError) {
+    return self.getByPath(path...)
+}
