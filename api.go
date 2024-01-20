@@ -219,8 +219,8 @@ func DeleteFromString(src string, path ...interface{}) (string, error) {
     return ast.NewSearcher(src).DeleteByPath(path...)
 }
 
-// GetOptions
-type GetOptions struct {
+// SearchOptions
+type SearchOptions struct {
     Copy bool // if copy returned JSON to reduce memory usage
     Validate bool // if validate returned JSON for safty
 }
@@ -235,12 +235,12 @@ type GetOptions struct {
 // 
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
-func GetValue(opts GetOptions, src []byte, path ...interface{}) (ast.Value, error) {
-    return GetValueFromString(opts, rt.Mem2Str(src), path...)
+func (opts SearchOptions) Get(src []byte, path ...interface{}) (ast.Value, error) {
+    return opts.GetFromString(rt.Mem2Str(src), path...)
 }
 
-// GetValueFromString is same with GetValue except src is string,
-func GetValueFromString(opts GetOptions, src string, path ...interface{}) (ast.Value, error) {
+// GetFromString is same with GetValue except src is string,
+func (opts SearchOptions) GetFromString(src string, path ...interface{}) (ast.Value, error) {
     s := ast.NewSearcher(src)
     s.Validate(opts.Validate)
     s.Copy(opts.Validate)
