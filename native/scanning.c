@@ -1819,6 +1819,10 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
     return sp == end && kp == ke;
 }
 
+long get_by_path_no_validate(const GoString *src, long *p, const GoSlice *path) {
+    return get_by_path(src, p, path, NULL);
+}
+
 long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm) {
     GoIface *ps = (GoIface*)(path->buf);
     GoIface *pe = (GoIface*)(path->buf) + path->len;
@@ -1829,6 +1833,9 @@ long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine
 query:
     /* to be safer for invalid json, use slower skip for the demanded fields */
     if (ps == pe) {
+        if (sm == NULL) {
+            return skip_one_fast(src, p);
+        }
         return skip_one(src, p, sm, 0);
     }
 

@@ -59,6 +59,7 @@ var (
     S_skip_one      uintptr
     S_skip_one_fast uintptr
     S_get_by_path   uintptr
+    S_get_by_path_no_validate   uintptr
     S_skip_array    uintptr
     S_skip_object   uintptr
     S_skip_number   uintptr
@@ -84,6 +85,8 @@ var (
     __SkipOneFast func(s unsafe.Pointer, p unsafe.Pointer) int
 
     __GetByPath func(s unsafe.Pointer, p unsafe.Pointer, path unsafe.Pointer, m unsafe.Pointer) int
+    
+    __GetByPathNoValidate func(s unsafe.Pointer, p unsafe.Pointer, path unsafe.Pointer) int
 
     __ValidateOne func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) int
 
@@ -134,6 +137,11 @@ func GetByPath(s *string, p *int, path *[]interface{}, m *types.StateMachine) in
 }
 
 //go:nosplit
+func GetByPathNoValidate(s *string, p *int, path *[]interface{}) int {
+    return __GetByPathNoValidate(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(path)))
+}
+
+//go:nosplit
 func ValidateOne(s *string, p *int, m *types.StateMachine) int {
     return __ValidateOne(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)))
 }
@@ -180,6 +188,7 @@ var stubs = []loader.GoC{
     {"_skip_one", &S_skip_one, &__SkipOne},
     {"_skip_one_fast", &S_skip_one_fast, &__SkipOneFast},
     {"_get_by_path", &S_get_by_path, &__GetByPath},
+    {"_get_by_path_no_validate", &S_get_by_path_no_validate, &__GetByPathNoValidate},
     {"_skip_array", &S_skip_array, nil},
     {"_skip_object", &S_skip_object, nil},
     {"_skip_number", &S_skip_number, nil},

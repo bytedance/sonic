@@ -8,17 +8,18 @@ import (
 )
 
 const (
-    _entry__f32toa = 34656
+    _entry__f32toa = 34720
     _entry__f64toa = 320
-    _entry__format_significand = 38880
+    _entry__format_significand = 38944
     _entry__format_integer = 3168
     _entry__fsm_exec = 21072
     _entry__advance_ns = 16928
     _entry__advance_string = 17664
-    _entry__advance_string_default = 40320
+    _entry__advance_string_default = 40384
     _entry__do_skip_number = 23696
-    _entry__get_by_path = 28896
+    _entry__get_by_path = 28912
     _entry__skip_one_fast = 25968
+    _entry__get_by_path_no_validate = 28896
     _entry__html_escape = 10560
     _entry__i64toa = 3600
     _entry__u64toa = 3712
@@ -30,15 +31,15 @@ const (
     _entry__skip_one = 25552
     _entry__unquote = 7888
     _entry__validate_one = 25600
-    _entry__validate_utf8 = 31072
-    _entry__validate_utf8_fast = 32016
+    _entry__validate_utf8 = 31120
+    _entry__validate_utf8_fast = 32080
     _entry__value = 15376
     _entry__vnumber = 18800
     _entry__atof_eisel_lemire64 = 12624
     _entry__atof_native = 14768
     _entry__decimal_to_f64 = 13056
-    _entry__right_shift = 39840
-    _entry__left_shift = 39344
+    _entry__right_shift = 39904
+    _entry__left_shift = 39408
     _entry__vsigned = 20352
     _entry__vstring = 17424
     _entry__vunsigned = 20672
@@ -56,6 +57,7 @@ const (
     _stack__do_skip_number = 48
     _stack__get_by_path = 272
     _stack__skip_one_fast = 184
+    _stack__get_by_path_no_validate = 280
     _stack__html_escape = 72
     _stack__i64toa = 16
     _stack__u64toa = 8
@@ -91,8 +93,9 @@ const (
     _size__advance_string = 1088
     _size__advance_string_default = 768
     _size__do_skip_number = 1360
-    _size__get_by_path = 2176
+    _size__get_by_path = 2208
     _size__skip_one_fast = 2428
+    _size__get_by_path_no_validate = 16
     _size__html_escape = 2064
     _size__i64toa = 48
     _size__u64toa = 1248
@@ -104,7 +107,7 @@ const (
     _size__skip_one = 48
     _size__unquote = 2480
     _size__validate_one = 64
-    _size__validate_utf8 = 672
+    _size__validate_utf8 = 688
     _size__validate_utf8_fast = 2608
     _size__value = 1000
     _size__vnumber = 1552
@@ -255,15 +258,15 @@ var (
         {10, 32},
         {12, 40},
         {13, 48},
-        {2049, 88},
-        {2053, 48},
-        {2054, 40},
-        {2056, 32},
-        {2058, 24},
-        {2060, 16},
-        {2062, 8},
-        {2063, 0},
-        {2170, 88},
+        {2089, 88},
+        {2093, 48},
+        {2094, 40},
+        {2096, 32},
+        {2098, 24},
+        {2100, 16},
+        {2102, 8},
+        {2103, 0},
+        {2195, 88},
     }
     _pcsp__skip_one_fast = [][2]uint32{
         {1, 0},
@@ -281,6 +284,11 @@ var (
         {427, 136},
         {431, 128},
         {2428, 176},
+    }
+    _pcsp__get_by_path_no_validate = [][2]uint32{
+        {1, 0},
+        {6, 8},
+        {12, 0},
     }
     _pcsp__html_escape = [][2]uint32{
         {1, 0},
@@ -588,6 +596,7 @@ var Funcs = []loader.CFunc{
     {"_do_skip_number", _entry__do_skip_number, _size__do_skip_number, _stack__do_skip_number, _pcsp__do_skip_number},
     {"_get_by_path", _entry__get_by_path, _size__get_by_path, _stack__get_by_path, _pcsp__get_by_path},
     {"_skip_one_fast", _entry__skip_one_fast, _size__skip_one_fast, _stack__skip_one_fast, _pcsp__skip_one_fast},
+    {"_get_by_path_no_validate", _entry__get_by_path_no_validate, _size__get_by_path_no_validate, _stack__get_by_path_no_validate, _pcsp__get_by_path_no_validate},
     {"_html_escape", _entry__html_escape, _size__html_escape, _stack__html_escape, _pcsp__html_escape},
     {"_i64toa", _entry__i64toa, _size__i64toa, _stack__i64toa, _pcsp__i64toa},
     {"_u64toa", _entry__u64toa, _size__u64toa, _stack__u64toa, _pcsp__u64toa},

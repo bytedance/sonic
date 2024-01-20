@@ -606,11 +606,27 @@ func TestNative_SkipOneFast_Error(t *testing.T) {
 }
 
 func TestNative_GetByPath(t *testing.T) {
-    s := `{"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
+    s := `{"asdf": [null, true, false, 1, 2.0, -3, {"a"}]}, 1234.5`
     p := 0
     path := []interface{}{"asdf", 4}
     ret := get_by_path(&s, &p, &path, types.NewStateMachine())
     assert.Equal(t, strings.Index(s, "2.0"), ret)
+    p = 0
+    path = []interface{}{"asdf", 6}
+    ret = get_by_path(&s, &p, &path, types.NewStateMachine())
+    assert.Less(t, ret, 0)
+}
+
+func TestNative_GetByPathNoValidate(t *testing.T) {
+    s := `{"asdf": [null, true, false, 1, 2.0, -3, {"a"}]}, 1234.5`
+    p := 0
+    path := []interface{}{"asdf", 4}
+    ret := get_by_path_no_validate(&s, &p, &path)
+    assert.Equal(t, strings.Index(s, "2.0"), ret)
+    p = 0
+    path = []interface{}{"asdf", 6}
+    ret = get_by_path_no_validate(&s, &p, &path)
+    assert.Equal(t, strings.Index(s, `{"a"}`), ret)
 }
 
 func BenchmarkNative_SkipOneFast(b *testing.B) {
@@ -631,5 +647,15 @@ func BenchmarkNative_GetByPath(b *testing.B) {
         sm := types.NewStateMachine()
         _ = get_by_path(&s, &p, &path, sm)
         types.FreeStateMachine(sm)
+    }
+}
+
+func BenchmarkNative_GetByPathNoValidate(b *testing.B) {
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        s := `{"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
+        p := 0
+        path := []interface{}{"asdf", 3}
+        _ = get_by_path_no_validate(&s, &p, &path)
     }
 }
