@@ -1060,34 +1060,33 @@ func (self Value) Raw() (string, error) {
 }
 
 func (self Value) toInt64() (int64, error) {
-	return json.Number(self.js).Int64()
+	ret, iv, err := decodeInt64(self.js, 0)
+	if err != nil {
+		return 0, err
+	} else if ret < 0 {
+		return 0, NewParserObj(self.js).ExportError(types.ParsingError(-ret))
+	} else {
+		return iv, nil
+	}
 }
 
 func (self Value) toFloat64() (float64, error) {
-	return json.Number(self.js).Float64()
+	ret, dv, err := decodeFloat64(self.js, 0)
+	if err != nil {
+		return 0, err
+	} else if ret < 0 {
+		return 0, NewParserObj(self.js).ExportError(types.ParsingError(-ret))
+	} else {
+		return dv, nil
+	}
 }
 
 func (self Value) toString() (string, error) {
-	p := NewParserObj(self.js)
-	switch val := p.decodeValue(); val.Vt {
-	case types.V_STRING:
-		/* fast path: no escape sequence */
-		if val.Ep == -1 {
-			return self.str(), nil
-		}
-
-		/* unquote the string */
-		out, err := unquote(p.s[val.Iv : p.p-1])
-
-		/* check for errors */
-		if err != 0 {
-			return "", p.ExportError(err)
-		} else {
-			return out, nil
-		}
-	default:
-		return "", _ERR_UNSUPPORT_TYPE
+	ret, str := decodeString(self.js, 0)
+	if ret < 0 {
+		return "", NewParserObj(self.js).ExportError(types.ParsingError(-ret))
 	}
+	return str, nil
 }
 
 // Bool returns bool value represented by this node,

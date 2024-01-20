@@ -140,3 +140,55 @@ func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.Parsing
     }
     return start, 0
 }
+
+func decodeString(src string, pos int) (ret int, v string) {
+	p := NewParserObj(src)
+    p.p = pos
+	switch val := p.decodeValue(); val.Vt {
+	case types.V_STRING:
+		/* fast path: no escape sequence */
+		if val.Ep == -1 {
+			return self.str(), nil
+		}
+		/* unquote the string */
+		out, err := unquote(p.s[val.Iv : p.p-1])
+		/* check for errors */
+		if err != 0 {
+			return -err, ""
+		} else {
+			return p.p, out
+		}
+	default:
+		return -_ERR_UNSUPPORT_TYPE, ""
+	}
+}
+
+func decodeInt64(src string, pos int) (ret int, v int64, err error) {
+    p := NewParserObj(src)
+    p.p = pos
+    p.decodeNumber(true)
+    val := p.decodeValue()
+    p.decodeNumber(false)
+    switch val.Vt {
+    case types.V_INTEGER:
+        return p.p, val.Iv, nil
+    default:
+        return -_ERR_UNSUPPORT_TYPE, 0, ""
+    }
+}
+
+func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
+    p := NewParserObj(src)
+    p.p = pos
+    p.decodeNumber(true)
+    val := p.decodeValue()
+    p.decodeNumber(false)
+    switch val.Vt {
+    case types.V_DOUBLE:
+        return p.p, val.Dv, nil
+    case types.V_INTEGER:
+        return p.p, float64(val.Iv), nil
+    default:
+        return -_ERR_UNSUPPORT_TYPE, 0, ""
+    }
+}
