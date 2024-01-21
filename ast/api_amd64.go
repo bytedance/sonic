@@ -141,7 +141,7 @@ func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.Parsing
     return start, 0
 }
 
-func decodeString(src string, pos int) (ret int, v string) {
+func DecodeString(src string, pos int) (ret int, v string) {
 	p := NewParserObj(src)
     p.p = pos
 	switch val := p.decodeValue(); val.Vt {
@@ -164,7 +164,7 @@ func decodeString(src string, pos int) (ret int, v string) {
 	}
 }
 
-func decodeInt64(src string, pos int) (ret int, v int64, err error) {
+func DecodeInt64(src string, pos int) (ret int, v int64, err error) {
     p := NewParserObj(src)
     p.p = pos
     p.decodeNumber(true)
@@ -178,7 +178,7 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
     }
 }
 
-func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
+func DecodeFloat64(src string, pos int) (ret int, v float64, err error) {
     p := NewParserObj(src)
     p.p = pos
     p.decodeNumber(true)

@@ -117,7 +117,7 @@ func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.Parsing
 }
 
 //go:nocheckptr
-func decodeString(src string, pos int) (ret int, v string) {
+func DecodeString(src string, pos int) (ret int, v string) {
     ret, ep := skipString(src, pos)
     if ep == -1 {
         (*rt.GoString)(unsafe.Pointer(&v)).Ptr = rt.IndexChar(src, pos+1)
@@ -135,7 +135,7 @@ func decodeString(src string, pos int) (ret int, v string) {
 }
 
 //go:nocheckptr
-func decodeInt64(src string, pos int) (ret int, v int64, err error) {
+func DecodeInt64(src string, pos int) (ret int, v int64, err error) {
     sp := uintptr(rt.IndexChar(src, pos))
     ss := uintptr(sp)
     se := uintptr(rt.IndexChar(src, len(src)))
@@ -181,7 +181,7 @@ func decodeInt64(src string, pos int) (ret int, v int64, err error) {
 }
 
 //go:nocheckptr
-func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
+func DecodeFloat64(src string, pos int) (ret int, v float64, err error) {
     sp := uintptr(rt.IndexChar(src, pos))
     ss := uintptr(sp)
     se := uintptr(rt.IndexChar(src, len(src)))

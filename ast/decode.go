@@ -95,7 +95,7 @@ func decodeFalse(src string, pos int) (ret int) {
 
 func decodeBinary(src string, pos int) (ret int, v []byte) {
     var vv string
-    ret, vv = decodeString(src, pos)
+    ret, vv = DecodeString(src, pos)
     if ret < 0 {
         return ret, nil
     }
@@ -160,14 +160,14 @@ func decodeValue(src string, pos int, skipnum bool) (ret int, v types.JsonState)
             }
         } else {
             var iv int64
-            ret, iv, _ = decodeInt64(src, pos)
+            ret, iv, _ = DecodeInt64(src, pos)
             if ret >= 0 {
                 return ret, types.JsonState{Vt: types.V_INTEGER, Iv: iv, Ep: pos}
             } else if ret != -int(types.ERR_INVALID_NUMBER_FMT) {
                 return ret, types.JsonState{Vt: types.ValueType(ret)}
             }
             var fv float64
-            ret, fv, _ = decodeFloat64(src, pos)
+            ret, fv, _ = DecodeFloat64(src, pos)
             if ret >= 0 {
                 return ret, types.JsonState{Vt: types.V_DOUBLE, Dv: fv, Ep: pos}
             } else {

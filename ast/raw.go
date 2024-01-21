@@ -1060,7 +1060,7 @@ func (self Value) Raw() (string, error) {
 }
 
 func (self Value) toInt64() (int64, error) {
-	ret, iv, err := decodeInt64(self.js, 0)
+	ret, iv, err := DecodeInt64(self.js, 0)
 	if err != nil {
 		return 0, err
 	} else if ret < 0 {
@@ -1071,7 +1071,7 @@ func (self Value) toInt64() (int64, error) {
 }
 
 func (self Value) toFloat64() (float64, error) {
-	ret, dv, err := decodeFloat64(self.js, 0)
+	ret, dv, err := DecodeFloat64(self.js, 0)
 	if err != nil {
 		return 0, err
 	} else if ret < 0 {
@@ -1082,7 +1082,7 @@ func (self Value) toFloat64() (float64, error) {
 }
 
 func (self Value) toString() (string, error) {
-	ret, str := decodeString(self.js, 0)
+	ret, str := DecodeString(self.js, 0)
 	if ret < 0 {
 		return "", NewParserObj(self.js).ExportError(types.ParsingError(-ret))
 	}
