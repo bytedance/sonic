@@ -209,11 +209,11 @@ func (self Value) GetByPath(path ...interface{}) Value {
 		return self
 	}
 	p := NewParserObj(self.js)
-	s, e := p.getByPathNoValidate(path...)
+	s, t, e := p.getByPathNoValidate(path...)
 	if e != 0 {
 		return errValue(p.ExportError(e))
 	}
-	return value(self.js[s:p.p])
+	return Value{int(t), self.js[s:p.p]}
 }
 
 // SetAnyByPath set value on given path and create nodes on the json if not exist
@@ -393,11 +393,11 @@ func (self Value) Get(key string) Value {
 		return self
 	}
 	p := NewParserObj(self.js)
-	s, e := p.getByPathNoValidate(key)
+	s, t, e := p.getByPathNoValidate(key)
 	if e != 0 {
 		return errValue(p.ExportError(e))
 	}
-	return value(self.js[s:p.p])
+	return Value{int(t), self.js[s:p.p]}
 }
 
 // GetMany retrieves all the keys in kvs and set found Value at correpsonding index
@@ -474,11 +474,11 @@ func (self Value) Index(idx int) Value {
 		return self
 	}
 	p := NewParserObj(self.js)
-	s, e := p.getByPathNoValidate(idx)
+	s, t, e := p.getByPathNoValidate(idx)
 	if e != 0 {
 		return errValue(p.ExportError(e))
 	}
-	return value(self.js[s:p.p])
+	return Value{int(t), self.js[s:p.p]}
 }
 
 // GetMany retrieves all the indexes in ids and set found Value at correpsonding index of vals

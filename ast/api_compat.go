@@ -23,7 +23,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"runtime"
-	"strconv"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/native/types"
@@ -91,15 +90,15 @@ func (self *Node) encodeInterface(buf *[]byte) error {
     return nil
 }
 
-func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+func (self *Parser) getByPath(path ...interface{}) (int, types.ValueType, types.ParsingError) {
     for _, p := range path {
         if idx, ok := p.(int); ok && idx >= 0 {
             if _, err := self.searchIndex(idx); err != 0 {
-                return self.p, err
+                return self.p, 0, err
             }
         } else if key, ok := p.(string); ok {
             if _, err := self.searchKey(key); err != 0 {
-                return self.p, err
+                return self.p, 0, err
             }
         } else {
             panic("path must be either int(>=0) or string")
@@ -107,12 +106,16 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     }
     start, e := self.skip()
     if e != 0 {
-        return self.p, e
+        return self.p, 0, e
     }
-    return start, 0
+    t := switchRawType(self.s[start])
+    if t == _V_NUMBER {
+        self.p = 1 + backward(self.s, self.p-1)
+    }
+    return start, t, 0
 }
 
-func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ParsingError) {
+func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ValueType, types.ParsingError) {
     return self.getByPath(path...)
 }
 
@@ -132,90 +135,4 @@ func DecodeString(src string, pos int) (ret int, v string) {
 
     runtime.KeepAlive(src)
     return ret, rt.Mem2Str(vv)
-}
-
-//go:nocheckptr
-func DecodeInt64(src string, pos int) (ret int, v int64, err error) {
-    sp := uintptr(rt.IndexChar(src, pos))
-    ss := uintptr(sp)
-    se := uintptr(rt.IndexChar(src, len(src)))
-    if uintptr(sp) >= se {
-        return -int(types.ERR_EOF), 0, nil
-    }
-
-    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' {
-        sp += 1
-    }
-    if sp == se {
-        return -int(types.ERR_EOF), 0, nil
-    }
-
-    for ; sp < se; sp += uintptr(1) {
-        if !isDigit(*(*byte)(unsafe.Pointer(sp))) {
-            break
-        }
-    }
-
-    if sp < se {
-        if c := *(*byte)(unsafe.Pointer(sp)); c == '.' || c == 'e' || c == 'E' {
-            return -int(types.ERR_INVALID_NUMBER_FMT), 0, nil
-        }
-    }
-
-    var vv string
-    ret = int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
-    (*rt.GoString)(unsafe.Pointer(&vv)).Ptr = unsafe.Pointer(ss)
-    (*rt.GoString)(unsafe.Pointer(&vv)).Len = ret - pos
-
-    v, err = strconv.ParseInt(vv, 10, 64)
-    if err != nil {
-        //NOTICE: allow overflow here
-        if err.(*strconv.NumError).Err == strconv.ErrRange {
-            return ret, 0, err
-        }
-        return -int(types.ERR_INVALID_CHAR), 0, err
-    }
-
-    runtime.KeepAlive(src)
-    return ret, v, nil
-}
-
-//go:nocheckptr
-func DecodeFloat64(src string, pos int) (ret int, v float64, err error) {
-    sp := uintptr(rt.IndexChar(src, pos))
-    ss := uintptr(sp)
-    se := uintptr(rt.IndexChar(src, len(src)))
-    if uintptr(sp) >= se {
-        return -int(types.ERR_EOF), 0, nil
-    }
-
-    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' {
-        sp += 1
-    }
-    if sp == se {
-        return -int(types.ERR_EOF), 0, nil
-    }
-
-    for ; sp < se; sp += uintptr(1) {
-        if !isNumberChars(*(*byte)(unsafe.Pointer(sp))) {
-            break
-        }
-    }
-
-    var vv string
-    ret = int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
-    (*rt.GoString)(unsafe.Pointer(&vv)).Ptr = unsafe.Pointer(ss)
-    (*rt.GoString)(unsafe.Pointer(&vv)).Len = ret - pos
-
-    v, err = strconv.ParseFloat(vv, 64)
-    if err != nil {
-        //NOTICE: allow overflow here
-        if err.(*strconv.NumError).Err == strconv.ErrRange {
-            return ret, 0, err
-        }
-        return -int(types.ERR_INVALID_CHAR), 0, err
-    }
-
-    runtime.KeepAlive(src)
-    return ret, v, nil
 }

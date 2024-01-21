@@ -121,24 +121,32 @@ func (self *Parser) skipFast() (int, types.ParsingError) {
     return start, 0
 }
 
-func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+func (self *Parser) getByPath(path ...interface{}) (int, types.ValueType, types.ParsingError) {
     fsm := types.NewStateMachine()
     start := native.GetByPath(&self.s, &self.p, &path, fsm)
     types.FreeStateMachine(fsm)
     runtime.KeepAlive(path)
     if start < 0 {
-        return self.p, types.ParsingError(-start)
+        return self.p, 0, types.ParsingError(-start)
     }
-    return start, 0
+    t := switchRawType(self.s[start])
+    if t == _V_NUMBER {
+        self.p = 1 + backward(self.s, self.p-1)
+    }
+    return start, t, 0
 }
 
-func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ParsingError) {
+func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ValueType, types.ParsingError) {
     start := native.GetByPath(&self.s, &self.p, &path, nil)
     runtime.KeepAlive(path)
     if start < 0 {
-        return self.p, types.ParsingError(-start)
+        return self.p, 0, types.ParsingError(-start)
     }
-    return start, 0
+    t := switchRawType(self.s[start])
+    if t == _V_NUMBER {
+        self.p = 1 + backward(self.s, self.p-1)
+    }
+    return start, t, 0
 }
 
 func DecodeString(src string, pos int) (ret int, v string) {
@@ -162,34 +170,4 @@ func DecodeString(src string, pos int) (ret int, v string) {
 	default:
 		return -int(_ERR_UNSUPPORT_TYPE), ""
 	}
-}
-
-func DecodeInt64(src string, pos int) (ret int, v int64, err error) {
-    p := NewParserObj(src)
-    p.p = pos
-    p.decodeNumber(true)
-    val := p.decodeValue()
-    p.decodeNumber(false)
-    switch val.Vt {
-    case types.V_INTEGER:
-        return p.p, val.Iv, nil
-    default:
-        return -int(_ERR_UNSUPPORT_TYPE), 0, nil
-    }
-}
-
-func DecodeFloat64(src string, pos int) (ret int, v float64, err error) {
-    p := NewParserObj(src)
-    p.p = pos
-    p.decodeNumber(true)
-    val := p.decodeValue()
-    p.decodeNumber(false)
-    switch val.Vt {
-    case types.V_DOUBLE:
-        return p.p, val.Dv, nil
-    case types.V_INTEGER:
-        return p.p, float64(val.Iv), nil
-    default:
-        return -int(_ERR_UNSUPPORT_TYPE), 0, nil
-    }
 }

@@ -17,12 +17,13 @@
 package ast
 
 import (
-    `encoding/base64`
-    `runtime`
-    `unsafe`
+	"encoding/base64"
+	"runtime"
+	"strconv"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const _blankCharsMask = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
@@ -160,14 +161,14 @@ func decodeValue(src string, pos int, skipnum bool) (ret int, v types.JsonState)
             }
         } else {
             var iv int64
-            ret, iv, _ = DecodeInt64(src, pos)
+            ret, iv, _ = decodeInt64(src, pos)
             if ret >= 0 {
                 return ret, types.JsonState{Vt: types.V_INTEGER, Iv: iv, Ep: pos}
             } else if ret != -int(types.ERR_INVALID_NUMBER_FMT) {
                 return ret, types.JsonState{Vt: types.ValueType(ret)}
             }
             var fv float64
-            ret, fv, _ = DecodeFloat64(src, pos)
+            ret, fv, _ = decodeFloat64(src, pos)
             if ret >= 0 {
                 return ret, types.JsonState{Vt: types.V_DOUBLE, Dv: fv, Ep: pos}
             } else {
@@ -477,4 +478,91 @@ func skipArray(src string, pos int) (ret int, start int) {
         }
         pos++
     }
+}
+
+
+//go:nocheckptr
+func decodeInt64(src string, pos int) (ret int, v int64, err error) {
+    sp := uintptr(rt.IndexChar(src, pos))
+    ss := uintptr(sp)
+    se := uintptr(rt.IndexChar(src, len(src)))
+    if uintptr(sp) >= se {
+        return -int(types.ERR_EOF), 0, nil
+    }
+
+    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' {
+        sp += 1
+    }
+    if sp == se {
+        return -int(types.ERR_EOF), 0, nil
+    }
+
+    for ; sp < se; sp += uintptr(1) {
+        if !isDigit(*(*byte)(unsafe.Pointer(sp))) {
+            break
+        }
+    }
+
+    if sp < se {
+        if c := *(*byte)(unsafe.Pointer(sp)); c == '.' || c == 'e' || c == 'E' {
+            return -int(types.ERR_INVALID_NUMBER_FMT), 0, nil
+        }
+    }
+
+    var vv string
+    ret = int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
+    (*rt.GoString)(unsafe.Pointer(&vv)).Ptr = unsafe.Pointer(ss)
+    (*rt.GoString)(unsafe.Pointer(&vv)).Len = ret - pos
+
+    v, err = strconv.ParseInt(vv, 10, 64)
+    if err != nil {
+        //NOTICE: allow overflow here
+        if err.(*strconv.NumError).Err == strconv.ErrRange {
+            return ret, 0, err
+        }
+        return -int(types.ERR_INVALID_CHAR), 0, err
+    }
+
+    runtime.KeepAlive(src)
+    return ret, v, nil
+}
+
+//go:nocheckptr
+func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
+    sp := uintptr(rt.IndexChar(src, pos))
+    ss := uintptr(sp)
+    se := uintptr(rt.IndexChar(src, len(src)))
+    if uintptr(sp) >= se {
+        return -int(types.ERR_EOF), 0, nil
+    }
+
+    if c := *(*byte)(unsafe.Pointer(sp)); c == '-' {
+        sp += 1
+    }
+    if sp == se {
+        return -int(types.ERR_EOF), 0, nil
+    }
+
+    for ; sp < se; sp += uintptr(1) {
+        if !isNumberChars(*(*byte)(unsafe.Pointer(sp))) {
+            break
+        }
+    }
+
+    var vv string
+    ret = int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
+    (*rt.GoString)(unsafe.Pointer(&vv)).Ptr = unsafe.Pointer(ss)
+    (*rt.GoString)(unsafe.Pointer(&vv)).Len = ret - pos
+
+    v, err = strconv.ParseFloat(vv, 64)
+    if err != nil {
+        //NOTICE: allow overflow here
+        if err.(*strconv.NumError).Err == strconv.ErrRange {
+            return ret, 0, err
+        }
+        return -int(types.ERR_INVALID_CHAR), 0, err
+    }
+
+    runtime.KeepAlive(src)
+    return ret, v, nil
 }

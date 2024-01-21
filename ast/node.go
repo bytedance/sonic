@@ -1800,3 +1800,8 @@ var typeJumpTable = [256]types.ValueType{
 func switchRawType(c byte) types.ValueType {
     return typeJumpTable[c]
 }
+
+func backward(src string, i int) int {
+    for ; i>=0 && isSpace(src[i]); i-- {}
+    return i
+}

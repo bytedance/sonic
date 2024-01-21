@@ -54,12 +54,13 @@ func (self *Searcher) Copy(enable bool) {
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     var err types.ParsingError
     var start int
+    var t types.ValueType
 
     self.parser.p = 0
     if self.noValidate {
-        start, err = self.parser.getByPathNoValidate(path...)
+        start, t, err = self.parser.getByPathNoValidate(path...)
     } else {
-        start, err = self.parser.getByPath(path...)
+        start, t, err = self.parser.getByPath(path...)
     }
     if err != 0 {
         // for compatibility with old version
@@ -72,11 +73,6 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
         return Node{}, self.parser.syntaxError(err)
     }
 
-    t := switchRawType(self.parser.s[start])
-    if t == _V_NONE {
-        return Node{}, self.parser.ExportError(err)
-    }
-
     var raw string
     if self.copy {
         raw = rt.Mem2Str([]byte(self.parser.s[start:self.parser.p]))
@@ -87,13 +83,13 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
 }
 
 // Export Search API for other libs
-func GetByPath(src string, path ...interface{}) (int, int, error) {
+func GetByPath(src string, path ...interface{}) (int, int, int, error) {
     p := NewParserObj(src)
-    s, e := p.getByPathNoValidate(path...)
+    s, t, e := p.getByPathNoValidate(path...)
     if e != 0 {
-        return -1, -1, p.ExportError(e)
+        return -1, -1, 0, p.ExportError(e)
     }
-    return s, p.p, nil
+    return s, p.p, int(t), nil
 }
 
 // GetValueByPath searches in the json and located a Value at path
@@ -106,20 +102,16 @@ func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
     self.parser.p = 0
     var s int
     var err types.ParsingError
+    var t types.ValueType
+
     if self.noValidate {
-        s, err = self.parser.getByPathNoValidate(path...)
+        s, t, err = self.parser.getByPathNoValidate(path...)
     } else {
-        s, err = self.parser.getByPath(path...)
+        s, t, err = self.parser.getByPath(path...)
     }
     if err != 0 {
 		e := self.parser.ExportError(err)
         return errValue(e), e
-    }
-
-    t := switchRawType(self.parser.s[s])
-    if t == _V_NONE {
-		e := self.parser.ExportError(err)
-        return errValue(e), e 
     }
 
     var raw string
@@ -140,7 +132,7 @@ func (self *Searcher) SetValueByPath(val Value, path ...interface{}) (string, er
 	}
 
     self.parser.p = 0
-    s, err := self.parser.getByPathNoValidate(path...)
+    s, _, err := self.parser.getByPathNoValidate(path...)
 
     if err != 0 {
         if err != _ERR_NOT_FOUND {
