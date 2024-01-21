@@ -780,3 +780,13 @@ func (self Parser) ExportError(err types.ParsingError) error {
 		Code: err,
 	}.Description())
 }
+
+func SkipFast(src string, i int) (int, int, error) {
+    p := NewParserObj(src)
+    p.p = i
+    s, e := p.skipFast()
+    if e != 0 {
+        return -1, -1, p.ExportError(e)
+    }
+    return s, p.p, nil
+}
