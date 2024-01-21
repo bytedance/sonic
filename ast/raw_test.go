@@ -22,7 +22,7 @@ func TestCast(t *testing.T) {
 }
 
 func TestSpace(t *testing.T) {
-	v, err := NewSearcher(`[ true , 1 , 1.1 , false , null , "a" , [ 2 ], { "a" : 2 }, 2 ]`).GetValueByPath()
+	v, err := NewSearcher(`[ true , 1 , 1.1 , false , null , "a" , [ 2 ] , { "a" : 2 } , 2 ]`).GetValueByPath()
 	require.NoError(t, err)
 
 	vv, e := v.Index(0).Interface()
