@@ -21,6 +21,43 @@ func TestCast(t *testing.T) {
 	spew.Dump(v, err)
 }
 
+func TestSpace(t *testing.T) {
+	v, err := NewSearcher(`[ true , 1 , 1.1 , false , null , "a" , [ 2 ], { "a" : 2 }, 2 ]`).GetValueByPath()
+	require.NoError(t, err)
+
+	vv, e := v.Index(0).Interface()
+	require.NoError(t, e)
+	require.Equal(t, true, vv)
+
+	vv, e = v.Index(1).Int64()
+	require.NoError(t, e)
+	require.Equal(t, int64(1), vv)
+
+	vv, e = v.Index(2).Interface()
+	require.NoError(t, e)
+	require.Equal(t, float64(1.1), vv)
+
+	vv, e = v.Index(3).Interface()
+	require.NoError(t, e)
+	require.Equal(t, false, vv)
+
+	vv, e = v.Index(4).Interface()
+	require.NoError(t, e)
+	require.Equal(t, nil, vv)
+
+	vv, e = v.Index(5).Interface()
+	require.NoError(t, e)
+	require.Equal(t, "a", vv)
+
+	vv, e = v.Index(6).Interface()
+	require.NoError(t, e)
+	require.Equal(t, []interface{}{float64(2)}, vv)
+
+	vv, e = v.Index(7).Interface()
+	require.NoError(t, e)
+	require.Equal(t, map[string]interface{}{"a":float64(2)}, vv)
+}
+
 func TestValueAPI(t *testing.T) {
 	var nonEmptyErr error = errors.New("")
 

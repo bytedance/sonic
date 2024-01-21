@@ -58,11 +58,6 @@ func NewValue(val interface{}) Value {
 	return value(rt.Mem2Str(js))
 }
 
-// NewErrorValue wraps error as V_ERROR
-func NewErrorValue(err error) Value {
-	return errValue(err)
-}
-
 func value(js string) Value {
 	return Value{
 		t:  int(switchRawType(js[0])),
@@ -1060,25 +1055,11 @@ func (self Value) Raw() (string, error) {
 }
 
 func (self Value) toInt64() (int64, error) {
-	ret, iv, err := DecodeInt64(self.js, 0)
-	if err != nil {
-		return 0, err
-	} else if ret < 0 {
-		return 0, NewParserObj(self.js).ExportError(types.ParsingError(-ret))
-	} else {
-		return iv, nil
-	}
+	return json.Number(self.js).Int64()
 }
 
 func (self Value) toFloat64() (float64, error) {
-	ret, dv, err := DecodeFloat64(self.js, 0)
-	if err != nil {
-		return 0, err
-	} else if ret < 0 {
-		return 0, NewParserObj(self.js).ExportError(types.ParsingError(-ret))
-	} else {
-		return dv, nil
-	}
+	return json.Number(self.js).Float64()
 }
 
 func (self Value) toString() (string, error) {
