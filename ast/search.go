@@ -86,6 +86,16 @@ func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
     return newRawNode(raw, t), nil
 }
 
+// Export Search API for other libs
+func GetByPath(src string, path ...interface{}) (int, int, error) {
+    p := NewParserObj(src)
+    s, e := p.getByPathNoValidate(path...)
+    if e != 0 {
+        return -1, -1, p.ExportError(e)
+    }
+    return s, p.p, nil
+}
+
 // GetValueByPath searches in the json and located a Value at path
 func (self *Searcher) GetValueByPath(path ...interface{}) (Value, error) {
 	if self.parser.s == "" {
