@@ -567,13 +567,13 @@ func (ps points) Len() int {
 
 // Set sets the node of given key under self, and insert new value if not exist.
 // It reports if the key has existed.
-func (self *Value) SetAny(key string, val interface{}, allowInsert bool) (bool, error) {
+func (self *Value) SetAny(key string, val interface{}) (bool, error) {
 	return self.SetMany([]string{key}, []Value{NewValue(val)})
 }
 
 // Set sets the node of given key under self, and insert new value if not exist.
 // It reports if the key has existed.
-func (self *Value) Set(key string, val Value, allowInsert bool) (bool, error) {
+func (self *Value) Set(key string, val Value) (bool, error) {
 	return self.SetMany([]string{key}, []Value{val})
 }
 
