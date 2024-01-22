@@ -387,8 +387,8 @@ var (
     }
     _pcsp__validate_one = [][2]uint32{
         {1, 0},
-        {35, 8},
-        {41, 0},
+        {30, 8},
+        {36, 0},
     }
     _pcsp__validate_utf8 = [][2]uint32{
         {1, 0},

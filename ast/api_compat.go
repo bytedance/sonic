@@ -136,3 +136,20 @@ func DecodeString(src string, pos int) (ret int, v string) {
     runtime.KeepAlive(src)
     return ret, rt.Mem2Str(vv)
 }
+
+// ValidSyntax check if a json has a valid JSON syntax,
+// while not validate UTF-8 charset
+func ValidSyntax(json string) bool {
+	p, _ := skipValue(json, 0)
+    if p < 0 {
+        return false
+    }
+    /* check for trailing spaces */
+    for ;p < len(json); p++ {
+        if !isSpace(json[p]) {
+            return false
+        }
+    }
+
+    return true
+}

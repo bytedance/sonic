@@ -171,3 +171,25 @@ func DecodeString(src string, pos int) (ret int, v string) {
 		return -int(_ERR_UNSUPPORT_TYPE), ""
 	}
 }
+
+// ValidSyntax check if a json has a valid JSON syntax,
+// while not validate UTF-8 charset
+func ValidSyntax(json string) bool {
+	fsm := types.NewStateMachine()
+    p := 0
+    ret := native.ValidateOne(&json, &p, fsm, 0)
+    types.FreeStateMachine(fsm)
+
+     if ret < 0 {
+        return false
+    }
+
+    /* check for trailing spaces */
+    for ;p < len(json); p++ {
+        if !isSpace(json[p]) {
+            return false
+        }
+    }
+
+    return true
+}

@@ -781,6 +781,8 @@ func (self Parser) ExportError(err types.ParsingError) error {
 	}.Description())
 }
 
+// SkipFast skip a json value in fast-skip algs, 
+// while not strictly validate JSON syntax and UTF-8 charset.
 func SkipFast(src string, i int) (int, int, error) {
     p := NewParserObj(src)
     p.p = i

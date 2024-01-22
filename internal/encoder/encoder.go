@@ -337,7 +337,7 @@ func Valid(data []byte) (ok bool, start int) {
     s := rt.Mem2Str(data)
     p := 0
     m := types.NewStateMachine()
-    ret := native.ValidateOne(&s, &p, m)
+    ret := native.ValidateOne(&s, &p, m, types.F_VALIDATE_STRING)
     types.FreeStateMachine(m)
 
     if ret < 0 {
