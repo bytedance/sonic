@@ -519,7 +519,7 @@ func TestRawNode_Set(t *testing.T) {
 		var exist bool
 		var err error
 		if key, ok:= c.key.(string); ok{
-			exist, err = root.Set(key, c.val, true)
+			exist, err = root.Set(key, c.val)
 		} else if id, ok := c.key.(int); ok {
 			exist, err = root.SetByIndex(id, c.val)
 		}

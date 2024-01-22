@@ -126,7 +126,7 @@ func DecodeString(src string, pos int, needEsc bool) (v string, ret int, hasEsc 
         (*rt.GoString)(unsafe.Pointer(&v)).Ptr = rt.IndexChar(src, pos+1)
         (*rt.GoString)(unsafe.Pointer(&v)).Len = ret - pos - 2
         return v, ret, false
-    } else if needEsc {
+    } else if !needEsc {
         return src[pos+1:ret-1], ret, true
     }
 
