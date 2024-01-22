@@ -13,13 +13,31 @@ import (
 )
 
 // Value represents a raw json value or error
-// It's safe to concurrently read Value
+// It's safe to concurrently read on Value,
+// and concurrently write is also allowed (race-free but behavior may be unexpected)
 //
-// Notice: passing a Value equals to pass-by-value,
-// which measn any moditification on passed Value won't affect the origin one
+// Notice: passing a Value always equals to pass-by-value,
+// which measn any moditification on passed Value won't affect the original one
 type Value struct {
 	t  int
 	js string
+}
+
+// ToNode converts self Value to a new Node
+func (self Value) ToNode() Node {
+	return newRawNode(self.js, types.ValueType(self.t))
+}
+
+// ToValue converts self Node to a new Value
+func (self Node) ToValue() Value {
+	raw, err := self.Raw()
+	if err != nil {
+		return errValue(err)
+	}
+	return Value{
+		t: int(self.itype()),
+		js: raw,
+	}
 }
 
 // NewValueJSON converts a json string to Value
