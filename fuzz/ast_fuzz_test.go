@@ -35,7 +35,7 @@ func fuzzAst(t *testing.T, data []byte) {
 }
 
 func GetFromString(json string, path ...interface{}) (ast.Value, error) {
-	return sonic.SearchOptions{}.GetFromString(json)
+	return sonic.SearchOptions{Validate: false}.GetFromString(json, path...)
 }
 
 func fuzzASTGetFromObject(t *testing.T, v []byte, m map[string]interface{}) {
@@ -78,5 +78,10 @@ func fuzzASTGetFromArray(t *testing.T, v []byte, a []interface{}) {
 		require.Equalf(t, a, nv, msg)
 	}
 	_, err := GetFromString(data, i)
-	require.Errorf(t, err, "no error in ast get out of range\nData:\n%s\n", spew.Sdump(data))
+	require.Errorf(t, err, "no error in ast get out of range %d \nData:\n%s\n", i, spew.Sdump(data))
+}
+
+func TestGetX(t *testing.T) {
+	_, err := GetFromString(`[]`, 0)
+	require.Error(t, err)
 }
