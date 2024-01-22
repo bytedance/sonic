@@ -96,7 +96,7 @@ func decodeFalse(src string, pos int) (ret int) {
 
 func decodeBinary(src string, pos int) (ret int, v []byte) {
     var vv string
-    ret, vv = DecodeString(src, pos)
+    vv, ret, _ = DecodeString(src, pos, true)
     if ret < 0 {
         return ret, nil
     }

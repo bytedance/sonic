@@ -1063,7 +1063,7 @@ func (self Value) toFloat64() (float64, error) {
 }
 
 func (self Value) toString() (string, error) {
-	ret, str := DecodeString(self.js, 0)
+	str, ret, _ := DecodeString(self.js, 0, true)
 	if ret < 0 {
 		return "", NewParserObj(self.js).ExportError(types.ParsingError(-ret))
 	}

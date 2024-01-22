@@ -120,21 +120,23 @@ func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ValueTy
 }
 
 //go:nocheckptr
-func DecodeString(src string, pos int) (ret int, v string) {
+func DecodeString(src string, pos int, needEsc bool) (v string, ret int, hasEsc bool) {
     ret, ep := skipString(src, pos)
     if ep == -1 {
         (*rt.GoString)(unsafe.Pointer(&v)).Ptr = rt.IndexChar(src, pos+1)
         (*rt.GoString)(unsafe.Pointer(&v)).Len = ret - pos - 2
-        return ret, v
+        return v, ret, false
+    } else if needEsc {
+        return src[pos+1:ret-1], ret, true
     }
 
     vv, ok := unquoteBytes(rt.Str2Mem(src[pos:ret]))
     if !ok {
-        return -int(types.ERR_INVALID_CHAR), ""
+        return "", -int(types.ERR_INVALID_CHAR), true
     }
 
     runtime.KeepAlive(src)
-    return ret, rt.Mem2Str(vv)
+    return rt.Mem2Str(vv), ret, true
 }
 
 // ValidSyntax check if a json has a valid JSON syntax,

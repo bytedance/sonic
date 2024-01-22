@@ -149,7 +149,7 @@ func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ValueTy
     return start, t, 0
 }
 
-func DecodeString(src string, pos int) (ret int, v string) {
+func DecodeString(src string, pos int, needEsc bool) (v string, ret int,  hasEsc bool) {
 	p := NewParserObj(src)
     p.p = pos
 	switch val := p.decodeValue(); val.Vt {
@@ -157,18 +157,20 @@ func DecodeString(src string, pos int) (ret int, v string) {
         str := p.s[val.Iv : p.p-1]
 		/* fast path: no escape sequence */
 		if val.Ep == -1 {
-			return p.p, str
-		}
+			return str, p.p, false
+		} else if !needEsc {
+            return str, p.p, true
+        }
 		/* unquote the string */
 		out, err := unquote(str)
 		/* check for errors */
 		if err != 0 {
-			return -int(err), ""
+			return "", -int(err), true
 		} else {
-			return p.p, out
+			return out, p.p, true
 		}
 	default:
-		return -int(_ERR_UNSUPPORT_TYPE), ""
+		return "", -int(_ERR_UNSUPPORT_TYPE), false
 	}
 }
 
