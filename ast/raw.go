@@ -304,7 +304,7 @@ func (self *Value) SetByPath(val Value, allowAppend bool, path ...interface{}) (
 func appendPathValue(b []byte, path []interface{}, val Value) ([]byte, error) {
 	for i, k := range path {
 		if key, ok := k.(string); ok {
-			quote(&b, key)
+			Quote(&b, key)
 			b = append(b, ":"...)
 		}
 		if i == len(path)-1 {
@@ -658,7 +658,7 @@ func (self *Value) SetMany(keys []string, vals []Value) (bool, error) {
 		}
 		empty = false
 		// write key
-		quote(&b, keys[r.i])
+		Quote(&b, keys[r.i])
 		b = append(b, ":"...)
 		// write new val
 		b = append(b, vals[r.i].js...)

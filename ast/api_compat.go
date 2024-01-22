@@ -33,11 +33,11 @@ func init() {
     println("WARNING: sonic only supports Go1.16~1.21 && CPU amd64, but your environment is not suitable")
 }
 
-func quote(buf *[]byte, val string) {
+func Quote(buf *[]byte, val string) {
     quoteString(buf, val)
 }
 
-func unquote(src string) (string, types.ParsingError) {
+func Unquote(src string) (string, types.ParsingError) {
     sp := rt.IndexChar(src, -1)
     out, ok := unquoteBytes(rt.BytesFrom(sp, len(src)+2, len(src)+2))
     if !ok {

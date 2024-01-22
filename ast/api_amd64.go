@@ -33,7 +33,7 @@ import (
 var typeByte = rt.UnpackEface(byte(0)).Type
 
 //go:nocheckptr
-func quote(buf *[]byte, val string) {
+func Quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
     if len(val) == 0 {
         *buf = append(*buf, '"')
@@ -73,7 +73,7 @@ func quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
 }
 
-func unquote(src string) (string, types.ParsingError) {
+func Unquote(src string) (string, types.ParsingError) {
     return uq.String(src)
 }
 
@@ -162,7 +162,7 @@ func DecodeString(src string, pos int, needEsc bool) (v string, ret int,  hasEsc
             return str, p.p, true
         }
 		/* unquote the string */
-		out, err := unquote(str)
+		out, err := Unquote(str)
 		/* check for errors */
 		if err != 0 {
 			return "", -int(err), true
