@@ -610,6 +610,10 @@ class Prototype:
             [v.size for v in self.args],
             (0 if self.retv is None else self.retv.size)
         )
+        
+    @property
+    def inputspace(self) -> int:
+        return sum([v.size for v in self.args])
 
 class PrototypeMap(Dict[str, Prototype]):
     @staticmethod
@@ -1686,12 +1690,14 @@ class CodeSection:
             self._alloc_instr(instr)
             self._check_split(instr)
 
+    # @functools.cache
     def stacksize(self, name: str) -> int:
         if name not in self.labels:
             raise SyntaxError('undefined function: ' + name)
         else:
             return self._trace_block(self.labels[name], None)
 
+    # @functools.cache
     def pcsp(self, name: str, entry: int) -> int:
         if name not in self.labels:
             raise SyntaxError('undefined function: ' + name)
@@ -2003,11 +2009,14 @@ class Assembler:
         if OUTPUT_RAW:
             self._declare_body_raw()
         else:
-            self._declare_body()
+            name = next(iter(protos))
+            self._declare_body(name[1:])
         self._declare_functions(protos)
 
-    def _declare_body(self):
-        self.out.append('TEXT ·%s(SB), NOSPLIT, $0' % STUB_NAME)
+    def _declare_body(self, name: str):
+        size = self.code.stacksize(name)-16
+        size = 0 if size < 0 else size
+        self.out.append('TEXT ·_%s_entry__(SB), NOSPLIT, $%d' % (name, size))
         self.out.append('\tNO_LOCAL_POINTERS')
         self._LE_4bytes_IntIntr_2_RawIntr()
         self._reloc()
@@ -2037,7 +2046,7 @@ class Assembler:
         subr = name[1:]
         addr = self.code.get(subr)
         self.subr[subr] = addr
-        size = self.code.pcsp(subr, addr)
+        size = self.code.stacksize(subr)
         m_size = size + 64
         # rsp_sub_size = size + 16
 
@@ -2047,27 +2056,27 @@ class Assembler:
         # function header and stack checking
         self.out.append('')
         # frame size is 16 to store x29 and x30
-        # self.out.append('TEXT ·%s(SB), NOSPLIT | NOFRAME, $0-%d' % (name, proto.argspace))
-        self.out.append('TEXT ·%s(SB), $%d-%d' % (name, m_size, proto.argspace))
+        self.out.append('TEXT ·%s(SB), NOSPLIT | NOFRAME, $0-%d' % (name, proto.argspace))
+        # self.out.append('TEXT ·%s(SB), $%d-%d' % (name, 0, proto.argspace))
         self.out.append('\tNO_LOCAL_POINTERS')
 
         # add stack check if needed
-        # if m_size != 0:
-        #     self.out.append('')
-        #     self.out.append('_entry:')
-        #     self.out.append('\tMOVD 16(g), R16')
-        #     if size > 0:
-        #      if size < (0x1 << 12) - 1:
-        #          self.out.append('\tSUB $%d, RSP, R17' % (m_size))
-        #      elif size < (0x1 << 16) - 1:
-        #          self.out.append('\tMOVD $%d, R17' % (m_size))
-        #          self.out.append('\tSUB R17, RSP, R17')
-        #      else:
-        #          raise RuntimeError('too large stack size: %d' % (m_size))
-        #      self.out.append('\tCMP  R16, R17')
-        #     else:
-        #      self.out.append('\tCMP R16, RSP')
-        #     self.out.append('\tBLS  _stack_grow')
+        if m_size != 0:
+            self.out.append('')
+            self.out.append('_entry:')
+            self.out.append('\tMOVD 16(g), R16')
+            if size > 0:
+             if size < (0x1 << 12) - 1:
+                 self.out.append('\tSUB $%d, RSP, R17' % (m_size))
+             elif size < (0x1 << 16) - 1:
+                 self.out.append('\tMOVD $%d, R17' % (m_size))
+                 self.out.append('\tSUB R17, RSP, R17')
+             else:
+                 raise RuntimeError('too large stack size: %d' % (m_size))
+             self.out.append('\tCMP  R16, R17')
+            else:
+             self.out.append('\tCMP R16, RSP')
+            self.out.append('\tBLS  _stack_grow')
 
         # function name
         self.out.append('')
@@ -2102,9 +2111,9 @@ class Assembler:
             # self.out.append('\tSTP.W (R29, R30), -16(RSP)')
             # self.out.append('\tMOVD RSP, R29')
             # self.out.append('\tSUB $16, RSP')
-            self.out.append('\tADD $%d, RSP' % (size + 32))
-            self.out.append('\tCALL ·%s+%d(SB)  // %s' % (STUB_NAME, addr, subr))
-            self.out.append('\tSUB $%d, RSP' % (size + 32))
+            # self.out.append('\tADD $%d, RSP' % (size + 32))
+            self.out.append('\tCALL ·_%s_entry__+%d(SB)  // %s' % (subr, addr, subr))
+            # self.out.append('\tSUB $%d, RSP' % (size + 32))
             # self.out.append('\tADD $16, RSP')
             # self.out.append('\tLDP -8(RSP), (R29, R30)')
             # self.out.append('\tADD $16, RSP')
@@ -2119,9 +2128,9 @@ class Assembler:
 
             # We need store return address manual in ARM
             # self.out.append('\tSUB $16, RSP')
-            self.out.append('\tADD $%d, RSP' % (size + 32))
-            self.out.append('\tCALL ·%s+%d(SB)  // %s' % (STUB_NAME, addr, subr))
-            self.out.append('\tSUB $%d, RSP' % (size + 32))
+            # self.out.append('\tADD $%d, RSP' % (size + 32))
+            self.out.append('\tCALL ·_%s_entry__+%d(SB)  // %s' % (subr, addr, subr))
+            # self.out.append('\tSUB $%d, RSP' % (size + 32))
             # self.out.append('\tADD $16, RSP')
             # self.out.append('\tSUB $%d, RSP, RSP' % size)
             
@@ -2135,12 +2144,12 @@ class Assembler:
         self.out.append('\tRET')
 
         # add stack growing if needed
-        # if m_size != 0:
-        #     self.out.append('')
-        #     self.out.append('_stack_grow:')
-        #     self.out.append('\tMOVD R30, R3')
-        #     self.out.append('\tCALL runtime·morestack_noctxt<>(SB)')
-        #     self.out.append('\tJMP  _entry')
+        if m_size != 0:
+            self.out.append('')
+            self.out.append('_stack_grow:')
+            self.out.append('\tMOVD R30, R3')
+            self.out.append('\tCALL runtime·morestack_noctxt<>(SB)')
+            self.out.append('\tJMP  _entry')
 
     def _declare_functions(self, protos: PrototypeMap):
         for name, proto in sorted(protos.items()):
@@ -2151,6 +2160,7 @@ class Assembler:
 
     def parse(self, src: List[str], proto: PrototypeMap):
         self.code.instr(Instruction('adr x0, .'))
+        # self.code.instr(Instruction('add sp, sp, #%d'%self.code.stacksize(name)))
         self.code.instr(Instruction('ret'))
 
         # align 16 bytes
@@ -2229,7 +2239,6 @@ def parse_args():
 
 def main():
     src = []
-    asm = Assembler()
     args = parse_args()
 
     # check if optional flag is enabled
@@ -2248,6 +2257,8 @@ def main():
     for fn in args.asm_file:
         with open(fn, 'r', newline = None) as fp:
             src.extend(fp.read().splitlines())
+
+    asm = Assembler()
 
     # convert the original sources
     if OUTPUT_RAW:
@@ -2350,14 +2361,15 @@ def main():
             print('//go:nosplit', file = fp)
             print('//go:noescape', file = fp)
             print('//goland:noinspection ALL', file = fp)
-            print('func %s() uintptr' % STUB_NAME, file = fp)
-
+            for name, entry in asm.subr.items():
+                print('func _%s_entry__() uintptr' % name, file = fp)
+            
             # dump exported function entry for exported functions
             print(file = fp)
             print('var (', file = fp)
             mlen = max(len(s) for s in asm.subr)
             for name, entry in asm.subr.items():
-                print('    _subr_%s uintptr = %s() + %d' % (name.ljust(mlen, ' '), STUB_NAME, entry), file = fp)
+                print('    _subr_%s uintptr = _%s_entry__() + %d' % (name.ljust(mlen, ' '), name, entry), file = fp)
             print(')', file = fp)
 
             # dump max stack depth for exported functions
