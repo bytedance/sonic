@@ -24,8 +24,8 @@ import (
 )
 
 const (
-    _DEFAULT_NODE_CAP int = 8
-    _APPEND_GROW_SHIFT = 1
+    _DEFAULT_NODE_CAP  int = 8
+    _APPEND_GROW_SHIFT     = 1
 )
 
 const (
@@ -34,19 +34,21 @@ const (
 )
 
 var (
-    // ErrNotExist means both key and value doesn't exist 
+    // ErrNotExist means both key and value doesn't exist
     ErrNotExist error = newError(_ERR_NOT_FOUND, "value not exists")
 
     // ErrUnsupportType means API on the node is unsupported
     ErrUnsupportType error = newError(_ERR_UNSUPPORT_TYPE, "unsupported type")
+
+    ErrInvalidPath error = newError(_ERR_UNSUPPORT_TYPE, "path must be either int(>=0) or string")
 )
 
 type Parser struct {
-    p           int
-    s           string
-    noLazy      bool
-    skipValue   bool
-    dbuf        *byte
+    p         int
+    s         string
+    noLazy    bool
+    skipValue bool
+    dbuf      *byte
 }
 
 /** Parser Private Methods **/
@@ -110,7 +112,8 @@ func (self *Parser) array() types.ParsingError {
 
 func (self *Parser) lspace(sp int) int {
     ns := len(self.s)
-    for ; sp<ns && isSpace(self.s[sp]); sp+=1 {}
+    for ; sp < ns && isSpace(self.s[sp]); sp += 1 {
+    }
 
     return sp
 }
@@ -149,7 +152,7 @@ func (self *Parser) decodeArray(ret *linkedNodes) (Node, types.ParsingError) {
                 return Node{}, types.ERR_INVALID_CHAR
             }
             val = newRawNode(self.s[start:self.p], t)
-        }else{
+        } else {
             /* decode the value */
             if val, err = self.Parse(); err != 0 {
                 return Node{}, err
@@ -167,13 +170,16 @@ func (self *Parser) decodeArray(ret *linkedNodes) (Node, types.ParsingError) {
 
         /* check for the next character */
         switch self.s[self.p] {
-            case ',' : self.p++
-            case ']' : self.p++; return newArray(ret), 0
-            default:
-                // if val.isLazy() {
-                //     return newLazyArray(self, ret), 0
-                // }
-                return Node{}, types.ERR_INVALID_CHAR
+        case ',':
+            self.p++
+        case ']':
+            self.p++
+            return newArray(ret), 0
+        default:
+            // if val.isLazy() {
+            //     return newLazyArray(self, ret), 0
+            // }
+            return Node{}, types.ERR_INVALID_CHAR
         }
     }
 }
@@ -210,7 +216,7 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = unquote(key); err != 0 {
+            if key, err = Unquote(key); err != 0 {
                 return Node{}, err
             }
         }
@@ -220,7 +226,6 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
             return Node{}, err
         }
 
-        
         if self.skipValue {
             /* skip the value */
             var start int
@@ -254,8 +259,11 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
 
         /* check for the next character */
         switch self.s[self.p] {
-            case ',' : self.p++
-            case '}' : self.p++; return newObject(ret), 0
+        case ',':
+            self.p++
+        case '}':
+            self.p++
+            return newObject(ret), 0
         default:
             // if val.isLazy() {
             //     return newLazyObject(self, ret), 0
@@ -275,7 +283,7 @@ func (self *Parser) decodeString(iv int64, ep int) (Node, types.ParsingError) {
     }
 
     /* unquote the string */
-    out, err := unquote(s)
+    out, err := Unquote(s)
 
     /* check for errors */
     if err != 0 {
@@ -293,60 +301,138 @@ func (self *Parser) Pos() int {
 
 func (self *Parser) Parse() (Node, types.ParsingError) {
     switch val := self.decodeValue(); val.Vt {
-        case types.V_EOF     : return Node{}, types.ERR_EOF
-        case types.V_NULL    : return nullNode, 0
-        case types.V_TRUE    : return trueNode, 0
-        case types.V_FALSE   : return falseNode, 0
-        case types.V_STRING  : return self.decodeString(val.Iv, val.Ep)
-        case types.V_ARRAY:
-            if p := skipBlank(self.s, self.p); p >= self.p && self.s[p] == ']' {
-                self.p = p + 1
-                return Node{t: types.V_ARRAY}, 0
-            }
-            if self.noLazy {
-                return self.decodeArray(new(linkedNodes))
-            }
-            return newLazyArray(self), 0
-        case types.V_OBJECT:
-            if p := skipBlank(self.s, self.p); p >= self.p && self.s[p] == '}' {
-                self.p = p + 1
-                return Node{t: types.V_OBJECT}, 0
-            }
-            if self.noLazy {
-                return self.decodeObject(new(linkedPairs))
-            }
-            return newLazyObject(self), 0
-        case types.V_DOUBLE  : return NewNumber(self.s[val.Ep:self.p]), 0
-        case types.V_INTEGER : return NewNumber(self.s[val.Ep:self.p]), 0
-        default              : return Node{}, types.ParsingError(-val.Vt)
+    case types.V_EOF:
+        return Node{}, types.ERR_EOF
+    case types.V_NULL:
+        return nullNode, 0
+    case types.V_TRUE:
+        return trueNode, 0
+    case types.V_FALSE:
+        return falseNode, 0
+    case types.V_STRING:
+        return self.decodeString(val.Iv, val.Ep)
+    case types.V_ARRAY:
+        if p := skipBlank(self.s, self.p); p >= self.p && self.s[p] == ']' {
+            self.p = p + 1
+            return Node{t: types.V_ARRAY}, 0
+        }
+        if self.noLazy {
+            return self.decodeArray(new(linkedNodes))
+        }
+        return newLazyArray(self), 0
+    case types.V_OBJECT:
+        if p := skipBlank(self.s, self.p); p >= self.p && self.s[p] == '}' {
+            self.p = p + 1
+            return Node{t: types.V_OBJECT}, 0
+        }
+        if self.noLazy {
+            return self.decodeObject(new(linkedPairs))
+        }
+        return newLazyObject(self), 0
+    case types.V_DOUBLE:
+        return NewNumber(self.s[val.Ep:self.p]), 0
+    case types.V_INTEGER:
+        return NewNumber(self.s[val.Ep:self.p]), 0
+    default:
+        return Node{}, types.ParsingError(-val.Vt)
     }
 }
 
-func (self *Parser) searchKey(match string) types.ParsingError {
+func (self *Parser) key() (string, types.ParsingError) {
+    var njs types.JsonState
+    var err types.ParsingError
+
+    /* decode the key */
+    if njs = self.decodeValue(); njs.Vt != types.V_STRING {
+        return "", types.ERR_INVALID_CHAR
+    }
+
+    /* extract the key */
+    idx := self.p - 1
+    key := self.s[njs.Iv:idx]
+
+    /* check for escape sequence */
+    if njs.Ep != -1 {
+        if key, err = Unquote(key); err != 0 {
+            return "", err
+        }
+    }
+
+    /* expect a ':' delimiter */
+    if err = self.delim(); err != 0 {
+        return "", err
+    }
+    return key, 0
+}
+
+func (self *Parser) objectBegin() (bool, types.ParsingError) {
     ns := len(self.s)
     if err := self.object(); err != 0 {
-        return err
+        return false, err
     }
 
     /* check for EOF */
     if self.p = self.lspace(self.p); self.p >= ns {
-        return types.ERR_EOF
+        return false, types.ERR_EOF
     }
 
     /* check for empty object */
     if self.s[self.p] == '}' {
         self.p++
-        return _ERR_NOT_FOUND
+        return true, 0
     }
+
+    return false, 0
+}
+
+func (self *Parser) objectEnd() (bool, types.ParsingError) {
+    /* check for EOF */
+    self.p = self.lspace(self.p)
+    if self.p >= len(self.s) {
+        return false, types.ERR_EOF
+    }
+
+    /* check for the next character */
+    switch self.s[self.p] {
+    case ',':
+        self.p++
+        return false, 0
+    case '}':
+        self.p++
+        return true, 0
+    default:
+        return false, types.ERR_INVALID_CHAR
+    }
+}
+
+func (self *Parser) searchKey(match string) (int, types.ParsingError) {
+    ns := len(self.s)
+    comma := -1
+
+    if err := self.object(); err != 0 {
+        return comma, err
+    }
+
+    /* check for EOF */
+    if self.p = self.lspace(self.p); self.p >= ns {
+        return comma, types.ERR_EOF
+    }
+
+    /* check for empty object */
+    if self.s[self.p] == '}' {
+        return comma, _ERR_NOT_FOUND
+    }
+    comma = self.p
 
     var njs types.JsonState
     var err types.ParsingError
+
     /* decode each pair */
     for {
 
         /* decode the key */
         if njs = self.decodeValue(); njs.Vt != types.V_STRING {
-            return types.ERR_INVALID_CHAR
+            return comma, types.ERR_INVALID_CHAR
         }
 
         /* extract the key */
@@ -355,60 +441,101 @@ func (self *Parser) searchKey(match string) types.ParsingError {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = unquote(key); err != 0 {
-                return err
+            if key, err = Unquote(key); err != 0 {
+                return comma, err
             }
         }
 
         /* expect a ':' delimiter */
         if err = self.delim(); err != 0 {
-            return err
+            return comma, err
         }
 
         /* skip value */
         if key != match {
             if _, err = self.skipFast(); err != 0 {
-                return err
+                return comma, err
             }
         } else {
-            return 0
+            return comma, 0
         }
 
         /* check for EOF */
         self.p = self.lspace(self.p)
         if self.p >= ns {
-            return types.ERR_EOF
+            return comma, types.ERR_EOF
         }
 
         /* check for the next character */
         switch self.s[self.p] {
         case ',':
+            comma = self.p
             self.p++
         case '}':
-            self.p++
-            return _ERR_NOT_FOUND
+            return comma, _ERR_NOT_FOUND
         default:
-            return types.ERR_INVALID_CHAR
+            return comma, types.ERR_INVALID_CHAR
         }
     }
 }
 
-func (self *Parser) searchIndex(idx int) types.ParsingError {
+func (self *Parser) arrayBegin() (bool, types.ParsingError) {
     ns := len(self.s)
     if err := self.array(); err != 0 {
-        return err
+        return false, err
     }
 
     /* check for EOF */
     if self.p = self.lspace(self.p); self.p >= ns {
-        return types.ERR_EOF
+        return false, types.ERR_EOF
     }
 
     /* check for empty array */
     if self.s[self.p] == ']' {
         self.p++
-        return _ERR_NOT_FOUND
+        return true, 0
     }
+
+    return false, 0
+}
+
+func (self *Parser) arrayEnd() (bool, types.ParsingError) {
+    /* check for EOF */
+    self.p = self.lspace(self.p)
+    if self.p >= len(self.s) {
+        return false, types.ERR_EOF
+    }
+
+    /* check for the next character */
+    switch self.s[self.p] {
+    case ',':
+        self.p++
+        return false, 0
+    case ']':
+        self.p++
+        return true, 0
+    default:
+        return false, types.ERR_INVALID_CHAR
+    }
+}
+
+func (self *Parser) searchIndex(idx int) (int, types.ParsingError) {
+    comma := -1
+    ns := len(self.s)
+    if err := self.array(); err != 0 {
+        return comma, err
+    }
+
+    /* check for EOF */
+    if self.p = self.lspace(self.p); self.p >= ns {
+        return comma, types.ERR_EOF
+    }
+
+    /* check for empty array */
+    if self.s[self.p] == ']' {
+        return comma, _ERR_NOT_FOUND
+    }
+    comma = self.p
 
     var err types.ParsingError
     /* allocate array space and parse every element */
@@ -416,28 +543,28 @@ func (self *Parser) searchIndex(idx int) types.ParsingError {
 
         /* decode the value */
         if _, err = self.skipFast(); err != 0 {
-            return err
+            return comma, err
         }
 
         /* check for EOF */
         self.p = self.lspace(self.p)
         if self.p >= ns {
-            return types.ERR_EOF
+            return comma, types.ERR_EOF
         }
 
         /* check for the next character */
         switch self.s[self.p] {
         case ',':
+            comma = self.p
             self.p++
         case ']':
-            self.p++
-            return _ERR_NOT_FOUND
+            return comma, _ERR_NOT_FOUND
         default:
-            return types.ERR_INVALID_CHAR
+            return comma, types.ERR_INVALID_CHAR
         }
     }
 
-    return 0
+    return comma, 0
 }
 
 func (self *Node) skipNextNode() *Node {
@@ -488,17 +615,17 @@ func (self *Node) skipNextNode() *Node {
     switch parser.s[parser.p] {
     case ',':
         parser.p++
-        return ret.At(ret.Len()-1)
+        return ret.At(ret.Len() - 1)
     case ']':
         parser.p++
         self.setArray(ret)
-        return ret.At(ret.Len()-1)
+        return ret.At(ret.Len() - 1)
     default:
         return newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))
     }
 }
 
-func (self *Node) skipNextPair() (*Pair) {
+func (self *Node) skipNextPair() *Pair {
     if !self.isLazy() {
         return nil
     }
@@ -536,7 +663,7 @@ func (self *Node) skipNextPair() (*Pair) {
 
     /* check for escape sequence */
     if njs.Ep != -1 {
-        if key, err = unquote(key); err != 0 {
+        if key, err = Unquote(key); err != 0 {
             return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
         }
     }
@@ -571,16 +698,15 @@ func (self *Node) skipNextPair() (*Pair) {
     switch parser.s[parser.p] {
     case ',':
         parser.p++
-        return ret.At(ret.Len()-1)
+        return ret.At(ret.Len() - 1)
     case '}':
         parser.p++
         self.setObject(ret)
-        return ret.At(ret.Len()-1)
+        return ret.At(ret.Len() - 1)
     default:
         return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
     }
 }
-
 
 /** Parser Factory **/
 
@@ -629,8 +755,9 @@ func NewParserObj(src string) Parser {
 }
 
 // decodeNumber controls if parser decodes the number values instead of skip them
-//   WARN: once you set decodeNumber(true), please set decodeNumber(false) before you drop the parser 
-//   otherwise the memory CANNOT be reused
+//
+//    WARN: once you set decodeNumber(true), please set decodeNumber(false) before you drop the parser
+//    otherwise the memory CANNOT be reused
 func (self *Parser) decodeNumber(decode bool) {
     if !decode && self.dbuf != nil {
         types.FreeDbuf(self.dbuf)
@@ -643,13 +770,25 @@ func (self *Parser) decodeNumber(decode bool) {
 }
 
 // ExportError converts types.ParsingError to std Error
-func (self *Parser) ExportError(err types.ParsingError) error {
+func (self Parser) ExportError(err types.ParsingError) error {
     if err == _ERR_NOT_FOUND {
         return ErrNotExist
     }
     return fmt.Errorf("%q", SyntaxError{
-        Pos : self.p,
-        Src : self.s,
+        Pos:  self.p,
+        Src:  self.s,
         Code: err,
     }.Description())
+}
+
+// SkipFast skip a json value in fast-skip algs, 
+// while not strictly validate JSON syntax and UTF-8 charset.
+func SkipFast(src string, i int) (int, int, error) {
+    p := NewParserObj(src)
+    p.p = i
+    s, e := p.skipFast()
+    if e != 0 {
+        return -1, -1, p.ExportError(e)
+    }
+    return s, p.p, nil
 }

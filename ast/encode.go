@@ -174,7 +174,7 @@ func (self *Node) encodeString(buf *[]byte) error {
         return nil
     }
 
-    quote(buf, self.toString())
+    Quote(buf, self.toString())
     return nil
 }
 
@@ -218,7 +218,7 @@ func (self *Pair) encode(buf *[]byte) error {
         return self.Value.encode(buf)
     }
 
-    quote(buf, self.Key)
+    Quote(buf, self.Key)
     *buf = append(*buf, ':')
 
     return self.Value.encode(buf)

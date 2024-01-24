@@ -52,6 +52,11 @@ const (
     V_ANY    = int(_V_ANY)
 )
 
+// Node repsents a json AST node, which can be read, written and passed-by-reference
+//
+// Notice: by default, Node is read by lazy-load mechanism, 
+// which means it is not saft to concurrently read it (ex: Get()/Index()...)
+// If you want to read it concurrently, try `Load()/LoadAll()` before concurrency.
 type Node struct {
     t types.ValueType
     l uint
@@ -1794,4 +1799,9 @@ var typeJumpTable = [256]types.ValueType{
 
 func switchRawType(c byte) types.ValueType {
     return typeJumpTable[c]
+}
+
+func backward(src string, i int) int {
+    for ; i>=0 && isSpace(src[i]); i-- {}
+    return i
 }

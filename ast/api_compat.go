@@ -21,6 +21,8 @@ package ast
 import (
     `encoding/base64`
     `encoding/json`
+    `runtime`
+    `unsafe`
 
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
@@ -30,11 +32,11 @@ func init() {
     println("WARNING: sonic only supports Go1.16~1.22 && CPU amd64, but your environment is not suitable")
 }
 
-func quote(buf *[]byte, val string) {
+func Quote(buf *[]byte, val string) {
     quoteString(buf, val)
 }
 
-func unquote(src string) (string, types.ParsingError) {
+func Unquote(src string) (string, types.ParsingError) {
     sp := rt.IndexChar(src, -1)
     out, ok := unquoteBytes(rt.BytesFrom(sp, len(src)+2, len(src)+2))
     if !ok {
@@ -87,25 +89,68 @@ func (self *Node) encodeInterface(buf *[]byte) error {
     return nil
 }
 
-func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
-    var err types.ParsingError
+func (self *Parser) getByPath(path ...interface{}) (int, types.ValueType, types.ParsingError) {
     for _, p := range path {
         if idx, ok := p.(int); ok && idx >= 0 {
-            if err = self.searchIndex(idx); err != 0 {
-                return -1, err
+            if _, err := self.searchIndex(idx); err != 0 {
+                return self.p, 0, err
             }
         } else if key, ok := p.(string); ok {
-            if err = self.searchKey(key); err != 0 {
-                return -1, err
+            if _, err := self.searchKey(key); err != 0 {
+                return self.p, 0, err
             }
         } else {
             panic("path must be either int(>=0) or string")
         }
     }
-
-    var start int
-    if start, err = self.skip(); err != 0 {
-        return -1, err
+    start, e := self.skip()
+    if e != 0 {
+        return self.p, 0, e
     }
-    return start, 0
+    t := switchRawType(self.s[start])
+    if t == _V_NUMBER {
+        self.p = 1 + backward(self.s, self.p-1)
+    }
+    return start, t, 0
+}
+
+func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ValueType, types.ParsingError) {
+    return self.getByPath(path...)
+}
+
+//go:nocheckptr
+func DecodeString(src string, pos int, needEsc bool) (v string, ret int, hasEsc bool) {
+    ret, ep := skipString(src, pos)
+    if ep == -1 {
+        (*rt.GoString)(unsafe.Pointer(&v)).Ptr = rt.IndexChar(src, pos+1)
+        (*rt.GoString)(unsafe.Pointer(&v)).Len = ret - pos - 2
+        return v, ret, false
+    } else if !needEsc {
+        return src[pos+1:ret-1], ret, true
+    }
+
+    vv, ok := unquoteBytes(rt.Str2Mem(src[pos:ret]))
+    if !ok {
+        return "", -int(types.ERR_INVALID_CHAR), true
+    }
+
+    runtime.KeepAlive(src)
+    return rt.Mem2Str(vv), ret, true
+}
+
+// ValidSyntax check if a json has a valid JSON syntax,
+// while not validate UTF-8 charset
+func ValidSyntax(json string) bool {
+    p, _ := skipValue(json, 0)
+    if p < 0 {
+        return false
+    }
+    /* check for trailing spaces */
+    for ;p < len(json); p++ {
+        if !isSpace(json[p]) {
+            return false
+        }
+    }
+
+    return true
 }

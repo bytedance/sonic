@@ -33,7 +33,7 @@ import (
 var typeByte = rt.UnpackEface(byte(0)).Type
 
 //go:nocheckptr
-func quote(buf *[]byte, val string) {
+func Quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
     if len(val) == 0 {
         *buf = append(*buf, '"')
@@ -73,7 +73,7 @@ func quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
 }
 
-func unquote(src string) (string, types.ParsingError) {
+func Unquote(src string) (string, types.ParsingError) {
     return uq.String(src)
 }
 
@@ -121,13 +121,77 @@ func (self *Parser) skipFast() (int, types.ParsingError) {
     return start, 0
 }
 
-func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+func (self *Parser) getByPath(path ...interface{}) (int, types.ValueType, types.ParsingError) {
     fsm := types.NewStateMachine()
     start := native.GetByPath(&self.s, &self.p, &path, fsm)
     types.FreeStateMachine(fsm)
     runtime.KeepAlive(path)
     if start < 0 {
-        return self.p, types.ParsingError(-start)
+        return self.p, 0, types.ParsingError(-start)
     }
-    return start, 0
+    t := switchRawType(self.s[start])
+    if t == _V_NUMBER {
+        self.p = 1 + backward(self.s, self.p-1)
+    }
+    return start, t, 0
+}
+
+func (self *Parser) getByPathNoValidate(path ...interface{}) (int, types.ValueType, types.ParsingError) {
+    start := native.GetByPath(&self.s, &self.p, &path, nil)
+    runtime.KeepAlive(path)
+    if start < 0 {
+        return self.p, 0, types.ParsingError(-start)
+    }
+    t := switchRawType(self.s[start])
+    if t == _V_NUMBER {
+        self.p = 1 + backward(self.s, self.p-1)
+    }
+    return start, t, 0
+}
+
+func DecodeString(src string, pos int, needEsc bool) (v string, ret int,  hasEsc bool) {
+	p := NewParserObj(src)
+    p.p = pos
+	switch val := p.decodeValue(); val.Vt {
+	case types.V_STRING:
+        str := p.s[val.Iv : p.p-1]
+		/* fast path: no escape sequence */
+		if val.Ep == -1 {
+			return str, p.p, false
+		} else if !needEsc {
+            return str, p.p, true
+        }
+		/* unquote the string */
+		out, err := Unquote(str)
+		/* check for errors */
+		if err != 0 {
+			return "", -int(err), true
+		} else {
+			return out, p.p, true
+		}
+	default:
+		return "", -int(_ERR_UNSUPPORT_TYPE), false
+	}
+}
+
+// ValidSyntax check if a json has a valid JSON syntax,
+// while not validate UTF-8 charset
+func ValidSyntax(json string) bool {
+	fsm := types.NewStateMachine()
+    p := 0
+    ret := native.ValidateOne(&json, &p, fsm, 0)
+    types.FreeStateMachine(fsm)
+
+     if ret < 0 {
+        return false
+    }
+
+    /* check for trailing spaces */
+    for ;p < len(json); p++ {
+        if !isSpace(json[p]) {
+            return false
+        }
+    }
+
+    return true
 }

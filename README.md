@@ -326,6 +326,22 @@ println(string(buf) == string(exp)) // true
 - iteration: `Values()`, `Properties()`, `ForEach()`, `SortKeys()`
 - modification: `Set()`, `SetByIndex()`, `Add()`
 
+### Ast.Value
+Due to `ast.Node`'s **transversely-lazy-load** design, it ** CANNOT be read concurrently**. If your business has such scenario, you can use `ast.Value`:
+```go
+var opts = sonic.SearchOptions{
+    Copy: false, // to control returning JSON by Copy instead of Reference
+    Validate: false // to control if validate returned JSON syntax
+}
+val, err := opts.GetFromString(json, paths...) // skip and search JSON
+any, err := val.Interface() // converts to go primitive type
+```
+
+#### APIs
+Most of its APIs are same with `ast.Node`'s, including both `Get` and `Set`. Besides:
+- It provide `GetMany` \ `SetMany` \ `UnsetMany` \ `AddMany` \ `PopMany` to read or write multiple values once, in order to **reduce the overhead of repeatedly visiting path**.
+- 
+
 ### Ast.Visitor
 
 Sonic provides an advanced API for fully parsing JSON into non-standard types (neither `struct` not `map[string]interface{}`) without using any intermediate representation (`ast.Node` or `interface{}`). For example, you might have the following types which are like `interface{}` but actually not `interface{}`:

@@ -152,6 +152,11 @@ func TestExportErrNotExist(t *testing.T)  {
             if err !=  test.err || node.Exists(){
                 t.Fatal(err)
             }
+            p.parser.p = 0
+            val, err := p.GetValueByPath(test.path...)
+            if err !=  test.err || val.Exists(){
+                t.Fatal(err)
+            }
         }
         t.Run(test.data, f)
     }
@@ -234,8 +239,13 @@ func TestSearcher_GetByPathSingle(t *testing.T) {
             s := NewSearcher(test.json)
             node, err1  := s.GetByPath(test.path...)
             assert.Equal(t, test.ok, err1 == nil)
-
             value, err2 := node.Interface()
+            assert.Equal(t, test.value, value)
+            assert.Equal(t, test.ok, err2 == nil)
+
+            val, err1  := s.GetValueByPath(test.path...)
+            assert.Equal(t, test.ok, err1 == nil)
+            value, err2 = val.Interface()
             assert.Equal(t, test.value, value)
             assert.Equal(t, test.ok, err2 == nil)
         })
@@ -272,6 +282,36 @@ func TestSearcher_GetByPathErr(t *testing.T) {
     node, e = s.GetByPath("err2", "x")
     if e == nil {
         t.Fatalf("node: %v, err: %v", node, e)
+    }
+    
+    val, e := s.GetByPath("zz")
+    if e == nil {
+        t.Fatalf("val: %v, err: %v", val, e)
+    }
+    s.parser.p = 0
+    val, e = s.GetByPath("xx", 4)
+    if e == nil {
+        t.Fatalf("val: %v, err: %v", val, e)
+    }
+    s.parser.p = 0
+    val, e = s.GetByPath("yy", "a")
+    if e == nil {
+        t.Fatalf("val: %v, err: %v", val, e)
+    }
+    s.parser.p = 0
+    val, e = s.GetByPath("test", 2, "x")
+    if e == nil {
+        t.Fatalf("val: %v, err: %v", val, e)
+    }
+    s.parser.p = 0
+    val, e = s.GetByPath("err1", 0)
+    if e == nil {
+        t.Fatalf("val: %v, err: %v", val, e)
+    }
+    s.parser.p = 0
+    val, e = s.GetByPath("err2", "x")
+    if e == nil {
+        t.Fatalf("val: %v, err: %v", val, e)
     }
 }
 

@@ -17,7 +17,7 @@
 package sonic
 
 import (
-    `io`
+	"io"
 
     `github.com/bytedance/sonic/ast`
     `github.com/bytedance/sonic/internal/rt`
@@ -200,8 +200,64 @@ func GetFromString(src string, path ...interface{}) (ast.Node, error) {
 
 // GetCopyFromString is same with Get except src is string
 func GetCopyFromString(src string, path ...interface{}) (ast.Node, error) {
-    return ast.NewSearcher(src).GetByPathCopy(path...)
+    s := ast.NewSearcher(src)
+    s.Copy(true)
+    return s.GetByPath(path...)
 }
+
+// Set write val to src according to path and return new json
+func Set(src []byte, val interface{}, path ...interface{}) ([]byte, error) {
+    s, err := ast.NewSearcher(rt.Mem2Str(src)).SetValueByPath(ast.NewValue(val), path...)
+    if err != nil {
+        return nil, err
+    }
+    return rt.Str2Mem(s), nil
+}
+
+// SetFromString is same with Set except src is string,
+// which can reduce unnecessary memory copy.
+func SetFromString(src string, val interface{}, path ...interface{}) (string, error) {
+    return ast.NewSearcher(src).SetValueByPath(ast.NewValue(val), path...)
+}
+
+// Delete remove val to src according to path and return new json
+func Delete(src []byte, path ...interface{}) (string, error) {
+    return ast.NewSearcher(rt.Mem2Str(src)).DeleteByPath(path...)
+}
+
+// Delete remove val to src according to path and return new json
+func DeleteFromString(src string, path ...interface{}) (string, error) {
+    return ast.NewSearcher(src).DeleteByPath(path...)
+}
+
+// SearchOptions
+type SearchOptions struct {
+    Copy bool // if copy returned JSON to reduce memory usage
+    Validate bool // if validate returned JSON for safty
+}
+
+// Get searches the given path from json,
+// and returns its representing ast.Value.
+//
+// Each path arg must be integer or string:
+//     - Integer is target index(>=0), means searching current value as array.
+//     - String is target key, means searching current value as object.
+//
+// 
+// Note, the api expects the json is well-formed at least,
+// otherwise it may return unexpected result.
+func (opts SearchOptions) Get(src []byte, path ...interface{}) (ast.Value, error) {
+    return opts.GetFromString(rt.Mem2Str(src), path...)
+}
+
+// GetFromString is same with GetValue except src is string,
+func (opts SearchOptions) GetFromString(src string, path ...interface{}) (ast.Value, error) {
+    s := ast.NewSearcher(src)
+    s.Validate(opts.Validate)
+    s.Copy(opts.Validate)
+    return s.GetValueByPath(path...)
+}
+
 
 // Valid reports whether data is a valid JSON encoding.
 func Valid(data []byte) bool {
