@@ -186,7 +186,7 @@ func UnmarshalString(buf string, val interface{}) error {
 // otherwise it may return unexpected result. 
 // Considering memory safty, the returned JSON is **Copied** from the input
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
-    return GetFromString(rt.Mem2Str(src), path...)
+    return GetCopyFromString(rt.Mem2Str(src), path...)
 }
 
 // GetFromString is same with Get except src is string.
