@@ -336,6 +336,10 @@ var opts = sonic.SearchOptions{
 val, err := opts.GetFromString(json, paths...) // skip and search JSON
 any, err := val.Interface() // converts to go primitive type
 ```
+Besides thread-safty, the main difference between `Value` and `Node` is that `Value` is implemented by pure `search-and-skip` of raw JSON, which means:
+- When visit a path for the first time, `Value` only need to search entire JSON and return a node located by path, no need to parse and deserialize on-the-way nodes. In this case, it is faster than `Node`.
+- When visit a repeated path more than once, `Value` still need to search the entire JSON and return the node, not like `Node` who can derefer and skip on-the-way nodes. In this case, it is slower than `Node`.
+In one word, if your application **visit each JSON path exacly once**, without much overlapping, we advice you to use `Value`. Otherwise you'd better use `Node`
 
 #### APIs
 Most of its APIs are same with `ast.Node`'s, including both `Get` and `Set`. Besides:
