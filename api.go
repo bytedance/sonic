@@ -175,7 +175,7 @@ func UnmarshalString(buf string, val interface{}) error {
 }
 
 // Get searches and locates the given path from src json,
-// and returns a ast.Node representing the **Partially-Copied** json.
+// and returns a ast.Node representing the partially json.
 //
 // Each path arg must be integer or string:
 //     - Integer is target index(>=0), means searching current node as array.
@@ -183,22 +183,24 @@ func UnmarshalString(buf string, val interface{}) error {
 //
 // 
 // Notice: It expects the src json is **Well-formed** and **Immutable** when calling,
-// otherwise it may return unexpected result.
+// otherwise it may return unexpected result. 
+// Considering memory safty, the returned JSON is **Copied** from the input
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
     return GetFromString(rt.Mem2Str(src), path...)
 }
 
-// GetFromString is same with Get except src is string
+// GetFromString is same with Get except src is string.
+//
+// WARNING: The returned JSON is **Referenced** from the input. 
+// Caching or long-time holding the returned node may cause OOM.
+// If your src is big, consider use GetFromStringCopy().
 func GetFromString(src string, path ...interface{}) (ast.Node, error) {
-    return ast.NewSearcher(src).GetByPathCopy(path...)
+    return ast.NewSearcher(src).GetByPath(path...)
 }
 
-// GetFromStringNoCopy is same with Get except src is string, 
-//
-// WARN: caching the returned node may cause OOM.
-// If your src is big, consider use GetCopyFromString.
-func GetFromStringNoCopy(src string, path ...interface{}) (ast.Node, error) {
-    return ast.NewSearcher(src).GetByPath(path...)
+// GetFromStringCopy is same with Get except src is string
+func GetFromStringCopy(src string, path ...interface{}) (ast.Node, error) {
+    return ast.NewSearcher(src).GetByPathCopy(path...)
 }
 
 // Valid reports whether data is a valid JSON encoding.
