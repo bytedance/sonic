@@ -198,8 +198,8 @@ func GetFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPath(path...)
 }
 
-// GetFromStringCopy is same with Get except src is string
-func GetFromStringCopy(src string, path ...interface{}) (ast.Node, error) {
+// GetCopyFromString is same with Get except src is string
+func GetCopyFromString(src string, path ...interface{}) (ast.Node, error) {
     return ast.NewSearcher(src).GetByPathCopy(path...)
 }
 
