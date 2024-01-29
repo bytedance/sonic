@@ -23,7 +23,6 @@ import (
 
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/encoder/x86"
-	"github.com/bytedance/sonic/utf8"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/option"
 )

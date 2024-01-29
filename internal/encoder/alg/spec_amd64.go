@@ -20,7 +20,6 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/bytedance/sonic/utf8"
 	"github.com/bytedance/sonic/internal/native"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
@@ -165,8 +164,4 @@ func HtmlEscape(dst []byte, src []byte) []byte {
 		*dbuf = rt.Growslice(typeByte, *dbuf, dbuf.Cap*2)
 	}
 	return dst
-}
-
-func ValidateString(buf []byte) bool {
-	return utf8.Valid(buf)
 }

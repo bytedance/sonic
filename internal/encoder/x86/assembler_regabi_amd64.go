@@ -196,7 +196,7 @@ func NewAssembler(p ir.Program) *Assembler {
 /** Assembler Interface **/
 
 func (self *Assembler) Load() vars.Encoder {
-	return ptoenc(self.BaseAssembler.Load("encode_"+self.Name, _FP_size, _FP_args, vars.ArgPtrs, vars.LocalPtrs))
+	return *(*vars.Encoder)(unsafe.Pointer(self.BaseAssembler.Load("encode_"+self.Name, _FP_size, _FP_args, vars.ArgPtrs, vars.LocalPtrs)))
 }
 
 func (self *Assembler) Init(p ir.Program) *Assembler {
