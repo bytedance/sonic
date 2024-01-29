@@ -29,11 +29,11 @@ type Encoder func(
 	fv uint64,
 ) error
 
-func FindOrCompile(vt *rt.GoType, pv bool, compiler func(*rt.GoType, ... interface{}) (interface{}, error)) (Encoder, error) {
+func FindOrCompile(vt *rt.GoType, pv bool, compiler func(*rt.GoType, ... interface{}) (interface{}, error)) (interface{}, error) {
 	if val := programCache.Get(vt); val != nil {
-		return val.(Encoder), nil
+		return val, nil
 	} else if ret, err := programCache.Compute(vt, compiler, pv); err == nil {
-		return ret.(Encoder), nil
+		return ret, nil
 	} else {
 		return nil, err
 	}

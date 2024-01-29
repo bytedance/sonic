@@ -32,6 +32,7 @@ func ForceUseVM() {
 	vm.SetCompiler(makeEncoderVM)
 	pretouchType = pretouchTypeVM
 	encodeTypedPointer = vm.EncodeTypedPointer
+	vars.UseVM = true
 }
 
 var encodeTypedPointer func(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars.Stack, fv uint64) error
@@ -41,9 +42,7 @@ func makeEncoderVM(vt *rt.GoType, ex ...interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return vars.Encoder(func(rb *[]byte, vp unsafe.Pointer, sb *vars.Stack, fv uint64) error {
-		return vm.ExecVM(rb, vp, sb, fv, pp)
-	}), nil
+	return &pp, nil
 }
 
 var pretouchType func(_vt reflect.Type, opts option.CompileOptions, v uint8) (map[reflect.Type]uint8, error)

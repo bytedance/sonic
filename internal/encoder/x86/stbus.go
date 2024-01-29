@@ -42,11 +42,9 @@ func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars
 	} else if fn, err := vars.FindOrCompile(vt, (fv&(1<<alg.BitPointerValue)) != 0, compiler); err != nil {
 		return err
 	} else if vt.Indirect() {
-		err := fn(buf, *vp, sb, fv)
-		return err
+		return	fn.(vars.Encoder)(buf, *vp, sb, fv)
 	} else {
-		err := fn(buf, unsafe.Pointer(vp), sb, fv)
-		return err
+		return fn.(vars.Encoder)(buf, unsafe.Pointer(vp), sb, fv)
 	}
 }
 

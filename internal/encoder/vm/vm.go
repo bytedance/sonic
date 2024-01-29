@@ -112,8 +112,8 @@ var (
 	_T_encoding_TextMarshaler = rt.UnpackType(vars.EncodingTextMarshalerType)
 )
 
-func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog ir.Program) (error) {
-	pl := len(prog)
+func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.Program) (error) {
+	pl := len(*prog)
 	if pl <= 0 {
 		return nil
 	}
@@ -123,7 +123,7 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog ir.Pr
 	var q unsafe.Pointer
 	var f uint64
 
-	var pro = &(prog)[0]
+	var pro = &(*prog)[0]
 	for pc := 0; pc < pl; {
 		ins := (*ir.Instr)(unsafe.Add(unsafe.Pointer(pro), ir.OpSize*uintptr(pc)))
 		pc++
@@ -169,6 +169,14 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog ir.Pr
 				f |= alg.BitPointerValue
 			}
 			*b = buf
+			// enc, err := vars.FindOrCompile(vt, pv, compiler)
+			// if err != nil {
+			// 	return err
+			// }
+			// s.Save(x, f, p, q)
+			// s.SavePC(pc, pro)
+			// prog = enc.(*ir.Program)
+			// x, f, p, q = s.Drop()
 			if vt.Indirect() {
 				sh := newStackHolds()
 				sh.p = p
@@ -198,7 +206,7 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog ir.Pr
 			buf = append(buf, "null"...)
 		case ir.OP_str:
 			v := *(*string)(p)
-			buf = alg.Quote(buf, v, false)
+			buf = alg.Quote(buf, v, false, has_opts(flags, alg.BitValidateString))
 		case ir.OP_bool:
 			if *(*bool)(p) {
 				buf = append(buf, "true"...)
@@ -246,7 +254,7 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog ir.Pr
 			buf = alg.EncodeBase64(buf, v)
 		case ir.OP_quote:
 			v := *(*string)(p)
-			buf = alg.Quote(buf, v, true)
+			buf = alg.Quote(buf, v, true, has_opts(flags, alg.BitValidateString))
 		case ir.OP_number:
 			v := *(*json.Number)(p)
 			if v == "" {
@@ -300,7 +308,7 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog ir.Pr
 		case ir.OP_map_write_key:
 			if has_opts(flags, alg.BitSortMapKeys) {
 				v := *(*string)(p)
-				buf = alg.Quote(buf, v, false)
+				buf = alg.Quote(buf, v, false, has_opts(flags, alg.BitValidateString))
 				pc = ins.Vi()
 				continue
 			}
