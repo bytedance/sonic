@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.15.x, 1.16.x, 1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21.x]
+        go-version: [1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21.x]
         os: [arm, X64]
     runs-on: ${{ matrix.os }}
     steps:
@@ -29,6 +29,9 @@ jobs:
 
       - name: main
         run: GOMAXPROCS=4 go test -v -gcflags="all=-l" -race github.com/bytedance/sonic
+
+      - name: encoder
+        run: GOMAXPROCS=4 go test -v -gcflags="all=-l" -race github.com/bytedance/sonic/internal/encoder
 
       - name: ast
         run: GOMAXPROCS=4 go test -v -gcflags="all=-l" -race github.com/bytedance/sonic/ast

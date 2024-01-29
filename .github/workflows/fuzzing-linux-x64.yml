@@ -1,10 +1,13 @@
-name: Fuzz Test Linux-X64
+name: Fuzz Test Linux
 
 on: pull_request
 
 jobs:
   build:
-    runs-on: [self-hosted, X64]
+    strategy:
+        matrix:
+          os: [arm, X64]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
