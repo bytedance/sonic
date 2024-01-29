@@ -24,6 +24,7 @@ import (
     `reflect`
     `fmt`
     `github.com/bytedance/sonic`
+	dev `github.com/bytedance/sonic/dev`
     `encoding/json`
     gojson `github.com/goccy/go-json`
     jsoniter `github.com/json-iterator/go`
@@ -41,14 +42,22 @@ type jsonLibEntry struct {
     unmarshal func([]byte, any) error
 }
 
-var jsonLibs = []jsonLibEntry {
+var jsonTotalLibs = []jsonLibEntry {
     {"Std", json.Marshal, json.Unmarshal},
     {"StdV2", jsonv2.Marshal, jsonv2.Unmarshal},
     {"Sonic", sonic.Marshal, sonic.Unmarshal},
+	{"SonicDev", dev.Marshal, dev.Unmarshal},
     {"SonicStd", sonic.ConfigStd.Marshal, sonic.ConfigStd.Unmarshal},
     {"GoJson", gojson.Marshal, gojson.Unmarshal},
     {"JsonIter", jsoniter.Marshal, jsoniter.Unmarshal},
     {"JsonIterStd", jsoniter.ConfigCompatibleWithStandardLibrary.Marshal, jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal},
+}
+
+
+var jsonLibs = []jsonLibEntry {
+    {"Std", json.Marshal, json.Unmarshal},
+    {"Sonic", sonic.Marshal, sonic.Unmarshal},
+	{"SonicDev", dev.Marshal, dev.Unmarshal},
 }
 
 func BenchmarkUnmarshalConcrete(b *testing.B)     { 

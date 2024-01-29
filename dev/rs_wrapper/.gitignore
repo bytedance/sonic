@@ -1,0 +1,6 @@
+build/
+/target
+/library/target
+
+
+!lib/*/librs_wrapper.a
