@@ -324,7 +324,6 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog ir.Pr
 		case ir.OP_cond_set:
 			f |= 1<<_S_cond
 		case ir.OP_cond_testc:
-			fmt.Printf("%x\n", f)
 			if has_opts(f, _S_cond) {
 				f &= ^uint64(1 << _S_cond)
 				pc = ins.Vi()

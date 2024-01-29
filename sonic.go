@@ -1,5 +1,3 @@
-// +build amd64,go1.16,!go1.22
-
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -129,7 +127,7 @@ func (cfg frozenConfig) NewEncoder(writer io.Writer) Encoder {
 // NewDecoder is implemented by sonic
 func (cfg frozenConfig) NewDecoder(reader io.Reader) Decoder {
     dec := decoder.NewStreamDecoder(reader)
-    dec.SetOptions(cfg.decoderOpts)
+    // dec.SetOptions(cfg.decoderOpts)
     return dec
 }
 
