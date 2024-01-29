@@ -56,6 +56,16 @@ func (dom *Dom) Root() Node {
 	return Node{cptr: dom.cdom.node}
 }
 
+func (dom *Dom) HasUtf8Lossy() bool {
+	return bool(dom.cdom.has_utf8_lossy)
+}
+
+func (dom *Dom) CopyJsonString() string {
+	cptr := (*C.char)(unsafe.Pointer(dom.cdom.str_buf))
+	len := C.int(dom.cdom.str_len);
+	return C.GoStringN(cptr, len);
+}
+
 func (dom *Dom) StrStart() uintptr {
 	return uintptr(unsafe.Pointer(dom.cdom.str_buf))
 }
@@ -155,7 +165,7 @@ func (val Node) AsU64() (uint64, error) {
 	return *(*uint64)((unsafe.Pointer)(&(cnum.num))), nil
 }
 
-func (val Node) AsObj() (Object, error) {
+func (val *Node) AsObj() (Object, error) {
 	var ret Object
 	if val.Type() != KObject {
 		return ret, newUnmatched("expect object")
@@ -173,7 +183,7 @@ func (val Node) Arr() Array {
 	return Array{cptr: val.cptr}
 }
 
-func (val Node) AsArr() (Array, error) {
+func (val *Node) AsArr() (Array, error) {
 	var ret Array
 	if val.Type() != KArray {
 		return ret, newUnmatched("expect array")
@@ -390,17 +400,17 @@ func (val *Node) Equal(lhs string) bool {
 	return lhs == s
 }
 
-func (node *Node) AsMapIface(ctx *Context, vp unsafe.Pointer) error {
+func (node *Node) AsMapEface(ctx *Context, vp unsafe.Pointer) error {
 	if node.IsNull() {
 		return nil
 	}
 
 	obj, err := node.AsObj()
-	size := obj.Len()
 	if err != nil {
 		return err
 	}
 
+	size := obj.Len()
 	var m map[string]interface{}
 	if *(*unsafe.Pointer)(vp) == nil {
 		m = make(map[string]interface{}, size)
@@ -417,7 +427,7 @@ func (node *Node) AsMapIface(ctx *Context, vp unsafe.Pointer) error {
 		}
 
 		val := NewNode(PtrOffset(next, 1))
-		m[key], err = val.AsIface(ctx)
+		m[key], err = val.AsEface(ctx)
 		if err != nil {
 			return err
 		}
@@ -428,7 +438,7 @@ func (node *Node) AsMapIface(ctx *Context, vp unsafe.Pointer) error {
 	return nil
 }
 
-func (node *Node) AsMapIfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
+func (node *Node) AsMapEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 	obj, err := node.AsObj()
 	if err != nil {
 		return nil
@@ -451,7 +461,40 @@ func (node *Node) AsMapIfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 		}
 
 		*node = NewNode(PtrOffset(node.cptr, 1))
-		m[key], err = node.AsIfaceUseNumner(ctx)
+		m[key], err = node.AsEfaceUseNumber(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	*(*map[string]interface{})(vp) = m
+	return nil
+}
+
+func (node *Node) AsMapEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
+	obj, err := node.AsObj()
+	if err != nil {
+		return nil
+	}
+
+	size := obj.Len()
+
+	var m map[string]interface{}
+	if *(*unsafe.Pointer)(vp) == nil {
+		m = make(map[string]interface{}, size)
+	} else {
+		m = *(*map[string]interface{})(vp)
+	}
+
+	*node = NewNode(obj.Children())
+	for i := 0; i < size; i++ {
+		key, err := node.AsStr(ctx)
+		if err != nil {
+			return err
+		}
+
+		*node = NewNode(PtrOffset(node.cptr, 1))
+		m[key], err = node.AsEfaceUseInt64(ctx)
 		if err != nil {
 			return err
 		}
@@ -496,7 +539,7 @@ func (node *Node) AsMapString(ctx *Context, vp unsafe.Pointer) error {
 	return nil
 }
 
-func (node *Node) AsSliceIface(ctx *Context, vp unsafe.Pointer) error {
+func (node *Node) AsSliceEface(ctx *Context, vp unsafe.Pointer) error {
 	arr, err := node.AsArr()
 	if err != nil {
 		return err
@@ -508,7 +551,7 @@ func (node *Node) AsSliceIface(ctx *Context, vp unsafe.Pointer) error {
 	next := arr.Children()
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
-		s[i], err = val.AsIface(ctx)
+		s[i], err = val.AsEface(ctx)
 		if err != nil {
 			return err
 		}
@@ -519,7 +562,7 @@ func (node *Node) AsSliceIface(ctx *Context, vp unsafe.Pointer) error {
 	return nil
 }
 
-func (node *Node) AsSliceIfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
+func (node *Node) AsSliceEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 	arr, err := node.AsArr()
 	if err != nil {
 		return err
@@ -531,7 +574,29 @@ func (node *Node) AsSliceIfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 	*node = NewNode(arr.Children())
 
 	for i := 0; i < size; i++ {
-		s[i], err = node.AsIfaceUseNumner(ctx)
+		s[i], err = node.AsEfaceUseNumber(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	*(*[]interface{})(vp) = s
+	return nil
+}
+
+func (node *Node) AsSliceEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
+	arr, err := node.AsArr()
+	if err != nil {
+		return err
+	}
+
+	size := arr.Len()
+
+	s := *(*[]interface{})((unsafe.Pointer)(MakeSlice(vp, anyType, size)))
+	*node = NewNode(arr.Children())
+
+	for i := 0; i < size; i++ {
+		s[i], err = node.AsEfaceUseInt64(ctx)
 		if err != nil {
 			return err
 		}
@@ -694,7 +759,7 @@ func (node *Node) AsSliceBytes(ctx *Context) ([]byte, error) {
 	return b64, nil
 }
 
-func (node *Node) AsIface(ctx *Context) (interface{}, error) {
+func (node *Node) AsEface(ctx *Context) (interface{}, error) {
 	switch node.Type() {
 	case KObject:
 		obj := node.Object()
@@ -712,11 +777,10 @@ func (node *Node) AsIface(ctx *Context) (interface{}, error) {
 			case KStringCommon:
 				key = node.String(ctx)
 			default:
-				// println("raw str is ", node.AsRaw(ctx))
 				return nil, newUnmatched("expect string")
 			}
 			*node = NewNode(PtrOffset(node.cptr, 1))
-			m[key], err = node.AsIface(ctx)
+			m[key], err = node.AsEface(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -729,7 +793,7 @@ func (node *Node) AsIface(ctx *Context) (interface{}, error) {
 		*node = NewNode(arr.Children())
 		var err error
 		for i := 0; i < size; i++ {
-			garr[i], err = node.AsIface(ctx)
+			garr[i], err = node.AsEface(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -769,7 +833,7 @@ func (node *Node) AsIface(ctx *Context) (interface{}, error) {
 	}
 }
 
-func (node *Node) AsIfaceUseNumner(ctx *Context) (interface{}, error) {
+func (node *Node) AsEfaceUseNumber(ctx *Context) (interface{}, error) {
 	switch node.Type() {
 	case KObject:
 		obj := node.Object()
@@ -790,7 +854,7 @@ func (node *Node) AsIfaceUseNumner(ctx *Context) (interface{}, error) {
 			}
 
 			*node = NewNode(PtrOffset(node.cptr, 1))
-			m[key], err = node.AsIfaceUseNumner(ctx)
+			m[key], err = node.AsEfaceUseNumber(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -804,7 +868,7 @@ func (node *Node) AsIfaceUseNumner(ctx *Context) (interface{}, error) {
 
 		var err error
 		for i := 0; i < size; i++ {
-			garr[i], err = node.AsIfaceUseNumner(ctx)
+			garr[i], err = node.AsEfaceUseNumber(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -842,7 +906,7 @@ func (node *Node) AsIfaceUseNumner(ctx *Context) (interface{}, error) {
 	}
 }
 
-func (node *Node) AsIfaceUseInt64(ctx *Context) (interface{}, error) {
+func (node *Node) AsEfaceUseInt64(ctx *Context) (interface{}, error) {
 	switch node.Type() {
 	case KObject:
 		{
@@ -864,7 +928,7 @@ func (node *Node) AsIfaceUseInt64(ctx *Context) (interface{}, error) {
 				}
 
 				*node = NewNode(PtrOffset(node.cptr, 1))
-				m[key], err = node.AsIfaceUseInt64(ctx)
+				m[key], err = node.AsEfaceUseInt64(ctx)
 				if err != nil {
 					return nil, err
 				}
@@ -878,7 +942,7 @@ func (node *Node) AsIfaceUseInt64(ctx *Context) (interface{}, error) {
 		*node = NewNode(arr.Children())
 		var err error
 		for i := 0; i < size; i++ {
-			garr[i], err = node.AsIfaceUseInt64(ctx)
+			garr[i], err = node.AsEfaceUseInt64(ctx)
 			if err != nil {
 				return nil, err
 			}

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef struct  {
     uint64_t pos;
@@ -61,10 +62,12 @@ typedef struct {
 typedef struct {
     void* dom;
     const char* str_buf; // string start address, used to calcaue offset
+    uint64_t str_len;
     Node* node;
 
     int64_t error_offset;
     const char* error_msg;
+    bool has_utf8_lossy;
     uint64_t error_msg_len;
     uint64_t error_msg_cap;
 } Document;

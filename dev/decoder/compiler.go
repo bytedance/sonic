@@ -86,7 +86,6 @@ func (c *compiler) rescue(ep *error) {
 		if err, ok := val.(error); ok {
 			*ep = err
 		} else {
-			println(val)
 			panic(val)
 		}
 	}
@@ -222,7 +221,7 @@ func (c *compiler) compileSlice(vt reflect.Type) decFunc {
 	}
 
 	if vt == reflect.TypeOf([]interface{}{}) {
-		return &sliceIfaceDecoder{}
+		return &sliceEfaceDecoder{}
 	}
 	if et.IsInt32() {
 		return &sliceI32Decoder{}
@@ -268,7 +267,7 @@ func (c *compiler) compileSliceBytes(vt reflect.Type) decFunc {
 
 func (c *compiler) compileInterface(vt reflect.Type) decFunc {
 	if vt.NumMethod() == 0 {
-		return &ifaceDecoder{}
+		return &efaceDecoder{}
 	}
 
 	if vt.Implements(jsonUnmarshalerType) {
@@ -301,7 +300,7 @@ func (c *compiler) compileMap(vt reflect.Type) decFunc {
 
 	// Most common map, use a decoder, to avoid function calls
 	if vt == reflect.TypeOf(map[string]interface{}{}) {
-		return &mapIfaceDecoder{}
+		return &mapEfaceDecoder{}
 	} else if vt == reflect.TypeOf(map[string]string{}) {
 		return &mapStringDecoder{}
 	}

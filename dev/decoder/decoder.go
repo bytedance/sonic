@@ -29,10 +29,17 @@ func (self *Decoder) Decode(val interface{}) error {
 }
 
 func (self *Decoder) decodeImpl(val interface{}) error {
+	/* parse into document */
 	ctx, err := newCtx(self.json, self.opts)
 	defer ctx.Context.Delete()
 	if err != nil {
 		return error_parse_internal(err, self.json)
+	}
+
+	/* check utf8 lossy and copy the repred string  */
+	if ctx.Dom.HasUtf8Lossy() {
+		self.json = ctx.Dom.CopyJsonString()
+		ctx.Json = self.json
 	}
 
 	vv := rt.UnpackEface(val)

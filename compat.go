@@ -24,16 +24,36 @@ import (
     `io`
     `reflect`
 
+	`github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/option`
 )
 
 type frozenConfig struct {
     Config
+    // encoderOpts encoder.Options
+    decoderOpts decoder.Options
 }
 
 // Froze convert the Config to API
 func (cfg Config) Froze() API {
     api := &frozenConfig{Config: cfg}
+
+    // configure decoder options:
+    if cfg.UseInt64 {
+        api.decoderOpts |= decoder.OptionUseInt64
+    }
+    if cfg.UseNumber {
+        api.decoderOpts |= decoder.OptionUseNumber
+    }
+    if cfg.DisallowUnknownFields {
+        api.decoderOpts |= decoder.OptionDisableUnknown
+    }
+    if cfg.CopyString {
+        api.decoderOpts |= decoder.OptionCopyString
+    }
+    if cfg.ValidateString {
+        api.decoderOpts |= decoder.OptionValidateString
+    }
     return api
 }
 
@@ -77,14 +97,8 @@ func (cfg frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([
 
 // UnmarshalFromString is implemented by sonic
 func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
-    r := bytes.NewBufferString(buf)
-    dec := json.NewDecoder(r)
-    if cfg.UseNumber {
-        dec.UseNumber()
-    }
-    if cfg.DisallowUnknownFields {
-        dec.DisallowUnknownFields()
-    }
+	dec := decoder.NewDecoder(buf)
+    dec.SetOptions(cfg.decoderOpts)
     return dec.Decode(val)
 }
 
@@ -102,6 +116,7 @@ func (cfg frozenConfig) NewEncoder(writer io.Writer) Encoder {
     return enc
 }
 
+// TODO: use dev.NewDecoder
 // NewDecoder is implemented by sonic
 func (cfg frozenConfig) NewDecoder(reader io.Reader) Decoder {
     dec := json.NewDecoder(reader)

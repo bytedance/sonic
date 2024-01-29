@@ -1,7 +1,6 @@
 package decoder
 
 import (
-	"encoding"
 	"encoding/json"
 	"math"
 	"unsafe"
@@ -293,43 +292,6 @@ func (d *numberDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *cont
 	}
 	*(*json.Number)(vp) = num
 	return nil
-}
-
-type unmarshalTextDecoder struct {
-	typ *rt.GoType
-}
-
-func (d *unmarshalTextDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
-	if node.IsNull() {
-		*(*unsafe.Pointer)(vp) = nil
-		return nil
-	}
-
-	s, err := node.AsStringCopy()
-	if err != nil {
-		return err
-	}
-
-	v := *(*interface{})(unsafe.Pointer(&rt.GoEface{
-		Type:  d.typ,
-		Value: vp,
-	}))
-
-	return v.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(s))
-}
-
-type unmarshalJSONDecoder struct {
-	typ *rt.GoType
-}
-
-func (d *unmarshalJSONDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
-	// not deal with null here
-	v := *(*interface{})(unsafe.Pointer(&rt.GoEface{
-		Type:  d.typ,
-		Value: vp,
-	}))
-
-	return v.(json.Unmarshaler).UnmarshalJSON([]byte(node.AsRaw(&ctx.Context)))
 }
 
 type recuriveDecoder struct {

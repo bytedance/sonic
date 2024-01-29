@@ -185,7 +185,7 @@ checksum = "e6ecd384b10a64542d77071bd64bd7b231f4ed5940fba55e98c3de13824cf3d7"
 [[package]]
 name = "sonic-rs"
 version = "0.3.2"
-source = "git+https://github.com/cloudwego/sonic-rs?branch=feat/flatnode#8478ef9c5900f1ca981d2b992dafa778929e1c35"
+source = "git+https://github.com/cloudwego/sonic-rs?branch=feat/flatnode#64896fe96a3f2b36dac26c7f2e89c5940b9da82e"
 dependencies = [
  "arrayref",
  "bumpalo",

@@ -23,7 +23,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/dev/internal/rt"
 )
 
 var (
@@ -44,6 +44,7 @@ var (
 	bytesType               = reflect.TypeOf([]byte(nil))
 	jsonNumberType          = reflect.TypeOf(json.Number(""))
 	base64CorruptInputError = reflect.TypeOf(base64.CorruptInputError(0))
+	anyType                 = rt.UnpackType(reflect.TypeOf((*interface{})(nil)).Elem())
 )
 
 var (

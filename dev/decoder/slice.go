@@ -80,41 +80,24 @@ func (d *arrayDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 	return nil
 }
 
-type ifaceDecoder struct {
+type sliceEfaceDecoder struct {
 }
 
-func (d *ifaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
-	var ret interface{}
-	var err error
-
-	if ctx.options&OptionUseNumber == 0 {
-		ret, err = node.AsIface(&ctx.Context)
-	} else {
-		ret, err = node.AsIfaceUseNumner(&ctx.Context)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	*(*interface{})(vp) = ret
-	return nil
-}
-
-type sliceIfaceDecoder struct {
-}
-
-func (d *sliceIfaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
+func (d *sliceEfaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
 	if node.IsNull() {
 		*(*rt.GoSlice)(vp) = rt.GoSlice{}
 		return nil
 	}
 
-	if ctx.options&OptionUseNumber == 0 {
-		return node.AsSliceIface(&ctx.Context, vp)
-	} else {
-		return node.AsSliceIfaceUseNumber(&ctx.Context, vp)
+	if ctx.options&OptionUseNumber == 0 && ctx.options&OptionUseInt64 == 0 {
+		return node.AsSliceEface(&ctx.Context, vp)
 	}
+
+	if ctx.options&OptionUseNumber != 0 {
+		return node.AsSliceEfaceUseNumber(&ctx.Context, vp)
+	}
+
+	return node.AsSliceEfaceUseInt64(&ctx.Context, vp)
 }
 
 type sliceI32Decoder struct {

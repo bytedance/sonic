@@ -13,21 +13,23 @@ import (
 
 /** Decoder for most common map types: map[string]interface{}, map[string]string **/
 
-type mapIfaceDecoder struct {
+type mapEfaceDecoder struct {
 }
 
-func (d *mapIfaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
+func (d *mapEfaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
 	if node.IsNull() {
 		*(*map[string]interface{})(vp) = nil
 		return nil
 	}
 
-	if ctx.options&OptionUseNumber == 0 {
-		return node.AsMapIface(&ctx.Context, vp)
+	if ctx.options&OptionUseNumber == 0 && ctx.options&OptionUseInt64 == 0 {
+		return node.AsMapEface(&ctx.Context, vp)
 
 	}
-
-	return node.AsMapIfaceUseNumber(&ctx.Context, vp)
+	if ctx.options&OptionUseNumber != 0 {
+		return node.AsMapEfaceUseNumber(&ctx.Context, vp)
+	}
+	return node.AsMapEfaceUseInt64(&ctx.Context, vp)
 }
 
 type mapStringDecoder struct {
