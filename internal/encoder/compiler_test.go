@@ -26,9 +26,9 @@ import (
 )
 
 func TestCompiler_Compile(t *testing.T) {
-    p, err := newCompiler().compile(reflect.TypeOf(_BindingValue), false)
+    p, err := NewCompiler().Compile(reflect.TypeOf(_BindingValue), false)
     assert.Nil(t, err)
-    p.disassemble()
+    p.Disassemble()
 }
 
 func TestReflectDirect(t *testing.T) {

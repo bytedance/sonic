@@ -1,3 +1,4 @@
+//go:build go1.21 && !go1.22
 // +build go1.21,!go1.22
 
 // Copyright 2023 CloudWeGo Authors
@@ -14,24 +15,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package encoder
+package x86
 
 import (
-    `strconv`
-    `unsafe`
+	"strconv"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/twitchyliquid64/golang-asm/obj`
-    `github.com/twitchyliquid64/golang-asm/obj/x86`
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/twitchyliquid64/golang-asm/obj"
+	"github.com/twitchyliquid64/golang-asm/obj/x86"
 )
 
 var (
-    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&rt.RuntimeWriteBarrier))))
 
-    _F_gcWriteBarrier2 = jit.Func(gcWriteBarrier2)
+    _F_gcWriteBarrier2 = jit.Func(rt.GcWriteBarrier2)
 )
 
-func (self *_Assembler) WritePtr(i int, ptr obj.Addr, old obj.Addr) {
+func (self *Assembler) WritePtr(i int, ptr obj.Addr, old obj.Addr) {
     if old.Reg == x86.REG_AX || old.Index == x86.REG_AX {
         panic("rec contains AX!")
     }

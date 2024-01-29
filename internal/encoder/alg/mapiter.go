@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package encoder
+package alg
 
 import (
 	"encoding"
 	"reflect"
 	"sync"
 	"unsafe"
+    "strconv"
 
-	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
 )
 
@@ -32,8 +33,8 @@ type _MapPair struct {
     m [32]byte
 }
 
-type _MapIterator struct {
-    it rt.GoMapIterator     // must be the first field
+type MapIterator struct {
+    It rt.GoMapIterator     // must be the first field
     kv rt.GoSlice           // slice of _MapPair
     ki int
 }
@@ -44,43 +45,43 @@ var (
 )
 
 func init() {
-    if unsafe.Offsetof(_MapIterator{}.it) != 0 {
+    if unsafe.Offsetof(MapIterator{}.It) != 0 {
         panic("_MapIterator.it is not the first field")
     }
 }
 
 
-func newIterator() *_MapIterator {
+func newIterator() *MapIterator {
     if v := iteratorPool.Get(); v == nil {
-        return new(_MapIterator)
+        return new(MapIterator)
     } else {
-        return resetIterator(v.(*_MapIterator))
+        return resetIterator(v.(*MapIterator))
     }
 }
 
-func resetIterator(p *_MapIterator) *_MapIterator {
+func resetIterator(p *MapIterator) *MapIterator {
     p.ki = 0
-    p.it = rt.GoMapIterator{}
+    p.It = rt.GoMapIterator{}
     p.kv.Len = 0
     return p
 }
 
-func (self *_MapIterator) at(i int) *_MapPair {
+func (self *MapIterator) at(i int) *_MapPair {
     return (*_MapPair)(unsafe.Pointer(uintptr(self.kv.Ptr) + uintptr(i) * unsafe.Sizeof(_MapPair{})))
 }
 
-func (self *_MapIterator) add() (p *_MapPair) {
+func (self *MapIterator) add() (p *_MapPair) {
     p = self.at(self.kv.Len)
     self.kv.Len++
     return
 }
 
-func (self *_MapIterator) data() (p []_MapPair) {
+func (self *MapIterator) data() (p []_MapPair) {
     *(*rt.GoSlice)(unsafe.Pointer(&p)) = self.kv
     return
 }
 
-func (self *_MapIterator) append(t *rt.GoType, k unsafe.Pointer, v unsafe.Pointer) (err error) {
+func (self *MapIterator) append(t *rt.GoType, k unsafe.Pointer, v unsafe.Pointer) (err error) {
     p := self.add()
     p.v = v
 
@@ -94,26 +95,26 @@ func (self *_MapIterator) append(t *rt.GoType, k unsafe.Pointer, v unsafe.Pointe
     return nil
 }
 
-func (self *_MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kind, k unsafe.Pointer) error {
+func (self *MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kind, k unsafe.Pointer) error {
     switch v {
-        case reflect.Int       : p.k = rt.Mem2Str(p.m[:native.I64toa(&p.m[0], int64(*(*int)(k)))])      ; return nil
-        case reflect.Int8      : p.k = rt.Mem2Str(p.m[:native.I64toa(&p.m[0], int64(*(*int8)(k)))])     ; return nil
-        case reflect.Int16     : p.k = rt.Mem2Str(p.m[:native.I64toa(&p.m[0], int64(*(*int16)(k)))])    ; return nil
-        case reflect.Int32     : p.k = rt.Mem2Str(p.m[:native.I64toa(&p.m[0], int64(*(*int32)(k)))])    ; return nil
-        case reflect.Int64     : p.k = rt.Mem2Str(p.m[:native.I64toa(&p.m[0], *(*int64)(k))])           ; return nil
-        case reflect.Uint      : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uint)(k)))])    ; return nil
-        case reflect.Uint8     : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uint8)(k)))])   ; return nil
-        case reflect.Uint16    : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uint16)(k)))])  ; return nil
-        case reflect.Uint32    : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uint32)(k)))])  ; return nil
-        case reflect.Uint64    : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], *(*uint64)(k))])          ; return nil
-        case reflect.Uintptr   : p.k = rt.Mem2Str(p.m[:native.U64toa(&p.m[0], uint64(*(*uintptr)(k)))]) ; return nil
+        case reflect.Int       : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int)(k)), 64))      ; return nil
+        case reflect.Int8      : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int8)(k)), 64))     ; return nil
+        case reflect.Int16     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int16)(k)), 64))    ; return nil
+        case reflect.Int32     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int32)(k)), 64))    ; return nil
+        case reflect.Int64     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int64)(k)), 64))           ; return nil
+        case reflect.Uint      : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*uint)(k)), 64))    ; return nil
+        case reflect.Uint8     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*uint8)(k)), 64))   ; return nil
+        case reflect.Uint16    : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*uint16)(k)), 64))  ; return nil
+        case reflect.Uint32    : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*uint32)(k)), 64))  ; return nil
+        case reflect.Uint64    : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*uint64)(k)), 64))          ; return nil
+        case reflect.Uintptr   : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*uintptr)(k)), 64)) ; return nil
         case reflect.Interface : return self.appendInterface(p, t, k)
         case reflect.Struct, reflect.Ptr : return self.appendConcrete(p, t, k)
         default                : panic("unexpected map key type")
     }
 }
 
-func (self *_MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
+func (self *MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
     // compiler has already checked that the type implements the encoding.MarshalText interface
     if !t.Indirect() {
         k = *(*unsafe.Pointer)(k)
@@ -127,7 +128,7 @@ func (self *_MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Poi
     return
 }
 
-func (self *_MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
+func (self *MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
     if len(rt.IfaceType(t).Methods) == 0 {
         panic("unexpected map key type")
     } else if p.k, err = asText(k); err == nil {
@@ -137,17 +138,17 @@ func (self *_MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Po
     }
 }
 
-func iteratorStop(p *_MapIterator) {
+func IteratorStop(p *MapIterator) {
     iteratorPool.Put(p)
 }
 
-func iteratorNext(p *_MapIterator) {
+func IteratorNext(p *MapIterator) {
     i := p.ki
-    t := &p.it
+    t := &p.It
 
     /* check for unordered iteration */
     if i < 0 {
-        mapiternext(t)
+        rt.Mapiternext(t)
         return
     }
 
@@ -164,25 +165,25 @@ func iteratorNext(p *_MapIterator) {
     p.ki++
 }
 
-func iteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*_MapIterator, error) {
+func IteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*MapIterator, error) {
     it := newIterator()
-    mapiterinit(t, m, &it.it)
+    rt.Mapiterinit(t, m, &it.It)
 
     /* check for key-sorting, empty map don't need sorting */
-    if m.Count == 0 || (fv & uint64(SortMapKeys)) == 0 {
+    if m.Count == 0 || (fv & (1<<BitSortMapKeys)) == 0 {
         it.ki = -1
         return it, nil
     }
 
     /* pre-allocate space if needed */
     if m.Count > it.kv.Cap {
-        it.kv = growslice(iteratorPair, it.kv, m.Count)
+        it.kv = rt.Growslice(iteratorPair, it.kv, m.Count)
     }
 
     /* dump all the key-value pairs */
-    for ; it.it.K != nil; mapiternext(&it.it) {
-        if err := it.append(t.Key, it.it.K, it.it.V); err != nil {
-            iteratorStop(it)
+    for ; it.It.K != nil; rt.Mapiternext(&it.It) {
+        if err := it.append(t.Key, it.It.K, it.It.V); err != nil {
+            IteratorStop(it)
             return nil, err
         }
     }
@@ -193,7 +194,13 @@ func iteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*_MapIterator, erro
     }
 
     /* load the first pair into iterator */
-    it.it.V = it.at(0).v
-    it.it.K = unsafe.Pointer(&it.at(0).k)
+    it.It.V = it.at(0).v
+    it.It.K = unsafe.Pointer(&it.at(0).k)
     return it, nil
+}
+
+func asText(v unsafe.Pointer) (string, error) {
+	text := rt.AssertI2I(rt.UnpackType(vars.EncodingTextMarshalerType), *(*rt.GoIface)(v))
+	r, e := (*(*encoding.TextMarshaler)(unsafe.Pointer(&text))).MarshalText()
+	return rt.Mem2Str(r), e
 }
