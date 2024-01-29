@@ -77,7 +77,7 @@ func EncodeBase64(buf []byte, src []byte) []byte {
 var typeByte = rt.UnpackEface(byte(0)).Type
 
 //go:nocheckptr
-func Quote(buf []byte, val string, double bool) []byte {
+func Quote(buf []byte, val string, double bool, correct bool) []byte {
 	if len(val) == 0 {
 		if double {
 			return append(buf, `"\"\""`...)
