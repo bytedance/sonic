@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __validate_one_arm64_entry__() uintptr
+func __validate_one_entry__() uintptr
 
 var (
-    _subr__validate_one uintptr = __validate_one_arm64_entry__() + 64
+    _subr__validate_one uintptr = __validate_one_entry__() + 64
 )
 
 const (
-    _stack__validate_one = 160
+    _stack__validate_one = 96
 )
 
 var (

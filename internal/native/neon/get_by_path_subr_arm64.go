@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __get_by_path_arm64_entry__() uintptr
+func __get_by_path_entry__() uintptr
 
 var (
-    _subr__get_by_path uintptr = __get_by_path_arm64_entry__() + 64
+    _subr__get_by_path uintptr = __get_by_path_entry__() + 64
 )
 
 const (
-    _stack__get_by_path = 224
+    _stack__get_by_path = 192
 )
 
 var (

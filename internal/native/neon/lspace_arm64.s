@@ -5,54 +5,51 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__lspace_arm64_entry__(SB), NOSPLIT, $16
+TEXT ·__lspace_entry__(SB), NOSPLIT, $0
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0x910083ff  // add sp, sp, #32
 	WORD $0xd65f03c0  // ret
+	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
 	  // .p2align 2, 0x00
 _lspace:
-	MOVD.W R30, -32(RSP)	// 	WORD $0xf81e0ffe  // str	x30, [sp, #-32]!
 	WORD $0xeb02003f  // cmp	x1, x2
-	WORD $0x540001e0  // b.eq	LBB0_4 $60(%rip)
+	WORD $0x54000061  // b.ne	LBB0_2 $12(%rip)
+	WORD $0x8b020008  // add	x8, x0, x2
+	WORD $0x1400000e  // b	LBB0_5 $56(%rip)
+LBB0_2:
 	WORD $0x8b010008  // add	x8, x0, x1
 	WORD $0x52800029  // mov	w9, #1
 	WORD $0xd284c00a  // mov	x10, #9728
 	WORD $0xf2c0002a  // movk	x10, #1, lsl #32
-LBB0_2:
-	WORD $0x38e2680b  // ldrsb	w11, [x0, x2]
+LBB0_3:
+	WORD $0x3862680b  // ldrb	w11, [x0, x2]
 	WORD $0x7100817f  // cmp	w11, #32
 	WORD $0x9acb212b  // lsl	x11, x9, x11
 	WORD $0x8a0a016b  // and	x11, x11, x10
 	WORD $0xfa409964  // ccmp	x11, #0, #4, ls
-	WORD $0x540000e0  // b.eq	LBB0_6 $28(%rip)
+	WORD $0x540000a0  // b.eq	LBB0_6 $20(%rip)
 	WORD $0x91000442  // add	x2, x2, #1
 	WORD $0xeb02003f  // cmp	x1, x2
-	WORD $0x54ffff01  // b.ne	LBB0_2 $-32(%rip)
-	WORD $0x14000002  // b	LBB0_5 $8(%rip)
-LBB0_4:
-	WORD $0x8b020008  // add	x8, x0, x2
+	WORD $0x54ffff01  // b.ne	LBB0_3 $-32(%rip)
 LBB0_5:
 	WORD $0xcb000102  // sub	x2, x8, x0
 LBB0_6:
 	WORD $0xaa0203e0  // mov	x0, x2
-	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 
-TEXT ·__lspace(SB), $0-32
+TEXT ·__lspace(SB), NOSPLIT | NOFRAME, $0-32
 	NO_LOCAL_POINTERS
 
 _entry:
 	MOVD 16(g), R16
-	SUB $64, RSP, R17
-	CMP  R16, R17
+	CMP R16, RSP
 	BLS  _stack_grow
 
 _lspace:
 	MOVD sp+0(FP), R0
 	MOVD nb+8(FP), R1
 	MOVD off+16(FP), R2
-	CALL ·__lspace_arm64_entry__+24(SB)  // _lspace
+	CALL ·__lspace_entry__+16(SB)  // _lspace
 	MOVD R0, ret+24(FP)
 	RET
 

@@ -20,10 +20,10 @@ package neon
 
 import (
 	`os`
-	`runtime`
-	`runtime/debug`
+	// `runtime`
+	// `runtime/debug`
 	`testing`
-	`time`
+	// `time`
 	`unsafe`
 
 	`github.com/bytedance/sonic/internal/native/types`
@@ -33,21 +33,21 @@ var (
 	debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 )
 
-func TestMain(m *testing.M) {	
-	go func ()  {
-		if !debugAsyncGC {
-			return
-		}
-		println("Begin GC looping...")
-		for {
-		runtime.GC()
-		debug.FreeOSMemory() 
-		}
-		println("stop GC looping!")
-	}()
-	time.Sleep(time.Millisecond*100)
-	m.Run()
-}
+// func TestMain(m *testing.M) {	
+// 	go func ()  {
+// 		if !debugAsyncGC {
+// 			return
+// 		}
+// 		println("Begin GC looping...")
+// 		for {
+// 		runtime.GC()
+// 		debug.FreeOSMemory() 
+// 		}
+// 		println("stop GC looping!")
+// 	}()
+// 	time.Sleep(time.Millisecond*100)
+// 	m.Run()
+// }
 
 func TestRecover_f64toa(t *testing.T) {
 	defer func() {

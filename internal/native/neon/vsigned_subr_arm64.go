@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __vsigned_arm64_entry__() uintptr
+func __vsigned_entry__() uintptr
 
 var (
-    _subr__vsigned uintptr = __vsigned_arm64_entry__() + 12
+    _subr__vsigned uintptr = __vsigned_entry__() + 16
 )
 
 const (
-    _stack__vsigned = 32
+    _stack__vsigned = 0
 )
 
 var (

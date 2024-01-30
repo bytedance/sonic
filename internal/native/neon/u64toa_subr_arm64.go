@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __u64toa_arm64_entry__() uintptr
+func __u64toa_entry__() uintptr
 
 var (
-    _subr__u64toa uintptr = __u64toa_arm64_entry__() + 64
+    _subr__u64toa uintptr = __u64toa_entry__() + 64
 )
 
 const (
-    _stack__u64toa = 32
+    _stack__u64toa = 0
 )
 
 var (

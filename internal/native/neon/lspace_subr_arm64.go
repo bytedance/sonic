@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __lspace_arm64_entry__() uintptr
+func __lspace_entry__() uintptr
 
 var (
-    _subr__lspace uintptr = __lspace_arm64_entry__() + 12
+    _subr__lspace uintptr = __lspace_entry__() + 16
 )
 
 const (
-    _stack__lspace = 32
+    _stack__lspace = 0
 )
 
 var (
