@@ -23,8 +23,8 @@ import (
 	"github.com/bytedance/sonic/internal/encoder/alg"
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/loader"
 	_ "github.com/chenzhuoyu/base64x"
-
 )
 
 //go:linkname _subr__b64encode github.com/chenzhuoyu/base64x._subr__b64encode
@@ -34,6 +34,10 @@ var compiler func(*rt.GoType, ... interface{}) (interface{}, error)
 
 func SetCompiler(c func(*rt.GoType, ... interface{}) (interface{}, error)) {
 	compiler = c
+}
+
+func ptoenc(p loader.Function) vars.Encoder {
+    return *(*vars.Encoder)(unsafe.Pointer(&p))
 }
 
 func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars.Stack, fv uint64) error {
