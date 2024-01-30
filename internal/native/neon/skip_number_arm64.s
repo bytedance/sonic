@@ -342,7 +342,7 @@ LBB0_60:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__skip_number(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__skip_number(SB), $0-24
 	NO_LOCAL_POINTERS
 
 _entry:

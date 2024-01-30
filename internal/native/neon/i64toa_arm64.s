@@ -934,7 +934,7 @@ _VecShiftShuffles:
 	WORD $0xffffffff  // .ascii 4, '\xff\xff\xff\xff\xff\xff\xff\xff'
 	WORD $0xffffffff  // .ascii 4, '\xff\xff\xff\xff'
 
-TEXT ·__i64toa(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__i64toa(SB), $0-24
 	NO_LOCAL_POINTERS
 
 _entry:

@@ -2521,7 +2521,7 @@ __EscTab:
 	WORD $0x00000000  // .space 4, '\x00\x00\x00\x00\x00\x00\x00\x00'
 	WORD $0x00000000  // .space 4, '\x00\x00\x00\x00'
 
-TEXT ·__quote(SB), NOSPLIT | NOFRAME, $0-48
+TEXT ·__quote(SB), $0-48
 	NO_LOCAL_POINTERS
 
 _entry:

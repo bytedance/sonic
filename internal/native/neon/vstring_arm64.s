@@ -610,7 +610,7 @@ LBB0_77:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__vstring(SB), NOSPLIT | NOFRAME, $0-32
+TEXT ·__vstring(SB), $0-32
 	NO_LOCAL_POINTERS
 
 _entry:

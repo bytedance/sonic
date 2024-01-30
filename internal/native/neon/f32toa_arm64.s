@@ -894,7 +894,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	WORD $0x00000000  // .p2align 3, 0x00
-_LB_702790d8: // _pow10_ceil_sig_f32.g
+_LB_3942682e: // _pow10_ceil_sig_f32.g
 	WORD $0x4b43fcf5; WORD $0x81ceb32c  // .quad -9093133594791772939
 	WORD $0x5e14fc32; WORD $0xa2425ff7  // .quad -6754730975062328270
 	WORD $0x359a3b3f; WORD $0xcad2f7f5  // .quad -3831727700400522433
@@ -973,7 +973,7 @@ _LB_702790d8: // _pow10_ceil_sig_f32.g
 	WORD $0x7bea5c70; WORD $0x8f7e32ce  // .quad -8106986416796705680
 	WORD $0x1ae4f38c; WORD $0xb35dbf82  // .quad -5522047002568494196
 
-TEXT ·__f32toa(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__f32toa(SB), $0-24
 	NO_LOCAL_POINTERS
 
 _entry:
