@@ -17,7 +17,7 @@ import (
 )
 
 type Context struct {
-	Cur   **C.Node
+	Options   uint64
 	Json  string
 	Start uintptr
 	Dom   Dom
@@ -29,7 +29,7 @@ func NewContext(json string, opts uint64) (Context, error) {
 		return Context{}, err
 	}
 	return Context{
-		Cur:   nil,
+		Options:   opts,
 		Json:  json,
 		Start: dom.StrStart(),
 		Dom:   dom,
@@ -205,8 +205,8 @@ func (val Node) AsI64() (int64, error) {
 	return 0, newUnmatched("expect int64")
 }
 
-func (val Node) AsKeyI64(ctx *Context) (int64, error) {
-	s, err := val.AsStr(ctx)
+func (val Node) ParseI64(ctx *Context) (int64, error) {
+	s, err := val.AsStrRef(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -218,8 +218,21 @@ func (val Node) AsKeyI64(ctx *Context) (int64, error) {
 	return i, nil
 }
 
-func (val Node) AsKeyU64(ctx *Context) (uint64, error) {
-	s, err := val.AsStr(ctx)
+func (val Node) ParseBool(ctx *Context) (bool, error) {
+	s, err := val.AsStrRef(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	b, err := ParseBool(s)
+	if err != nil {
+		return false, err
+	}
+	return b, nil
+}
+
+func (val Node) ParseU64(ctx *Context) (uint64, error) {
+	s, err := val.AsStrRef(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -231,8 +244,8 @@ func (val Node) AsKeyU64(ctx *Context) (uint64, error) {
 	return i, nil
 }
 
-func (val Node) AsKeyF64(ctx *Context) (float64, error) {
-	s, err := val.AsStr(ctx)
+func (val Node) ParseF64(ctx *Context) (float64, error) {
+	s, err := val.AsStrRef(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -268,6 +281,22 @@ func (val Node) AsBool() (bool, error) {
 }
 
 func (val Node) AsStr(ctx *Context) (string, error) {
+	if ctx.Options & (1 << _F_copy_string) != 0 {
+		return val.StringCopy(), nil
+	}
+
+	switch val.Type() {
+	case KStringHasEscaped:
+		return val.StringCopy(), nil
+	case KStringCommon:
+		return val.String(ctx), nil
+	default:
+		return "", newUnmatched("expect string")
+	}
+}
+
+
+func (val Node) AsStrRef(ctx *Context) (string, error) {
 	switch val.Type() {
 	case KStringHasEscaped:
 		return val.StringCopy(), nil
@@ -746,7 +775,7 @@ func (node *Node) AsSliceString(ctx *Context, vp unsafe.Pointer) error {
 }
 
 func (node *Node) AsSliceBytes(ctx *Context) ([]byte, error) {
-	s, err := node.AsStr(ctx)
+	s, err := node.AsStrRef(ctx)
 	if err != nil {
 		return nil, err
 	}

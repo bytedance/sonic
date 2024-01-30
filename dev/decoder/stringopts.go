@@ -16,12 +16,7 @@ func (d *boolStringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	b, err := internal.ParseBool(s)
+	b, err := node.ParseBool(&ctx.Context)
 	if err != nil {
 		return err
 	}
@@ -36,18 +31,13 @@ func (d *i8StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *co
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseI64(s)
+	ret, err := node.ParseI64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
 	if ret > math.MaxInt8 || ret < math.MinInt8 {
-		return error_value(s, int8Type)
+		return error_value(node.AsRaw(&ctx.Context), int8Type)
 	}
 
 	*(*int8)(vp) = int8(ret)
@@ -61,18 +51,13 @@ func (d *i16StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseI64(s)
+	ret, err := node.ParseI64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
 	if ret > math.MaxInt16 || ret < math.MinInt16 {
-		return error_value(s, int16Type)
+		return error_value(node.AsRaw(&ctx.Context), int16Type)
 	}
 
 	*(*int16)(vp) = int16(ret)
@@ -86,18 +71,13 @@ func (d *i32StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseI64(s)
+	ret, err := node.ParseI64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
 	if ret > math.MaxInt32 || ret < math.MinInt32 {
-		return error_value(s, int32Type)
+		return error_value(node.AsRaw(&ctx.Context), int32Type)
 	}
 
 	*(*int32)(vp) = int32(ret)
@@ -111,12 +91,7 @@ func (d *i64StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseI64(s)
+	ret, err := node.ParseI64(&ctx.Context)
 	if err != nil {
 		return err
 	}
@@ -132,18 +107,13 @@ func (d *u8StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *co
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseU64(s)
+	ret, err := node.ParseU64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
 	if ret > math.MaxUint8 {
-		return error_value(s, uint8Type)
+		return error_value(node.AsRaw(&ctx.Context), uint8Type)
 	}
 
 	*(*uint8)(vp) = uint8(ret)
@@ -157,18 +127,13 @@ func (d *u16StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseU64(s)
+	ret, err := node.ParseU64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
 	if ret > math.MaxUint16 {
-		return error_value(s, uint16Type)
+		return error_value(node.AsRaw(&ctx.Context), uint16Type)
 	}
 
 	*(*uint16)(vp) = uint16(ret)
@@ -182,18 +147,13 @@ func (d *u32StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseU64(s)
+	ret, err := node.ParseU64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
 	if ret > math.MaxUint32 {
-		return error_value(s, uint32Type)
+		return error_value(node.AsRaw(&ctx.Context), uint32Type)
 	}
 
 	*(*uint32)(vp) = uint32(ret)
@@ -207,15 +167,11 @@ func (d *u64StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
+	ret, err := node.ParseU64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
-	ret, err := internal.ParseU64(s)
-	if err != nil {
-		return err
-	}
 	*(*uint64)(vp) = uint64(ret)
 	return nil
 }
@@ -227,18 +183,13 @@ func (d *f32StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseF64(s)
+	ret, err := node.ParseF64(&ctx.Context)
 	if err != nil {
 		return err
 	}
 
 	if ret > math.MaxFloat32 || ret < -math.MaxFloat32 {
-		return error_value(s, float32Type)
+		return error_value(node.AsRaw(&ctx.Context), float32Type)
 	}
 
 	*(*float32)(vp) = float32(ret)
@@ -252,12 +203,7 @@ func (d *f64StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	ret, err := internal.ParseF64(s)
+	ret, err := node.ParseF64(&ctx.Context)
 	if err != nil {
 		return err
 	}
@@ -274,7 +220,7 @@ func (d *strStringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	s, err := node.AsStr(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
 	/* deal with empty string */
 	if err != nil || s == "" {
 		return err

@@ -32,7 +32,7 @@ func (d *structDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *cont
 
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
-		key, err := internal.NewNode(next).AsStr(&ctx.Context)
+		key, err := internal.NewNode(next).AsStrRef(&ctx.Context)
 		val := internal.NewNode(internal.PtrOffset(next, 1))
 		next = val.Next()
 		if err != nil {
@@ -47,7 +47,7 @@ func (d *structDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *cont
 			idx = d.fieldMap.GetCaseInsensitive(key)
 		}
         if idx == -1 {
-            if ctx.options&OptionDisableUnknown != 0 {
+            if Options(ctx.Options)&OptionDisableUnknown != 0 {
                 return error_field(key)
             }
             continue

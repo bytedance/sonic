@@ -5,24 +5,6 @@ import (
 	"github.com/bytedance/sonic/dev/decoder"
 )
 
-// func UnmarshalString_Bak(json string, val interface{}) error {
-// 	ctx, err := internal.NewContext(json)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	node := ctx.Dom.Root()
-// 	ret, err := node.AsIface(&ctx)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	rv := reflect.ValueOf(val)
-// 	rv.Elem().Set(reflect.ValueOf(ret))
-// 	ctx.Delete()
-// 	return nil
-// }
-
 func UnmarshalString(json string, val interface{}) error {
 	dec := decoder.NewDecoder(json)
 	err := dec.Decode(val)

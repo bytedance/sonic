@@ -58,3 +58,10 @@ const (
 	ConLenMask = uint64(math.MaxUint32)
 	ConLenBits = 32
 )
+
+const (
+	_F_use_int64       = 0
+	_F_disable_urc     = 2
+	_F_disable_unknown = 3
+	_F_copy_string     = 4
+)

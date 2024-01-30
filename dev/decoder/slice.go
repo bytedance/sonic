@@ -89,11 +89,11 @@ func (d *sliceEfaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *
 		return nil
 	}
 
-	if ctx.options&OptionUseNumber == 0 && ctx.options&OptionUseInt64 == 0 {
+	if Options(ctx.Options)&OptionUseNumber == 0 && Options(ctx.Options)&OptionUseInt64 == 0 {
 		return node.AsSliceEface(&ctx.Context, vp)
 	}
 
-	if ctx.options&OptionUseNumber != 0 {
+	if Options(ctx.Options)&OptionUseNumber != 0 {
 		return node.AsSliceEfaceUseNumber(&ctx.Context, vp)
 	}
 

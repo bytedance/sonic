@@ -6,7 +6,6 @@ import (
 
 type context struct {
 	internal.Context
-	options Options
 }
 
 func newCtx(s string, opt Options) (context, error) {
@@ -17,6 +16,5 @@ func newCtx(s string, opt Options) (context, error) {
 
 	return context{
 		Context: ctx,
-		options: opt,
 	}, nil
 }

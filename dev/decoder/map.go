@@ -22,11 +22,11 @@ func (d *mapEfaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *co
 		return nil
 	}
 
-	if ctx.options&OptionUseNumber == 0 && ctx.options&OptionUseInt64 == 0 {
+	if Options(ctx.Options)&OptionUseNumber == 0 && Options(ctx.Options)&OptionUseInt64 == 0 {
 		return node.AsMapEface(&ctx.Context, vp)
 
 	}
-	if ctx.options&OptionUseNumber != 0 {
+	if Options(ctx.Options)&OptionUseNumber != 0 {
 		return node.AsMapEfaceUseNumber(&ctx.Context, vp)
 	}
 	return node.AsMapEfaceUseInt64(&ctx.Context, vp)
@@ -160,7 +160,7 @@ func (d *mapI32KeyFastDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ct
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
-		k, err := keyn.AsKeyI64(&ctx.Context)
+		k, err := keyn.ParseI64(&ctx.Context)
 		if k > math.MaxInt32 || k < math.MinInt32 {
 			return error_value(keyn.AsRaw(&ctx.Context), d.mapType.Key.Pack())
 		}
@@ -210,7 +210,7 @@ func (d *mapI32KeyStdDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
-		k, err := keyn.AsKeyI64(&ctx.Context)
+		k, err := keyn.ParseI64(&ctx.Context)
 		if k > math.MaxInt32 || k < math.MinInt32 {
 			return error_value(keyn.AsRaw(&ctx.Context), d.mapType.Key.Pack())
 		}
@@ -258,7 +258,7 @@ func (d *mapI64KeyFastDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ct
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
-		key, err := keyn.AsKeyI64(&ctx.Context)
+		key, err := keyn.ParseI64(&ctx.Context)
 		ku64 := *(*uint64)(unsafe.Pointer(&key))
 		if err != nil {
 			return err
@@ -302,7 +302,7 @@ func (d *mapI64KeyStdDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
-		key, err := keyn.AsKeyI64(&ctx.Context)
+		key, err := keyn.ParseI64(&ctx.Context)
 		if err != nil {
 			return err
 		}
@@ -347,7 +347,7 @@ func (d *mapU32KeyFastDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ct
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
-		k, err := keyn.AsKeyU64(&ctx.Context)
+		k, err := keyn.ParseU64(&ctx.Context)
 		if k > math.MaxUint32 {
 			return error_value(keyn.AsRaw(&ctx.Context), d.mapType.Key.Pack())
 		}
@@ -394,7 +394,7 @@ func (d *mapU32KeyStdDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
-		k, err := keyn.AsKeyU64(&ctx.Context)
+		k, err := keyn.ParseU64(&ctx.Context)
 		if k > math.MaxUint32 {
 			return error_value(keyn.AsRaw(&ctx.Context), d.mapType.Key.Pack())
 		}
@@ -442,7 +442,7 @@ func (d *mapU64KeyFastDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ct
 
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
-		key, err := internal.NewNode(next).AsKeyU64(&ctx.Context)
+		key, err := internal.NewNode(next).ParseU64(&ctx.Context)
 		if err != nil {
 			return err
 		}
@@ -485,7 +485,7 @@ func (d *mapU64KeyStdDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
-		key, err := keyn.AsKeyU64(&ctx.Context)
+		key, err := keyn.ParseU64(&ctx.Context)
 		if err != nil {
 			return err
 		}

@@ -26,9 +26,9 @@ func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 		var ret interface{}
 		var err error
 	
-		if ctx.options&OptionUseNumber == 0 &&  ctx.options&OptionUseInt64 == 0 {
+		if Options(ctx.Options)&OptionUseNumber == 0 &&  Options(ctx.Options)&OptionUseInt64 == 0 {
 			ret, err = node.AsEface(&ctx.Context)
-		} else if  ctx.options&OptionUseNumber != 0 {
+		} else if  Options(ctx.Options)&OptionUseNumber != 0 {
 			ret, err = node.AsEfaceUseNumber(&ctx.Context)
 		} else {
 			ret, err = node.AsEfaceUseInt64(&ctx.Context)
