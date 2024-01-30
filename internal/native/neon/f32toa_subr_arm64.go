@@ -9,11 +9,11 @@ package neon
 func __f32toa_entry__() uintptr
 
 var (
-    _subr__f32toa uintptr = __f32toa_entry__() + 16
+    _subr__f32toa uintptr = 16
 )
 
 const (
-    _stack__f32toa = 0
+    _stack__f32toa = 32
 )
 
 var (

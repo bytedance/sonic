@@ -19,7 +19,7 @@ for src_file in "$SRC_DIR"/*.c; do
     asm_file="$TMP_DIR/${base_name}.s"
 
     # Compile the source file into an assembly file
-    clang -target aarch64-apple-macos11 -march=armv8-a+simd -Itools/simde/simde -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -S -o "$asm_file" "$src_file" 
+    clang -mllvm=--go-frame -target aarch64-apple-macos11 -march=armv8-a+simd -Itools/simde/simde -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -S -o "$asm_file" "$src_file" 
 
     # Execute asm2asm tool
     python3 ${TOOL_DIR}/asm2arm/arm.py ${OUT_DIR}/${base_name}_arm64.go $asm_file

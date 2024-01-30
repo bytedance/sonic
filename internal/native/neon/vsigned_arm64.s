@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__vsigned_entry__(SB), NOSPLIT, $0
+TEXT ·__vsigned_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0xd65f03c0  // ret
@@ -20,18 +20,21 @@ _vsigned:
 	WORD $0xf940002b  // ldr	x11, [x1]
 	WORD $0xf9000c4b  // str	x11, [x2, #24]
 	WORD $0xeb09011f  // cmp	x8, x9
-	WORD $0x54000602  // b.hs	LBB0_12 $192(%rip)
+	WORD $0x54000682  // b.hs	LBB0_12 $208(%rip)
+	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
+	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0x3868694c  // ldrb	w12, [x10, x8]
 	WORD $0x7100b59f  // cmp	w12, #45
-	WORD $0x54000621  // b.ne	LBB0_13 $196(%rip)
+	WORD $0x54000641  // b.ne	LBB0_13 $200(%rip)
 	WORD $0x91000508  // add	x8, x8, #1
 	WORD $0xeb09011f  // cmp	x8, x9
-	WORD $0x54000542  // b.hs	LBB0_12 $168(%rip)
+	WORD $0x54000702  // b.hs	LBB0_15 $224(%rip)
 	WORD $0x3868694c  // ldrb	w12, [x10, x8]
 	WORD $0x9280000b  // mov	x11, #-1
 	WORD $0x5100e98d  // sub	w13, w12, #58
 	WORD $0x31002dbf  // cmn	w13, #11
-	WORD $0x540005a9  // b.ls	LBB0_14 $180(%rip)
+	WORD $0x540005c9  // b.ls	LBB0_14 $184(%rip)
 LBB0_4:
 	WORD $0x7100c19f  // cmp	w12, #48
 	WORD $0x54000181  // b.ne	LBB0_6 $48(%rip)
@@ -45,17 +48,17 @@ LBB0_4:
 	WORD $0xf280002d  // movk	x13, #1
 	WORD $0x8a0d018c  // and	x12, x12, x13
 	WORD $0xfa409984  // ccmp	x12, #0, #4, ls
-	WORD $0x540006a0  // b.eq	LBB0_22 $212(%rip)
+	WORD $0x540007c0  // b.eq	LBB0_23 $248(%rip)
 LBB0_6:
 	WORD $0xd280000c  // mov	x12, #0
 	WORD $0x5280014d  // mov	w13, #10
 LBB0_7:
 	WORD $0xeb08013f  // cmp	x9, x8
-	WORD $0x540005c0  // b.eq	LBB0_21 $184(%rip)
+	WORD $0x540006c0  // b.eq	LBB0_22 $216(%rip)
 	WORD $0x3868694e  // ldrb	w14, [x10, x8]
 	WORD $0x5100c1ce  // sub	w14, w14, #48
 	WORD $0x710025df  // cmp	w14, #9
-	WORD $0x54000388  // b.hi	LBB0_15 $112(%rip)
+	WORD $0x54000468  // b.hi	LBB0_16 $140(%rip)
 	WORD $0x9b4d7d8f  // smulh	x15, x12, x13
 	WORD $0x8b0c098c  // add	x12, x12, x12, lsl #2
 	WORD $0xd37ff98c  // lsl	x12, x12, #1
@@ -71,6 +74,7 @@ LBB0_11:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x92800088  // mov	x8, #-5
 	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_12:
 	WORD $0xf9000029  // str	x9, [x1]
@@ -81,36 +85,46 @@ LBB0_13:
 	WORD $0x5280002b  // mov	w11, #1
 	WORD $0x5100e98d  // sub	w13, w12, #58
 	WORD $0x31002dbf  // cmn	w13, #11
-	WORD $0x54fffaa8  // b.hi	LBB0_4 $-172(%rip)
+	WORD $0x54fffa88  // b.hi	LBB0_4 $-176(%rip)
 LBB0_14:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x92800028  // mov	x8, #-2
 	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_15:
+	WORD $0xf9000029  // str	x9, [x1]
+	WORD $0x92800008  // mov	x8, #-1
+	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
+	WORD $0xd65f03c0  // ret
+LBB0_16:
 	WORD $0xeb09011f  // cmp	x8, x9
-	WORD $0x54000182  // b.hs	LBB0_20 $48(%rip)
+	WORD $0x540001a2  // b.hs	LBB0_21 $52(%rip)
 	WORD $0x38686949  // ldrb	w9, [x10, x8]
 	WORD $0x7100b93f  // cmp	w9, #46
-	WORD $0x540000a0  // b.eq	LBB0_19 $20(%rip)
+	WORD $0x540000a0  // b.eq	LBB0_20 $20(%rip)
 	WORD $0x7101153f  // cmp	w9, #69
-	WORD $0x54000060  // b.eq	LBB0_19 $12(%rip)
+	WORD $0x54000060  // b.eq	LBB0_20 $12(%rip)
 	WORD $0x7101953f  // cmp	w9, #101
-	WORD $0x540000a1  // b.ne	LBB0_20 $20(%rip)
-LBB0_19:
+	WORD $0x540000c1  // b.ne	LBB0_21 $24(%rip)
+LBB0_20:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x928000a8  // mov	x8, #-6
 	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
-LBB0_20:
-	WORD $0xaa0803e9  // mov	x9, x8
 LBB0_21:
+	WORD $0xaa0803e9  // mov	x9, x8
+LBB0_22:
 	WORD $0xf9000029  // str	x9, [x1]
 	WORD $0xf900084c  // str	x12, [x2, #16]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
-LBB0_22:
+LBB0_23:
 	WORD $0x91000508  // add	x8, x8, #1
 	WORD $0xf9000028  // str	x8, [x1]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
 _MASK_USE_NUMBER:
@@ -121,7 +135,8 @@ TEXT ·__vsigned(SB), $0-24
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $96, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _vsigned:

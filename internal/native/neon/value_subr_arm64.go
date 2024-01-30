@@ -9,11 +9,11 @@ package neon
 func __value_entry__() uintptr
 
 var (
-    _subr__value uintptr = __value_entry__() + 48
+    _subr__value uintptr = 48
 )
 
 const (
-    _stack__value = 80
+    _stack__value = 112
 )
 
 var (

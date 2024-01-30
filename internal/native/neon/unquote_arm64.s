@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__unquote_entry__(SB), NOSPLIT, $80
+TEXT ·__unquote_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0xd65f03c0  // ret
@@ -56,12 +56,14 @@ lCPI0_1:
 // .byte 15
 
 _unquote:
-	WORD $0xa9ba6ffc  // stp	x28, x27, [sp, #-96]!
+	WORD $0xa9b96ffc  // stp	x28, x27, [sp, #-112]!
 	WORD $0xa90167fa  // stp	x26, x25, [sp, #16]
 	WORD $0xa9025ff8  // stp	x24, x23, [sp, #32]
 	WORD $0xa90357f6  // stp	x22, x21, [sp, #48]
 	WORD $0xa9044ff4  // stp	x20, x19, [sp, #64]
 	WORD $0xa9057bfd  // stp	fp, lr, [sp, #80]
+	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
+	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xb4002201  // cbz	x1, LBB0_62 $1088(%rip)
 	WORD $0x3203cbe9  // mov	w9, #-522133280
 	WORD $0x5299fa0a  // mov	w10, #53200
@@ -83,11 +85,11 @@ _unquote:
 	WORD $0x72bf9414  // movk	w20, #64672, lsl #16
 	WORD $0x4f02e780  // movi.16b	v0, #92
 Lloh0:
-	WORD $0x10fffbc8  // adr	x8, lCPI0_0 $-136(%rip)
+	WORD $0x10fffb88  // adr	x8, lCPI0_0 $-144(%rip)
 Lloh1:
 	WORD $0x3dc00101  // ldr	q1, [x8, lCPI0_0@PAGEOFF] $0(%rip)
 Lloh2:
-	WORD $0x10fffc08  // adr	x8, lCPI0_1 $-128(%rip)
+	WORD $0x10fffbc8  // adr	x8, lCPI0_1 $-136(%rip)
 Lloh3:
 	WORD $0x3dc00102  // ldr	q2, [x8, lCPI0_1@PAGEOFF] $0(%rip)
 	WORD $0xaa0003e8  // mov	x8, x0
@@ -377,7 +379,7 @@ LBB0_64:
 	WORD $0xa94357f6  // ldp	x22, x21, [sp, #48]
 	WORD $0xa9425ff8  // ldp	x24, x23, [sp, #32]
 	WORD $0xa94167fa  // ldp	x26, x25, [sp, #16]
-	WORD $0xa8c66ffc  // ldp	x28, x27, [sp], #96
+	WORD $0xa8c76ffc  // ldp	x28, x27, [sp], #112
 	WORD $0xd65f03c0  // ret
 LBB0_65:
 	WORD $0xcb000109  // sub	x9, x8, x0
@@ -589,7 +591,7 @@ TEXT ·__unquote(SB), $0-48
 
 _entry:
 	MOVD 16(g), R16
-	SUB $160, RSP, R17
+	SUB $176, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 

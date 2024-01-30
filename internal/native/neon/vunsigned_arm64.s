@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__vunsigned_entry__(SB), NOSPLIT, $0
+TEXT ·__vunsigned_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0xd65f03c0  // ret
@@ -20,15 +20,19 @@ _vunsigned:
 	WORD $0xf940002b  // ldr	x11, [x1]
 	WORD $0xf9000c4b  // str	x11, [x2, #24]
 	WORD $0xeb09011f  // cmp	x8, x9
-	WORD $0x54000122  // b.hs	LBB0_3 $36(%rip)
+	WORD $0x540001a2  // b.hs	LBB0_3 $52(%rip)
+	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
+	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0x8b08014b  // add	x11, x10, x8
 	WORD $0x3940016c  // ldrb	w12, [x11]
 	WORD $0x7100b59f  // cmp	w12, #45
-	WORD $0x54000121  // b.ne	LBB0_4 $36(%rip)
+	WORD $0x54000141  // b.ne	LBB0_4 $40(%rip)
 LBB0_2:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x928000a8  // mov	x8, #-6
 	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_3:
 	WORD $0xf9000029  // str	x9, [x1]
@@ -38,10 +42,11 @@ LBB0_3:
 LBB0_4:
 	WORD $0x5100e98d  // sub	w13, w12, #58
 	WORD $0x31002dbf  // cmn	w13, #11
-	WORD $0x540000a8  // b.hi	LBB0_6 $20(%rip)
+	WORD $0x540000c8  // b.hi	LBB0_6 $24(%rip)
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x92800028  // mov	x8, #-2
 	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_6:
 	WORD $0x7100c19f  // cmp	w12, #48
@@ -55,7 +60,7 @@ LBB0_6:
 	WORD $0xf280002c  // movk	x12, #1
 	WORD $0x8a0c016b  // and	x11, x11, x12
 	WORD $0xfa409964  // ccmp	x11, #0, #4, ls
-	WORD $0x54000520  // b.eq	LBB0_21 $164(%rip)
+	WORD $0x54000560  // b.eq	LBB0_21 $172(%rip)
 LBB0_8:
 	WORD $0xd280000b  // mov	x11, #0
 	WORD $0xeb08013f  // cmp	x9, x8
@@ -63,11 +68,11 @@ LBB0_8:
 	WORD $0x5280014d  // mov	w13, #10
 LBB0_9:
 	WORD $0xeb08019f  // cmp	x12, x8
-	WORD $0x54000400  // b.eq	LBB0_20 $128(%rip)
+	WORD $0x54000420  // b.eq	LBB0_20 $132(%rip)
 	WORD $0x3868694e  // ldrb	w14, [x10, x8]
 	WORD $0x5100c1ce  // sub	w14, w14, #48
 	WORD $0x710025df  // cmp	w14, #9
-	WORD $0x54000248  // b.hi	LBB0_15 $72(%rip)
+	WORD $0x54000268  // b.hi	LBB0_15 $76(%rip)
 	WORD $0x9bcd7d6f  // umulh	x15, x11, x13
 	WORD $0xeb0f03ff  // cmp	xzr, x15
 	WORD $0x54000141  // b.ne	LBB0_14 $40(%rip)
@@ -85,26 +90,29 @@ LBB0_14:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x92800088  // mov	x8, #-5
 	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_15:
 	WORD $0xeb09011f  // cmp	x8, x9
 	WORD $0x54000102  // b.hs	LBB0_19 $32(%rip)
 	WORD $0x38686949  // ldrb	w9, [x10, x8]
 	WORD $0x7100b93f  // cmp	w9, #46
-	WORD $0x54fff8c0  // b.eq	LBB0_2 $-232(%rip)
+	WORD $0x54fff860  // b.eq	LBB0_2 $-244(%rip)
 	WORD $0x7101153f  // cmp	w9, #69
-	WORD $0x54fff880  // b.eq	LBB0_2 $-240(%rip)
+	WORD $0x54fff820  // b.eq	LBB0_2 $-252(%rip)
 	WORD $0x7101953f  // cmp	w9, #101
-	WORD $0x54fff840  // b.eq	LBB0_2 $-248(%rip)
+	WORD $0x54fff7e0  // b.eq	LBB0_2 $-260(%rip)
 LBB0_19:
 	WORD $0xaa0803ec  // mov	x12, x8
 LBB0_20:
 	WORD $0xf900002c  // str	x12, [x1]
 	WORD $0xf900084b  // str	x11, [x2, #16]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_21:
 	WORD $0x91000508  // add	x8, x8, #1
 	WORD $0xf9000028  // str	x8, [x1]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
 _MASK_USE_NUMBER:
@@ -115,7 +123,8 @@ TEXT ·__vunsigned(SB), $0-24
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $96, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _vunsigned:

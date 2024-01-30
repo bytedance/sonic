@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__vnumber_entry__(SB), NOSPLIT, $80
+TEXT ·__vnumber_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0xd65f03c0  // ret
@@ -21,13 +21,15 @@ _vnumber:
 	WORD $0xf940002c  // ldr	x12, [x1]
 	WORD $0xf9000c4c  // str	x12, [x2, #24]
 	WORD $0xeb08023f  // cmp	x17, x8
-	WORD $0x54000702  // b.hs	LBB0_10 $224(%rip)
-	WORD $0xa9ba6ffc  // stp	x28, x27, [sp, #-96]!
+	WORD $0x54000742  // b.hs	LBB0_10 $232(%rip)
+	WORD $0xa9b96ffc  // stp	x28, x27, [sp, #-112]!
 	WORD $0xa90167fa  // stp	x26, x25, [sp, #16]
 	WORD $0xa9025ff8  // stp	x24, x23, [sp, #32]
 	WORD $0xa90357f6  // stp	x22, x21, [sp, #48]
 	WORD $0xa9044ff4  // stp	x20, x19, [sp, #64]
 	WORD $0xa9057bfd  // stp	fp, lr, [sp, #80]
+	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
+	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0x3871696c  // ldrb	w12, [x11, x17]
 	WORD $0x7100b59f  // cmp	w12, #45
 	WORD $0x54000661  // b.ne	LBB0_11 $204(%rip)
@@ -632,7 +634,7 @@ LBB0_135:
 	WORD $0xa94357f6  // ldp	x22, x21, [sp, #48]
 	WORD $0xa9425ff8  // ldp	x24, x23, [sp, #32]
 	WORD $0xa94167fa  // ldp	x26, x25, [sp, #16]
-	WORD $0xa8c66ffc  // ldp	x28, x27, [sp], #96
+	WORD $0xa8c76ffc  // ldp	x28, x27, [sp], #112
 	WORD $0xd65f03c0  // ret
 LBB0_136:
 	WORD $0xb201e7ee  // mov	x14, #-7378697629483820647
@@ -4672,7 +4674,7 @@ TEXT ·__vnumber(SB), $0-24
 
 _entry:
 	MOVD 16(g), R16
-	SUB $160, RSP, R17
+	SUB $176, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 

@@ -9,11 +9,11 @@ package neon
 func __html_escape_entry__() uintptr
 
 var (
-    _subr__html_escape uintptr = __html_escape_entry__() + 48
+    _subr__html_escape uintptr = 48
 )
 
 const (
-    _stack__html_escape = 0
+    _stack__html_escape = 32
 )
 
 var (

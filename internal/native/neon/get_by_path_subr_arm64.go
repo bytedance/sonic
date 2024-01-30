@@ -9,11 +9,11 @@ package neon
 func __get_by_path_entry__() uintptr
 
 var (
-    _subr__get_by_path uintptr = __get_by_path_entry__() + 64
+    _subr__get_by_path uintptr = 64
 )
 
 const (
-    _stack__get_by_path = 192
+    _stack__get_by_path = 208
 )
 
 var (

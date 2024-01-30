@@ -9,11 +9,11 @@ package neon
 func __vnumber_entry__() uintptr
 
 var (
-    _subr__vnumber uintptr = __vnumber_entry__() + 16
+    _subr__vnumber uintptr = 16
 )
 
 const (
-    _stack__vnumber = 96
+    _stack__vnumber = 112
 )
 
 var (
