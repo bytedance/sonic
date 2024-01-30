@@ -4550,7 +4550,7 @@ __UnquoteTab:
 	WORD $0x00000000  // .space 4, '\x00\x00\x00\x00\x00\x00\x00\x00'
 	WORD $0x00000000  // .space 4, '\x00\x00\x00\x00'
 
-TEXT ·__get_by_path(SB), NOSPLIT | NOFRAME, $0-40
+TEXT ·__get_by_path(SB), $0-40
 	NO_LOCAL_POINTERS
 
 _entry:

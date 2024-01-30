@@ -4667,7 +4667,7 @@ _LSHIFT_TAB:
 	WORD $0x00000000  // .asciz 4, '\x00\x00\x00\x00\x00\x00\x00\x00'
 	WORD $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
 
-TEXT ·__vnumber(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__vnumber(SB), $0-24
 	NO_LOCAL_POINTERS
 
 _entry:

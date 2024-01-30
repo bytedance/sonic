@@ -110,7 +110,7 @@ LBB0_21:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__vunsigned(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__vunsigned(SB), $0-24
 	NO_LOCAL_POINTERS
 
 _entry:

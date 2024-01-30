@@ -970,7 +970,7 @@ LBB0_124:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__skip_one_fast(SB), NOSPLIT | NOFRAME, $0-24
+TEXT ·__skip_one_fast(SB), $0-24
 	NO_LOCAL_POINTERS
 
 _entry:

@@ -154,7 +154,7 @@ LBB0_30:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__validate_utf8_fast(SB), NOSPLIT | NOFRAME, $0-16
+TEXT ·__validate_utf8_fast(SB), $0-16
 	NO_LOCAL_POINTERS
 
 _entry:

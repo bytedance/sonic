@@ -37,7 +37,7 @@ LBB0_6:
 	WORD $0xaa0203e0  // mov	x0, x2
 	WORD $0xd65f03c0  // ret
 
-TEXT ·__lspace(SB), NOSPLIT | NOFRAME, $0-32
+TEXT ·__lspace(SB), $0-32
 	NO_LOCAL_POINTERS
 
 _entry:

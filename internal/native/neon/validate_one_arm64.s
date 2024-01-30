@@ -1831,7 +1831,7 @@ LBB0_337:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__validate_one(SB), NOSPLIT | NOFRAME, $0-32
+TEXT ·__validate_one(SB), $0-32
 	NO_LOCAL_POINTERS
 
 _entry:
