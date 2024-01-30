@@ -1175,6 +1175,7 @@ func TestUnmarshal(t *testing.T) {
 
 		dec := decoder.NewDecoder(tt.in)
 		checkOptions(dec, &tt)
+		dec.CopyString()
 		if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil) {
 			spew.Dump(tt, v)
 			t.Fatalf("#%d: %v, want %v", i, err, tt.err)

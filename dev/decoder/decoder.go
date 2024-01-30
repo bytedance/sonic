@@ -5,6 +5,7 @@ import (
 	"unsafe"
 
 	"encoding/json"
+	"github.com/bytedance/sonic/ast"
 	"github.com/bytedance/sonic/dev/internal/rt"
 	"github.com/davecgh/go-spew/spew"
 )
@@ -74,4 +75,19 @@ func (self *Decoder) decodeImpl(val interface{}) error {
 		return error_parse_internal(err, self.json)
 	}
 	return err
+}
+
+func (self *Decoder) Reset(s string) {
+    self.json = s
+}
+
+// Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
+// Otherwise, returns negative error code using start and invalid character position using end
+func Skip(data []byte) (start int, end int) {
+	pos := 0
+	start, err := ast.Skip(rt.Mem2Str(data), &pos)
+	if err != nil {
+		return -1, pos
+	}
+	return start, pos
 }

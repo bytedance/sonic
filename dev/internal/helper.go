@@ -20,18 +20,17 @@ func SkipNumberFast(json string, start int) (int, error) {
 	return pos, nil
 }
 
-func skipOneFast(json string, start int) string {
+func SkipOneFast(json string, start int) (string, error) {
 	// find the number ending, we pasred in sonic-cpp, it alway valid
 	nast, err := ast.NewSearcher(json[start:]).GetByPath()
 	if err != nil {
-		println(json[start:])
-		panic("json should always be valid here")
+		return "", err
 	}
 	raw, err := nast.Raw()
 	if err != nil {
-		panic("json should always be valid here")
+		return "", err
 	}
-	return raw
+	return raw, nil
 }
 
 func decodeBase64(raw string) ([]byte, error) {

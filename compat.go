@@ -24,7 +24,7 @@ import (
     `io`
     `reflect`
 
-	`github.com/bytedance/sonic/decoder`
+	`github.com/bytedance/sonic/dev/decoder`
     `github.com/bytedance/sonic/option`
 )
 
@@ -119,13 +119,8 @@ func (cfg frozenConfig) NewEncoder(writer io.Writer) Encoder {
 // TODO: use dev.NewDecoder
 // NewDecoder is implemented by sonic
 func (cfg frozenConfig) NewDecoder(reader io.Reader) Decoder {
-    dec := json.NewDecoder(reader)
-    if cfg.UseNumber {
-        dec.UseNumber()
-    }
-    if cfg.DisallowUnknownFields {
-        dec.DisallowUnknownFields()
-    }
+    dec := decoder.NewStreamDecoder(reader)
+    dec.Decoder.SetOptions(cfg.decoderOpts)
     return dec
 }
 

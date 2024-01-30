@@ -281,18 +281,15 @@ func (val Node) AsBool() (bool, error) {
 }
 
 func (val Node) AsStr(ctx *Context) (string, error) {
-	if ctx.Options & (1 << _F_copy_string) != 0 {
-		return val.StringCopy(), nil
-	}
-
-	switch val.Type() {
-	case KStringHasEscaped:
-		return val.StringCopy(), nil
-	case KStringCommon:
-		return val.String(ctx), nil
-	default:
+	if !val.IsStr() {
 		return "", newUnmatched("expect string")
 	}
+
+	if (ctx.Options & (1 << _F_copy_string) == 0) && val.Type() == KStringCommon {
+		return val.String(ctx), nil
+	}
+
+	return val.StringCopy(), nil
 }
 
 
@@ -378,7 +375,11 @@ func (val Node) AsRaw(ctx *Context) string {
 		ref := rt.Str2Mem(ctx.Json)[offset-1 : int(offset+len)+1]
 		return rt.Mem2Str(ref)
 	default:
-		return skipOneFast(ctx.Json, val.Position(ctx))
+		raw, err := SkipOneFast(ctx.Json, val.Position(ctx))
+		if err != nil {
+			panic("should always be valid json here")
+		}
+		return raw
 	}
 }
 

@@ -78,3 +78,16 @@ func (self *Searcher) getByPath(copystring bool, path ...interface{}) (Node, err
     }
     return newRawNode(raw, t), nil
 }
+
+func Skip(json string, pos *int) (start int, err error ) {
+	parser := NewParser(json)
+	parser.p = *pos
+
+	start, err = parser.getByPath()
+    if code := err.(types.ParsingError); code != 0 {
+		return -1, err
+    }
+
+	*pos = parser.p
+	return start, nil
+}

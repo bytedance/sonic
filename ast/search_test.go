@@ -410,3 +410,12 @@ func BenchmarkSetOne_Parallel_Sonic(b *testing.B) {
         }
     })
 }
+
+func TestAstSkip(t *testing.T) {
+	input := ` {"test":123} `
+	pos := 0
+	start, err := Skip(input, &pos)
+	assert.Equal(t, start, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, pos, 13)
+}
