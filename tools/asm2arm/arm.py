@@ -2056,8 +2056,8 @@ class Assembler:
         # function header and stack checking
         self.out.append('')
         # frame size is 16 to store x29 and x30
-        self.out.append('TEXT ·%s(SB), NOSPLIT | NOFRAME, $0-%d' % (name, proto.argspace))
-        # self.out.append('TEXT ·%s(SB), $%d-%d' % (name, 0, proto.argspace))
+        # self.out.append('TEXT ·%s(SB), NOSPLIT | NOFRAME, $0-%d' % (name, proto.argspace))
+        self.out.append('TEXT ·%s(SB), $%d-%d' % (name, 0, proto.argspace))
         self.out.append('\tNO_LOCAL_POINTERS')
 
         # add stack check if needed
