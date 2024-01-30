@@ -28,59 +28,6 @@ import (
 	"github.com/bytedance/sonic/internal/rt"
 )
 
-// const (
-// 	_Realloc_Threshold_0 = 512
-// 	_Realloc_Threshold_1 = 4096
-// 	_Realloc_Threshold_2 = 128 * 1024
-// 	_Realloc_Threshold_3 = 1024 * 1024
-// )
-
-// func ralloc(w unsafe.Pointer, c int, l int, n int) (unsafe.Pointer, int) {
-// 	if c < _Realloc_Threshold_0 {
-// 		c = c<<2 + n + l
-// 	} else if c < _Realloc_Threshold_1 {
-// 		c = c<<1 + n + l
-// 	} else if c < _Realloc_Threshold_2 {
-// 		c = c + n + l
-// 	} else if c < _Realloc_Threshold_3 {
-// 		c = c>>1 + n + l
-// 	} else {
-// 		c = c>>2 + n + l
-// 	}
-// 	buf := rt.BytesFrom(unsafe.Pointer(uintptr(w)-uintptr(l)), l, l)
-// 	tmp := make([]byte, l, c)
-// 	copy(tmp, buf)
-// 	w = rt.IndexByte(tmp, l)
-// 	return w, c
-// }
-
-// func check_size(ow unsafe.Pointer, oc int, l int, n int) (unsafe.Pointer, int) {
-// 	if oc-l <= n {
-// 		ow, oc = ralloc(ow, oc, l, n)
-// 	}
-// 	return ow, oc
-// }
-
-// func write_char(ow unsafe.Pointer, ol int, oc int, char byte) (w unsafe.Pointer, l int, c int) {
-// 	w, c = check_size(ow, oc, ol, 1)
-// 	*(*byte)(w) = char
-// 	w = unsafe.Add(w, 1)
-// 	l = ol + 1
-// 	return
-// }
-
-// func write_str(ow unsafe.Pointer, ol int, oc int, str string) (w unsafe.Pointer, l int, c int) {
-// 	return write_bytes(ow, ol, oc, rt.IndexChar(str, 0), len(str))
-// }
-
-// func write_bytes(ow unsafe.Pointer, ol int, oc int, p unsafe.Pointer, n int) (w unsafe.Pointer, l int, c int) {
-// 	w, c = check_size(ow, oc, ol, n)
-// 	memmove(w, p, uintptr(n))
-// 	w = unsafe.Add(w, n)
-// 	l = ol + n
-// 	return
-// }
-
 const (
 	_S_cond = iota
 	_S_init
@@ -145,7 +92,7 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.P
 			vt, pv := ins.Vp2()
 			f := flags
 			if pv {
-				f |= alg.BitPointerValue
+				f |= (1 << alg.BitPointerValue)
 			}
 			*b = buf
 			if vt.Indirect() {
@@ -337,27 +284,27 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.P
 				buf = append(buf, "null"...)
 			}
 		case ir.OP_marshal:
-			vt := ins.Vr()
+			vt, itab := ins.Vtab()
 			var err error
-			if buf, err = call_json_marshaler(buf, vt, p, flags, false); err != nil {
+			if buf, err = call_json_marshaler(buf, vt, itab, p, flags, false); err != nil {
 				return err
 			}
 		case ir.OP_marshal_p:
-			vt := ins.Vr()
+			vt, itab := ins.Vtab()
 			var err error
-			if buf, err = call_json_marshaler(buf, vt, p, flags, true); err != nil {
+			if buf, err = call_json_marshaler(buf, vt, itab, p, flags, true); err != nil {
 				return err
 			}
 		case ir.OP_marshal_text:
-			vt := ins.Vr()
+			vt, itab := ins.Vtab()
 			var err error
-			if buf, err = call_text_marshaler(buf, vt, p, flags, false); err != nil {
+			if buf, err = call_text_marshaler(buf, vt, itab, p, flags, false); err != nil {
 				return err
 			}
 		case ir.OP_marshal_text_p:
-			vt := ins.Vr()
+			vt, itab := ins.Vtab()
 			var err error
-			if buf, err = call_text_marshaler(buf, vt, p, flags, true); err != nil {
+			if buf, err = call_text_marshaler(buf, vt, itab, p, flags, true); err != nil {
 				return err
 			}
 		default:
@@ -385,7 +332,17 @@ func is_nil(p unsafe.Pointer) bool {
 	return *(*unsafe.Pointer)(p) == nil
 }
 
-func call_text_marshaler(buf []byte, vt *rt.GoType, p unsafe.Pointer, flags uint64, pointer bool) ([]byte, error) {
+func convT2I(ptr unsafe.Pointer, deref bool, itab *rt.GoItab) (rt.GoIface) {
+	if deref {
+		ptr = *(*unsafe.Pointer)(ptr)
+	}
+	return rt.GoIface{
+		Itab:  itab,
+		Value: ptr,
+	}
+}
+
+func call_text_marshaler(buf []byte, vt *rt.GoType, itab *rt.GoItab, p unsafe.Pointer, flags uint64, pointer bool) ([]byte, error) {
 	var it rt.GoIface
 	if !pointer {
 		switch vt.Kind() {
@@ -395,12 +352,12 @@ func call_text_marshaler(buf []byte, vt *rt.GoType, p unsafe.Pointer, flags uint
 				return buf, nil
 			}
 			it = rt.AssertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(p))
-			case reflect.Ptr, reflect.Map : it = rt.ConvT2I(vt, p, _T_encoding_TextMarshaler, true)
-			default                       : it = rt.ConvT2I(vt, p, _T_encoding_TextMarshaler, !vt.Indirect())
+			case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
+			default                       : it = convT2I(p, !vt.Indirect(), itab)
 		}
 
 	} else {
-		it = rt.ConvT2I(vt, p, _T_encoding_TextMarshaler, false)
+		it = convT2I(p, false, itab)
 	}
 	if err := alg.EncodeTextMarshaler(&buf, *(*encoding.TextMarshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
 		return buf, err
@@ -408,7 +365,7 @@ func call_text_marshaler(buf []byte, vt *rt.GoType, p unsafe.Pointer, flags uint
 	return buf, nil
 }
 
-func call_json_marshaler(buf []byte, vt *rt.GoType, p unsafe.Pointer, flags uint64, pointer bool) ([]byte, error) {
+func call_json_marshaler(buf []byte, vt *rt.GoType, itab *rt.GoItab, p unsafe.Pointer, flags uint64, pointer bool) ([]byte, error) {
 	var it rt.GoIface
 	if !pointer {
 		switch vt.Kind() {
@@ -418,12 +375,12 @@ func call_json_marshaler(buf []byte, vt *rt.GoType, p unsafe.Pointer, flags uint
 				return buf, nil
 			}
 			it = rt.AssertI2I(_T_json_Marshaler, *(*rt.GoIface)(p))
-			case reflect.Ptr, reflect.Map : it = rt.ConvT2I(vt, p, _T_json_Marshaler, true)
-			default                       : it = rt.ConvT2I(vt, p, _T_json_Marshaler, !vt.Indirect())
+			case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
+			default                       : it = convT2I(p, !vt.Indirect(), itab)
 		}
 
 	} else {
-		it = rt.ConvT2I(vt, p, _T_json_Marshaler, false)
+		it = convT2I(p, false, itab)
 	}
 	if err := alg.EncodeJsonMarshaler(&buf, *(*json.Marshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
 		return buf, err

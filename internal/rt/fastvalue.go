@@ -229,16 +229,5 @@ func (t *GoType) IsUint32() bool {
 }
 
 //go:noescape
-//go:linkname getitab runtime.getitab
-//goland:noinspection ALL
-func getitab(inter *GoType, typ *GoType, canfail bool) *GoItab
-
-func ConvT2I(typ *GoType, ptr unsafe.Pointer, inter *GoType, deref bool) (GoIface) {
-	if deref {
-		ptr = *(*unsafe.Pointer)(ptr)
-	}
-	return GoIface{
-		Itab:  getitab(inter, typ, false),
-		Value: ptr,
-	}
-}
+//go:linkname GetItab runtime.getitab
+func GetItab(inter *GoType, typ *GoType, canfail bool) *GoItab

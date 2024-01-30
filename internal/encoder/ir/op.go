@@ -224,6 +224,21 @@ func NewInsVt(op Op, vt reflect.Type) Instr {
 	}
 }
 
+type typAndTab struct {
+	vt *rt.GoType
+	itab *rt.GoItab
+}
+
+func NewInsVtab(op Op, vt reflect.Type, itab *rt.GoItab) Instr {
+	return Instr{
+		o: op,
+		p: unsafe.Pointer(&typAndTab{
+			vt: rt.UnpackType(vt),
+			itab: itab,
+		}),
+	}
+}
+
 func NewInsVp(op Op, vt reflect.Type, pv bool) Instr {
 	i := 0
 	if pv {
@@ -268,6 +283,11 @@ func (self Instr) Vr() *rt.GoType {
 
 func (self Instr) Vp() (vt reflect.Type, pv bool) {
 	return (*rt.GoType)(self.p).Pack(), self.u == 1
+}
+
+func (self Instr) Vtab() (vt *rt.GoType, itab *rt.GoItab) {
+	tt := (*typAndTab)(self.p)
+	return tt.vt, tt.itab
 }
 
 func (self Instr) Vp2() (vt *rt.GoType, pv bool) {
@@ -334,7 +354,8 @@ func (self Instr) Disassemble() string {
 	case OP_marshal_text:
 		fallthrough
 	case OP_marshal_text_p:
-		return fmt.Sprintf("%-18s%s", self.Op().String(), self.Vt())
+		vt, _ := self.Vtab()
+		return fmt.Sprintf("%-18s%s", self.Op().String(), vt.Pack())
 	case OP_goto:
 		fallthrough
 	case OP_is_nil:
@@ -415,6 +436,10 @@ func (self *Program) Rtt(op Op, vt reflect.Type) {
 
 func (self *Program) Vp(op Op, vt reflect.Type, pv bool) {
 	*self = append(*self, NewInsVp(op, vt, pv))
+}
+
+func (self *Program) Vtab(op Op, vt reflect.Type, itab *rt.GoItab) {
+	*self = append(*self, NewInsVtab(op, vt, itab))
 }
 
 func (self Program) Disassemble() string {

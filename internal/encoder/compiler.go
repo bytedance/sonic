@@ -133,7 +133,7 @@ func (self *Compiler) compileRec(p *ir.Program, sp int, vt reflect.Type, pv bool
 
 	/* check for addressable `json.Marshaler` with pointer receiver */
 	if pv && pt.Implements(vars.JsonMarshalerType) {
-		p.Rtt(ir.OP_marshal_p, pt)
+		addMarshalerOp(p, ir.OP_marshal_p, pt, vars.JsonMarshalerType)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (self *Compiler) compileRec(p *ir.Program, sp int, vt reflect.Type, pv bool
 
 	/* check for addressable `encoding.TextMarshaler` with pointer receiver */
 	if pv && pt.Implements(vars.EncodingTextMarshalerType) {
-		p.Rtt(ir.OP_marshal_text_p, pt)
+		addMarshalerOp(p, ir.OP_marshal_text_p, pt, vars.EncodingTextMarshalerType)
 		return
 	}
 
@@ -323,7 +323,7 @@ func (self *Compiler) compileMapBodyTextKey(p *ir.Program, vk reflect.Type) {
 
 func (self *Compiler) compileMapBodyUtextKey(p *ir.Program, vk reflect.Type) {
 	if vk.Kind() != reflect.Ptr {
-		p.Rtt(ir.OP_marshal_text, vk)
+		addMarshalerOp(p, ir.OP_marshal_text, vk, vars.EncodingTextMarshalerType)
 	} else {
 		self.compileMapBodyUtextPtr(p, vk)
 	}
@@ -332,7 +332,7 @@ func (self *Compiler) compileMapBodyUtextKey(p *ir.Program, vk reflect.Type) {
 func (self *Compiler) compileMapBodyUtextPtr(p *ir.Program, vk reflect.Type) {
 	i := p.PC()
 	p.Add(ir.OP_is_nil)
-	p.Rtt(ir.OP_marshal_text, vk)
+	addMarshalerOp(p, ir.OP_marshal_text, vk, vars.EncodingTextMarshalerType)
 	j := p.PC()
 	p.Add(ir.OP_goto)
 	p.Pin(i)
@@ -629,16 +629,27 @@ func (self *Compiler) compileMarshaler(p *ir.Program, op ir.Op, vt reflect.Type,
 
 	/* direct receiver */
 	if vk != reflect.Ptr {
-		p.Rtt(op, vt)
+		addMarshalerOp(p, op, vt, mt)
 		return
 	}
-
 	/* value receiver with a pointer type, check for nil before calling the marshaler */
 	p.Add(ir.OP_is_nil)
-	p.Rtt(op, vt)
+
+	addMarshalerOp(p, op, vt, mt)
+
 	i := p.PC()
 	p.Add(ir.OP_goto)
 	p.Pin(pc)
 	p.Add(ir.OP_null)
 	p.Pin(i)
+}
+
+func addMarshalerOp(p *ir.Program, op ir.Op, vt reflect.Type, mt reflect.Type) {
+	if vars.UseVM {
+		itab := rt.GetItab(rt.UnpackType(mt), rt.UnpackType(vt), true)
+		p.Vtab(op, vt, itab)
+	} else {
+		// OPT: get itab here 
+		p.Rtt(op, vt)
+	}
 }
