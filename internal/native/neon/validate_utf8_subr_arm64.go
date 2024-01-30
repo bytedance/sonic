@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __validate_utf8_arm64_entry__() uintptr
+func __validate_utf8_entry__() uintptr
 
 var (
-    _subr__validate_utf8 uintptr = __validate_utf8_arm64_entry__() + 12
+    _subr__validate_utf8 uintptr = __validate_utf8_entry__() + 16
 )
 
 const (
-    _stack__validate_utf8 = 64
+    _stack__validate_utf8 = 32
 )
 
 var (

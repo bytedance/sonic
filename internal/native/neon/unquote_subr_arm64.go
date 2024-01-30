@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __unquote_arm64_entry__() uintptr
+func __unquote_entry__() uintptr
 
 var (
-    _subr__unquote uintptr = __unquote_arm64_entry__() + 48
+    _subr__unquote uintptr = __unquote_entry__() + 48
 )
 
 const (
-    _stack__unquote = 128
+    _stack__unquote = 96
 )
 
 var (

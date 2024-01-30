@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __skip_object_arm64_entry__() uintptr
+func __skip_object_entry__() uintptr
 
 var (
-    _subr__skip_object uintptr = __skip_object_arm64_entry__() + 64
+    _subr__skip_object uintptr = __skip_object_entry__() + 64
 )
 
 const (
-    _stack__skip_object = 160
+    _stack__skip_object = 96
 )
 
 var (

@@ -5,14 +5,13 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__vunsigned_arm64_entry__(SB), NOSPLIT, $16
+TEXT ·__vunsigned_entry__(SB), NOSPLIT, $0
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0x910083ff  // add sp, sp, #32
 	WORD $0xd65f03c0  // ret
+	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
 	  // .p2align 2, 0x00
 _vunsigned:
-	MOVD.W R30, -32(RSP)	// 	WORD $0xf81e0ffe  // str	x30, [sp, #-32]!
 	WORD $0xf9400028  // ldr	x8, [x1]
 	WORD $0xa940240a  // ldp	x10, x9, [x0]
 	WORD $0x5280012b  // mov	w11, #9
@@ -22,44 +21,41 @@ _vunsigned:
 	WORD $0xf9000c4b  // str	x11, [x2, #24]
 	WORD $0xeb09011f  // cmp	x8, x9
 	WORD $0x54000122  // b.hs	LBB0_3 $36(%rip)
-	WORD $0x3868694b  // ldrb	w11, [x10, x8]
-	WORD $0x7100b57f  // cmp	w11, #45
-	WORD $0x54000161  // b.ne	LBB0_4 $44(%rip)
+	WORD $0x8b08014b  // add	x11, x10, x8
+	WORD $0x3940016c  // ldrb	w12, [x11]
+	WORD $0x7100b59f  // cmp	w12, #45
+	WORD $0x54000121  // b.ne	LBB0_4 $36(%rip)
 LBB0_2:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x928000a8  // mov	x8, #-6
 	WORD $0xf9000048  // str	x8, [x2]
-	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 LBB0_3:
 	WORD $0xf9000029  // str	x9, [x1]
 	WORD $0x92800008  // mov	x8, #-1
 	WORD $0xf9000048  // str	x8, [x2]
-	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 LBB0_4:
-	WORD $0x5100e96c  // sub	w12, w11, #58
-	WORD $0x31002d9f  // cmn	w12, #11
-	WORD $0x540000c8  // b.hi	LBB0_6 $24(%rip)
+	WORD $0x5100e98d  // sub	w13, w12, #58
+	WORD $0x31002dbf  // cmn	w13, #11
+	WORD $0x540000a8  // b.hi	LBB0_6 $20(%rip)
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x92800028  // mov	x8, #-2
 	WORD $0xf9000048  // str	x8, [x2]
-	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 LBB0_6:
-	WORD $0x7100c17f  // cmp	w11, #48
-	WORD $0x54000181  // b.ne	LBB0_8 $48(%rip)
-	WORD $0x9100050b  // add	x11, x8, #1
-	WORD $0x386b694c  // ldrb	w12, [x10, x11]
-	WORD $0x5100b98c  // sub	w12, w12, #46
-	WORD $0x7100dd9f  // cmp	w12, #55
-	WORD $0x5280002d  // mov	w13, #1
-	WORD $0x9acc21ac  // lsl	x12, x13, x12
-	WORD $0xb20903ed  // mov	x13, #36028797027352576
-	WORD $0xf280002d  // movk	x13, #1
-	WORD $0x8a0d018c  // and	x12, x12, x13
-	WORD $0xfa409984  // ccmp	x12, #0, #4, ls
-	WORD $0x54000560  // b.eq	LBB0_21 $172(%rip)
+	WORD $0x7100c19f  // cmp	w12, #48
+	WORD $0x54000161  // b.ne	LBB0_8 $44(%rip)
+	WORD $0x3940056b  // ldrb	w11, [x11, #1]
+	WORD $0x5100b96b  // sub	w11, w11, #46
+	WORD $0x7100dd7f  // cmp	w11, #55
+	WORD $0x5280002c  // mov	w12, #1
+	WORD $0x9acb218b  // lsl	x11, x12, x11
+	WORD $0xb20903ec  // mov	x12, #36028797027352576
+	WORD $0xf280002c  // movk	x12, #1
+	WORD $0x8a0c016b  // and	x11, x11, x12
+	WORD $0xfa409964  // ccmp	x11, #0, #4, ls
+	WORD $0x54000520  // b.eq	LBB0_21 $164(%rip)
 LBB0_8:
 	WORD $0xd280000b  // mov	x11, #0
 	WORD $0xeb08013f  // cmp	x9, x8
@@ -67,19 +63,19 @@ LBB0_8:
 	WORD $0x5280014d  // mov	w13, #10
 LBB0_9:
 	WORD $0xeb08019f  // cmp	x12, x8
-	WORD $0x54000420  // b.eq	LBB0_20 $132(%rip)
-	WORD $0x38e8694e  // ldrsb	w14, [x10, x8]
+	WORD $0x54000400  // b.eq	LBB0_20 $128(%rip)
+	WORD $0x3868694e  // ldrb	w14, [x10, x8]
 	WORD $0x5100c1ce  // sub	w14, w14, #48
 	WORD $0x710025df  // cmp	w14, #9
-	WORD $0x54000268  // b.hi	LBB0_15 $76(%rip)
+	WORD $0x54000248  // b.hi	LBB0_15 $72(%rip)
 	WORD $0x9bcd7d6f  // umulh	x15, x11, x13
 	WORD $0xeb0f03ff  // cmp	xzr, x15
 	WORD $0x54000141  // b.ne	LBB0_14 $40(%rip)
 	WORD $0x8b0b096b  // add	x11, x11, x11, lsl #2
 	WORD $0xd37ff96b  // lsl	x11, x11, #1
 	WORD $0x91000508  // add	x8, x8, #1
-	WORD $0xab0e016b  // adds	x11, x11, x14
-	WORD $0xba1f03ef  // adcs	x15, xzr, xzr
+	WORD $0xab2e016b  // adds	x11, x11, w14, uxtb
+	WORD $0x1a9f37ef  // cset	w15, hs
 	WORD $0x934001ee  // sbfx	x14, x15, #0, #1
 	WORD $0xca0f01cf  // eor	x15, x14, x15
 	WORD $0xb500004f  // cbnz	x15, LBB0_14 $8(%rip)
@@ -89,47 +85,44 @@ LBB0_14:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x92800088  // mov	x8, #-5
 	WORD $0xf9000048  // str	x8, [x2]
-	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 LBB0_15:
 	WORD $0xeb09011f  // cmp	x8, x9
 	WORD $0x54000102  // b.hs	LBB0_19 $32(%rip)
 	WORD $0x38686949  // ldrb	w9, [x10, x8]
 	WORD $0x7100b93f  // cmp	w9, #46
-	WORD $0x54fff820  // b.eq	LBB0_2 $-252(%rip)
+	WORD $0x54fff8c0  // b.eq	LBB0_2 $-232(%rip)
 	WORD $0x7101153f  // cmp	w9, #69
-	WORD $0x54fff7e0  // b.eq	LBB0_2 $-260(%rip)
+	WORD $0x54fff880  // b.eq	LBB0_2 $-240(%rip)
 	WORD $0x7101953f  // cmp	w9, #101
-	WORD $0x54fff7a0  // b.eq	LBB0_2 $-268(%rip)
+	WORD $0x54fff840  // b.eq	LBB0_2 $-248(%rip)
 LBB0_19:
 	WORD $0xaa0803ec  // mov	x12, x8
 LBB0_20:
 	WORD $0xf900002c  // str	x12, [x1]
 	WORD $0xf900084b  // str	x11, [x2, #16]
-	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 LBB0_21:
-	WORD $0xf900002b  // str	x11, [x1]
-	WORD $0x910083ff  // add	sp, sp, #32
+	WORD $0x91000508  // add	x8, x8, #1
+	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__vunsigned(SB), $0-24
+TEXT ·__vunsigned(SB), NOSPLIT | NOFRAME, $0-24
 	NO_LOCAL_POINTERS
 
 _entry:
 	MOVD 16(g), R16
-	SUB $64, RSP, R17
-	CMP  R16, R17
+	CMP R16, RSP
 	BLS  _stack_grow
 
 _vunsigned:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
-	CALL ·__vunsigned_arm64_entry__+24(SB)  // _vunsigned
+	CALL ·__vunsigned_entry__+16(SB)  // _vunsigned
 	RET
 
 _stack_grow:

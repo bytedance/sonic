@@ -6,14 +6,14 @@ package neon
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func __html_escape_arm64_entry__() uintptr
+func __html_escape_entry__() uintptr
 
 var (
-    _subr__html_escape uintptr = __html_escape_arm64_entry__() + 48
+    _subr__html_escape uintptr = __html_escape_entry__() + 48
 )
 
 const (
-    _stack__html_escape = 48
+    _stack__html_escape = 0
 )
 
 var (
