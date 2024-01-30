@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"strconv"
-	"sync"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/encoder/alg"
@@ -82,25 +80,6 @@ import (
 // 	l = ol + n
 // 	return
 // }
-
-type stackHolds struct {
-	p unsafe.Pointer
-}
-
-var shPools = sync.Pool{
-	New: func() interface{} {
-		return &stackHolds{}
-	},
-}
-
-func newStackHolds() *stackHolds {
-	return shPools.Get().(*stackHolds)
-}
-
-func freeStackHolds(sh *stackHolds) {
-	sh.p = nil
-	shPools.Put(sh)
-}
 
 const (
 	_S_cond = iota
@@ -169,22 +148,10 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.P
 				f |= alg.BitPointerValue
 			}
 			*b = buf
-			// enc, err := vars.FindOrCompile(vt, pv, compiler)
-			// if err != nil {
-			// 	return err
-			// }
-			// s.Save(x, f, p, q)
-			// s.SavePC(pc, pro)
-			// prog = enc.(*ir.Program)
-			// x, f, p, q = s.Drop()
 			if vt.Indirect() {
-				sh := newStackHolds()
-				sh.p = p
-				if err := EncodeTypedPointer(b, vt, &sh.p, s, f); err != nil {
-					freeStackHolds(sh)
+				if err := EncodeTypedPointer(b, vt, (*unsafe.Pointer)(rt.NoEscape(unsafe.Pointer(&p))), s, f); err != nil {
 					return err
 				}
-				freeStackHolds(sh)
 			} else {
 				vp := (*unsafe.Pointer)(p)
 				if err := EncodeTypedPointer(b, vt, vp, s, f); err != nil {
@@ -215,40 +182,40 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.P
 			}
 		case ir.OP_i8:
 			v := *(*int8)(p)
-			strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.I64toa(buf, int64(v))
 		case ir.OP_i16:
 			v := *(*int16)(p)
-			buf = strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.I64toa(buf, int64(v))
 		case ir.OP_i32:
 			v := *(*int32)(p)
-			buf = strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.I64toa(buf, int64(v))
 		case ir.OP_i64:
 			v := *(*int64)(p)
-			buf = strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.I64toa(buf, int64(v))
 		case ir.OP_u8:
 			v := *(*uint8)(p)
-			buf = strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u16:
 			v := *(*uint16)(p)
-			buf = strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u32:
 			v := *(*uint32)(p)
-			buf = strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u64:
 			v := *(*uint64)(p)
-			buf = strconv.AppendInt(buf, int64(v), 10)
+			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_f32:
 			v := *(*float32)(p)
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
 				return vars.ERR_nan_or_infinite
 			}
-			buf = strconv.AppendFloat(buf, float64(v), 'g', -1, 32)
+			buf = alg.F32toa(buf, v)
 		case ir.OP_f64:
 			v := *(*float64)(p)
 			if math.IsNaN(v) || math.IsInf(v, 0) {
 				return vars.ERR_nan_or_infinite
 			}
-			buf = strconv.AppendFloat(buf, float64(v), 'g', -1, 64)
+			buf = alg.F64toa(buf, v)
 		case ir.OP_bin:
 			v := *(*[]byte)(p)
 			buf = alg.EncodeBase64(buf, v)
