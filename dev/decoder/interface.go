@@ -20,6 +20,8 @@ func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 	}
 
 	eface := *(*rt.GoEface)(vp)
+
+	// not pointer type, or nil pointer, or *interface{}
 	if eface.Value == nil || eface.Type.Kind() != reflect.Ptr || rt.PtrElem(eface.Type) == anyType {
 		var ret interface{}
 		var err error
@@ -41,7 +43,7 @@ func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 	}
 
 
-	dec, err := findOrCompile(eface.Type)
+	dec, err := findOrCompile(rt.PtrElem(eface.Type))
 	if err != nil {
 		return err
 	}
