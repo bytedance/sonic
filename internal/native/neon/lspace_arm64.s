@@ -5,13 +5,16 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__lspace_entry__(SB), NOSPLIT, $0
+TEXT ·__lspace_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0xd65f03c0  // ret
 	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
 	  // .p2align 2, 0x00
 _lspace:
+	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
+	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xeb02003f  // cmp	x1, x2
 	WORD $0x54000061  // b.ne	LBB0_2 $12(%rip)
 	WORD $0x8b020008  // add	x8, x0, x2
@@ -35,6 +38,7 @@ LBB0_5:
 	WORD $0xcb000102  // sub	x2, x8, x0
 LBB0_6:
 	WORD $0xaa0203e0  // mov	x0, x2
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 
 TEXT ·__lspace(SB), $0-32
@@ -42,7 +46,8 @@ TEXT ·__lspace(SB), $0-32
 
 _entry:
 	MOVD 16(g), R16
-	CMP R16, RSP
+	SUB $96, RSP, R17
+	CMP  R16, R17
 	BLS  _stack_grow
 
 _lspace:

@@ -9,11 +9,11 @@ package neon
 func __skip_object_entry__() uintptr
 
 var (
-    _subr__skip_object uintptr = __skip_object_entry__() + 64
+    _subr__skip_object uintptr = 64
 )
 
 const (
-    _stack__skip_object = 96
+    _stack__skip_object = 112
 )
 
 var (

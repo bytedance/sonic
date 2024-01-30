@@ -9,11 +9,11 @@ package neon
 func __validate_one_entry__() uintptr
 
 var (
-    _subr__validate_one uintptr = __validate_one_entry__() + 64
+    _subr__validate_one uintptr = 64
 )
 
 const (
-    _stack__validate_one = 96
+    _stack__validate_one = 112
 )
 
 var (

@@ -9,11 +9,11 @@ package neon
 func __skip_array_entry__() uintptr
 
 var (
-    _subr__skip_array uintptr = __skip_array_entry__() + 64
+    _subr__skip_array uintptr = 64
 )
 
 const (
-    _stack__skip_array = 96
+    _stack__skip_array = 112
 )
 
 var (

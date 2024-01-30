@@ -9,11 +9,11 @@ package neon
 func __f64toa_entry__() uintptr
 
 var (
-    _subr__f64toa uintptr = __f64toa_entry__() + 16
+    _subr__f64toa uintptr = 16
 )
 
 const (
-    _stack__f64toa = 0
+    _stack__f64toa = 32
 )
 
 var (

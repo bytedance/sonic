@@ -2369,7 +2369,8 @@ def main():
             print('var (', file = fp)
             mlen = max(len(s) for s in asm.subr)
             for name, entry in asm.subr.items():
-                print('    _subr_%s uintptr = _%s_entry__() + %d' % (name.ljust(mlen, ' '), name, entry), file = fp)
+                # print('    _subr_%s uintptr = _%s_entry__() + %d' % (name.ljust(mlen, ' '), name, entry), file = fp)
+                print('    _subr_%s uintptr = %d' % (name.ljust(mlen, ' '), entry), file = fp)
             print(')', file = fp)
 
             # dump max stack depth for exported functions

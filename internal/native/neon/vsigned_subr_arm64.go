@@ -9,11 +9,11 @@ package neon
 func __vsigned_entry__() uintptr
 
 var (
-    _subr__vsigned uintptr = __vsigned_entry__() + 16
+    _subr__vsigned uintptr = 16
 )
 
 const (
-    _stack__vsigned = 0
+    _stack__vsigned = 32
 )
 
 var (

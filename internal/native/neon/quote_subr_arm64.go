@@ -9,11 +9,11 @@ package neon
 func __quote_entry__() uintptr
 
 var (
-    _subr__quote uintptr = __quote_entry__() + 48
+    _subr__quote uintptr = 48
 )
 
 const (
-    _stack__quote = 0
+    _stack__quote = 32
 )
 
 var (

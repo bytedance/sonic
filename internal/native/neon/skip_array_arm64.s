@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__skip_array_entry__(SB), NOSPLIT, $80
+TEXT ·__skip_array_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
 	WORD $0x10000000  // adr x0, . $0(%rip)
 	WORD $0xd65f03c0  // ret
@@ -59,14 +59,16 @@ lCPI0_2:
 // .byte 15
 
 _skip_array:
-	WORD $0xa9ba6ffc  // stp	x28, x27, [sp, #-96]!
+	WORD $0xa9b96ffc  // stp	x28, x27, [sp, #-112]!
 	WORD $0xa90167fa  // stp	x26, x25, [sp, #16]
 	WORD $0xa9025ff8  // stp	x24, x23, [sp, #32]
 	WORD $0xa90357f6  // stp	x22, x21, [sp, #48]
 	WORD $0xa9044ff4  // stp	x20, x19, [sp, #64]
 	WORD $0xa9057bfd  // stp	fp, lr, [sp, #80]
+	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
+	WORD $0xd10023fd  // sub	fp, sp, #8
 Lloh0:
-	WORD $0x10fffdc8  // adr	x8, lCPI0_0 $-72(%rip)
+	WORD $0x10fffd88  // adr	x8, lCPI0_0 $-80(%rip)
 Lloh1:
 	WORD $0x3dc00100  // ldr	q0, [x8, lCPI0_0@PAGEOFF] $0(%rip)
 	WORD $0xaa0203ea  // mov	x10, x2
@@ -85,11 +87,11 @@ Lloh1:
 	WORD $0x4f01e440  // movi.16b	v0, #34
 	WORD $0x4f02e781  // movi.16b	v1, #92
 Lloh2:
-	WORD $0x10fffc28  // adr	x8, lCPI0_1 $-124(%rip)
+	WORD $0x10fffbe8  // adr	x8, lCPI0_1 $-132(%rip)
 Lloh3:
 	WORD $0x3dc00102  // ldr	q2, [x8, lCPI0_1@PAGEOFF] $0(%rip)
 Lloh4:
-	WORD $0x10fffc68  // adr	x8, lCPI0_2 $-116(%rip)
+	WORD $0x10fffc28  // adr	x8, lCPI0_2 $-124(%rip)
 Lloh5:
 	WORD $0x3dc00103  // ldr	q3, [x8, lCPI0_2@PAGEOFF] $0(%rip)
 	WORD $0x92f00006  // mov	x6, #9223372036854775807
@@ -2214,7 +2216,7 @@ LBB0_394:
 	WORD $0xa94357f6  // ldp	x22, x21, [sp, #48]
 	WORD $0xa9425ff8  // ldp	x24, x23, [sp, #32]
 	WORD $0xa94167fa  // ldp	x26, x25, [sp, #16]
-	WORD $0xa8c66ffc  // ldp	x28, x27, [sp], #96
+	WORD $0xa8c76ffc  // ldp	x28, x27, [sp], #112
 	WORD $0xd65f03c0  // ret
 LBB0_395:
 	WORD $0x9280001c  // mov	x28, #-1
@@ -2359,7 +2361,7 @@ TEXT ·__skip_array(SB), $0-40
 
 _entry:
 	MOVD 16(g), R16
-	SUB $160, RSP, R17
+	SUB $176, RSP, R17
 	CMP  R16, R17
 	BLS  _stack_grow
 

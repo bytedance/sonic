@@ -9,11 +9,11 @@ package neon
 func __vstring_entry__() uintptr
 
 var (
-    _subr__vstring uintptr = __vstring_entry__() + 48
+    _subr__vstring uintptr = 48
 )
 
 const (
-    _stack__vstring = 16
+    _stack__vstring = 48
 )
 
 var (
