@@ -20,10 +20,10 @@ package neon
 
 import (
 	`os`
+	`time`
 	`runtime`
 	`runtime/debug`
 	`testing`
-	`time`
 	`unsafe`
 
 	`github.com/bytedance/sonic/internal/native/types`
@@ -49,17 +49,6 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestRecover_f64toa(t *testing.T) {
-	defer func() {
-		if r := recover(); r!= nil {
-			t.Log("recover: ", r)
-		} else {
-			t.Fatal("no panic")
-		}
-	}()
-	_ = f64toa(nil, 123)
-}
-
 func TestRecover_f32toa(t *testing.T) {
 	defer func() {
 		if r := recover(); r!= nil {
@@ -69,6 +58,17 @@ func TestRecover_f32toa(t *testing.T) {
 		}
 	}()
 	_ = f32toa(nil, 123)
+}
+
+func TestRecover_f64toa(t *testing.T) {
+	defer func() {
+		if r := recover(); r!= nil {
+			t.Log("recover: ", r)
+		} else {
+			t.Fatal("no panic")
+		}
+	}()
+	_ = f64toa(nil, 123)
 }
 
 func TestRecover_i64toa(t *testing.T) {

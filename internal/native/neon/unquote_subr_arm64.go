@@ -9,7 +9,7 @@ package neon
 func __unquote_entry__() uintptr
 
 var (
-    _subr__unquote uintptr = 48
+    _subr__unquote uintptr = 32
 )
 
 const (

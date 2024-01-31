@@ -7,9 +7,7 @@
 
 TEXT ·__lspace_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 2, 0x00
 _lspace:
 	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
@@ -41,7 +39,7 @@ LBB0_6:
 	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 
-TEXT ·__lspace(SB), $0-32
+TEXT ·__lspace(SB), NOSPLIT, $0-32
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -54,7 +52,9 @@ _lspace:
 	MOVD sp+0(FP), R0
 	MOVD nb+8(FP), R1
 	MOVD off+16(FP), R2
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__lspace_entry__+16(SB)  // _lspace
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+24(FP)
 	RET
 

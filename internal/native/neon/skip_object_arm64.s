@@ -7,9 +7,7 @@
 
 TEXT ·__skip_object_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x00000001; WORD $0x00000000  // .quad 1
@@ -2356,7 +2354,7 @@ LBB0_430:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__skip_object(SB), $0-40
+TEXT ·__skip_object(SB), NOSPLIT, $0-40
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -2370,7 +2368,9 @@ _skip_object:
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	MOVD flags+24(FP), R3
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__skip_object_entry__+64(SB)  // _skip_object
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+32(FP)
 	RET
 

@@ -7,9 +7,7 @@
 
 TEXT ·__value_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -5939,7 +5937,7 @@ _LSHIFT_TAB:
 	WORD $0x00000000  // .asciz 4, '\x00\x00\x00\x00\x00\x00\x00\x00'
 	WORD $0x00000000  // .asciz 4, '\x00\x00\x00\x00'
 
-TEXT ·__value(SB), $0-48
+TEXT ·__value(SB), NOSPLIT, $0-48
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -5954,7 +5952,9 @@ _value:
 	MOVD p+16(FP), R2
 	MOVD v+24(FP), R3
 	MOVD flags+32(FP), R4
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__value_entry__+48(SB)  // _value
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+40(FP)
 	RET
 

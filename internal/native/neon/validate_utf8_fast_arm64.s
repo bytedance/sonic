@@ -7,9 +7,7 @@
 
 TEXT ·__validate_utf8_fast_entry__(SB), NOSPLIT, $32
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 2, 0x00
 _validate_utf8_fast:
 	WORD $0xd100c3ff  // sub	sp, sp, #48
@@ -159,7 +157,7 @@ LBB0_30:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__validate_utf8_fast(SB), $0-16
+TEXT ·__validate_utf8_fast(SB), NOSPLIT, $0-16
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -170,7 +168,9 @@ _entry:
 
 _validate_utf8_fast:
 	MOVD s+0(FP), R0
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__validate_utf8_fast_entry__+16(SB)  // _validate_utf8_fast
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+8(FP)
 	RET
 

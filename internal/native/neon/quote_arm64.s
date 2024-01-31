@@ -7,9 +7,7 @@
 
 TEXT ·__quote_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -2531,7 +2529,7 @@ __EscTab:
 	WORD $0x00000000  // .space 4, '\x00\x00\x00\x00\x00\x00\x00\x00'
 	WORD $0x00000000  // .space 4, '\x00\x00\x00\x00'
 
-TEXT ·__quote(SB), $0-48
+TEXT ·__quote(SB), NOSPLIT, $0-48
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -2546,7 +2544,9 @@ _quote:
 	MOVD dp+16(FP), R2
 	MOVD dn+24(FP), R3
 	MOVD flags+32(FP), R4
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__quote_entry__+48(SB)  // _quote
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+40(FP)
 	RET
 
