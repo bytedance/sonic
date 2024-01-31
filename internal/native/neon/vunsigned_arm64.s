@@ -7,9 +7,7 @@
 
 TEXT ·__vunsigned_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 2, 0x00
 _vunsigned:
 	WORD $0xf9400028  // ldr	x8, [x1]
@@ -118,7 +116,7 @@ LBB0_21:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__vunsigned(SB), $0-24
+TEXT ·__vunsigned(SB), NOSPLIT, $0-24
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -131,7 +129,9 @@ _vunsigned:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__vunsigned_entry__+16(SB)  // _vunsigned
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	RET
 
 _stack_grow:

@@ -7,9 +7,7 @@
 
 TEXT ·__validate_one_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x00000001; WORD $0x00000000  // .quad 1
@@ -1833,7 +1831,7 @@ LBB0_337:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__validate_one(SB), $0-32
+TEXT ·__validate_one(SB), NOSPLIT, $0-32
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -1846,7 +1844,9 @@ _validate_one:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__validate_one_entry__+64(SB)  // _validate_one
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+24(FP)
 	RET
 

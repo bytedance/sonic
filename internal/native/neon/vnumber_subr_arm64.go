@@ -9,7 +9,7 @@ package neon
 func __vnumber_entry__() uintptr
 
 var (
-    _subr__vnumber uintptr = 16
+    _subr__vnumber uintptr = 0
 )
 
 const (

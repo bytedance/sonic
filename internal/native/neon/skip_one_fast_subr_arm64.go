@@ -9,7 +9,7 @@ package neon
 func __skip_one_fast_entry__() uintptr
 
 var (
-    _subr__skip_one_fast uintptr = 48
+    _subr__skip_one_fast uintptr = 32
 )
 
 const (

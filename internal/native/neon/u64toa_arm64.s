@@ -7,9 +7,7 @@
 
 TEXT ·__u64toa_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 3, 0x00
 lCPI0_0:
 	WORD $0x147b20c5
@@ -566,7 +564,7 @@ _VecShiftShuffles:
 	WORD $0xffffffff  // .ascii 4, '\xff\xff\xff\xff\xff\xff\xff\xff'
 	WORD $0xffffffff  // .ascii 4, '\xff\xff\xff\xff'
 
-TEXT ·__u64toa(SB), $0-24
+TEXT ·__u64toa(SB), NOSPLIT, $0-24
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -578,7 +576,9 @@ _entry:
 _u64toa:
 	MOVD out+0(FP), R0
 	MOVD val+8(FP), R1
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__u64toa_entry__+64(SB)  // _u64toa
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET
 

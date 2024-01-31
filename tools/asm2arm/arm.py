@@ -2018,6 +2018,7 @@ class Assembler:
         size = 0 if size < 0 else size
         self.out.append('TEXT ·_%s_entry__(SB), NOSPLIT, $%d' % (name, size))
         self.out.append('\tNO_LOCAL_POINTERS')
+        self.out.append('\tPCALIGN $16')
         self._LE_4bytes_IntIntr_2_RawIntr()
         self._reloc()
 
@@ -2047,6 +2048,12 @@ class Assembler:
         addr = self.code.get(subr)
         self.subr[subr] = addr
         size = self.code.stacksize(subr)
+        
+        # Notice: golang will insert 3 instructions when stacksize > 0.
+        # And since we use PCALIGN 16, thus we add 16 bytes PC
+        if size > 0:
+            addr += 16
+
         m_size = size + 64
         # rsp_sub_size = size + 16
 
@@ -2057,7 +2064,7 @@ class Assembler:
         self.out.append('')
         # frame size is 16 to store x29 and x30
         # self.out.append('TEXT ·%s(SB), NOSPLIT | NOFRAME, $0-%d' % (name, proto.argspace))
-        self.out.append('TEXT ·%s(SB), $%d-%d' % (name, 0, proto.argspace))
+        self.out.append('TEXT ·%s(SB), NOSPLIT, $%d-%d' % (name, 0, proto.argspace))
         self.out.append('\tNO_LOCAL_POINTERS')
 
         # add stack check if needed
@@ -2099,47 +2106,35 @@ class Assembler:
 
         # Go ASM completely ignores the offset of the JMP instruction,
         # so we need to use indirect jumps instead for tail-call elimination
-        elif proto.retv is None:
-            # raise RuntimeError("UNIMPLEMENT FUNC: %s" % name)
-            print("%s return void." % name)
-            # self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (STUB_NAME, addr, subr))
-            # self.out.append('\tJMP AX')
+        # raise RuntimeError("UNIMPLEMENT FUNC: %s" % name)
+        # self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (STUB_NAME, addr, subr))
+        # self.out.append('\tJMP AX')
 
-            # save LR(x30) and Frame Pointer(x29)
+        # save LR(x30) and Frame Pointer(x29)
 
-            # self.out.append('\tADD $%d, RSP, RSP' % size)
-            # self.out.append('\tSTP.W (R29, R30), -16(RSP)')
-            # self.out.append('\tMOVD RSP, R29')
-            # self.out.append('\tSUB $16, RSP')
-            # self.out.append('\tADD $%d, RSP' % (size + 32))
-            self.out.append('\tCALL ·_%s_entry__+%d(SB)  // %s' % (subr, addr, subr))
-            # self.out.append('\tSUB $%d, RSP' % (size + 32))
-            # self.out.append('\tADD $16, RSP')
-            # self.out.append('\tLDP -8(RSP), (R29, R30)')
-            # self.out.append('\tADD $16, RSP')
-            # self.out.append('\tLDP.P 16(RSP), (R29, R30)')
-            # self.out.append('\tSUB $%d, RSP, RSP' % size)
+        # self.out.append('\tADD $%d, RSP, RSP' % size)
+        # self.out.append('\tSTP.W (R29, R30), -16(RSP)')
+        # self.out.append('\tMOVD RSP, R29')
+        # self.out.append('\tSUB $16, RSP')
+        # self.out.append('\tADD $%d, RSP' % (size + 32))
+        self.out.append('\tWORD $0xf90007fc // str x28, [sp, #8]')
+        self.out.append('\tCALL ·_%s_entry__+%d(SB)  // %s' % (subr, addr, subr))
+        self.out.append('\tWORD $0xf94007fc // ldr x28, [sp, #8]')
+        # self.out.append('\tSUB $%d, RSP' % (size + 32))
+        # self.out.append('\tADD $16, RSP')
+        # self.out.append('\tLDP -8(RSP), (R29, R30)')
+        # self.out.append('\tADD $16, RSP')
+        # self.out.append('\tLDP.P 16(RSP), (R29, R30)')
+        # self.out.append('\tSUB $%d, RSP, RSP' % size)
 
-            # Restore LR and Frame Pointer
+        # Restore LR and Frame Pointer
 
         # normal functions, call the real function, and return the result
-        else:
-            # save LR(x30) and Frame Pointer(x29)
-
-            # We need store return address manual in ARM
-            # self.out.append('\tSUB $16, RSP')
-            # self.out.append('\tADD $%d, RSP' % (size + 32))
-            self.out.append('\tCALL ·_%s_entry__+%d(SB)  // %s' % (subr, addr, subr))
-            # self.out.append('\tSUB $%d, RSP' % (size + 32))
-            # self.out.append('\tADD $16, RSP')
-            # self.out.append('\tSUB $%d, RSP, RSP' % size)
-            
+        if proto.retv is not None:
             self.out.append('\t%s, %s+%d(FP)' % (' '.join(REG_MAP[proto.retv.creg.reg]), proto.retv.name, offs))
-            
-            # Restore LR and Frame Pointer
-            # self.out.append('\tLDP -8(RSP), (R29, R30)')
-            # self.out.append('\tADD $16, RSP')
-
+        # Restore LR and Frame Pointer
+        # self.out.append('\tLDP -8(RSP), (R29, R30)')
+        # self.out.append('\tADD $16, RSP')
         
         self.out.append('\tRET')
 
@@ -2159,14 +2154,12 @@ class Assembler:
                 raise SyntaxError('function prototype must have a "_" prefix: ' + repr(name))
 
     def parse(self, src: List[str], proto: PrototypeMap):
-        self.code.instr(Instruction('adr x0, .'))
+        # self.code.instr(Instruction('adr x0, .'))
         # self.code.instr(Instruction('add sp, sp, #%d'%self.code.stacksize(name)))
-        self.code.instr(Instruction('ret'))
-
-        # align 16 bytes
-        cmd = Command.parse(".p2align 4")
-        func = self._commands.get(cmd.cmd)
-        func(cmd.args)
+        # self.code.instr(Instruction('ret'))
+        # cmd = Command.parse(".p2align 4")
+        # func = self._commands.get(cmd.cmd)
+        # func(cmd.args)
 
         self._parse(src)
         self._declare(proto)

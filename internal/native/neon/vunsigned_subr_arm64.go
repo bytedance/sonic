@@ -9,7 +9,7 @@ package neon
 func __vunsigned_entry__() uintptr
 
 var (
-    _subr__vunsigned uintptr = 16
+    _subr__vunsigned uintptr = 0
 )
 
 const (

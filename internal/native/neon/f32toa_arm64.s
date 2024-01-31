@@ -7,9 +7,7 @@
 
 TEXT ·__f32toa_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x10000000  // adr x0, . $0(%rip)
-	WORD $0xd65f03c0  // ret
-	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
+	PCALIGN $16
 	  // .p2align 2, 0x00
 _f32toa:
 	WORD $0x1e260009  // fmov	w9, s0
@@ -902,7 +900,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	WORD $0x00000000  // .p2align 3, 0x00
-_LB_412ab4da: // _pow10_ceil_sig_f32.g
+_LB_9ffba3ae: // _pow10_ceil_sig_f32.g
 	WORD $0x4b43fcf5; WORD $0x81ceb32c  // .quad -9093133594791772939
 	WORD $0x5e14fc32; WORD $0xa2425ff7  // .quad -6754730975062328270
 	WORD $0x359a3b3f; WORD $0xcad2f7f5  // .quad -3831727700400522433
@@ -981,7 +979,7 @@ _LB_412ab4da: // _pow10_ceil_sig_f32.g
 	WORD $0x7bea5c70; WORD $0x8f7e32ce  // .quad -8106986416796705680
 	WORD $0x1ae4f38c; WORD $0xb35dbf82  // .quad -5522047002568494196
 
-TEXT ·__f32toa(SB), $0-24
+TEXT ·__f32toa(SB), NOSPLIT, $0-24
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -993,7 +991,9 @@ _entry:
 _f32toa:
 	MOVD out+0(FP), R0
 	FMOVD val+8(FP), F0
+	WORD $0xf90007fc // str x28, [sp, #8]
 	CALL ·__f32toa_entry__+16(SB)  // _f32toa
+	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET
 

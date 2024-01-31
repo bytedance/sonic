@@ -9,7 +9,7 @@ package neon
 func __f64toa_entry__() uintptr
 
 var (
-    _subr__f64toa uintptr = 16
+    _subr__f64toa uintptr = 0
 )
 
 const (
