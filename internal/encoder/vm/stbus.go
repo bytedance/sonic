@@ -32,9 +32,9 @@ func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars
 	} else if pp, err := vars.FindOrCompile(vt, (fv&(1<<alg.BitPointerValue)) != 0, compiler); err != nil {
 		return err
 	} else if vt.Indirect() {
-		return ExecVM(buf, *vp, sb, fv, pp.(*ir.Program))
+		return Execute(buf, *vp, sb, fv, pp.(*ir.Program))
 	} else {
-		return ExecVM(buf, unsafe.Pointer(vp), sb, fv, pp.(*ir.Program))
+		return Execute(buf, unsafe.Pointer(vp), sb, fv, pp.(*ir.Program))
 	}
 }
 

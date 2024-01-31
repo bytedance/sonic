@@ -346,7 +346,7 @@ func (self Instr) Disassemble() string {
 	case OP_recurse:
 		fallthrough
 	case OP_map_iter:
-		fallthrough
+		return fmt.Sprintf("%-18s%s", self.Op().String(), self.Vt())
 	case OP_marshal:
 		fallthrough
 	case OP_marshal_p:

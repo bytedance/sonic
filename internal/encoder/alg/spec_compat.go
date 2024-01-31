@@ -164,6 +164,7 @@ func I64toa(buf []byte, v int64) ([]byte) {
 }
 
 func U64toa(buf []byte, v uint64) ([]byte) {
-	return buf = strconv.AppendInt(buf, int64(v), 10)
+	return buf = strconv.AppendUint(buf, v, 10)
 }
+
 

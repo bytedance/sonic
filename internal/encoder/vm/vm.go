@@ -38,7 +38,16 @@ var (
 	_T_encoding_TextMarshaler = rt.UnpackType(vars.EncodingTextMarshalerType)
 )
 
-func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.Program) (error) {
+func print_instr(buf []byte, pc int, op ir.Op, ins *ir.Instr) {
+	if len(buf) > 20 {
+		fmt.Println(string(buf[len(buf)-20:]))
+	} else {
+		fmt.Println(string(buf))
+	}
+	fmt.Printf("pc %04d, op %v, ins %#v\n", pc, op, ins.Disassemble())
+}
+
+func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.Program) (error) {
 	pl := len(*prog)
 	if pl <= 0 {
 		return nil
@@ -55,12 +64,9 @@ func ExecVM(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.P
 		pc++
 		op := ins.Op()
 
-		// if len(buf) > 20 {
-		// 	fmt.Println(string(buf[len(buf)-20:]))
-		// } else {
-		// 	fmt.Println(string(buf))
-		// }
-		// fmt.Printf("\npc %04d, op %v, ins %#v\n", pc, op, ins.Disassemble())
+		if vars.DebugSyncGC {
+			print_instr(buf, pc, op, ins)
+		}
 		
 		switch op {
 		case ir.OP_goto:
