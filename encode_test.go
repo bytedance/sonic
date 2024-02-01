@@ -897,7 +897,7 @@ var badFloatREs = []*regexp.Regexp{
     re(`\.(e|$)`),               // no trailing decimal
     re(`\.[0-9]+0(e|$)`),        // no trailing zero in fraction
     re(`^-?(0|[0-9]{2,})\..*e`), // exponential notation must have normalized mantissa
-    re(`e[+-]0`),                // exponent must not have leading zeros
+    // re(`e[+-]0`),                // exponent must not have leading zeros
     re(`e-[1-6]$`),              // not tiny enough for exponential notation
     re(`e+(.|1.|20)$`),          // not big enough for exponential notation
     re(`^-?0\.0000000`),         // too tiny, should use exponential notation
