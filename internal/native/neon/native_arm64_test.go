@@ -21,18 +21,19 @@
 package neon
 
 import (
-    `encoding/hex`
-    `fmt`
-    `math`
-    `strings`
-    `testing`
-    `unsafe`
+	"encoding/hex"
+	"fmt"
+	"math"
+	"runtime"
+	"strings"
+	"testing"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //go:noinline
@@ -41,6 +42,7 @@ func BREAK() bool {
 }
 
 func TestNative_Value(t *testing.T) {
+    runtime.GC()
     var v types.JsonState
     s := `   -12345`
     p := (*rt.GoString)(unsafe.Pointer(&s))

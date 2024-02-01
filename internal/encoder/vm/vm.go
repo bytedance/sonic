@@ -126,7 +126,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			buf = append(buf, "null"...)
 		case ir.OP_str:
 			v := *(*string)(p)
-			buf = alg.Quote(buf, v, false, has_opts(flags, alg.BitValidateString))
+			buf = alg.Quote(buf, v, false)
 		case ir.OP_bool:
 			if *(*bool)(p) {
 				buf = append(buf, "true"...)
@@ -174,7 +174,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			buf = alg.EncodeBase64(buf, v)
 		case ir.OP_quote:
 			v := *(*string)(p)
-			buf = alg.Quote(buf, v, true, has_opts(flags, alg.BitValidateString))
+			buf = alg.Quote(buf, v, true)
 		case ir.OP_number:
 			v := *(*json.Number)(p)
 			if v == "" {
@@ -228,7 +228,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 		case ir.OP_map_write_key:
 			if has_opts(flags, alg.BitSortMapKeys) {
 				v := *(*string)(p)
-				buf = alg.Quote(buf, v, false, has_opts(flags, alg.BitValidateString))
+				buf = alg.Quote(buf, v, false)
 				pc = ins.Vi()
 				continue
 			}

@@ -115,6 +115,11 @@ func F64toa(out *byte, val float64) (ret int)
 
 //go:nosplit
 //go:noescape
+//go:linkname F32toa github.com/bytedance/sonic/internal/native/neon.__f32toa
+func F32toa(out *byte, val float32) (ret int)
+
+//go:nosplit
+//go:noescape
 //go:linkname ValidateUTF8 github.com/bytedance/sonic/internal/native/neon.__validate_utf8
 func ValidateUTF8(s *string, p *int, m *types.StateMachine) (ret int)
 
