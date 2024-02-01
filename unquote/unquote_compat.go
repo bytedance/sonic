@@ -1,4 +1,4 @@
-// +build amd64,go1.16,!go1.22 arm64,go1.20,!go1.22
+// +build !amd64,!arm64 go1.22 !go1.16 arm64,!go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -19,12 +19,13 @@
 package unquote
 
 import (
-    `unsafe`
-    `runtime`
+	"runtime"
+	"strconv"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 func String(s string) (ret string, err types.ParsingError) {
@@ -43,19 +44,10 @@ func IntoBytes(s string, m *[]byte) types.ParsingError {
 }
 
 func intoBytesUnsafe(s string, m *[]byte) types.ParsingError {
-    pos := -1
-    slv := (*rt.GoSlice)(unsafe.Pointer(m))
-    str := (*rt.GoString)(unsafe.Pointer(&s))
-    /* unquote as the default configuration, replace invalid unicode with \ufffd */
-    ret := native.Unquote(str.Ptr, str.Len, slv.Ptr, &pos, types.F_UNICODE_REPLACE)
-
-    /* check for errors */
-    if ret < 0 {
-        return types.ParsingError(-ret)
+    o, e := strconv.Unquote(s)
+    if e != nil {
+        return types.ERR_INVALID_ESCAPE
     }
-
-    /* update the length */
-    slv.Len = ret
-    runtime.KeepAlive(s)
+    *m = append(*m, o...)
     return 0
 }
