@@ -9,7 +9,7 @@ fuzz:
 	file2fuzz -o ${corpusdir} ./go-fuzz-corpus/json/corpus/*  ./corpus/* 
 
 run:
-	SONIC_FUZZ_MEM_LIMIT=2 GOMAXPROCS=4 GOARCH=amd64 go test -fuzz=${testname} -v -fuzztime 5m
+	SONIC_FUZZ_MEM_LIMIT=2 GOMAXPROCS=4 go test -fuzz=${testname} -v -fuzztime 10m
 
 clean:
 	rm -rf ./go-fuzz-corpus/

@@ -19,7 +19,6 @@
 package decoder
 
 import (
-    `encoding/json`
     `io`
     `reflect`
 
@@ -66,11 +65,11 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 }
 
 // TODO: replace stream decoder with dev/decoder
-type StreamDecoder = json.Decoder
+type StreamDecoder = decoder.StreamDecoder
 
 // NewStreamDecoder adapts to encoding/json.NewDecoder API.
 //
 // NewStreamDecoder returns a new decoder that reads from r.
 func NewStreamDecoder(r io.Reader) *StreamDecoder {
-   return json.NewDecoder(r)
+   return decoder.NewStreamDecoder(r)
 }
