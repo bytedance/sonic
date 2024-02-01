@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package encoder
+package testdata
 
 const TwitterJson = `{
   "statuses": [

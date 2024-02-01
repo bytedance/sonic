@@ -90,6 +90,21 @@ func GuardSlice(buf *[]byte, n int) {
 	}
 }
 
+func GuardSlice2(buf []byte, n int) []byte {
+	c := cap(buf)
+	l := len(buf)
+	if c-l < n {
+		c = c>>1 + n + l
+		if c < 32 {
+			c = 32
+		}
+		tmp := make([]byte, l, c)
+		copy(tmp, buf)
+		buf = tmp
+	}
+    return buf
+}
+
 //go:nosplit
 func Ptr2SlicePtr(s unsafe.Pointer, l int, c int) unsafe.Pointer {
     slice := &GoSlice{
@@ -123,3 +138,6 @@ func NoEscape(p unsafe.Pointer) unsafe.Pointer {
     x := uintptr(p)
     return unsafe.Pointer(x ^ 0)
 }
+
+//go:nosplit
+func MoreStack(size uintptr)

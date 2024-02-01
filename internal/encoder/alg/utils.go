@@ -14,39 +14,12 @@
  * limitations under the License.
  */
 
-package encoder
+package alg
 
 import (
-    `encoding/json`
     `unsafe`
-
-    `github.com/bytedance/sonic/loader`
 )
 
-//go:nosplit
-func padd(p unsafe.Pointer, v int) unsafe.Pointer {
+func Padd(p unsafe.Pointer, v int) unsafe.Pointer {
     return unsafe.Pointer(uintptr(p) + uintptr(v))
-}
-
-//go:nosplit
-func ptoenc(p loader.Function) _Encoder {
-    return *(*_Encoder)(unsafe.Pointer(&p))
-}
-
-func compact(p *[]byte, v []byte) error {
-    buf := newBuffer()
-    err := json.Compact(buf, v)
-
-    /* check for errors */
-    if err != nil {
-        return err
-    }
-
-    /* add to result */
-    v = buf.Bytes()
-    *p = append(*p, v...)
-
-    /* return the buffer into pool */
-    freeBuffer(buf)
-    return nil
 }

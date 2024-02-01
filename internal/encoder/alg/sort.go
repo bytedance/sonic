@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package encoder
+package alg
 
 // Algorithm 3-way Radix Quicksort, d means the radix.
 // Reference: https://algs4.cs.princeton.edu/51radix/Quick3string.java.html

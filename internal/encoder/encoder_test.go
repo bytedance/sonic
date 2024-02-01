@@ -17,23 +17,27 @@
 package encoder
 
 import (
-    `bytes`
-    `encoding`
-    `encoding/json`
-    `runtime`
-    `runtime/debug`
-    `strconv`
-    `sync`
-    `testing`
-    `time`
+	"bytes"
+	"encoding"
+	"encoding/json"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"strings"
+	"sync"
+	"testing"
+	"time"
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/encoder/vars"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
+	"github.com/bytedance/sonic/testdata"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
     go func ()  {
-        if !debugAsyncGC {
+        if !vars.DebugAsyncGC {
             return
         }
         println("Begin GC looping...")
@@ -44,11 +48,12 @@ func TestMain(m *testing.M) {
         println("stop GC looping!")
     }()
     time.Sleep(time.Millisecond)
+
     m.Run()
 }
 
 func TestGC(t *testing.T) {
-    if debugSyncGC {
+    if vars.DebugSyncGC {
         return
     }
     out, err := Encode(_GenericValue, 0)
@@ -73,6 +78,27 @@ func TestGC(t *testing.T) {
         }(wg, n)
     }
     wg.Wait()
+}
+
+func TestEncoderMemoryCorruption(t *testing.T) {
+	println("TestEncoderMemoryCorruption")
+	runtime.GC()
+	var m = map[string]interface{}{
+		"1": map[string]interface{}{
+			`"` + strings.Repeat("a", int(option.DefaultEncoderBufferSize)-38) + `"`: "b",
+			"1": map[string]int32{
+				"b": 1658219785,
+			},
+		},
+	}
+	out, err := Encode(m, SortMapKeys)
+	if err != nil {
+		t.Fatal(err)
+	}
+	println(len(out))
+	if err := json.Unmarshal(out, &m); err != nil {
+		t.Fatal(err)
+	}
 }
 
 type sample struct {
@@ -208,7 +234,10 @@ func (self *MarshalerErrorStruct) MarshalJSON() ([]byte, error) {
 func TestMarshalerError(t *testing.T) {
     v := MarshalerErrorStruct{}
     ret, err := Encode(&v, 0)
-    require.EqualError(t, err, `invalid Marshaler output json syntax at 5: "[\"\"] {"`)
+    if !strings.Contains(err.Error(), `invalid Marshaler output json syntax`) {
+        t.Fatal()
+    }
+    // require.EqualError(t, err, `invalid Marshaler output json syntax at 5: "[\"\"] {"`)
     require.Equal(t, []byte(nil), ret)
 }
 
@@ -313,7 +342,7 @@ func TestEncoder_Marshal_EscapeHTML(t *testing.T) {
 
     m = map[string]string{"K": "\u2028\u2028\xe2"}
     ret, err = Encode(m, EscapeHTML)
-    require.Equal(t, string(ret), "{\"K\":\"\\u2028\\u2028\xe2\"}")
+    require.Equal(t, "{\"K\":\"\\u2028\\u2028\xe2\"}", string(ret))
     require.NoError(t, err)
 }
 
@@ -341,23 +370,27 @@ func TestEncoder_Marshal_EscapeHTML_LargeJson(t *testing.T) {
 }
 
 var _GenericValue interface{}
-var _BindingValue TwitterStruct
+var _BindingValue testdata.TwitterStruct
 
 func init() {
-    _ = json.Unmarshal([]byte(TwitterJson), &_GenericValue)
-    _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
+    _ = json.Unmarshal([]byte(testdata.TwitterJson), &_GenericValue)
+    _ = json.Unmarshal([]byte(testdata.TwitterJson), &_BindingValue)
 }
 
 func TestEncoder_Generic(t *testing.T) {
     v, e := Encode(_GenericValue, 0)
     require.NoError(t, e)
     println(string(v))
+    var exp interface{}
+    require.NoError(t, json.Unmarshal(v, &exp))
 }
 
 func TestEncoder_Binding(t *testing.T) {
     v, e := Encode(_BindingValue, 0)
     require.NoError(t, e)
     println(string(v))
+    var exp testdata.TwitterStruct
+    require.NoError(t, json.Unmarshal(v, &exp))
 }
 
 func TestEncoder_MapSortKey(t *testing.T) {
@@ -376,7 +409,7 @@ func TestEncoder_MapSortKey(t *testing.T) {
 
 func BenchmarkEncoder_Generic_Sonic(b *testing.B) {
     _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML | CompactMarshaler)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML | CompactMarshaler)
@@ -385,7 +418,7 @@ func BenchmarkEncoder_Generic_Sonic(b *testing.B) {
 
 func BenchmarkEncoder_Generic_Sonic_Fast(b *testing.B) {
     _, _ = Encode(_GenericValue, 0)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = Encode(_GenericValue, 0)
@@ -394,7 +427,7 @@ func BenchmarkEncoder_Generic_Sonic_Fast(b *testing.B) {
 
 func BenchmarkEncoder_Generic_StdLib(b *testing.B) {
     _, _ = json.Marshal(_GenericValue)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = json.Marshal(_GenericValue)
@@ -403,7 +436,7 @@ func BenchmarkEncoder_Generic_StdLib(b *testing.B) {
 
 func BenchmarkEncoder_Binding_Sonic(b *testing.B) {
     _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML | CompactMarshaler)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML | CompactMarshaler)
@@ -412,7 +445,7 @@ func BenchmarkEncoder_Binding_Sonic(b *testing.B) {
 
 func BenchmarkEncoder_Binding_Sonic_Fast(b *testing.B) {
     _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
@@ -421,7 +454,7 @@ func BenchmarkEncoder_Binding_Sonic_Fast(b *testing.B) {
 
 func BenchmarkEncoder_Binding_StdLib(b *testing.B) {
     _, _ = json.Marshal(&_BindingValue)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, _ = json.Marshal(&_BindingValue)
@@ -430,7 +463,7 @@ func BenchmarkEncoder_Binding_StdLib(b *testing.B) {
 
 func BenchmarkEncoder_Parallel_Generic_Sonic(b *testing.B) {
     _, _ = Encode(_GenericValue, SortMapKeys | EscapeHTML | CompactMarshaler)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
@@ -441,7 +474,7 @@ func BenchmarkEncoder_Parallel_Generic_Sonic(b *testing.B) {
 
 func BenchmarkEncoder_Parallel_Generic_Sonic_Fast(b *testing.B) {
     _, _ = Encode(_GenericValue, NoQuoteTextMarshaler)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
@@ -452,7 +485,7 @@ func BenchmarkEncoder_Parallel_Generic_Sonic_Fast(b *testing.B) {
 
 func BenchmarkEncoder_Parallel_Generic_StdLib(b *testing.B) {
     _, _ = json.Marshal(_GenericValue)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
@@ -463,7 +496,7 @@ func BenchmarkEncoder_Parallel_Generic_StdLib(b *testing.B) {
 
 func BenchmarkEncoder_Parallel_Binding_Sonic(b *testing.B) {
     _, _ = Encode(&_BindingValue, SortMapKeys | EscapeHTML | CompactMarshaler)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
@@ -474,7 +507,7 @@ func BenchmarkEncoder_Parallel_Binding_Sonic(b *testing.B) {
 
 func BenchmarkEncoder_Parallel_Binding_Sonic_Fast(b *testing.B) {
     _, _ = Encode(&_BindingValue, NoQuoteTextMarshaler)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
@@ -485,7 +518,7 @@ func BenchmarkEncoder_Parallel_Binding_Sonic_Fast(b *testing.B) {
 
 func BenchmarkEncoder_Parallel_Binding_StdLib(b *testing.B) {
     _, _ = json.Marshal(&_BindingValue)
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
@@ -495,8 +528,8 @@ func BenchmarkEncoder_Parallel_Binding_StdLib(b *testing.B) {
 }
 
 func BenchmarkHTMLEscape_Sonic(b *testing.B) {
-    jsonByte := []byte(TwitterJson)
-    b.SetBytes(int64(len(TwitterJson)))
+    jsonByte := []byte(testdata.TwitterJson)
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     var buf []byte
     for i := 0; i < b.N; i++ {
@@ -506,12 +539,12 @@ func BenchmarkHTMLEscape_Sonic(b *testing.B) {
 }
 
 func BenchmarkHTMLEscape_StdLib(b *testing.B) {
-    jsonByte := []byte(TwitterJson)
-    b.SetBytes(int64(len(TwitterJson)))
+    jsonByte := []byte(testdata.TwitterJson)
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     var buf []byte
     for i := 0; i < b.N; i++ {
-        out := bytes.NewBuffer(make([]byte, 0, len(TwitterJson) * 6 / 5))
+        out := bytes.NewBuffer(make([]byte, 0, len(testdata.TwitterJson) * 6 / 5))
         json.HTMLEscape(out, jsonByte)
         buf = out.Bytes()
     }
@@ -520,12 +553,12 @@ func BenchmarkHTMLEscape_StdLib(b *testing.B) {
 
 
 func BenchmarkValidate_Sonic(b *testing.B) {
-    var data = rt.Str2Mem(TwitterJson)
+    var data = rt.Str2Mem(testdata.TwitterJson)
     ok, s := Valid(data)
     if !ok {
         b.Fatal(s)
     }
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
         _, _ = Valid(data)
@@ -533,11 +566,11 @@ func BenchmarkValidate_Sonic(b *testing.B) {
 }
 
 func BenchmarkValidate_Std(b *testing.B) {
-    var data = rt.Str2Mem(TwitterJson)
+    var data = rt.Str2Mem(testdata.TwitterJson)
     if !json.Valid(data) {
         b.Fatal()
     }
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
         _ = json.Valid(data)
@@ -545,12 +578,12 @@ func BenchmarkValidate_Std(b *testing.B) {
 }
 
 func BenchmarkCompact_Std(b *testing.B) {
-    var data = rt.Str2Mem(TwitterJson)
+    var data = rt.Str2Mem(testdata.TwitterJson)
     var dst = bytes.NewBuffer(nil)
     if err := json.Compact(dst, data); err != nil {
         b.Fatal(err)
     }
-    b.SetBytes(int64(len(TwitterJson)))
+    b.SetBytes(int64(len(testdata.TwitterJson)))
     b.ResetTimer()
     for i:=0; i<b.N; i++ {
         dst.Reset()

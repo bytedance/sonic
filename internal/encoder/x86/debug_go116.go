@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package encoder
+package x86
 
 import (
     `os`
