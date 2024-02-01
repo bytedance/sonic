@@ -53,10 +53,16 @@ func TestIssue144_StringOption(t *testing.T) {
     }`)
 
     var v1, v2 Issue144_StringOption
+
 	v1.S3 = "hello"
 	v2.S3 = "hello"
 	v1.B1 = true
 	v2.B1 = true
+	v2.I1 = 123
+	v1.I1 = 123
+	v1.J1 = json.Number("123.456")
+	v2.J1 = json.Number("123.456")
+
     e1 := json.Unmarshal(data, &v1)
     e2 := sonic.Unmarshal(data, &v2)
     require.NoError(t, e1)

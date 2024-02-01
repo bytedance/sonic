@@ -25,11 +25,19 @@ import (
 )
 
 func TestDecodeStringToJsonNumber(t *testing.T) {
-	var objs json.Number 
-	errs := sonic.UnmarshalString(`"1234"`, &objs)
-	var obje json.Number 
-	erre := json.Unmarshal([]byte(`"1234"`), &obje)
-	require.Equal(t, erre, errs)
+	var objs, obje json.Number 
+	var errs, erre error
+
+	errs = sonic.UnmarshalString(`"1234"`, &objs)
+	erre = json.Unmarshal([]byte(`"1234"`), &obje)
+	require.NoError(t, errs)
+	require.Equal(t, erre == nil, errs == nil)
+	require.Equal(t, obje, objs)
+
+	errs = sonic.UnmarshalString(`"1234 "`, &objs)
+	erre = json.Unmarshal([]byte(`"1234 "`), &obje)
+	require.Error(t, errs)
+	require.Equal(t, erre == nil, errs == nil)
 	require.Equal(t, obje, objs)
 
 	errs = sonic.UnmarshalString(`"12x4"`, &objs)

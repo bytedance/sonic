@@ -111,13 +111,12 @@ func TestIssue379(t *testing.T) {
         },
     }
 
-    for i, tt := range tests {
-        println(i)
+    for _, tt := range tests {
         jv, sv := tt.newf(), tt.newf()
         jerr := json.Unmarshal([]byte(tt.data), jv)
         serr := sonic.Unmarshal([]byte(tt.data), sv)
-        require.Equal(t, jv, sv)
         require.Equal(t, jerr, serr)
+        require.Equal(t, jv, sv)
 
         jv, sv = tt.newf(), tt.newf()
         jerr = json.Unmarshal([]byte(tt.data), &jv)

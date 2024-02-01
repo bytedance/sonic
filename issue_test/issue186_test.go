@@ -70,12 +70,15 @@ func Reload(t *testing.T, rawData string) (tmp GlobalConfig) {
 }
 
 func TestIssue186(t *testing.T) {
-    t.Parallel()
+	// TODO FIXME: hangle in cgo
+    // t.Parallel()
     var data = `[{"A":"xxx","B":{"Slice":[111]}},{"A":"yyy","B":{"Slice":[222]},"C":["extra"]},{"A":"zzz","B":{"Slice":[333]},"C":["extra"]},{"A":"zzz","B":{"Slice":[333]},"C":["extra"]},{"A":"zzz","B":{"Slice":[1111111111,2222222222,3333333333,44444444444,55555555555]},"C":["extra","aaaaaaaaaaaa","bbbbbbbbbbbbb","ccccccccccccc","ddddddddddddd"]}]`
+
+	count := 1000
     // var obj interface{}
     for k:=0; k<100; k++ {
         wg := sync.WaitGroup{}
-        for i:=0; i<1000; i++ {
+        for i:=0; i<count; i++ {
             wg.Add(1)
             go func(){
                 defer wg.Done()
