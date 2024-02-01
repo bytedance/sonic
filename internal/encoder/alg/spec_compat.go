@@ -155,16 +155,16 @@ func F64toa(buf []byte, v float64) ([]byte) {
 	return strconv.AppendFloat(buf, float64(v), 'g', -1, 64)
 }
 
-func F32toa(buf []byte, v float64) ([]byte) {
+func F32toa(buf []byte, v float32) ([]byte) {
 	return strconv.AppendFloat(buf, float64(v), 'g', -1, 32)
 }
 
 func I64toa(buf []byte, v int64) ([]byte) {
-	return buf = strconv.AppendInt(buf, int64(v), 10)
+	return strconv.AppendInt(buf, int64(v), 10)
 }
 
 func U64toa(buf []byte, v uint64) ([]byte) {
-	return buf = strconv.AppendUint(buf, v, 10)
+	return strconv.AppendUint(buf, v, 10)
 }
 
 
