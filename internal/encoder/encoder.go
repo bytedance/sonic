@@ -158,7 +158,7 @@ func (enc *Encoder) SetIndent(prefix, indent string) {
 // Quote returns the JSON-quoted version of s.
 func Quote(s string) string {
     buf := make([]byte, 0, len(s)+2)
-    buf = alg.Quote(buf, s, false, true)
+    buf = alg.Quote(buf, s, false)
     return rt.Mem2Str(buf)
 }
 
@@ -228,7 +228,7 @@ func encodeFinish(buf []byte, opts Options) []byte {
     if opts & EscapeHTML != 0 {
         buf = HTMLEscape(nil, buf)
     }
-    if !vars.UseVM && (opts & ValidateString != 0) && !utf8.Validate(buf) {
+    if (opts & ValidateString != 0) && !utf8.Validate(buf) {
         buf = utf8.CorrectWith(nil, buf, `\ufffd`)
     }
     return buf
