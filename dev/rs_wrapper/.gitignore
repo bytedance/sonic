@@ -3,4 +3,5 @@ build/
 /library/target
 
 
-!lib/*/librs_wrapper.a
+!lib/linux/*.a
+!lib/darwin/*.a

@@ -25,4 +25,4 @@ overflow-checks = false
 # If you only wanted static library, you'd use only "staticlib".
 # This demo shows both. See https://doc.rust-lang.org/reference/linkage.html
 # for more information.
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["staticlib"]
