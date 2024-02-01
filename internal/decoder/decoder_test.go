@@ -400,3 +400,163 @@ func TestDecoder_MapWithIndirectElement(t *testing.T) {
     require.NoError(t, err)
     assert.Equal(t, [129]byte{1, 2, 3, 4, 5}, v[""].A)
 }
+
+func BenchmarkDecoder_Generic_Sonic(b *testing.B) {
+    var w interface{}
+    _, _ = decode(TwitterJson, &w, true)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v interface{}
+        _, _ = decode(TwitterJson, &v, true)
+    }
+}
+
+func BenchmarkDecoder_Generic_Sonic_Fast(b *testing.B) {
+    var w interface{}
+    _, _ = decode(TwitterJson, &w, false)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v interface{}
+        _, _ = decode(TwitterJson, &v, false)
+    }
+}
+
+func BenchmarkDecoder_Generic_StdLib(b *testing.B) {
+    var w interface{}
+    m := []byte(TwitterJson)
+    _ = json.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v interface{}
+        _ = json.Unmarshal(m, &v)
+    }
+}
+
+func BenchmarkDecoder_Binding_Sonic(b *testing.B) {
+    var w TwitterStruct
+    _, _ = decode(TwitterJson, &w, true)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v TwitterStruct
+        _, _ = decode(TwitterJson, &v, true)
+    }
+}
+
+func BenchmarkDecoder_Binding_Sonic_Fast(b *testing.B) {
+    var w TwitterStruct
+    _, _ = decode(TwitterJson, &w, false)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v TwitterStruct
+        _, _ = decode(TwitterJson, &v, false)
+    }
+}
+
+func BenchmarkDecoder_Binding_StdLib(b *testing.B) {
+    var w TwitterStruct
+    m := []byte(TwitterJson)
+    _ = json.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var v TwitterStruct
+        _ = json.Unmarshal(m, &v)
+    }
+}
+
+func BenchmarkDecoder_Parallel_Generic_Sonic(b *testing.B) {
+    var w interface{}
+    _, _ = decode(TwitterJson, &w, true)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v interface{}
+            _, _ = decode(TwitterJson, &v, true)
+        }
+    })
+}
+
+func BenchmarkDecoder_Parallel_Generic_Sonic_Fast(b *testing.B) {
+    var w interface{}
+    _, _ = decode(TwitterJson, &w, false)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v interface{}
+            _, _ = decode(TwitterJson, &v, false)
+        }
+    })
+}
+
+func BenchmarkDecoder_Parallel_Generic_StdLib(b *testing.B) {
+    var w interface{}
+    m := []byte(TwitterJson)
+    _ = json.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v interface{}
+            _ = json.Unmarshal(m, &v)
+        }
+    })
+}
+
+func BenchmarkDecoder_Parallel_Binding_Sonic(b *testing.B) {
+    var w TwitterStruct
+    _, _ = decode(TwitterJson, &w, true)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v TwitterStruct
+            _, _ = decode(TwitterJson, &v, true)
+        }
+    })
+}
+
+func BenchmarkDecoder_Parallel_Binding_Sonic_Fast(b *testing.B) {
+    var w TwitterStruct
+    _, _ = decode(TwitterJson, &w, false)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v TwitterStruct
+            _, _ = decode(TwitterJson, &v, false)
+        }
+    })
+}
+
+func BenchmarkDecoder_Parallel_Binding_StdLib(b *testing.B) {
+    var w TwitterStruct
+    m := []byte(TwitterJson)
+    _ = json.Unmarshal(m, &w)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var v TwitterStruct
+            _ = json.Unmarshal(m, &v)
+        }
+    })
+}
+
+func BenchmarkSkip_Sonic(b *testing.B) {
+    var data = rt.Str2Mem(TwitterJson)
+    if ret, _ := Skip(data); ret < 0 {
+        b.Fatal()
+    }
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i:=0; i<b.N; i++ {
+        _, _ = Skip(data)
+    }
+}
