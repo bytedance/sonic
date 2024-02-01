@@ -65,7 +65,7 @@ func BenchmarkDecoder_Generic_GoJson(b *testing.B) {
     }
 }
 
-func BenchmarkDecoder_Sonic_GoJson(b *testing.B) {
+func BenchmarkDecoder_Generic_Sonic(b *testing.B) {
     var w interface{}
     m := []byte(TwitterJson)
     _ = sonic.Unmarshal(m, &w)
