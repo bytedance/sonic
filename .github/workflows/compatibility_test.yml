@@ -33,6 +33,9 @@ jobs:
       - name: encoder
         run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/internal/encoder
 
+      - name: issues
+        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/issue_test
+
       - name: ast
         run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
       
