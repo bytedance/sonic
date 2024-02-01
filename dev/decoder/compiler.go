@@ -104,11 +104,15 @@ func (c *compiler) compile(vt reflect.Type) decFunc {
 		}
 	}
 
-	dec := c.tryCompileUnmarshaler(vt)
+	dec := c.tryCompilePtrUnmarshaler(vt)
 	if dec != nil {
 		return dec
 	}
 
+	return c.compileBasic(vt)
+}
+
+func (c *compiler) compileBasic(vt reflect.Type) decFunc {
 	switch vt.Kind() {
 	case reflect.Bool:
 		return &boolDecoder{}
@@ -160,6 +164,15 @@ func (c *compiler) compile(vt reflect.Type) decFunc {
 func (c *compiler) compilePtr(vt reflect.Type) decFunc {
 	c.enter(vt)
 	defer c.exit(vt)
+
+	// specail logic for Named Ptr, issue 379
+	if reflect.PointerTo(vt.Elem()) != vt {
+		return &ptrDecoder{
+			typ:   rt.UnpackType(vt.Elem()),
+			deref: c.compileBasic(vt.Elem()),
+		}
+	}
+
 	return &ptrDecoder{
 		typ:   rt.UnpackType(vt.Elem()),
 		deref: c.compile(vt.Elem()),
@@ -276,13 +289,15 @@ func (c *compiler) compileInterface(vt reflect.Type) decFunc {
 		}
 	}
 
-	if vt.Implements(jsonUnmarshalerType) {
+	if vt.Implements(encodingTextUnmarshalerType) {
 		return &unmarshalTextDecoder{
 			typ: rt.UnpackType(vt),
 		}
 	}
 
-	panic(error_type(rt.UnpackType(vt)))
+	return &ifaceDecoder{
+		typ: rt.UnpackType(vt),
+	}
 }
 
 func (c *compiler) compileMap(vt reflect.Type) decFunc {
@@ -414,7 +429,7 @@ func (c *compiler) compileMapKey(vt reflect.Type) decKey {
 	}
 }
 
-func (c *compiler) tryCompileUnmarshaler(vt reflect.Type) decFunc {
+func (c *compiler) tryCompilePtrUnmarshaler(vt reflect.Type) decFunc {
 	pt := reflect.PtrTo(vt)
 
 	/* check for `json.Unmarshaler` with pointer receiver */

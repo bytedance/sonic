@@ -16,11 +16,17 @@ func (d *boolStringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *
 		return nil
 	}
 
-	b, err := node.ParseBool(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseBool(s)
 	if err != nil {
 		return err
 	}
-	*(*bool)(vp) = b
+
+	*(*bool)(vp) = ret
 	return nil
 }
 
@@ -31,7 +37,12 @@ func (d *i8StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *co
 		return nil
 	}
 
-	ret, err := node.ParseI64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseI64(s)
 	if err != nil {
 		return err
 	}
@@ -51,7 +62,12 @@ func (d *i16StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	ret, err := node.ParseI64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseI64(s)
 	if err != nil {
 		return err
 	}
@@ -71,7 +87,12 @@ func (d *i32StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	ret, err := node.ParseI64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseI64(s)
 	if err != nil {
 		return err
 	}
@@ -91,7 +112,12 @@ func (d *i64StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	ret, err := node.ParseI64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseI64(s)
 	if err != nil {
 		return err
 	}
@@ -107,7 +133,12 @@ func (d *u8StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *co
 		return nil
 	}
 
-	ret, err := node.ParseU64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseU64(s)
 	if err != nil {
 		return err
 	}
@@ -127,7 +158,12 @@ func (d *u16StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	ret, err := node.ParseU64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseU64(s)
 	if err != nil {
 		return err
 	}
@@ -147,7 +183,12 @@ func (d *u32StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	ret, err := node.ParseU64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseU64(s)
 	if err != nil {
 		return err
 	}
@@ -167,7 +208,12 @@ func (d *u64StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	ret, err := node.ParseU64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseU64(s)
 	if err != nil {
 		return err
 	}
@@ -183,7 +229,12 @@ func (d *f32StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 		return nil
 	}
 
-	ret, err := node.ParseF64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseF64(s)
 	if err != nil {
 		return err
 	}
@@ -199,11 +250,17 @@ func (d *f32StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 type f64StringDecoder struct{}
 
 func (d *f64StringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
+	// check null
 	if node.IsNull() {
 		return nil
 	}
 
-	ret, err := node.ParseF64(&ctx.Context)
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		return err
+	}
+
+	ret, err := internal.ParseF64(s)
 	if err != nil {
 		return err
 	}
@@ -222,7 +279,7 @@ func (d *strStringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 
 	s, err := node.AsStrRef(&ctx.Context)
 	/* deal with empty string */
-	if err != nil || s == "" {
+	if err != nil || s == "" || s == "null" {
 		return err
 	}
 
@@ -244,17 +301,13 @@ func (d *numberStringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 	}
 
 	s, err := node.AsStr(&ctx.Context)
-	if err != nil {
+	if err != nil || s == "null" {
 		return err
-	}
-
-	if s == "null" {
-		*(*string)(vp) = ""
-		return nil
 	}
 
 	end, err := internal.SkipNumberFast(s, 0)
 	if err != nil {
+		*(*string)(vp) = ""
 		return err
 	}
 

@@ -29,12 +29,7 @@ func (d *ptrDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context
 		*(*unsafe.Pointer)(vp) = mallocgc(d.typ.Size, d.typ, true)
 	}
 
-	err := d.deref.FromDom(*(*unsafe.Pointer)(vp), node, ctx)
-	if err != nil {
-		*(*unsafe.Pointer)(vp) = nil
-		return err
-	}
-	return nil
+	return d.deref.FromDom(*(*unsafe.Pointer)(vp), node, ctx)
 }
 
 type embeddedFieldPtrDecoder struct {

@@ -68,6 +68,7 @@ func (d *mapStrKeyFastDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ct
 		m = makemap(&d.mapType.GoType, obj.Len())
 	}
 
+	var gerr error
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
@@ -79,14 +80,14 @@ func (d *mapStrKeyFastDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ct
 		valn := internal.NewNode(internal.PtrOffset(next, 1))
 		valp := mapassign_faststr(d.mapType, m, key)
 		err = d.elemDec.FromDom(valp, valn, ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 		next = valn.Next()
 	}
 
 	*(*unsafe.Pointer)(vp) = m
-	return nil
+	return gerr
 }
 
 type mapStrKeyStdDecoder struct {
@@ -111,6 +112,7 @@ func (d *mapStrKeyStdDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 		m = makemap(&d.mapType.GoType, obj.Len())
 	}
 
+	var gerr error
 	next := obj.Children()
 	for i := 0; i < obj.Len(); i++ {
 		keyn := internal.NewNode(next)
@@ -122,15 +124,14 @@ func (d *mapStrKeyStdDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 		valn := internal.NewNode(internal.PtrOffset(next, 1))
 		valp := mapassign(d.mapType, m, unsafe.Pointer(&key))
 		err = d.elemDec.FromDom(valp, valn, ctx)
-		if err != nil {
-			*(*unsafe.Pointer)(vp) = nil
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 		next = valn.Next()
 	}
 
 	*(*unsafe.Pointer)(vp) = m
-	return nil
+	return gerr
 }
 
 /** Decoder for map with int32 or int64 key **/

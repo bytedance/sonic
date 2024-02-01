@@ -35,6 +35,7 @@ type Issue144_StringOption struct {
     I1 int          `json:"i1,string"`
     I2 *int         `json:"i2,string"`
     I3 *int         `json:"i3,string"`
+	B1 bool        `json:"b1,string"`
 }
 
 func TestIssue144_StringOption(t *testing.T) {
@@ -47,10 +48,15 @@ func TestIssue144_StringOption(t *testing.T) {
         "j3":"123.456",
         "i1":"null",
         "i2":"null",
-        "i3":"-123"
+        "i3":"-123",
+		"b1":"null"
     }`)
 
     var v1, v2 Issue144_StringOption
+	v1.S3 = "hello"
+	v2.S3 = "hello"
+	v1.B1 = true
+	v2.B1 = true
     e1 := json.Unmarshal(data, &v1)
     e2 := sonic.Unmarshal(data, &v2)
     require.NoError(t, e1)

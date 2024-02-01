@@ -342,6 +342,15 @@ func (val Node) Position(ctx *Context) int {
 }
 
 func (val Node) AsNumber(ctx *Context) (json.Number, error) {
+	if val.IsStr() {
+		s, _ := val.AsStr(ctx)
+		err := ValidNumberFast(s)
+		if err != nil {
+			return "", err
+		}
+		return json.Number(s), nil
+	}
+
 	if !val.IsNumber() {
 		return json.Number(""), newUnmatched("expect number")
 	}

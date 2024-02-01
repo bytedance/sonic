@@ -31,18 +31,20 @@ func (d *sliceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 	elems := slice.Ptr
 
 	next := arr.Children()
+
+	var gerr error
 	for i := 0; i < arr.Len(); i++ {
 		val := internal.NewNode(next)
 		elem := unsafe.Pointer(uintptr(elems) + uintptr(i)*d.elemType.Size)
 		err = d.elemDec.FromDom(elem, val, ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 		next = val.Next()
 	}
 
 	*(*rt.GoSlice)(vp) = *slice
-	return nil
+	return gerr
 }
 
 type arrayDecoder struct {

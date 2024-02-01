@@ -20,6 +20,19 @@ func SkipNumberFast(json string, start int) (int, error) {
 	return pos, nil
 }
 
+func ValidNumberFast(json string) error {
+	// find the number ending, we pasred in sonic-cpp, it alway valid
+	pos := 0
+	for pos < len(json) && json[pos] != ']' && json[pos] != '}' && json[pos] != ',' {
+		if json[pos] >= '0' && json[pos] <= '9' || json[pos] == '.' || json[pos] == '-' || json[pos] == '+' || json[pos] == 'e' || json[pos] == 'E' {
+			pos += 1
+		} else {
+			return newError("invalid number", int64(pos))
+		}
+	}
+	return nil
+}
+
 func SkipOneFast(json string, start int) (string, error) {
 	// find the number ending, we pasred in sonic-cpp, it alway valid
 	nast, err := ast.NewSearcher(json[start:]).GetByPath()
