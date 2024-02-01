@@ -17,11 +17,13 @@
 package benchmark_test
 
 import (
-    "io"
-    `strings`
-    `testing`
+	"encoding/json"
+	"io"
+	"strings"
+	"testing"
 
-    jsoniter `github.com/json-iterator/go`
+	"github.com/bytedance/sonic/decoder"
+	jsoniter "github.com/json-iterator/go"
 )
 
 var (
@@ -79,6 +81,7 @@ var testHalts = func() map[int]bool {
 func BenchmarkDecodeStream_Jsoniter(b *testing.B) {
     b.Run("single", func(b *testing.B) {
         var str = _Single_JSON
+        b.SetBytes(int64(len(str)))
         for i := 0; i < b.N; i++ {
             var r1 = strings.NewReader(str)
             var v1 map[string]interface{}
@@ -90,6 +93,7 @@ func BenchmarkDecodeStream_Jsoniter(b *testing.B) {
 
     b.Run("double", func(b *testing.B) {
         var str = _Double_JSON
+        b.SetBytes(int64(len(str)))
         for i := 0; i < b.N; i++ {
             var r1 = strings.NewReader(str)
             var v1 map[string]interface{}
@@ -101,6 +105,7 @@ func BenchmarkDecodeStream_Jsoniter(b *testing.B) {
 
     b.Run("halt", func(b *testing.B) {
         var str = _Double_JSON
+        b.SetBytes(int64(len(str)))
         for i := 0; i < b.N; i++ {
             var r1 = NewHaltReader(str, testHalts())
             var v1 map[string]interface{}
@@ -109,3 +114,81 @@ func BenchmarkDecodeStream_Jsoniter(b *testing.B) {
         }
     })
 }
+
+
+func BenchmarkDecodeStream_Std(b *testing.B) {
+    b.Run("single", func(b *testing.B) {
+        var str = _Single_JSON
+        b.SetBytes(int64(len(str)))
+        for i := 0; i < b.N; i++ {
+            var r1 = strings.NewReader(str)
+            var v1 map[string]interface{}
+            dc := json.NewDecoder(r1)
+            _ = dc.Decode(&v1)
+            _ = dc.Decode(&v1)
+        }
+    })
+
+    b.Run("double", func(b *testing.B) {
+        var str = _Double_JSON
+        b.SetBytes(int64(len(str)))
+        for i := 0; i < b.N; i++ {
+            var r1 = strings.NewReader(str)
+            var v1 map[string]interface{}
+            dc := json.NewDecoder(r1)
+            _ = dc.Decode(&v1)
+            _ = dc.Decode(&v1)
+        }
+    })
+
+    b.Run("halt", func(b *testing.B) {
+        var str = _Double_JSON
+        b.SetBytes(int64(len(str)))
+        for i := 0; i < b.N; i++ {
+            var r1 = NewHaltReader(str, testHalts())
+            var v1 map[string]interface{}
+            dc := json.NewDecoder(r1)
+            _ = dc.Decode(&v1)
+        }
+    })
+}
+
+
+
+func BenchmarkDecodeStream_Sonic(b *testing.B) {
+    b.Run("single", func(b *testing.B) {
+        var str = _Single_JSON
+        b.SetBytes(int64(len(str)))
+        for i := 0; i < b.N; i++ {
+            var r1 = strings.NewReader(str)
+            var v1 map[string]interface{}
+            dc := decoder.NewStreamDecoder(r1)
+            _ = dc.Decode(&v1)
+            _ = dc.Decode(&v1)
+        }
+    })
+
+    b.Run("double", func(b *testing.B) {
+        var str = _Double_JSON
+        b.SetBytes(int64(len(str)))
+        for i := 0; i < b.N; i++ {
+            var r1 = strings.NewReader(str)
+            var v1 map[string]interface{}
+            dc := decoder.NewStreamDecoder(r1)
+            _ = dc.Decode(&v1)
+            _ = dc.Decode(&v1)
+        }
+    })
+
+    b.Run("halt", func(b *testing.B) {
+        var str = _Double_JSON
+        b.SetBytes(int64(len(str)))
+        for i := 0; i < b.N; i++ {
+            var r1 = NewHaltReader(str, testHalts())
+            var v1 map[string]interface{}
+            dc := decoder.NewStreamDecoder(r1)
+            _ = dc.Decode(&v1)
+        }
+    })
+}
+
