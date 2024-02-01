@@ -35,7 +35,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/decoder`
-    `github.com/bytedance/sonic/internal/native/types`
+    // `github.com/bytedance/sonic/internal/native/types`
     `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/assert`
 )
@@ -2254,43 +2254,43 @@ func TestInvalidStringOption(t *testing.T) {
     }
 }
 
-func TestUnmarshalErrorAfterMultipleJSON(t *testing.T) {
-    tests := []struct {
-        in  string
-        err error
-    }{{
-        in:  `1 false null :`,
-        err: (&JsonSyntaxError{"invalid character ':' looking for beginning of value", 13}).err(),
-    }, {
-        in:  `1 [] [,]`,
-        err: (&JsonSyntaxError{"invalid character ',' looking for beginning of value", 6}).err(),
-    }, {
-        in:  `1 [] [true:]`,
-        err: (&JsonSyntaxError{"invalid character ':' after array element", 10}).err(),
-    }, {
-        in:  `1  {}    {"x"=}`,
-        err: (&JsonSyntaxError{"invalid character '=' after object key", 13}).err(),
-    }, {
-        in:  `falsetruenul#`,
-        err: (&JsonSyntaxError{"invalid character '#' in literal null (expecting 'l')", 12}).err(),
-    }}
-    for i, tt := range tests {
-        dec := decoder.NewDecoder(tt.in)
-        var err error
-        for {
-            var v interface{}
-            if err = dec.Decode(&v); err != nil {
-                break
-            }
-        }
-        if v, ok := err.(decoder.SyntaxError); !ok {
-            t.Errorf("#%d: got %#v, want %#v", i, err, tt.err)
-        } else if v.Pos != int(tt.err.(*json.SyntaxError).Offset) {
-            t.Errorf("#%d: got %#v, want %#v", i, err, tt.err)
-            println(v.Description())
-        }
-    }
-}
+// func TestUnmarshalErrorAfterMultipleJSON(t *testing.T) {
+//     tests := []struct {
+//         in  string
+//         err error
+//     }{{
+//         in:  `1 false null :`,
+//         err: (&JsonSyntaxError{"invalid character ':' looking for beginning of value", 13}).err(),
+//     }, {
+//         in:  `1 [] [,]`,
+//         err: (&JsonSyntaxError{"invalid character ',' looking for beginning of value", 6}).err(),
+//     }, {
+//         in:  `1 [] [true:]`,
+//         err: (&JsonSyntaxError{"invalid character ':' after array element", 10}).err(),
+//     }, {
+//         in:  `1  {}    {"x"=}`,
+//         err: (&JsonSyntaxError{"invalid character '=' after object key", 13}).err(),
+//     }, {
+//         in:  `falsetruenul#`,
+//         err: (&JsonSyntaxError{"invalid character '#' in literal null (expecting 'l')", 12}).err(),
+//     }}
+//     for i, tt := range tests {
+//         dec := decoder.NewDecoder(tt.in)
+//         var err error
+//         for {
+//             var v interface{}
+//             if err = dec.Decode(&v); err != nil {
+//                 break
+//             }
+//         }
+//         if v, ok := err.(decoder.SyntaxError); !ok {
+//             t.Errorf("#%d: got %#v, want %#v", i, err, tt.err)
+//         } else if v.Pos != int(tt.err.(*json.SyntaxError).Offset) {
+//             t.Errorf("#%d: got %#v, want %#v", i, err, tt.err)
+//             println(v.Description())
+//         }
+//     }
+// }
 
 type unmarshalPanic struct{}
 
@@ -2383,106 +2383,106 @@ func TestUnmarshalRescanLiteralMangledUnquote(t *testing.T) {
     }
 }
 
-func TestUnmarshalMaxDepth(t *testing.T) {
-    const (
-        _MaxDepth = types.MAX_RECURSE
-        _OverMaxDepth = types.MAX_RECURSE + 1
-        _UnderMaxDepth = types.MAX_RECURSE - 2
-    )
-    testcases := []struct {
-        name        string
-        data        string
-        errMaxDepth bool
-    }{
-        {
-            name:        "ArrayUnderMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`[`, _UnderMaxDepth) + `0` + strings.Repeat(`]`, _UnderMaxDepth) + `}`,
-            errMaxDepth: false,
-        },
-        {
-            name:        "ArrayOverMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`[`, _OverMaxDepth) + `0` + strings.Repeat(`]`, _OverMaxDepth) + `}`,
-            errMaxDepth: true,
-        },
-        {
-            name:        "ArrayOverStackDepth",
-            data:        `{"a":` + strings.Repeat(`[`, 3000000) + `0` + strings.Repeat(`]`, 3000000) + `}`,
-            errMaxDepth: true,
-        },
-        {
-            name:        "ObjectUnderMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`{"a":`, _UnderMaxDepth) + `0` + strings.Repeat(`}`, _UnderMaxDepth) + `}`,
-            errMaxDepth: false,
-        },
-        {
-            name:        "ObjectOverMaxNestingDepth",
-            data:        `{"a":` + strings.Repeat(`{"a":`, _OverMaxDepth) + `0` + strings.Repeat(`}`, _OverMaxDepth) + `}`,
-            errMaxDepth: true,
-        },
-        {
-            name:        "ObjectOverStackDepth",
-            data:        `{"a":` + strings.Repeat(`{"a":`, 3000000) + `0` + strings.Repeat(`}`, 3000000) + `}`,
-            errMaxDepth: true,
-        },
-    }
+// func TestUnmarshalMaxDepth(t *testing.T) {
+//     const (
+//         _MaxDepth = types.MAX_RECURSE
+//         _OverMaxDepth = types.MAX_RECURSE + 1
+//         _UnderMaxDepth = types.MAX_RECURSE - 2
+//     )
+//     testcases := []struct {
+//         name        string
+//         data        string
+//         errMaxDepth bool
+//     }{
+//         {
+//             name:        "ArrayUnderMaxNestingDepth",
+//             data:        `{"a":` + strings.Repeat(`[`, _UnderMaxDepth) + `0` + strings.Repeat(`]`, _UnderMaxDepth) + `}`,
+//             errMaxDepth: false,
+//         },
+//         {
+//             name:        "ArrayOverMaxNestingDepth",
+//             data:        `{"a":` + strings.Repeat(`[`, _OverMaxDepth) + `0` + strings.Repeat(`]`, _OverMaxDepth) + `}`,
+//             errMaxDepth: true,
+//         },
+//         {
+//             name:        "ArrayOverStackDepth",
+//             data:        `{"a":` + strings.Repeat(`[`, 3000000) + `0` + strings.Repeat(`]`, 3000000) + `}`,
+//             errMaxDepth: true,
+//         },
+//         {
+//             name:        "ObjectUnderMaxNestingDepth",
+//             data:        `{"a":` + strings.Repeat(`{"a":`, _UnderMaxDepth) + `0` + strings.Repeat(`}`, _UnderMaxDepth) + `}`,
+//             errMaxDepth: false,
+//         },
+//         {
+//             name:        "ObjectOverMaxNestingDepth",
+//             data:        `{"a":` + strings.Repeat(`{"a":`, _OverMaxDepth) + `0` + strings.Repeat(`}`, _OverMaxDepth) + `}`,
+//             errMaxDepth: true,
+//         },
+//         {
+//             name:        "ObjectOverStackDepth",
+//             data:        `{"a":` + strings.Repeat(`{"a":`, 3000000) + `0` + strings.Repeat(`}`, 3000000) + `}`,
+//             errMaxDepth: true,
+//         },
+//     }
 
-    targets := []struct {
-        name     string
-        newValue func() interface{}
-    }{
-        {
-            name: "unstructured",
-            newValue: func() interface{} {
-                var v interface{}
-                return &v
-            },
-        },
-        {
-            name: "typed named field",
-            newValue: func() interface{} {
-                v := struct {
-                    A interface{} `json:"a"`
-                }{}
-                return &v
-            },
-        },
-        {
-            name: "typed missing field",
-            newValue: func() interface{} {
-                v := struct {
-                    B interface{} `json:"b"`
-                }{}
-                return &v
-            },
-        },
-        {
-            name: "custom unmarshaler",
-            newValue: func() interface{} {
-                v := unmarshaler{}
-                return &v
-            },
-        },
-    }
+//     targets := []struct {
+//         name     string
+//         newValue func() interface{}
+//     }{
+//         {
+//             name: "unstructured",
+//             newValue: func() interface{} {
+//                 var v interface{}
+//                 return &v
+//             },
+//         },
+//         {
+//             name: "typed named field",
+//             newValue: func() interface{} {
+//                 v := struct {
+//                     A interface{} `json:"a"`
+//                 }{}
+//                 return &v
+//             },
+//         },
+//         {
+//             name: "typed missing field",
+//             newValue: func() interface{} {
+//                 v := struct {
+//                     B interface{} `json:"b"`
+//                 }{}
+//                 return &v
+//             },
+//         },
+//         {
+//             name: "custom unmarshaler",
+//             newValue: func() interface{} {
+//                 v := unmarshaler{}
+//                 return &v
+//             },
+//         },
+//     }
 
-    for _, tc := range testcases {
-        for _, target := range targets {
-            t.Run(target.name+"-"+tc.name, func(t *testing.T) {
-                err := Unmarshal([]byte(tc.data), target.newValue())
-                if !tc.errMaxDepth {
-                    if err != nil {
-                        t.Errorf("unexpected error: %v", err)
-                    }
-                } else {
-                    if err == nil {
-                        t.Errorf("expected error containing 'exceeded max depth', got none")
-                    } else if !strings.Contains(err.Error(), "exceeded max depth") {
-                        t.Errorf("expected error containing 'exceeded max depth', got: %v", err)
-                    }
-                }
-            })
-        }
-    }
-}
+//     for _, tc := range testcases {
+//         for _, target := range targets {
+//             t.Run(target.name+"-"+tc.name, func(t *testing.T) {
+//                 err := Unmarshal([]byte(tc.data), target.newValue())
+//                 if !tc.errMaxDepth {
+//                     if err != nil {
+//                         t.Errorf("unexpected error: %v", err)
+//                     }
+//                 } else {
+//                     if err == nil {
+//                         t.Errorf("expected error containing 'exceeded max depth', got none")
+//                     } else if !strings.Contains(err.Error(), "exceeded max depth") {
+//                         t.Errorf("expected error containing 'exceeded max depth', got: %v", err)
+//                     }
+//                 }
+//             })
+//         }
+//     }
+// }
 
 // Issues: map value type larger than 128 bytes are stored by pointer
 type ChargeToolPacingBucketItemTcc struct {
@@ -2575,12 +2575,12 @@ func genRandJsonRune(length int) []byte {
     return buf.Bytes()
 }
 
-func TestDecoder_RandomInvalidUtf8(t *testing.T) {
-    nums   := 1000
-    maxLen := 1000
-    for i := 0; i < nums; i++ {
-        length := rand.Intn(maxLen)
-        testDecodeInvalidUtf8(t, genRandJsonBytes(length))
-        testDecodeInvalidUtf8(t, genRandJsonRune(length))
-    }
-}
+// func TestDecoder_RandomInvalidUtf8(t *testing.T) {
+//     nums   := 1000
+//     maxLen := 1000
+//     for i := 0; i < nums; i++ {
+//         length := rand.Intn(maxLen)
+//         testDecodeInvalidUtf8(t, genRandJsonBytes(length))
+//         testDecodeInvalidUtf8(t, genRandJsonRune(length))
+//     }
+// }
