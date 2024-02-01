@@ -10,6 +10,9 @@ TEXT ·__vunsigned_entry__(SB), NOSPLIT, $16
 	PCALIGN $16
 	  // .p2align 2, 0x00
 _vunsigned:
+	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
+	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf9400028  // ldr	x8, [x1]
 	WORD $0xa940240a  // ldp	x10, x9, [x0]
 	WORD $0x5280012b  // mov	w11, #9
@@ -18,14 +21,11 @@ _vunsigned:
 	WORD $0xf940002b  // ldr	x11, [x1]
 	WORD $0xf9000c4b  // str	x11, [x2, #24]
 	WORD $0xeb09011f  // cmp	x8, x9
-	WORD $0x540001a2  // b.hs	LBB0_3 $52(%rip)
-	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
-	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
-	WORD $0xd10023fd  // sub	fp, sp, #8
+	WORD $0x54000142  // b.hs	LBB0_3 $40(%rip)
 	WORD $0x8b08014b  // add	x11, x10, x8
 	WORD $0x3940016c  // ldrb	w12, [x11]
 	WORD $0x7100b59f  // cmp	w12, #45
-	WORD $0x54000141  // b.ne	LBB0_4 $40(%rip)
+	WORD $0x54000161  // b.ne	LBB0_4 $44(%rip)
 LBB0_2:
 	WORD $0xf9000028  // str	x8, [x1]
 	WORD $0x928000a8  // mov	x8, #-6
@@ -36,6 +36,7 @@ LBB0_3:
 	WORD $0xf9000029  // str	x9, [x1]
 	WORD $0x92800008  // mov	x8, #-1
 	WORD $0xf9000048  // str	x8, [x2]
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_4:
 	WORD $0x5100e98d  // sub	w13, w12, #58
@@ -95,11 +96,11 @@ LBB0_15:
 	WORD $0x54000102  // b.hs	LBB0_19 $32(%rip)
 	WORD $0x38686949  // ldrb	w9, [x10, x8]
 	WORD $0x7100b93f  // cmp	w9, #46
-	WORD $0x54fff860  // b.eq	LBB0_2 $-244(%rip)
+	WORD $0x54fff840  // b.eq	LBB0_2 $-248(%rip)
 	WORD $0x7101153f  // cmp	w9, #69
-	WORD $0x54fff820  // b.eq	LBB0_2 $-252(%rip)
+	WORD $0x54fff800  // b.eq	LBB0_2 $-256(%rip)
 	WORD $0x7101953f  // cmp	w9, #101
-	WORD $0x54fff7e0  // b.eq	LBB0_2 $-260(%rip)
+	WORD $0x54fff7c0  // b.eq	LBB0_2 $-264(%rip)
 LBB0_19:
 	WORD $0xaa0803ec  // mov	x12, x8
 LBB0_20:
