@@ -1,5 +1,7 @@
-/**
- * Copyright 2024 ByteDance Inc.
+//go:build !amd64 || !go1.16
+
+/*
+ * Copyright 2022 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +16,10 @@
  * limitations under the License.
  */
 
-package alg
+package thirdparty 
 
 import (
-	"github.com/chenzhuoyu/base64x"
+	"encoding/base64"
 )
 
 func EncodeBase64(buf []byte, src []byte) []byte {
@@ -25,14 +27,19 @@ func EncodeBase64(buf []byte, src []byte) []byte {
 		return append(buf, '"', '"')
 	}
 	buf = append(buf, '"')
-	need := base64x.StdEncoding.EncodedLen(len(src))
+	need := base64.StdEncoding.EncodedLen(len(src))
 	if cap(buf) - len(buf) < need {
 		tmp := make([]byte, len(buf), len(buf) + need*2)
 		copy(tmp, buf)
 		buf = tmp
 	}
-	base64x.StdEncoding.Encode(buf[len(buf):cap(buf)], src)
+	base64.StdEncoding.Encode(buf[len(buf):cap(buf)], src)
 	buf = buf[:len(buf) + need]
 	buf = append(buf, '"')
 	return buf
 }
+
+func DecodeBase64(src string) ([]byte, error) {
+    return base64.StdEncoding.DecodeString(src)
+}
+
