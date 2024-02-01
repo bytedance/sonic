@@ -35,7 +35,7 @@ func TestNegZeroInIEEE754(t *testing.T) {
         println(sonicerr.(decoder.SyntaxError).Description())
         require.NoError(t, sonicerr)
     }
-    require.Equal(t, math.Float64bits(sonicobj), math.Float64bits(stdobj))
+    require.Equal(t, math.Float64bits(stdobj), math.Float64bits(sonicobj))
 
     sonicout, sonicerr2 := Marshal(&stdobj)
     stdout, stderr2 := json.Marshal(&stdobj)

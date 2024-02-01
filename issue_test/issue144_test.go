@@ -28,6 +28,7 @@ import (
 type Issue144_StringOption struct {
     S1 *string      `json:"s1,string"`
     S2 *string      `json:"s2,string"`
+	S4 *string      `json:"s4,string"`
     S3 string       `json:"s3,string"`
     J1 json.Number  `json:"j1,string"`
     J2 *json.Number `json:"j2,string"`
@@ -43,6 +44,7 @@ func TestIssue144_StringOption(t *testing.T) {
         "s1":"\"null\"",
         "s2":"null",
         "s3":"null",
+		"s4":"null",
         "j1":"null",
         "j2":"null",
         "j3":"123.456",
@@ -54,8 +56,11 @@ func TestIssue144_StringOption(t *testing.T) {
 
     var v1, v2 Issue144_StringOption
 
+	s := "pointer"
 	v1.S3 = "hello"
 	v2.S3 = "hello"
+	v2.S4 = &s
+	v1.S4 = &s
 	v1.B1 = true
 	v2.B1 = true
 	v2.I1 = 123
@@ -65,8 +70,8 @@ func TestIssue144_StringOption(t *testing.T) {
 
     e1 := json.Unmarshal(data, &v1)
     e2 := sonic.Unmarshal(data, &v2)
-    require.NoError(t, e1)
     require.NoError(t, e2)
+    require.NoError(t, e1)
     require.Equal(t, v1, v2)
     spew.Dump(v1)
 

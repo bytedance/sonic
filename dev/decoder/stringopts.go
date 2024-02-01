@@ -5,8 +5,34 @@ import (
 	"math"
 	"unsafe"
 
+	"github.com/bytedance/sonic/dev/internal/rt"
 	"github.com/bytedance/sonic/dev/internal"
 )
+
+type ptrStrDecoder struct {
+	typ   *rt.GoType
+	deref decFunc
+}
+
+// Pointer Value is allocated in the Caller
+func (d *ptrStrDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
+	if node.IsNull() {
+		*(*unsafe.Pointer)(vp) = nil
+		return nil
+	}
+
+	s, err := node.AsStrRef(&ctx.Context)
+	if err != nil || s == "null" {
+		*(*unsafe.Pointer)(vp) = nil
+		return err
+	}
+
+	if *(*unsafe.Pointer)(vp) == nil {
+		*(*unsafe.Pointer)(vp) = mallocgc(d.typ.Size, d.typ, true)
+	}
+
+	return d.deref.FromDom(*(*unsafe.Pointer)(vp), node, ctx)
+}
 
 type boolStringDecoder struct {
 }
@@ -279,13 +305,12 @@ func (d *strStringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *c
 
 	s, err := node.AsStrRef(&ctx.Context)
 	/* deal with empty string */
-	if err != nil || s == "" || s == "null" {
+	if err != nil || s == "null" {
 		return err
 	}
 
 	ret, err := internal.Unquote(s)
 	if err != nil {
-		*(*string)(vp) = ""
 		return err
 	}
 
@@ -307,7 +332,6 @@ func (d *numberStringDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx
 
 	end, err := internal.SkipNumberFast(s, 0)
 	if err != nil {
-		*(*string)(vp) = ""
 		return err
 	}
 

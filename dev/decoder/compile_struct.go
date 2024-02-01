@@ -71,7 +71,7 @@ func (c *compiler) compileFieldStringOption(vt reflect.Type) decFunc {
 	case reflect.Int:
 		return c.compileIntStringOption(vt)
 	case reflect.Pointer:
-		return &ptrDecoder{
+		return &ptrStrDecoder{
 			typ:   rt.UnpackType(vt.Elem()),
 			deref: c.compileFieldStringOption(vt.Elem()),
 		}
