@@ -26,7 +26,7 @@ func DecodeBase64(src string) ([]byte, error) {
     return base64x.StdEncoding.DecodeString(src)
 }
 
-func EncodeBase64(buf []byte, src []byte) string {
+func EncodeBase64(buf []byte, src []byte) []byte {
     if len(src) == 0 {
 		return append(buf, '"', '"')
 	}
