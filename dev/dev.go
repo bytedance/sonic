@@ -17,11 +17,11 @@ func Unmarshal(json []byte, val interface{}) error {
 
 // Marshal returns the JSON encoding bytes of v.
 func Marshal(val interface{}) ([]byte, error) {
-	return sonic.Marshal(val)
+	return sonic.ConfigDefault.Marshal(val)
 }
 
 // MarshalString returns the JSON encoding string of v.
 func MarshalString(val interface{}) (string, error) {
-	out, err := sonic.Marshal(val)
+	out, err := sonic.ConfigDefault.Marshal(val)
 	return string(out), err
 }

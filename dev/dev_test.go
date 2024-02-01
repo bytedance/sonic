@@ -27,9 +27,7 @@ func TestUnmarshalI(t *testing.T) {
 	testUnmarshalI(t, `"abc"`)
 	testUnmarshalI(t, `{"a": "\\true", "\\b": {"a": [1, 2, 3] }}`)
 	testUnmarshalI(t, METADATA)
-	// internal.EnbaleMetrics()
 	testUnmarshalI(t, Twitter_JSON)
-	// internal.DumpMetrics()
 }
 
 func BenchmarkUnmarshalIface(b *testing.B) {
@@ -219,14 +217,12 @@ func TestUnmarshalC_MetaData(t *testing.T) {
 
 func TestUnmarshalC_Twitter(t *testing.T) {
 	var got, expect TwitterStruct
-	internal.EnbaleMetrics()
 	gerr := json.Unmarshal([]byte(Twitter_JSON), &expect)
 	xerr := dev.UnmarshalString(Twitter_JSON, &got)
 
 	assert.Nil(t, gerr)
 	assert.Nil(t, xerr)
 	assert.Equal(t, expect, got)
-	internal.DumpMetrics()
 }
 
 func BenchmarkUnmarshalConcret(b *testing.B) {

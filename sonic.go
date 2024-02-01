@@ -102,7 +102,11 @@ func (cfg frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([
 func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
     dec := decoder.NewDecoder(buf)
     dec.SetOptions(cfg.decoderOpts)
-    return dec.Decode(val)
+	err :=  dec.Decode(val)
+	if err != nil {
+		return err
+	}
+    return dec.CheckTrailings()
 }
 
 // Unmarshal is implemented by sonic

@@ -20,18 +20,9 @@ func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 	}
 
 	eface := *(*rt.GoEface)(vp)
-	etp := rt.PtrElem(eface.Type)
-	vp = eface.Value
-
-	/* check the defined pointer type for issue 379 */
-	if eface.Type.IsNamed() {
-		newp := vp
-		etp = eface.Type
-		vp = unsafe.Pointer(&newp)
-	}
 
 	// not pointer type, or nil pointer, or *interface{}
-	if eface.Value == nil || eface.Type.Kind() != reflect.Ptr ||  etp == anyType {
+	if eface.Value == nil || eface.Type.Kind() != reflect.Ptr || rt.PtrElem(eface.Type) == anyType {
 		var ret interface{}
 		var err error
 	
@@ -51,6 +42,15 @@ func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 		return nil
 	}
 
+	etp := rt.PtrElem(eface.Type)
+	vp = eface.Value
+
+	/* check the defined pointer type for issue 379 */
+	if eface.Type.IsNamed() {
+		newp := vp
+		etp = eface.Type
+		vp = unsafe.Pointer(&newp)
+	}
 
 	dec, err := findOrCompile(etp)
 	if err != nil {
@@ -71,19 +71,14 @@ func (d *ifaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 	}
 
 	iface := *(*rt.GoIface)(vp)
-	vt := iface.Itab.Vt
-	etp := rt.PtrElem(iface.Itab.Vt)
-	vp = iface.Value
-
-	/* check the defined pointer type for issue 379 */
-	if vt.IsNamed() {
-		newp := vp
-		etp = vt
-		vp = unsafe.Pointer(&newp)
+	if iface.Itab == nil {
+		return error_type(d.typ)
 	}
 
+	vt := iface.Itab.Vt
+
 	// not pointer type, or nil pointer, or *interface{}
-	if vp == nil || vt.Kind() != reflect.Ptr ||  etp == anyType {
+	if vp == nil || vt.Kind() != reflect.Ptr || rt.PtrElem(vt) == anyType {
 		var ret interface{}
 		var err error
 	
@@ -103,6 +98,16 @@ func (d *ifaceDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *conte
 		return nil
 	}
 
+
+	etp := rt.PtrElem(vt)
+	vp = iface.Value
+
+	/* check the defined pointer type for issue 379 */
+	if vt.IsNamed() {
+		newp := vp
+		etp = vt
+		vp = unsafe.Pointer(&newp)
+	}
 
 	dec, err := findOrCompile(etp)
 	if err != nil {

@@ -6,7 +6,7 @@ package internal
 import (
 	"unsafe"
 
-	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/dev/internal/rt"
 )
 
 //go:linkname makeslice runtime.makeslice

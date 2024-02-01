@@ -53,6 +53,7 @@ type arrayDecoder struct {
 	elemDec  decFunc
 }
 
+//go:nocheckptr
 func (d *arrayDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *context) error {
 	if node.IsNull() {
 		return nil

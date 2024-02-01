@@ -81,6 +81,11 @@ func (self *Decoder) Reset(s string) {
     self.json = s
 }
 
+
+func (self *Decoder) CheckTrailings() error {
+	return nil
+}
+
 // Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
 // Otherwise, returns negative error code using start and invalid character position using end
 func Skip(data []byte) (start int, end int) {

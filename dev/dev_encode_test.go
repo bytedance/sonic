@@ -325,33 +325,33 @@ func (ValText) MarshalText() ([]byte, error) {
 }
 
 func TestRefValMarshal(t *testing.T) {
-	var s = struct {
-		R0 Ref
-		R1 *Ref
-		R2 RefText
-		R3 *RefText
-		V0 Val
-		V1 *Val
-		dev ValText
-		V3 *ValText
-	}{
-		R0: 12,
-		R1: new(Ref),
-		R2: 14,
-		R3: new(RefText),
-		V0: 13,
-		V1: new(Val),
-		dev: 15,
-		V3: new(ValText),
-	}
-	const want = `{"R0":"ref","R1":"ref","R2":"\"ref\"","R3":"\"ref\"","V0":"val","V1":"val","dev":"\"val\"","V3":"\"val\""}`
-	b, err := Marshal(&s)
-	if err != nil {
-		t.Fatalf("Marshal: %v", err)
-	}
-	if got := string(b); got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
+    var s = struct {
+        R0 Ref
+        R1 *Ref
+        R2 RefText
+        R3 *RefText
+        V0 Val
+        V1 *Val
+        V2 ValText
+        V3 *ValText
+    }{
+        R0: 12,
+        R1: new(Ref),
+        R2: 14,
+        R3: new(RefText),
+        V0: 13,
+        V1: new(Val),
+        V2: 15,
+        V3: new(ValText),
+    }
+    const want = `{"R0":"ref","R1":"ref","R2":"\"ref\"","R3":"\"ref\"","V0":"val","V1":"val","V2":"\"val\"","V3":"\"val\""}`
+    b, err := Marshal(&s)
+    if err != nil {
+        t.Fatalf("Marshal: %v", err)
+    }
+    if got := string(b); got != want {
+        t.Errorf("got %q, want %q", got, want)
+    }
 }
 
 /*
