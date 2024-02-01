@@ -24,7 +24,7 @@ import (
     `reflect`
     `fmt`
     `github.com/bytedance/sonic`
-	dev `github.com/bytedance/sonic/dev`
+	// dev `github.com/bytedance/sonic/dev`
     `encoding/json`
     gojson `github.com/goccy/go-json`
     jsoniter `github.com/json-iterator/go`
@@ -46,19 +46,18 @@ var jsonTotalLibs = []jsonLibEntry {
     {"Std", json.Marshal, json.Unmarshal},
     {"StdV2", jsonv2.Marshal, jsonv2.Unmarshal},
     {"Sonic", sonic.Marshal, sonic.Unmarshal},
-	{"SonicDev", dev.Marshal, dev.Unmarshal},
+	// {"SonicDev", dev.Marshal, dev.Unmarshal},
     {"SonicStd", sonic.ConfigStd.Marshal, sonic.ConfigStd.Unmarshal},
     {"GoJson", gojson.Marshal, gojson.Unmarshal},
     {"JsonIter", jsoniter.Marshal, jsoniter.Unmarshal},
     {"JsonIterStd", jsoniter.ConfigCompatibleWithStandardLibrary.Marshal, jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal},
 }
 
-
-var jsonLibs = []jsonLibEntry {
-    {"Std", json.Marshal, json.Unmarshal},
-    {"Sonic", sonic.Marshal, sonic.Unmarshal},
-	{"SonicDev", dev.Marshal, dev.Unmarshal},
-}
+// var jsonTotalLibs = []jsonLibEntry {
+//     {"Std", json.Marshal, json.Unmarshal},
+//     {"Sonic", sonic.Marshal, sonic.Unmarshal},
+// 	{"SonicDev", dev.Marshal, dev.Unmarshal},
+// }
 
 func BenchmarkUnmarshalConcrete(b *testing.B)     { 
     runUnmarshalC(b)
@@ -78,7 +77,7 @@ func BenchmarkMarshalInterface(b *testing.B)     {
 
 func runUnmarshalC(b *testing.B) {
     for _, tt := range jsonTestdata() {
-        for _, lib := range jsonLibs {
+        for _, lib := range jsonTotalLibs {
             var val any = tt.new()
             pretouch := func() {
                 _ = lib.unmarshal(tt.data, val)
@@ -123,7 +122,7 @@ func runUnmarshalC(b *testing.B) {
 
 func runUnmarshalI(b *testing.B) {
     for _, tt := range jsonTestdata() {
-        for _, lib := range jsonLibs {
+        for _, lib := range jsonTotalLibs {
             var val any = tt.newI()
             pretouch := func() {
                 _ = lib.unmarshal(tt.data, val)
@@ -168,7 +167,7 @@ func runUnmarshalI(b *testing.B) {
 
 func runMarshalC(b *testing.B) {
     for _, tt := range jsonTestdata() {
-        for _, lib := range jsonLibs {
+        for _, lib := range jsonTotalLibs {
             pretouch := func() {
                 _, _ = lib.marshal(tt.val)
             }
@@ -223,7 +222,7 @@ func runMarshalC(b *testing.B) {
 
 func runMarshalI(b *testing.B) {
     for _, tt := range jsonTestdata() {
-        for _, lib := range jsonLibs {
+        for _, lib := range jsonTotalLibs {
             pretouch := func() {
                 _, _ = lib.marshal(tt.valI)
             }

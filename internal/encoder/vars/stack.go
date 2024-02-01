@@ -68,7 +68,6 @@ func ResetStack(p *Stack) {
 	rt.MemclrNoHeapPointers(unsafe.Pointer(p), StackSize)
 }
 
-
 func (s *Stack) Top() *State {
 	return (*State)(unsafe.Add(unsafe.Pointer(&s.sb[0]), s.sp))
 }
@@ -77,8 +76,10 @@ func (s *Stack) Cur() *State {
 	return (*State)(unsafe.Add(unsafe.Pointer(&s.sb[0]), s.sp - uintptr(StateSize)))
 }
 
+const _MaxStackSP = uintptr(MaxStack * StateSize)
+
 func (s *Stack) Push(v State) bool {
-	if uintptr(s.sp) > uintptr(unsafe.Pointer(&s.sb[MaxStack-1])) {
+	if uintptr(s.sp) >= _MaxStackSP {
 		return false
 	}
 	st := s.Top()
