@@ -40,7 +40,7 @@ func Valid(data []byte) (ok bool, start int) {
 
 var typeByte = rt.UnpackEface(byte(0)).Type
 
-func Quote(e []byte, s string, double bool, correct bool) []byte {
+func Quote(e []byte, s string, double bool) []byte {
 	if len(s) == 0 {
 		if double {
 			return append(e, `"\"\""`...)
@@ -85,15 +85,15 @@ func Quote(e []byte, s string, double bool, correct bool) []byte {
 			continue
 		}
 		c, size := utf8.DecodeRuneInString(s[i:])
-		if correct && c == utf8.RuneError && size == 1 {
-			if start < i {
-				e = append(e, s[start:i]...)
-			}
-			e = append(e, `\ufffd`...)
-			i += size
-			start = i
-			continue
-		}
+		// if correct && c == utf8.RuneError && size == 1 {
+		// 	if start < i {
+		// 		e = append(e, s[start:i]...)
+		// 	}
+		// 	e = append(e, `\ufffd`...)
+		// 	i += size
+		// 	start = i
+		// 	continue
+		// }
 		if c == '\u2028' || c == '\u2029' {
 			if start < i {
 				e = append(e, s[start:i]...)
