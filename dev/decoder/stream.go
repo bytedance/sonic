@@ -21,8 +21,8 @@
 	 `io`
 	 `sync`
  
-	 `github.com/bytedance/sonic/ast`
 	 `github.com/bytedance/sonic/dev/internal/rt`
+	 `github.com/bytedance/sonic/dev/internal`
 	 `github.com/bytedance/sonic/option`
 	 _ `github.com/davecgh/go-spew/spew`
  )
@@ -69,7 +69,7 @@
 
 		 // try skip
 		 pos := 0
-		 start, err := ast.Skip(src, &pos)
+		 start, err := internal.SkipOneFast2(src, &pos)
 		 if err != nil {
 			if self.readMore()  {
 				goto try_skip

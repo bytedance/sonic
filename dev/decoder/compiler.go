@@ -166,7 +166,7 @@ func (c *compiler) compilePtr(vt reflect.Type) decFunc {
 	defer c.exit(vt)
 
 	// specail logic for Named Ptr, issue 379
-	if reflect.PointerTo(vt.Elem()) != vt {
+	if reflect.PtrTo(vt.Elem()) != vt {
 		return &ptrDecoder{
 			typ:   rt.UnpackType(vt.Elem()),
 			deref: c.compileBasic(vt.Elem()),

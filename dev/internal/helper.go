@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/bytedance/sonic/ast"
+	"github.com/bytedance/sonic/internal/native"
 )
 
 func SkipNumberFast(json string, start int) (int, error) {
@@ -33,17 +33,23 @@ func ValidNumberFast(json string) error {
 	return nil
 }
 
-func SkipOneFast(json string, start int) (string, error) {
+func SkipOneFast2(json string, pos *int) (int, error) {
 	// find the number ending, we pasred in sonic-cpp, it alway valid
-	nast, err := ast.NewSearcher(json[start:]).GetByPath()
-	if err != nil {
-		return "", err
+	start := native.SkipOneFast(&json, pos)
+	if start < 0 {
+		return -1, newError("invalid json", int64(-start))
 	}
-	raw, err := nast.Raw()
-	if err != nil {
-		return "", err
+	return start, nil
+}
+
+
+func SkipOneFast(json string, pos int) (string, error) {
+	// find the number ending, we pasred in sonic-cpp, it alway valid
+	start := native.SkipOneFast(&json, &pos)
+	if start < 0 {
+		return "", newError("invalid json", int64(pos))
 	}
-	return raw, nil
+	return json[start:pos], nil
 }
 
 func decodeBase64(raw string) ([]byte, error) {

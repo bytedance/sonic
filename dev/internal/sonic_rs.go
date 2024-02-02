@@ -459,6 +459,7 @@ func (node *Node) AsMapEface(ctx *Context, vp unsafe.Pointer) error {
 		m = *(*map[string]interface{})(vp)
 	}
 
+	var gerr error
 	next := obj.Children()
 	for i := 0; i < size; i++ {
 		knode := NewNode(next)
@@ -469,14 +470,14 @@ func (node *Node) AsMapEface(ctx *Context, vp unsafe.Pointer) error {
 
 		val := NewNode(PtrOffset(next, 1))
 		m[key], err = val.AsEface(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 		next = val.cptr
 	}
 
 	*(*map[string]interface{})(vp) = m
-	return nil
+	return gerr
 }
 
 func (node *Node) AsMapEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
@@ -494,6 +495,7 @@ func (node *Node) AsMapEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 		m = *(*map[string]interface{})(vp)
 	}
 
+	var gerr error
 	*node = NewNode(obj.Children())
 	for i := 0; i < size; i++ {
 		key, err := node.AsStr(ctx)
@@ -503,13 +505,13 @@ func (node *Node) AsMapEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 
 		*node = NewNode(PtrOffset(node.cptr, 1))
 		m[key], err = node.AsEfaceUseNumber(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 	}
 
 	*(*map[string]interface{})(vp) = m
-	return nil
+	return gerr
 }
 
 func (node *Node) AsMapEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
@@ -521,6 +523,7 @@ func (node *Node) AsMapEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
 	size := obj.Len()
 
 	var m map[string]interface{}
+	var gerr error
 	if *(*unsafe.Pointer)(vp) == nil {
 		m = make(map[string]interface{}, size)
 	} else {
@@ -536,13 +539,13 @@ func (node *Node) AsMapEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
 
 		*node = NewNode(PtrOffset(node.cptr, 1))
 		m[key], err = node.AsEfaceUseInt64(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 	}
 
 	*(*map[string]interface{})(vp) = m
-	return nil
+	return gerr
 }
 
 func (node *Node) AsMapString(ctx *Context, vp unsafe.Pointer) error {
@@ -561,6 +564,7 @@ func (node *Node) AsMapString(ctx *Context, vp unsafe.Pointer) error {
 	}
 
 	next := obj.Children()
+	var gerr error
 	for i := 0; i < size; i++ {
 		knode := NewNode(next)
 		key, err := knode.AsStr(ctx)
@@ -570,14 +574,14 @@ func (node *Node) AsMapString(ctx *Context, vp unsafe.Pointer) error {
 
 		val := NewNode(PtrOffset(next, 1))
 		m[key], err = val.AsStr(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 		next = val.Next()
 	}
 
 	*(*map[string]string)(vp) = m
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceEface(ctx *Context, vp unsafe.Pointer) error {
@@ -590,17 +594,19 @@ func (node *Node) AsSliceEface(ctx *Context, vp unsafe.Pointer) error {
 
 	s := *(*[]interface{})((unsafe.Pointer)(MakeSlice(vp, anyType, size)))
 	next := arr.Children()
+
+	var gerr error
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
 		s[i], err = val.AsEface(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 		next = val.cptr
 	}
 
 	*(*[]interface{})(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
@@ -614,15 +620,16 @@ func (node *Node) AsSliceEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 	s := *(*[]interface{})((unsafe.Pointer)(MakeSlice(vp, anyType, size)))
 	*node = NewNode(arr.Children())
 
+	var gerr error
 	for i := 0; i < size; i++ {
 		s[i], err = node.AsEfaceUseNumber(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 	}
 
 	*(*[]interface{})(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
@@ -636,15 +643,16 @@ func (node *Node) AsSliceEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
 	s := *(*[]interface{})((unsafe.Pointer)(MakeSlice(vp, anyType, size)))
 	*node = NewNode(arr.Children())
 
+	var gerr error
 	for i := 0; i < size; i++ {
 		s[i], err = node.AsEfaceUseInt64(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 	}
 
 	*(*[]interface{})(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceI32(ctx *Context, vp unsafe.Pointer) error {
@@ -657,15 +665,20 @@ func (node *Node) AsSliceI32(ctx *Context, vp unsafe.Pointer) error {
 
 	s := *(*[]int32)((unsafe.Pointer)(MakeSlice(vp, int32Type, size)))
 	next := arr.Children()
+
+	var gerr error
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
 		ret, err := val.AsI64()
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 
 		if ret > math.MaxInt32 || ret < math.MinInt32 {
-			return newUnmatched("expect int32")
+			if gerr == nil {
+				gerr = newUnmatched("expect int32")
+			}
+			ret = 0
 		}
 
 		next = val.Next()
@@ -673,7 +686,7 @@ func (node *Node) AsSliceI32(ctx *Context, vp unsafe.Pointer) error {
 	}
 
 	*(*[]int32)(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceI64(ctx *Context, vp unsafe.Pointer) error {
@@ -687,12 +700,13 @@ func (node *Node) AsSliceI64(ctx *Context, vp unsafe.Pointer) error {
 
 	s := *(*[]int64)((unsafe.Pointer)(MakeSlice(vp, int64Type, size)))
 
+	var gerr error
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
 
 		ret, err := val.AsI64()
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 
 		s[i] = ret
@@ -700,7 +714,7 @@ func (node *Node) AsSliceI64(ctx *Context, vp unsafe.Pointer) error {
 	}
 
 	*(*[]int64)(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceU32(ctx *Context, vp unsafe.Pointer) error {
@@ -713,16 +727,19 @@ func (node *Node) AsSliceU32(ctx *Context, vp unsafe.Pointer) error {
 	next := arr.Children()
 
 	s := *(*[]uint32)((unsafe.Pointer)(MakeSlice(vp, uint32Type, size)))
-
+	var gerr error
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
 		ret, err := val.AsU64()
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 
 		if ret > math.MaxUint32 {
-			return newUnmatched("expect uint32")
+			if gerr == nil {
+				gerr =  newUnmatched("expect uint32")
+			}
+			ret = 0
 		}
 
 		s[i] = uint32(ret)
@@ -730,7 +747,7 @@ func (node *Node) AsSliceU32(ctx *Context, vp unsafe.Pointer) error {
 	}
 
 	*(*[]uint32)(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceU64(ctx *Context, vp unsafe.Pointer) error {
@@ -743,13 +760,13 @@ func (node *Node) AsSliceU64(ctx *Context, vp unsafe.Pointer) error {
 	next := arr.Children()
 
 	s := *(*[]uint64)((unsafe.Pointer)(MakeSlice(vp, uint64Type, size)))
-
+	var gerr error
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
 
 		ret, err := val.AsU64()
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 
 		s[i] = ret
@@ -757,7 +774,7 @@ func (node *Node) AsSliceU64(ctx *Context, vp unsafe.Pointer) error {
 	}
 
 	*(*[]uint64)(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceString(ctx *Context, vp unsafe.Pointer) error {
@@ -769,13 +786,13 @@ func (node *Node) AsSliceString(ctx *Context, vp unsafe.Pointer) error {
 	next := arr.Children()
 
 	s := *(*[]string)((unsafe.Pointer)(MakeSlice(vp, strType, size)))
-
+	var gerr error
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
 
 		ret, err := val.AsStr(ctx)
-		if err != nil {
-			return err
+		if gerr == nil && err != nil {
+			gerr = err
 		}
 
 		s[i] = ret
@@ -783,7 +800,7 @@ func (node *Node) AsSliceString(ctx *Context, vp unsafe.Pointer) error {
 	}
 
 	*(*[]string)(vp) = s
-	return nil
+	return gerr
 }
 
 func (node *Node) AsSliceBytes(ctx *Context) ([]byte, error) {

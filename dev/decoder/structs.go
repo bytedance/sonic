@@ -58,9 +58,8 @@ func (d *structDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *cont
 		err = d.fields[idx].fieldDec.FromDom(elem, val, ctx)
 
 		// deal with mismatch type errors
-		if err != nil {
+		if gerr == nil && err != nil {
 			gerr = error_mismatch_internal(err, d.fields[idx].Type, ctx.Json)
-			continue
 		}
 	}
 	return gerr
