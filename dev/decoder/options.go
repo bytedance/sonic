@@ -1,18 +1,14 @@
 package decoder
 
-import (
-	"github.com/bytedance/sonic/internal/native/types"
-)
-
 const (
 	_F_use_int64       = 0
 	_F_disable_urc     = 2
 	_F_disable_unknown = 3
 	_F_copy_string     = 4
 
-	_F_use_number      = types.B_USE_NUMBER
-	_F_validate_string = types.B_VALIDATE_STRING
-	_F_allow_control   = types.B_ALLOW_CONTROL
+	_F_use_number      = 1 // types.B_USE_NUMBER
+	_F_validate_string = 5 // types.B_VALIDATE_STRING
+	_F_allow_control   = 31 // types.B_ALLOW_CONTROL
 )
 
 type Options uint64
