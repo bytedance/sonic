@@ -70,7 +70,7 @@ func (c *compiler) compileFieldStringOption(vt reflect.Type) decFunc {
 		fallthrough
 	case reflect.Int:
 		return c.compileIntStringOption(vt)
-	case reflect.Pointer:
+	case reflect.Ptr:
 		return &ptrStrDecoder{
 			typ:   rt.UnpackType(vt.Elem()),
 			deref: c.compileFieldStringOption(vt.Elem()),
