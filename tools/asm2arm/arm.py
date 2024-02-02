@@ -2014,11 +2014,12 @@ class Assembler:
         self._declare_functions(protos)
 
     def _declare_body(self, name: str):
-        size = self.code.stacksize(name)-16
-        size = 0 if size < 0 else size
-        self.out.append('TEXT ·_%s_entry__(SB), NOSPLIT, $%d' % (name, size))
+        size = self.code.stacksize(name)
+        gosize = 0 if size < 16 else size-16
+        self.out.append('TEXT ·_%s_entry__(SB), NOSPLIT, $%d' % (name, gosize))
         self.out.append('\tNO_LOCAL_POINTERS')
-        self.out.append('\tPCALIGN $16')
+        self.out.append('\t'+Instruction('add sp, sp, #%d' % size).encoded)
+        self.out.append('\tJMP %s' % name)
         self._LE_4bytes_IntIntr_2_RawIntr()
         self._reloc()
 
@@ -2118,7 +2119,7 @@ class Assembler:
         # self.out.append('\tSUB $16, RSP')
         # self.out.append('\tADD $%d, RSP' % (size + 32))
         self.out.append('\tWORD $0xf90007fc // str x28, [sp, #8]')
-        self.out.append('\tCALL ·_%s_entry__+%d(SB)  // %s' % (subr, addr, subr))
+        self.out.append('\tCALL ·_%s_entry__(SB)  // %s' % (subr, subr))
         self.out.append('\tWORD $0xf94007fc // ldr x28, [sp, #8]')
         # self.out.append('\tSUB $%d, RSP' % (size + 32))
         # self.out.append('\tADD $16, RSP')

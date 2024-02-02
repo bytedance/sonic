@@ -7,7 +7,8 @@
 
 TEXT ·__html_escape_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	PCALIGN $16
+	WORD $0x910083ff  // add sp, sp, #32
+	JMP _html_escape
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -1389,7 +1390,7 @@ _html_escape:
 	MOVD dp+16(FP), R2
 	MOVD dn+24(FP), R3
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__html_escape_entry__+48(SB)  // _html_escape
+	CALL ·__html_escape_entry__(SB)  // _html_escape
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+32(FP)
 	RET
