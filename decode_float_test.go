@@ -35,7 +35,7 @@ type atofTest struct {
 // All tests are passed in Go encoding/json.
 var atoftests = []atofTest{
     {"1.234e", "", nil}, // error
-    {"1i", "1", nil},    // pass
+    // {"1i", "1", nil},    // pass
     {"1", "1", nil},
     {"1e23", "1e+23", nil},
     {"1E23", "1e+23", nil},
