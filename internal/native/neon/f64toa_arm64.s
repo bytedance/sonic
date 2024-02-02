@@ -7,7 +7,8 @@
 
 TEXT ·__f64toa_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	PCALIGN $16
+	WORD $0x910083ff  // add sp, sp, #32
+	JMP _f64toa
 	  // .p2align 2, 0x00
 _f64toa:
 	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
@@ -1220,7 +1221,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	  // .p2align 3, 0x00
-_LB_de8c9345: // _pow10_ceil_sig.g
+_LB_40c6cc40: // _pow10_ceil_sig.g
 	WORD $0xbebcdc4f; WORD $0xff77b1fc  // .quad -38366372719436721
 	WORD $0x13bb0f7b; WORD $0x25e8e89c  // .quad 2731688931043774331
 	WORD $0xf73609b1; WORD $0x9faacf3d  // .quad -6941508010590729807
@@ -2469,7 +2470,7 @@ _f64toa:
 	MOVD out+0(FP), R0
 	FMOVD val+8(FP), F0
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__f64toa_entry__+16(SB)  // _f64toa
+	CALL ·__f64toa_entry__(SB)  // _f64toa
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET

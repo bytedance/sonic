@@ -7,7 +7,8 @@
 
 TEXT ·__vunsigned_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	PCALIGN $16
+	WORD $0x910083ff  // add sp, sp, #32
+	JMP _vunsigned
 	  // .p2align 2, 0x00
 _vunsigned:
 	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
@@ -131,7 +132,7 @@ _vunsigned:
 	MOVD p+8(FP), R1
 	MOVD v+16(FP), R2
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__vunsigned_entry__+16(SB)  // _vunsigned
+	CALL ·__vunsigned_entry__(SB)  // _vunsigned
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	RET
 

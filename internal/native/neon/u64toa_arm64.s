@@ -7,7 +7,8 @@
 
 TEXT ·__u64toa_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	PCALIGN $16
+	WORD $0x910083ff  // add sp, sp, #32
+	JMP _u64toa
 	  // .p2align 3, 0x00
 lCPI0_0:
 	WORD $0x147b20c5
@@ -580,7 +581,7 @@ _u64toa:
 	MOVD out+0(FP), R0
 	MOVD val+8(FP), R1
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__u64toa_entry__+64(SB)  // _u64toa
+	CALL ·__u64toa_entry__(SB)  // _u64toa
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET

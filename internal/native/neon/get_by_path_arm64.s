@@ -7,7 +7,8 @@
 
 TEXT ·__get_by_path_entry__(SB), NOSPLIT, $192
 	NO_LOCAL_POINTERS
-	PCALIGN $16
+	WORD $0x910343ff  // add sp, sp, #208
+	JMP _get_by_path
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -4566,7 +4567,7 @@ _get_by_path:
 	MOVD path+16(FP), R2
 	MOVD m+24(FP), R3
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__get_by_path_entry__+64(SB)  // _get_by_path
+	CALL ·__get_by_path_entry__(SB)  // _get_by_path
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+32(FP)
 	RET

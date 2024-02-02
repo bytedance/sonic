@@ -7,7 +7,8 @@
 
 TEXT ·__validate_one_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
-	PCALIGN $16
+	WORD $0x9101c3ff  // add sp, sp, #112
+	JMP _validate_one
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x00000001; WORD $0x00000000  // .quad 1
@@ -1845,7 +1846,7 @@ _validate_one:
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__validate_one_entry__+64(SB)  // _validate_one
+	CALL ·__validate_one_entry__(SB)  // _validate_one
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+24(FP)
 	RET
