@@ -54,6 +54,15 @@ func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
 }
 
+func BenchmarkEncoder_Generic_StdLib(b *testing.B) {
+    _, _ = json.Marshal(_GenericValue)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = json.Marshal(_GenericValue)
+    }
+}
+
 func BenchmarkEncoder_Generic_JsonIter(b *testing.B) {
     _, _ = jsoniter.Marshal(_GenericValue)
     b.SetBytes(int64(len(TwitterJson)))
@@ -81,6 +90,14 @@ func BenchmarkEncoder_Generic_Sonic(b *testing.B) {
     }
 }
 
+func BenchmarkEncoder_Binding_StdLib(b *testing.B) {
+    _, _ = json.Marshal(&_BindingValue)
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = json.Marshal(&_BindingValue)
+    }
+}
 
 func BenchmarkEncoder_Binding_JsonIter(b *testing.B) {
     _, _ = jsoniter.Marshal(&_BindingValue)

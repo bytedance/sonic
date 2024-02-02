@@ -20,7 +20,6 @@ package ast
 
 import (
 	`encoding/json`
-	`fmt`
 
 	`github.com/bytedance/sonic/internal/native/types`
 	`github.com/bytedance/sonic/internal/rt`
@@ -78,4 +77,29 @@ func (self *Node) encodeInterface(buf *[]byte) error {
 	}
 	*buf = append(*buf, out...)
 	return nil
+}
+
+func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+    for _, p := range path {
+        if idx, ok := p.(int); ok && idx >= 0 {
+            if err := self.searchIndex(idx); err != 0 {
+                return self.p, err
+            }
+        } else if key, ok := p.(string); ok {
+            if err := self.searchKey(key); err != 0 {
+                return self.p, err
+            }
+        } else {
+            panic("path must be either int(>=0) or string")
+        }
+    }
+    start, e := self.skip()
+    if e != 0 {
+        return self.p, e
+    }
+    // t := switchRawType(self.s[start])
+    // if t == _V_NUMBER {
+    //     self.p = 1 + backward(self.s, self.p-1)
+    // }
+    return start, 0
 }
