@@ -1,3 +1,4 @@
+//go:build (amd64 && go1.16 && !go1.22) || (arm64 && go1.20 && !go1.22)
 // +build amd64,go1.16,!go1.22 arm64,go1.20,!go1.22
 
 /**
@@ -20,6 +21,7 @@ package alg
 
 import (
 	"runtime"
+	"strconv"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/native"
@@ -170,21 +172,29 @@ func F32toa(buf []byte, v float32) ([]byte) {
 }
 
 func I64toa(buf []byte, v int64) ([]byte) {
-	buf = rt.GuardSlice2(buf, 32)
-	ret := native.I64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-	if ret > 0 {
-		return buf[:len(buf)+ret]
+	if -10 < v && v < 10 {
+		buf = rt.GuardSlice2(buf, 32)
+		ret := native.I64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
+		if ret > 0 {
+			return buf[:len(buf)+ret]
+		} else {
+			return buf
+		}
 	} else {
-		return buf
+		return strconv.AppendInt(buf, v, 10)
 	}
 }
 
 func U64toa(buf []byte, v uint64) ([]byte) {
-	buf = rt.GuardSlice2(buf, 32)
-	ret := native.U64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-	if ret > 0 {
-		return buf[:len(buf)+ret]
+	if v < 10 {
+		buf = rt.GuardSlice2(buf, 32)
+		ret := native.U64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
+		if ret > 0 {
+			return buf[:len(buf)+ret]
+		} else {
+			return buf
+		}
 	} else {
-		return buf
+		return strconv.AppendInt(buf, int64(v), 10)
 	}
 }
