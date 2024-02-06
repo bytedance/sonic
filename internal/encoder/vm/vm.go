@@ -124,15 +124,15 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 				continue
 			}
 		case ir.OP_null:
-			buf = append(buf, "null"...)
+			buf = append(buf, 'n', 'u', 'l', 'l')
 		case ir.OP_str:
 			v := *(*string)(p)
 			buf = alg.Quote(buf, v, false)
 		case ir.OP_bool:
 			if *(*bool)(p) {
-				buf = append(buf, "true"...)
+				buf = append(buf, 't', 'r', 'u', 'e')
 			} else {
-				buf = append(buf, "false"...)
+				buf = append(buf, 'f', 'a', 'l', 's', 'e')
 			}
 		case ir.OP_i8:
 			v := *(*int8)(p)
@@ -280,15 +280,15 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			}
 		case ir.OP_empty_arr:
 			if has_opts(flags, alg.BitNoNullSliceOrMap) {
-				buf = append(buf, "[]"...)
+				buf = append(buf, '[', ']')
 			} else {
-				buf = append(buf, "null"...)
+				buf = append(buf, 'n', 'u', 'l', 'l')
 			}
 		case ir.OP_empty_obj:
 			if has_opts(flags, alg.BitNoNullSliceOrMap) {
-				buf = append(buf, "{}"...)
+				buf = append(buf, '[', ']')
 			} else {
-				buf = append(buf, "null"...)
+				buf = append(buf, 'n', 'u', 'l', 'l')
 			}
 		case ir.OP_marshal:
 			vt, itab := ins.Vtab()
@@ -355,7 +355,7 @@ func call_text_marshaler(buf []byte, vt *rt.GoType, itab *rt.GoItab, p unsafe.Po
 		switch vt.Kind() {
 			case reflect.Interface        : 
 			if is_nil(p) {
-				buf = append(buf, "null"...)
+				buf = append(buf, 'n', 'u', 'l', 'l')
 				return buf, nil
 			}
 			it = rt.AssertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(p))
@@ -378,7 +378,7 @@ func call_json_marshaler(buf []byte, vt *rt.GoType, itab *rt.GoItab, p unsafe.Po
 		switch vt.Kind() {
 			case reflect.Interface        : 
 			if is_nil(p) {
-				buf = append(buf, "null"...)
+				buf = append(buf, 'n', 'u', 'l', 'l')
 				return buf, nil
 			}
 			it = rt.AssertI2I(_T_json_Marshaler, *(*rt.GoIface)(p))
