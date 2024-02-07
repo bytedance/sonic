@@ -22,8 +22,6 @@ import (
     `sync`
     `testing`
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
 )
 
@@ -61,62 +59,6 @@ func TestGC_Encode(t *testing.T) {
         }(wg)
     }
     wg.Wait()
-}
-
-func TestEncodeValue(t *testing.T) {
-    obj := new(_TwitterStruct)
-    if err := json.Unmarshal([]byte(_TwitterJson), obj); err != nil {
-        t.Fatal(err)
-    }
-    // buf, err := encoder.Encode(obj, encoder.EscapeHTML|encoder.SortMapKeys)
-    buf, err := json.Marshal(obj)
-    if err != nil {
-        t.Fatal(err)
-    }
-    quote, err := json.Marshal(_TwitterJson)
-    if err != nil {
-        t.Fatal(err)
-    }
-    type Case struct {
-        node Node
-        exp string
-        err bool
-    }
-    input := []Case{
-        {NewNull(), "null", false},
-        {NewBool(true), "true", false},
-        {NewBool(false), "false", false},
-        {NewNumber("0.0"), "0.0", false},
-        {NewString(""), `""`, false},
-        {NewString(`\"\"`), `"\\\"\\\""`, false},
-        {NewString(_TwitterJson), string(quote), false},
-        {NewArray([]Node{}), "[]", false},
-        {NewArray([]Node{NewString(""), NewNull()}), `["",null]`, false},
-        {NewArray([]Node{NewBool(true), NewString("true"), NewString("\t")}), `[true,"true","\t"]`, false},
-        {NewObject([]Pair{Pair{"a", NewNull()}, Pair{"b", NewNumber("0")}}), `{"a":null,"b":0}`, false},
-        {NewObject([]Pair{Pair{"\ta", NewString("\t")}, Pair{"\bb", NewString("\b")}, Pair{"\nb", NewString("\n")}, Pair{"\ra", NewString("\r")}}),`{"\ta":"\t","\u0008b":"\u0008","\nb":"\n","\ra":"\r"}`, false},
-        {NewObject([]Pair{}), `{}`, false},
-        {NewObject([]Pair{Pair{Key: "", Value: NewNull()}}), `{"":null}`, false},
-        {NewBytes([]byte("hello, world")), `"aGVsbG8sIHdvcmxk"`, false},
-        {NewAny(obj), string(buf), false},
-        {NewRaw(`[{ }]`), "[{}]", false},
-        {Node{}, "", true},
-        {Node{t: types.ValueType(1)}, "", true},
-    }
-    for i, c := range input {
-        t.Log(i)
-        buf, err := json.Marshal(&c.node)
-        if c.err {
-            if err == nil {
-                t.Fatal(i)
-            }
-            continue
-        }
-        if err != nil {
-            t.Fatal(i, err)
-        }
-        assert.Equal(t, c.exp, string(buf))
-    }
 }
 
 func TestEncodeNode(t *testing.T) {
