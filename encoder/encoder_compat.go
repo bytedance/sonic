@@ -1,4 +1,4 @@
-// +build !amd64 !go1.16 go1.22
+// +build !amd64 !go1.16 go1.23
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -28,7 +28,7 @@ import (
 )
 
 func init() {
-    println("WARNING: sonic only supports Go1.16~1.21 && CPU amd64, but your environment is not suitable")
+    println("WARNING: sonic only supports Go1.16~1.22 && CPU amd64, but your environment is not suitable")
 }
 
 // Options is a set of encoding options.

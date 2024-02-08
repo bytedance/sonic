@@ -1,4 +1,4 @@
-// +build amd64,go1.16,!go1.22
+// +build amd64,go1.16,!go1.23
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -2584,5 +2584,232 @@ func TestDecoder_RandomInvalidUtf8(t *testing.T) {
         length := rand.Intn(maxLen)
         testDecodeInvalidUtf8(t, genRandJsonBytes(length))
         testDecodeInvalidUtf8(t, genRandJsonRune(length))
+    }
+}
+
+
+type atofTest struct {
+    in  string
+    out string
+    err error
+}
+
+// Tests from Go strconv package, https://github.com/golang/go/blob/master/src/strconv/atof_test.go
+// All tests are passed in Go encoding/json.
+var atoftests = []atofTest{
+    {"1.234e", "", nil}, // error
+    {"1i", "1", nil},    // pass
+    {"1", "1", nil},
+    {"1e23", "1e+23", nil},
+    {"1E23", "1e+23", nil},
+    {"100000000000000000000000", "1e+23", nil},
+    {"1e-100", "1e-100", nil},
+    {"123456700", "1.234567e+08", nil},
+    {"99999999999999974834176", "9.999999999999997e+22", nil},
+    {"100000000000000000000001", "1.0000000000000001e+23", nil},
+    {"100000000000000008388608", "1.0000000000000001e+23", nil},
+    {"100000000000000016777215", "1.0000000000000001e+23", nil},
+    {"100000000000000016777216", "1.0000000000000003e+23", nil},
+    {"-1", "-1", nil},
+    {"-0.1", "-0.1", nil},
+    {"-0", "-0", nil},
+    {"1e-20", "1e-20", nil},
+    {"625e-3", "0.625", nil},
+
+    // zeros
+    {"0", "0", nil},
+    {"0e0", "0", nil},
+    {"-0e0", "-0", nil},
+    {"0e-0", "0", nil},
+    {"-0e-0", "-0", nil},
+    {"0e+0", "0", nil},
+    {"-0e+0", "-0", nil},
+    {"0e+01234567890123456789", "0", nil},
+    {"0.00e-01234567890123456789", "0", nil},
+    {"-0e+01234567890123456789", "-0", nil},
+    {"-0.00e-01234567890123456789", "-0", nil},
+
+    {"0e291", "0", nil}, // issue 15364
+    {"0e292", "0", nil}, // issue 15364
+    {"0e347", "0", nil}, // issue 15364
+    {"0e348", "0", nil}, // issue 15364
+    {"-0e291", "-0", nil},
+    {"-0e292", "-0", nil},
+    {"-0e347", "-0", nil},
+    {"-0e348", "-0", nil},
+
+    // largest float64
+    {"1.7976931348623157e308", "1.7976931348623157e+308", nil},
+    {"-1.7976931348623157e308", "-1.7976931348623157e+308", nil},
+
+    // the border is ...158079
+    // borderline - okay
+    {"1.7976931348623158e308", "1.7976931348623157e+308", nil},
+    {"-1.7976931348623158e308", "-1.7976931348623157e+308", nil},
+
+    // a little too large
+    {"1e308", "1e+308", nil},
+
+    // denormalized
+    {"1e-305", "1e-305", nil},
+    {"1e-306", "1e-306", nil},
+    {"1e-307", "1e-307", nil},
+    {"1e-308", "1e-308", nil},
+    {"1e-309", "1e-309", nil},
+    {"1e-310", "1e-310", nil},
+    {"1e-322", "1e-322", nil},
+    // smallest denormal
+    {"5e-324", "5e-324", nil},
+    {"4e-324", "5e-324", nil},
+    {"3e-324", "5e-324", nil},
+    // too small
+    {"2e-324", "0", nil},
+    // way too small
+    {"1e-350", "0", nil},
+    {"1e-400000", "0", nil},
+
+    // try to overflow exponent
+    {"1e-4294967296", "0", nil},
+    {"1e-18446744073709551616", "0", nil},
+
+    // https://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308/
+    {"2.2250738585072012e-308", "2.2250738585072014e-308", nil},
+    // https://www.exploringbinary.com/php-hangs-on-numeric-value-2-2250738585072011e-308/
+    {"2.2250738585072011e-308", "2.225073858507201e-308", nil},
+
+    // A very large number (initially wrongly parsed by the fast algorithm).
+    {"4.630813248087435e+307", "4.630813248087435e+307", nil},
+
+    // A different kind of very large number.
+    {"22.222222222222222", "22.22222222222222", nil},
+    {"2." + strings.Repeat("2", 800) + "e+1", "22.22222222222222", nil},
+
+    // Exactly halfway between 1 and math.Nextafter(1, 2).
+    // Round to even (down).
+    {"1.00000000000000011102230246251565404236316680908203125", "1", nil},
+    // Slightly lower; still round down.
+    {"1.00000000000000011102230246251565404236316680908203124", "1", nil},
+    // Slightly higher; round up.
+    {"1.00000000000000011102230246251565404236316680908203126", "1.0000000000000002", nil},
+    // Slightly higher, but you have to read all the way to the end.
+    {"1.00000000000000011102230246251565404236316680908203125" + strings.Repeat("0", 10000) + "1", "1.0000000000000002", nil},
+
+    // Halfway between x := math.Nextafter(1, 2) and math.Nextafter(x, 2)
+    // Round to even (up).
+    {"1.00000000000000033306690738754696212708950042724609375", "1.0000000000000004", nil},
+
+    // Halfway between 1090544144181609278303144771584 and 1090544144181609419040633126912
+    // (15497564393479157p+46, should round to even 15497564393479156p+46, issue 36657)
+    {"1090544144181609348671888949248", "1.0905441441816093e+30", nil},
+
+    // Corner case between int64 and float64 for the input
+    {"9223372036854775807", "9223372036854775807", nil}, // max int64: (1 << 63) - 1
+    {"9223372036854775808", "9223372036854775808", nil},
+    {"-9223372036854775808", "-9223372036854775808", nil}, // min int64: 1 << 63
+    {"-9223372036854775809", "-9223372036854775809", nil},
+}
+
+func TestDecodeFloat(t *testing.T) {
+    for i, tt := range atoftests {
+        // default float64
+        var sonicout, stdout float64
+        sonicerr := decoder.NewDecoder(tt.in).Decode(&sonicout)
+        stderr := json.NewDecoder(strings.NewReader(tt.in)).Decode(&stdout)
+        if !reflect.DeepEqual(sonicout, stdout) {
+            t.Fatalf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sonicout, stdout)
+        }
+        if !reflect.DeepEqual(sonicerr == nil, stderr == nil) {
+            t.Fatalf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sonicerr, stderr)
+        }
+    }
+}
+
+
+type useInt64Test struct {
+    in  string
+    out int64
+}
+
+type useFloatTest struct {
+    in  string
+    out float64
+}
+
+var useinttest = []useInt64Test{
+    // int64
+    {"0", 0},
+    {"1", 1},
+    {"-1", -1},
+    {"100", 100},
+
+    {"-9223372036854775807", -9223372036854775807},
+    {"-9223372036854775808", -9223372036854775808}, //min int64
+    {"9223372036854775807", 9223372036854775807},   //max int64
+    {"9223372036854775806", 9223372036854775806},
+}
+
+var usefloattest = []useFloatTest{
+    // float64
+    {"-9223372036854775809", -9223372036854775809}, // int64 overflow
+    {"9223372036854775808", 9223372036854775808},   // int64 overflow
+    {"1e2", 1e2},
+    {"1e-20", 1e-20},
+    {"1.0", 1},
+}
+
+func TestUseInt64(t *testing.T) {
+    for i, tt := range useinttest {
+        var sout interface{}
+        dc := decoder.NewDecoder(tt.in)
+        dc.UseInt64()
+        serr := dc.Decode(&sout)
+        if !reflect.DeepEqual(sout, tt.out) {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sout, tt.in)
+        }
+        if serr != nil {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   nil\n", i, tt, serr)
+        }
+    }
+
+    for i, tt := range usefloattest {
+        var sout interface{}
+        dc := decoder.NewDecoder(tt.in)
+        dc.UseInt64()
+        //the input string is not int64, still return float64
+        serr := dc.Decode(&sout)
+        if !reflect.DeepEqual(sout, tt.out) {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sout, tt.in)
+        }
+        if serr != nil {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   nil\n", i, tt, serr)
+        }
+    }
+}
+
+func TestUseNumber(t *testing.T) {
+    for i, tt := range useinttest {
+        var sout interface{}
+        dc := decoder.NewDecoder(tt.in)
+        dc.UseNumber()
+        serr := dc.Decode(&sout)
+        if !reflect.DeepEqual(sout, json.Number(tt.in)) {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sout, tt.out)
+        }
+        if serr != nil {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   nil\n", i, tt, serr)
+        }
+    }
+
+    for i, tt := range usefloattest {
+        var sout interface{}
+        dc := decoder.NewDecoder(tt.in)
+        dc.UseNumber()
+        serr := dc.Decode(&sout)
+        if !reflect.DeepEqual(sout, json.Number(tt.in)) {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   %#v\n", i, tt.in, sout, tt.out)
+        }
+        if serr != nil {
+            t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   nil\n", i, tt, serr)
+        }
     }
 }
