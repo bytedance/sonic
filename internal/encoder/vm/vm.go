@@ -65,9 +65,9 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 		pc++
 		op := ins.Op()
 
-		if vars.DebugSyncGC {
-			print_instr(buf, pc, op, ins)
-		}
+		// if vars.DebugSyncGC {
+		// 	print_instr(buf, pc, op, ins)
+		// }
 		
 		switch op {
 		case ir.OP_goto:
@@ -226,6 +226,28 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 				continue
 			}
 			p = it.It.K
+		case ir.OP_marshal_text:
+			vt, itab := ins.Vtab()
+			var it rt.GoIface
+			switch vt.Kind() {
+				case reflect.Interface        : 
+				if is_nil(p) {
+					buf = append(buf, 'n', 'u', 'l', 'l')
+					continue
+				}
+				it = rt.AssertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(p))
+				case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
+				default                       : it = convT2I(p, !vt.Indirect(), itab)
+			}
+			if err := alg.EncodeTextMarshaler(&buf, *(*encoding.TextMarshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
+				return err
+			}
+		case ir.OP_marshal_text_p:
+			_, itab := ins.Vtab()
+			it := convT2I(p, false, itab)
+			if err := alg.EncodeTextMarshaler(&buf, *(*encoding.TextMarshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
+				return err
+			}
 		case ir.OP_map_write_key:
 			if has_opts(flags, alg.BitSortMapKeys) {
 				v := *(*string)(p)
@@ -292,26 +314,24 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			}
 		case ir.OP_marshal:
 			vt, itab := ins.Vtab()
-			var err error
-			if buf, err = call_json_marshaler(buf, vt, itab, p, flags, false); err != nil {
+			var it rt.GoIface
+			switch vt.Kind() {
+				case reflect.Interface        : 
+				if is_nil(p) {
+					buf = append(buf, 'n', 'u', 'l', 'l')
+					continue
+				}
+				it = rt.AssertI2I(_T_json_Marshaler, *(*rt.GoIface)(p))
+				case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
+				default                       : it = convT2I(p, !vt.Indirect(), itab)
+			}
+			if err := alg.EncodeJsonMarshaler(&buf, *(*json.Marshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
 				return err
 			}
 		case ir.OP_marshal_p:
-			vt, itab := ins.Vtab()
-			var err error
-			if buf, err = call_json_marshaler(buf, vt, itab, p, flags, true); err != nil {
-				return err
-			}
-		case ir.OP_marshal_text:
-			vt, itab := ins.Vtab()
-			var err error
-			if buf, err = call_text_marshaler(buf, vt, itab, p, flags, false); err != nil {
-				return err
-			}
-		case ir.OP_marshal_text_p:
-			vt, itab := ins.Vtab()
-			var err error
-			if buf, err = call_text_marshaler(buf, vt, itab, p, flags, true); err != nil {
+			_, itab := ins.Vtab()
+			it := convT2I(p, false, itab)
+			if err := alg.EncodeJsonMarshaler(&buf, *(*json.Marshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
 				return err
 			}
 		default:
@@ -347,50 +367,4 @@ func convT2I(ptr unsafe.Pointer, deref bool, itab *rt.GoItab) (rt.GoIface) {
 		Itab:  itab,
 		Value: ptr,
 	}
-}
-
-func call_text_marshaler(buf []byte, vt *rt.GoType, itab *rt.GoItab, p unsafe.Pointer, flags uint64, pointer bool) ([]byte, error) {
-	var it rt.GoIface
-	if !pointer {
-		switch vt.Kind() {
-			case reflect.Interface        : 
-			if is_nil(p) {
-				buf = append(buf, 'n', 'u', 'l', 'l')
-				return buf, nil
-			}
-			it = rt.AssertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(p))
-			case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
-			default                       : it = convT2I(p, !vt.Indirect(), itab)
-		}
-
-	} else {
-		it = convT2I(p, false, itab)
-	}
-	if err := alg.EncodeTextMarshaler(&buf, *(*encoding.TextMarshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
-		return buf, err
-	}
-	return buf, nil
-}
-
-func call_json_marshaler(buf []byte, vt *rt.GoType, itab *rt.GoItab, p unsafe.Pointer, flags uint64, pointer bool) ([]byte, error) {
-	var it rt.GoIface
-	if !pointer {
-		switch vt.Kind() {
-			case reflect.Interface        : 
-			if is_nil(p) {
-				buf = append(buf, 'n', 'u', 'l', 'l')
-				return buf, nil
-			}
-			it = rt.AssertI2I(_T_json_Marshaler, *(*rt.GoIface)(p))
-			case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
-			default                       : it = convT2I(p, !vt.Indirect(), itab)
-		}
-
-	} else {
-		it = convT2I(p, false, itab)
-	}
-	if err := alg.EncodeJsonMarshaler(&buf, *(*json.Marshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
-		return buf, err
-	}
-	return buf, nil
 }
