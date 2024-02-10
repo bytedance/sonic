@@ -286,7 +286,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			}
 		case ir.OP_empty_obj:
 			if has_opts(flags, alg.BitNoNullSliceOrMap) {
-				buf = append(buf, '[', ']')
+				buf = append(buf, '{', '}')
 			} else {
 				buf = append(buf, 'n', 'u', 'l', 'l')
 			}

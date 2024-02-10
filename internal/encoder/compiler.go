@@ -244,6 +244,8 @@ func (self *Compiler) compileMap(p *ir.Program, sp int, vt reflect.Type) {
 func (self *Compiler) compileMapBody(p *ir.Program, sp int, vt reflect.Type) {
 	p.Tag(sp + 1)
 	p.Int(ir.OP_byte, '{')
+	e := p.PC()
+	p.Add(ir.OP_is_zero_map)
 	p.Add(ir.OP_save)
 	p.Rtt(ir.OP_map_iter, vt)
 	p.Add(ir.OP_save)
@@ -271,6 +273,7 @@ func (self *Compiler) compileMapBody(p *ir.Program, sp int, vt reflect.Type) {
 	p.Pin(j)
 	p.Add(ir.OP_map_stop)
 	p.Add(ir.OP_drop_2)
+	p.Pin(e)
 	p.Int(ir.OP_byte, '}')
 }
 
@@ -355,6 +358,8 @@ func (self *Compiler) compileSliceBody(p *ir.Program, sp int, vt reflect.Type) {
 func (self *Compiler) compileSliceArray(p *ir.Program, sp int, vt reflect.Type) {
 	p.Tag(sp)
 	p.Int(ir.OP_byte, '[')
+	e := p.PC()
+	p.Add(ir.OP_is_nil)
 	p.Add(ir.OP_save)
 	p.Add(ir.OP_slice_len)
 	i := p.PC()
@@ -368,6 +373,7 @@ func (self *Compiler) compileSliceArray(p *ir.Program, sp int, vt reflect.Type) 
 	p.Pin(i)
 	p.Pin(j)
 	p.Add(ir.OP_drop)
+	p.Pin(e)
 	p.Int(ir.OP_byte, ']')
 }
 
