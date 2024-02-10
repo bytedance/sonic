@@ -151,50 +151,67 @@ func HtmlEscape(dst []byte, src []byte) []byte {
 	return dst
 }
 
+// func F64toa(buf []byte, v float64) ([]byte) {
+// 	buf = rt.GuardSlice2(buf, 64)
+// 	ret := native.F64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
+// 	if ret > 0 {
+// 		return buf[:len(buf)+ret]
+// 	} else {
+// 		return buf
+// 	}
+// }
+
+// func F32toa(buf []byte, v float32) ([]byte) {
+// 	buf = rt.GuardSlice2(buf, 64)
+// 	ret := native.F32toa((*byte)(rt.IndexByte(buf, len(buf))), v)
+// 	if ret > 0 {
+// 		return buf[:len(buf)+ret]
+// 	} else {
+// 		return buf
+// 	}
+// }
+
+// func I64toa(buf []byte, v int64) ([]byte) {
+// 	if -10 < v && v < 10 {
+// 		buf = rt.GuardSlice2(buf, 32)
+// 		ret := native.I64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
+// 		if ret > 0 {
+// 			return buf[:len(buf)+ret]
+// 		} else {
+// 			return buf
+// 		}
+// 	} else {
+// 		return strconv.AppendInt(buf, v, 10)
+// 	}
+// }
+
+// func U64toa(buf []byte, v uint64) ([]byte) {
+// 	if v < 10 {
+// 		buf = rt.GuardSlice2(buf, 32)
+// 		ret := native.U64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
+// 		if ret > 0 {
+// 			return buf[:len(buf)+ret]
+// 		} else {
+// 			return buf
+// 		}
+// 	} else {
+// 		return strconv.AppendInt(buf, int64(v), 10)
+// 	}
+// }
+
 func F64toa(buf []byte, v float64) ([]byte) {
-	buf = rt.GuardSlice2(buf, 64)
-	ret := native.F64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-	if ret > 0 {
-		return buf[:len(buf)+ret]
-	} else {
-		return buf
-	}
+	return strconv.AppendFloat(buf, float64(v), 'g', -1, 64)
 }
 
 func F32toa(buf []byte, v float32) ([]byte) {
-	buf = rt.GuardSlice2(buf, 64)
-	ret := native.F32toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-	if ret > 0 {
-		return buf[:len(buf)+ret]
-	} else {
-		return buf
-	}
+	return strconv.AppendFloat(buf, float64(v), 'g', -1, 32)
 }
 
 func I64toa(buf []byte, v int64) ([]byte) {
-	if -10 < v && v < 10 {
-		buf = rt.GuardSlice2(buf, 32)
-		ret := native.I64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-		if ret > 0 {
-			return buf[:len(buf)+ret]
-		} else {
-			return buf
-		}
-	} else {
-		return strconv.AppendInt(buf, v, 10)
-	}
+	return strconv.AppendInt(buf, int64(v), 10)
 }
 
 func U64toa(buf []byte, v uint64) ([]byte) {
-	if v < 10 {
-		buf = rt.GuardSlice2(buf, 32)
-		ret := native.U64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-		if ret > 0 {
-			return buf[:len(buf)+ret]
-		} else {
-			return buf
-		}
-	} else {
-		return strconv.AppendInt(buf, int64(v), 10)
-	}
+	return strconv.AppendUint(buf, v, 10)
 }
+
