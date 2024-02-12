@@ -9,7 +9,7 @@ package neon
 func __html_escape_entry__() uintptr
 
 var (
-    _subr__html_escape uintptr = 32
+    _subr__html_escape uintptr = __html_escape_entry__() + 32
 )
 
 const (

@@ -9,7 +9,7 @@ package neon
 func __skip_one_entry__() uintptr
 
 var (
-    _subr__skip_one uintptr = 48
+    _subr__skip_one uintptr = __skip_one_entry__() + 48
 )
 
 const (

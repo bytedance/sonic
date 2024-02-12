@@ -9,7 +9,7 @@ package neon
 func __f32toa_entry__() uintptr
 
 var (
-    _subr__f32toa uintptr = 0
+    _subr__f32toa uintptr = __f32toa_entry__() + 0
 )
 
 const (

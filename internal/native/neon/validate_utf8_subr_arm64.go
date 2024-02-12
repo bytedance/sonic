@@ -9,7 +9,7 @@ package neon
 func __validate_utf8_entry__() uintptr
 
 var (
-    _subr__validate_utf8 uintptr = 0
+    _subr__validate_utf8 uintptr = __validate_utf8_entry__() + 0
 )
 
 const (

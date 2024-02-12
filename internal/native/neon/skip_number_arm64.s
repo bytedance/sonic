@@ -7,8 +7,9 @@
 
 TEXT ·__skip_number_entry__(SB), NOSPLIT, $32
 	NO_LOCAL_POINTERS
-	WORD $0x9100c3ff  // add sp, sp, #48
-	JMP _skip_number
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -361,7 +362,9 @@ _skip_number:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__skip_number_entry__(SB)  // _skip_number
+	MOVD ·_subr__skip_number(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET

@@ -7,8 +7,9 @@
 
 TEXT ·__validate_utf8_fast_entry__(SB), NOSPLIT, $32
 	NO_LOCAL_POINTERS
-	WORD $0x9100c3ff  // add sp, sp, #48
-	JMP _validate_utf8_fast
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 2, 0x00
 _validate_utf8_fast:
 	WORD $0xd100c3ff  // sub	sp, sp, #48
@@ -170,7 +171,9 @@ _entry:
 _validate_utf8_fast:
 	MOVD s+0(FP), R0
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__validate_utf8_fast_entry__(SB)  // _validate_utf8_fast
+	MOVD ·_subr__validate_utf8_fast(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+8(FP)
 	RET

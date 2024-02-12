@@ -7,8 +7,9 @@
 
 TEXT ·__f32toa_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x910083ff  // add sp, sp, #32
-	JMP _f32toa
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 2, 0x00
 _f32toa:
 	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
@@ -905,7 +906,7 @@ _Digits:
 	WORD $0x37393639  // .ascii 4, '96979899'
 	WORD $0x39393839  // .ascii 4, '9899'
 	WORD $0x00000000  // .p2align 3, 0x00
-_LB_e80ea3d0: // _pow10_ceil_sig_f32.g
+_LB_8f8a73de: // _pow10_ceil_sig_f32.g
 	WORD $0x4b43fcf5; WORD $0x81ceb32c  // .quad -9093133594791772939
 	WORD $0x5e14fc32; WORD $0xa2425ff7  // .quad -6754730975062328270
 	WORD $0x359a3b3f; WORD $0xcad2f7f5  // .quad -3831727700400522433
@@ -997,7 +998,9 @@ _f32toa:
 	MOVD out+0(FP), R0
 	FMOVD val+8(FP), F0
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__f32toa_entry__(SB)  // _f32toa
+	MOVD ·_subr__f32toa(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET

@@ -7,8 +7,9 @@
 
 TEXT ·__skip_one_fast_entry__(SB), NOSPLIT, $176
 	NO_LOCAL_POINTERS
-	WORD $0x910303ff  // add sp, sp, #192
-	JMP _skip_one_fast
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -986,7 +987,9 @@ _skip_one_fast:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__skip_one_fast_entry__(SB)  // _skip_one_fast
+	MOVD ·_subr__skip_one_fast(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET

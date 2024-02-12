@@ -7,8 +7,9 @@
 
 TEXT ·__lspace_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x910083ff  // add sp, sp, #32
-	JMP _lspace
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 2, 0x00
 _lspace:
 	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
@@ -54,7 +55,9 @@ _lspace:
 	MOVD nb+8(FP), R1
 	MOVD off+16(FP), R2
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__lspace_entry__(SB)  // _lspace
+	MOVD ·_subr__lspace(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+24(FP)
 	RET
