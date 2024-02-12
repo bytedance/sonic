@@ -120,11 +120,14 @@ func BenchmarkParseFloat32(b *testing.B) {
         float   float32
     }{
         {"Zero", 0},
-        {"Integer", 33909},
-        {"ExactFraction", 3.375},
-        {"Point", 339.7784},
-        {"Exp", -5.09e25},
-        {"NegExp", -5.11e-25},
+        {"Decimal1", 39},
+        {"Decimal2", 33909},
+        {"Float1", 3.77},
+        {"Float2", 339.778442},
+        {"Exp1", 5.9e5},
+        {"Exp2", 521.091e19},
+        {"NegExp1", -5.1e-5},
+        {"NegExp2", -52.132e-19},
         {"Shortest", 1.234567e-8},
     }
     for _, c := range f32toaBenches {
