@@ -43,6 +43,18 @@ var (
     ErrInvalidPath error = newError(_ERR_UNSUPPORT_TYPE, "path must be either int(>=0) or string")
 )
 
+// ErrIndexOutOfRange indicates a integer path is out of range
+type ErrIndexOutOfRange struct {
+    New bool // tells ff the error happens at a existed array or newly-created array (SetByPath() allow create new nodes)
+    Pos int // the position (not value) of the path in path array
+}
+
+// Error
+func (e ErrIndexOutOfRange) Error() string {
+    return fmt.Sprintf("%dth path is out of range", e.Pos)
+}
+
+// Parser
 type Parser struct {
     p         int
     s         string
