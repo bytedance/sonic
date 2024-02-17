@@ -548,6 +548,7 @@ func TestRawNode_SetByPath(t *testing.T) {
         {"not-exist object",`{"b":1}`,true,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"b":1,"a":2}`},
         {"empty object",`{}`,true,[]interface{}{"a"},NewValueJSON(`2`),false,"",`{"a":2}`},
         {"empty object 2",`{}`,true,[]interface{}{"a",1},NewValueJSON(`2`),false,"",`{"a":[2]}`},
+        {"empty object 2",`{}`,false,[]interface{}{"a",1},NewValueJSON(`2`),false,ErrInvalidPath.Error(),`{}`},
         {"empty object 3",`{}`,true,[]interface{}{"a",1,"a"},NewValueJSON(`2`),false,"",`{"a":[{"a":2}]}`},
         {"exist array",`[1]`,true,[]interface{}{0},NewValueJSON(`2`),true,"",`[2]`},
         {"not exist array",`[1]`,true,[]interface{}{1},NewValueJSON(`2`),false,"",`[1,2]`},

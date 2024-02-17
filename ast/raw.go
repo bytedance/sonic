@@ -234,9 +234,12 @@ func (self Value) GetByPath(path ...interface{}) Value {
     return Value{int(t), self.js[s:p.p]}
 }
 
-// SetAnyByPath set value on given path and create nodes on the json if not exist
-func (self *Value) SetAnyByPath(val interface{}, allowInsert bool, path ...interface{}) (bool, error) {
-    return self.SetByPath(NewValue(val), allowInsert, path...)
+// SetAnyByPath set value on given path and create nodes on the json if not exist.
+// Not-existed key on an Object is always handled as INSERT. 
+// Not-existed index on an Array is not allowed by default, 
+// While if allowAppend = true, not-existed index  is handled as APPEND last index
+func (self *Value) SetAnyByPath(val interface{}, allowAppend bool, path ...interface{}) (bool, error) {
+    return self.SetByPath(NewValue(val), allowAppend, path...)
 }
 
 // SetByPath set value on given path and create nodes on the json if not exist
@@ -306,7 +309,7 @@ func (self *Value) SetByPath(val Value, allowAppend bool, path ...interface{}) (
         }
         // creat new nodes on path
         var err error
-        b, err = appendPathValue(b, path[idx:], val)
+        b, err = appendPathValue(b, path[idx:], allowAppend, val)
         if err != nil {
             return exist, err
         }
@@ -319,7 +322,7 @@ func (self *Value) SetByPath(val Value, allowAppend bool, path ...interface{}) (
 
 // [2,"a"],1 => {"a":1}
 // ["a",2],1  => "a":[1]
-func appendPathValue(b []byte, path []interface{}, val Value) ([]byte, error) {
+func appendPathValue(b []byte, path []interface{}, allowAppend bool, val Value) ([]byte, error) {
     for i, k := range path {
         if key, ok := k.(string); ok {
             Quote(&b, key)
@@ -331,6 +334,9 @@ func appendPathValue(b []byte, path []interface{}, val Value) ([]byte, error) {
         }
         n := path[i+1]
         if _, ok := n.(int); ok {
+            if !allowAppend {
+                return nil, ErrInvalidPath
+            }
             b = append(b, "["...)
         } else if _, ok := n.(string); ok {
             b = append(b, `{`...)
