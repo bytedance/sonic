@@ -9,7 +9,7 @@ package neon
 func __lspace_entry__() uintptr
 
 var (
-    _subr__lspace uintptr = 0
+    _subr__lspace uintptr = __lspace_entry__() + 0
 )
 
 const (

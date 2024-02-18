@@ -9,7 +9,7 @@ package neon
 func __value_entry__() uintptr
 
 var (
-    _subr__value uintptr = 32
+    _subr__value uintptr = __value_entry__() + 32
 )
 
 const (

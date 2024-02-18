@@ -7,8 +7,9 @@
 
 TEXT ·__i64toa_entry__(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
-	WORD $0x910083ff  // add sp, sp, #32
-	JMP _i64toa
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 3, 0x00
 lCPI0_0:
 	WORD $0x147b20c5
@@ -964,7 +965,9 @@ _i64toa:
 	MOVD out+0(FP), R0
 	MOVD val+8(FP), R1
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__i64toa_entry__(SB)  // _i64toa
+	MOVD ·_subr__i64toa(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+16(FP)
 	RET

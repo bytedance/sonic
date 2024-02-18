@@ -2018,8 +2018,11 @@ class Assembler:
         gosize = 0 if size < 16 else size-16
         self.out.append('TEXT ·_%s_entry__(SB), NOSPLIT, $%d' % (name, gosize))
         self.out.append('\tNO_LOCAL_POINTERS')
-        self.out.append('\t'+Instruction('add sp, sp, #%d' % size).encoded)
-        self.out.append('\tJMP %s' % name)
+        # get current PC
+        self.out.append('\tWORD $0x100000a0 // adr x0, .+20')
+        # self.out.append('\t'+Instruction('add sp, sp, #%d' % size).encoded)
+        self.out.append('\tMOVD R0, ret(FP)')
+        self.out.append('\tRET')
         self._LE_4bytes_IntIntr_2_RawIntr()
         self._reloc()
 
@@ -2049,11 +2052,6 @@ class Assembler:
         addr = self.code.get(subr)
         self.subr[subr] = addr
         size = self.code.stacksize(subr)
-        
-        # Notice: golang will insert 3 instructions when stacksize > 0.
-        # And since we use PCALIGN 16, thus we add 16 bytes PC
-        if size > 0:
-            addr += 16
 
         m_size = size + 64
         # rsp_sub_size = size + 16
@@ -2100,33 +2098,18 @@ class Assembler:
             op, reg = REG_MAP[arg.creg.reg]
             self.out.append('\t%s %s+%d(FP), %s' % (op, arg.name, offs - arg.size, reg))
 
-        # the function starts at zero
-        if addr == 0 and proto.retv is None:
-            raise RuntimeError("UNIMPLEMENT FUNC: %s" % name)
-            self.out.append('\tJMP ·%s(SB)  // %s' % (STUB_NAME, subr))
 
         # Go ASM completely ignores the offset of the JMP instruction,
         # so we need to use indirect jumps instead for tail-call elimination
-        # raise RuntimeError("UNIMPLEMENT FUNC: %s" % name)
-        # self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (STUB_NAME, addr, subr))
-        # self.out.append('\tJMP AX')
-
         # save LR(x30) and Frame Pointer(x29)
-
-        # self.out.append('\tADD $%d, RSP, RSP' % size)
-        # self.out.append('\tSTP.W (R29, R30), -16(RSP)')
-        # self.out.append('\tMOVD RSP, R29')
-        # self.out.append('\tSUB $16, RSP')
-        # self.out.append('\tADD $%d, RSP' % (size + 32))
         self.out.append('\tWORD $0xf90007fc // str x28, [sp, #8]')
-        self.out.append('\tCALL ·_%s_entry__(SB)  // %s' % (subr, subr))
+        self.out.append('\tMOVD ·_subr_%s(SB), R11' % (subr))
+        self.out.append('\tWORD $0x1000005e // adr x30, .+8')
+        self.out.append('\tJMP (R11)')
+        # self.out.append('\tCALL ·_%s_entry__(SB)  // %s' % (subr, subr))
         self.out.append('\tWORD $0xf94007fc // ldr x28, [sp, #8]')
-        # self.out.append('\tSUB $%d, RSP' % (size + 32))
-        # self.out.append('\tADD $16, RSP')
-        # self.out.append('\tLDP -8(RSP), (R29, R30)')
-        # self.out.append('\tADD $16, RSP')
-        # self.out.append('\tLDP.P 16(RSP), (R29, R30)')
-        # self.out.append('\tSUB $%d, RSP, RSP' % size)
+        
+        
 
         # Restore LR and Frame Pointer
 
@@ -2363,8 +2346,8 @@ def main():
             print('var (', file = fp)
             mlen = max(len(s) for s in asm.subr)
             for name, entry in asm.subr.items():
-                # print('    _subr_%s uintptr = _%s_entry__() + %d' % (name.ljust(mlen, ' '), name, entry), file = fp)
-                print('    _subr_%s uintptr = %d' % (name.ljust(mlen, ' '), entry), file = fp)
+                print('    _subr_%s uintptr = _%s_entry__() + %d' % (name.ljust(mlen, ' '), name, entry), file = fp)
+                # print('    _subr_%s uintptr = %d' % (name.ljust(mlen, ' '), entry), file = fp)
             print(')', file = fp)
 
             # dump max stack depth for exported functions

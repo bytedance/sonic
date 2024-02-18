@@ -7,8 +7,9 @@
 
 TEXT ·__vstring_entry__(SB), NOSPLIT, $32
 	NO_LOCAL_POINTERS
-	WORD $0x9100c3ff  // add sp, sp, #48
-	JMP _vstring
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -632,7 +633,9 @@ _vstring:
 	MOVD v+16(FP), R2
 	MOVD flags+24(FP), R3
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__vstring_entry__(SB)  // _vstring
+	MOVD ·_subr__vstring(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	RET
 

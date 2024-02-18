@@ -9,7 +9,7 @@ package neon
 func __u64toa_entry__() uintptr
 
 var (
-    _subr__u64toa uintptr = 48
+    _subr__u64toa uintptr = __u64toa_entry__() + 48
 )
 
 const (

@@ -7,8 +7,9 @@
 
 TEXT ·__unquote_entry__(SB), NOSPLIT, $96
 	NO_LOCAL_POINTERS
-	WORD $0x9101c3ff  // add sp, sp, #112
-	JMP _unquote
+	WORD $0x100000a0 // adr x0, .+20
+	MOVD R0, ret(FP)
+	RET
 	  // .p2align 4, 0x00
 lCPI0_0:
 	WORD $0x08040201
@@ -601,7 +602,9 @@ _unquote:
 	MOVD ep+24(FP), R3
 	MOVD flags+32(FP), R4
 	WORD $0xf90007fc // str x28, [sp, #8]
-	CALL ·__unquote_entry__(SB)  // _unquote
+	MOVD ·_subr__unquote(SB), R11
+	WORD $0x1000005e // adr x30, .+8
+	JMP (R11)
 	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+40(FP)
 	RET

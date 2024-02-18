@@ -36,17 +36,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//go:noinline
-func BREAK() bool {
-    return true
-}
-
 func TestNative_Value(t *testing.T) {
     runtime.GC()
     var v types.JsonState
     s := `   -12345`
     p := (*rt.GoString)(unsafe.Pointer(&s))
-    BREAK()
     x := value(p.Ptr, p.Len, 0, &v, 0)
     assert.Equal(t, 9, x)
     assert.Equal(t, types.V_INTEGER, v.Vt)
