@@ -47,10 +47,12 @@ func Quote(e []byte, s string, double bool) []byte {
 		}
 		return append(e, `""`...)
 	}
+
 	b := e
-	
+	ss := len(e)
 	e = append(e, '"')
 	start := 0
+
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
 			if safeSet[b] {
@@ -106,13 +108,14 @@ func Quote(e []byte, s string, double bool) []byte {
 		}
 		i += size
 	}
+
 	if start < len(s) {
 		e = append(e, s[start:]...)
 	}
 	e = append(e, '"')
 
 	if double {
-		return strconv.AppendQuote(b, rt.Mem2Str(e))
+		return strconv.AppendQuote(b, string(e[ss:]))
 	} else {
 		return e
 	}

@@ -65,9 +65,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 		pc++
 		op := ins.Op()
 
-		// if vars.DebugSyncGC {
-		// 	print_instr(buf, pc, op, ins)
-		// }
+		// print_instr(buf, pc, op, ins)
 		
 		switch op {
 		case ir.OP_goto:
