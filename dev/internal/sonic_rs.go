@@ -483,7 +483,7 @@ func (node *Node) AsMapEface(ctx *Context, vp unsafe.Pointer) error {
 func (node *Node) AsMapEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 	obj, err := node.AsObj()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	size := obj.Len()
@@ -517,7 +517,7 @@ func (node *Node) AsMapEfaceUseNumber(ctx *Context, vp unsafe.Pointer) error {
 func (node *Node) AsMapEfaceUseInt64(ctx *Context, vp unsafe.Pointer) error {
 	obj, err := node.AsObj()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	size := obj.Len()

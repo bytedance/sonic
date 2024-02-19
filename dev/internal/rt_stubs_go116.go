@@ -41,7 +41,7 @@ func MakeSlice(oldPtr unsafe.Pointer, et *rt.GoType, newLen int) *rt.GoSlice {
 		return old
 	}
 
-	new := growslice(et, *old, newLen-old.Len)
+	new := growslice(et, *old, newLen)
 	// growslice does not zero out new[old.cap:new.len] since it assumes that
 	// the memory will be overwritten by an append() that called growslice.
 	// Since the caller of reflect_growslice is not append(),

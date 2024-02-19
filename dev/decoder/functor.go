@@ -53,11 +53,7 @@ func (d *embeddedFieldPtrDecoder) FromDom(vp unsafe.Pointer, node internal.Node,
 	}
 
 	vp = unsafe.Pointer(uintptr(vp) + d.offset)
-	err := d.fieldDec.FromDom(vp, node, ctx)
-	if err != nil {
-		return err
-	}
-	return nil
+	return d.fieldDec.FromDom(vp, node, ctx)
 }
 
 type i8Decoder struct{}

@@ -27,7 +27,7 @@ func (d *structDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *cont
 	var gerr error
 	obj, err := node.AsObj()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	next := obj.Children()
@@ -36,7 +36,7 @@ func (d *structDecoder) FromDom(vp unsafe.Pointer, node internal.Node, ctx *cont
 		val := internal.NewNode(internal.PtrOffset(next, 1))
 		next = val.Next()
 		if err != nil {
-			return nil
+			return err
 		}
 
 		idx := d.fieldMap.TryGet(key, i)

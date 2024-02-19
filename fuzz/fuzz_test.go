@@ -1,3 +1,4 @@
+//go:build go1.18
 // +build go1.18
 
 /*
@@ -19,21 +20,21 @@
 package sonic_fuzz
 
 import (
-    `encoding/json`
-    `testing`
-    _ `unicode/utf8`
-    `os`
-    `runtime`
-    `runtime/debug`
-    `time`
-    `io`
-    `log`
-    `strconv`
+	"encoding/json"
+	"io"
+	"log"
+	"os"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"testing"
+	"time"
+	"unicode/utf8"
 
-    `github.com/bytedance/sonic`
-    `github.com/stretchr/testify/require`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/bytedance/gopkg/util/gctuner`
+	"github.com/bytedance/gopkg/util/gctuner"
+	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 func FuzzMain(f *testing.F) {
@@ -46,6 +47,7 @@ func FuzzMain(f *testing.F) {
 // Used for debug falied fuzz corpus
 func TestCorpus(t *testing.T) {
     fuzzMain(t, []byte("[1\x00"))
+	// fuzzMain(t, []byte("3469446951536141862700000000000000000e-62"))
     fuzzMain(t, []byte("\"\\uDE1D\\uDE1D\\uDEDD\\uDE1D\\uDE1D\\uDE1D\\uDE1D\\uDEDD\\uDE1D\""))
     // fuzzMain(t, []byte(`{"":null}`))
 }
@@ -57,8 +59,9 @@ func fuzzMain(t *testing.T, data []byte) {
     fuzzHtmlEscape(t, data)
     // fuzz ast get api, should not panic here.
     fuzzAst(t, data)
-    // Only fuzz the validate json here.
-    if !json.Valid(data) {
+    // Rust std repr invalid utf8 chars is diff from Golang,
+	// so we skip invalid utf8 here.
+    if !json.Valid(data) || !utf8.Valid(data) {
         return
     }
     fuzzStream(t, data)
@@ -82,7 +85,7 @@ func fuzzMain(t *testing.T, data []byte) {
         if jerr != nil {
             continue
         }
-        require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+        require.Equal(t, jv, sv, dump(string(data), jv, jerr, sv, serr))
     
         v := jv
         sout, serr := target.Marshal(v)
