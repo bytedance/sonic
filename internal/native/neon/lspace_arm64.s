@@ -12,7 +12,8 @@ TEXT ·__lspace_entry__(SB), NOSPLIT, $16
 	RET
 	  // .p2align 2, 0x00
 _lspace:
-	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xd10083ff  // sub	sp, sp, #32
+	WORD $0xa900fbfd  // stp	fp, lr, [sp, #8]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xeb02003f  // cmp	x1, x2
@@ -38,7 +39,8 @@ LBB0_5:
 	WORD $0xcb000102  // sub	x2, x8, x0
 LBB0_6:
 	WORD $0xaa0203e0  // mov	x0, x2
-	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
+	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
+	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 
 TEXT ·__lspace(SB), NOSPLIT, $0-32
@@ -54,11 +56,9 @@ _lspace:
 	MOVD sp+0(FP), R0
 	MOVD nb+8(FP), R1
 	MOVD off+16(FP), R2
-	WORD $0xf90007fc // str x28, [sp, #8]
 	MOVD ·_subr__lspace(SB), R11
 	WORD $0x1000005e // adr x30, .+8
 	JMP (R11)
-	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+24(FP)
 	RET
 

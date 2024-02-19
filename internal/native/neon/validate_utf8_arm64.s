@@ -13,8 +13,8 @@ TEXT ·__validate_utf8_entry__(SB), NOSPLIT, $48
 	  // .p2align 2, 0x00
 _validate_utf8:
 	WORD $0xd10103ff  // sub	sp, sp, #64
-	WORD $0xa9014ff4  // stp	x20, x19, [sp, #16]
-	WORD $0xa9027bfd  // stp	fp, lr, [sp, #32]
+	WORD $0xa901cff4  // stp	x20, x19, [sp, #24]
+	WORD $0xa902fbfd  // stp	fp, lr, [sp, #40]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xa9402408  // ldp	x8, x9, [x0]
@@ -106,28 +106,28 @@ LBB0_17:
 LBB0_18:
 	WORD $0x39c00120  // ldrsb	w0, [x9]
 	WORD $0x36ffff80  // tbz	w0, #31, LBB0_17 $-16(%rip)
-	WORD $0x381f43bf  // sturb	wzr, [fp, #-12]
-	WORD $0x381f23bf  // sturb	wzr, [fp, #-14]
+	WORD $0x390053ff  // strb	wzr, [sp, #20]
+	WORD $0x39004bff  // strb	wzr, [sp, #18]
 	WORD $0xcb090145  // sub	x5, x10, x9
 	WORD $0xf10008a7  // subs	x7, x5, #2
 	WORD $0x540001a3  // b.lo	LBB0_22 $52(%rip)
 	WORD $0x39400120  // ldrb	w0, [x9]
 	WORD $0x39400523  // ldrb	w3, [x9, #1]
-	WORD $0x381f43a0  // sturb	w0, [fp, #-12]
+	WORD $0x390053e0  // strb	w0, [sp, #20]
 	WORD $0x91000926  // add	x6, x9, #2
-	WORD $0xd1003ba4  // sub	x4, fp, #14
+	WORD $0x91004be4  // add	x4, sp, #18
 	WORD $0xaa0703e5  // mov	x5, x7
 	WORD $0xb4000167  // cbz	x7, LBB0_23 $44(%rip)
 LBB0_21:
 	WORD $0x394000c0  // ldrb	w0, [x6]
 	WORD $0x39000080  // strb	w0, [x4]
-	WORD $0x385f43a0  // ldurb	w0, [fp, #-12]
-	WORD $0x385f23a4  // ldurb	w4, [fp, #-14]
+	WORD $0x394053e0  // ldrb	w0, [sp, #20]
+	WORD $0x39404be4  // ldrb	w4, [sp, #18]
 	WORD $0x14000007  // b	LBB0_24 $28(%rip)
 LBB0_22:
 	WORD $0x52800000  // mov	w0, #0
 	WORD $0x52800003  // mov	w3, #0
-	WORD $0xd10033a4  // sub	x4, fp, #12
+	WORD $0x910053e4  // add	x4, sp, #20
 	WORD $0xaa0903e6  // mov	x6, x9
 	WORD $0xb5fffee5  // cbnz	x5, LBB0_21 $-36(%rip)
 LBB0_23:
@@ -175,22 +175,22 @@ LBB0_31:
 	WORD $0xd2800000  // mov	x0, #0
 	WORD $0xcb080128  // sub	x8, x9, x8
 	WORD $0xf9000028  // str	x8, [x1]
-	WORD $0xa9427bfd  // ldp	fp, lr, [sp, #32]
-	WORD $0xa9414ff4  // ldp	x20, x19, [sp, #16]
+	WORD $0xa942fbfd  // ldp	fp, lr, [sp, #40]
+	WORD $0xa941cff4  // ldp	x20, x19, [sp, #24]
 	WORD $0x910103ff  // add	sp, sp, #64
 	WORD $0xd65f03c0  // ret
 LBB0_32:
 	WORD $0xf9000020  // str	x0, [x1]
 	WORD $0x92800000  // mov	x0, #-1
-	WORD $0xa9427bfd  // ldp	fp, lr, [sp, #32]
-	WORD $0xa9414ff4  // ldp	x20, x19, [sp, #16]
+	WORD $0xa942fbfd  // ldp	fp, lr, [sp, #40]
+	WORD $0xa941cff4  // ldp	x20, x19, [sp, #24]
 	WORD $0x910103ff  // add	sp, sp, #64
 	WORD $0xd65f03c0  // ret
 LBB0_33:
 	WORD $0xf9000027  // str	x7, [x1]
 	WORD $0x92800000  // mov	x0, #-1
-	WORD $0xa9427bfd  // ldp	fp, lr, [sp, #32]
-	WORD $0xa9414ff4  // ldp	x20, x19, [sp, #16]
+	WORD $0xa942fbfd  // ldp	fp, lr, [sp, #40]
+	WORD $0xa941cff4  // ldp	x20, x19, [sp, #24]
 	WORD $0x910103ff  // add	sp, sp, #64
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
@@ -210,11 +210,9 @@ _validate_utf8:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
-	WORD $0xf90007fc // str x28, [sp, #8]
 	MOVD ·_subr__validate_utf8(SB), R11
 	WORD $0x1000005e // adr x30, .+8
 	JMP (R11)
-	WORD $0xf94007fc // ldr x28, [sp, #8]
 	MOVD R0, ret+24(FP)
 	RET
 
