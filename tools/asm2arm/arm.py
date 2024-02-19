@@ -2101,18 +2101,13 @@ class Assembler:
 
         # Go ASM completely ignores the offset of the JMP instruction,
         # so we need to use indirect jumps instead for tail-call elimination
-        # save LR(x30) and Frame Pointer(x29)
-        self.out.append('\tWORD $0xf90007fc // str x28, [sp, #8]')
+        
+        # LEA and JUMP
         self.out.append('\tMOVD ·_subr_%s(SB), R11' % (subr))
         self.out.append('\tWORD $0x1000005e // adr x30, .+8')
         self.out.append('\tJMP (R11)')
         # self.out.append('\tCALL ·_%s_entry__(SB)  // %s' % (subr, subr))
-        self.out.append('\tWORD $0xf94007fc // ldr x28, [sp, #8]')
         
-        
-
-        # Restore LR and Frame Pointer
-
         # normal functions, call the real function, and return the result
         if proto.retv is not None:
             self.out.append('\t%s, %s+%d(FP)' % (' '.join(REG_MAP[proto.retv.creg.reg]), proto.retv.name, offs))
