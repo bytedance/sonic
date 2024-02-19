@@ -136,11 +136,15 @@ func HtmlEscape(dst []byte, src []byte) []byte {
 }
 
 func F64toa(buf []byte, v float64) ([]byte) {
-	return strconv.AppendFloat(buf, float64(v), 'g', -1, 64)
+	bs := bytes.NewBuffer(buf)
+	_ = json.NewEncoder(bs).Encode(v)
+	return bs.Bytes()
 }
 
 func F32toa(buf []byte, v float32) ([]byte) {
-	return strconv.AppendFloat(buf, float64(v), 'g', -1, 32)
+	bs := bytes.NewBuffer(buf)
+	_ = json.NewEncoder(bs).Encode(v)
+	return bs.Bytes()
 }
 
 func I64toa(buf []byte, v int64) ([]byte) {
