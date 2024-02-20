@@ -250,6 +250,17 @@ func TestIndexOrGet(t *testing.T) {
     }
 }
 
+func TestIndexOrGetWithIdx(t *testing.T) {
+	root, _ := NewParser(`{"a":1,"b":2}`).Parse()
+	b, idx := root.IndexOrGetWithIdx(0, "b")
+	if v, err := b.Int64(); err != nil || v != int64(2) {
+		t.Fatal(b, idx)
+	}
+	if idx != 1 {
+		t.Fatal(b, idx)
+	}
+}
+
 func TestTypeCast(t *testing.T) {
     type tcase struct {
         method string
