@@ -1,4 +1,4 @@
-// +build !noasm !appengine !amd64
+// +build !noasm,!amd64 !appengine,!amd64
 
 #include "go_asm.h"
 #include "funcdata.h"
