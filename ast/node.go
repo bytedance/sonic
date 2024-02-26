@@ -581,7 +581,7 @@ func (self *Node) Unset(key string) (bool, error) {
     } else if err := p.Check(); err != nil {
         return false, err
     }
-    self.removePair(i)
+    self.removePairAt(i)
     return true, nil
 }
 
@@ -1477,6 +1477,16 @@ func (self *Node) removePair(i int) {
         return
     }
     *last = Pair{}
+    // NOTICE: should be consistent with linkedPair.Len()
+    self.l--
+}
+
+func (self *Node) removePairAt(i int) {
+    p := (*linkedPairs)(self.p).At(i)
+    if p == nil {
+        return
+    }
+    *p = Pair{}
     // NOTICE: should be consistent with linkedPair.Len()
     self.l--
 }
