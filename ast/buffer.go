@@ -351,7 +351,7 @@ func (self *linkedPairs) Swap(i, j int) {
 }
 
 func (self *linkedPairs) Sort() {
-    sort.Sort(self)
+    sort.Stable(self)
 }
 
 // Compare two strings from the pos d.
