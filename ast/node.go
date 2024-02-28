@@ -971,7 +971,7 @@ func (self *Node) SortKeys(recurse bool) error {
     }
     if self.itype() == types.V_OBJECT {
         return self.sortKeys(recurse)
-    } else {
+    } else if self.itype() == types.V_ARRAY {
         var err error
         err2 := self.ForEach(func(path Sequence, node *Node) bool {
             it := node.itype()
@@ -987,10 +987,16 @@ func (self *Node) SortKeys(recurse bool) error {
             return err
         }
         return err2
+    } else {
+        return nil
     }
 }
 
 func (self *Node) sortKeys(recurse bool) (err error) {
+    // check raw node first
+    if err := self.checkRaw(); err != nil {
+        return err
+    }
     ps, err := self.unsafeMap()
     if err != nil {
         return err
