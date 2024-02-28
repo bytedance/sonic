@@ -5,3 +5,5 @@ build/
 
 !lib/linux/*.a
 !lib/darwin/*.a
+!lib/linux/*.so
+!lib/darwin/*.so

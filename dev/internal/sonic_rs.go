@@ -1,11 +1,13 @@
 package internal
 
-//#cgo linux,arm64 LDFLAGS:  -L ../rs_wrapper/lib/linux -lsonic_rs_aarch64-unknown-linux-gnu
-//#cgo linux,amd64 LDFLAGS:  -L ../rs_wrapper/lib/linux -lsonic_rs_x86_64-unknown-linux-gnu
-//#cgo darwin,arm64 LDFLAGS: -L ../rs_wrapper/lib/darwin -lsonic_rs_aarch64-apple-darwin
-//#cgo darwin,amd64 LDFLAGS: -L ../rs_wrapper/lib/darwin -lsonic_rs_x86_64-apple-darwin
-//
-//#include "../rs_wrapper/include/sonic_rs.h"
+/*
+#cgo linux,arm64  LDFLAGS:  -L ../rs_wrapper/lib/linux -lsonic_rs_aarch64-unknown-linux-gnu
+#cgo linux,amd64  LDFLAGS:  -L ../rs_wrapper/lib/linux -lsonic_rs_x86_64-unknown-linux-gnu
+#cgo darwin,arm64 LDFLAGS:  -L ../rs_wrapper/lib/darwin -lsonic_rs_aarch64-apple-darwin
+#cgo darwin,amd64 LDFLAGS:  -L ../rs_wrapper/lib/darwin -lsonic_rs_x86_64-apple-darwin
+
+#include "../rs_wrapper/include/sonic_rs.h"
+*/
 import "C"
 import (
 	"encoding/json"
