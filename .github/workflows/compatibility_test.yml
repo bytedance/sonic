@@ -7,8 +7,8 @@ jobs:
     strategy:
       matrix:
         go-version: [1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21.x]
-        os: [X64, arm]
-    runs-on: ${{ matrix.os }}
+        arch: [X64, arm]
+    runs-on: ${{ matrix.arch }}
     steps:
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
@@ -23,21 +23,21 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.arch }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.arch }}-go-
 
       - name: main
-        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic
+        run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./dev/rs_wrapper/lib/linux GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic
 
       - name: encoder
-        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/internal/encoder
+        run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./dev/rs_wrapper/lib/linux GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/internal/encoder
 
       - name: issues
-        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/issue_test
+        run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./dev/rs_wrapper/lib/linux GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/issue_test
 
       - name: ast
-        run: GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
+        run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./dev/rs_wrapper/lib/linux GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
       
       - name: qemu
         run: sh scripts/qemu.sh

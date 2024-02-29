@@ -20,9 +20,6 @@ panic = 'abort'
 incremental = false
 overflow-checks = false
 
+# use dynamic libaray here, to pervent possible relocation errors when gcc linking.
 [lib]
-# If you only wanted dynamic library, you'd use only "cdylib".
-# If you only wanted static library, you'd use only "staticlib".
-# This demo shows both. See https://doc.rust-lang.org/reference/linkage.html
-# for more information.
-crate-type = ["staticlib"]
+crate-type = ["cdylib"]

@@ -8,22 +8,23 @@ all: ${ARCHS}
 rustup:
 	rustup target add ${TARGETS}
 
+
+# Reference: https://github.com/chinedufn/cross-compile-rust-from-mac-to-linux
 linux_x86:
 	mkdir -p ./rs_wrapper/lib/linux
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-unknown-linux-gnu  --release && cp -a target/x86_64-unknown-linux-gnu/release/librs_wrapper.a  ./lib/linux/libsonic_rs_x86_64-unknown-linux-gnu.a
-
+	cd rs_wrapper && cargo update --package sonic-rs && CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-unknown-linux-gnu-gcc RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-unknown-linux-gnu  --release && cp -a target/x86_64-unknown-linux-gnu/release/librs_wrapper.so  ./lib/linux/libsonic_rs_x86_64-unknown-linux-gnu.so
 
 linux_aarch64:
 	mkdir -p ./rs_wrapper/lib/linux
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-unknown-linux-gnu  --release && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.a  ./lib/linux/libsonic_rs_aarch64-unknown-linux-gnu.a
+	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-unknown-linux-gnu  --release && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.so   ./lib/linux/libsonic_rs_aarch64-unknown-linux-gnu.so
 
 darwin_x86:
 	mkdir -p ./rs_wrapper/lib/darwin
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-apple-darwin  --release && cp -a target/x86_64-apple-darwin/release/librs_wrapper.a  ./lib/darwin/libsonic_rs_x86_64-apple-darwin.a
+	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-apple-darwin  --release && cp -a target/x86_64-apple-darwin/release/librs_wrapper.dylib	./lib/darwin/libsonic_rs_x86_64-apple-darwin.so
 
 darwin_aarch64:
 	mkdir -p ./rs_wrapper/lib/darwin
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-apple-darwin  --release && cp -a target/aarch64-apple-darwin/release/librs_wrapper.a  ./lib/darwin/libsonic_rs_aarch64-apple-darwin.a
+	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-apple-darwin  --release && cp -a target/aarch64-apple-darwin/release/librs_wrapper.dylib   ./lib/darwin/libsonic_rs_aarch64-apple-darwin.so
 
 clean:
 	rm -vrf ./rs_wrapper/lib/
