@@ -19,10 +19,11 @@ package ast
 import (
     `encoding/json`
     `runtime`
+    `strings`
     `sync`
     `testing`
-    `strings`
 
+    `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
 )
 
@@ -95,12 +96,12 @@ func TestEncodeNode(t *testing.T) {
 
 type SortableNode struct {
     sorted bool
-	*Node
+    *Node
 }
 
 func (j *SortableNode) UnmarshalJSON(data []byte) (error) {
     j.Node = new(Node)
-	return j.Node.UnmarshalJSON(data)
+    return j.Node.UnmarshalJSON(data)
 }
 
 func (j *SortableNode) MarshalJSON() ([]byte, error) {
@@ -108,7 +109,7 @@ func (j *SortableNode) MarshalJSON() ([]byte, error) {
         j.Node.SortKeys(true)
         j.sorted = true
     }
-	return j.Node.MarshalJSON()
+    return j.Node.MarshalJSON()
 }
 
 func TestMarshalSort(t *testing.T) {
