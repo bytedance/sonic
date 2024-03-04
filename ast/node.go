@@ -586,7 +586,7 @@ func (self *Node) Unset(key string) (bool, error) {
     } else if err := p.Check(); err != nil {
         return false, err
     }
-    self.removePair(i)
+    self.removePairAt(i)
     return true, nil
 }
 
@@ -856,19 +856,30 @@ func (self *Node) IndexPair(idx int) *Pair {
     return self.skipIndexPair(idx)
 }
 
+func (self *Node) indexOrGet(idx int, key string) (*Node, int) {
+	if err := self.should(types.V_OBJECT, "an object"); err != nil {
+		return unwrapError(err), idx
+	}
+
+	pr := self.skipIndexPair(idx)
+	if pr != nil && pr.Key == key {
+		return &pr.Value, idx
+	}
+
+	return self.skipKey(key)
+}
+
 // IndexOrGet firstly use idx to index a value and check if its key matches
 // If not, then use the key to search value
 func (self *Node) IndexOrGet(idx int, key string) *Node {
-    if err := self.should(types.V_OBJECT, "an object"); err != nil {
-        return unwrapError(err)
-    }
+	node, _ := self.indexOrGet(idx, key)
+	return node
+}
 
-    pr := self.skipIndexPair(idx)
-    if pr != nil && pr.Key == key {
-        return &pr.Value
-    }
-    n, _ := self.skipKey(key)
-    return n
+// IndexOrGetWithIdx attempts to retrieve a node by index and key, returning the node and its correct index.
+// If the key does not match at the given index, it searches by key and returns the node with its updated index.
+func (self *Node) IndexOrGetWithIdx(idx int, key string) (*Node, int) {
+	return self.indexOrGet(idx, key)
 }
 
 /** Generic Value Converters **/
@@ -965,7 +976,7 @@ func (self *Node) SortKeys(recurse bool) error {
     }
     if self.itype() == types.V_OBJECT {
         return self.sortKeys(recurse)
-    } else {
+    } else if self.itype() == types.V_ARRAY {
         var err error
         err2 := self.ForEach(func(path Sequence, node *Node) bool {
             it := node.itype()
@@ -981,10 +992,16 @@ func (self *Node) SortKeys(recurse bool) error {
             return err
         }
         return err2
+    } else {
+        return nil
     }
 }
 
 func (self *Node) sortKeys(recurse bool) (err error) {
+    // check raw node first
+    if err := self.checkRaw(); err != nil {
+        return err
+    }
     ps, err := self.unsafeMap()
     if err != nil {
         return err
@@ -1471,6 +1488,16 @@ func (self *Node) removePair(i int) {
         return
     }
     *last = Pair{}
+    // NOTICE: should be consistent with linkedPair.Len()
+    self.l--
+}
+
+func (self *Node) removePairAt(i int) {
+    p := (*linkedPairs)(self.p).At(i)
+    if p == nil {
+        return
+    }
+    *p = Pair{}
     // NOTICE: should be consistent with linkedPair.Len()
     self.l--
 }

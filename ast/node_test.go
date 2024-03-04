@@ -86,9 +86,9 @@ func BenchmarkNodeSortKeys(b *testing.B) {
     if err != nil {
         b.Fatal(err)
     }
-    if err := root.LoadAll(); err != nil {
-        b.Fatal(err)
-    }
+    // if err := root.LoadAll(); err != nil {
+    //     b.Fatal(err)
+    // }
 
     b.Run("single", func(b *testing.B) {
         r := root.Get("statuses")
@@ -109,6 +109,28 @@ func BenchmarkNodeSortKeys(b *testing.B) {
         }
     })
 }
+
+func TestNodeSortKeys2(t *testing.T) {
+    root, err := NewSearcher(_TwitterJson).GetByPath()
+    if err != nil {
+        t.Fatal(err)
+    }
+    // if err := root.LoadAll(); err != nil {
+    //     b.Fatal(err)
+    // }
+    t.Run("single", func(t *testing.T) {
+        r := root.Get("statuses")
+        if r.Check() != nil {
+            t.Fatal(r.Error())
+        }
+        require.NoError(t, root.SortKeys(false))
+    })
+    t.Run("recurse", func(t *testing.T) {
+        require.NoError(t, root.SortKeys(true))
+    })
+}
+
+
 
 //go:noinline
 func stackObj() interface{} {
@@ -248,6 +270,17 @@ func TestIndexOrGet(t *testing.T) {
     if a.Valid() {
         t.Fatal(a)
     }
+}
+
+func TestIndexOrGetWithIdx(t *testing.T) {
+	root, _ := NewParser(`{"a":1,"b":2}`).Parse()
+	b, idx := root.IndexOrGetWithIdx(0, "b")
+	if v, err := b.Int64(); err != nil || v != int64(2) {
+		t.Fatal(b, idx)
+	}
+	if idx != 1 {
+		t.Fatal(b, idx)
+	}
 }
 
 func TestTypeCast(t *testing.T) {
