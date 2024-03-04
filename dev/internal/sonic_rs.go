@@ -18,6 +18,18 @@ import (
 	_ "github.com/davecgh/go-spew/spew"
 )
 
+
+var parse_func func(data string, opt uint64) (Dom, error)
+var delete_func func(*Dom)
+
+var cgo_parse unsafe.Pointer
+var cgo_delet unsafe.Pointer
+
+func init() {
+	parse_func = Parse
+	delete_func = Delete
+}
+
 type Context struct {
 	Options   uint64
 	Json  string
@@ -26,7 +38,7 @@ type Context struct {
 }
 
 func NewContext(json string, opts uint64) (Context, error) {
-	dom, err := Parse(json, opts)
+	dom, err := parse_func(json, opts)
 	if err != nil {
 		return Context{}, err
 	}
@@ -73,7 +85,7 @@ func (dom *Dom) StrStart() uintptr {
 }
 
 func (dom *Dom) Delete() {
-	C.sonic_rs_ffi_free(dom.cdom.dom, dom.cdom.str_buf, dom.cdom.error_msg_cap)
+	delete_func(dom)
 }
 
 type Array struct {
@@ -94,23 +106,30 @@ func (arr Array) Len() int {
 	return int(uint64(carr.len) & ConLenMask)
 }
 
+func Delete(dom *Dom) {
+	// C.sonic_rs_ffi_free(dom.cdom.dom, dom.cdom.str_buf, dom.cdom.error_msg_cap)
+}
+
 func Parse(data string, opt uint64) (Dom, error) {
-	var s = (*reflect.StringHeader)((unsafe.Pointer)(&data))
-	cdom := C.sonic_rs_ffi_parse((*C.char)(unsafe.Pointer((s.Data))), C.size_t(s.Len), C.uint64_t(opt))
-	runtime.KeepAlive(data)
-	ret := Dom{
-		cdom: cdom,
-	}
+	// var s = (*reflect.StringHeader)((unsafe.Pointer)(&data))
+	// cdom := C.sonic_rs_ffi_parse((*C.char)(unsafe.Pointer((s.Data))), C.size_t(s.Len), C.uint64_t(opt))
+	// runtime.KeepAlive(data)
+	// ret := Dom{
+	// 	cdom: cdom,
+	// }
 
-	// parse error
-	if offset := int64(cdom.error_offset); offset != -1 {
-		msg := C.GoStringN(cdom.error_msg, C.int(cdom.error_msg_len))
-		err := newError(msg, offset)
-		ret.Delete()
-		return ret, err
-	}
+	// // parse error
+	// if offset := int64(cdom.error_offset); offset != -1 {
+	// 	msg := C.GoStringN(cdom.error_msg, C.int(cdom.error_msg_len))
+	// 	err := newError(msg, offset)
+	// 	ret.Delete()
+	// 	return ret, err
+	// }
 
-	return ret, nil
+	// return ret, nil
+	return Dom{
+			cdom: C.Document {},
+		}, nil
 }
 
 // / Helper functions to eliminate CGO calls
