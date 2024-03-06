@@ -74,15 +74,24 @@ pub unsafe extern "C" fn sonic_rs_ffi_parse(json: *const u8, len: usize, config:
 /// # Safety
 /// FFI wrapper.
 #[no_mangle]
-pub unsafe extern "C" fn sonic_rs_ffi_free(dom: *mut Document, msg: *mut u8, msg_cap: u64) {
-    unsafe {
-        if !dom.is_null() {
-            drop(Box::from_raw(dom));
-        }
+pub unsafe extern "C" fn sonic_rs_ffi_free(dom: *mut Document, msg: *mut u8, msg_cap: u64) -> usize {
+    // println!("dom is {}", dom as usize);
 
-        if !msg.is_null() {
-            let s = String::from_raw_parts(msg, 0, msg_cap as usize);
-            drop(s);
-        }
-    }
+    // unsafe {
+    //     if !dom.is_null() {
+    //         drop(Box::from_raw(dom));
+    //     }
+
+    //     if !msg.is_null() {
+    //         let s = String::from_raw_parts(msg, 0, msg_cap as usize);
+    //         drop(s);
+    //     }
+    // }
+    return dom as usize;
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn func_1args(arg: usize) -> usize {
+    return arg
 }

@@ -12,10 +12,9 @@ linux_x86:
 	mkdir -p ./rs_wrapper/lib/linux
 	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-unknown-linux-gnu  --release && cp -a target/x86_64-unknown-linux-gnu/release/librs_wrapper.a  ./lib/linux/libsonic_rs_x86_64-unknown-linux-gnu.a
 
-
 linux_aarch64:
 	mkdir -p ./rs_wrapper/lib/linux
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-unknown-linux-gnu  --release && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.a  ./lib/linux/libsonic_rs_aarch64-unknown-linux-gnu.a
+	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-unknown-linux-gnu  --release && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.so  ../internal/link/librs_wrapper.so && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.so  ./lib/linux/libsonic_rs_aarch64-unknown-linux-gnu.so
 
 darwin_x86:
 	mkdir -p ./rs_wrapper/lib/darwin
