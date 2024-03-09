@@ -413,7 +413,7 @@ func init() {
 
 When decoding **string values without any escaped characters**, sonic references them from the origin JSON buffer instead of mallocing a new buffer to copy. This helps a lot for CPU performance but may leave the whole JSON buffer in memory as long as the decoded objects are being used. In practice, we found the extra memory introduced by referring JSON buffer is usually 20% ~ 80% of decoded objects. Once an application holds these objects for a long time (for example, cache the decoded objects for reusing), its in-use memory on the server may go up. - `Config.CopyString`/`decoder.CopyString()`: We provide the option for `Decode()` / `Unmarshal()` users to choose not to reference the JSON buffer, which may cause a decline in CPU performance to some degree.
 
-- `GetFromStringNoCopy()`: For memory safty, `sonic.Get()` / `sonic.GetFromString()` now copies return JSON. If users want to get json more quickly and not care about memory usage, you can use `GetFromStringNoCopy()` to return a JSON direclty referenced from source.
+- `GetFromStringNoCopy()`: For memory safety, `sonic.Get()` / `sonic.GetFromString()` now copies return JSON. If users want to get json more quickly and not care about memory usage, you can use `GetFromStringNoCopy()` to return a JSON directly referenced from source.
 
 ### Pass string or []byte?
 
