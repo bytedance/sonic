@@ -80,7 +80,7 @@ type Config struct {
 }
  
 var (
-    // ConfigDefault is the default config of APIs, aiming at efficiency and safty.
+    // ConfigDefault is the default config of APIs, aiming at efficiency and safety.
     ConfigDefault = Config{}.Froze()
  
     // ConfigStd is the standard config of APIs, aiming at being compatible with encoding/json.
@@ -118,7 +118,7 @@ type API interface {
     NewEncoder(writer io.Writer) Encoder
     // NewDecoder create a Decoder holding reader
     NewDecoder(reader io.Reader) Decoder
-    // Valid validates the JSON-encoded bytes and reportes if it is valid
+    // Valid validates the JSON-encoded bytes and reports if it is valid
     Valid(data []byte) bool
 }
 
@@ -184,7 +184,7 @@ func UnmarshalString(buf string, val interface{}) error {
 // 
 // Notice: It expects the src json is **Well-formed** and **Immutable** when calling,
 // otherwise it may return unexpected result. 
-// Considering memory safty, the returned JSON is **Copied** from the input
+// Considering memory safety, the returned JSON is **Copied** from the input
 func Get(src []byte, path ...interface{}) (ast.Node, error) {
     return GetCopyFromString(rt.Mem2Str(src), path...)
 }
