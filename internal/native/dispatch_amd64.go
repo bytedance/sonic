@@ -93,6 +93,8 @@ var (
 
     __F64toa func(out unsafe.Pointer, val float64) (ret int)
 
+    __F32toa func(out unsafe.Pointer, val float32) (ret int)
+
     __ValidateUTF8 func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) (ret int)
 
     __ValidateUTF8Fast func(s unsafe.Pointer) (ret int)
@@ -154,6 +156,11 @@ func F64toa(out *byte, val float64) (ret int) {
 }
 
 //go:nosplit
+func F32toa(out *byte, val float32) (ret int) {
+    return __F32toa(rt.NoEscape(unsafe.Pointer(out)), val)
+}
+
+//go:nosplit
 func ValidateUTF8(s *string, p *int, m *types.StateMachine) (ret int) {
     return __ValidateUTF8(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)))
 }
@@ -165,7 +172,7 @@ func ValidateUTF8Fast(s *string) (ret int) {
 
 var stubs = []loader.GoC{
     {"_f64toa", &S_f64toa, &__F64toa},
-    {"_f32toa", &S_f32toa, nil},
+    {"_f32toa", &S_f32toa, &__F32toa},
     {"_i64toa", &S_i64toa, &__I64toa},
     {"_u64toa", &S_u64toa, &__U64toa},
     {"_lspace", &S_lspace, nil},
