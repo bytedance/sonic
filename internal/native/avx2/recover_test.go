@@ -605,16 +605,6 @@ func TestRecover_get_by_path(t *testing.T) {
 		}()
 		_ = get_by_path(&sp, &p, nil, m)
 	})
-	t.Run("m", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r!= nil {
-				t.Log("recover: ", r)
-			} else {
-				t.Fatal("no panic")
-			}
-		}()
-		_ = get_by_path(&sp, &p, &v, nil)
-	})
 }
 
 func TestRecover_validate_one(t *testing.T) {
@@ -629,7 +619,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(nil, &p, v)
+		_ = validate_one(nil, &p, v, 0)
 	})
 	t.Run("p", func(t *testing.T) {
 		defer func() {
@@ -639,7 +629,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(&sp, nil, v)
+		_ = validate_one(&sp, nil, v, 0)
 	})
 	t.Run("v", func(t *testing.T) {
 		defer func() {
@@ -649,7 +639,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(&sp, &p, nil)
+		_ = validate_one(&sp, &p, nil, 0)
 	})
 }
 

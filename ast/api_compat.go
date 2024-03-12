@@ -19,64 +19,65 @@
 package ast
 
 import (
-	`encoding/json`
+    `encoding/json`
 
-	`github.com/bytedance/sonic/internal/native/types`
-	`github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 func init() {
-	println("WARNING:(ast) sonic only supports Go1.16~1.22, but your environment is not suitable")
+    println("WARNING:(ast) sonic only supports Go1.16~1.22, but your environment is not suitable")
 }
 
 func quote(buf *[]byte, val string) {
-	quoteString(buf, val)
+    quoteString(buf, val)
 }
 
-func unquote(src string) (string, types.ParsingError) {
-	sp := rt.IndexChar(src, -1)
-	out, ok := unquoteBytes(rt.BytesFrom(sp, len(src)+2, len(src)+2))
-	if !ok {
-		return "", types.ERR_INVALID_ESCAPE
-	}
-	return rt.Mem2Str(out), 0
+// Unquote unescapes a internal JSON string (it doesn't count quotas at the begining and end)
+func Unquote(src string) (string, types.ParsingError) {
+    sp := rt.IndexChar(src, -1)
+    out, ok := unquoteBytes(rt.BytesFrom(sp, len(src)+2, len(src)+2))
+    if !ok {
+        return "", types.ERR_INVALID_ESCAPE
+    }
+    return rt.Mem2Str(out), 0
 }
 
 
 func (self *Parser) decodeValue() (val types.JsonState) {
-	e, v := decodeValue(self.s, self.p, self.dbuf == nil)
-	if e < 0 {
-		return v
-	}
-	self.p = e
-	return v
+    e, v := decodeValue(self.s, self.p, self.dbuf == nil)
+    if e < 0 {
+        return v
+    }
+    self.p = e
+    return v
 }
 
 func (self *Parser) skip() (int, types.ParsingError) {
-	e, s := skipValue(self.s, self.p)
-	if e < 0 {
-		return self.p, types.ParsingError(-e)
-	}
-	self.p = e
-	return s, 0
+    e, s := skipValue(self.s, self.p)
+    if e < 0 {
+        return self.p, types.ParsingError(-e)
+    }
+    self.p = e
+    return s, 0
 }
 
 func (self *Parser) skipFast() (int, types.ParsingError) {
-	e, s := skipValueFast(self.s, self.p)
-	if e < 0 {
-		return self.p, types.ParsingError(-e)
-	}
-	self.p = e
-	return s, 0
+    e, s := skipValueFast(self.s, self.p)
+    if e < 0 {
+        return self.p, types.ParsingError(-e)
+    }
+    self.p = e
+    return s, 0
 }
 
 func (self *Node) encodeInterface(buf *[]byte) error {
-	out, err := json.Marshal(self.packAny())
-	if err != nil {
-		return err
-	}
-	*buf = append(*buf, out...)
-	return nil
+    out, err := json.Marshal(self.packAny())
+    if err != nil {
+        return err
+    }
+    *buf = append(*buf, out...)
+    return nil
 }
 
 func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
@@ -97,9 +98,5 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     if e != 0 {
         return self.p, e
     }
-    // t := switchRawType(self.s[start])
-    // if t == _V_NUMBER {
-    //     self.p = 1 + backward(self.s, self.p-1)
-    // }
     return start, 0
 }

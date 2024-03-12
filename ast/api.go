@@ -1,3 +1,4 @@
+//go:build (amd64 && go1.16 && !go1.23) || (arm64 && go1.20 && !go1.23)
 // +build amd64,go1.16,!go1.23 arm64,go1.20,!go1.23
 
 /*
@@ -72,7 +73,8 @@ func quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
 }
 
-func unquote(src string) (string, types.ParsingError) {
+// Unquote unescapes a internal JSON string (it doesn't count quotas at the begining and end)
+func Unquote(src string) (string, types.ParsingError) {
     return uq.String(src)
 }
 

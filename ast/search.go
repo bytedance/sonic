@@ -78,3 +78,45 @@ func (self *Searcher) getByPath(copystring bool, path ...interface{}) (Node, err
     }
     return newRawNode(raw, t), nil
 }
+
+// GetByPath searches a path and returns relaction and types of target
+func GetByPath(src string, path ...interface{}) (start int, end int, typ int, err error) {
+	p := NewParserObj(src)
+	s, e := p.getByPath(path...)
+	if e != 0 {
+		// for compatibility with old version
+		if e == types.ERR_NOT_FOUND {
+			return -1, -1, 0, ErrNotExist
+		}
+		if e == types.ERR_UNSUPPORT_TYPE {
+			panic("path must be either int(>=0) or string")
+		}
+		return -1, -1, 0, p.syntaxError(e)
+	}
+
+	t := switchRawType(p.s[s])
+	if t == _V_NONE {
+		return -1, -1, 0, ErrNotExist
+	}
+	return s, p.p, int(t), nil
+}
+
+// ValidSyntax check if a json has a valid JSON syntax,
+// while not validate UTF-8 charset
+func ValidSyntax(json string) bool {
+	p := NewParserObj(json)
+    _, e := p.skip()
+	return e == 0
+}
+
+// SkipFast skip a json value in fast-skip algs, 
+// while not strictly validate JSON syntax and UTF-8 charset.
+func SkipFast(src string, i int) (int, int, error) {
+    p := NewParserObj(src)
+    p.p = i
+    s, e := p.skipFast()
+    if e != 0 {
+        return -1, -1, p.ExportError(e)
+    }
+    return s, p.p, nil
+}

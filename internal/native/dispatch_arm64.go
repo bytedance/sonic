@@ -96,7 +96,7 @@ func GetByPath(s *string, p *int, path *[]interface{}, m *types.StateMachine) in
 //go:nosplit
 //go:noescape
 //go:linkname ValidateOne github.com/bytedance/sonic/internal/native/neon.__validate_one
-func ValidateOne(s *string, p *int, m *types.StateMachine) int
+func ValidateOne(s *string, p *int, m *types.StateMachine, flags uint64) int
 
 //go:nosplit
 //go:noescape

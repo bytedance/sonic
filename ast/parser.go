@@ -210,7 +210,7 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = unquote(key); err != 0 {
+            if key, err = Unquote(key); err != 0 {
                 return Node{}, err
             }
         }
@@ -274,8 +274,8 @@ func (self *Parser) decodeString(iv int64, ep int) (Node, types.ParsingError) {
         return NewString(s), 0
     }
 
-    /* unquote the string */
-    out, err := unquote(s)
+    /* Unquote the string */
+    out, err := Unquote(s)
 
     /* check for errors */
     if err != 0 {
@@ -355,7 +355,7 @@ func (self *Parser) searchKey(match string) types.ParsingError {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = unquote(key); err != 0 {
+            if key, err = Unquote(key); err != 0 {
                 return err
             }
         }
@@ -536,7 +536,7 @@ func (self *Node) skipNextPair() (*Pair) {
 
     /* check for escape sequence */
     if njs.Ep != -1 {
-        if key, err = unquote(key); err != 0 {
+        if key, err = Unquote(key); err != 0 {
             return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
         }
     }
