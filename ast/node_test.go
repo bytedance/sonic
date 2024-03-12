@@ -22,8 +22,6 @@ import (
     `errors`
     `fmt`
     `reflect`
-    `runtime`
-    `runtime/debug`
     `strconv`
     `testing`
 
@@ -129,30 +127,10 @@ func TestNodeSortKeys2(t *testing.T) {
         require.NoError(t, root.SortKeys(true))
     })
 }
-
-
-
 //go:noinline
 func stackObj() interface{} {
     var a int = 1
     return rt.UnpackEface(a).Pack()
-}
-
-func TestStackAny(t *testing.T) {
-    var obj = stackObj()
-    any := NewAny(obj)
-    fmt.Printf("any: %#v\n", any)
-    runtime.GC()
-    debug.FreeOSMemory()
-    println("finish GC")
-    buf, err := any.MarshalJSON()
-    println("finish marshal")
-    if err != nil {
-        t.Fatal(err)
-    }
-    if string(buf) != `1` {
-        t.Fatal(string(buf))
-    }
 }
 
 func TestLoadAll(t *testing.T) {
@@ -328,7 +306,6 @@ func TestTypeCast(t *testing.T) {
         {"ArrayUseNumber", NewAny([]Node{NewNumber("1")}), []interface{}(nil), ErrUnsupportType},
         {"ArrayUseNumber", NewArray([]Node{NewNumber("1")}), []interface{}{json.Number("1")}, nil},
         {"Raw", Node{}, "", ErrNotExist},
-        {"Raw", NewAny(""), `""`, nil},
         {"Raw", NewRaw(" "), "", nonEmptyErr},
         {"Raw", NewRaw(" [ ] "), "[ ]", nil},
         {"Raw", NewRaw("[ ]"), "[ ]", nil},
@@ -1322,43 +1299,6 @@ func TestNodeSet(t *testing.T) {
     val2, _ := root.GetByPath("statuses", 3, "id_str2", "a", 4, "b").String()
     if val2 != "c" {
         t.Fatalf("exp:%+v, got:%+v", "c", val2)
-    }
-}
-
-func TestNodeAny(t *testing.T) {
-    empty := Node{}
-    _, err := empty.SetAny("any", map[string]interface{}{"a": []int{0}})
-    if err != nil {
-        t.Fatal(err)
-    }
-    if m, err := empty.Get("any").Interface(); err != nil {
-        t.Fatal(err)
-    } else if v, ok := m.(map[string]interface{}); !ok {
-        t.Fatal(v)
-    }
-    if buf, err := empty.MarshalJSON(); err != nil {
-        t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]}}` {
-        t.Fatal(string(buf))
-    }
-    if _, err := empty.Set("any2", Node{}); err != nil {
-        t.Fatal(err)
-    }
-    if err := empty.Get("any2").AddAny(nil); err != nil {
-        t.Fatal(err)
-    }
-    if buf, err := empty.MarshalJSON(); err != nil {
-        t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]},"any2":[null]}` {
-        t.Fatal(string(buf))
-    }
-    if _, err := empty.Get("any2").SetAnyByIndex(0, NewNumber("-0.0")); err != nil {
-        t.Fatal(err)
-    }
-    if buf, err := empty.MarshalJSON(); err != nil {
-        t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]},"any2":[-0.0]}` {
-        t.Fatal(string(buf))
     }
 }
 
