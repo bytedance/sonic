@@ -33,8 +33,8 @@ func quote(buf *[]byte, val string) {
     quoteString(buf, val)
 }
 
-// Unquote unescapes a internal JSON string (it doesn't count quotas at the begining and end)
-func Unquote(src string) (string, types.ParsingError) {
+// unquote unescapes a internal JSON string (it doesn't count quotas at the begining and end)
+func unquote(src string) (string, types.ParsingError) {
     sp := rt.IndexChar(src, -1)
     out, ok := unquoteBytes(rt.BytesFrom(sp, len(src)+2, len(src)+2))
     if !ok {
@@ -44,7 +44,7 @@ func Unquote(src string) (string, types.ParsingError) {
 }
 
 
-func (self *Parser) decodeValue() (val types.JsonState) {
+func (self *Parser) decodeValue(_ bool) (val types.JsonState) {
     e, v := decodeValue(self.s, self.p, self.dbuf == nil)
     if e < 0 {
         return v
@@ -80,7 +80,7 @@ func (self *Node) encodeInterface(buf *[]byte) error {
     return nil
 }
 
-func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
+func (self *Parser) getByPath(validate bool, path ...interface{}) (int, types.ParsingError) {
     for _, p := range path {
         if idx, ok := p.(int); ok && idx >= 0 {
             if err := self.searchIndex(idx); err != 0 {
@@ -94,7 +94,14 @@ func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
             panic("path must be either int(>=0) or string")
         }
     }
-    start, e := self.skip()
+
+    var start int
+    var e types.ParsingError
+    if validate {
+        start, e = self.skip()
+    } else {
+        start, e = self.skipFast()
+    }
     if e != 0 {
         return self.p, e
     }

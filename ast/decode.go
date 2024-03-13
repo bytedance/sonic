@@ -587,10 +587,10 @@ func skipArray(src string, pos int) (ret int, start int) {
 // DecoderString decodes a JSON string from pos and return golang string.
 //   - needEsc indicates if to unescaped escaping chars
 //   - hasEsc tells if the returned string has escaping chars
-func DecodeString(src string, pos int, needEsc bool) (v string, ret int, hasEsc bool) {
+func _DecodeString(src string, pos int, needEsc bool, validStr bool) (v string, ret int, hasEsc bool) {
 	p := NewParserObj(src)
 	p.p = pos
-	switch val := p.decodeValue(); val.Vt {
+	switch val := p.decodeValue(validStr); val.Vt {
 	case types.V_STRING:
 		str := p.s[val.Iv : p.p-1]
 		/* fast path: no escape sequence */
@@ -600,7 +600,7 @@ func DecodeString(src string, pos int, needEsc bool) (v string, ret int, hasEsc 
 			return str, p.p, true
 		}
 		/* unquote the string */
-		out, err := Unquote(str)
+		out, err := unquote(str)
 		/* check for errors */
 		if err != 0 {
 			return "", -int(err), true

@@ -143,7 +143,7 @@ type traverser struct {
 
 // NOTE: keep in sync with (*Parser).Parse method.
 func (self *traverser) decodeValue() error {
-    switch val := self.parser.decodeValue(); val.Vt {
+    switch val := self.parser.decodeValue(false); val.Vt {
     case types.V_EOF:
         return types.ERR_EOF
     case types.V_NULL:
@@ -247,7 +247,7 @@ func (self *traverser) decodeObject() error {
         var err types.ParsingError
 
         /* decode the key */
-        if njs = self.parser.decodeValue(); njs.Vt != types.V_STRING {
+        if njs = self.parser.decodeValue(false); njs.Vt != types.V_STRING {
             return types.ERR_INVALID_CHAR
         }
 
@@ -257,7 +257,7 @@ func (self *traverser) decodeObject() error {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = Unquote(key); err != 0 {
+            if key, err = unquote(key); err != 0 {
                 return err
             }
         }
@@ -307,7 +307,7 @@ func (self *traverser) decodeString(iv int64, ep int) error {
     }
 
     /* unquote the string */
-    out, err := Unquote(s)
+    out, err := unquote(s)
     if err != 0 {
         return err
     }

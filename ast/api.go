@@ -73,18 +73,20 @@ func quote(buf *[]byte, val string) {
     *buf = append(*buf, '"')
 }
 
-// Unquote unescapes a internal JSON string (it doesn't count quotas at the begining and end)
-func Unquote(src string) (string, types.ParsingError) {
+func unquote(src string) (string, types.ParsingError) {
     return uq.String(src)
 }
 
-func (self *Parser) decodeValue() (val types.JsonState) {
+func (self *Parser) decodeValue(validStr bool) (val types.JsonState) {
     sv := (*rt.GoString)(unsafe.Pointer(&self.s))
     flag := types.F_USE_NUMBER
     if self.dbuf != nil {
         flag = 0
         val.Dbuf = self.dbuf
         val.Dcap = types.MaxDigitNums
+    }
+    if validStr {
+        flag |= types.F_VALIDATE_STRING
     }
     self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, uint64(flag))
     return
@@ -114,10 +116,15 @@ func (self *Parser) skipFast() (int, types.ParsingError) {
     return start, 0
 }
 
-func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
-    fsm := types.NewStateMachine()
+func (self *Parser) getByPath(validate bool, path ...interface{}) (int, types.ParsingError) {
+	var fsm *types.StateMachine
+	if validate {
+		fsm = types.NewStateMachine()
+	}
     start := native.GetByPath(&self.s, &self.p, &path, fsm)
-    types.FreeStateMachine(fsm)
+	if validate {
+		types.FreeStateMachine(fsm)
+	}
     runtime.KeepAlive(path)
     if start < 0 {
         return self.p, types.ParsingError(-start)

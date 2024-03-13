@@ -200,7 +200,7 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
         var err types.ParsingError
 
         /* decode the key */
-        if njs = self.decodeValue(); njs.Vt != types.V_STRING {
+        if njs = self.decodeValue(false); njs.Vt != types.V_STRING {
             return Node{}, types.ERR_INVALID_CHAR
         }
 
@@ -210,7 +210,7 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = Unquote(key); err != 0 {
+            if key, err = unquote(key); err != 0 {
                 return Node{}, err
             }
         }
@@ -274,8 +274,8 @@ func (self *Parser) decodeString(iv int64, ep int) (Node, types.ParsingError) {
         return NewString(s), 0
     }
 
-    /* Unquote the string */
-    out, err := Unquote(s)
+    /* unquote the string */
+    out, err := unquote(s)
 
     /* check for errors */
     if err != 0 {
@@ -292,7 +292,7 @@ func (self *Parser) Pos() int {
 }
 
 func (self *Parser) Parse() (Node, types.ParsingError) {
-    switch val := self.decodeValue(); val.Vt {
+    switch val := self.decodeValue(false); val.Vt {
         case types.V_EOF     : return Node{}, types.ERR_EOF
         case types.V_NULL    : return nullNode, 0
         case types.V_TRUE    : return trueNode, 0
@@ -345,7 +345,7 @@ func (self *Parser) searchKey(match string) types.ParsingError {
     for {
 
         /* decode the key */
-        if njs = self.decodeValue(); njs.Vt != types.V_STRING {
+        if njs = self.decodeValue(false); njs.Vt != types.V_STRING {
             return types.ERR_INVALID_CHAR
         }
 
@@ -355,7 +355,7 @@ func (self *Parser) searchKey(match string) types.ParsingError {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = Unquote(key); err != 0 {
+            if key, err = unquote(key); err != 0 {
                 return err
             }
         }
@@ -526,7 +526,7 @@ func (self *Node) skipNextPair() (*Pair) {
     var err types.ParsingError
 
     /* decode the key */
-    if njs = parser.decodeValue(); njs.Vt != types.V_STRING {
+    if njs = parser.decodeValue(false); njs.Vt != types.V_STRING {
         return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
     }
 
@@ -536,7 +536,7 @@ func (self *Node) skipNextPair() (*Pair) {
 
     /* check for escape sequence */
     if njs.Ep != -1 {
-        if key, err = Unquote(key); err != 0 {
+        if key, err = unquote(key); err != 0 {
             return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
         }
     }

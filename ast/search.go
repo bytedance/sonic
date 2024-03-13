@@ -36,7 +36,7 @@ func NewSearcher(str string) *Searcher {
 
 // GetByPathCopy search in depth from top json and returns a **Copied** json node at the path location
 func (self *Searcher) GetByPathCopy(path ...interface{}) (Node, error) {
-    return self.getByPath(true, path...)
+    return self.getByPath(true, true, path...)
 }
 
 // GetByPathNoCopy search in depth from top json and returns a **Referenced** json node at the path location
@@ -44,15 +44,15 @@ func (self *Searcher) GetByPathCopy(path ...interface{}) (Node, error) {
 // WARN: this search directly refer partial json from top json, which has faster speed,
 // may consumes more memory.
 func (self *Searcher) GetByPath(path ...interface{}) (Node, error) {
-    return self.getByPath(false, path...)
+    return self.getByPath(false, true, path...)
 }
 
-func (self *Searcher) getByPath(copystring bool, path ...interface{}) (Node, error) {
+func (self *Searcher) getByPath(copystring bool, validate bool, path ...interface{}) (Node, error) {
     var err types.ParsingError
     var start int
 
     self.parser.p = 0
-    start, err = self.parser.getByPath(path...)
+    start, err = self.parser.getByPath(validate, path...)
     if err != 0 {
         // for compatibility with old version
         if err == types.ERR_NOT_FOUND {
@@ -79,10 +79,10 @@ func (self *Searcher) getByPath(copystring bool, path ...interface{}) (Node, err
     return newRawNode(raw, t), nil
 }
 
-// GetByPath searches a path and returns relaction and types of target
-func GetByPath(src string, path ...interface{}) (start int, end int, typ int, err error) {
+// EXPORT
+func _GetByPath(src string, path ...interface{}) (start int, end int, typ int, err error) {
 	p := NewParserObj(src)
-	s, e := p.getByPath(path...)
+	s, e := p.getByPath(false, path...)
 	if e != 0 {
 		// for compatibility with old version
 		if e == types.ERR_NOT_FOUND {
@@ -101,17 +101,15 @@ func GetByPath(src string, path ...interface{}) (start int, end int, typ int, er
 	return s, p.p, int(t), nil
 }
 
-// ValidSyntax check if a json has a valid JSON syntax,
-// while not validate UTF-8 charset
-func ValidSyntax(json string) bool {
+// EXPORT
+func _ValidSyntax(json string) bool {
 	p := NewParserObj(json)
     _, e := p.skip()
 	return e == 0
 }
 
-// SkipFast skip a json value in fast-skip algs, 
-// while not strictly validate JSON syntax and UTF-8 charset.
-func SkipFast(src string, i int) (int, int, error) {
+// EXPORT
+func _SkipFast(src string, i int) (int, int, error) {
     p := NewParserObj(src)
     p.p = i
     s, e := p.skipFast()
