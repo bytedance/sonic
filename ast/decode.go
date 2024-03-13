@@ -588,29 +588,29 @@ func skipArray(src string, pos int) (ret int, start int) {
 //   - needEsc indicates if to unescaped escaping chars
 //   - hasEsc tells if the returned string has escaping chars
 func _DecodeString(src string, pos int, needEsc bool, validStr bool) (v string, ret int, hasEsc bool) {
-	p := NewParserObj(src)
-	p.p = pos
-	switch val := p.decodeValue(); val.Vt {
-	case types.V_STRING:
-		str := p.s[val.Iv : p.p-1]
+    p := NewParserObj(src)
+    p.p = pos
+    switch val := p.decodeValue(); val.Vt {
+    case types.V_STRING:
+        str := p.s[val.Iv : p.p-1]
         if validStr && !validate_utf8(str) {
            return "", -int(types.ERR_INVALID_UTF8), false
         }
-		/* fast path: no escape sequence */
-		if val.Ep == -1 {
-			return str, p.p, false
-		} else if !needEsc {
-			return str, p.p, true
-		}
-		/* unquote the string */
-		out, err := unquote(str)
-		/* check for errors */
-		if err != 0 {
-			return "", -int(err), true
-		} else {
-			return out, p.p, true
-		}
-	default:
-		return "", -int(_ERR_UNSUPPORT_TYPE), false
-	}
+        /* fast path: no escape sequence */
+        if val.Ep == -1 {
+            return str, p.p, false
+        } else if !needEsc {
+            return str, p.p, true
+        }
+        /* unquote the string */
+        out, err := unquote(str)
+        /* check for errors */
+        if err != 0 {
+            return "", -int(err), true
+        } else {
+            return out, p.p, true
+        }
+    default:
+        return "", -int(_ERR_UNSUPPORT_TYPE), false
+    }
 }

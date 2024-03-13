@@ -20,15 +20,15 @@
 package ast
 
 import (
-	"runtime"
-	"unsafe"
+    `runtime`
+    `unsafe`
 
-	"github.com/bytedance/sonic/encoder"
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	uq "github.com/bytedance/sonic/unquote"
-	"github.com/bytedance/sonic/utf8"
+    `github.com/bytedance/sonic/encoder`
+    `github.com/bytedance/sonic/internal/native`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    uq `github.com/bytedance/sonic/unquote`
+    `github.com/bytedance/sonic/utf8`
 )
 
 var typeByte = rt.UnpackEface(byte(0)).Type
@@ -115,14 +115,14 @@ func (self *Parser) skipFast() (int, types.ParsingError) {
 }
 
 func (self *Parser) getByPath(validate bool, path ...interface{}) (int, types.ParsingError) {
-	var fsm *types.StateMachine
-	if validate {
-		fsm = types.NewStateMachine()
-	}
+    var fsm *types.StateMachine
+    if validate {
+        fsm = types.NewStateMachine()
+    }
     start := native.GetByPath(&self.s, &self.p, &path, fsm)
-	if validate {
-		types.FreeStateMachine(fsm)
-	}
+    if validate {
+        types.FreeStateMachine(fsm)
+    }
     runtime.KeepAlive(path)
     if start < 0 {
         return self.p, types.ParsingError(-start)
