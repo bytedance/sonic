@@ -584,9 +584,11 @@ func skipArray(src string, pos int) (ret int, start int) {
     }
 }
 
-// DecoderString decodes a JSON string from pos and return golang string.
+// DecodeString decodes a JSON string from pos and return golang string.
 //   - needEsc indicates if to unescaped escaping chars
 //   - hasEsc tells if the returned string has escaping chars
+//   - validStr enables validating UTF8 charset
+//
 func _DecodeString(src string, pos int, needEsc bool, validStr bool) (v string, ret int, hasEsc bool) {
     p := NewParserObj(src)
     p.p = pos

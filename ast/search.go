@@ -79,7 +79,7 @@ func (self *Searcher) getByPath(copystring bool, validate bool, path ...interfac
     return newRawNode(raw, t), nil
 }
 
-// EXPORT
+// GetByPath searches a path and returns relaction and types of target
 func _GetByPath(src string, path ...interface{}) (start int, end int, typ int, err error) {
 	p := NewParserObj(src)
 	s, e := p.getByPath(false, path...)
@@ -104,7 +104,8 @@ func _GetByPath(src string, path ...interface{}) (start int, end int, typ int, e
 	return s, p.p, int(t), nil
 }
 
-// EXPORT
+// ValidSyntax check if a json has a valid JSON syntax,
+// while not validate UTF-8 charset
 func _ValidSyntax(json string) bool {
 	p := NewParserObj(json)
     _, e := p.skip()
@@ -117,7 +118,8 @@ func _ValidSyntax(json string) bool {
    return true
 }
 
-// EXPORT
+// SkipFast skip a json value in fast-skip algs, 
+// while not strictly validate JSON syntax and UTF-8 charset.
 func _SkipFast(src string, i int) (int, int, error) {
     p := NewParserObj(src)
     p.p = i

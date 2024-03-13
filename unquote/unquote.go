@@ -43,7 +43,8 @@ func IntoBytes(s string, m *[]byte) types.ParsingError {
     }
 }
 
-// EXPORT
+// String unescapes a escaped string (not including `"` at begining and end)
+//   - replace enables replacing invalid utf8 escaped char with `\uffd`
 func _String(s string, replace bool) (ret string, err error) {
     mm := make([]byte, 0, len(s))
     err = intoBytesUnsafe(s, &mm, replace)
