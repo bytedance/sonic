@@ -145,7 +145,7 @@ bool atof_eisel_lemire64(uint64_t mant, int exp10, int sgn, double *val);
 double atof_native(const char *sp, ssize_t nb, char *dbuf, ssize_t cap);
 
 long validate_string(const GoString *src, long *p);
-long validate_one(const GoString *src, long *p, StateMachine *m);
+long validate_one(const GoString *src, long *p, StateMachine *m, uint64_t flags);
 long validate_utf8(const GoString *src, long *p, StateMachine *m);
 long validate_utf8_fast(const GoString *src); 
 

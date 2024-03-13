@@ -67,7 +67,7 @@ var (
 
     __skip_number func(s unsafe.Pointer, p unsafe.Pointer) (ret int)
 
-    __validate_one func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) (ret int)
+    __validate_one func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer, flags uint64) (ret int)
 
     __get_by_path func(s unsafe.Pointer, p unsafe.Pointer, path unsafe.Pointer, m unsafe.Pointer) (ret int)
 
@@ -167,8 +167,8 @@ func skip_number(s *string, p *int) (ret int) {
 }
 
 //go:nosplit
-func validate_one(s *string, p *int, m *types.StateMachine) (ret int) {
-    return __validate_one(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)))
+func validate_one(s *string, p *int, m *types.StateMachine, flags uint64) (ret int) {
+    return __validate_one(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)), flags)
 }
 
 //go:nosplit

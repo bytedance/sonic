@@ -13,11 +13,11 @@ const (
     _entry__format_significand = 35344
     _entry__format_integer = 3040
     _entry__get_by_path = 25696
+    _entry__skip_one_fast = 22176
     _entry__fsm_exec = 17920
     _entry__advance_string = 14320
     _entry__advance_string_default = 36736
     _entry__do_skip_number = 20528
-    _entry__skip_one_fast = 22176
     _entry__html_escape = 8912
     _entry__i64toa = 3472
     _entry__u64toa = 3584
@@ -49,11 +49,11 @@ const (
     _stack__format_significand = 24
     _stack__format_integer = 16
     _stack__get_by_path = 280
+    _stack__skip_one_fast = 176
     _stack__fsm_exec = 168
     _stack__advance_string = 64
     _stack__advance_string_default = 64
     _stack__do_skip_number = 48
-    _stack__skip_one_fast = 176
     _stack__html_escape = 72
     _stack__i64toa = 16
     _stack__u64toa = 8
@@ -85,11 +85,11 @@ const (
     _size__format_significand = 464
     _size__format_integer = 432
     _size__get_by_path = 4208
+    _size__skip_one_fast = 3016
     _size__fsm_exec = 1692
     _size__advance_string = 1280
     _size__advance_string_default = 944
     _size__do_skip_number = 924
-    _size__skip_one_fast = 3016
     _size__html_escape = 1248
     _size__i64toa = 48
     _size__u64toa = 1232
@@ -177,15 +177,32 @@ var (
         {10, 32},
         {12, 40},
         {13, 48},
-        {4012, 104},
-        {4016, 48},
-        {4017, 40},
-        {4019, 32},
-        {4021, 24},
-        {4023, 16},
-        {4025, 8},
-        {4026, 0},
-        {4194, 104},
+        {4088, 104},
+        {4092, 48},
+        {4093, 40},
+        {4095, 32},
+        {4097, 24},
+        {4099, 16},
+        {4101, 8},
+        {4102, 0},
+        {4206, 104},
+    }
+    _pcsp__skip_one_fast = [][2]uint32{
+        {1, 0},
+        {4, 8},
+        {6, 16},
+        {8, 24},
+        {10, 32},
+        {12, 40},
+        {13, 48},
+        {658, 176},
+        {659, 168},
+        {661, 160},
+        {663, 152},
+        {665, 144},
+        {667, 136},
+        {671, 128},
+        {3016, 176},
     }
     _pcsp__fsm_exec = [][2]uint32{
         {1, 0},
@@ -256,23 +273,6 @@ var (
         {858, 8},
         {859, 0},
         {924, 48},
-    }
-    _pcsp__skip_one_fast = [][2]uint32{
-        {1, 0},
-        {4, 8},
-        {6, 16},
-        {8, 24},
-        {10, 32},
-        {12, 40},
-        {13, 48},
-        {658, 176},
-        {659, 168},
-        {661, 160},
-        {663, 152},
-        {665, 144},
-        {667, 136},
-        {671, 128},
-        {3016, 176},
     }
     _pcsp__html_escape = [][2]uint32{
         {1, 0},
@@ -387,8 +387,8 @@ var (
     }
     _pcsp__validate_one = [][2]uint32{
         {1, 0},
-        {35, 8},
-        {41, 0},
+        {30, 8},
+        {36, 0},
     }
     _pcsp__validate_utf8 = [][2]uint32{
         {1, 0},
@@ -576,11 +576,11 @@ var Funcs = []loader.CFunc{
     {"_format_significand", _entry__format_significand, _size__format_significand, _stack__format_significand, _pcsp__format_significand},
     {"_format_integer", _entry__format_integer, _size__format_integer, _stack__format_integer, _pcsp__format_integer},
     {"_get_by_path", _entry__get_by_path, _size__get_by_path, _stack__get_by_path, _pcsp__get_by_path},
+    {"_skip_one_fast", _entry__skip_one_fast, _size__skip_one_fast, _stack__skip_one_fast, _pcsp__skip_one_fast},
     {"_fsm_exec", _entry__fsm_exec, _size__fsm_exec, _stack__fsm_exec, _pcsp__fsm_exec},
     {"_advance_string", _entry__advance_string, _size__advance_string, _stack__advance_string, _pcsp__advance_string},
     {"_advance_string_default", _entry__advance_string_default, _size__advance_string_default, _stack__advance_string_default, _pcsp__advance_string_default},
     {"_do_skip_number", _entry__do_skip_number, _size__do_skip_number, _stack__do_skip_number, _pcsp__do_skip_number},
-    {"_skip_one_fast", _entry__skip_one_fast, _size__skip_one_fast, _stack__skip_one_fast, _pcsp__skip_one_fast},
     {"_html_escape", _entry__html_escape, _size__html_escape, _stack__html_escape, _pcsp__html_escape},
     {"_i64toa", _entry__i64toa, _size__i64toa, _stack__i64toa, _pcsp__i64toa},
     {"_u64toa", _entry__u64toa, _size__u64toa, _stack__u64toa, _pcsp__u64toa},

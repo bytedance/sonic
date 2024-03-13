@@ -10,6 +10,9 @@ long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine
 query:
     /* to be safer for invalid json, use slower skip for the demanded fields */
     if (ps == pe) {
+        if (sm == NULL) {
+            return skip_one_fast_1(src, p);
+        }
         return skip_one_1(src, p, sm, 0);
     }
 

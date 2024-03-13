@@ -1,4 +1,5 @@
-// +build amd64,go1.16,!go1.23
+//go:build (amd64 && go1.16 && !go1.23) || (arm64 && go1.20 && !go1.23)
+// +build amd64,go1.16,!go1.23 arm64,go1.20,!go1.23
 
 /*
  * Copyright 2022 ByteDance Inc.
@@ -31,6 +32,9 @@ import (
 )
 
 func TestSortNodeTwitter(t *testing.T) {
+    if encoder.EnableFallback {
+        return
+    }
     root, err := NewSearcher(_TwitterJson).GetByPath()
     if err != nil {
         t.Fatal(err)
@@ -39,7 +43,7 @@ func TestSortNodeTwitter(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    exp, err := encoder.Encode(obj, encoder.SortMapKeys)
+    exp, err := encoder.Encode(obj, encoder.SortMapKeys|encoder.NoEncoderNewline)
     if err != nil {
         t.Fatal(err)
     }
@@ -117,7 +121,7 @@ func TestTypeCast2(t *testing.T) {
         if len(rets) != 2 {
             t.Fatal(i, rets)
         }
-        require.Equal(t, rets[0].Interface(), c.exp)
+        require.Equal(t, c.exp, rets[0].Interface())
         v := rets[1].Interface();
         if  v != c.err {
             t.Fatal(i, v)
@@ -140,4 +144,65 @@ func TestStackAny(t *testing.T) {
     if string(buf) != "1" {
         t.Fatal(string(buf))
     }
+}
+
+
+func Test_Export(t *testing.T) {
+	type args struct {
+		src  string
+		path []interface{}
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantStart int
+		wantEnd   int
+		wantTyp   int
+		wantErr   bool
+		wantValid bool
+	}{
+		{"bool", args{`[true  ,2]`, []interface{}{0}}, 1, 5, V_TRUE, false, true},
+		{"bool", args{`[t2ue  ,2]`, []interface{}{0}}, 1, 5, V_TRUE, false, false},
+		{"number", args{`[1  ,2]`, []interface{}{0}}, 1, 2, V_NUMBER, false, true},
+		{"number", args{`[1w ,2]`, []interface{}{0}}, 1, 3, V_NUMBER, false, false},
+		{"string", args{`[" "  ,2]`, []interface{}{0}}, 1, 4, V_STRING, false, true},
+		{"string", args{`[" "]  ,2]`, []interface{}{0}}, 1, 4, V_STRING, false, true},
+		{"object", args{`[{"":""}  ,2]`, []interface{}{0}}, 1, 8, V_OBJECT, false, true},
+		{"object", args{`[{x}  ,2]`, []interface{}{0}}, 1, 4, V_OBJECT, false, false},
+		{"arrauy", args{`[[{}]  ,2]`, []interface{}{0}}, 1, 5, V_ARRAY, false, true},
+		{"arrauy", args{`[[xx]  ,2]`, []interface{}{0}}, 1, 5, V_ARRAY, false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotStart, gotEnd, gotTyp, err := _GetByPath(tt.args.src, tt.args.path...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("_GetByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotStart != tt.wantStart {
+				t.Errorf("_GetByPath() gotStart = %v, want %v", gotStart, tt.wantStart)
+			}
+			if gotEnd != tt.wantEnd {
+				t.Errorf("_GetByPath() gotEnd = %v, want %v", gotEnd, tt.wantEnd)
+			}
+			if gotTyp != tt.wantTyp {
+				t.Errorf("_GetByPath() gotTyp = %v, want %v", gotTyp, tt.wantTyp)
+			}
+			gotStart, gotEnd, err = _SkipFast(tt.args.src, tt.wantStart)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("_SkipFast() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotStart != tt.wantStart {
+				t.Errorf("_SkipFast() gotStart = %v, want %v", gotStart, tt.wantStart)
+			}
+			if gotEnd != tt.wantEnd {
+				t.Errorf("_SkipFast() gotEnd = %v, want %v", gotEnd, tt.wantEnd)
+			}
+			valid := _ValidSyntax(tt.args.src[tt.wantStart:tt.wantEnd])
+			if valid != tt.wantValid {
+				t.Errorf("_ValidSyntax() gotValid = %v, want %v", valid, tt.wantValid)
+			}
+		})
+	}
 }

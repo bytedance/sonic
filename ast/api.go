@@ -1,3 +1,4 @@
+//go:build (amd64 && go1.16 && !go1.23) || (arm64 && go1.20 && !go1.23)
 // +build amd64,go1.16,!go1.23 arm64,go1.20,!go1.23
 
 /*
@@ -27,6 +28,7 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
     uq `github.com/bytedance/sonic/unquote`
+    `github.com/bytedance/sonic/utf8`
 )
 
 var typeByte = rt.UnpackEface(byte(0)).Type
@@ -101,7 +103,7 @@ func (self *Parser) skip() (int, types.ParsingError) {
 
 func (self *Node) encodeInterface(buf *[]byte) error {
     //WARN: NOT compatible with json.Encoder
-    return encoder.EncodeInto(buf, self.packAny(), 0)
+    return encoder.EncodeInto(buf, self.packAny(), encoder.NoEncoderNewline)
 }
 
 func (self *Parser) skipFast() (int, types.ParsingError) {
@@ -112,13 +114,22 @@ func (self *Parser) skipFast() (int, types.ParsingError) {
     return start, 0
 }
 
-func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
-    fsm := types.NewStateMachine()
+func (self *Parser) getByPath(validate bool, path ...interface{}) (int, types.ParsingError) {
+    var fsm *types.StateMachine
+    if validate {
+        fsm = types.NewStateMachine()
+    }
     start := native.GetByPath(&self.s, &self.p, &path, fsm)
-    types.FreeStateMachine(fsm)
+    if validate {
+        types.FreeStateMachine(fsm)
+    }
     runtime.KeepAlive(path)
     if start < 0 {
         return self.p, types.ParsingError(-start)
     }
     return start, 0
+}
+
+func validate_utf8(str string) bool {
+    return utf8.ValidateString(str)
 }
