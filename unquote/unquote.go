@@ -44,7 +44,7 @@ func IntoBytes(s string, m *[]byte) types.ParsingError {
 }
 
 // EXPORT
-func _String(s string, replace bool) (ret string, err types.ParsingError) {
+func _String(s string, replace bool) (ret string, err error) {
     mm := make([]byte, 0, len(s))
     err = intoBytesUnsafe(s, &mm, replace)
     ret = rt.Mem2Str(mm)

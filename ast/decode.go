@@ -590,9 +590,12 @@ func skipArray(src string, pos int) (ret int, start int) {
 func _DecodeString(src string, pos int, needEsc bool, validStr bool) (v string, ret int, hasEsc bool) {
 	p := NewParserObj(src)
 	p.p = pos
-	switch val := p.decodeValue(validStr); val.Vt {
+	switch val := p.decodeValue(); val.Vt {
 	case types.V_STRING:
 		str := p.s[val.Iv : p.p-1]
+        if validStr && !validate_utf8(str) {
+           return "", -int(types.ERR_INVALID_UTF8), false
+        }
 		/* fast path: no escape sequence */
 		if val.Ep == -1 {
 			return str, p.p, false

@@ -143,7 +143,7 @@ type traverser struct {
 
 // NOTE: keep in sync with (*Parser).Parse method.
 func (self *traverser) decodeValue() error {
-    switch val := self.parser.decodeValue(false); val.Vt {
+    switch val := self.parser.decodeValue(); val.Vt {
     case types.V_EOF:
         return types.ERR_EOF
     case types.V_NULL:
@@ -247,7 +247,7 @@ func (self *traverser) decodeObject() error {
         var err types.ParsingError
 
         /* decode the key */
-        if njs = self.parser.decodeValue(false); njs.Vt != types.V_STRING {
+        if njs = self.parser.decodeValue(); njs.Vt != types.V_STRING {
             return types.ERR_INVALID_CHAR
         }
 

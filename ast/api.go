@@ -20,14 +20,15 @@
 package ast
 
 import (
-    `runtime`
-    `unsafe`
+	"runtime"
+	"unsafe"
 
-    `github.com/bytedance/sonic/encoder`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    uq `github.com/bytedance/sonic/unquote`
+	"github.com/bytedance/sonic/encoder"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	uq "github.com/bytedance/sonic/unquote"
+	"github.com/bytedance/sonic/utf8"
 )
 
 var typeByte = rt.UnpackEface(byte(0)).Type
@@ -77,16 +78,13 @@ func unquote(src string) (string, types.ParsingError) {
     return uq.String(src)
 }
 
-func (self *Parser) decodeValue(validStr bool) (val types.JsonState) {
+func (self *Parser) decodeValue() (val types.JsonState) {
     sv := (*rt.GoString)(unsafe.Pointer(&self.s))
     flag := types.F_USE_NUMBER
     if self.dbuf != nil {
         flag = 0
         val.Dbuf = self.dbuf
         val.Dcap = types.MaxDigitNums
-    }
-    if validStr {
-        flag |= types.F_VALIDATE_STRING
     }
     self.p = native.Value(sv.Ptr, sv.Len, self.p, &val, uint64(flag))
     return
@@ -130,4 +128,8 @@ func (self *Parser) getByPath(validate bool, path ...interface{}) (int, types.Pa
         return self.p, types.ParsingError(-start)
     }
     return start, 0
+}
+
+func validate_utf8(str string) bool {
+    return utf8.ValidateString(str)
 }

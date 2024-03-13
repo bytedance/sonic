@@ -19,9 +19,6 @@ package export
 
 import (
 	_ "unsafe"
-
-	_ "github.com/bytedance/sonic/ast"
-	"github.com/bytedance/sonic/internal/native/types"
 )
 
 // DecoderString decodes a JSON string from pos and return golang string.
@@ -53,4 +50,4 @@ func SkipFast(src string, i int) (int, int, error)
 //   - replace enables replacing invalid utf8 escaped char with `\uffd`
 //
 //go:linkname Unquote github.com/bytedance/sonic/unquote._String  
-func Unquote(s string, replace bool) (ret string, err types.ParsingError)
+func Unquote(s string, replace bool) (ret string, err error)

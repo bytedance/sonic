@@ -20,6 +20,7 @@ package ast
 
 import (
     `encoding/json`
+    `unicode/utf8`
 
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
@@ -44,7 +45,7 @@ func unquote(src string) (string, types.ParsingError) {
 }
 
 
-func (self *Parser) decodeValue(_ bool) (val types.JsonState) {
+func (self *Parser) decodeValue() (val types.JsonState) {
     e, v := decodeValue(self.s, self.p, self.dbuf == nil)
     if e < 0 {
         return v
@@ -106,4 +107,8 @@ func (self *Parser) getByPath(validate bool, path ...interface{}) (int, types.Pa
         return self.p, e
     }
     return start, 0
+}
+
+func validate_utf8(str string) bool {
+    return utf8.ValidString(str)
 }

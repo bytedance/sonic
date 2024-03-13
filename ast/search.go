@@ -98,6 +98,9 @@ func _GetByPath(src string, path ...interface{}) (start int, end int, typ int, e
 	if t == _V_NONE {
 		return -1, -1, 0, ErrNotExist
 	}
+    if t == _V_NUMBER {
+        p.p = 1 + backward(p.s, p.p-1)
+    }
 	return s, p.p, int(t), nil
 }
 
@@ -105,7 +108,13 @@ func _GetByPath(src string, path ...interface{}) (start int, end int, typ int, e
 func _ValidSyntax(json string) bool {
 	p := NewParserObj(json)
     _, e := p.skip()
-	return e == 0
+	if e != 0 {
+        return false
+    }
+   if skipBlank(p.s, p.p) != -int(types.ERR_EOF) {
+        return false
+   }
+   return true
 }
 
 // EXPORT
@@ -115,6 +124,13 @@ func _SkipFast(src string, i int) (int, int, error) {
     s, e := p.skipFast()
     if e != 0 {
         return -1, -1, p.ExportError(e)
+    }
+    t := switchRawType(p.s[s])
+	if t == _V_NONE {
+		return -1, -1, ErrNotExist
+	}
+    if t == _V_NUMBER {
+        p.p = 1 + backward(p.s, p.p-1)
     }
     return s, p.p, nil
 }
