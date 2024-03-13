@@ -32,6 +32,9 @@ import (
 )
 
 func TestSortNodeTwitter(t *testing.T) {
+    if encoder.EnableFallback {
+        return
+    }
     root, err := NewSearcher(_TwitterJson).GetByPath()
     if err != nil {
         t.Fatal(err)
@@ -40,7 +43,7 @@ func TestSortNodeTwitter(t *testing.T) {
     if err != nil {
         t.Fatal(err)
     }
-    exp, err := encoder.Encode(obj, encoder.SortMapKeys)
+    exp, err := encoder.Encode(obj, encoder.SortMapKeys|encoder.NoEncoderNewline)
     if err != nil {
         t.Fatal(err)
     }

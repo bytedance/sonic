@@ -22,6 +22,8 @@ import (
     `github.com/bytedance/sonic/internal/encoder`
 )
 
+// EnableFallback indicates if encoder use fallback
+const EnableFallback = false
 
 // Encoder represents a specific set of encoder configurations.
 type Encoder = encoder.Encoder

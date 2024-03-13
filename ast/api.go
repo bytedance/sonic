@@ -103,7 +103,7 @@ func (self *Parser) skip() (int, types.ParsingError) {
 
 func (self *Node) encodeInterface(buf *[]byte) error {
     //WARN: NOT compatible with json.Encoder
-    return encoder.EncodeInto(buf, self.packAny(), 0)
+    return encoder.EncodeInto(buf, self.packAny(), encoder.NoEncoderNewline)
 }
 
 func (self *Parser) skipFast() (int, types.ParsingError) {
