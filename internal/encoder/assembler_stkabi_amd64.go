@@ -414,6 +414,20 @@ const (
     _StackLimit = _MaxStack * _StateSize
 )
 
+var (
+    _F_mallocgc = jit.Func(mallocgc)
+)
+
+func (self *_Assembler) valloc(vt reflect.Type, ret obj.Addr) {
+    self.Emit("MOVQ", jit.Imm(int64(vt.Size())), _AX)   // MOVQ    ${vt.Size()}, AX
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))             // MOVQ    AX, (SP)
+    self.Emit("MOVQ", jit.Type(vt), _AX)                // MOVQ    ${vt}, AX
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))             // MOVQ    AX, 8(SP)
+    self.Emit("MOVB", jit.Imm(1), jit.Ptr(_SP, 16))     // MOVB    $1, 16(SP)
+    self.call_go(_F_mallocgc)                           // CALL_GO mallocgc
+    self.Emit("MOVQ", jit.Ptr(_SP, 24), ret)            // MOVQ    24(SP), ${ret}
+}
+
 func (self *_Assembler) save_state() {
     self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)             // MOVQ (ST), CX
     self.Emit("LEAQ", jit.Ptr(_CX, _StateSize), _R8)    // LEAQ _StateSize(CX), R8
@@ -1008,21 +1022,23 @@ func (self *_Assembler) _asm_OP_drop_2(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_recurse(p *_Instr) {
-    self.prep_buffer()                          // MOVE {buf}, (SP)
     vt, pv := p.vp()
-    self.Emit("MOVQ", jit.Type(vt), _AX)    // MOVQ $(type(p.vt())), AX
-    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))     // MOVQ AX, 8(SP)
 
     /* check for indirection */
     if !rt.UnpackType(vt).Indirect() {
-        self.Emit("MOVQ", _SP_p, _AX)               // MOVQ SP.p, AX
+        self.Emit("MOVQ", _SP_p, _CX)               
     } else {
-        self.Emit("MOVQ", _SP_p, _VAR_vp)  // MOVQ SP.p, 48(SP)
-        self.Emit("LEAQ", _VAR_vp, _AX)    // LEAQ 48(SP), AX
+        self.valloc(ptrType, _CX)
+        self.Emit("MOVQ", _CX, _VAR_vp)
+        self.WritePtr(3, _SP_p, jit.Ptr(_CX, 0)) 
     }
 
+    self.prep_buffer()                          // MOVE {buf}, (SP)
+    self.Emit("MOVQ", jit.Type(vt), _AX)    // MOVQ $(type(p.vt())), AX
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 8))     // MOVQ AX, 8(SP)
+
     /* call the encoder */
-    self.Emit("MOVQ" , _AX, jit.Ptr(_SP, 16))   // MOVQ  AX, 16(SP)
+    self.Emit("MOVQ" , _CX, jit.Ptr(_SP, 16))   // MOVQ  CX, 16(SP)
     self.Emit("MOVQ" , _ST, jit.Ptr(_SP, 24))   // MOVQ  ST, 24(SP)
     self.Emit("MOVQ" , _ARG_fv, _AX)            // MOVQ  fv, AX
     if pv {
