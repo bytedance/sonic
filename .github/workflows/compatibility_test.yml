@@ -1,6 +1,6 @@
 name: Compatibility Test Linux-X64|ARM
 
-on: pull_request
+on: push
 
 jobs:
   build:

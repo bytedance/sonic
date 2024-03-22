@@ -1,6 +1,6 @@
 name: Benchmark Linux-ARM
 
-on: pull_request
+on: push
 
 jobs:
   build:

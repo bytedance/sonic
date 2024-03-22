@@ -1,6 +1,6 @@
 name: Compatibility Test Windows-X64
 
-on: pull_request
+on: push
 
 jobs:
   build:

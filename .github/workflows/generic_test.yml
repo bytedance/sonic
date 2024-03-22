@@ -1,6 +1,6 @@
 name: Generic Test Go1.18-Linux-X64
 
-on: pull_request
+on: push
 
 jobs:
   build:
