@@ -6,10 +6,10 @@ package sse
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
-func _f32toa_entry() uintptr
+func __f32toa_entry() uintptr
 
 var (
-    _subr__f32toa uintptr = _f32toa_entry() + 32
+    _subr__f32toa uintptr = GetFuncPC(__f32toa_entry) + 32
 )
 
 const (

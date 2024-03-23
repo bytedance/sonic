@@ -2597,8 +2597,8 @@ def main():
             print('//goland:noinspection ALL', file = fp)
             
             # native entry for entry function
-            for name, _ in asm.subr.items():
-                print('func %s() uintptr' % stub_name(name), file = fp)
+            for (name, _) in asm.subr.items():
+                print('func _%s() uintptr' % stub_name(name), file = fp)
             
             # dump exported function entry for exported functions
             print(file = fp)
