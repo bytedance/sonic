@@ -3,17 +3,21 @@
 
 package sse
 
+import (
+`github.com/bytedance/sonic/internal/rt`
+)
+
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
 func __f32toa_entry() uintptr
 
 var (
-    _subr__f32toa uintptr = GetFuncPC(__f32toa_entry) + 32
+    _subr__f32toa uintptr = rt.GetFuncPC(__f32toa_entry) + 46
 )
 
 const (
-    _stack__f32toa = 56
+    _stack__f32toa = 48
 )
 
 var (

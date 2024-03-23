@@ -4,7 +4,7 @@
 SRC_DIR="native/arm"
 TMP_DIR="output/$2"
 OUT_DIR="internal/native/$2"
-TOOL_DIR="tools"
+TOOL_DIR="tools/asm"
 CC=clang
 if [ "$1" != "" ]; then
     CC=$1

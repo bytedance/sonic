@@ -232,3 +232,12 @@ func AssertI2I2(t *GoType, i GoIface) (r GoIface) {
 //go:noescape
 //go:linkname Getitab runtime.getitab
 func Getitab(inter *GoInterfaceType, typ *GoType, canfail bool) *GoItab
+
+
+func GetFuncPC(fn interface{}) uintptr {
+    ft := UnpackEface(fn)
+    if ft.Type.Kind() != reflect.Func {
+        panic("not a function")
+    }
+    return *(*uintptr)(ft.Value)
+}

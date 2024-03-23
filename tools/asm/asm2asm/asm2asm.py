@@ -2297,7 +2297,7 @@ class Assembler:
 
     def _declare_body(self, name :str):
         size = self.code.stacksize(name[1:])
-        gosize = 0 if size < 16 else size-16
+        gosize = 0 if size < 8 else size - 8
         self.out.append('TEXT ·%s(SB), NOSPLIT, $%d' % (stub_name(name), gosize))
         self.out.append('\tNO_LOCAL_POINTERS')
         self._reloc()
@@ -2327,8 +2327,10 @@ class Assembler:
         offs = 0
         subr = name[1:]
         addr = self.code.get(subr)
+        size = self.code.pcsp(subr, addr)   
+        # 14 for reserve go frame instructions
+        addr += 14     
         self.subr[subr] = addr
-        size = self.code.pcsp(subr, addr)        
 
         if OUTPUT_RAW:
             return
@@ -2592,6 +2594,7 @@ def main():
 
         else:
             print(file = fp)
+            print('import (\n`github.com/bytedance/sonic/internal/rt`\n)\n', file = fp)
             print('//go:nosplit', file = fp)
             print('//go:noescape', file = fp)
             print('//goland:noinspection ALL', file = fp)
@@ -2605,7 +2608,7 @@ def main():
             print('var (', file = fp)
             mlen = max(len(s) for s in asm.subr)
             for name, entry in asm.subr.items():
-                print('    _subr_%s uintptr = %s() + %d' % (name.ljust(mlen, ' '), stub_name(name), entry), file = fp)
+                print('    _subr_%s uintptr = rt.GetFuncPC(_%s) + %d' % (name.ljust(mlen, ' '), stub_name(name), entry), file = fp)
             print(')', file = fp)
 
             # dump max stack depth for exported functions
