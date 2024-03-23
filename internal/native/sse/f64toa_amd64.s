@@ -5,7 +5,7 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__f64toa_entry(SB), NOSPLIT, $48
+TEXT ·__f64toa_entry(SB), NOSPLIT, $56
 	NO_LOCAL_POINTERS
 	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
 	LONG $0x24448948; BYTE $0x08  // movq         %rax, $8(%rsp)
@@ -2516,7 +2516,8 @@ _entry:
 _f64toa:
 	MOVQ out+0(FP), DI
 	MOVSD val+8(FP), X0
-	CALL ·__f64toa_entry+32(SB)  // _f64toa
+	// BYTE $0xcc
+	CALL ·__f64toa_entry+46(SB)  // _f64toa
 	MOVQ AX, ret+16(FP)
 	RET
 
