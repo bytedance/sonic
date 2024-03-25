@@ -66,16 +66,16 @@ _get_by_path:
 	LONG $0x007d8b49  // movq         (%r13), %rdi
 	WORD $0x8b49; BYTE $0x03  // movq         (%r11), %rax
 	QUAD $0x000100002600ba49; WORD $0x0000  // movabsq      $4294977024, %r10
-	QUAD $0xfffffeec056f0f66  // movdqa       $-276(%rip), %xmm0  /* LCPI0_3+0(%rip) */
-	QUAD $0xfffffef40d6f0f66  // movdqa       $-268(%rip), %xmm1  /* LCPI0_4+0(%rip) */
-	QUAD $0xfffeab2d6f0f4466; BYTE $0xff  // movdqa       $-341(%rip), %xmm13  /* LCPI0_0+0(%rip) */
-	QUAD $0xfffeb2356f0f4466; BYTE $0xff  // movdqa       $-334(%rip), %xmm14  /* LCPI0_1+0(%rip) */
-	QUAD $0xfffffeba256f0f66  // movdqa       $-326(%rip), %xmm4  /* LCPI0_2+0(%rip) */
+	QUAD $0xfffffeec056f0ff3  // movdqu       $-276(%rip), %xmm0  /* LCPI0_3+0(%rip) */
+	QUAD $0xfffffef40d6f0ff3  // movdqu       $-268(%rip), %xmm1  /* LCPI0_4+0(%rip) */
+	QUAD $0xfffeab2d6f0f44f3; BYTE $0xff  // movdqu       $-341(%rip), %xmm13  /* LCPI0_0+0(%rip) */
+	QUAD $0xfffeb2356f0f44f3; BYTE $0xff  // movdqu       $-334(%rip), %xmm14  /* LCPI0_1+0(%rip) */
+	QUAD $0xfffffeba256f0ff3  // movdqu       $-326(%rip), %xmm4  /* LCPI0_2+0(%rip) */
 	LONG $0x760f4566; BYTE $0xc9  // pcmpeqd      %xmm9, %xmm9
-	QUAD $0xfffeec156f0f4466; BYTE $0xff  // movdqa       $-276(%rip), %xmm10  /* LCPI0_6+0(%rip) */
-	QUAD $0xfffef31d6f0f4466; BYTE $0xff  // movdqa       $-269(%rip), %xmm11  /* LCPI0_7+0(%rip) */
+	QUAD $0xfffeec156f0f44f3; BYTE $0xff  // movdqu       $-276(%rip), %xmm10  /* LCPI0_6+0(%rip) */
+	QUAD $0xfffef31d6f0f44f3; BYTE $0xff  // movdqu       $-269(%rip), %xmm11  /* LCPI0_7+0(%rip) */
 	LONG $0xef0f4566; BYTE $0xc0  // pxor         %xmm8, %xmm8
-	QUAD $0xfffec5256f0f4466; BYTE $0xff  // movdqa       $-315(%rip), %xmm12  /* LCPI0_5+0(%rip) */
+	QUAD $0xfffec5256f0f44f3; BYTE $0xff  // movdqu       $-315(%rip), %xmm12  /* LCPI0_5+0(%rip) */
 	LONG $0xb045894c  // movq         %r8, $-80(%rbp)
 LBB0_2:
 	WORD $0x8b49; BYTE $0x08  // movq         (%r8), %rcx
@@ -3209,15 +3209,15 @@ LBB0_448:
 	LONG $0x05478d49  // leaq         $5(%r15), %rax
 	LONG $0x90458948  // movq         %rax, $-112(%rbp)
 	QUAD $0xffffffff9845c748  // movq         $-1, $-104(%rbp)
-	QUAD $0xffffcfab056f0f66  // movdqa       $-12373(%rip), %xmm0  /* LCPI0_3+0(%rip) */
-	QUAD $0xffffcfb30d6f0f66  // movdqa       $-12365(%rip), %xmm1  /* LCPI0_4+0(%rip) */
-	QUAD $0xffcfea056f0f4466; BYTE $0xff  // movdqa       $-12310(%rip), %xmm8  /* LCPI0_8+0(%rip) */
-	QUAD $0xffffcff21d6f0f66  // movdqa       $-12302(%rip), %xmm3  /* LCPI0_9+0(%rip) */
-	QUAD $0xffcff90d6f0f4466; BYTE $0xff  // movdqa       $-12295(%rip), %xmm9  /* LCPI0_10+0(%rip) */
-	QUAD $0xffd000156f0f4466; BYTE $0xff  // movdqa       $-12288(%rip), %xmm10  /* LCPI0_11+0(%rip) */
-	QUAD $0xffcf571d6f0f4466; BYTE $0xff  // movdqa       $-12457(%rip), %xmm11  /* LCPI0_1+0(%rip) */
-	QUAD $0xffcffe256f0f4466; BYTE $0xff  // movdqa       $-12290(%rip), %xmm12  /* LCPI0_12+0(%rip) */
-	QUAD $0xffd0052d6f0f4466; BYTE $0xff  // movdqa       $-12283(%rip), %xmm13  /* LCPI0_13+0(%rip) */
+	QUAD $0xffffcfab056f0ff3  // movdqu       $-12373(%rip), %xmm0  /* LCPI0_3+0(%rip) */
+	QUAD $0xffffcfb30d6f0ff3  // movdqu       $-12365(%rip), %xmm1  /* LCPI0_4+0(%rip) */
+	QUAD $0xffcfea056f0f44f3; BYTE $0xff  // movdqu       $-12310(%rip), %xmm8  /* LCPI0_8+0(%rip) */
+	QUAD $0xffffcff21d6f0ff3  // movdqu       $-12302(%rip), %xmm3  /* LCPI0_9+0(%rip) */
+	QUAD $0xffcff90d6f0f44f3; BYTE $0xff  // movdqu       $-12295(%rip), %xmm9  /* LCPI0_10+0(%rip) */
+	QUAD $0xffd000156f0f44f3; BYTE $0xff  // movdqu       $-12288(%rip), %xmm10  /* LCPI0_11+0(%rip) */
+	QUAD $0xffcf571d6f0f44f3; BYTE $0xff  // movdqu       $-12457(%rip), %xmm11  /* LCPI0_1+0(%rip) */
+	QUAD $0xffcffe256f0f44f3; BYTE $0xff  // movdqu       $-12290(%rip), %xmm12  /* LCPI0_12+0(%rip) */
+	QUAD $0xffd0052d6f0f44f3; BYTE $0xff  // movdqu       $-12283(%rip), %xmm13  /* LCPI0_13+0(%rip) */
 	LONG $0xb87d894c  // movq         %r15, $-72(%rbp)
 	LONG $0x00032fe9; BYTE $0x00  // jmp          LBB0_586, $815(%rip)
 LBB0_526:
@@ -3378,9 +3378,9 @@ LBB0_564:
 	WORD $0x014c; BYTE $0xe0  // addq         %r12, %rax
 	LONG $0x00748d49; BYTE $0x11  // leaq         $17(%r8,%rax), %rsi
 	WORD $0xe283; BYTE $0x0f  // andl         $15, %edx
-	QUAD $0xffffcd00056f0f66  // movdqa       $-13056(%rip), %xmm0  /* LCPI0_0+0(%rip) */
-	QUAD $0xffffcd080d6f0f66  // movdqa       $-13048(%rip), %xmm1  /* LCPI0_1+0(%rip) */
-	QUAD $0xffffcd10156f0f66  // movdqa       $-13040(%rip), %xmm2  /* LCPI0_2+0(%rip) */
+	QUAD $0xffffcd00056f0ff3  // movdqu       $-13056(%rip), %xmm0  /* LCPI0_0+0(%rip) */
+	QUAD $0xffffcd080d6f0ff3  // movdqu       $-13048(%rip), %xmm1  /* LCPI0_1+0(%rip) */
+	QUAD $0xffffcd10156f0ff3  // movdqu       $-13040(%rip), %xmm2  /* LCPI0_2+0(%rip) */
 	  // .p2align 4, 0x90
 LBB0_566:
 	LONG $0x1f6f0ff3  // movdqu       (%rdi), %xmm3
@@ -5029,8 +5029,8 @@ LBB0_877:
 	WORD $0x294d; BYTE $0xe1  // subq         %r12, %r9
 	LONG $0x00001fbe; BYTE $0x00  // movl         $31, %esi
 	WORD $0x3145; BYTE $0xf6  // xorl         %r14d, %r14d
-	QUAD $0xffffb518056f0f66  // movdqa       $-19176(%rip), %xmm0  /* LCPI0_3+0(%rip) */
-	QUAD $0xffffb5200d6f0f66  // movdqa       $-19168(%rip), %xmm1  /* LCPI0_4+0(%rip) */
+	QUAD $0xffffb518056f0ff3  // movdqu       $-19176(%rip), %xmm0  /* LCPI0_3+0(%rip) */
+	QUAD $0xffffb5200d6f0ff3  // movdqu       $-19168(%rip), %xmm1  /* LCPI0_4+0(%rip) */
 	WORD $0x3145; BYTE $0xff  // xorl         %r15d, %r15d
 	LONG $0x000022e9; BYTE $0x00  // jmp          LBB0_879, $34(%rip)
 LBB0_882:
@@ -5098,11 +5098,11 @@ LBB0_887:
 	WORD $0x2948; BYTE $0xf8  // subq         %rdi, %rax
 	WORD $0x0149; BYTE $0xf8  // addq         %rdi, %r8
 	WORD $0x3145; BYTE $0xff  // xorl         %r15d, %r15d
-	QUAD $0xffb417156f0f4466; BYTE $0xff  // movdqa       $-19433(%rip), %xmm10  /* LCPI0_3+0(%rip) */
-	QUAD $0xffffb41f0d6f0f66  // movdqa       $-19425(%rip), %xmm1  /* LCPI0_4+0(%rip) */
+	QUAD $0xffb417156f0f44f3; BYTE $0xff  // movdqu       $-19433(%rip), %xmm10  /* LCPI0_3+0(%rip) */
+	QUAD $0xffffb41f0d6f0ff3  // movdqu       $-19425(%rip), %xmm1  /* LCPI0_4+0(%rip) */
 	LONG $0x760f4566; BYTE $0xc9  // pcmpeqd      %xmm9, %xmm9
-	QUAD $0xffffb4321d6f0f66  // movdqa       $-19406(%rip), %xmm3  /* LCPI0_6+0(%rip) */
-	QUAD $0xffffb43a256f0f66  // movdqa       $-19398(%rip), %xmm4  /* LCPI0_7+0(%rip) */
+	QUAD $0xffffb4321d6f0ff3  // movdqu       $-19406(%rip), %xmm3  /* LCPI0_6+0(%rip) */
+	QUAD $0xffffb43a256f0ff3  // movdqu       $-19398(%rip), %xmm4  /* LCPI0_7+0(%rip) */
 	QUAD $0x333333333333bd49; WORD $0x3333  // movabsq      $3689348814741910323, %r13
 	LONG $0xef0f4566; BYTE $0xc0  // pxor         %xmm8, %xmm8
 	WORD $0xd231  // xorl         %edx, %edx
@@ -5374,11 +5374,11 @@ LBB0_914:
 	WORD $0x0149; BYTE $0xf8  // addq         %rdi, %r8
 	WORD $0xd231  // xorl         %edx, %edx
 	LONG $0x90558948  // movq         %rdx, $-112(%rbp)
-	QUAD $0xffafc8156f0f4466; BYTE $0xff  // movdqa       $-20536(%rip), %xmm10  /* LCPI0_3+0(%rip) */
-	QUAD $0xffffafd00d6f0f66  // movdqa       $-20528(%rip), %xmm1  /* LCPI0_4+0(%rip) */
+	QUAD $0xffafc8156f0f44f3; BYTE $0xff  // movdqu       $-20536(%rip), %xmm10  /* LCPI0_3+0(%rip) */
+	QUAD $0xffffafd00d6f0ff3  // movdqu       $-20528(%rip), %xmm1  /* LCPI0_4+0(%rip) */
 	LONG $0x760f4566; BYTE $0xc9  // pcmpeqd      %xmm9, %xmm9
-	QUAD $0xffffafd31d6f0f66  // movdqa       $-20525(%rip), %xmm3  /* LCPI0_5+0(%rip) */
-	QUAD $0xffffaf9b256f0f66  // movdqa       $-20581(%rip), %xmm4  /* LCPI0_2+0(%rip) */
+	QUAD $0xffffafd31d6f0ff3  // movdqu       $-20525(%rip), %xmm3  /* LCPI0_5+0(%rip) */
+	QUAD $0xffffaf9b256f0ff3  // movdqu       $-20581(%rip), %xmm4  /* LCPI0_2+0(%rip) */
 	QUAD $0x333333333333bd49; WORD $0x3333  // movabsq      $3689348814741910323, %r13
 	LONG $0xef0f4566; BYTE $0xc0  // pxor         %xmm8, %xmm8
 	WORD $0xd231  // xorl         %edx, %edx

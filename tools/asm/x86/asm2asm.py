@@ -1852,7 +1852,7 @@ class CodeSection:
             # NOTICE: since we need use unaligned instruction, thus SP can be fixed according to PC
             for op in instr.operands:
                 if isinstance(op, Memory):
-                    if op.base is not None and (op.base.reg == 'rbp' or op.base.reg == 'rsp'):
+                    if op.base is not None and (op.base.reg == 'rbp' or op.base.reg == 'rsp' or op.base.reg == 'rip'):
                         instr.mnemonic = self.__instr_repl__[instr.mnemonic]
                         return False
         elif instr.mnemonic == 'andq' and self._is_spadj(instr):

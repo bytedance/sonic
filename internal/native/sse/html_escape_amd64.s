@@ -38,10 +38,10 @@ _html_escape:
 	LONG $0x04938e0f; WORD $0x0000  // jle          LBB0_59, $1171(%rip)
 	LONG $0xc0458b48  // movq         $-64(%rbp), %rax
 	WORD $0x8b4c; BYTE $0x08  // movq         (%rax), %r9
-	QUAD $0xffffff85056f0f66  // movdqa       $-123(%rip), %xmm0  /* LCPI0_0+0(%rip) */
-	QUAD $0xffffff8d0d6f0f66  // movdqa       $-115(%rip), %xmm1  /* LCPI0_1+0(%rip) */
-	QUAD $0xffffff95156f0f66  // movdqa       $-107(%rip), %xmm2  /* LCPI0_2+0(%rip) */
-	QUAD $0xffffff9d1d6f0f66  // movdqa       $-99(%rip), %xmm3  /* LCPI0_3+0(%rip) */
+	QUAD $0xffffff85056f0ff3  // movdqu       $-123(%rip), %xmm0  /* LCPI0_0+0(%rip) */
+	QUAD $0xffffff8d0d6f0ff3  // movdqu       $-115(%rip), %xmm1  /* LCPI0_1+0(%rip) */
+	QUAD $0xffffff95156f0ff3  // movdqu       $-107(%rip), %xmm2  /* LCPI0_2+0(%rip) */
+	QUAD $0xffffff9d1d6f0ff3  // movdqu       $-99(%rip), %xmm3  /* LCPI0_3+0(%rip) */
 	QUAD $0x004000000000be49; WORD $0x5000  // movabsq      $5764607797912141824, %r14
 	LONG $0x9c1d8d4c; WORD $0x0004; BYTE $0x00  // leaq         $1180(%rip), %r11  /* __HtmlQuoteTab+0(%rip) */
 	LONG $0xd07d8b4c  // movq         $-48(%rbp), %r15

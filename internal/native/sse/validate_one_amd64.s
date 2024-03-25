@@ -59,16 +59,16 @@ _validate_one:
 	LONG $0x05418d49  // leaq         $5(%r9), %rax
 	LONG $0x68858948; WORD $0xffff; BYTE $0xff  // movq         %rax, $-152(%rbp)
 	QUAD $0xffffffff7885c748; WORD $0xffff; BYTE $0xff  // movq         $-1, $-136(%rbp)
-	QUAD $0xfffffefe056f0f66  // movdqa       $-258(%rip), %xmm0  /* LCPI0_0+0(%rip) */
-	QUAD $0xffffff060d6f0f66  // movdqa       $-250(%rip), %xmm1  /* LCPI0_1+0(%rip) */
-	QUAD $0xffffff0e156f0f66  // movdqa       $-242(%rip), %xmm2  /* LCPI0_2+0(%rip) */
+	QUAD $0xfffffefe056f0ff3  // movdqu       $-258(%rip), %xmm0  /* LCPI0_0+0(%rip) */
+	QUAD $0xffffff060d6f0ff3  // movdqu       $-250(%rip), %xmm1  /* LCPI0_1+0(%rip) */
+	QUAD $0xffffff0e156f0ff3  // movdqu       $-242(%rip), %xmm2  /* LCPI0_2+0(%rip) */
 	LONG $0x760f4566; BYTE $0xf6  // pcmpeqd      %xmm14, %xmm14
-	QUAD $0xffff10056f0f4466; BYTE $0xff  // movdqa       $-240(%rip), %xmm8  /* LCPI0_3+0(%rip) */
-	QUAD $0xffff172d6f0f4466; BYTE $0xff  // movdqa       $-233(%rip), %xmm13  /* LCPI0_4+0(%rip) */
-	QUAD $0xffff1e0d6f0f4466; BYTE $0xff  // movdqa       $-226(%rip), %xmm9  /* LCPI0_5+0(%rip) */
-	QUAD $0xffff25156f0f4466; BYTE $0xff  // movdqa       $-219(%rip), %xmm10  /* LCPI0_6+0(%rip) */
-	QUAD $0xffff2c1d6f0f4466; BYTE $0xff  // movdqa       $-212(%rip), %xmm11  /* LCPI0_7+0(%rip) */
-	QUAD $0xffff33256f0f4466; BYTE $0xff  // movdqa       $-205(%rip), %xmm12  /* LCPI0_8+0(%rip) */
+	QUAD $0xffff10056f0f44f3; BYTE $0xff  // movdqu       $-240(%rip), %xmm8  /* LCPI0_3+0(%rip) */
+	QUAD $0xffff172d6f0f44f3; BYTE $0xff  // movdqu       $-233(%rip), %xmm13  /* LCPI0_4+0(%rip) */
+	QUAD $0xffff1e0d6f0f44f3; BYTE $0xff  // movdqu       $-226(%rip), %xmm9  /* LCPI0_5+0(%rip) */
+	QUAD $0xffff25156f0f44f3; BYTE $0xff  // movdqu       $-219(%rip), %xmm10  /* LCPI0_6+0(%rip) */
+	QUAD $0xffff2c1d6f0f44f3; BYTE $0xff  // movdqu       $-212(%rip), %xmm11  /* LCPI0_7+0(%rip) */
+	QUAD $0xffff33256f0f44f3; BYTE $0xff  // movdqu       $-205(%rip), %xmm12  /* LCPI0_8+0(%rip) */
 	LONG $0xc8758948  // movq         %rsi, $-56(%rbp)
 	LONG $0xd04d894c  // movq         %r9, $-48(%rbp)
 	LONG $0x000048e9; BYTE $0x00  // jmp          LBB0_6, $72(%rip)

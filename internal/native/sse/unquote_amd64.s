@@ -32,7 +32,7 @@ _unquote:
 	WORD $0x8945; BYTE $0xc2  // movl         %r8d, %r10d
 	LONG $0x01e28341  // andl         $1, %r10d
 	LONG $0xaa058d4c; WORD $0x0008; BYTE $0x00  // leaq         $2218(%rip), %r8  /* __UnquoteTab+0(%rip) */
-	QUAD $0xffffffb2056f0f66  // movdqa       $-78(%rip), %xmm0  /* LCPI0_0+0(%rip) */
+	QUAD $0xffffffb2056f0ff3  // movdqu       $-78(%rip), %xmm0  /* LCPI0_0+0(%rip) */
 	WORD $0x8949; BYTE $0xf9  // movq         %rdi, %r9
 	WORD $0x8949; BYTE $0xf5  // movq         %rsi, %r13
 	WORD $0x8948; BYTE $0xd0  // movq         %rdx, %rax
