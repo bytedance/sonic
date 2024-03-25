@@ -32,6 +32,11 @@ import (
     `github.com/stretchr/testify/assert`
 )
 
+func TestEncodeNative(t *testing.T) {
+    var obj = float64(1.11)
+    Encode()
+}
+
 func TestEncoderMemoryCorruption(t *testing.T) {
     println("TestEncoderMemoryCorruption")
     runtime.GC()

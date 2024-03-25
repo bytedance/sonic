@@ -7,7 +7,7 @@
 
 TEXT ·__skip_array_entry(SB), NOSPLIT, $152
 	NO_LOCAL_POINTERS
-	BYTE $0x00
+	BYTE $0xcc
 	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
