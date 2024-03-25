@@ -417,7 +417,7 @@ out:
     return 0;
 }
 
-static INLINE_FOR_ARM double atof_native_1(const char *sp, ssize_t nb, char* dbuf, ssize_t cap) {
+static always_inline double atof_native_1(const char *sp, ssize_t nb, char* dbuf, ssize_t cap) {
     Decimal d;
     double val = 0;
     decimal_set(&d, sp, nb, dbuf, cap);

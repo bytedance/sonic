@@ -18,7 +18,7 @@
 
 #include "native.h"
 
-static INLINE_FOR_ARM size_t lspace_1(const char *sp, size_t nb, size_t p) {
+static always_inline size_t lspace_1(const char *sp, size_t nb, size_t p) {
     const char * ss = sp;
 
     /* seek to `p` */

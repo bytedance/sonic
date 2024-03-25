@@ -47,16 +47,6 @@
 #define as_uint64v(p) (*(uint64_t *)(p))
 #define is_infinity(v) ((as_uint64v(&v) << 1) == 0xFFE0000000000000)
 
-#ifndef INLINE_FOR_ARM
-// All functions should be inlined because the position of LR in clang frame
-// is different from go.
-#if __aarch64__
-#define INLINE_FOR_ARM always_inline
-#else
-#define INLINE_FOR_ARM
-#endif
-#endif
-
 typedef struct
 {
     void *buf;

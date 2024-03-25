@@ -70,7 +70,7 @@ static always_inline u128_output mul_u64(uint64_t x, uint64_t y) {
 /* This is Eisel Lemire ParseFloat algorithm implemented in C.
  * reference: https://nigeltao.github.io/blog/2020/eisel-lemire.html 
  */
-static INLINE_FOR_ARM bool atof_eisel_lemire64_1(uint64_t mant, int exp10, int sgn, double *val) {
+static always_inline bool atof_eisel_lemire64_1(uint64_t mant, int exp10, int sgn, double *val) {
     if (exp10 < -348 || exp10 > 347) {
         return false;
     }

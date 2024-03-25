@@ -3,7 +3,7 @@
 
 #include "scanning.h"
 
-static INLINE_FOR_ARM void vstring_1(const GoString *src, long *p, JsonState *ret, uint64_t flags) {
+static always_inline void vstring_1(const GoString *src, long *p, JsonState *ret, uint64_t flags) {
     int64_t v = -1;
     int64_t i = *p;
     ssize_t e = advance_string(src, i, &v, flags);

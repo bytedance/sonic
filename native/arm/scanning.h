@@ -24,11 +24,11 @@
 #include "atof_native.h"
 #include "atof_eisel_lemire.h"
 
-static INLINE_FOR_ARM long skip_number_1(const GoString *src, long *p);
-static INLINE_FOR_ARM void vnumber_1(const GoString *src, long *p, JsonState *ret);
-static INLINE_FOR_ARM long skip_string_1(const GoString *src, long *p, uint64_t flags);
-static INLINE_FOR_ARM long skip_positive_1(const GoString *src, long *p);
-static INLINE_FOR_ARM long skip_negative_1(const GoString *src, long *p);
+static always_inline long skip_number_1(const GoString *src, long *p);
+static always_inline void vnumber_1(const GoString *src, long *p, JsonState *ret);
+static always_inline long skip_string_1(const GoString *src, long *p, uint64_t flags);
+static always_inline long skip_positive_1(const GoString *src, long *p);
+static always_inline long skip_negative_1(const GoString *src, long *p);
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
@@ -805,7 +805,7 @@ static bool always_inline is_overflow(uint64_t man, int sgn, int exp10) {
         ((man >> 63) == 1 && ((uint64_t)sgn & man) != (1ull << 63));
 }
 
-static INLINE_FOR_ARM void vnumber_1(const GoString *src, long *p, JsonState *ret) {
+static always_inline void vnumber_1(const GoString *src, long *p, JsonState *ret) {
     int      sgn = 1;
     uint64_t man = 0; // mantissa for double (float64)
     int   man_nd = 0; // # digits of mantissa, 10 ^ 19 fits uint64_t
@@ -950,7 +950,7 @@ static always_inline long fsm_push(StateMachine *self, int vt) {
     }
 }
 
-static INLINE_FOR_ARM long fsm_exec_1(StateMachine *self, const GoString *src, long *p, uint64_t flags) {
+static always_inline long fsm_exec_1(StateMachine *self, const GoString *src, long *p, uint64_t flags) {
     int  vt;
     char ch;
     long vi = -1;
@@ -1288,7 +1288,7 @@ check_index:
 #undef check_sidx
 #undef check_vidx
 
-static INLINE_FOR_ARM long skip_string_1(const GoString *src, long *p, uint64_t flags) {
+static always_inline long skip_string_1(const GoString *src, long *p, uint64_t flags) {
     int64_t v = -1;
     ssize_t q = *p - 1; // start position
     ssize_t e = advance_string(src, *p, &v, flags);
@@ -1304,7 +1304,7 @@ static INLINE_FOR_ARM long skip_string_1(const GoString *src, long *p, uint64_t 
     return q;
 }
 
-static INLINE_FOR_ARM long skip_negative_1(const GoString *src, long *p) {
+static always_inline long skip_negative_1(const GoString *src, long *p) {
     long i = *p;
     long r = do_skip_number(src->buf + i, src->len - i);
 
@@ -1319,7 +1319,7 @@ static INLINE_FOR_ARM long skip_negative_1(const GoString *src, long *p) {
     return i - 1;
 }
 
-static INLINE_FOR_ARM long skip_positive_1(const GoString *src, long *p) {
+static always_inline long skip_positive_1(const GoString *src, long *p) {
     long i = *p - 1;
     long r = do_skip_number(src->buf + i, src->len - i);
 
@@ -1334,7 +1334,7 @@ static INLINE_FOR_ARM long skip_positive_1(const GoString *src, long *p) {
     return i;
 }
 
-static INLINE_FOR_ARM long skip_number_1(const GoString *src, long *p) {
+static always_inline long skip_number_1(const GoString *src, long *p) {
     const char* ss = src->buf;
     const char* sp = src->buf + *p;
     size_t nb = src->len - *p;
@@ -1363,7 +1363,7 @@ static INLINE_FOR_ARM long skip_number_1(const GoString *src, long *p) {
     return i;
 }
 
-static INLINE_FOR_ARM long skip_one_1(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
+static always_inline long skip_one_1(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
     fsm_init(m, FSM_VAL);
     return fsm_exec_1(m, src, p, flags);
 }
@@ -1595,7 +1595,7 @@ static always_inline long skip_string_fast(const GoString *src, long *p) {
     return -ERR_EOF;
 }
 
-static INLINE_FOR_ARM long skip_one_fast_1(const GoString *src, long *p) {
+static always_inline long skip_one_fast_1(const GoString *src, long *p) {
     char c = advance_ns(src, p);
     /* set the start address */
     long vi = *p - 1;
