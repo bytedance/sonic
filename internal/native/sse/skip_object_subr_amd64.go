@@ -13,7 +13,7 @@ import (
 func __skip_object_entry() uintptr
 
 var (
-    _subr__skip_object uintptr = rt.GetFuncPC(__skip_object_entry) + 190
+    _subr__skip_object uintptr = rt.GetFuncPC(__skip_object_entry) + 192
 )
 
 const (

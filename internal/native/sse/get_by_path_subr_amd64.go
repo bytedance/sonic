@@ -13,7 +13,7 @@ import (
 func __get_by_path_entry() uintptr
 
 var (
-    _subr__get_by_path uintptr = rt.GetFuncPC(__get_by_path_entry) + 254
+    _subr__get_by_path uintptr = rt.GetFuncPC(__get_by_path_entry) + 256
 )
 
 const (

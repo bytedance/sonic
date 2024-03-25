@@ -13,7 +13,7 @@ import (
 func __u64toa_entry() uintptr
 
 var (
-    _subr__u64toa uintptr = rt.GetFuncPC(__u64toa_entry) + 110
+    _subr__u64toa uintptr = rt.GetFuncPC(__u64toa_entry) + 96
 )
 
 const (

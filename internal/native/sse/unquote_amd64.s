@@ -7,10 +7,9 @@
 
 TEXT ·__unquote_entry(SB), NOSPLIT, $80
 	NO_LOCAL_POINTERS
-	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
-	LONG $0x24448948; BYTE $0x08  // movq         %rax, $8(%rsp)
-	BYTE $0xc3  // retq         
-	WORD $0x0000; BYTE $0x00  // .p2align 4, 0x00
+	BYTE $0x00
+	BYTE $0x00
+	  // .p2align 4, 0x00
 LCPI0_0:
 	QUAD $0x5c5c5c5c5c5c5c5c; QUAD $0x5c5c5c5c5c5c5c5c  // .space 16, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\'
 	  // .p2align 4, 0x90
@@ -657,7 +656,7 @@ _unquote:
 	MOVQ dp+16(FP), DX
 	MOVQ ep+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__unquote_entry+46(SB)  // _unquote
+	CALL ·__unquote_entry+32(SB)  // _unquote
 	MOVQ AX, ret+40(FP)
 	RET
 

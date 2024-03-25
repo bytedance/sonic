@@ -13,7 +13,7 @@ import (
 func __validate_utf8_entry() uintptr
 
 var (
-    _subr__validate_utf8 uintptr = rt.GetFuncPC(__validate_utf8_entry) + 30
+    _subr__validate_utf8 uintptr = rt.GetFuncPC(__validate_utf8_entry) + 16
 )
 
 const (

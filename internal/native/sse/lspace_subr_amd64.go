@@ -13,7 +13,7 @@ import (
 func __lspace_entry() uintptr
 
 var (
-    _subr__lspace uintptr = rt.GetFuncPC(__lspace_entry) + 30
+    _subr__lspace uintptr = rt.GetFuncPC(__lspace_entry) + 16
 )
 
 const (

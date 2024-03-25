@@ -7,10 +7,9 @@
 
 TEXT ·__vsigned_entry(SB), NOSPLIT, $8
 	NO_LOCAL_POINTERS
-	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
-	LONG $0x24448948; BYTE $0x08  // movq         %rax, $8(%rsp)
-	BYTE $0xc3  // retq         
-	WORD $0x9090; BYTE $0x90  // .p2align 4, 0x90
+	BYTE $0x00
+	BYTE $0x00
+	  // .p2align 4, 0x90
 _vsigned:
 	BYTE $0x55  // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
@@ -128,8 +127,8 @@ _vsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__vsigned_entry+30(SB), AX  // _vsigned
-	JMP AX
+	CALL ·__vsigned_entry+16(SB)  // _vsigned
+	RET
 
 _stack_grow:
 	CALL runtime·morestack_noctxt<>(SB)

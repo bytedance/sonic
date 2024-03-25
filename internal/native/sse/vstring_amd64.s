@@ -7,10 +7,9 @@
 
 TEXT ·__vstring_entry(SB), NOSPLIT, $80
 	NO_LOCAL_POINTERS
-	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
-	LONG $0x24448948; BYTE $0x08  // movq         %rax, $8(%rsp)
-	BYTE $0xc3  // retq         
-	WORD $0x0000; BYTE $0x00  // .p2align 4, 0x00
+	BYTE $0x00
+	BYTE $0x00
+	  // .p2align 4, 0x00
 LCPI0_0:
 	QUAD $0x2222222222222222; QUAD $0x2222222222222222  // .space 16, '""""""""""""""""'
 LCPI0_1:
@@ -680,8 +679,8 @@ _vstring:
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
 	MOVQ flags+24(FP), CX
-	LEAQ ·__vstring_entry+78(SB), AX  // _vstring
-	JMP AX
+	CALL ·__vstring_entry+64(SB)  // _vstring
+	RET
 
 _stack_grow:
 	CALL runtime·morestack_noctxt<>(SB)

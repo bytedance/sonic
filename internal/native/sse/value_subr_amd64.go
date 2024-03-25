@@ -13,7 +13,7 @@ import (
 func __value_entry() uintptr
 
 var (
-    _subr__value uintptr = rt.GetFuncPC(__value_entry) + 222
+    _subr__value uintptr = rt.GetFuncPC(__value_entry) + 208
 )
 
 const (

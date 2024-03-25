@@ -13,7 +13,7 @@ import (
 func __skip_one_fast_entry() uintptr
 
 var (
-    _subr__skip_one_fast uintptr = rt.GetFuncPC(__skip_one_fast_entry) + 158
+    _subr__skip_one_fast uintptr = rt.GetFuncPC(__skip_one_fast_entry) + 160
 )
 
 const (

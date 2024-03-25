@@ -7,10 +7,9 @@
 
 TEXT ·__vnumber_entry(SB), NOSPLIT, $104
 	NO_LOCAL_POINTERS
-	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
-	LONG $0x24448948; BYTE $0x08  // movq         %rax, $8(%rsp)
-	BYTE $0xc3  // retq         
-	WORD $0x0000; BYTE $0x00  // .p2align 4, 0x00
+	BYTE $0x00
+	BYTE $0x00
+	  // .p2align 4, 0x00
 LCPI0_0:
 	LONG $0x43300000  // .long 1127219200
 	LONG $0x45300000  // .long 1160773632
@@ -4394,8 +4393,8 @@ _vnumber:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	LEAQ ·__vnumber_entry+78(SB), AX  // _vnumber
-	JMP AX
+	CALL ·__vnumber_entry+64(SB)  // _vnumber
+	RET
 
 _stack_grow:
 	CALL runtime·morestack_noctxt<>(SB)

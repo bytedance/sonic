@@ -13,7 +13,7 @@ import (
 func __skip_array_entry() uintptr
 
 var (
-    _subr__skip_array uintptr = rt.GetFuncPC(__skip_array_entry) + 190
+    _subr__skip_array uintptr = rt.GetFuncPC(__skip_array_entry) + 192
 )
 
 const (

@@ -5,12 +5,11 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__lspace_entry(SB), NOSPLIT, $0
+TEXT ·__lspace_entry(SB), NOSPLIT, $8
 	NO_LOCAL_POINTERS
-	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
-	LONG $0x24448948; BYTE $0x08  // movq         %rax, $8(%rsp)
-	BYTE $0xc3  // retq         
-	WORD $0x9090; BYTE $0x90  // .p2align 4, 0x90
+	BYTE $0x00
+	BYTE $0x00
+	  // .p2align 4, 0x90
 _lspace:
 	BYTE $0x55  // pushq        %rbp
 	WORD $0x8948; BYTE $0xe5  // movq         %rsp, %rbp
@@ -60,7 +59,7 @@ _lspace:
 	MOVQ sp+0(FP), DI
 	MOVQ nb+8(FP), SI
 	MOVQ off+16(FP), DX
-	CALL ·__lspace_entry+30(SB)  // _lspace
+	CALL ·__lspace_entry+16(SB)  // _lspace
 	MOVQ AX, ret+24(FP)
 	RET
 

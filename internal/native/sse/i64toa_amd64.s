@@ -5,12 +5,11 @@
 #include "funcdata.h"
 #include "textflag.h"
 
-TEXT ·__i64toa_entry(SB), NOSPLIT, $0
+TEXT ·__i64toa_entry(SB), NOSPLIT, $8
 	NO_LOCAL_POINTERS
-	LONG $0xf9058d48; WORD $0xffff; BYTE $0xff  // leaq         $-7(%rip), %rax
-	LONG $0x24448948; BYTE $0x08  // movq         %rax, $8(%rsp)
-	BYTE $0xc3  // retq         
-	WORD $0x0000; BYTE $0x00  // .p2align 4, 0x00
+	BYTE $0x00
+	BYTE $0x00
+	  // .p2align 4, 0x00
 LCPI0_0:
 	QUAD $0x00000000d1b71759  // .quad 3518437209
 	QUAD $0x00000000d1b71759  // .quad 3518437209
@@ -681,7 +680,7 @@ _entry:
 _i64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__i64toa_entry+110(SB)  // _i64toa
+	CALL ·__i64toa_entry+96(SB)  // _i64toa
 	MOVQ AX, ret+16(FP)
 	RET
 

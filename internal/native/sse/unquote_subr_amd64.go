@@ -13,7 +13,7 @@ import (
 func __unquote_entry() uintptr
 
 var (
-    _subr__unquote uintptr = rt.GetFuncPC(__unquote_entry) + 46
+    _subr__unquote uintptr = rt.GetFuncPC(__unquote_entry) + 32
 )
 
 const (

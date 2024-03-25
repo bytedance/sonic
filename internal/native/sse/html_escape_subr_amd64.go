@@ -13,7 +13,7 @@ import (
 func __html_escape_entry() uintptr
 
 var (
-    _subr__html_escape uintptr = rt.GetFuncPC(__html_escape_entry) + 94
+    _subr__html_escape uintptr = rt.GetFuncPC(__html_escape_entry) + 80
 )
 
 const (

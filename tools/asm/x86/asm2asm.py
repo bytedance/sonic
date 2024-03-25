@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import math
 import os
 import sys
 import string
@@ -2296,10 +2297,32 @@ class Assembler:
         self._declare_functions(protos)
 
     def _declare_body(self, name :str):
-        size = self.code.stacksize(name[1:])
-        gosize = 8 if size < 8 else size - 8
-        self.out.append('TEXT ·%s(SB), NOSPLIT, $%d' % (stub_name(name), gosize))
+        subr = name[1:]
+        size = self.code.stacksize(subr)
+        addr = self.code.get(subr)
+        
+        print('function: %s' % subr)
+        # NOTICE: golang ASM will emit frame-entry instructions
+        size = 8 if size <= 8 else size - 8
+        frame_size = size + 8
+        pc_offset = 0
+        pc_offset += Instruction('subq', [Immediate(frame_size), Register('rsp')]).size
+        pc_offset += Instruction('movq', [Register('rbp'), Memory(Register('rsp'), Immediate(frame_size-8), None)]).size
+        pc_offset += Instruction('leaq', [Memory(Register('rsp'), Immediate(frame_size-8), None), Register('rbp')]).size
+        print('pc_offset: %d' % pc_offset)
+
+        # C func always starts with aligned 16 bytes address
+        align_offset = math.ceil(pc_offset / 16) * 16
+        print('align_offset: %d' % align_offset)
+        self.subr[subr] = align_offset + addr
+        
+        self.out.append('TEXT ·%s(SB), NOSPLIT, $%d' % (stub_name(name), size))
         self.out.append('\tNO_LOCAL_POINTERS')
+        
+        # NOTICE: must be pc-align to 16 manually
+        for _ in range(align_offset - pc_offset):
+            self.out.append('\tBYTE $0x00')
+        
         self._reloc()
 
         # instruction buffer
@@ -2326,11 +2349,8 @@ class Assembler:
     def _declare_function(self, name: str, proto: Prototype):
         offs = 0
         subr = name[1:]
-        addr = self.code.get(subr)
-        size = self.code.pcsp(subr, addr)   
-        # 14 for reserve go frame instructions
-        addr += 14     
-        self.subr[subr] = addr
+        size = self.code.pcsp(subr, self.code.get(subr))   
+        addr = self.subr[subr]
 
         if OUTPUT_RAW:
             return
@@ -2359,21 +2379,22 @@ class Assembler:
             op, reg = REG_MAP[arg.creg.reg]
             self.out.append('\t%s %s+%d(FP), %s' % (op, arg.name, offs - arg.size, reg))
 
-        # the function starts at zero
-        if addr == 0 and proto.retv is None:
-            self.out.append('\tJMP ·%s(SB)  // %s' % (stub_name(name), subr))
+        # # the function starts at zero
+        # if addr == 0 and proto.retv is None:
+        #     self.out.append('\tJMP ·%s(SB)  // %s' % (stub_name(name), subr))
 
-        # Go ASM completely ignores the offset of the JMP instruction,
-        # so we need to use indirect jumps instead for tail-call elimination
-        elif proto.retv is None:
-            self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (stub_name(name), addr, subr))
-            self.out.append('\tJMP AX')
+        # # Go ASM completely ignores the offset of the JMP instruction,
+        # # so we need to use indirect jumps instead for tail-call elimination
+        # elif proto.retv is None:
+        #     self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (stub_name(name), addr, subr))
+        #     self.out.append('\tJMP AX')
 
         # normal functions, call the real function, and return the result
-        else:
-            self.out.append('\tCALL ·%s+%d(SB)  // %s' % (stub_name(name), addr, subr))
+        # else:
+        self.out.append('\tCALL ·%s+%d(SB)  // %s' % (stub_name(name), addr, subr))
+        if proto.retv is not None:
             self.out.append('\t%s, %s+%d(FP)' % (' '.join(REG_MAP[proto.retv.creg.reg]), proto.retv.name, offs))
-            self.out.append('\tRET')
+        self.out.append('\tRET')
 
         # add stack growing if needed
         if size != 0:
@@ -2391,9 +2412,9 @@ class Assembler:
                 raise SyntaxError('function prototype must have a "_" prefix: ' + repr(name))
 
     def parse(self, src: List[str], proto: PrototypeMap):
-        self.code.instr(Instruction('leaq', [Memory(Register('rip'), Immediate(-7), None), Register('rax')]))
-        self.code.instr(Instruction('movq', [Register('rax'), Memory(Register('rsp'), Immediate(8), None)]))
-        self.code.instr(Instruction('retq', []))
+        # self.code.instr(Instruction('leaq', [Memory(Register('rip'), Immediate(-7), None), Register('rax')]))
+        # self.code.instr(Instruction('movq', [Register('rax'), Memory(Register('rsp'), Immediate(8), None)]))
+        # self.code.instr(Instruction('retq', []))
         self._parse(src)
         # print("DEBUG...")
         # self.code.debug(0, [

@@ -13,7 +13,7 @@ import (
 func __vstring_entry() uintptr
 
 var (
-    _subr__vstring uintptr = rt.GetFuncPC(__vstring_entry) + 78
+    _subr__vstring uintptr = rt.GetFuncPC(__vstring_entry) + 64
 )
 
 const (

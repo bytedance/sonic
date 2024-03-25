@@ -13,7 +13,7 @@ import (
 func __vsigned_entry() uintptr
 
 var (
-    _subr__vsigned uintptr = rt.GetFuncPC(__vsigned_entry) + 30
+    _subr__vsigned uintptr = rt.GetFuncPC(__vsigned_entry) + 16
 )
 
 const (
