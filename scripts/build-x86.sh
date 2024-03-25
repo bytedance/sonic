@@ -24,7 +24,7 @@ for src_file in "$SRC_DIR"/*.c; do
     asm_file="$TMP_DIR/${base_name}.s"
 
     # Compile the source file into an assembly file
-    $CC -mstack-alignment=0 -msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul -Wno-error -Wno-nullability-completeness -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -S -o "$asm_file" "$src_file" 
+    $CC -msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul -mno-red-zone -target x86_64-apple-macos11 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o "$asm_file" "$src_file" 
 
     # Execute asm2asm tool
     python3 ${TOOL_DIR}/asm2asm.py ${OUT_DIR}/${base_name}_amd64.go $asm_file

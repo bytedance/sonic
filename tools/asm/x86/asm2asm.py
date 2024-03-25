@@ -2297,7 +2297,7 @@ class Assembler:
 
     def _declare_body(self, name :str):
         size = self.code.stacksize(name[1:])
-        gosize = 0 if size < 8 else size - 8
+        gosize = 8 if size < 8 else size - 8
         self.out.append('TEXT ·%s(SB), NOSPLIT, $%d' % (stub_name(name), gosize))
         self.out.append('\tNO_LOCAL_POINTERS')
         self._reloc()
