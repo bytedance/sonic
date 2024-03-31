@@ -2309,6 +2309,16 @@ class Assembler:
         pc_offset += Instruction('subq', [Immediate(frame_size), Register('rsp')]).size
         pc_offset += Instruction('movq', [Register('rbp'), Memory(Register('rsp'), Immediate(frame_size-8), None)]).size
         pc_offset += Instruction('leaq', [Memory(Register('rsp'), Immediate(frame_size-8), None), Register('rbp')]).size
+        
+        entry_instrs = [
+            Instruction('leaq', [Memory(Register('rip'), Immediate(-7-pc_offset), None), Register('rax')]),
+            Instruction('movq', [Register('rax'), Memory(Register('rsp'), Immediate(8), None)]),
+            Instruction('retq', []),
+        ]
+        for instr in entry_instrs:
+            self.out.append('\t' + instr.encoded)
+            pc_offset += instr.size
+        
         print('pc_offset: %d' % pc_offset)
 
         # C func always starts with aligned 16 bytes address
@@ -2412,9 +2422,6 @@ class Assembler:
                 raise SyntaxError('function prototype must have a "_" prefix: ' + repr(name))
 
     def parse(self, src: List[str], proto: PrototypeMap):
-        # self.code.instr(Instruction('leaq', [Memory(Register('rip'), Immediate(-7), None), Register('rax')]))
-        # self.code.instr(Instruction('movq', [Register('rax'), Memory(Register('rsp'), Immediate(8), None)]))
-        # self.code.instr(Instruction('retq', []))
         self._parse(src)
         # print("DEBUG...")
         # self.code.debug(0, [
@@ -2629,7 +2636,7 @@ def main():
             print('var (', file = fp)
             mlen = max(len(s) for s in asm.subr)
             for name, entry in asm.subr.items():
-                print('    _subr_%s uintptr = rt.GetFuncPC(_%s) + %d' % (name.ljust(mlen, ' '), stub_name(name), entry), file = fp)
+                print('    _subr_%s uintptr = _%s() + %d' % (name.ljust(mlen, ' '), stub_name(name), entry), file = fp)
             print(')', file = fp)
 
             # dump max stack depth for exported functions
