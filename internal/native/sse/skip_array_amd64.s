@@ -7,7 +7,10 @@
 
 TEXT ·__skip_array_entry(SB), NOSPLIT, $152
 	NO_LOCAL_POINTERS
-	BYTE $0xcc
+	LONG $0xe90d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-23(%rip), %r9
+	QUAD $0x000000a8248c894c  // movq         %r9, $168(%rsp)
+	BYTE $0xc3  // retq         
+	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
@@ -3044,7 +3047,7 @@ _skip_array:
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
 	MOVQ flags+24(FP), CX
-	CALL ·__skip_array_entry+192(SB)  // _skip_array
+	CALL ·__skip_array_entry+208(SB)  // _skip_array
 	MOVQ AX, ret+32(FP)
 	RET
 

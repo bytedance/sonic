@@ -7,6 +7,12 @@
 
 TEXT ·__u64toa_entry(SB), NOSPLIT, $8
 	NO_LOCAL_POINTERS
+	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0x244c894c; BYTE $0x18  // movq         %r9, $24(%rsp)
+	BYTE $0xc3  // retq         
+	BYTE $0x00
+	BYTE $0x00
+	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x00
@@ -405,7 +411,7 @@ _entry:
 _u64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__u64toa_entry+96(SB)  // _u64toa
+	CALL ·__u64toa_entry+112(SB)  // _u64toa
 	MOVQ AX, ret+16(FP)
 	RET
 

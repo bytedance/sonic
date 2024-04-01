@@ -7,6 +7,12 @@
 
 TEXT ·__html_escape_entry(SB), NOSPLIT, $64
 	NO_LOCAL_POINTERS
+	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0x244c894c; BYTE $0x50  // movq         %r9, $80(%rsp)
+	BYTE $0xc3  // retq         
+	BYTE $0x00
+	BYTE $0x00
+	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x00
@@ -640,7 +646,7 @@ _html_escape:
 	MOVQ nb+8(FP), SI
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
-	CALL ·__html_escape_entry+80(SB)  // _html_escape
+	CALL ·__html_escape_entry+96(SB)  // _html_escape
 	MOVQ AX, ret+32(FP)
 	RET
 

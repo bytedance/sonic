@@ -7,6 +7,12 @@
 
 TEXT ·__validate_utf8_fast_entry(SB), NOSPLIT, $16
 	NO_LOCAL_POINTERS
+	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0x244c894c; BYTE $0x20  // movq         %r9, $32(%rsp)
+	BYTE $0xc3  // retq         
+	BYTE $0x00
+	BYTE $0x00
+	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x90
@@ -169,7 +175,7 @@ _entry:
 
 _validate_utf8_fast:
 	MOVQ s+0(FP), DI
-	CALL ·__validate_utf8_fast_entry+16(SB)  // _validate_utf8_fast
+	CALL ·__validate_utf8_fast_entry+32(SB)  // _validate_utf8_fast
 	MOVQ AX, ret+8(FP)
 	RET
 

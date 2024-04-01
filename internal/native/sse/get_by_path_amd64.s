@@ -7,6 +7,9 @@
 
 TEXT ·__get_by_path_entry(SB), NOSPLIT, $208
 	NO_LOCAL_POINTERS
+	LONG $0xe90d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-23(%rip), %r9
+	QUAD $0x000000e0248c894c  // movq         %r9, $224(%rsp)
+	BYTE $0xc3  // retq         
 	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
@@ -6564,7 +6567,7 @@ _get_by_path:
 	MOVQ p+8(FP), SI
 	MOVQ path+16(FP), DX
 	MOVQ m+24(FP), CX
-	CALL ·__get_by_path_entry+256(SB)  // _get_by_path
+	CALL ·__get_by_path_entry+272(SB)  // _get_by_path
 	MOVQ AX, ret+32(FP)
 	RET
 

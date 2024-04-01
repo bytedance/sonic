@@ -7,6 +7,9 @@
 
 TEXT ·__validate_one_entry(SB), NOSPLIT, $152
 	NO_LOCAL_POINTERS
+	LONG $0xe90d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-23(%rip), %r9
+	QUAD $0x000000a8248c894c  // movq         %r9, $168(%rsp)
+	BYTE $0xc3  // retq         
 	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
@@ -3040,7 +3043,7 @@ _validate_one:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__validate_one_entry+176(SB)  // _validate_one
+	CALL ·__validate_one_entry+192(SB)  // _validate_one
 	MOVQ AX, ret+24(FP)
 	RET
 

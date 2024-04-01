@@ -2302,17 +2302,21 @@ class Assembler:
         addr = self.code.get(subr)
         
         print('function: %s' % subr)
-        # NOTICE: golang ASM will emit frame-entry instructions
         size = 8 if size <= 8 else size - 8
+        self.out.append('TEXT ·%s(SB), NOSPLIT, $%d' % (stub_name(name), size))
+        self.out.append('\tNO_LOCAL_POINTERS')
+        
+        # NOTICE: golang ASM will emit frame-entry instructions
         frame_size = size + 8
         pc_offset = 0
         pc_offset += Instruction('subq', [Immediate(frame_size), Register('rsp')]).size
         pc_offset += Instruction('movq', [Register('rbp'), Memory(Register('rsp'), Immediate(frame_size-8), None)]).size
         pc_offset += Instruction('leaq', [Memory(Register('rsp'), Immediate(frame_size-8), None), Register('rbp')]).size
         
+        # NOTICE: for get entry PC
         entry_instrs = [
-            Instruction('leaq', [Memory(Register('rip'), Immediate(-7-pc_offset), None), Register('rax')]),
-            Instruction('movq', [Register('rax'), Memory(Register('rsp'), Immediate(8), None)]),
+            Instruction('leaq', [Memory(Register('rip'), Immediate(-pc_offset), None), Register('r9')]),
+            Instruction('movq', [Register('r9'), Memory(Register('rsp'), Immediate(frame_size+8), None)]),
             Instruction('retq', []),
         ]
         for instr in entry_instrs:
@@ -2325,9 +2329,6 @@ class Assembler:
         align_offset = math.ceil(pc_offset / 16) * 16
         print('align_offset: %d' % align_offset)
         self.subr[subr] = align_offset + addr
-        
-        self.out.append('TEXT ·%s(SB), NOSPLIT, $%d' % (stub_name(name), size))
-        self.out.append('\tNO_LOCAL_POINTERS')
         
         # NOTICE: must be pc-align to 16 manually
         for _ in range(align_offset - pc_offset):
@@ -2622,7 +2623,6 @@ def main():
 
         else:
             print(file = fp)
-            print('import (\n`github.com/bytedance/sonic/internal/rt`\n)\n', file = fp)
             print('//go:nosplit', file = fp)
             print('//go:noescape', file = fp)
             print('//goland:noinspection ALL', file = fp)

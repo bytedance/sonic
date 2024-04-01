@@ -3,17 +3,13 @@
 
 package sse
 
-import (
-`github.com/bytedance/sonic/internal/rt`
-)
-
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
 func __skip_array_entry() uintptr
 
 var (
-    _subr__skip_array uintptr = rt.GetFuncPC(__skip_array_entry) + 192
+    _subr__skip_array uintptr = __skip_array_entry() + 208
 )
 
 const (

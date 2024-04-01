@@ -7,6 +7,12 @@
 
 TEXT ·__value_entry(SB), NOSPLIT, $104
 	NO_LOCAL_POINTERS
+	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0x244c894c; BYTE $0x78  // movq         %r9, $120(%rsp)
+	BYTE $0xc3  // retq         
+	BYTE $0x00
+	BYTE $0x00
+	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x00
@@ -5672,7 +5678,7 @@ _value:
 	MOVQ p+16(FP), DX
 	MOVQ v+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__value_entry+208(SB)  // _value
+	CALL ·__value_entry+224(SB)  // _value
 	MOVQ AX, ret+40(FP)
 	RET
 

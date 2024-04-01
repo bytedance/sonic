@@ -3,17 +3,13 @@
 
 package sse
 
-import (
-`github.com/bytedance/sonic/internal/rt`
-)
-
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
 func __quote_entry() uintptr
 
 var (
-    _subr__quote uintptr = rt.GetFuncPC(__quote_entry) + 64
+    _subr__quote uintptr = __quote_entry() + 80
 )
 
 const (

@@ -7,6 +7,12 @@
 
 TEXT ·__vnumber_entry(SB), NOSPLIT, $104
 	NO_LOCAL_POINTERS
+	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0x244c894c; BYTE $0x78  // movq         %r9, $120(%rsp)
+	BYTE $0xc3  // retq         
+	BYTE $0x00
+	BYTE $0x00
+	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x00
@@ -4393,7 +4399,7 @@ _vnumber:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	CALL ·__vnumber_entry+64(SB)  // _vnumber
+	CALL ·__vnumber_entry+80(SB)  // _vnumber
 	RET
 
 _stack_grow:

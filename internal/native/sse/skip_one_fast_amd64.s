@@ -7,6 +7,9 @@
 
 TEXT ·__skip_one_fast_entry(SB), NOSPLIT, $128
 	NO_LOCAL_POINTERS
+	LONG $0xe90d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-23(%rip), %r9
+	QUAD $0x00000090248c894c  // movq         %r9, $144(%rsp)
+	BYTE $0xc3  // retq         
 	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
@@ -1060,7 +1063,7 @@ _entry:
 _skip_one_fast:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
-	CALL ·__skip_one_fast_entry+160(SB)  // _skip_one_fast
+	CALL ·__skip_one_fast_entry+176(SB)  // _skip_one_fast
 	MOVQ AX, ret+16(FP)
 	RET
 

@@ -7,6 +7,12 @@
 
 TEXT ·__vunsigned_entry(SB), NOSPLIT, $8
 	NO_LOCAL_POINTERS
+	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0x244c894c; BYTE $0x18  // movq         %r9, $24(%rsp)
+	BYTE $0xc3  // retq         
+	BYTE $0x00
+	BYTE $0x00
+	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x90
@@ -123,7 +129,7 @@ _vunsigned:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
-	CALL ·__vunsigned_entry+16(SB)  // _vunsigned
+	CALL ·__vunsigned_entry+32(SB)  // _vunsigned
 	RET
 
 _stack_grow:

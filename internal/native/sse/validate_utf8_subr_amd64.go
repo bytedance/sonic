@@ -3,17 +3,13 @@
 
 package sse
 
-import (
-`github.com/bytedance/sonic/internal/rt`
-)
-
 //go:nosplit
 //go:noescape
 //goland:noinspection ALL
 func __validate_utf8_entry() uintptr
 
 var (
-    _subr__validate_utf8 uintptr = rt.GetFuncPC(__validate_utf8_entry) + 16
+    _subr__validate_utf8 uintptr = __validate_utf8_entry() + 32
 )
 
 const (
