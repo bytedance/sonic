@@ -411,7 +411,10 @@ _entry:
 _skip_number:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
-	CALL ·__skip_number_entry+144(SB)  // _skip_number
+	MOVQ ·_subr__skip_number(SB), R9
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	MOVQ AX, ret+16(FP)
 	RET
 

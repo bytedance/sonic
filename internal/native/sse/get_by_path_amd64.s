@@ -6561,7 +6561,10 @@ _get_by_path:
 	MOVQ p+8(FP), SI
 	MOVQ path+16(FP), DX
 	MOVQ m+24(FP), CX
-	CALL ·__get_by_path_entry+272(SB)  // _get_by_path
+	MOVQ ·_subr__get_by_path(SB), R9
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	MOVQ AX, ret+32(FP)
 	RET
 

@@ -209,7 +209,10 @@ _validate_utf8:
 	MOVQ s+0(FP), DI
 	MOVQ p+8(FP), SI
 	MOVQ m+16(FP), DX
-	CALL ·__validate_utf8_entry+32(SB)  // _validate_utf8
+	MOVQ ·_subr__validate_utf8(SB), R9
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	MOVQ AX, ret+24(FP)
 	RET
 

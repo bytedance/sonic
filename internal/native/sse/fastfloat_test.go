@@ -33,6 +33,52 @@ import (
     `github.com/stretchr/testify/assert`
 )
 
+func TestFastInt_IntToString2(t *testing.T) {
+    var buf [32]byte
+    assert.Equal(t, "0"                    , string(buf[:i64toa(&buf[0], 0)]))
+    assert.Equal(t, "1"                    , string(buf[:i64toa(&buf[0], 1)]))
+    assert.Equal(t, "12"                   , string(buf[:i64toa(&buf[0], 12)]))
+    assert.Equal(t, "123"                  , string(buf[:i64toa(&buf[0], 123)]))
+    assert.Equal(t, "1234"                 , string(buf[:i64toa(&buf[0], 1234)]))
+    assert.Equal(t, "12345"                , string(buf[:i64toa(&buf[0], 12345)]))
+    assert.Equal(t, "123456"               , string(buf[:i64toa(&buf[0], 123456)]))
+    assert.Equal(t, "1234567"              , string(buf[:i64toa(&buf[0], 1234567)]))
+    assert.Equal(t, "12345678"             , string(buf[:i64toa(&buf[0], 12345678)]))
+    assert.Equal(t, "123456789"            , string(buf[:i64toa(&buf[0], 123456789)]))
+    assert.Equal(t, "1234567890"           , string(buf[:i64toa(&buf[0], 1234567890)]))
+    assert.Equal(t, "12345678901"          , string(buf[:i64toa(&buf[0], 12345678901)]))
+    assert.Equal(t, "123456789012"         , string(buf[:i64toa(&buf[0], 123456789012)]))
+    assert.Equal(t, "1234567890123"        , string(buf[:i64toa(&buf[0], 1234567890123)]))
+    assert.Equal(t, "12345678901234"       , string(buf[:i64toa(&buf[0], 12345678901234)]))
+    assert.Equal(t, "123456789012345"      , string(buf[:i64toa(&buf[0], 123456789012345)]))
+    assert.Equal(t, "1234567890123456"     , string(buf[:i64toa(&buf[0], 1234567890123456)]))
+    assert.Equal(t, "12345678901234567"    , string(buf[:i64toa(&buf[0], 12345678901234567)]))
+    assert.Equal(t, "123456789012345678"   , string(buf[:i64toa(&buf[0], 123456789012345678)]))
+    assert.Equal(t, "1234567890123456789"  , string(buf[:i64toa(&buf[0], 1234567890123456789)]))
+    assert.Equal(t, "9223372036854775807"  , string(buf[:i64toa(&buf[0], 9223372036854775807)]))
+    assert.Equal(t, "-1"                   , string(buf[:i64toa(&buf[0], -1)]))
+    assert.Equal(t, "-12"                  , string(buf[:i64toa(&buf[0], -12)]))
+    assert.Equal(t, "-123"                 , string(buf[:i64toa(&buf[0], -123)]))
+    assert.Equal(t, "-1234"                , string(buf[:i64toa(&buf[0], -1234)]))
+    assert.Equal(t, "-12345"               , string(buf[:i64toa(&buf[0], -12345)]))
+    assert.Equal(t, "-123456"              , string(buf[:i64toa(&buf[0], -123456)]))
+    assert.Equal(t, "-1234567"             , string(buf[:i64toa(&buf[0], -1234567)]))
+    assert.Equal(t, "-12345678"            , string(buf[:i64toa(&buf[0], -12345678)]))
+    assert.Equal(t, "-123456789"           , string(buf[:i64toa(&buf[0], -123456789)]))
+    assert.Equal(t, "-1234567890"          , string(buf[:i64toa(&buf[0], -1234567890)]))
+    assert.Equal(t, "-12345678901"         , string(buf[:i64toa(&buf[0], -12345678901)]))
+    assert.Equal(t, "-123456789012"        , string(buf[:i64toa(&buf[0], -123456789012)]))
+    assert.Equal(t, "-1234567890123"       , string(buf[:i64toa(&buf[0], -1234567890123)]))
+    assert.Equal(t, "-12345678901234"      , string(buf[:i64toa(&buf[0], -12345678901234)]))
+    assert.Equal(t, "-123456789012345"     , string(buf[:i64toa(&buf[0], -123456789012345)]))
+    assert.Equal(t, "-1234567890123456"    , string(buf[:i64toa(&buf[0], -1234567890123456)]))
+    assert.Equal(t, "-12345678901234567"   , string(buf[:i64toa(&buf[0], -12345678901234567)]))
+    assert.Equal(t, "-123456789012345678"  , string(buf[:i64toa(&buf[0], -123456789012345678)]))
+    assert.Equal(t, "-1234567890123456789" , string(buf[:i64toa(&buf[0], -1234567890123456789)]))
+    assert.Equal(t, "-9223372036854775808" , string(buf[:i64toa(&buf[0], -9223372036854775808)]))
+}
+
+
 func TestFastFloat_Encode(t *testing.T) {
     var buf [64]byte
     assert.Equal(t, "0"                         , string(buf[:f64toa(&buf[0], 0)]))

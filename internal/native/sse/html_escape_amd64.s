@@ -643,7 +643,10 @@ _html_escape:
 	MOVQ nb+8(FP), SI
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
-	CALL ·__html_escape_entry+96(SB)  // _html_escape
+	MOVQ ·_subr__html_escape(SB), R9
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	MOVQ AX, ret+32(FP)
 	RET
 

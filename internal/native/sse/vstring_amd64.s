@@ -682,7 +682,10 @@ _vstring:
 	MOVQ p+8(FP), SI
 	MOVQ v+16(FP), DX
 	MOVQ flags+24(FP), CX
-	CALL ·__vstring_entry+80(SB)  // _vstring
+	MOVQ ·_subr__vstring(SB), R9
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	RET
 
 _stack_grow:

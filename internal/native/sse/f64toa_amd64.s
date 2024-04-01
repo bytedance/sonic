@@ -1163,7 +1163,7 @@ _Digits:
 	QUAD $0x3139303939383838; QUAD $0x3539343933393239  // .ascii 16, '8889909192939495'
 	QUAD $0x3939383937393639  // .ascii 8, '96979899'
 	QUAD $0x0000000000000000  // .p2align 4, 0x00
-_LB_0d75ee1d: // _pow10_ceil_sig.g
+_LB_a0eaeb3c: // _pow10_ceil_sig.g
 	QUAD $0xff77b1fcbebcdc4f  // .quad -38366372719436721
 	QUAD $0x25e8e89c13bb0f7b  // .quad 2731688931043774331
 	QUAD $0x9faacf3df73609b1  // .quad -6941508010590729807
@@ -2411,7 +2411,10 @@ _entry:
 _f64toa:
 	MOVQ out+0(FP), DI
 	MOVSD val+8(FP), X0
-	CALL ·__f64toa_entry+48(SB)  // _f64toa
+	MOVQ ·_subr__f64toa(SB), R9
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	MOVQ AX, ret+16(FP)
 	RET
 

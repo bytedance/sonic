@@ -1113,7 +1113,10 @@ _quote:
 	MOVQ dp+16(FP), DX
 	MOVQ dn+24(FP), CX
 	MOVQ flags+32(FP), R8
-	CALL ·__quote_entry+80(SB)  // _quote
+	MOVQ ·_subr__quote(SB), R9
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	MOVQ AX, ret+40(FP)
 	RET
 

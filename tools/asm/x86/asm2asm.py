@@ -2391,19 +2391,15 @@ class Assembler:
             op, reg = REG_MAP[arg.creg.reg]
             self.out.append('\t%s %s+%d(FP), %s' % (op, arg.name, offs - arg.size, reg))
 
-        # # the function starts at zero
-        # if addr == 0 and proto.retv is None:
-        #     self.out.append('\tJMP ·%s(SB)  // %s' % (stub_name(name), subr))
-
-        # # Go ASM completely ignores the offset of the JMP instruction,
-        # # so we need to use indirect jumps instead for tail-call elimination
-        # elif proto.retv is None:
-        #     self.out.append('\tLEAQ ·%s+%d(SB), AX  // %s' % (stub_name(name), addr, subr))
-        #     self.out.append('\tJMP AX')
-
         # normal functions, call the real function, and return the result
-        # else:
-        self.out.append('\tCALL ·%s+%d(SB)  // %s' % (stub_name(name), addr, subr))
+        # self.out.append('\tCALL ·%s+%d(SB)  // %s' % (stub_name(name), addr, subr))
+        
+        # Notice: since Go1.21 doesn't allow use label+offset to calll, must use _subr_%s to jmpq
+        self.out.append('\tMOVQ ·_subr_%s(SB), R9' % subr)
+        self.out.append('\t' + Instruction('leaq', [Memory(Register('rip'), Immediate(5), None), Register('r10')]).encoded)
+        self.out.append('\t' + Instruction('pushq', [Register('r10')]).encoded)
+        self.out.append('\t' + Instruction('jmpq', [Register('r9')]).encoded)
+        
         if proto.retv is not None:
             self.out.append('\t%s, %s+%d(FP)' % (' '.join(REG_MAP[proto.retv.creg.reg]), proto.retv.name, offs))
         self.out.append('\tRET')

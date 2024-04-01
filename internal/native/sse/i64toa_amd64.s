@@ -683,7 +683,11 @@ _entry:
 _i64toa:
 	MOVQ out+0(FP), DI
 	MOVQ val+8(FP), SI
-	CALL ·__i64toa_entry+112(SB)  // _i64toa
+	MOVQ ·_subr__i64toa(SB), R9
+	// BYTE $0xcc
+	LONG $0x05158d4c; WORD $0x0000; BYTE $0x00  // leaq         $5(%rip), %r10
+	WORD $0x5241  // pushq        %r10
+	JMP R9
 	MOVQ AX, ret+16(FP)
 	RET
 
