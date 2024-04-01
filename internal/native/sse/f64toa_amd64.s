@@ -7,13 +7,10 @@
 
 TEXT ·__f64toa_entry(SB), NOSPLIT, $48
 	NO_LOCAL_POINTERS
-	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0xeb0d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-21(%rip), %r9
 	LONG $0x244c894c; BYTE $0x40  // movq         %r9, $64(%rsp)
+	LONG $0x38c48348  // addq         $56, %rsp
 	BYTE $0xc3  // retq         
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x00
 LCPI0_0:
@@ -1166,7 +1163,7 @@ _Digits:
 	QUAD $0x3139303939383838; QUAD $0x3539343933393239  // .ascii 16, '8889909192939495'
 	QUAD $0x3939383937393639  // .ascii 8, '96979899'
 	QUAD $0x0000000000000000  // .p2align 4, 0x00
-_LB_d013d28b: // _pow10_ceil_sig.g
+_LB_0d75ee1d: // _pow10_ceil_sig.g
 	QUAD $0xff77b1fcbebcdc4f  // .quad -38366372719436721
 	QUAD $0x25e8e89c13bb0f7b  // .quad 2731688931043774331
 	QUAD $0x9faacf3df73609b1  // .quad -6941508010590729807

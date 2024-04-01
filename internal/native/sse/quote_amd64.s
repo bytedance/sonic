@@ -7,13 +7,10 @@
 
 TEXT ·__quote_entry(SB), NOSPLIT, $56
 	NO_LOCAL_POINTERS
-	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0xeb0d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-21(%rip), %r9
 	LONG $0x244c894c; BYTE $0x48  // movq         %r9, $72(%rsp)
+	LONG $0x40c48348  // addq         $64, %rsp
 	BYTE $0xc3  // retq         
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x00
 LCPI0_0:

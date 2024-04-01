@@ -34,7 +34,7 @@ import (
 
 func TestEncodeNative(t *testing.T) {
     var obj = float64(1.11)
-    Encode()
+    Encode(obj, 0)
 }
 
 func TestEncoderMemoryCorruption(t *testing.T) {

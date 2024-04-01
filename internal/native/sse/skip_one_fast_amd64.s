@@ -7,16 +7,10 @@
 
 TEXT ·__skip_one_fast_entry(SB), NOSPLIT, $128
 	NO_LOCAL_POINTERS
-	LONG $0xe90d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-23(%rip), %r9
+	LONG $0xe20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-30(%rip), %r9
 	QUAD $0x00000090248c894c  // movq         %r9, $144(%rsp)
+	LONG $0x88c48148; WORD $0x0000; BYTE $0x00  // addq         $136, %rsp
 	BYTE $0xc3  // retq         
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
 	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x00

@@ -7,13 +7,10 @@
 
 TEXT ·__vunsigned_entry(SB), NOSPLIT, $8
 	NO_LOCAL_POINTERS
-	LONG $0xf20d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-14(%rip), %r9
+	LONG $0xeb0d8d4c; WORD $0xffff; BYTE $0xff  // leaq         $-21(%rip), %r9
 	LONG $0x244c894c; BYTE $0x18  // movq         %r9, $24(%rsp)
+	LONG $0x10c48348  // addq         $16, %rsp
 	BYTE $0xc3  // retq         
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
-	BYTE $0x00
 	BYTE $0x00
 	  // .p2align 4, 0x90
 _vunsigned:

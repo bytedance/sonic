@@ -2315,8 +2315,9 @@ class Assembler:
         
         # NOTICE: for get entry PC
         entry_instrs = [
-            Instruction('leaq', [Memory(Register('rip'), Immediate(-pc_offset), None), Register('r9')]),
+            Instruction('leaq', [Memory(Register('rip'), Immediate(-7-pc_offset), None), Register('r9')]),
             Instruction('movq', [Register('r9'), Memory(Register('rsp'), Immediate(frame_size+8), None)]),
+            Instruction('addq', [Immediate(frame_size), Register('rsp')]),
             Instruction('retq', []),
         ]
         for instr in entry_instrs:
