@@ -27,6 +27,6 @@ for src_file in "$SRC_DIR"/*.c; do
     $CC -msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul -mno-red-zone -target x86_64-apple-macos11 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o "$asm_file" "$src_file" 
 
     # Execute asm2asm tool
-    python3 ${TOOL_DIR}/asm2asm.py ${OUT_DIR}/${base_name}_amd64.go $asm_file
+    python3 ${TOOL_DIR}/asm2asm.py -r ${OUT_DIR}/${base_name}.go $asm_file
 
 done
