@@ -21,10 +21,10 @@
 package avx
 
 import (
-	"unsafe"
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 var F_validate_utf8 func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) (ret int)

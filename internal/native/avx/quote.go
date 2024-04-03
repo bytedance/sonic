@@ -21,9 +21,9 @@
 package avx
 
 import (
-	"unsafe"
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 var F_quote func(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn unsafe.Pointer, flags uint64) (ret int)
 

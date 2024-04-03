@@ -21,9 +21,9 @@
 package avx
 
 import (
-	"unsafe"
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 var F_validate_utf8_fast func(s unsafe.Pointer)  (ret int)

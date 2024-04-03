@@ -17,10 +17,10 @@
 package avx
 
 import (
-	"unsafe"
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 var F_vstring func(s unsafe.Pointer, p unsafe.Pointer, v unsafe.Pointer, flags uint64)
