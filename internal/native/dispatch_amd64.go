@@ -232,6 +232,7 @@ func useAVX() {
 
 func useAVX2() {
     avx2.Use()
+    sse.Use()
     S_f64toa      = avx2.S_f64toa
     __F64toa      = avx2.F_f64toa
     S_f32toa      = avx2.S_f32toa
@@ -251,12 +252,12 @@ func useAVX2() {
     S_vnumber     = avx2.S_vnumber
     S_vsigned     = avx2.S_vsigned
     S_vunsigned   = avx2.S_vunsigned
-    S_skip_one    = avx2.S_skip_one
-    __SkipOne     = avx2.F_skip_one
-    __SkipOneFast = avx2.F_skip_one_fast
-    S_skip_array  = avx2.S_skip_array
-    S_skip_object = avx2.S_skip_object
-    S_skip_number = avx2.S_skip_number
+    S_skip_one    = sse.S_skip_one
+    __SkipOne     = sse.F_skip_one
+    __SkipOneFast = sse.F_skip_one_fast
+    S_skip_array  = sse.S_skip_array
+    S_skip_object = sse.S_skip_object
+    S_skip_number = sse.S_skip_number
     S_get_by_path = avx2.S_get_by_path
     __GetByPath   = avx2.F_get_by_path
     __HTMLEscape  = avx2.F_html_escape

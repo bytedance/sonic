@@ -17,18 +17,19 @@
 package decoder
 
 import (
-    `encoding/base64`
-    `encoding/json`
-    `reflect`
-    `testing`
-    `unsafe`
+	"encoding/base64"
+	"encoding/json"
+	"reflect"
+	"runtime"
+	"testing"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
@@ -42,6 +43,11 @@ func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
     pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
     if len(s) != pos {
         panic(pos)
+    }
+    pc, file, line, ok := runtime.Caller(0)
+    if !ok {
+        println(pc, file, line)
+        panic("runtime.Caller failed")
     }
     require.NoError(t, err)
     // assert.Equal(t, len(s), pos)
