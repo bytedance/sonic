@@ -1,11 +1,9 @@
 package link
 
-
 import (
 	_ "embed"
 )
 
-//go:embed librs_wrapper.so
+//go:embed libsonic_rs_aarch64-unknown-linux-gnu.so
 var sonic_rs_blob []byte
-
 

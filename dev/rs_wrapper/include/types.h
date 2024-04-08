@@ -72,3 +72,15 @@ typedef struct {
     uint64_t error_msg_cap;
 } Document;
 
+typedef struct {
+    char* json; /* Non NULL terminated */
+    uint64_t len;
+    uint64_t config;
+    Document dom;
+} ParseArgs;
+
+typedef struct {
+    Document* dom; /* Non NULL terminated */
+    char* error_msg;
+    uint64_t msg_cap;
+} FreeArgs;

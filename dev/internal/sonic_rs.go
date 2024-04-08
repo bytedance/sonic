@@ -1,10 +1,5 @@
 package internal
 
-//#cgo linux,arm64 LDFLAGS:  -L ../rs_wrapper/lib/linux -lsonic_rs_aarch64-unknown-linux-gnu
-//#cgo linux,amd64 LDFLAGS:  -L ../rs_wrapper/lib/linux -lsonic_rs_x86_64-unknown-linux-gnu
-//#cgo darwin,arm64 LDFLAGS: -L ../rs_wrapper/lib/darwin -lsonic_rs_aarch64-apple-darwin
-//#cgo darwin,amd64 LDFLAGS: -L ../rs_wrapper/lib/darwin -lsonic_rs_x86_64-apple-darwin
-//
 //#include "../rs_wrapper/include/sonic_rs.h"
 import "C"
 import (
@@ -14,23 +9,52 @@ import (
 	"runtime"
 	"unsafe"
 
+	"github.com/bytedance/sonic/dev/internal/ccall"
+	"github.com/bytedance/sonic/dev/internal/link"
 	"github.com/bytedance/sonic/dev/internal/rt"
 	_ "github.com/davecgh/go-spew/spew"
 )
 
-func Cgo_func(arg uintptr) uintptr {
-	return uintptr(C.func_1args(C.size_t(arg)))
+
+type parseArgs struct {
+	json *C.char
+	len C.uint64_t
+	config C.uint64_t
+	dom C.Document
 }
 
-var parse_func func(data string, opt uint64) (Dom, error)
-var delete_func func(*Dom)
+type freeArgs struct {
+	dom *C.Document
+	msg *C.char
+	cap C.uint64_t
+}
 
-var cgo_parse unsafe.Pointer
-var cgo_delet unsafe.Pointer
+//go:noinline
+func sonic_rs_ffi_parse(p0 *C.char, p1 C.size_t, p2 C.uint64_t) (r1 C.Document) {
+	args := parseArgs {
+		json: p0,
+		len: C.uint64_t(p1),
+		config: p2,
+	}
+	ccall.Cgo_runtime_cgocall(link.Sonic_rs_parse, uintptr(unsafe.Pointer(&args)))
+	if ccall.Cgo_always_false {
+		ccall.Cgo_use(args)
+	}
+	return args.dom
+}
 
-func init() {
-	parse_func = Parse
-	delete_func = Delete
+//go:noinline
+func sonic_rs_ffi_free(p0 unsafe.Pointer, p1 *C.char, p2 C.uint64_t) {
+	args := freeArgs {
+		dom: (*C.Document)(p0),
+		msg: p1,
+		cap: p2,
+	}
+	ccall.Cgo_runtime_cgocall(link.Sonic_rs_free, uintptr(unsafe.Pointer(&args)))
+	if ccall.Cgo_always_false {
+		ccall.Cgo_use(args)
+	}
+	return
 }
 
 type Context struct {
@@ -41,7 +65,7 @@ type Context struct {
 }
 
 func NewContext(json string, opts uint64) (Context, error) {
-	dom, err := parse_func(json, opts)
+	dom, err := Parse(json, opts)
 	if err != nil {
 		return Context{}, err
 	}
@@ -88,7 +112,7 @@ func (dom *Dom) StrStart() uintptr {
 }
 
 func (dom *Dom) Delete() {
-	delete_func(dom)
+	sonic_rs_ffi_free(dom.cdom.dom, dom.cdom.str_buf, dom.cdom.error_msg_cap)
 }
 
 type Array struct {
@@ -110,12 +134,12 @@ func (arr Array) Len() int {
 }
 
 func Delete(dom *Dom) {
-	C.sonic_rs_ffi_free(dom.cdom.dom, dom.cdom.str_buf, dom.cdom.error_msg_cap)
+	sonic_rs_ffi_free(dom.cdom.dom, dom.cdom.str_buf, dom.cdom.error_msg_cap)
 }
 
 func Parse(data string, opt uint64) (Dom, error) {
 	var s = (*reflect.StringHeader)((unsafe.Pointer)(&data))
-	cdom := C.sonic_rs_ffi_parse((*C.char)(unsafe.Pointer((s.Data))), C.size_t(s.Len), C.uint64_t(opt))
+	cdom := sonic_rs_ffi_parse((*C.char)(unsafe.Pointer((s.Data))), C.size_t(s.Len), C.uint64_t(opt))
 	runtime.KeepAlive(data)
 	ret := Dom{
 		cdom: cdom,
@@ -130,9 +154,6 @@ func Parse(data string, opt uint64) (Dom, error) {
 	}
 
 	return ret, nil
-	// return Dom{
-	// 		cdom: C.Document {},
-	// 	}, nil
 }
 
 // / Helper functions to eliminate CGO calls

@@ -27,4 +27,14 @@ func Link(blob []byte, names []string) []unsafe.Pointer {
 	return cfuncs
 }
 
-func AddPcSp()
+
+var Sonic_rs_parse unsafe.Pointer
+var Sonic_rs_free unsafe.Pointer
+
+func init() {
+	syms := Link(sonic_rs_blob, []string{"sonic_rs_ffi_parse", "sonic_rs_ffi_free"})
+	Sonic_rs_parse = syms[0]
+	Sonic_rs_free = syms[1]
+	println("symbols are ", Sonic_rs_parse, Sonic_rs_free)
+}
+

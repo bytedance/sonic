@@ -1,4 +1,3 @@
-use flat::Document;
 use sonic_rs::private::config::Config;
 use sonic_rs::private::flat;
 
@@ -18,26 +17,48 @@ pub struct Dom {
     error_msg_cap: u64,
 }
 
+#[derive(Debug)]
+#[repr(C)]
+pub struct ParseArgs {
+    json: *const u8,/* Non NULL terminated */
+    len: u64,
+    config: u64,
+    dom: Dom,
+}
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct FreeArgs {
+    dom: *mut Dom,
+    error_msg: *mut u8,
+    msg_cap: u64,
+}
+
 const F_USE_NUMBER: u64 = 1 << 2;
 const F_VALIDATE_STRING: u64 = 1 << 5;
 
 /// # Safety
 /// FFI wrapper.
 #[no_mangle]
-pub unsafe extern "C" fn sonic_rs_ffi_parse(json: *const u8, len: usize, config: u64) -> Dom {
+pub unsafe extern "C" fn sonic_rs_ffi_parse(args: *mut ParseArgs) {
+    assert!(!args.is_null());
+    let json = (*args).json;
+    let len = (*args).len as usize;
+    let config = (*args).config;
     let json = std::slice::from_raw_parts(json, len);
+
     let config = Config {
         use_number: config & F_USE_NUMBER != 0,
         validate_string: config & F_VALIDATE_STRING != 0,
         disable_surrogates_error: true,
     };
 
-    match flat::dom_from_slice_config(json, config) {
+    let dom =  match flat::dom_from_slice_config(json, config) {
         Ok(dom) => {
             let dom = Box::into_raw(Box::new(dom));
             let str_buf = (*dom).json_buffer.as_ptr();
             let node = (*dom).root();
-            let dom = Dom {
+            Dom {
                 dom,
                 str_buf,
                 str_len: (*dom).json_buffer.len() as u64,
@@ -47,8 +68,7 @@ pub unsafe extern "C" fn sonic_rs_ffi_parse(json: *const u8, len: usize, config:
                 error_msg: std::ptr::null_mut(),
                 error_msg_len: 0,
                 error_msg_cap: 0,
-            };
-            dom
+            }
         }
         Err(e) => {
             let mut msg = e.to_string();
@@ -68,30 +88,26 @@ pub unsafe extern "C" fn sonic_rs_ffi_parse(json: *const u8, len: usize, config:
                 error_msg_cap,
             }
         }
-    }
+    };
+    (*args).dom = dom;
+    return;
 }
 
 /// # Safety
 /// FFI wrapper.
 #[no_mangle]
-pub unsafe extern "C" fn sonic_rs_ffi_free(dom: *mut Document, msg: *mut u8, msg_cap: u64) -> usize {
-    // println!("dom is {}", dom as usize);
+pub unsafe extern "C" fn sonic_rs_ffi_free(args: *mut FreeArgs) {
+    let dom = (*args).dom;
+    let msg = (*args).error_msg;
+    let cap = (*args).msg_cap;
+    unsafe {
+        if !dom.is_null() {
+            drop(Box::from_raw(dom));
+        }
 
-    // unsafe {
-    //     if !dom.is_null() {
-    //         drop(Box::from_raw(dom));
-    //     }
-
-    //     if !msg.is_null() {
-    //         let s = String::from_raw_parts(msg, 0, msg_cap as usize);
-    //         drop(s);
-    //     }
-    // }
-    return dom as usize;
-}
-
-
-#[no_mangle]
-pub unsafe extern "C" fn func_1args(arg: usize) -> usize {
-    return arg
+        if !msg.is_null() {
+            let s = String::from_raw_parts(msg, 0, cap as usize);
+            drop(s);
+        }
+    }
 }
