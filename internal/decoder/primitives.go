@@ -21,6 +21,7 @@ import (
     `encoding/json`
     `unsafe`
 
+    `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/rt`
 )
 
@@ -28,9 +29,8 @@ func decodeTypedPointer(s string, i int, vt *rt.GoType, vp unsafe.Pointer, sb *_
     if fn, err := findOrCompile(vt); err != nil {
         return 0, err
     } else {
-        rt.StopProf()
+        rt.MoreStack(_FP_size + _VD_size + native.MaxFrameSize)
         ret, err := fn(s, i, vp, sb, fv, "", nil)
-        rt.StartProf()
         return ret, err
     }
 }

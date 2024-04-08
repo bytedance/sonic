@@ -19,13 +19,15 @@ package native
 import (
     `unsafe`
 
-    `github.com/bytedance/sonic/internal/cpu`
+    // `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/native/avx`
     `github.com/bytedance/sonic/internal/native/avx2`
     `github.com/bytedance/sonic/internal/native/sse`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
+
+const MaxFrameSize   uintptr = 400
 
 var (
     S_f64toa uintptr
@@ -265,13 +267,13 @@ func useAVX2() {
 
 
 func init() {
- if cpu.HasAVX2 {
-     useAVX2()
- } else if cpu.HasAVX {
-        useAVX()
- } else if cpu.HasSSE {
-     useSSE()
- } else {
-     panic("Unsupported CPU, maybe it's too old to run Sonic.")
- }
+//  if cpu.HasAVX2 {
+    useAVX2()
+//  } else if cpu.HasAVX {
+    // useAVX()
+//  } else if cpu.HasSSE {
+    // useSSE()
+//  } else {
+//     panic("Unsupported CPU, maybe it's too old to run Sonic.")
+//  }
 }

@@ -605,7 +605,6 @@ func (self *_Assembler) skip_one() {
     self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
     self.Emit("MOVQ" , _VAR_pc, _R9)            // MOVQ    pc, R9
-    // self.Byte(0xcc)
     self.Rjmp("JMP"  , _R9)                     // JMP     (R9)
 }
 

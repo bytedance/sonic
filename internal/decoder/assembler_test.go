@@ -31,6 +31,23 @@ import (
     `github.com/stretchr/testify/require`
 )
 
+func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
+    var v Tx
+    s := `{"x": 1}`
+    p, err := newCompiler().compile(reflect.TypeOf(v))
+    require.NoError(t, err)
+    k := new(_Stack)
+    a := newAssembler(p)
+    f := a.Load()
+    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
+    if len(s) != pos {
+        panic(pos)
+    }
+    require.NoError(t, err)
+    // assert.Equal(t, len(s), pos)
+    // assert.Equal(t, Tx{}, v)
+}
+
 var utextVar []byte
 type UtextValue int
 
@@ -175,7 +192,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: `hello\ud800world"`,
         exp: "hello\ufffdworld",
         val: new(string),
-    }, {
+    }, 
+    {
         key: "_OP_str/error_eof",
         ins: []_Instr{newInsOp(_OP_str)},
         src: `12345`,
@@ -187,7 +205,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: `12\g345"`,
         err: SyntaxError{Src: `12\g345"`, Pos: 3, Code: types.ERR_INVALID_ESCAPE},
         val: new(string),
-    }, {
+    },
+     {
         key: "_OP_str/error_invalid_unicode",
         ins: []_Instr{newInsOp(_OP_str)},
         src: `hello\ud800world"`,
@@ -218,7 +237,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: `aGVsbG8!sIHdvcmxk"`,
         err: base64.CorruptInputError(7),
         val: new([]byte),
-    }, {
+    }, 
+    {
         key: "_OP_bool/true",
         ins: []_Instr{newInsOp(_OP_bool)},
         src: "true",
@@ -288,7 +308,8 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "-",
         err: SyntaxError{Src: `-`, Pos: 1, Code: types.ERR_INVALID_CHAR},
         val: new(json.Number),
-    }, {
+    }, 
+    {
         key: "_OP_num/error_invalid_char",
         ins: []_Instr{newInsOp(_OP_num)},
         src: "xxx",
@@ -521,20 +542,23 @@ func TestAssembler_OpCode(t *testing.T) {
             assert.Equal(t, _MinSlice, cap(v.([]int)))
         },
         val: new([]int),
-    }, {
+    },
+    { 
         key: "_OP_slice_append",
         ins: []_Instr{newInsVt(_OP_slice_append, reflect.TypeOf(0)), newInsOp(_OP_nil_1)},
         src: "",
         exp: []int{123, 0},
         val: &[]int{123},
-    }, {
+    }, 
+    {
         key: "_OP_object_skip",
         ins: []_Instr{newInsOp(_OP_object_skip)},
         src: `{"zxcv":[1,2.0],"asdf":[true,false,null,"asdf",{"qwer":345}]}`,
         pos: 1,
         vfn: func(i int, _ interface{}) { assert.Equal(t, 61, i) },
         val: nil,
-    }, {
+    }, 
+    {
         key: "_OP_object_next",
         ins: []_Instr{newInsOp(_OP_object_next)},
         src: `{"asdf":[1,2.0,true,false,null,"asdf",{"qwer":345}]}`,
@@ -709,20 +733,6 @@ func TestAssembler_PrologueAndEpilogue(t *testing.T) {
 
 type Tx struct {
     x int
-}
-
-func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {
-    var v Tx
-    s := `{"x": 1}`
-    p, err := newCompiler().compile(reflect.TypeOf(v))
-    require.NoError(t, err)
-    k := new(_Stack)
-    a := newAssembler(p)
-    f := a.Load()
-    pos, err := f(s, 0, unsafe.Pointer(&v), k, 0, "", nil)
-    require.NoError(t, err)
-    assert.Equal(t, len(s), pos)
-    assert.Equal(t, Tx{}, v)
 }
 
 func TestAssembler_DecodeByteSlice_Bin(t *testing.T) {

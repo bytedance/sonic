@@ -15,13 +15,13 @@ echo $CC
 CPU_ARCS=("sse" "avx" "avx2")
 CLAGS=(
     "-msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul" 
-    "-msse -mno-sse4 -mavx -mpclmul -mno-avx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=0"
-    "-msse -mno-sse4 -mavx -mpclmul -mavx2 -mstack-alignment=0 -DUSE_AVX=1 -DUSE_AVX2=1" 
+    "-mno-sse4 -mavx -mpclmul -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0"
+    "-mno-sse4 -mavx -mpclmul -mavx2 -DUSE_AVX=1 -DUSE_AVX2=1" 
     )
 
-i = 1
+i=0
 for arc in "${CPU_ARCS[@]}"; do
-    echo "arch:$arc"
+    echo "arch: $arc"
     # Create the output directory if it doesn't exist
     out_dir="$OUT_DIR/$arc"
     tmp_dir="$TMP_DIR/$arc"
@@ -41,9 +41,11 @@ for arc in "${CPU_ARCS[@]}"; do
         asm_file="$tmp_dir/${base_name}.s"
     
         # Compile the source file into an assembly file
+        echo "$CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o $asm_file $src_file"
         $CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o $asm_file $src_file
 
         # Execute asm2asm tool
+        echo "python3 $TOOL_DIR/asm2asm.py -r $out_dir/${base_name}.go $asm_file"
         python3 $TOOL_DIR/asm2asm.py -r $out_dir/${base_name}.go $asm_file
 
     done
