@@ -17,19 +17,19 @@
 package decoder
 
 import (
-	"encoding/base64"
-	"encoding/json"
-	"reflect"
-	"runtime"
-	"testing"
-	"unsafe"
+    `encoding/base64`
+    `encoding/json`
+    `reflect`
+    `runtime`
+    `testing`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/caching"
-	"github.com/bytedance/sonic/internal/jit"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/internal/caching`
+    `github.com/bytedance/sonic/internal/jit`
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func TestAssembler_DecodeStruct_SinglePrivateField(t *testing.T) {

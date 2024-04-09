@@ -625,6 +625,17 @@ func BenchmarkNative_SkipOneFast(b *testing.B) {
     }
 }
 
+func BenchmarkNative_SkipOne(b *testing.B) {
+    b.ResetTimer()
+    fsm := types.NewStateMachine()
+    for i:=0; i<b.N; i++ {
+        s := `{"asdf": [null, true, false, 1, 2.0, -3]}, 1234.5`
+        p := 0
+        _ = skip_one(&s, &p, fsm, 0)
+        fsm.Sp = 0
+    }
+}
+
 func BenchmarkNative_GetByPath(b *testing.B) {
     b.ResetTimer()
     for i:=0; i<b.N; i++ {

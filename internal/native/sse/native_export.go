@@ -45,3 +45,11 @@ func Use() {
     loader.WrapGoC(_text_vstring, _cfunc_vstring, []loader.GoC{{"_vstring", &S_vstring, &F_vstring}}, "sse", "sse/vstring.c")
     loader.WrapGoC(_text_value, _cfunc_value, []loader.GoC{{"_value", &S_value, &F_value}}, "sse", "sse/value.c")
 }
+
+func UseSkipOne() {
+    loader.WrapGoC(_text_skip_object, _cfunc_skip_object, []loader.GoC{{"_skip_object", &S_skip_object, &F_skip_object}}, "sse", "sse/skip_object.c")
+    loader.WrapGoC(_text_skip_array, _cfunc_skip_array, []loader.GoC{{"_skip_array", &S_skip_array, &F_skip_array}}, "sse", "sse/skip_array.c")
+    loader.WrapGoC(_text_skip_number, _cfunc_skip_number, []loader.GoC{{"_skip_number", &S_skip_number, &F_skip_number}}, "sse", "sse/skip_number.c")
+    loader.WrapGoC(_text_skip_one, _cfunc_skip_one, []loader.GoC{{"_skip_one", &S_skip_one, &F_skip_one}}, "sse", "sse/skip_one.c")
+    loader.WrapGoC(_text_validate_one, _cfunc_validate_one, []loader.GoC{{"_validate_one", &S_validate_one, &F_validate_one}}, "sse", "sse/validate_one.c")
+}

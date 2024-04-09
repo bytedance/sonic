@@ -19,7 +19,7 @@ package native
 import (
     `unsafe`
 
-    // `github.com/bytedance/sonic/internal/cpu`
+    `github.com/bytedance/sonic/internal/cpu`
     `github.com/bytedance/sonic/internal/native/avx`
     `github.com/bytedance/sonic/internal/native/avx2`
     `github.com/bytedance/sonic/internal/native/sse`
@@ -197,6 +197,7 @@ func useSSE() {
 
 func useAVX() {
     avx.Use()
+    sse.UseSkipOne()
     S_f64toa      = avx.S_f64toa
     __F64toa      = avx.F_f64toa
     S_f32toa      = avx.S_f32toa
@@ -216,23 +217,23 @@ func useAVX() {
     S_vnumber     = avx.S_vnumber
     S_vsigned     = avx.S_vsigned
     S_vunsigned   = avx.S_vunsigned
-    S_skip_one    = avx.S_skip_one
-    __SkipOne     = avx.F_skip_one
+    S_skip_one    = sse.S_skip_one
+    __SkipOne     = sse.F_skip_one
     __SkipOneFast = avx.F_skip_one_fast
-    S_skip_array  = avx.S_skip_array
-    S_skip_object = avx.S_skip_object
-    S_skip_number = avx.S_skip_number
+    S_skip_array  = sse.S_skip_array
+    S_skip_object = sse.S_skip_object
+    S_skip_number = sse.S_skip_number
     S_get_by_path = avx.S_get_by_path
     __GetByPath   = avx.F_get_by_path
     __HTMLEscape  = avx.F_html_escape
-    __ValidateOne = avx.F_validate_one
+    __ValidateOne = sse.F_validate_one
     __ValidateUTF8= avx.F_validate_utf8
     __ValidateUTF8Fast = avx.F_validate_utf8_fast
 }
 
 func useAVX2() {
     avx2.Use()
-    sse.Use()
+    sse.UseSkipOne()
     S_f64toa      = avx2.S_f64toa
     __F64toa      = avx2.F_f64toa
     S_f32toa      = avx2.S_f32toa
@@ -254,27 +255,27 @@ func useAVX2() {
     S_vunsigned   = avx2.S_vunsigned
     S_skip_one    = sse.S_skip_one
     __SkipOne     = sse.F_skip_one
-    __SkipOneFast = sse.F_skip_one_fast
+    __SkipOneFast = avx2.F_skip_one_fast
     S_skip_array  = sse.S_skip_array
     S_skip_object = sse.S_skip_object
     S_skip_number = sse.S_skip_number
     S_get_by_path = avx2.S_get_by_path
     __GetByPath   = avx2.F_get_by_path
     __HTMLEscape  = avx2.F_html_escape
-    __ValidateOne = avx2.F_validate_one
+    __ValidateOne = sse.F_validate_one
     __ValidateUTF8= avx2.F_validate_utf8
     __ValidateUTF8Fast = avx2.F_validate_utf8_fast
 }
 
 
 func init() {
-//  if cpu.HasAVX2 {
+ if cpu.HasAVX2 {
     useAVX2()
-//  } else if cpu.HasAVX {
-    // useAVX()
-//  } else if cpu.HasSSE {
-    // useSSE()
-//  } else {
-//     panic("Unsupported CPU, maybe it's too old to run Sonic.")
-//  }
+ } else if cpu.HasAVX {
+    useAVX()
+ } else if cpu.HasSSE {
+    useSSE()
+ } else {
+    panic("Unsupported CPU, maybe it's too old to run Sonic.")
+ }
 }
