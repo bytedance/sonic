@@ -10,7 +10,7 @@ rustup:
 
 linux_x86:
 	mkdir -p ./rs_wrapper/lib/linux
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-unknown-linux-gnu  --release && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.so  ../internal/link/libsonic_rs_x86_64-unknown-linux-gnu.so 
+	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-unknown-linux-gnu  --release && cp -a target/x86_64-unknown-linux-gnu/release/librs_wrapper.so  ../internal/link/libsonic_rs_x86_64-unknown-linux-gnu.so 
 
 linux_aarch64:
 	mkdir -p ./rs_wrapper/lib/linux
@@ -18,7 +18,7 @@ linux_aarch64:
 
 darwin_x86:
 	mkdir -p ./rs_wrapper/lib/darwin
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-apple-darwin  --release && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.so  ../internal/link/libsonic_rs_x86_64-unknown-darwin-gnu.so 
+	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-cpu=haswell" cargo build --target=x86_64-apple-darwin  --release && cp -a target/x86_64-unknown-linux-gnu/release/librs_wrapper.so  ../internal/link/libsonic_rs_x86_64-unknown-darwin-gnu.so 
 
 darwin_aarch64:
 	mkdir -p ./rs_wrapper/lib/darwin
