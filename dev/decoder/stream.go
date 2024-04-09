@@ -65,11 +65,11 @@
 
 	 try_skip:
 		 var e = len(self.buf)
-		 var src = rt.Mem2Str(self.buf[s:e])
+		 var src = self.buf[s:e]
 
 		 // try skip
 		 pos := 0
-		 start, err := internal.SkipOneFast2(src, &pos)
+		 start, err := internal.SkipOneFast2(rt.Mem2Str(src), &pos)
 		 if err != nil {
 			if self.readMore()  {
 				goto try_skip
