@@ -4,7 +4,7 @@
 SRC_DIR="native"
 TMP_DIR="output"
 OUT_DIR="internal/native"
-TOOL_DIR="tools/asm/x86"
+TOOL_DIR="tools/asm2asm"
 TMPL_DIR="internal/native"
 CC=clang
 if [ "$1" != "" ]; then
