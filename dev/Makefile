@@ -22,7 +22,7 @@ darwin_x86:
 
 darwin_aarch64:
 	mkdir -p ./rs_wrapper/lib/darwin
-	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-apple-darwin  --release && cp -a target/aarch64-unknown-linux-gnu/release/librs_wrapper.so  ../internal/link/libsonic_rs_aarch64-unknown-darwin-gnu.so 
+	cd rs_wrapper && cargo update --package sonic-rs && RUSTFLAGS="-C target-feature=+neon" cargo build --target=aarch64-apple-darwin  --release && cp -a target/aarch64-apple-darwin/release/librs_wrapper.dylib  ../internal/link/libsonic_rs_aarch64-apple-darwin.dylib
 
 clean:
 	rm -vrf ./rs_wrapper/lib/
