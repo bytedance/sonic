@@ -134,6 +134,7 @@ var (
     _R9 = jit.Reg("R9")
     _X0 = jit.Reg("X0")
     _X1 = jit.Reg("X1")
+    _X15 = jit.Reg("X15")
 )
 
 var (
@@ -421,6 +422,7 @@ func (self *_Assembler) call_go(fn obj.Addr) {
 func (self *_Assembler) callc(fn obj.Addr) {
     self.save(_IP)
     self.call(fn)
+    self.Emit("XORPS", _X15, _X15)
     self.load(_IP)
 }
 
