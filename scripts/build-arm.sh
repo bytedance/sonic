@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the directories
-SRC_DIR="native/arm"
+SRC_DIR="native"
 TMP_DIR="output/arm"
 OUT_DIR="internal/native/neon"
 TOOL_DIR="tools"

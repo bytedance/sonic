@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the directories
-SRC_DIR="native/arm"
+SRC_DIR="native"
 TMP_DIR="output"
 OUT_DIR="internal/native"
 TOOL_DIR="tools/asm/x86"
@@ -30,7 +30,6 @@ for arc in "${CPU_ARCS[@]}"; do
 
     # all tmplates
     for tmpl in "$TMPL_DIR"/*.tmpl; do
-        echo $tmpl
         tmpl_name=$(basename "$tmpl" .tmpl)
         sed -e 's/{{PACKAGE}}/'${arc}'/g' $tmpl > "$out_dir/${tmpl_name}.go"
     done
@@ -41,7 +40,7 @@ for arc in "${CPU_ARCS[@]}"; do
         asm_file="$tmp_dir/${base_name}.s"
     
         # Compile the source file into an assembly file
-        echo "$CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o $asm_file $src_file"
+        echo "$CC ${CLAGS[$i]} -m -target x86_64-apple-macos11 -mno-red-zone -mstack-alignment=0 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o $asm_file $src_file"
         $CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o $asm_file $src_file
 
         # Execute asm2asm tool

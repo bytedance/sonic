@@ -1137,7 +1137,6 @@ class PrototypeMap(Dict[str, Prototype]):
                 # function names must be identifiers
                 if not name.isidentifier():
                     raise cls._err('invalid function prototype: ' + name)
-                print("find func: %s"%name)
                 if not name.startswith('F'):
                     raise cls._err('please do not declare func stub with `F` prefix')
                 # register a empty prototype
@@ -1909,7 +1908,6 @@ class CodeSection:
                 # NOTICE: must mark pcsp at block entry because go only calculate delta value
                 pcsp.pc = self.get(bb.name)
                 if bb.func or pcsp.pc < pcsp.entry or bb.name == ('_'+self.name):  
-                    print("new func %s pc %d" % (bb.name, pcsp.pc))
                     # new func
                     pcsp = Pcsp(pcsp.pc)
                     self.funcs[bb.name] = pcsp
@@ -2547,7 +2545,6 @@ def main():
         asm.out.append('')
         
     asm.parse(src, proto)
-    print(asm.code.funcs.keys())
     
     if OUTPUT_RAW:
         asrc = fpath + '_text_amd64.go'
@@ -2581,7 +2578,6 @@ def main():
             print('const (', file = fp)
             for name in asm.code.funcs.keys():
                 addr = asm.code.get(name)
-                print("entry:", name, addr)
                 if addr is not None:
                     print(f'    _entry_{name} = %d' % addr, file = fp)
             print(')', file = fp)
