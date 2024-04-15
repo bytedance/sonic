@@ -19,7 +19,7 @@
 package ast 
 
 import (
-    `github.com/chenzhuoyu/base64x`
+    `github.com/cloudwego/base64x`
 )
 
 func decodeBase64(src string) ([]byte, error) {

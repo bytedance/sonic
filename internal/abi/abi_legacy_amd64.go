@@ -24,7 +24,7 @@ import (
     `reflect`
     `runtime`
 
-    . `github.com/chenzhuoyu/iasm/x86_64`
+    . `github.com/cloudwego/iasm/x86_64`
 )
 
 func ReservedRegs(callc bool) []Register {
