@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <immintrin.h>
 #include <string.h>
 #include "native.h"
 

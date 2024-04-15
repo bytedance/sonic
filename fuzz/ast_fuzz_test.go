@@ -39,7 +39,7 @@ func fuzzASTGetFromObject(t *testing.T, data []byte, m map[string]interface{}) {
 		v, err := node.Interface()
 		require.NoErrorf(t, err, "error in node convert\n%s", msg)
 		require.Equalf(t, v, expv, "error in node equal\n%sGot:\n%s\nExp:\n%s\n", 
-			msg, spew.Sdump(v), spew.Sdump(expv))
+		msg, spew.Sdump(v), spew.Sdump(expv))
 	}
 }
 
