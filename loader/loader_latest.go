@@ -19,7 +19,7 @@
 package loader
 
 import (
-    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/loader/internal/rt`
 )
 
 // LoadFuncs loads only one function as module, and returns the function pointer
