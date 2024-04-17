@@ -1,7 +1,7 @@
 github.com/buger/jsonparser v1.1.1 h1:2PnMjfWD7wBILjqQbt530v576A/cAbQvEW9gGIpYMUs=
 github.com/buger/jsonparser v1.1.1/go.mod h1:6RYKKt7H4d4+iWqouImQ9R2FZql3VbhNgx27UK13J/0=
-github.com/cloudwego/base64x v0.1.1 h1:ClI/Dhf8lEZ753TZ6N2CEsTvBgj48LUXqT1rSsKJrf8=
-github.com/cloudwego/base64x v0.1.1/go.mod h1:8DeCguxATjLTYFYhoS/CLQuTjr4/ofRb1vOVJLalPPM=
+github.com/cloudwego/base64x v0.1.2 h1:+/5aoq3u+nG+oaQRlnFg/oWu788X6KzDpquxoNJ6Vt0=
+github.com/cloudwego/base64x v0.1.2/go.mod h1:jSIw/Ru6lyma8wP6MbQJ+7ZAgXkHthTuuClUTUxcYwY=
 github.com/cloudwego/iasm v0.2.0 h1:1KNIy1I1H9hNNFEEH3DVnI4UujN+1zjpuk6gwHLTssg=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
