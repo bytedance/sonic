@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/bytedance/sonic/loader v0.1.0-rc // indirect
 	github.com/cloudwego/base64x v0.1.2 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
