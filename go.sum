@@ -1,6 +1,7 @@
 github.com/bytedance/sonic v1.11.5-alpha3/go.mod h1:NYwWBqBszgmWi7sDnT+p6Yj1Jwf2gzpN0UY7R3VYH+c=
-github.com/cloudwego/base64x v0.1.2-alpha3 h1:fe2g+m5egfPudJi8oyM8H5VOKHk7Q13Jup1ZJVtfc1M=
 github.com/cloudwego/base64x v0.1.2-alpha3/go.mod h1:jSIw/Ru6lyma8wP6MbQJ+7ZAgXkHthTuuClUTUxcYwY=
+github.com/cloudwego/base64x v0.1.2 h1:+/5aoq3u+nG+oaQRlnFg/oWu788X6KzDpquxoNJ6Vt0=
+github.com/cloudwego/base64x v0.1.2/go.mod h1:jSIw/Ru6lyma8wP6MbQJ+7ZAgXkHthTuuClUTUxcYwY=
 github.com/cloudwego/iasm v0.2.0 h1:1KNIy1I1H9hNNFEEH3DVnI4UujN+1zjpuk6gwHLTssg=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
