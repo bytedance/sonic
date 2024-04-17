@@ -50,3 +50,13 @@ func FuncAddr(f interface{}) unsafe.Pointer {
         return *(*unsafe.Pointer)(vv.Value)
     }
 }
+
+//go:nocheckptr
+func IndexChar(src string, index int) unsafe.Pointer {
+	return unsafe.Pointer(uintptr((*GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(index))
+}
+
+//go:nocheckptr
+func IndexByte(ptr []byte, index int) unsafe.Pointer {
+	return unsafe.Pointer(uintptr((*GoSlice)(unsafe.Pointer(&ptr)).Ptr) + uintptr(index))
+}
