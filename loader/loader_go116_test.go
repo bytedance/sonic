@@ -27,7 +27,7 @@ import (
     `testing`
     `unsafe`
 
-    `github.com/bytedance/sonic/internal/rt`
+    `github.com/bytedance/sonic/loader/internal/rt`
     `github.com/stretchr/testify/require`
 )
 
