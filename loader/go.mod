@@ -1,6 +1,6 @@
 module github.com/bytedance/sonic/loader
 
-go 1.20
+go 1.16
 
 require (
 	github.com/cloudwego/iasm v0.2.0
