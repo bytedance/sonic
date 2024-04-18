@@ -10,8 +10,8 @@ require (
 )
 
 require (
-	github.com/bytedance/sonic/loader v0.1.0-rc2 // indirect
-	github.com/cloudwego/base64x v0.1.2 // indirect
+	github.com/bytedance/sonic/loader v0.1.0 // indirect
+	github.com/cloudwego/base64x v0.1.3 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

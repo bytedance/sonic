@@ -1,10 +1,9 @@
 github.com/bytedance/gopkg v0.0.0-20221122125632-68358b8ecec6 h1:FCLDGi1EmB7JzjVVYNZiqc/zAJj2BQ5M0lfkVOxbfs8=
 github.com/bytedance/gopkg v0.0.0-20221122125632-68358b8ecec6/go.mod h1:5FoAH5xUHHCMDvQPy1rnj8moqLkLHFaDVBjHhcFwEi0=
-github.com/bytedance/sonic/loader v0.1.0-rc2 h1:CI0eYwvmo1+KlQygChjkRUDxRXqjrSP3QgTqv5hfUbo=
-github.com/bytedance/sonic/loader v0.1.0-rc2/go.mod h1:wR7yq8NE4y+fuLiES9zhP7KzLLMFBezjAiH4MhTaRTU=
-github.com/cloudwego/base64x v0.1.2 h1:+/5aoq3u+nG+oaQRlnFg/oWu788X6KzDpquxoNJ6Vt0=
-github.com/cloudwego/base64x v0.1.2/go.mod h1:jSIw/Ru6lyma8wP6MbQJ+7ZAgXkHthTuuClUTUxcYwY=
-github.com/cloudwego/iasm v0.1.1/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
+github.com/bytedance/sonic/loader v0.1.0 h1:skjHJ2Bi9ibbq3Dwzh1w42MQ7wZJrXmEZr/uqUn3f0Q=
+github.com/bytedance/sonic/loader v0.1.0/go.mod h1:UmRT+IRTGKz/DAkzcEGzyVqQFJ7H9BqwBO3pm9H/+HY=
+github.com/cloudwego/base64x v0.1.3 h1:b5J/l8xolB7dyDTTmhJP2oTs5LdrjyrUFuNxdfq5hAg=
+github.com/cloudwego/base64x v0.1.3/go.mod h1:1+1K5BUHIQzyapgpF7LwvOGAEDicKtt1umPV+aN8pi8=
 github.com/cloudwego/iasm v0.2.0 h1:1KNIy1I1H9hNNFEEH3DVnI4UujN+1zjpuk6gwHLTssg=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

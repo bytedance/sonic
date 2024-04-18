@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/bytedance/sonic/loader v0.1.0
-	github.com/cloudwego/base64x v0.1.2
+	github.com/cloudwego/base64x v0.1.3
 	github.com/davecgh/go-spew v1.1.1
 	github.com/klauspost/cpuid/v2 v2.0.9
 	github.com/stretchr/testify v1.8.1
