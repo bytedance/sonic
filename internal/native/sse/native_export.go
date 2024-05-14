@@ -23,7 +23,6 @@ import (
     `github.com/bytedance/sonic/loader`
 )
 
-
 func Use() {
     loader.WrapGoC(_text_f64toa, _cfunc_f64toa, []loader.GoC{{"_f64toa", &S_f64toa, &F_f64toa}}, "sse", "sse/f64toa.c")
     loader.WrapGoC(_text_f32toa, _cfunc_f32toa, []loader.GoC{{"_f32toa", &S_f32toa, &F_f32toa}}, "sse", "sse/f32toa.c")
@@ -47,4 +46,6 @@ func Use() {
     loader.WrapGoC(_text_vunsigned, _cfunc_vunsigned, []loader.GoC{{"_vunsigned", &S_vunsigned, &F_vunsigned}}, "sse", "sse/vunsigned.c")
     loader.WrapGoC(_text_vstring, _cfunc_vstring, []loader.GoC{{"_vstring", &S_vstring, &F_vstring}}, "sse", "sse/vstring.c")
     loader.WrapGoC(_text_value, _cfunc_value, []loader.GoC{{"_value", &S_value, &F_value}}, "sse", "sse/value.c")
+    loader.WrapGoC(_text_parse_with_padding, _cfunc_parse_with_padding, []loader.GoC{{"_parse_with_padding", &S_parse_with_padding, &F_parse_with_padding}}, "sse", "sse/parser.c")
+    loader.WrapGoC(_text_lookup_small_key, _cfunc_lookup_small_key, []loader.GoC{{"_lookup_small_key", &S_lookup_small_key, &F_lookup_small_key}}, "sse", "sse/lookup.c")
 }
