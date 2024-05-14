@@ -1,4 +1,5 @@
-// +build amd64,go1.16,!go1.23
+//go:build (amd64 && go1.16 && !go1.23) || (arm64 && go1.20 && !go1.23)
+// +build amd64,go1.16,!go1.23 arm64,go1.20,!go1.23
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -458,6 +459,8 @@ var unmarshalTests = []unmarshalTest{
     {in: `{"F1":1,"F2":2,"F3":3}`, ptr: new(V), out: V{F1: json.Number("1"), F2: int32(2), F3: json.Number("3")}, useNumber: true},
     {in: `{"k1":1,"k2":"s","k3":[1,2.0,3e-3],"k4":{"kk1":"s","kk2":2}}`, ptr: new(interface{}), out: ifaceNumAsFloat64},
     {in: `{"k1":1,"k2":"s","k3":[1,2.0,3e-3],"k4":{"kk1":"s","kk2":2}}`, ptr: new(interface{}), out: ifaceNumAsNumber, useNumber: true},
+	{in: `{"":""}`, ptr: new(struct{}), out: struct{}{}},
+	{in: `{"x":""}`, ptr: new(struct{ X json.Number }),  err: errors.New("empty string into json number")},
 
     // raw values with whitespace
     {in: "\n true ", ptr: new(bool), out: true},
@@ -1116,7 +1119,6 @@ func TestMarshalEmbeds(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
     for i, tt := range unmarshalTests {
-        t.Log(i, tt.in)
         if !json.Valid([]byte(tt.in)) {
             continue
         }
