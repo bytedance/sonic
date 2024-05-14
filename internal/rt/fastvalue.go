@@ -212,6 +212,23 @@ func findReflectRtypeItab() *GoItab {
 	return (*GoIface)(unsafe.Pointer(&v)).Itab
 }
 
+func AssertI2I2(t *GoType, i GoIface) (r GoIface) {
+	inter := IfaceType(t)
+	tab := i.Itab
+	if tab == nil {
+		return
+	}
+	if (*GoInterfaceType)(tab.it) != inter {
+		tab = GetItab(inter, tab.Vt, true)
+		if tab == nil {
+			return
+		}
+	}
+	r.Itab = tab
+	r.Value = i.Value
+	return
+}
+
 func (t *GoType) IsInt64() bool {
 	return t.Kind() == reflect.Int64 || (t.Kind() == reflect.Int && t.Size == 8)
 }
@@ -220,17 +237,25 @@ func (t *GoType) IsInt32() bool {
 	return t.Kind() == reflect.Int32 || (t.Kind() == reflect.Int && t.Size == 4)
 }
 
+//go:nosplit
 func (t *GoType) IsUint64() bool {
-	return t.Kind() == reflect.Uint64 || (t.Kind() == reflect.Uint && t.Size == 8)
+	isUint := t.Kind() == reflect.Uint || t.Kind() == reflect.Uintptr
+	return t.Kind() == reflect.Uint64 || (isUint && t.Size == 8)
 }
 
+//go:nosplit
 func (t *GoType) IsUint32() bool {
-	return t.Kind() == reflect.Uint32 || (t.Kind() == reflect.Uint && t.Size == 4)
+	isUint := t.Kind() == reflect.Uint || t.Kind() == reflect.Uintptr
+	return t.Kind() == reflect.Uint32 || (isUint && t.Size == 4)
+}
+
+//go:nosplit
+func PtrAdd(ptr unsafe.Pointer, offset uintptr) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(ptr) + offset)
 }
 
 //go:noescape
 //go:linkname GetItab runtime.getitab
 func GetItab(inter *GoInterfaceType, typ *GoType, canfail bool) *GoItab
-
 
 

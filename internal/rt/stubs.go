@@ -17,7 +17,8 @@
 package rt
 
 import (
-    `unsafe`
+	"reflect"
+	"unsafe"
 )
 
 //go:noescape
@@ -33,8 +34,93 @@ func Mapiterinit(t *GoMapType, m *GoMap, it *GoMapIterator)
 //go:linkname IsValidNumber encoding/json.isValidNumber
 func IsValidNumber(s string) bool
 
-//go:noescape
+//go:nosplit
+//go:linkname MemclrHasPointers runtime.memclrHasPointers
+//goland:noinspection GoUnusedParameter
+func MemclrHasPointers(ptr unsafe.Pointer, n uintptr)
+
 //go:linkname MemclrNoHeapPointers runtime.memclrNoHeapPointers
+//goland:noinspection GoUnusedParameter
 func MemclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
+//go:linkname newarray runtime.newarray
+func newarray(typ *GoType, n int) unsafe.Pointer 
+
+func add(p unsafe.Pointer, x uintptr) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(p) + x)
+}
+
+func ClearMemory(et *GoType, ptr unsafe.Pointer, size uintptr) {
+	if et.PtrData == 0 {
+		MemclrNoHeapPointers(ptr, size)
+	} else {
+		MemclrHasPointers(ptr, size)
+	}
+}
+
+// runtime.maxElementSize
+const _max_map_element_size uintptr = 128
+
+func IsMapfast(vt reflect.Type) bool {
+	return vt.Elem().Size() <= _max_map_element_size
+}
+
+//go:linkname Mallocgc runtime.mallocgc
+//goland:noinspection GoUnusedParameter
+func Mallocgc(size uintptr, typ *GoType, needzero bool) unsafe.Pointer
+
+//go:linkname Makemap reflect.makemap
+func Makemap(*GoType, int) unsafe.Pointer
+
+//go:linkname Mapassign runtime.mapassign
+//goland:noinspection GoUnusedParameter
+func Mapassign(t *GoMapType, h unsafe.Pointer, k unsafe.Pointer) unsafe.Pointer
+
+//go:linkname Mapassign_fast32 runtime.mapassign_fast32
+//goland:noinspection GoUnusedParameter
+func Mapassign_fast32(t *GoMapType, h unsafe.Pointer, k uint32) unsafe.Pointer
+
+//go:linkname Mapassign_fast64 runtime.mapassign_fast64
+//goland:noinspection GoUnusedParameter
+func Mapassign_fast64(t *GoMapType, h unsafe.Pointer, k uint64) unsafe.Pointer
+
+//go:linkname Mapassign_faststr runtime.mapassign_faststr
+//goland:noinspection GoUnusedParameter
+func Mapassign_faststr(t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer
+
+type MapStrAssign func (t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer
+
+func GetMapStrAssign(vt reflect.Type) MapStrAssign {
+	if IsMapfast(vt) {
+		return Mapassign_faststr
+	} else {
+		return func (t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer {
+			return Mapassign(t, h, unsafe.Pointer(&s))
+		}
+	}
+}
+
+type Map32Assign func(t *GoMapType, h unsafe.Pointer, k uint32) unsafe.Pointer
+
+func GetMap32Assign(vt reflect.Type) Map32Assign {
+	if IsMapfast(vt) {
+		return Mapassign_fast32
+	} else {
+		return func (t *GoMapType, h unsafe.Pointer, s uint32) unsafe.Pointer {
+			return Mapassign(t, h, unsafe.Pointer(&s))
+		}
+	}
+}
+
+type Map64Assign func(t *GoMapType, h unsafe.Pointer, k uint64) unsafe.Pointer
+
+func GetMap64Assign(vt reflect.Type) Map64Assign {
+	if IsMapfast(vt) {
+		return Mapassign_fast64
+	} else {
+		return func (t *GoMapType, h unsafe.Pointer, s uint64) unsafe.Pointer {
+			return Mapassign(t, h, unsafe.Pointer(&s))
+		}
+	}
+}
 
