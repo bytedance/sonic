@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"runtime"
+
 	"github.com/bytedance/sonic/internal/native"
 	"github.com/bytedance/sonic/internal/native/types"
 )
@@ -245,6 +247,10 @@ func parseLazy(json string, path *[]interface{}) (Node, error) {
 	copy(tmp, node.node.Kids)
 	types.FreeToken(node.node.Kids)
 	node.node.Kids = tmp
+	// to keep json alive, and gcwb works for node.node.JSON
+	v := node.node.JSON
+	node.node.JSON = v
+	runtime.KeepAlive(json)
 	return node, nil
 }
 

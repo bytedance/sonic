@@ -1844,7 +1844,11 @@ long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine
 query:
     /* to be safer for invalid json, use slower skip for the demanded fields */
     if (ps == pe) {
-        return skip_one(src, p, sm, 0);
+        if (sm == NULL) {
+            return skip_one_fast(src, p);
+        } else {
+            return skip_one(src, p, sm, 0);
+        }
     }
 
     /* match type: should query key in object, query index in array */

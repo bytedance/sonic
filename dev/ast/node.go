@@ -547,21 +547,25 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 		var err types.ParsingError
 		var missing int
 		var start int
+		var exist bool
 		for i, k := range path {
 			if id, ok := k.(int); ok {
 				if start, err = p.locate(id); err != 0 {
 					if err != types.ERR_NOT_FOUND {
-						return false, makeSyntaxError(self.node.JSON, p.pos, err.Message())
+						return exist, makeSyntaxError(self.node.JSON, p.pos, err.Message())
+					} else if !allowArrayAppend {
+						return false, ErrNotExist
 					} else {
 						missing = i
 						break
 					}
 				}
 			} else if key, ok := k.(string); ok {
+				println(key, p.src)
 				if start, err = p.locate(key); err != 0 {
 					// for object, we allow insert non-exist key
 					if err != types.ERR_NOT_FOUND {
-						return false, makeSyntaxError(self.node.JSON, p.pos, err.Message())
+						return exist, makeSyntaxError(self.node.JSON, p.pos, err.Message())
 					} else {
 						missing = i
 						break
@@ -570,9 +574,6 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 			} else {
 				panic("path must be either int or string")
 			}
-		}
-		if err != 0 && err != types.ERR_NOT_FOUND {
-			return false, makeSyntaxError(self.node.JSON, p.pos, err.Message())
 		}
 		var b []byte
 		if err == types.ERR_NOT_FOUND {
@@ -589,13 +590,15 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 			var err error
 			b, err = makePathAndValue(b, path, allowArrayAppend, valjs)
 			if err != nil {
-				return false, err
+				return exist, err
 			}
+			b = append(b, self.node.JSON[s:]...)
 		} else {
 			b = make([]byte, 0, start+len(valjs)+(len(self.node.JSON)-p.pos))
 			b = append(b, self.node.JSON[:start]...)
 			b = append(b, valjs...)
 			b = append(b, self.node.JSON[p.pos:]...)
+			exist = true
 		}
 		// refrest the node
 		p.src = rt.Mem2Str(b)
@@ -605,7 +608,7 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 			return true, ee
 		}
 		*self = node
-		return true, nil
+		return exist, nil
 	}
 }
 

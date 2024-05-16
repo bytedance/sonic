@@ -56,6 +56,7 @@ func (self *Parser) GetByPath(path ...interface{}) (Node, error) {
 // get location no validate
 func (self *Parser) locate(path ...interface{}) (start int, err types.ParsingError) {
     start = native.GetByPath(&self.src, &self.pos, &path, nil)
+    println("s", start, "p", self.pos)
     if start < 0 {
         return -1, types.ParsingError(-start)
     }

@@ -11,8 +11,8 @@ import (
 
 // NOTICE: must assume pos is at ']' or '}'
 func backward(json string, pos int) (stop int, empty bool) {
-    if json[stop] != ']' && json[stop] != '}' {
-        panic(fmt.Sprintf("char '%c' at stop %d is not close dilimeter of JSON", json[stop], stop))
+    if json[pos] != ']' && json[pos] != '}' {
+        panic(fmt.Sprintf("char '%c' at stop %d is not close dilimeter of JSON", json[pos], pos))
     }
     stop = pos - 1
     for ; stop >= 0 && isSpace(json[stop]); stop-- {
