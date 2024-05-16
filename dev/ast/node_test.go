@@ -167,6 +167,148 @@ func BenchmarkParse(b *testing.B) {
 	})
 }
 
+func TestNode_UnsetByPath(t *testing.T) {
+	type args struct {
+		path []interface{}
+	}
+	tests := []struct {
+		name   string
+		src    string
+		args   args
+		want   string
+		val    interface{}
+		exist  bool
+		err    error
+	}{
+		{
+			name: "self",
+			src:  `[1]`,
+			args: args{path: []interface{}{}},
+			want: ``,
+			exist: true,
+			val: nil,
+		},
+		{
+			name: "unsupporetd",
+			src:  `1`,
+			args: args{path: []interface{}{1}},
+			want: `1`,
+			exist: false,
+			val: int64(1),
+			err: ErrUnsupportType,
+		},
+		{
+			name: "unsupporetd",
+			src:  `1`,
+			args: args{path: []interface{}{"1"}},
+			want: `1`,
+			exist: false,
+			val: int64(1),
+			err: ErrUnsupportType,
+		},
+		{
+			name: "empty object",
+			src:  ` { } `,
+			args: args{path: []interface{}{"1"}},
+			want: ` { } `,
+			exist: false,
+			val: map[string]interface {}{},
+		},
+		{
+			name: "one object not-exist",
+			src:  ` { "1" : 1 } `,
+			args: args{path: []interface{}{"2"}},
+			want: ` { "1" : 1 } `,
+			exist: false,
+			val: map[string]interface{}{"1":int64(1)},
+		},
+		{
+			name: "one object exist",
+			src:  ` { "1" : true } `,
+			args: args{path: []interface{}{"1"}},
+			want: ` {} `,
+			exist: true,
+			val: map[string]interface{}{},
+		},
+		{
+			name: "two object exist",
+			src:  ` { "1" : 1 , "2" : 2 } `,
+			args: args{path: []interface{}{"1"}},
+			want: ` { "2" : 2 } `,
+			exist: true,
+			val: map[string]interface{}{"2":int64(2)},
+		},
+		{
+			name: "two object exist 2",
+			src:  ` { "1" : 1 , "2" : 2 } `,
+			args: args{path: []interface{}{"2"}},
+			want: ` { "1" : 1 } `,
+			exist: true,
+			val: map[string]interface{}{"1":int64(1)},
+		},
+		{
+			name: "empty array",
+			src:  ` [ ] `,
+			args: args{path: []interface{}{0}},
+			want: ` [ ] `,
+			exist: false,
+			val: []interface{}{},
+		},
+		{
+			name: "one array not-exist",
+			src:  ` [ 1 ] `,
+			args: args{path: []interface{}{1}},
+			want: ` [ 1 ] `,
+			exist: false,
+			val: []interface{}{int64(1)},
+		},
+		{
+			name: "one array exist",
+			src:  ` [ 1 ] `,
+			args: args{path: []interface{}{0}},
+			want: ` [] `,
+			exist: true,
+			val: []interface{}{},
+		},
+		{
+			name: "two array exist",
+			src:  ` [ 1 , 2 ] `,
+			args: args{path: []interface{}{0}},
+			want: ` [ 2 ] `,
+			exist: true,
+			val: []interface{}{int64(2)},
+		},
+		{
+			name: "two array exist 2",
+			src:  ` [ 1 , 2 ] `,
+			args: args{path: []interface{}{1}},
+			want: ` [ 1 ] `,
+			exist: true,
+			val: []interface{}{int64(1)},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			println(tt.name)
+			self := NewRaw(tt.src)
+			exist, err := self.UnsetByPath(tt.args.path...)
+			spew.Dump(self.node)
+			if err != nil && tt.err == nil || err == nil && tt.err != nil {
+				t.Errorf("err = %v, want %v", err, tt.err)
+			}
+			if exist != tt.exist {
+				t.Errorf("exist = %v, want %v", exist, tt.exist)
+			}
+			if js, _ := self.Raw(); js != tt.want {
+				t.Errorf("raw = `%v`, want `%v`", js, tt.want)
+			}
+			if val, e := self.Interface(decoder.OptionUseInt64); !reflect.DeepEqual(val, tt.val) {
+				t.Errorf("val = %#v, val %#v, err = %v", val, tt.val, e)
+			}
+		})
+	}
+}
+
 func TestNode_SetByPath(t *testing.T) {
 	type args struct {
 		path []interface{}
@@ -191,6 +333,24 @@ func TestNode_SetByPath(t *testing.T) {
 			val: int64(1),
 		},
 		{
+			name: "unsupported",
+			src:  `1`,
+			args: args{path: []interface{}{1}, val: "1"},
+			want: `1`,
+			exist: false,
+			val: int64(1),
+			err: ErrUnsupportType,
+		},
+		{
+			name: "unsupported",
+			src:  `1`,
+			args: args{path: []interface{}{"1"}, val: "1"},
+			want: `1`,
+			exist: false,
+			val: int64(1),
+			err: ErrUnsupportType,
+		},
+		{
 			name: "empty object",
 			src:  ` { } `,
 			args: args{path: []interface{}{"1"}, val: "1"},
@@ -213,14 +373,6 @@ func TestNode_SetByPath(t *testing.T) {
 			want: ` { "1" : -1 } `,
 			exist: true,
 			val: map[string]interface{}{"1":int64(-1)},
-		},
-		{
-			name: "two object not exist",
-			src:  ` { "1" : 1 , "2" : 2 } `,
-			args: args{path: []interface{}{"3"}, val: "3"},
-			want: ` { "1" : 1 , "2" : 2,"3":3 } `,
-			exist: false,
-			val: map[string]interface{}{"1":int64(1),"2":int64(2),"3":int64(3)},
 		},
 		{
 			name: "empty array",
@@ -255,14 +407,6 @@ func TestNode_SetByPath(t *testing.T) {
 			exist: true,
 			val: []interface{}{int64(-1)},
 		},
-		{
-			name: "two object not exist",
-			src:  ` [ 1 , 2 ] `,
-			args: args{path: []interface{}{3}, val: "3", allowArrayAppend: true},
-			want: ` [ 1 , 2,3 ] `,
-			exist: false,
-			val: []interface{}{int64(1), int64(2), int64(3)},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -284,7 +428,6 @@ func TestNode_SetByPath(t *testing.T) {
 			}
 		})
 	}
-	
 }
 
 func TestNode_GetByPath(t *testing.T) {

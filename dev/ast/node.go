@@ -550,7 +550,7 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 		var exist bool
 		for i, k := range path {
 			if id, ok := k.(int); ok {
-				if start, err = p.locate(id); err != 0 {
+				if start, err = p.locate(0, id); err != 0 {
 					if err != types.ERR_NOT_FOUND {
 						return exist, makeSyntaxError(self.node.JSON, p.pos, err.Message())
 					} else if !allowArrayAppend {
@@ -561,8 +561,7 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 					}
 				}
 			} else if key, ok := k.(string); ok {
-				println(key, p.src)
-				if start, err = p.locate(key); err != 0 {
+				if start, err = p.locate(0, key); err != 0 {
 					// for object, we allow insert non-exist key
 					if err != types.ERR_NOT_FOUND {
 						return exist, makeSyntaxError(self.node.JSON, p.pos, err.Message())
@@ -578,12 +577,13 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 		var b []byte
 		if err == types.ERR_NOT_FOUND {
 			// NOTICE: pos must stop at '}' or ']'
-			s, empty := backward(self.node.JSON, p.pos)
+			s, c := backward(self.node.JSON, p.pos)
 			path := path[missing:]
 			size := len(self.node.JSON) + len(valjs) + EstimatedInsertedPathCharSize*len(path)
 			b = make([]byte, 0, size)
 			b = append(b, self.node.JSON[:s]...)
-			if !empty {
+			if c != '[' && c != '{' {
+				// non-empty, insert sep
 				b = append(b, ","...)
 			}
 			// creat new nodes on path
@@ -633,38 +633,33 @@ func (self *Node) UnsetByPath(path ...interface{}) (bool, error) {
 		p := NewParser(self.node.JSON)
 		var err types.ParsingError
 		var start int
-		for _, k := range path {
-			if id, ok := k.(int); ok {
-				if start, err = p.locate(id); err != 0 {
-					if err == types.ERR_NOT_FOUND {
-						return false, nil
-					} else {
-						return true, makeSyntaxError(self.node.JSON, p.pos, err.Message())
-					}
-				}
-			} else if key, ok := k.(string); ok {
-				if start, err = p.locate(key); err != 0 {
-					if err == types.ERR_NOT_FOUND {
-						return false, nil
-					} else {
-						return true, makeSyntaxError(self.node.JSON, p.pos, err.Message())
-					}
-				}
+		if start, err = p.locate(types.F_GetByPath_StartAtKey, path...); err != 0 {
+			if err == types.ERR_NOT_FOUND {
+				return false, nil
+			} else if err == types.ERR_UNSUPPORT_TYPE {
+				return false, ErrUnsupportType
 			} else {
-				panic("path must be either int or string")
+				return false, makeSyntaxError(self.node.JSON, p.pos, err.Message())
 			}
 		}
 
-		for ; start >= 0 && isSpace(self.node.JSON[start]); start-- {
+		end := p.pos
+		start, c := backward(self.node.JSON, start)
+		if c == ',' {
+			// not first, remove sep
+			start -= 1
+		} else {
+			// first, remove subfix ',' (if any)
+			end, c = forward(self.node.JSON, end)
+			if c == ',' {
+				end += 1
+			}
 		}
-		if (self.node.JSON[start] != ',') {
-			start = start - 1 // NOTICE: first elem doesn't need to delete left ','
-		}
+		
 		var b []byte
-		b = make([]byte, 0, len(self.node.JSON) - (p.pos-start))
+		b = make([]byte, 0, len(self.node.JSON) - (end-start))
 		b = append(b, self.node.JSON[:start]...)
-		b = append(b, self.node.JSON[p.pos:]...)
-
+		b = append(b, self.node.JSON[end:]...)
 		// refrest the node
 		p.src = rt.Mem2Str(b)
 		p.pos = 0

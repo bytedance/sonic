@@ -8,24 +8,24 @@ import (
 )
 
 const (
-    _entry__f32toa = 51360
+    _entry__f32toa = 51392
     _entry__f64toa = 192
-    _entry__format_significand = 55536
+    _entry__format_significand = 55568
     _entry__format_integer = 3040
     _entry__get_by_path = 25712
     _entry__skip_one_fast = 22176
     _entry__fsm_exec = 17920
     _entry__advance_string = 14320
-    _entry__advance_string_default = 56928
+    _entry__advance_string_default = 56960
     _entry__do_skip_number = 20528
-    _entry__get_index = 50016
-    _entry__get_key = 49952
-    _entry__get_key_impl = 46768
+    _entry__get_index = 50064
+    _entry__get_key = 50000
+    _entry__get_key_impl = 46816
     _entry__html_escape = 8912
     _entry__i64toa = 3472
     _entry__u64toa = 3584
     _entry__lspace = 16
-    _entry__parse_lazy = 31264
+    _entry__parse_lazy = 31312
     _entry__quote = 4864
     _entry__skip_array = 17872
     _entry__skip_number = 21792
@@ -33,15 +33,15 @@ const (
     _entry__skip_one = 21952
     _entry__unquote = 6576
     _entry__validate_one = 22000
-    _entry__validate_utf8 = 29920
-    _entry__validate_utf8_fast = 30592
+    _entry__validate_utf8 = 29968
+    _entry__validate_utf8_fast = 30640
     _entry__value = 12320
     _entry__vnumber = 15648
     _entry__atof_eisel_lemire64 = 10160
     _entry__atof_native = 11712
     _entry__decimal_to_f64 = 10528
-    _entry__right_shift = 56496
-    _entry__left_shift = 56000
+    _entry__right_shift = 56528
+    _entry__left_shift = 56032
     _entry__vsigned = 17200
     _entry__vstring = 14144
     _entry__vunsigned = 17520
@@ -52,7 +52,7 @@ const (
     _stack__f64toa = 80
     _stack__format_significand = 24
     _stack__format_integer = 16
-    _stack__get_by_path = 280
+    _stack__get_by_path = 296
     _stack__skip_one_fast = 176
     _stack__fsm_exec = 168
     _stack__advance_string = 64
@@ -92,13 +92,13 @@ const (
     _size__f64toa = 2848
     _size__format_significand = 464
     _size__format_integer = 432
-    _size__get_by_path = 4208
+    _size__get_by_path = 4256
     _size__skip_one_fast = 3032
     _size__fsm_exec = 1692
     _size__advance_string = 1280
     _size__advance_string_default = 944
     _size__do_skip_number = 924
-    _size__get_index = 1312
+    _size__get_index = 1296
     _size__get_key = 64
     _size__get_key_impl = 3184
     _size__html_escape = 1248
@@ -189,15 +189,15 @@ var (
         {10, 32},
         {12, 40},
         {13, 48},
-        {4088, 104},
-        {4092, 48},
-        {4093, 40},
-        {4095, 32},
-        {4097, 24},
-        {4099, 16},
-        {4101, 8},
-        {4102, 0},
-        {4206, 104},
+        {4031, 120},
+        {4035, 48},
+        {4036, 40},
+        {4038, 32},
+        {4040, 24},
+        {4042, 16},
+        {4044, 8},
+        {4045, 0},
+        {4253, 120},
     }
     _pcsp__skip_one_fast = [][2]uint32{
         {1, 0},

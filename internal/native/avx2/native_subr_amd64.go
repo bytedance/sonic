@@ -34,7 +34,7 @@ const (
     _entry__skip_one = 25552
     _entry__unquote = 7888
     _entry__validate_one = 25600
-    _entry__validate_utf8 = 31136
+    _entry__validate_utf8 = 31120
     _entry__validate_utf8_fast = 32080
     _entry__value = 15376
     _entry__vnumber = 18800
@@ -53,7 +53,7 @@ const (
     _stack__f64toa = 80
     _stack__format_significand = 24
     _stack__format_integer = 16
-    _stack__get_by_path = 272
+    _stack__get_by_path = 288
     _stack__skip_one_fast = 184
     _stack__advance_ns = 8
     _stack__fsm_exec = 144
@@ -94,7 +94,7 @@ const (
     _size__f64toa = 2848
     _size__format_significand = 464
     _size__format_integer = 432
-    _size__get_by_path = 2208
+    _size__get_by_path = 2192
     _size__skip_one_fast = 2460
     _size__advance_ns = 496
     _size__fsm_exec = 1468
@@ -116,7 +116,7 @@ const (
     _size__skip_one = 48
     _size__unquote = 2480
     _size__validate_one = 64
-    _size__validate_utf8 = 672
+    _size__validate_utf8 = 688
     _size__validate_utf8_fast = 2608
     _size__value = 1000
     _size__vnumber = 1552
@@ -192,15 +192,15 @@ var (
         {10, 32},
         {12, 40},
         {13, 48},
-        {2089, 88},
-        {2093, 48},
-        {2094, 40},
-        {2096, 32},
-        {2098, 24},
-        {2100, 16},
-        {2102, 8},
-        {2103, 0},
-        {2195, 88},
+        {2074, 104},
+        {2078, 48},
+        {2079, 40},
+        {2081, 32},
+        {2083, 24},
+        {2085, 16},
+        {2087, 8},
+        {2088, 0},
+        {2180, 104},
     }
     _pcsp__skip_one_fast = [][2]uint32{
         {1, 0},

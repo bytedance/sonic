@@ -351,3 +351,7 @@ var typeJumpTable = [256]Type{
     't' : T_TRUE,
     '{' : T_OBJECT,
 }
+
+const (
+    F_GetByPath_StartAtKey uint64 = 1 << 1
+)

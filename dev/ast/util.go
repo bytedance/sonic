@@ -1,25 +1,27 @@
 package ast
 
 import (
-	"fmt"
-
 	"github.com/bytedance/sonic/internal/encoder/alg"
 	"github.com/bytedance/sonic/internal/native/types"
 	uq "github.com/bytedance/sonic/unquote"
 	"github.com/cloudwego/base64x"
 )
 
-// NOTICE: must assume pos is at ']' or '}'
-func backward(json string, pos int) (stop int, empty bool) {
-    if json[pos] != ']' && json[pos] != '}' {
-        panic(fmt.Sprintf("char '%c' at stop %d is not close dilimeter of JSON", json[pos], pos))
-    }
+// NOTICE: start last char of container
+func backward(json string, pos int) (stop int, c byte) {
+    // ignore next char
     stop = pos - 1
     for ; stop >= 0 && isSpace(json[stop]); stop-- {
     }
-    empty = (json[stop] == '[' || json[stop] == '{')
+	c  = json[stop]
     stop += 1
     return
+}
+
+func forward(json string, pos int) (int, byte) {
+    for ; pos < len(json) && isSpace(json[pos]); pos++ {
+    }
+    return pos, json[pos]
 }
 
 func decodeBase64(src string) ([]byte, error) {

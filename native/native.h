@@ -167,7 +167,7 @@ long validate_utf8(const GoString *src, long *p, StateMachine *m);
 long validate_utf8_fast(const GoString *src); 
 
 long skip_one_fast(const GoString *src, long *p);
-long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm);
+long get_by_path(const GoString *src, long *p, const GoSlice *path, StateMachine* sm, uint64_t flags);
 
 long parse_lazy(const GoString *src, long *p, Node* node, const GoSlice *path);
 long get_key(const GoString *src, long *p, const GoString *key);
