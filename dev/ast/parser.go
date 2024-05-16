@@ -17,9 +17,11 @@
 package ast
 
 import (
-	`github.com/bytedance/sonic/internal/native`
-	`github.com/bytedance/sonic/internal/native/types`
-	`runtime`
+	"runtime"
+
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/davecgh/go-spew/spew"
 )
 
 type Parser struct {
@@ -37,6 +39,7 @@ func (self *Parser) Pos() int {
 // parse one layer but no validate sub layers
 func (self *Parser) Parse() (Node, error) {
 	node, err := parseLazy(self.src, nil)
+    spew.Dump(node.node)
 	if err != nil {
 		return Node{}, err
 	}

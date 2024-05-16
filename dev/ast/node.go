@@ -194,7 +194,10 @@ func (n *Node) Bool() (bool, error) {
 	// 		return false, ErrUnsupportType
 	// 	}
 	// 	return b, nil
-	default: return false, ErrUnsupportType
+	case V_ERROR: return false, n
+	case V_NONE:  return false, ErrNotExist
+	default:
+		return false, ErrUnsupportType
 	}
 }
 

@@ -8,19 +8,19 @@ import (
 )
 
 const (
-    _entry__f32toa = 51392
+    _entry__f32toa = 51456
     _entry__f64toa = 192
-    _entry__format_significand = 55568
+    _entry__format_significand = 55632
     _entry__format_integer = 3040
     _entry__get_by_path = 25712
     _entry__skip_one_fast = 22176
     _entry__fsm_exec = 17920
     _entry__advance_string = 14320
-    _entry__advance_string_default = 56960
+    _entry__advance_string_default = 57024
     _entry__do_skip_number = 20528
-    _entry__get_index = 50064
-    _entry__get_key = 50000
-    _entry__get_key_impl = 46816
+    _entry__get_index = 50128
+    _entry__get_key = 50064
+    _entry__get_key_impl = 46880
     _entry__html_escape = 8912
     _entry__i64toa = 3472
     _entry__u64toa = 3584
@@ -40,8 +40,8 @@ const (
     _entry__atof_eisel_lemire64 = 10160
     _entry__atof_native = 11712
     _entry__decimal_to_f64 = 10528
-    _entry__right_shift = 56528
-    _entry__left_shift = 56032
+    _entry__right_shift = 56592
+    _entry__left_shift = 56096
     _entry__vsigned = 17200
     _entry__vstring = 14144
     _entry__vunsigned = 17520
@@ -105,7 +105,7 @@ const (
     _size__i64toa = 48
     _size__u64toa = 1232
     _size__lspace = 144
-    _size__parse_lazy = 13360
+    _size__parse_lazy = 13428
     _size__quote = 1696
     _size__skip_array = 48
     _size__skip_number = 160
@@ -380,14 +380,14 @@ var (
         {10, 32},
         {12, 40},
         {13, 48},
-        {4728, 240},
-        {4729, 232},
-        {4731, 224},
-        {4733, 216},
-        {4735, 208},
-        {4737, 200},
-        {4741, 192},
-        {13360, 240},
+        {4725, 240},
+        {4726, 232},
+        {4728, 224},
+        {4730, 216},
+        {4732, 208},
+        {4734, 200},
+        {4738, 192},
+        {13428, 240},
     }
     _pcsp__quote = [][2]uint32{
         {1, 0},

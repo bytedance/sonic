@@ -2,6 +2,7 @@ package ast
 
 import (
 	"encoding/json"
+	"errors"
 	"reflect"
 	"strconv"
 	"testing"
@@ -680,5 +681,128 @@ func TestNode_GetByPath(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+
+func TestNodeCast(t *testing.T) {
+	type tcase struct {
+        method string
+        node   Node
+		opts decoder.Options
+        exp    interface{}
+        err    error
+    }
+	var cases = []tcase{
+		// none
+        {"Interface", Node{}, 0, interface{}(nil), ErrNotExist},
+        {"Bool", Node{}, 0, false, ErrNotExist},
+        {"Int64", Node{}, 0, int64(0), ErrNotExist},
+        {"Float64", Node{}, 0, float64(0), ErrNotExist},
+        {"Number", Node{}, 0, json.Number(""), ErrNotExist},
+		{"String", Node{}, 0, "", ErrNotExist},
+		{"Map", Node{}, 0, map[string]Node{}, ErrNotExist},
+		{"Array", Node{}, 0, []Node{}, ErrNotExist},
+
+		// error
+		{"Interface", newError(ErrUnsupportType), 0, interface{}(nil), ErrUnsupportType},
+  
+		// string
+		{"Interface", NewRaw(` "a"`), 0, "a", nil},
+        {"Bool", NewRaw(`"a"`), 0, false, ErrUnsupportType},
+        {"Int64", NewRaw(`"a"`), 0, int64(0), ErrUnsupportType},
+        {"Float64", NewRaw(`"a"`), 0, float64(0), ErrUnsupportType},
+        {"Number", NewRaw(`"a"`), 0, json.Number(""), ErrUnsupportType},
+		{"String", NewRaw(` "a"`), 0, "a", nil},
+		{"String", NewRaw(` "\"a"`), 0, `"a`, nil},
+		{"String", NewRaw(` "\u263a"`), 0, `☺`, nil},
+		{"String", NewString(` \u263a`), 0, ` \u263a`, nil},
+		{"String", NewAny(` \u263a`, 0), 0, ` \u263a`, nil},
+		{"Map", NewRaw(`"a"`), 0, map[string]Node{}, ErrUnsupportType},
+		{"Array", NewRaw(`"a"`), 0, []Node{}, ErrUnsupportType},
+
+		// bool
+		{"Interface", NewRaw(` true`), 0, true, nil},
+        {"Bool", NewRaw(` true`), 0, true, nil},
+        {"Bool", NewAny(true, 0), 0, true, nil},
+        {"Bool", NewBool(true), 0, true, nil},
+        {"Bool", NewBool(false), 0, false, nil},
+        {"Int64", NewRaw(` true`), 0, int64(0), ErrUnsupportType},
+        {"Float64", NewRaw(` true`), 0, float64(0), ErrUnsupportType},
+        {"Number", NewRaw(` true`), 0, json.Number(""), ErrUnsupportType},
+		{"String", NewRaw(` true`), 0, "", ErrUnsupportType},
+		{"Map", NewRaw(` true`), 0, map[string]Node{}, ErrUnsupportType},
+		{"Array", NewRaw(` true`), 0, []Node{}, ErrUnsupportType},
+
+		// number
+		{"Interface", NewRaw(` 1 `), decoder.OptionUseInt64, int64(1), nil},
+		{"Interface", NewRaw(` 1 `), decoder.OptionUseInt64, int64(1), nil},
+		{"Interface", NewRaw(` 1.1 `), 0, float64(1.1), nil},
+        {"Bool", NewRaw(` 1 `), 0, false, ErrUnsupportType},
+        {"Int64", NewRaw(` 1 `), 0, int64(1), nil},
+        {"Float64", NewRaw(` 1 `), 0, float64(1), nil},
+        {"Number", NewRaw(` 1 `), 0, json.Number("1"), nil},
+		{"Int64", NewRaw(` 1.1 `), 0, int64(0), errors.New("\"Syntax error at index 0: strconv.ParseInt: parsing \\\"1.1\\\": invalid syntax\\n\\n\\t1.1\\n\\t^..\\n\"")},
+        {"Float64", NewRaw(` 1.1 `), 0, float64(1.1), nil},
+        {"Number", NewRaw(` 1.1 `), 0, json.Number("1.1"), nil},
+		{"String", NewRaw(` 1 `), 0, "", ErrUnsupportType},
+		{"Map", NewRaw(` 1 `), 0, map[string]Node{}, ErrUnsupportType},
+		{"Array", NewRaw(` 1 `), 0, []Node{}, ErrUnsupportType},
+
+		// array
+		{"Interface", NewRaw(` [ 1 ] `), 0, []interface{}{float64(1)}, nil},
+        {"Bool", NewRaw(` [ 1 ] `), 0, false, ErrUnsupportType},
+        {"Int64", NewRaw(` [ 1 ] `), 0, int64(0), ErrUnsupportType},
+        {"Float64", NewRaw(` [ 1 ] `), 0, float64(0), ErrUnsupportType},
+        {"Number", NewRaw(` [ 1 ] `), 0, json.Number(""), ErrUnsupportType},
+		{"String", NewRaw(` [ 1 ] `), 0, "", ErrUnsupportType},
+		{"Map", NewRaw(` [ 1 ] `), 0, map[string]Node{}, ErrUnsupportType},
+		{"Array", NewRaw(` [ 1 ] `), 0, []Node{NewRaw(`1`)}, nil},
+
+		// map
+		{"Interface", NewRaw(` { "1" : 1 } `), 0, map[string]interface{}{"1":float64(1)}, nil},
+        {"Bool", NewRaw(` { "1" : 1 } `), 0, false, ErrUnsupportType},
+        {"Int64", NewRaw(` { "1" : 1 } `), 0, int64(0), ErrUnsupportType},
+        {"Float64", NewRaw(` { "1" : 1 } `), 0, float64(0), ErrUnsupportType},
+        {"Number", NewRaw(` { "1" : 1 } `), 0, json.Number(""), ErrUnsupportType},
+		{"String", NewRaw(` { "1" : 1 } `), 0, "", ErrUnsupportType},
+		{"Map", NewRaw(` { "1" : 1 } `), 0, map[string]Node{"1":NewRaw("1")}, nil},
+		{"Array", NewRaw(` { "1" : 1 } `), 0, []Node{}, ErrUnsupportType},
+	}
+
+	for i, c := range cases {
+        println(i, c.node.node.JSON)
+        rt := reflect.ValueOf(&c.node)
+        m := rt.MethodByName(c.method)
+		args := []reflect.Value{}
+		maps := map[string]Node{}
+		arrs := []Node{}
+		if c.method == "Interface" {
+			args = append(args, reflect.ValueOf(c.opts))
+		} else if c.method == "Map" {
+			args = append(args, reflect.ValueOf(maps))
+		} else if c.method == "Array" {
+			args = append(args, reflect.ValueOf(&arrs))
+		}
+        rets := m.Call(args)
+		var v interface{}
+		var e interface{}
+		if c.method == "Map" {
+			v = maps
+			e = rets[0].Interface()
+		} else if c.method == "Array" {
+			v = arrs
+			e = rets[0].Interface()
+		} else if len(rets) == 2 {
+			v = rets[0].Interface()
+			e = rets[1].Interface()
+        } else {
+			t.Fatal(i, rets)
+		}
+        require.Equal(t, c.exp,  v)
+		require.Equal(t, c.err == nil, e == nil)
+		if e != nil {
+			require.Equal(t, c.err.Error(), e.(error).Error())
+		}
 	}
 }

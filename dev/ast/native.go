@@ -191,10 +191,11 @@ func (n *Node) str(t types.Token) (string, error) {
 }
 
 func raw2str(json string, esc bool, off uint32) (string, error) {
+	s := json[1: len(json) - 1]
 	if !esc {
-		return json[1: len(json) - 1], nil
+		return s, nil
 	}
-	s, err := unquote(json[1: len(json) - 1])
+	s, err := unquote(s)
 	if err != 0 {
 		return "", makeSyntaxError(json, int(off), err.Message())
 	} else {
@@ -243,10 +244,18 @@ func parseLazy(json string, path *[]interface{}) (Node, error) {
 		return Node{},  makeSyntaxError(json, p, types.ParsingError(-r).Message())
 	}
 
-	tmp := make([]types.Token, len(node.node.Kids))
-	copy(tmp, node.node.Kids)
-	types.FreeToken(node.node.Kids)
-	node.node.Kids = tmp
+	// copy kids
+	l := len(node.node.Kids)
+	if l == 0 {
+		types.FreeToken(node.node.Kids)
+		node.node.Kids = nil
+	} else {
+		tmp := make([]types.Token, l)
+		copy(tmp, node.node.Kids)
+		types.FreeToken(node.node.Kids)
+		node.node.Kids = tmp
+	}
+	
 	// to keep json alive, and gcwb works for node.node.JSON
 	v := node.node.JSON
 	node.node.JSON = v

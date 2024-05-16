@@ -2083,6 +2083,9 @@ static always_inline long parse_prmitives(const GoString *src, long *p, Node* no
                 return r;
             }
             node->kind = T_STRING;
+            if (esc) {
+                node->flag |= F_ESC;
+            }
             break;
         }
         default:
