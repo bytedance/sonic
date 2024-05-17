@@ -18,6 +18,6 @@ package rt
 
 import _ "unsafe"
 
-//go:linkname Growslice runtime.growslice
+//go:linkname GrowSlice runtime.growslice
 //goland:noinspection GoUnusedParameter
-func Growslice(et *GoType, old GoSlice, cap int) GoSlice
+func GrowSlice(et *GoType, old GoSlice, cap int) GoSlice
