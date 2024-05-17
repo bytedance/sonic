@@ -574,7 +574,7 @@ func (self *_Assembler) call_marshaler_v(fn obj.Addr, it *rt.GoType, vt reflect.
 
 var (
     _T_byte      = jit.Type(byteType)
-    _F_growslice = jit.Func(growslice)
+    _F_growslice = jit.Func(rt.GrowSlice)
 )
 
 func (self *_Assembler) more_space() {

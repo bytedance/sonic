@@ -1,4 +1,4 @@
-// +build !go1.20
+// +build go1.16
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -33,10 +33,6 @@ func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 //go:linkname unsafe_NewArray reflect.unsafe_NewArray
 //goland:noinspection GoUnusedParameter
 func unsafe_NewArray(typ *rt.GoType, n int) unsafe.Pointer
-
-//go:linkname growslice runtime.growslice
-//goland:noinspection GoUnusedParameter
-func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
 
 //go:nosplit
 func mem2ptr(s []byte) unsafe.Pointer {

@@ -61,7 +61,7 @@ func quote(buf *[]byte, val string) {
         }
 
         // double buf size
-        *b = growslice(typeByte, *b, b.Cap*2)
+        *b = rt.GrowSlice(typeByte, *b, b.Cap*2)
         // ret is the complement of consumed input
         ret = ^ret
         // update input buffer

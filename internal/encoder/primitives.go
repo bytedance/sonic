@@ -59,7 +59,7 @@ func encodeString(buf *[]byte, val string) error {
 
         /* not enough space, grow the slice and try again */
         sidx += ^nb
-        *pbuf = growslice(rt.UnpackType(byteType), *pbuf, pbuf.Cap * 2)
+        *pbuf = rt.GrowSlice(rt.UnpackType(byteType), *pbuf, pbuf.Cap * 2)
     }
 
     /* closing quote */
@@ -122,7 +122,7 @@ func htmlEscape(dst []byte, src []byte) []byte {
     /* grow dst if it is shorter */
     if cap(dst) - len(dst) < len(src) + types.BufPaddingSize {
         cap :=  len(src) * 3 / 2 + types.BufPaddingSize
-        *dbuf = growslice(typeByte, *dbuf, cap)
+        *dbuf = rt.GrowSlice(typeByte, *dbuf, cap)
     }
 
     for sidx < sbuf.Len {
@@ -140,7 +140,7 @@ func htmlEscape(dst []byte, src []byte) []byte {
 
         /* not enough space, grow the slice and try again */
         sidx += ^nb
-        *dbuf = growslice(typeByte, *dbuf, dbuf.Cap * 2)
+        *dbuf = rt.GrowSlice(typeByte, *dbuf, dbuf.Cap * 2)
     }
     return dst
 }
