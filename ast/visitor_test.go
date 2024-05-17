@@ -648,6 +648,115 @@ func TestVisitor_UserNodeDiff(t *testing.T) {
     })
 }
 
+type skipVisitor struct {
+    sp int
+    Skip int
+    inSkip bool
+    CountSkip int
+}
+
+func (self *skipVisitor) OnNull() error {
+    if self.sp == self.Skip+1 && self.inSkip  {
+        panic("unexpected key")
+    }
+    return nil
+}
+
+func (self *skipVisitor) OnFloat64(v float64, n json.Number) error {
+    if self.sp == self.Skip+1 && self.inSkip  {
+        panic("unexpected key")
+    }
+    return nil
+}
+
+func (self *skipVisitor) OnInt64(v int64, n json.Number) error {
+    if self.sp == self.Skip+1 && self.inSkip  {
+        panic("unexpected key")
+    }
+    return nil
+}
+
+func (self *skipVisitor) OnBool(v bool) error {
+    if self.sp == self.Skip+1 && self.inSkip  {
+        panic("unexpected key")
+    }
+    return nil
+}
+
+func (self *skipVisitor) OnString(v string) error {
+    if self.sp == self.Skip+1 && self.inSkip  {
+        panic("unexpected key")
+    }
+    return nil
+}
+
+func (self *skipVisitor) OnObjectBegin(capacity int) error {
+    println("self.sp", self.sp)
+    if self.sp == self.Skip {
+        self.inSkip = true
+        self.CountSkip++
+        println("op skip")
+        self.sp++
+        return VisitOPSkip
+    }
+    self.sp++
+    return nil
+}
+
+func (self *skipVisitor) OnObjectKey(key string) error {
+    if self.sp == self.Skip+1 && self.inSkip  {
+        panic("unexpected key")
+    }
+    return nil
+}
+
+func (self *skipVisitor) OnObjectEnd() error {
+    if self.sp == self.Skip + 1 {
+        if !self.inSkip {
+            panic("not in skip")
+        }
+        self.inSkip = false
+        println("finish op skip")
+    }
+    self.sp--
+    return nil
+}
+
+func (self *skipVisitor) OnArrayBegin(capacity int) error {
+    println("arr self.sp", self.sp)
+    if self.sp == self.Skip {
+        self.inSkip = true
+        self.CountSkip++
+        println("arr op skip")
+        self.sp++
+        return VisitOPSkip
+    }
+    self.sp++
+    return nil
+}
+
+func (self *skipVisitor) OnArrayEnd() error {
+    println("arr self.sp", self.sp)
+    if self.sp == self.Skip + 1 {
+        if !self.inSkip {
+            panic("arr not in skip")
+        }
+        self.inSkip = false
+        println("arr finish op skip")
+    }
+    self.sp--
+    return nil
+}
+
+func TestVisitor_OpSkip(t *testing.T) {
+    var suite skipVisitor
+    suite.Skip = 1
+    Preorder(`{"a": [ null ] , "b":1, "c": { "1" : 1 } }`, &suite, nil)
+    if suite.CountSkip != 2 {
+        t.Fatal(suite.CountSkip)
+    }
+}
+
 func BenchmarkVisitor_UserNode(b *testing.B) {
     const str = _TwitterJson
     b.Run("AST", func(b *testing.B) {

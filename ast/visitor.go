@@ -18,6 +18,7 @@ package ast
 
 import (
     `encoding/json`
+    `errors`
 
     `github.com/bytedance/sonic/internal/native/types`
 )
@@ -191,6 +192,19 @@ func (self *traverser) decodeArray() error {
 
     /* allocate array space and parse every element */
     if err := self.visitor.OnArrayBegin(_DEFAULT_NODE_CAP); err != nil {
+        if err == VisitOPSkip {
+            // NOTICE: for user needs to skip entiry object
+            self.parser.p -= 1
+            self.parser.backward()
+            if self.parser.s[self.parser.p] != '[' {
+                return types.ERR_INVALID_CHAR
+            }
+            if _, e := self.parser.skipFast(); e != 0 {
+                return e
+            }
+            println("skip to ", self.parser.p)
+            return self.visitor.OnArrayEnd()
+        }
         return err
     }
     for {
@@ -240,6 +254,18 @@ func (self *traverser) decodeObject() error {
 
     /* allocate object space and decode each pair */
     if err := self.visitor.OnObjectBegin(_DEFAULT_NODE_CAP); err != nil {
+        if err == VisitOPSkip {
+            // NOTICE: for user needs to skip entiry object
+            self.parser.p -= 1
+            self.parser.backward()
+            if self.parser.s[self.parser.p] != '{' {
+                return types.ERR_INVALID_CHAR
+            }
+            if _, e := self.parser.skipFast(); e != 0 {
+                return e
+            }
+            return self.visitor.OnObjectEnd()
+        }
         return err
     }
     for {
@@ -313,3 +339,7 @@ func (self *traverser) decodeString(iv int64, ep int) error {
     }
     return self.visitor.OnString(out)
 }
+
+// If visitor return this error on `OnObjectBegin()` or `OnArrayBegin()`, 
+// the transverer will skip entiry object or array
+var VisitOPSkip = errors.New("")
