@@ -25,7 +25,7 @@ func TestGrowSlic(t *testing.T) {
 	println("n len:", len(n), "cap:", cap(n))
 	v := GrowSlice(et, *(*GoSlice)(unsafe.Pointer(&n)), 1025)
 	println("v len:", v.Len, "cap:", v.Cap)
-	// according to go growslice rule, 
+	// according to go growslice rule, the next cap must be 1.5x of old.Cap
 	if v.Cap != 1536 {
 		t.Fatal(v.Cap)
 	}
