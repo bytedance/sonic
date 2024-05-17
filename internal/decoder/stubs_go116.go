@@ -72,11 +72,6 @@ func mallocgc(size uintptr, typ *rt.GoType, needzero bool) unsafe.Pointer
 //goland:noinspection GoUnusedParameter
 func makeslice(et *rt.GoType, len int, cap int) unsafe.Pointer
 
-//go:noescape
-//go:linkname growslice runtime.growslice
-//goland:noinspection GoUnusedParameter
-func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
-
 //go:linkname makemap_small runtime.makemap_small
 func makemap_small() unsafe.Pointer
 

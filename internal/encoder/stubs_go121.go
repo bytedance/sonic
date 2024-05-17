@@ -34,10 +34,6 @@ var _subr__b64encode uintptr
 //goland:noinspection GoUnusedParameter
 func memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
 
-//go:linkname growslice reflect.growslice
-//goland:noinspection GoUnusedParameter
-func growslice(et *rt.GoType, old rt.GoSlice, cap int) rt.GoSlice
-
 //go:linkname mapiternext runtime.mapiternext
 //goland:noinspection GoUnusedParameter
 func mapiternext(it *rt.GoMapIterator)
