@@ -260,6 +260,7 @@ func parseLazy(json string, path *[]interface{}) (Node, error) {
 	v := node.node.JSON
 	node.node.JSON = v
 	runtime.KeepAlive(json)
+	runtime.KeepAlive(path)
 	return node, nil
 }
 

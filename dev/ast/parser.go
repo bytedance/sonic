@@ -64,6 +64,7 @@ func (self *Parser) locate(flags uint64, path ...interface{}) (start int, err ty
     if start < 0 {
         return -1, types.ParsingError(-start)
     }
+    runtime.KeepAlive(path)
     return start, 0
 }
 
@@ -72,10 +73,10 @@ func (self *Parser) locateAndValidate(flags uint64, path ...interface{}) (start 
     var fsm = types.NewStateMachine()
     start = native.GetByPath(&self.src, &self.pos, &path, fsm, flags)
     types.FreeStateMachine(fsm)
-    runtime.KeepAlive(path)
     if start < 0 {
         return -1, types.ParsingError(-start)
     }
+    runtime.KeepAlive(path)
     return start, 0
 }
 

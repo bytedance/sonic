@@ -44,3 +44,13 @@ func makeSyntaxError(json string, p int, msg string) decoder.SyntaxError {
 		Msg: msg,
 	}
 }
+
+// speciall used for `SetByPath()`, tells which path is array index of range
+type ErrIndexOutOfRange struct {
+    Index int // index of path
+    Err  error
+}
+
+func (e ErrIndexOutOfRange) Error() string {
+    return e.Err.Error()
+}

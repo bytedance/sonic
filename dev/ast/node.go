@@ -557,7 +557,7 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 					if err != types.ERR_NOT_FOUND {
 						return exist, makeSyntaxError(self.node.JSON, p.pos, err.Message())
 					} else if !allowArrayAppend {
-						return false, ErrNotExist
+						return false, ErrIndexOutOfRange{Index: i, Err: ErrNotExist}
 					} else {
 						missing = i
 						break
@@ -575,6 +575,10 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 				}
 			} else {
 				panic("path must be either int or string")
+			}
+			// next layer, reset pos
+			if i != l - 1 {
+				p.pos = start
 			}
 		}
 		var b []byte
