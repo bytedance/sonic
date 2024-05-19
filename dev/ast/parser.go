@@ -21,6 +21,7 @@ import (
 
 	"github.com/bytedance/sonic/internal/native"
 	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 	"github.com/davecgh/go-spew/spew"
 )
 
@@ -101,3 +102,14 @@ func (self *Parser) skip() (int, types.ParsingError) {
     return start, 0
 }
 
+func Get(src []byte, path ...interface{}) (Node, error) {
+    node, err := parseLazy(rt.Mem2Str(src), &path)
+    // NOTICE: always copy JSON string to avoid memory leak
+    r := node
+    r.node.JSON = rt.Mem2Str([]byte(node.node.JSON))
+    return node, err
+}
+
+func GetFromString(src string, path ...interface{}) (Node, error) {
+    return parseLazy(src, &path)
+}
