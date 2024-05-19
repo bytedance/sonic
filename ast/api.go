@@ -114,7 +114,7 @@ func (self *Parser) skipFast() (int, types.ParsingError) {
 
 func (self *Parser) getByPath(path ...interface{}) (int, types.ParsingError) {
     fsm := types.NewStateMachine()
-    start := native.GetByPath(&self.s, &self.p, &path, fsm)
+    start := native.GetByPath(&self.s, &self.p, &path, fsm, 0)
     types.FreeStateMachine(fsm)
     runtime.KeepAlive(path)
     if start < 0 {
