@@ -17,6 +17,14 @@
 #ifndef XASSERT_H
 #define XASSERT_H
 
+#ifndef PANIC
+    static always_inline void xpanic() {}
+#else
+    static always_inline void xpanic() {
+        int *ptr = NULL;
+        volatile int value = *ptr;
+    }
+#endif
 
 #ifndef DEBUG
     #define xassert(expr)     ((void)0)
