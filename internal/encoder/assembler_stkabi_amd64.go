@@ -452,6 +452,9 @@ func (self *_Assembler) add_long(ch uint32, n int64) {
 }
 
 func (self *_Assembler) add_text(ss string) {
+    if debug_OOM > 0 && len(ss) > debug_OOM {
+        print_string("STATIC TEXT", &ss)
+    }
     self.store_str(ss)                                  // TEXT $ss
     self.Emit("ADDQ", jit.Imm(int64(len(ss))), _RL)     // ADDQ ${len(ss)}, RL
 }
@@ -869,10 +872,12 @@ func (self *_Assembler) _asm_OP_f64(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {
+    self.debug_string(_SP_p)
     self.encode_string(false)
 }
 
 func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
+    self.debug_string(_SP_p)
     self.Emit("MOVQ", jit.Ptr(_SP_p, 8), _AX)           // MOVQ 8(SP.p), AX
     self.Emit("ADDQ", jit.Imm(2), _AX)                  // ADDQ $2, AX
     self.Emit("MOVQ", jit.Imm(_IM_mulv), _CX)           // MOVQ $_MF_mulv, CX
@@ -901,6 +906,7 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_quote(_ *_Instr) {
+    self.debug_string(_SP_p)
     self.encode_string(true)
 }
 

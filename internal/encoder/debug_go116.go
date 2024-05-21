@@ -1,3 +1,4 @@
+//go:build go1.16 && !go1.17
 // +build go1.16,!go1.17
 
 /*
@@ -19,12 +20,16 @@
 package encoder
 
 import (
-    `os`
-    `strings`
-    `runtime`
-    `runtime/debug`
+	"os"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"strings"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/jit`
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 var (
@@ -62,5 +67,48 @@ func (self *_Assembler) debug_instr(i int, v *_Instr) {
             }
         }
         self.force_gc()
+    }
+}
+
+
+var (
+    debug_OOM int
+    _F_debug_string = jit.Func(print_string)
+)
+
+func init() {
+    val := os.Getenv("SONIC_DEBUG_OOM")
+    iv, err := strconv.ParseInt(val, 10, 64)
+    if err == nil {
+        debug_OOM = int(iv)
+    }
+}
+
+func (self *_Assembler) debug_string(str obj.Addr) {
+    if debug_OOM <= 0 {
+        return
+    }
+    self.Emit("MOVQ", jit.Ptr(str, 8), _AX)
+    self.Emit("CMPQ", _AX, jit.Imm(int64(debug_OOM)))
+    self.Sjmp("JBE", "_debug_string_ret_{n}")
+    self.Emit("MOVQ", _RP, jit.Ptr(_SP, 0))        
+    self.Emit("MOVQ", _RL, jit.Ptr(_SP, 8))        
+    self.Emit("MOVQ", str, jit.Ptr(_SP, 16))     
+    self.call_go(_F_debug_string)
+    self.Link("_debug_string_ret_{n}")
+}
+
+func print_string(curjson string, val *string) {
+    println("[SONIC_DEBUG] Current output json: ", curjson)
+    if val != nil {
+        s := (*rt.GoString)(unsafe.Pointer(val))
+        print("[SONIC_DEBUG] GoString Ptr:", s.Ptr, ", Len:", s.Len, ", first bytes: ")
+        if s.Len <= 100 {
+            println(*val)
+        } else {
+            println((*val)[:100])
+        }
+    } else {
+        println("[SONIC_DEBUG] nil pointer")
     }
 }
