@@ -184,6 +184,13 @@ func (n *Node) Raw() (string, error) {
 	return n.node.JSON, nil
 }
 
+func (n *Node) Len() (int, error) {
+	switch n.node.Kind {
+		case types.T_ARRAY, types.T_OBJECT: return len(n.node.Kids), nil
+		default: return 0, ErrUnsupportType
+	}
+}
+
 func (n *Node) Bool() (bool, error) {
 	switch n.node.Kind {
 	case types.T_FALSE: return false, nil
