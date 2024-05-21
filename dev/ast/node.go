@@ -11,16 +11,16 @@ import (
 )
 
 const (
-    V_NONE   = 0
-    V_ERROR  = 1
-    V_NULL   = int(types.T_NULL)
-    V_TRUE   = int(types.T_TRUE)
-    V_FALSE  = int(types.T_FALSE)
-    V_ARRAY  = int(types.T_ARRAY)
-    V_OBJECT = int(types.T_OBJECT)
-    V_STRING = int(types.T_STRING)
-    V_NUMBER = int(types.T_NUMBER)
-    // V_ANY    = V_NUMBER + 1 // go interface{}, only appears when using `SetXX()` API
+	V_NONE   = 0
+	V_ERROR  = 1
+	V_NULL   = int(types.T_NULL)
+	V_TRUE   = int(types.T_TRUE)
+	V_FALSE  = int(types.T_FALSE)
+	V_ARRAY  = int(types.T_ARRAY)
+	V_OBJECT = int(types.T_OBJECT)
+	V_STRING = int(types.T_STRING)
+	V_NUMBER = int(types.T_NUMBER)
+	// V_ANY    = V_NUMBER + 1 // go interface{}, only appears when using `SetXX()` API
 )
 
 // JSON Node
@@ -79,9 +79,9 @@ func (self *Node) Check() error {
 // }
 
 var (
-    nullNode  = types.NewNode("null", 0, 0)
-    trueNode  = types.NewNode("true", 0, 0)
-    falseNode = types.NewNode("false", 0, 0)
+	nullNode  = types.NewNode("null", 0, 0)
+	trueNode  = types.NewNode("true", 0, 0)
+	falseNode = types.NewNode("false", 0, 0)
 )
 
 // NewRaw creates a node of raw json.
@@ -96,7 +96,7 @@ func NewRaw(json string) Node {
 
 // NewAny creates a node of type:
 //   - V_ANY: if any's type isn't Node or *Node
-//   val.Type(): if any's type is Node or *Node
+//     val.Type(): if any's type is Node or *Node
 func NewAny(val interface{}, opts encoder.Options) Node {
 	// if n, isNode := val.(Node); isNode {
 	// 	return n
@@ -121,32 +121,33 @@ func NewAny(val interface{}, opts encoder.Options) Node {
 
 // NewNull creates a node of type V_NULL
 func NewNull() Node {
-    return Node{nullNode}
+	return Node{nullNode}
 }
 
 // NewBool creates a node of type bool:
-//  If v is true, returns V_TRUE node
-//  If v is false, returns V_FALSE node
+//
+//	If v is true, returns V_TRUE node
+//	If v is false, returns V_FALSE node
 func NewBool(v bool) Node {
-   if v {
+	if v {
 		return Node{trueNode}
-   } else {
+	} else {
 		return Node{falseNode}
-   }
+	}
 }
 
 // NewNumber creates a json.Number node
 // v must be a decimal string complying with RFC8259
 func NewNumber(v json.Number) Node {
-    return newRawNodeLoad(string(v), 0)
+	return newRawNodeLoad(string(v), 0)
 }
 
-// NewString creates a node of type V_STRING. 
+// NewString creates a node of type V_STRING.
 // v is considered to be a valid UTF-8 string, which means it won't be validated and unescaped.
 // when the node is encoded to json, v will be escaped.
 func NewString(v string) Node {
 	s := encoder.Quote(v)
-	esc := len(s) > len(v) + 2
+	esc := len(s) > len(v)+2
 	if esc {
 		return newRawNodeLoad(s, types.F_ESC)
 	}
@@ -186,23 +187,29 @@ func (n *Node) Raw() (string, error) {
 
 func (n *Node) Len() (int, error) {
 	switch n.node.Kind {
-		case types.T_ARRAY, types.T_OBJECT: return len(n.node.Kids), nil
-		default: return 0, ErrUnsupportType
+	case types.T_ARRAY, types.T_OBJECT:
+		return len(n.node.Kids), nil
+	default:
+		return 0, ErrUnsupportType
 	}
 }
 
 func (n *Node) Bool() (bool, error) {
 	switch n.node.Kind {
-	case types.T_FALSE: return false, nil
-	case types.T_TRUE: return true, nil
+	case types.T_FALSE:
+		return false, nil
+	case types.T_TRUE:
+		return true, nil
 	// case types.Type(V_ANY):
 	// 	b, ok := n.any().(bool)
 	// 	if !ok {
 	// 		return false, ErrUnsupportType
 	// 	}
 	// 	return b, nil
-	case V_ERROR: return false, n
-	case V_NONE:  return false, ErrNotExist
+	case V_ERROR:
+		return false, n
+	case V_NONE:
+		return false, ErrNotExist
 	default:
 		return false, ErrUnsupportType
 	}
@@ -296,15 +303,15 @@ func (n *Node) Array(buf *[]Node) error {
 	case types.T_ARRAY:
 		l := len(n.node.Kids)
 		ol := len(*buf)
-		if cap(*buf) - ol < l {
+		if cap(*buf)-ol < l {
 			tmp := make([]Node, ol+l)
 			copy(tmp, *buf)
 			*buf = tmp[:ol]
 		}
 		for _, t := range n.node.Kids {
 			*buf = append(*buf, n.getKidLoad(t))
-	}
-	return nil
+		}
+		return nil
 	// case types.Type(V_ANY):
 	// 	ok := castToArray(n.any(), buf)
 	// 	if !ok {
@@ -325,8 +332,8 @@ func (n *Node) Map(buf map[string]Node) error {
 	}
 	switch n.node.Kind {
 	case types.T_OBJECT:
-		for i := 0; i<len(n.node.Kids);  {
-			t := n.node.Kids[i];
+		for i := 0; i < len(n.node.Kids); {
+			t := n.node.Kids[i]
 			key, err := n.str(t)
 			if err != nil {
 				return err
@@ -346,7 +353,7 @@ func (n *Node) Map(buf map[string]Node) error {
 	default:
 		return ErrUnsupportType
 	}
-	
+
 }
 
 func (n *Node) Interface(opts decoder.Options) (interface{}, error) {
@@ -362,9 +369,9 @@ func (n *Node) Interface(opts decoder.Options) (interface{}, error) {
 	case types.T_STRING:
 		return n.String()
 	case types.T_NUMBER:
-		if opts & decoder.OptionUseNumber != 0 {
+		if opts&decoder.OptionUseNumber != 0 {
 			return json.Number(n.node.JSON), nil
-		} else if opts & decoder.OptionUseInt64 != 0 {
+		} else if opts&decoder.OptionUseInt64 != 0 {
 			if iv, err := n.Int64(); err == nil {
 				return iv, nil
 			}
@@ -383,7 +390,7 @@ func (n *Node) Interface(opts decoder.Options) (interface{}, error) {
 		return buf, nil
 	case types.T_OBJECT:
 		buf := make(map[string]interface{}, len(n.node.Kids)/2)
-		for i:=0; i<len(n.node.Kids); i += 2 {
+		for i := 0; i < len(n.node.Kids); i += 2 {
 			key, err := n.str(n.node.Kids[i])
 			if err != nil {
 				return nil, err
@@ -411,7 +418,7 @@ func (n *Node) ForEachKV(scanner func(key string, elem Node) bool) error {
 	if err := n.should(types.T_OBJECT); err != nil {
 		return err
 	}
-	for i:=0; i<len(n.node.Kids); i+=2 {
+	for i := 0; i < len(n.node.Kids); i += 2 {
 		key, err := n.str(n.node.Kids[i])
 		if err != nil {
 			return err
@@ -425,7 +432,7 @@ func (n *Node) ForEachKV(scanner func(key string, elem Node) bool) error {
 }
 
 func (n *Node) ForEachElem(scanner func(index int, elem Node) bool) error {
-	if err := n.should(types.T_OBJECT); err != nil {
+	if err := n.should(types.T_ARRAY); err != nil {
 		return err
 	}
 	for i, t := range n.node.Kids {
@@ -437,7 +444,7 @@ func (n *Node) ForEachElem(scanner func(index int, elem Node) bool) error {
 	return nil
 }
 
-func (n *Node) Get(key string) Node  {
+func (n *Node) Get(key string) Node {
 	if err := n.should(types.T_OBJECT); err != nil {
 		return newError(err)
 	}
@@ -448,7 +455,7 @@ func (n *Node) Get(key string) Node  {
 	return n.getKidLoad(*t)
 }
 
-func (n *Node) get(key string) (string, error)  {
+func (n *Node) get(key string) (string, error) {
 	if err := n.should(types.T_OBJECT); err != nil {
 		return "", err
 	}
@@ -459,7 +466,7 @@ func (n *Node) get(key string) (string, error)  {
 	return n.json(*t), nil
 }
 
-func (n *Node) Index(key int) Node  {
+func (n *Node) Index(key int) Node {
 	if err := n.should(types.T_ARRAY); err != nil {
 		return newError(err)
 	}
@@ -470,7 +477,7 @@ func (n *Node) Index(key int) Node  {
 	return n.getKidLoad(*t)
 }
 
-func (n *Node) index(key int) (string, error)  {
+func (n *Node) index(key int) (string, error) {
 	if err := n.should(types.T_ARRAY); err != nil {
 		return "", err
 	}
@@ -507,14 +514,14 @@ func (self *Node) GetByPath(paths ...interface{}) Node {
 				return newError(err)
 			}
 		default:
-			panic("path must be either int or string")
+			return ErrInvalidPath
 		}
-		
+
 		// more paths, using parser..
 		n, err := NewParser(js).GetByPath(paths[1:]...)
 		if err != nil {
 			return newError(err)
-		} 
+		}
 		return n
 	}
 }
@@ -531,26 +538,26 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 	if l := len(path); l == 0 {
 		*self = NewRaw(valjs)
 		return true, nil
-	// } else if l == 1 {
-	// 	// for one layer set
-	// 	switch p := path[0].(type) {
-	// 	case int:
-	// 		e := self.arrSet(p, val)
-	// 		if e == ErrNotExist && allowArrayAppend {
-	// 			ee := self.arrAdd(val)
-	// 			return false, ee
-	// 		}
-	// 		return e == nil, e 
-	// 	case string:
-	// 		e := self.objSet(p, val)
-	// 		if e == ErrNotExist {
-	// 			ee := self.objAdd(p, val)
-	// 			return false, ee
-	// 		} 
-	// 		return e == nil, e
-	// 	default:
-	// 		panic("path must be either int or string")
-	// 	}
+		// } else if l == 1 {
+		// 	// for one layer set
+		// 	switch p := path[0].(type) {
+		// 	case int:
+		// 		e := self.arrSet(p, val)
+		// 		if e == ErrNotExist && allowArrayAppend {
+		// 			ee := self.arrAdd(val)
+		// 			return false, ee
+		// 		}
+		// 		return e == nil, e
+		// 	case string:
+		// 		e := self.objSet(p, val)
+		// 		if e == ErrNotExist {
+		// 			ee := self.objAdd(p, val)
+		// 			return false, ee
+		// 		}
+		// 		return e == nil, e
+		// 	default:
+		// 		panic("path must be either int or string")
+		// 	}
 	} else {
 		// multi layers set
 		p := NewParser(self.node.JSON)
@@ -581,10 +588,10 @@ func (self *Node) SetByPath(allowArrayAppend bool, json string, path ...interfac
 					}
 				}
 			} else {
-				panic("path must be either int or string")
+				return false, ErrInvalidPath
 			}
 			// next layer, reset pos
-			if i != l - 1 {
+			if i != l-1 {
 				p.pos = start
 			}
 		}
@@ -630,18 +637,18 @@ func (self *Node) UnsetByPath(path ...interface{}) (bool, error) {
 	if l := len(path); l == 0 {
 		*self = Node{}
 		return true, nil
-	// } else if l == 1 {
-	// 	// for one layer set
-	// 	switch p := path[0].(type) {
-	// 	case int:
-	// 		e := self.arrDel(p)
-	// 		return e != ErrNotExist, e 
-	// 	case string:
-	// 		e := self.objDel(p)
-	// 		return e != ErrNotExist, e 
-	// 	default:
-	// 		panic("path must be either int or string")
-	// 	}
+		// } else if l == 1 {
+		// 	// for one layer set
+		// 	switch p := path[0].(type) {
+		// 	case int:
+		// 		e := self.arrDel(p)
+		// 		return e != ErrNotExist, e
+		// 	case string:
+		// 		e := self.objDel(p)
+		// 		return e != ErrNotExist, e
+		// 	default:
+		// 		panic("path must be either int or string")
+		// 	}
 	} else {
 		// multi layers set
 		p := NewParser(self.node.JSON)
@@ -669,9 +676,9 @@ func (self *Node) UnsetByPath(path ...interface{}) (bool, error) {
 				end += 1
 			}
 		}
-		
+
 		var b []byte
-		b = make([]byte, 0, len(self.node.JSON) - (end-start))
+		b = make([]byte, 0, len(self.node.JSON)-(end-start))
 		b = append(b, self.node.JSON[:start]...)
 		b = append(b, self.node.JSON[end:]...)
 		// refrest the node
