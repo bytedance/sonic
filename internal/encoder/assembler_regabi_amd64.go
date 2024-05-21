@@ -467,7 +467,7 @@ func (self *_Assembler) add_long(ch uint32, n int64) {
 }
 
 func (self *_Assembler) add_text(ss string) {
-    if len(ss) > debug_OOM {
+    if debug_OOM > 0 && len(ss) > debug_OOM {
         print_string("STATIC TEXT", &ss)
     }
     self.store_str(ss)                                  // TEXT $ss
