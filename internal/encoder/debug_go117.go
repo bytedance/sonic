@@ -1,3 +1,4 @@
+//go:build go1.17 && !go1.22
 // +build go1.17,!go1.22
 
 /*
@@ -19,14 +20,16 @@
 package encoder
 
 import (
-    `fmt`
-    `os`
-    `runtime`
-    `strings`
-    `unsafe`
+	"fmt"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/twitchyliquid64/golang-asm/obj`
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 const _FP_debug = 128
@@ -42,7 +45,7 @@ var (
 
     _F_gc       = jit.Func(gc)
     _F_println  = jit.Func(println_wrapper)
-    _F_print    = jit.Func(print)
+    _F_print    = jit.Func(printInt)
 )
 
 func (self *_Assembler) dsave(r ...obj.Addr) {
@@ -69,7 +72,7 @@ func println_wrapper(i int, op1 int, op2 int){
     println(i, " Intrs ", op1, _OpNames[op1], "next: ", op2, _OpNames[op2])
 }
 
-func print(i int){
+func printInt(i int){
     println(i)
 }
 
@@ -202,4 +205,46 @@ func (self *_Assembler) print_ptr(i int, ptr obj.Addr, lea bool) {
     self.Emit("MOVQ", _R10, _BX)
     self.dcall(_F_printptr)
     self.dload(_REG_debug...)
+}
+
+var (
+    debug_OOM int
+    _F_debug_string = jit.Func(print_string)
+)
+
+func init() {
+    val := os.Getenv("SONIC_DEBUG_OOM")
+    iv, err := strconv.ParseInt(val, 10, 64)
+    if err == nil {
+        debug_OOM = int(iv)
+    }
+}
+
+func (self *_Assembler) debug_string(str obj.Addr) {
+    if debug_OOM <= 0 {
+        return
+    }
+    self.Emit("MOVQ", jit.Ptr(str, 8), _AX)
+    self.Emit("CMPQ", _AX, jit.Imm(int64(debug_OOM)))
+    self.Sjmp("JBE", "_debug_string_ret_{n}")
+    self.Emit("MOVQ", _RP, _AX)        
+    self.Emit("MOVQ", _RL, _BX)        
+    self.Emit("MOVQ", str, _CX)     
+    self.call_go(_F_debug_string)
+    self.Link("_debug_string_ret_{n}")
+}
+
+func print_string(curjson string, val *string) {
+    println("[SONIC_DEBUG] Current output json: ", curjson)
+    if val != nil {
+        s := (*rt.GoString)(unsafe.Pointer(val))
+        print("[SONIC_DEBUG] GoString Ptr:", s.Ptr, ", Len:", s.Len, ", first bytes: ")
+        if s.Len <= 100 {
+            println(*val)
+        } else {
+            println((*val)[:100])
+        }
+    } else {
+        println("[SONIC_DEBUG] nil pointer")
+    }
 }

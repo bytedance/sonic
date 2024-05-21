@@ -20,19 +20,19 @@
 package encoder
 
 import (
-    `fmt`
-    `reflect`
-    `strconv`
-    `unsafe`
+	"fmt"
+	"reflect"
+	"strconv"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/twitchyliquid64/golang-asm/obj`
-    `github.com/twitchyliquid64/golang-asm/obj/x86`
+	"github.com/bytedance/sonic/internal/cpu"
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/twitchyliquid64/golang-asm/obj"
+	"github.com/twitchyliquid64/golang-asm/obj/x86"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 /** Register Allocations
@@ -104,6 +104,7 @@ const (
 const (
     _LB_more_space        = "_more_space"
     _LB_more_space_return = "_more_space_return_"
+    _LB_debug_string        = "_debug_string"
 )
 
 const (
@@ -466,6 +467,9 @@ func (self *_Assembler) add_long(ch uint32, n int64) {
 }
 
 func (self *_Assembler) add_text(ss string) {
+    if len(ss) > debug_OOM {
+        print_string("STATIC TEXT", &ss)
+    }
     self.store_str(ss)                                  // TEXT $ss
     self.Emit("ADDQ", jit.Imm(int64(len(ss))), _RL)     // ADDQ ${len(ss)}, RL
 }
@@ -602,7 +606,7 @@ func (self *_Assembler) more_space() {
     self.Emit("MOVQ", _RC, _DI)        // MOVQ DX, DI
     self.Emit("MOVQ", _AX, _SI)        // MOVQ AX, SI
     self.Emit("MOVQ", _T_byte, _AX)    // MOVQ $_T_byte, AX
-    self.call_more_space(_F_growslice)            // CALL $pc    
+    self.call_more_space(_F_growslice) // CALL $pc    
     self.Emit("MOVQ", _AX, _RP)        // MOVQ AX, DI
     self.Emit("MOVQ", _BX, _RL)        // MOVQ BX, SI
     self.Emit("MOVQ", _CX, _RC)        // MOVQ CX, DX
@@ -653,7 +657,7 @@ func (self *_Assembler) go_panic() {
     self.call_go(_F_panic)
 }
 
-func (self *_Assembler) encode_string(doubleQuote bool) {       
+func (self *_Assembler) encode_string(doubleQuote bool) {
     self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _AX)  // MOVQ  8(SP.p), AX
     self.Emit("TESTQ", _AX, _AX)                // TESTQ AX, AX
     self.Sjmp("JZ"   , "_str_empty_{n}")        // JZ    _str_empty_{n}
@@ -885,10 +889,12 @@ func (self *_Assembler) _asm_OP_f64(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {
+    self.debug_string(_SP_p)       
     self.encode_string(false)
 }
 
 func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
+    self.debug_string(_SP_p)
     self.Emit("MOVQ", jit.Ptr(_SP_p, 8), _AX)           // MOVQ 8(SP.p), AX
     self.Emit("ADDQ", jit.Imm(2), _AX)                  // ADDQ $2, AX
     self.Emit("MOVQ", jit.Imm(_IM_mulv), _CX)           // MOVQ $_MF_mulv, CX
@@ -917,10 +923,12 @@ func (self *_Assembler) _asm_OP_bin(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_quote(_ *_Instr) {
+    self.debug_string(_SP_p)       
     self.encode_string(true)
 }
 
 func (self *_Assembler) _asm_OP_number(_ *_Instr) {
+    self.debug_string(_SP_p)
     self.Emit("MOVQ" , jit.Ptr(_SP_p, 8), _BX)          // MOVQ    (SP.p), BX
     self.Emit("TESTQ", _BX, _BX)                        // TESTQ   BX, BX
     self.Sjmp("JZ"   , "_empty_{n}")
