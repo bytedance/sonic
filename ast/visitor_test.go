@@ -751,7 +751,7 @@ func (self *skipVisitor) OnArrayEnd() error {
 func TestVisitor_OpSkip(t *testing.T) {
     var suite skipVisitor
     suite.Skip = 1
-    Preorder(`{"a": [ null ] , "b":1, "c": { "1" : 1 } }`, &suite, nil)
+    Preorder(`{ "a": [ null ] , "b": 1, "c": { "1" : 1 } }`, &suite, nil)
     if suite.CountSkip != 2 {
         t.Fatal(suite.CountSkip)
     }

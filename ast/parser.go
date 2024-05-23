@@ -658,7 +658,3 @@ func (self *Parser) ExportError(err types.ParsingError) error {
     }.Description())
 }
 
-func backward(src string, i int) int {
-    for ; i>=0 && isSpace(src[i]); i-- {}
-    return i
-}
