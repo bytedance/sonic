@@ -579,12 +579,12 @@ var (
 
 func (self *_Assembler) more_space() {
     self.Link(_LB_more_space)
-    self.Emit("MOVQ", _T_byte, _AX)                 // MOVQ $_T_byte, _AX
-    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))         // MOVQ _AX, (SP)
     self.Emit("MOVQ", _RP, jit.Ptr(_SP, 8))         // MOVQ RP, 8(SP)
     self.Emit("MOVQ", _RL, jit.Ptr(_SP, 16))        // MOVQ RL, 16(SP)
     self.Emit("MOVQ", _RC, jit.Ptr(_SP, 24))        // MOVQ RC, 24(SP)
     self.Emit("MOVQ", _AX, jit.Ptr(_SP, 32))        // MOVQ AX, 32(SP)
+    self.Emit("MOVQ", _T_byte, _AX)                 // MOVQ $_T_byte, _AX
+    self.Emit("MOVQ", _AX, jit.Ptr(_SP, 0))         // MOVQ _AX, (SP)
     self.xsave(_REG_jsr...)                         // SAVE $REG_jsr
     self.call(_F_growslice)                         // CALL $pc
     self.xload(_REG_jsr...)                         // LOAD $REG_jsr
