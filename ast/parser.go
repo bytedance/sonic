@@ -115,6 +115,10 @@ func (self *Parser) lspace(sp int) int {
     return sp
 }
 
+func (self *Parser) backward() {
+    for ; self.p >= 0 && isSpace(self.s[self.p]); self.p-=1 {}
+}
+
 func (self *Parser) decodeArray(ret *linkedNodes) (Node, types.ParsingError) {
     sp := self.p
     ns := len(self.s)
