@@ -202,7 +202,6 @@ func (self *traverser) decodeArray() error {
             if _, e := self.parser.skipFast(); e != 0 {
                 return e
             }
-            println("skip to ", self.parser.p)
             return self.visitor.OnArrayEnd()
         }
         return err
