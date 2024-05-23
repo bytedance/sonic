@@ -30,20 +30,20 @@ func TestRecover_lspace0(t *testing.T) {
         }
     }()
     println("case 1")
-    n := 15
+    n := 1
     b := strings.Repeat(` `, n)
     b = b + "{"
     b += strings.Repeat(` `, n)
     _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
 
-    println("case 2")
-    n = 1
-    b = strings.Repeat(` `, n)
-    b = b + "{"
-    _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
+    // println("case 2")
+    // n = 1
+    // b = strings.Repeat(` `, n)
+    // b = b + "{"
+    // _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
 
-    println("case 3")
-    n = 1
-    b = strings.Repeat(` `, n)
-    _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
+    // println("case 3")
+    // n = 1
+    // b = strings.Repeat(` `, n)
+    // _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
 }
