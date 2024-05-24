@@ -17,8 +17,10 @@
 package ast
 
 import (
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/bytedance/sonic/internal/native/types`
+	"errors"
+
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type Searcher struct {
@@ -59,7 +61,7 @@ func (self *Searcher) getByPath(copystring bool, path ...interface{}) (Node, err
             return Node{}, ErrNotExist
         }
         if err == types.ERR_UNSUPPORT_TYPE {
-            panic("path must be either int(>=0) or string")
+            return Node{}, errors.New("path must be either int(>=0) or string")
         }
         return Node{}, self.parser.syntaxError(err)
     }
