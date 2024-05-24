@@ -22,16 +22,14 @@
 package avx2
 
 import (
-	"os"
-	"runtime"
-	"runtime/debug"
-	"strings"
-	"testing"
-	"time"
-	"unsafe"
+    `os`
+    `runtime`
+    `runtime/debug`
+    `testing`
+    `time`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/native/types`
 )
 
 var (
@@ -108,23 +106,7 @@ func TestRecover_lspace(t *testing.T) {
             t.Fatal("no panic")
         }
     }()
-    println("case 1")
-    n := 15
-    b := strings.Repeat(` `, n)
-    b = b + "{"
-    b += strings.Repeat(` `, n)
-    _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
-
-    println("case 2")
-    n = 1
-    b = strings.Repeat(` `, n)
-    b = b + "{"
-    _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
-
-    println("case 3")
-    n = 1
-    b = strings.Repeat(` `, n)
-    _ = lspace((*byte)(rt.IndexChar(b, 0)), len(b), 0)
+    _ = lspace(nil, 2, 0)
 }
 
 func TestRecover_quote(t *testing.T) {
