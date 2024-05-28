@@ -219,7 +219,7 @@ func AssertI2I2(t *GoType, i GoIface) (r GoIface) {
 		return
 	}
 	if (*GoInterfaceType)(tab.it) != inter {
-		tab = Getitab(inter, tab.Vt, true)
+		tab = GetItab(inter, tab.Vt, true)
 		if tab == nil {
 			return
 		}
@@ -228,10 +228,6 @@ func AssertI2I2(t *GoType, i GoIface) (r GoIface) {
 	r.Value = i.Value
 	return
 }
-
-//go:noescape
-//go:linkname Getitab runtime.getitab
-func Getitab(inter *GoInterfaceType, typ *GoType, canfail bool) *GoItab
 
 func GetFuncPC(fn interface{}) uintptr {
 	ft := UnpackEface(fn)
@@ -267,3 +263,7 @@ func (t *GoType) IsUint32() bool {
 func PtrAdd(ptr unsafe.Pointer, offset uintptr) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(ptr) + offset)
 }
+
+//go:noescape
+//go:linkname GetItab runtime.getitab
+func GetItab(inter *GoInterfaceType, typ *GoType, canfail bool) *GoItab

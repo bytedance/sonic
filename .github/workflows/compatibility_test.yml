@@ -28,10 +28,16 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: main
-        run: GOMAXPROCS=4 go test -v -gcflags="all=-l" -race github.com/bytedance/sonic
+        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic
+
+      - name: decoder
+        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic/decoder
+
+      - name: encoder
+        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic/encoder
 
       - name: ast
-        run: GOMAXPROCS=4 go test -v -gcflags="all=-l" -race github.com/bytedance/sonic/ast
+        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic/ast
       
       - name: qemu
         run: sh scripts/qemu.sh

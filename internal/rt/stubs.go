@@ -21,7 +21,6 @@ import (
 	"unsafe"
 )
 
-//go:nosplit
 //go:linkname MemclrHasPointers runtime.memclrHasPointers
 //goland:noinspection GoUnusedParameter
 func MemclrHasPointers(ptr unsafe.Pointer, n uintptr)
@@ -107,4 +106,17 @@ func GetMap64Assign(vt reflect.Type) Map64Assign {
 		}
 	}
 }
+
+//go:linkname Memmove runtime.memmove
+func Memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
+
+//go:linkname Mapiternext runtime.mapiternext
+func Mapiternext(it *GoMapIterator)
+
+//go:linkname Mapiterinit runtime.mapiterinit
+func Mapiterinit(t *GoMapType, m *GoMap, it *GoMapIterator)
+
+//go:linkname IsValidNumber encoding/json.isValidNumber
+func IsValidNumber(s string) bool
+
 

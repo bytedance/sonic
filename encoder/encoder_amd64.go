@@ -1,4 +1,4 @@
-// +build amd64,go1.16,!go1.23
+// +build amd64,go1.17,!go1.23
 
 /*
  * Copyright 2023 ByteDance Inc.
@@ -21,6 +21,10 @@ package encoder
 import (
     `github.com/bytedance/sonic/internal/encoder`
 )
+
+func init() {
+    encoder.ForceUseVM()
+}
 
 // EnableFallback indicates if encoder use fallback
 const EnableFallback = false
