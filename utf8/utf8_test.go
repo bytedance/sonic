@@ -100,6 +100,9 @@ func TestValidate_Random(t *testing.T) {
         assert.Equal(t, utf8.Valid(data), Validate(data), string(data))
     }
 
+	compare(t, []byte{})
+	compare(t, nil)
+
     // random testing
     nums   := 1000
     maxLen := 1000
