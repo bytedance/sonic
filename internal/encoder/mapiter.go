@@ -176,7 +176,7 @@ func iteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*_MapIterator, erro
 
     /* pre-allocate space if needed */
     if m.Count > it.kv.Cap {
-        it.kv = growslice(iteratorPair, it.kv, m.Count)
+        it.kv = rt.GrowSlice(iteratorPair, it.kv, m.Count)
     }
 
     /* dump all the key-value pairs */

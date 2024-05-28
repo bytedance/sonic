@@ -1146,7 +1146,7 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
 var (
     _F_memequal         = jit.Func(memequal)
     _F_memmove          = jit.Func(memmove)
-    _F_growslice        = jit.Func(growslice)
+    _F_growslice        = jit.Func(rt.GrowSlice)
     _F_makeslice        = jit.Func(makeslice)
     _F_makemap_small    = jit.Func(makemap_small)
     _F_mapassign_fast64 = jit.Func(mapassign_fast64)
