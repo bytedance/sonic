@@ -17,175 +17,166 @@
 package decoder
 
 import (
-    `encoding/json`
-    `errors`
-    `fmt`
-    `reflect`
-    `strconv`
-    `strings`
+	"encoding/json"
+	"errors"
+	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/internal"
 )
 
 type SyntaxError struct {
-    Pos  int
-    Src  string
-    Code types.ParsingError
-    Msg  string
+	Pos int
+	Src string
+	Msg string
 }
 
 func (self SyntaxError) Error() string {
-    return fmt.Sprintf("%q", self.Description())
+	return fmt.Sprintf("%q", self.Description())
 }
 
 func (self SyntaxError) Description() string {
-    return "Syntax error " + self.description()
+	return "Syntax error: " + self.description()
 }
 
 func (self SyntaxError) description() string {
-    /* check for empty source */
-    if self.Src == "" {
-        return fmt.Sprintf("no sources available: %#v", self)
-    }
+	/* check for empty source */
+	if self.Src == "" {
+		return fmt.Sprintf("no sources available: %#v", self)
+	}
 
-    p, x, q, y := calcBounds(len(self.Src), self.Pos)
+	p, x, q, y := calcBounds(len(self.Src), self.Pos)
 
-    /* compose the error description */
-    return fmt.Sprintf(
-        "at index %d: %s\n\n\t%s\n\t%s^%s\n",
-        self.Pos,
-        self.Message(),
-        self.Src[p:q],
-        strings.Repeat(".", x),
-        strings.Repeat(".", y),
-    )
+	/* compose the error description */
+	return fmt.Sprintf(
+		"at index %d: %s\n\n\t%s\n\t%s^%s\n",
+		self.Pos,
+		self.Message(),
+		self.Src[p:q],
+		strings.Repeat(".", x),
+		strings.Repeat(".", y),
+	)
 }
 
 func calcBounds(size int, pos int) (lbound int, lwidth int, rbound int, rwidth int) {
-    if pos >= size || pos < 0 {
-        return 0, 0, size, 0
-    }
+	if pos >= size || pos < 0 {
+		return 0, 0, size, 0
+	}
 
-    i := 16
-    lbound = pos - i
-    rbound = pos + i
+	i := 16
+	lbound = pos - i
+	rbound = pos + i
 
-    /* prevent slicing before the beginning */
-    if lbound < 0 {
-        lbound, rbound, i = 0, rbound - lbound, i + lbound
-    }
+	/* prevent slicing before the beginning */
+	if lbound < 0 {
+		lbound, rbound, i = 0, rbound-lbound, i+lbound
+	}
 
-    /* prevent slicing beyond the end */
-    if n := size; rbound > n {
-        n = rbound - n
-        rbound = size
+	/* prevent slicing beyond the end */
+	if n := size; rbound > n {
+		n = rbound - n
+		rbound = size
 
-        /* move the left bound if possible */
-        if lbound > n {
-            i += n
-            lbound -= n
-        }
-    }
+		/* move the left bound if possible */
+		if lbound > n {
+			i += n
+			lbound -= n
+		}
+	}
 
-    /* left and right length */
-    lwidth = clamp_zero(i)
-    rwidth = clamp_zero(rbound - lbound - i - 1)
+	/* left and right length */
+	lwidth = clamp_zero(i)
+	rwidth = clamp_zero(rbound - lbound - i - 1)
 
-    return
+	return
 }
 
 func (self SyntaxError) Message() string {
-    if self.Msg == "" {
-        return self.Code.Message()
-    }
-    return self.Msg
+	return self.Msg
 }
 
 func clamp_zero(v int) int {
-    if v < 0 {
-        return 0
-    } else {
-        return v
-    }
+	if v < 0 {
+		return 0
+	} else {
+		return v
+	}
 }
 
 /** JIT Error Helpers **/
 
-var stackOverflow = &json.UnsupportedValueError {
-    Str   : "Value nesting too deep",
-    Value : reflect.ValueOf("..."),
-}
-
-func error_wrap(src string, pos int, code types.ParsingError) error {
-    return *error_wrap_heap(src, pos, code)
-}
-
-//go:noinline
-func error_wrap_heap(src string, pos int, code types.ParsingError) *SyntaxError {
-    return &SyntaxError {
-        Pos  : pos,
-        Src  : src,
-        Code : code,
-    }
+var stackOverflow = &json.UnsupportedValueError{
+	Str:   "Value nesting too deep",
+	Value: reflect.ValueOf("..."),
 }
 
 func error_type(vt *rt.GoType) error {
-    return &json.UnmarshalTypeError{Type: vt.Pack()}
+	return &json.UnmarshalTypeError{Type: vt.Pack()}
 }
 
 type MismatchTypeError struct {
-    Pos  int
-    Src  string
-    Type reflect.Type
+	Pos  		int
+	Src  		string
+	Type 		reflect.Type
+	Struct 		string
+	Field 		string
 }
 
-func swithchJSONType (src string, pos int) string {
-    var val string
-    switch src[pos] {
-        case 'f': fallthrough
-        case 't': val = "bool"
-        case '"': val = "string"
-        case '{': val = "object"
-        case '[': val = "array"
-        case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9': val = "number"        
-    }
-    return val
+func swithchJSONType(src string, pos int) string {
+	var val string
+	switch src[pos] {
+	case 'f':
+		fallthrough
+	case 't':
+		val = "bool"
+	case '"':
+		val = "string"
+	case '{':
+		val = "object"
+	case '[':
+		val = "array"
+	case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		val = "number"
+	}
+	return val
 }
 
 func (self MismatchTypeError) Error() string {
-    se := SyntaxError {
-        Pos  : self.Pos,
-        Src  : self.Src,
-        Code : types.ERR_MISMATCH,
-    }
-    return fmt.Sprintf("Mismatch type %s with value %s %q", self.Type.String(), swithchJSONType(self.Src, self.Pos), se.description())
+	return self.Description()
 }
 
 func (self MismatchTypeError) Description() string {
-    se := SyntaxError {
-        Pos  : self.Pos,
-        Src  : self.Src,
-        Code : types.ERR_MISMATCH,
-    }
-    return fmt.Sprintf("Mismatch type %s with value %s %s", self.Type.String(), swithchJSONType(self.Src, self.Pos), se.description())
+	se := SyntaxError{
+		Pos: self.Pos,
+		Src: self.Src,
+	}
+	if self.Struct != "" {
+		return fmt.Sprintf("Mismatch type `%s` in struct `%s` field `%s` with value `%s` %s", self.Type.String(), self.Struct, self.Field, swithchJSONType(self.Src, self.Pos), se.description())
+	} else {
+		return fmt.Sprintf("Mismatch type `%s` with value `%s` %s", self.Type.String(), swithchJSONType(self.Src, self.Pos), se.description())
+	}
+	
 }
 
-func error_mismatch(src string, pos int, vt *rt.GoType) error {
-    return &MismatchTypeError {
-        Pos  : pos,
-        Src  : src,
-        Type : vt.Pack(),
-    }
+func error_mismatch(node internal.Node, ctx *context, typ reflect.Type) error {
+	return &MismatchTypeError{
+		Pos:  node.Position(),
+		Src:  ctx.Parser.Json,
+		Type: typ,
+	}
 }
 
 func error_field(name string) error {
-    return errors.New("json: unknown field " + strconv.Quote(name))
+	return errors.New("json: unknown field " + strconv.Quote(name))
 }
 
 func error_value(value string, vtype reflect.Type) error {
-    return &json.UnmarshalTypeError {
-        Type  : vtype,
-        Value : value,
-    }
+	return &json.UnmarshalTypeError{
+		Type:  vtype,
+		Value: value,
+	}
 }
+

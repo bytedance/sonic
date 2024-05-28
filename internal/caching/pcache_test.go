@@ -17,41 +17,41 @@
 package caching
 
 import (
-    `sync`
-    `testing`
+	"sync"
+	"testing"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 func TestPcacheRace(t *testing.T) {
-    t.Parallel()
+	t.Parallel()
 
-    pc := CreateProgramCache()
-    wg := sync.WaitGroup{}
-    wg.Add(2)
-    start := make(chan struct{}, 2)
+	pc := CreateProgramCache()
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	start := make(chan struct{}, 2)
 
-    go func(){
-        defer wg.Done()
-        var k = map[string]interface{}{}
-        <- start
-        for i:=0; i<100; i++ {
-            _, _ = pc.Compute(rt.UnpackEface(k).Type, func(*rt.GoType, ... interface{}) (interface{}, error) {
-                return map[string]interface{}{}, nil
-            })
-        }
-    }()
+	go func() {
+		defer wg.Done()
+		var k = map[string]interface{}{}
+		<-start
+		for i := 0; i < 100; i++ {
+			_, _ = pc.Compute(rt.UnpackEface(k).Type, func(*rt.GoType, ...interface{}) (interface{}, error) {
+				return map[string]interface{}{}, nil
+			})
+		}
+	}()
 
-    go func(){
-        defer wg.Done()
-        var k = map[string]interface{}{}
-        <- start
-        for i:=0; i<100; i++ {
-            pc.Get(rt.UnpackEface(k).Type)
-        }
-    }()
+	go func() {
+		defer wg.Done()
+		var k = map[string]interface{}{}
+		<-start
+		for i := 0; i < 100; i++ {
+			pc.Get(rt.UnpackEface(k).Type)
+		}
+	}()
 
-    start <- struct{}{}
-    start <- struct{}{}
-    wg.Wait()
+	start <- struct{}{}
+	start <- struct{}{}
+	wg.Wait()
 }

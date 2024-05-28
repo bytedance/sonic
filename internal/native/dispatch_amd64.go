@@ -20,9 +20,7 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/native/avx`
     `github.com/bytedance/sonic/internal/native/avx2`
-    `github.com/bytedance/sonic/internal/native/sse`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/internal/rt`
 )
@@ -87,6 +85,10 @@ var (
     __ValidateUTF8 func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) (ret int)
 
     __ValidateUTF8Fast func(s unsafe.Pointer) (ret int)
+
+	__ParseWithPadding func(parser unsafe.Pointer) (ret int)
+
+	__LookupSmallKey func(key  unsafe.Pointer, table  unsafe.Pointer, lowerOff int) (index int)
 )
 
 //go:nosplit
@@ -159,75 +161,14 @@ func ValidateUTF8Fast(s *string) (ret int) {
     return __ValidateUTF8Fast(rt.NoEscape(unsafe.Pointer(s)))
 }
 
-func useSSE() {
-    sse.Use()
-    S_f64toa      = sse.S_f64toa
-    __F64toa      = sse.F_f64toa
-    S_f32toa      = sse.S_f32toa
-    __F64toa      = sse.F_f64toa
-    S_i64toa      = sse.S_i64toa
-    __I64toa      = sse.F_i64toa
-    S_u64toa      = sse.S_u64toa
-    __U64toa      = sse.F_u64toa
-    S_lspace      = sse.S_lspace
-    S_quote       = sse.S_quote
-    __Quote       = sse.F_quote
-    S_unquote     = sse.S_unquote
-    __Unquote     = sse.F_unquote
-    S_value       = sse.S_value
-    __Value       = sse.F_value
-    S_vstring     = sse.S_vstring
-    S_vnumber     = sse.S_vnumber
-    S_vsigned     = sse.S_vsigned
-    S_vunsigned   = sse.S_vunsigned
-    S_skip_one    = sse.S_skip_one
-    __SkipOne     = sse.F_skip_one
-    __SkipOneFast = sse.F_skip_one_fast
-    S_skip_array  = sse.S_skip_array
-    S_skip_object = sse.S_skip_object
-    S_skip_number = sse.S_skip_number
-    S_get_by_path = sse.S_get_by_path
-    __GetByPath   = sse.F_get_by_path
-    __HTMLEscape  = sse.F_html_escape
-    __ValidateOne = sse.F_validate_one
-    __ValidateUTF8= sse.F_validate_utf8
-    __ValidateUTF8Fast = sse.F_validate_utf8_fast
+//go:nosplit
+func ParseWithPadding(parser unsafe.Pointer) (ret int) {
+    return __ParseWithPadding(rt.NoEscape(unsafe.Pointer(parser)))
 }
 
-
-func useAVX() {
-    avx.Use()
-    S_f64toa      = avx.S_f64toa
-    __F64toa      = avx.F_f64toa
-    S_f32toa      = avx.S_f32toa
-    __F64toa      = avx.F_f64toa
-    S_i64toa      = avx.S_i64toa
-    __I64toa      = avx.F_i64toa
-    S_u64toa      = avx.S_u64toa
-    __U64toa      = avx.F_u64toa
-    S_lspace      = avx.S_lspace
-    S_quote       = avx.S_quote
-    __Quote       = avx.F_quote
-    S_unquote     = avx.S_unquote
-    __Unquote     = avx.F_unquote
-    S_value       = avx.S_value
-    __Value       = avx.F_value
-    S_vstring     = avx.S_vstring
-    S_vnumber     = avx.S_vnumber
-    S_vsigned     = avx.S_vsigned
-    S_vunsigned   = avx.S_vunsigned
-    S_skip_one    = avx.S_skip_one
-    __SkipOne     = avx.F_skip_one
-    __SkipOneFast = avx.F_skip_one_fast
-    S_skip_array  = avx.S_skip_array
-    S_skip_object = avx.S_skip_object
-    S_skip_number = avx.S_skip_number
-    S_get_by_path = avx.S_get_by_path
-    __GetByPath   = avx.F_get_by_path
-    __HTMLEscape  = avx.F_html_escape
-    __ValidateOne = avx.F_validate_one
-    __ValidateUTF8= avx.F_validate_utf8
-    __ValidateUTF8Fast = avx.F_validate_utf8_fast
+//go:nosplit
+func LookupSmallKey(key *string, table *[]byte, lowerOff int) (index int) {
+    return __LookupSmallKey(rt.NoEscape(unsafe.Pointer(key)), rt.NoEscape(unsafe.Pointer(table)), lowerOff)
 }
 
 func useAVX2() {
@@ -263,16 +204,14 @@ func useAVX2() {
     __ValidateOne = avx2.F_validate_one
     __ValidateUTF8= avx2.F_validate_utf8
     __ValidateUTF8Fast = avx2.F_validate_utf8_fast
+	__ParseWithPadding = avx2.F_parse_with_padding
+	__LookupSmallKey = avx2.F_lookup_small_key
 }
 
 
 func init() {
  if cpu.HasAVX2 {
     useAVX2()
- } else if cpu.HasAVX {
-    useAVX()
- } else if cpu.HasSSE {
-    useSSE()
  } else {
     panic("Unsupported CPU, maybe it's too old to run Sonic.")
  }

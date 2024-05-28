@@ -8,15 +8,15 @@ import (
 )
 
 const (
-    _entry__validate_utf8_fast = 272
+    _entry__validate_utf8_fast = 0
 )
 
 const (
-    _stack__validate_utf8_fast = 176
+    _stack__validate_utf8_fast = 24
 )
 
 const (
-    _size__validate_utf8_fast = 2600
+    _size__validate_utf8_fast = 536
 )
 
 var (
@@ -24,13 +24,14 @@ var (
         {1, 0},
         {4, 8},
         {5, 16},
-        {1738, 176},
-        {1739, 168},
-        {1743, 160},
-        {2018, 176},
-        {2019, 168},
-        {2023, 160},
-        {2600, 176},
+        {247, 24},
+        {251, 16},
+        {252, 8},
+        {253, 0},
+        {527, 24},
+        {531, 16},
+        {532, 8},
+        {534, 0},
     }
 )
 

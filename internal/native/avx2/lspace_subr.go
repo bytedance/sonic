@@ -8,7 +8,7 @@ import (
 )
 
 const (
-    _entry__lspace = 32
+    _entry__lspace = 0
 )
 
 const (
@@ -16,18 +16,14 @@ const (
 )
 
 const (
-    _size__lspace = 220
+    _size__lspace = 87
 )
 
 var (
     _pcsp__lspace = [][2]uint32{
         {1, 0},
-        {184, 8},
-        {188, 0},
-        {204, 8},
-        {208, 0},
-        {215, 8},
-        {220, 0},
+        {85, 8},
+        {86, 0},
     }
 )
 
