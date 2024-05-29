@@ -17,6 +17,7 @@
 #pragma once
 
 #include "native.h"
+#include "test/xassert.h"
 
 static always_inline size_t lspace_1(const char *sp, size_t nb, size_t p) {
     const char * ss = sp;

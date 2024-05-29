@@ -22,14 +22,18 @@
 package avx
 
 import (
+    `bytes`
     `os`
     `runtime`
     `runtime/debug`
+    `runtime/pprof`
+    `strings`
     `testing`
     `time`
     `unsafe`
 
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 var (
@@ -107,6 +111,23 @@ func TestRecover_lspace(t *testing.T) {
         }
     }()
     _ = lspace(nil, 2, 0)
+}
+
+func TestRecover_lspace2(t *testing.T) {
+    // generate random space with json
+    cases := []string{
+        strings.Repeat(" ", 1) + "123",
+        strings.Repeat(" ", 1) + "123",
+         "123",
+    }
+    pprof.StartCPUProfile(bytes.NewBuffer(nil))
+    defer pprof.StopCPUProfile()
+    for i := 0; i < 10000000; i++{
+        for _, t := range  cases {
+            sp := (*byte)((*rt.GoString)(unsafe.Pointer(&t)).Ptr)
+            _ = lspace(sp, len(t), 0)
+        }
+    }
 }
 
 func TestRecover_quote(t *testing.T) {
