@@ -163,7 +163,7 @@ func useSSE() {
     S_f64toa      = sse.S_f64toa
     __F64toa      = sse.F_f64toa
     S_f32toa      = sse.S_f32toa
-    __F64toa      = sse.F_f64toa
+    __F32toa      = sse.F_f32toa
     S_i64toa      = sse.S_i64toa
     __I64toa      = sse.F_i64toa
     S_u64toa      = sse.S_u64toa
@@ -198,7 +198,7 @@ func useAVX2() {
     S_f64toa      = avx2.S_f64toa
     __F64toa      = avx2.F_f64toa
     S_f32toa      = avx2.S_f32toa
-    __F64toa      = avx2.F_f64toa
+    __F32toa      = avx2.F_f32toa
     S_i64toa      = avx2.S_i64toa
     __I64toa      = avx2.F_i64toa
     S_u64toa      = avx2.S_u64toa
