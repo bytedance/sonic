@@ -1,4 +1,4 @@
-// +build amd64,go1.17,!go1.23
+// +build amd64,go1.17,!go1.23 arm64,go1.20,!go1.23
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -2275,7 +2275,7 @@ func TestUnmarshalErrorAfterMultipleJSON(t *testing.T) {
         err: (&JsonSyntaxError{"invalid character '=' after object key", 13}).err(),
     }, {
         in:  `falsetruenul#`,
-        err: (&JsonSyntaxError{"invalid character '#' in literal null (expecting 'l')", 9}).err(),
+        err: (&JsonSyntaxError{"invalid character '#' in literal null (expecting 'l')", 12}).err(),
     }}
     for i, tt := range tests {
         dec := decoder.NewDecoder(tt.in)

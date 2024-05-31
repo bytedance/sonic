@@ -8,15 +8,15 @@ import (
 )
 
 const (
-    _entry__parse_with_padding = 336
+    _entry__parse_with_padding = 320
 )
 
 const (
-    _stack__parse_with_padding = 192
+    _stack__parse_with_padding = 176
 )
 
 const (
-    _size__parse_with_padding = 47668
+    _size__parse_with_padding = 49340
 )
 
 var (
@@ -28,15 +28,15 @@ var (
         {10, 32},
         {12, 40},
         {13, 48},
-        {6358, 192},
-        {6365, 48},
-        {6366, 40},
-        {6368, 32},
-        {6370, 24},
-        {6372, 16},
-        {6374, 8},
-        {6375, 0},
-        {47668, 192},
+        {8192, 176},
+        {8199, 48},
+        {8200, 40},
+        {8202, 32},
+        {8204, 24},
+        {8206, 16},
+        {8208, 8},
+        {8209, 0},
+        {49340, 176},
     }
 )
 

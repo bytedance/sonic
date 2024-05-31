@@ -34,3 +34,4 @@ var S_f32toa uintptr
 func f32toa(out *byte, val float32) (ret int) {
     return F_f32toa(rt.NoEscape(unsafe.Pointer(out)), val)
 }
+

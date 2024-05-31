@@ -27,11 +27,11 @@ import (
 )
 
 //go:nosplit
-func validate_one(s *string, p *int, m *types.StateMachine) (ret int) {
-    return __validate_one(s, p, m)
+func validate_one(s *string, p *int, m *types.StateMachine, flags uint64) (ret int) {
+    return __validate_one(s, p, m, flags)
 }
 
 //go:nosplit
 //go:noescape
 //goland:noinspection GoUnusedParameter
-func __validate_one(s *string, p *int, m *types.StateMachine) (ret int)
+func __validate_one(s *string, p *int, m *types.StateMachine, flags uint64) (ret int)

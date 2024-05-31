@@ -136,16 +136,3 @@ func _SkipFast(src string, i int) (int, int, error) {
     }
     return s, p.p, nil
 }
-
-func Skip(json string, pos *int) (start int, err error ) {
-	parser := NewParser(json)
-	parser.p = *pos
-
-	start, err = parser.getByPath(false)
-    if code := err.(types.ParsingError); code != 0 {
-		return -1, err
-    }
-
-	*pos = parser.p
-	return start, nil
-}

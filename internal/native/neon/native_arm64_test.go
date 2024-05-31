@@ -21,23 +21,21 @@
 package neon
 
 import (
-	"encoding/hex"
-	"fmt"
-	"math"
-	"runtime"
-	"strings"
-	"testing"
-	"unsafe"
+    `encoding/hex`
+    `fmt`
+    `math`
+    `strings`
+    `testing`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/internal/rt`
+    `github.com/davecgh/go-spew/spew`
+    `github.com/stretchr/testify/assert`
+    `github.com/stretchr/testify/require`
 )
 
 func TestNative_Value(t *testing.T) {
-    runtime.GC()
     var v types.JsonState
     s := `   -12345`
     p := (*rt.GoString)(unsafe.Pointer(&s))
@@ -236,6 +234,20 @@ func TestNative_HTMLEscapeNoMem(t *testing.T) {
     assert.Equal(t, -6, rv)
     assert.Equal(t, 5, len(d))
     assert.Equal(t, `hello`, string(d))
+}
+
+func TestNative_Vstring(t *testing.T) {
+    var v types.JsonState
+    i := 0
+    s := `test"test\n2"`
+    vstring(&s, &i, &v, 0)
+    assert.Equal(t, 5, i)
+    assert.Equal(t, -1, v.Ep)
+    assert.Equal(t, int64(0), v.Iv)
+    vstring(&s, &i, &v, 0)
+    assert.Equal(t, 13, i)
+    assert.Equal(t, 9, v.Ep)
+    assert.Equal(t, int64(5), v.Iv)
 }
 
 func TestNative_Vstring_ValidUnescapedChars(t *testing.T) {
@@ -620,18 +632,4 @@ func BenchmarkNative_GetByPath(b *testing.B) {
         _ = get_by_path(&s, &p, &path, sm)
         types.FreeStateMachine(sm)
     }
-}
-
-func TestNative_Vstring(t *testing.T) {
-    var v types.JsonState
-    i := 0
-    s := `test"test\n2"`
-    vstring(&s, &i, &v, 0)
-    assert.Equal(t, 5, i)
-    assert.Equal(t, -1, v.Ep)
-    assert.Equal(t, int64(0), v.Iv)
-    vstring(&s, &i, &v, 0)
-    assert.Equal(t, 13, i)
-    assert.Equal(t, 9, v.Ep)
-    assert.Equal(t, int64(5), v.Iv)
 }

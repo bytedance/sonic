@@ -17,347 +17,99 @@
 package caching
 
 import (
-	"strings"
-	"unicode"
-	"unsafe"
+    `strings`
+    `unsafe`
 
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/resolver"
-	"github.com/bytedance/sonic/internal/rt"
+    `github.com/bytedance/sonic/internal/rt`
 )
 
-const _AlignSize =  32
-const _PaddingSize =  32
-
-type FieldLookup interface {
-	Set(fields []resolver.FieldMeta)
-	Get(name string) int
+type FieldMap struct {
+    N uint64
+    b unsafe.Pointer
+    m map[string]int
 }
 
-func isAscii(s string) bool {
-	for i :=0; i < len(s); i++ {
-		if s[i] > unicode.MaxASCII {
-			return false
-		}
-	}
-	return true
+type FieldEntry struct {
+    ID   int
+    Name string
+    Hash uint64
 }
 
-func NewFieldLookup(fields []resolver.FieldMeta) FieldLookup {
-	var f FieldLookup
-	isAsc := true
-	n := len(fields)
+const (
+    FieldMap_N     = int64(unsafe.Offsetof(FieldMap{}.N))
+    FieldMap_b     = int64(unsafe.Offsetof(FieldMap{}.b))
+	FieldEntrySize = int64(unsafe.Sizeof(FieldEntry{}))
+)
 
-	// when field name has non-ascii, use the fallback methods to use strings.ToLower
-	for _, f := range fields {
-		if !isAscii(f.Name) {
-			isAsc = false
-			break
-		}
-	}
-
-	if n <= 8 {
-		f =  NewSmallFieldMap(n)
-	} else if n <= 128 && isAsc {
-		f =   NewNormalFieldMap(n)
-	} else {
-		f =   NewFallbackFieldMap(n)
-	}
-
-	f.Set(fields)
-	return f
+func newBucket(n int) unsafe.Pointer {
+    v := make([]FieldEntry, n)
+    return (*rt.GoSlice)(unsafe.Pointer(&v)).Ptr
 }
 
-// Map for keys nums max 8, idx is in [0, 8)
-type SmallFieldMap struct {
-	keys []string
-	lowerKeys []string
+func CreateFieldMap(n int) *FieldMap {
+    return &FieldMap {
+        N: uint64(n * 2),
+        b: newBucket(n * 2),    // LoadFactor = 0.5
+        m: make(map[string]int, n * 2),
+    }
 }
 
-func NewSmallFieldMap (hint int) *SmallFieldMap {
-	return &SmallFieldMap{
-		keys: make([]string, hint, hint),
-		lowerKeys: make([]string, hint, hint),
-	}
+func (self *FieldMap) At(p uint64) *FieldEntry {
+    off := uintptr(p) * uintptr(FieldEntrySize)
+    return (*FieldEntry)(unsafe.Pointer(uintptr(self.b) + off))
 }
 
-func (self *SmallFieldMap) Set(fields []resolver.FieldMeta) {
-	if len(fields) > 8 {
-		panic("small field map shoud use in small struct")
-	}
+// Get searches FieldMap by name. JIT generated assembly does NOT call this
+// function, rather it implements its own version directly in assembly. So
+// we must ensure this function stays in sync with the JIT generated one.
+func (self *FieldMap) Get(name string) int {
+    h := StrHash(name)
+    p := h % self.N
+    s := self.At(p)
 
-	for i, f := range fields {
-		self.keys[i] = f.Name
-		self.lowerKeys[i] = strings.ToLower(f.Name)
-	}
+    /* find the element;
+     * the hash map is never full, so the loop will always terminate */
+    for s.Hash != 0 {
+        if s.Hash == h && s.Name == name {
+            return s.ID
+        } else {
+            p = (p + 1) % self.N
+            s = self.At(p)
+        }
+    }
+
+    /* not found */
+    return -1
 }
 
-func (self *SmallFieldMap) Get(name string) int {
-	for i, k := range self.keys {
-		if len(k) == len(name) && k == name {
-			return i
-		}
-	}
+func (self *FieldMap) Set(name string, i int) {
+    h := StrHash(name)
+    p := h % self.N
+    s := self.At(p)
 
-	name = strings.ToLower(name)
-	for i, k := range self.lowerKeys {
-		if len(k) == len(name) && k == name {
-			return i
-		}
-	}
-	return -1
+    /* searching for an empty slot;
+     * the hash map is never full, so the loop will always terminate */
+    for s.Hash != 0 {
+        p = (p + 1) % self.N
+        s = self.At(p)
+    }
+
+    /* set the value */
+    s.ID   = i
+    s.Hash = h
+    s.Name = name
+
+    /* add the case-insensitive version, prefer the one with smaller field ID */
+    key := strings.ToLower(name)
+    if v, ok := self.m[key]; !ok || i < v {
+        self.m[key] = i
+    }
 }
 
-
-/*
-1. select by the length: 0 ~ 32 and larger lengths
-2. simd match the aligned prefix of the keys: 4/8/16/32 bytes or larger keys
-3. check the key with strict match
-4. check the key with case-insensitive match
-5. find the index 
-
-Mem Layout:
-     fixed 33 * 5 bytes  165 bytes |||  variable keys  ||| variable lowerkeys
-| length metadata array[33] ||| key0.0 | u8 | key0.1 | u8 | ...  || key1.0 | u8 | key1.1 | u8 | ...  ||| lowerkeys info ...
-
-*/
-
-// Map for keys nums max 255, idx is in [0, 255), idx 255 means not found.
-// keysoffset
-// | metadata | aligned key0 | aligned key1 | ... |
-// 1 ~ 8
-// 8 ~ 16
-// 16 ~ 32
-// > 32 keys use the long keys entry lists
-// use bytes to reduce GC
-type NormalFieldMap struct {
-	keys  			[]byte
-	longKeys		[]keyEntry
-	// offset for lower
-	lowOffset	    int
+func (self *FieldMap) GetCaseInsensitive(name string) int {
+    if i, ok := self.m[strings.ToLower(name)]; ok {
+        return i
+    } else {
+        return -1
+    }
 }
-
-type keyEntry struct {
-	key 		string
-	lowerKey	string
-	index		uint
-}
-
-func NewNormalFieldMap(n int) *NormalFieldMap {
-	return &NormalFieldMap{
-	}
-}
-
-const _HdrSlot = 33
-const _HdrSize = _HdrSlot * 5
-
-// use native SIMD to accelerate it
-func (self *NormalFieldMap) Get(name string) int {
-	// small keys use native C
-	if len(name) <= 32 {
-		 _ = native.LookupSmallKey
-		return native.LookupSmallKey(&name, &self.keys, self.lowOffset);
-	}
-	return self.getLongKey(name)
-}
-
-func (self *NormalFieldMap) getLongKey(name string) int {
-	for _, k := range self.longKeys {
-		if len(k.key) != len(name) {
-			continue;
-		}
-		if k.key == name {
-			return int(k.index)
-		}
-	}
-
-	lower := strings.ToLower(name)
-	for _, k := range self.longKeys {
-		if len(k.key) != len(name) {
-			continue;
-		}
-
-		if k.lowerKey == lower {
-			return int(k.index)
-		}
-	}
-	return -1
-}
-
-func (self *NormalFieldMap) Getdouble(name string) int {
-	if len(name) > 32 {
-		for _, k := range self.longKeys {
-			if len(k.key) != len(name) {
-				continue;
-			}
-			if k.key == name {
-				return int(k.index)
-			}
-		}
-		return self.getCaseInsensitive(name)
-	}
-
-	// check the fixed length keys, not found the target length
-	cnt := int(self.keys[5 * len(name)])
-	if cnt == 0 {
-		return -1
-	}
-	p := ((*rt.GoSlice)(unsafe.Pointer(&self.keys))).Ptr
-	offset := int(*(*int32)(unsafe.Pointer(uintptr(p) + uintptr(5 * len(name) + 1)))) + _HdrSize
-	for i := 0; i < cnt; i++ {
-		key := rt.Mem2Str(self.keys[offset: offset + len(name)])
-		if key == name {
-			return int(self.keys[offset + len(name)])
-		}
-		offset += len(name) + 1
-	}
-
-	return self.getCaseInsensitive(name)
-}
-
-func (self *NormalFieldMap) getCaseInsensitive(name string) int {
-	lower := strings.ToLower(name)
-	if len(name) > 32 {
-		for _, k := range self.longKeys {
-			if len(k.key) != len(name) {
-				continue;
-			}
-
-			if k.lowerKey == lower {
-				return int(k.index)
-			}
-		}
-		return -1
-	}
-
-	cnt := int(self.keys[5 * len(name)])
-	p := ((*rt.GoSlice)(unsafe.Pointer(&self.keys))).Ptr
-	offset := int(*(*int32)(unsafe.Pointer(uintptr(p) + uintptr(5 * len(name) + 1)))) + self.lowOffset
-	for i := 0; i < cnt; i++ {
-		key := rt.Mem2Str(self.keys[offset: offset + len(name)])
-		println("compare with loer is ---> ket is ", key, lower)
-		if key == lower {
-			println("compare with loer is ---> ket is inde is ", key, lower, int(self.keys[offset + len(name)]))
-			return int(self.keys[offset + len(name)])
-		}
-		offset += len(name) + 1
-	}
-
-	return -1
-}
-
-type keysInfo struct {
-	counts int
-	lenSum int
-	offset int
-	cur    int
-}
-
-func (self *NormalFieldMap) Set(fields []resolver.FieldMeta) {
-	if len(fields) <=8 || len(fields) > 128 {
-		panic("normal field map shoud use in small struct")
-	}
-
-	// allocate the flat map in []byte
-	var keyLenSum [_HdrSlot]keysInfo
-
-	for i := 0; i < _HdrSlot; i++ {
-		keyLenSum[i].offset = 0
-		keyLenSum[i].counts = 0
-		keyLenSum[i].lenSum = 0
-		keyLenSum[i].cur = 0
-	}
-
-	kvLen := 0
-	for _, f := range(fields) {
-		len := len(f.Name)
-		if len <= 32 {
-			kvLen += len + 1 // key + index
-			keyLenSum[len].counts++
-			keyLenSum[len].lenSum += len + 1
-		}
-
-	}
-
-	// add a padding size at last to make it firendly for SIMD.
-	self.keys = make([]byte, _HdrSize + 2 * kvLen, _HdrSize + 2 * kvLen + _PaddingSize)
-	self.lowOffset = _HdrSize + kvLen
-
-	// initialize all keys offset
-	self.keys[0] = byte(keyLenSum[0].counts)
-	// self.keys[1:5] = 0 // offset is always zero here.
-	i := 1
-	p := ((*rt.GoSlice)(unsafe.Pointer(&self.keys))).Ptr
-	for i < _HdrSlot {
-		keyLenSum[i].offset = keyLenSum[i-1].offset + keyLenSum[i-1].lenSum
-		self.keys[i * 5] = byte(keyLenSum[i].counts)
-		// write the offset into []byte
-		*(*int32)(unsafe.Pointer(uintptr(p) + uintptr(i * 5 + 1))) = int32(keyLenSum[i].offset)
-		i += 1
-
-	}
-
-	// fill the key into bytes
-	for i, f := range(fields) {
-		len := len(f.Name)
-		if len <= 32 {
-			offset := keyLenSum[len].offset +  keyLenSum[len].cur
-			copy(self.keys[_HdrSize + offset: ], f.Name)
-			copy(self.keys[self.lowOffset + offset: ], strings.ToLower(f.Name))
-			self.keys[_HdrSize + offset + len] = byte(i)
-			self.keys[self.lowOffset + offset + len] = byte(i)
-			keyLenSum[len].cur += len + 1
-
-		} else {
-			self.longKeys = append(self.longKeys, keyEntry{f.Name, strings.ToLower(f.Name), uint(i)})
-		}
-	}
-
-}
-
-// use hashnap
-type FallbackFieldMap struct {
-	oders  []string
-	inner  map[string]int
-	backup map[string]int
-}
- 
- func NewFallbackFieldMap(n int) *FallbackFieldMap {
-	 return &FallbackFieldMap{
-		 oders:  make([]string, n, n),
-		 inner:  make(map[string]int, n*2),
-		 backup: make(map[string]int, n*2),
-	 }
- }
- 
- func (self *FallbackFieldMap) Get(name string) int {
-	 if i, ok := self.inner[name]; ok {
-		 return i
-	 } else {
-		 return self.getCaseInsensitive(name)
-	 }
- }
- 
- func (self *FallbackFieldMap) Set(fields []resolver.FieldMeta) {
-
-	for i, f := range(fields) {
-		name := f.Name
-		self.oders[i] = name
-		self.inner[name] = i
-	
-		/* add the case-insensitive version, prefer the one with smaller field ID */
-		key := strings.ToLower(name)
-		if v, ok := self.backup[key]; !ok || i < v {
-			self.backup[key] = i
-		}
-	}
- }
- 
- func (self *FallbackFieldMap) getCaseInsensitive(name string) int {
-	 if i, ok := self.backup[strings.ToLower(name)]; ok {
-		 return i
-	 } else {
-		 return -1
-	 }
- }
- 

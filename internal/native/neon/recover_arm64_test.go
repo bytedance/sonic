@@ -2,13 +2,13 @@
 
 /**
  * Copyright 2023 ByteDance Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,14 +19,15 @@
 package neon
 
 import (
-	`os`
-	`time`
-	`runtime`
-	`runtime/debug`
-	`testing`
-	`unsafe`
+	"bytes"
+	"os"
+	"runtime"
+	"runtime/debug"
+	"testing"
+	"time"
+	"unsafe"
 
-	`github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 var (
@@ -588,7 +589,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(nil, &p, v)
+		_ = validate_one(nil, &p, v, 0)
 	})
 	t.Run("p", func(t *testing.T) {
 		defer func() {
@@ -598,7 +599,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(&sp, nil, v)
+		_ = validate_one(&sp, nil, v, 0)
 	})
 	t.Run("v", func(t *testing.T) {
 		defer func() {
@@ -608,7 +609,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(&sp, &p, nil)
+		_ = validate_one(&sp, &p, nil, 0)
 	})
 }
 
@@ -658,3 +659,40 @@ func TestRecover_validate_utf8_fast(t *testing.T) {
 	}()
 	_ = validate_utf8_fast(nil)
 }
+
+func TestRecover_parse_with_padding(t *testing.T) {
+	defer func() {
+		if r := recover(); r!= nil {
+			t.Log("recover: ", r)
+		} else {
+			t.Fatal("no panic")
+		}
+	}()
+	_ = parse_with_padding(nil)
+}
+
+func TestRecover_lookup_small_key(t *testing.T) {
+	t.Run("key", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r!= nil {
+				t.Log("recover: ", r)
+			} else {
+				t.Fatal("no panic")
+			}
+		}()
+		b := bytes.Repeat([]byte("a"), 100)
+		_ = lookup_small_key(nil, &b, 10)
+	})
+	t.Run("table", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r!= nil {
+				t.Log("recover: ", r)
+			} else {
+				t.Fatal("no panic")
+			}
+		}()
+		key := "a"
+		_ = lookup_small_key(&key, nil, 10)
+	})
+}
+

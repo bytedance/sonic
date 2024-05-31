@@ -929,7 +929,18 @@ static always_inline long skip_positive2(uint8_t** cur, size_t len) {
 
 static always_inline error_code parse_true(uint8_t** cur) {
     if (unlikely((*cur)[0] != 'r' || (*cur)[1] != 'u' || (*cur)[2] != 'e')) {
-        return SONIC_INVALID_LITERAL;
+        if (likely((*cur)[0] != 'r')) {
+             *cur += 1;
+            return SONIC_INVALID_LITERAL;
+        }
+        if (likely((*cur)[1] != 'u')) {
+             *cur += 2;
+            return SONIC_INVALID_LITERAL;
+        }
+        if (likely((*cur)[2] != 'e')) {
+             *cur += 3;
+            return SONIC_INVALID_LITERAL;
+        }
     }
     *cur += 3;
     return SONIC_OK;
@@ -937,7 +948,22 @@ static always_inline error_code parse_true(uint8_t** cur) {
 
 static always_inline error_code parse_false(uint8_t** cur) {
     if (unlikely((*cur)[0] != 'a' || (*cur)[1] != 'l' || (*cur)[2] != 's' || (*cur)[3] != 'e')) {
-        return SONIC_INVALID_LITERAL;
+        if (likely((*cur)[0] != 'a')) {
+             *cur += 1;
+            return SONIC_INVALID_LITERAL;
+        }
+        if (likely((*cur)[1] != 'l')) {
+             *cur += 2;
+            return SONIC_INVALID_LITERAL;
+        }
+        if (likely((*cur)[2] != 's')) {
+             *cur += 3;
+            return SONIC_INVALID_LITERAL;
+        }
+        if (likely((*cur)[3] != 'e')) {
+             *cur += 4;
+            return SONIC_INVALID_LITERAL;
+        }
     }
     *cur += 4;
     return SONIC_OK;
@@ -945,7 +971,18 @@ static always_inline error_code parse_false(uint8_t** cur) {
 
 static always_inline error_code parse_null(uint8_t** cur) {
     if (unlikely((*cur)[0] != 'u' || (*cur)[1] != 'l' || (*cur)[2] != 'l')) {
-        return SONIC_INVALID_LITERAL;
+        if (likely((*cur)[0] != 'u')) {
+             *cur += 1;
+            return SONIC_INVALID_LITERAL;
+        }
+        if (likely((*cur)[1] != 'l')) {
+             *cur += 2;
+            return SONIC_INVALID_LITERAL;
+        }
+        if (likely((*cur)[2] != 'l')) {
+             *cur += 3;
+            return SONIC_INVALID_LITERAL;
+        }
     }
     *cur += 3;
     return SONIC_OK;
@@ -1376,7 +1413,7 @@ long parse_with_padding(void* p) {
     xprintf("endong is depth is %d", gp->nbuf.stat.max_depth);
 
     // check depth
-    if (gp->nbuf.stat.max_depth > MAX_DEPTTH) {
+    if (unlikely(gp->nbuf.stat.max_depth > MAX_DEPTTH)) {
         return SONIC_STACK_OVERFLOW;
     }
 

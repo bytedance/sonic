@@ -2358,7 +2358,7 @@ LBB0_430:
 _MASK_USE_NUMBER:
 	WORD $0x00000002  // .long 2
 
-TEXT ·__validate_one(SB), NOSPLIT, $0-32
+TEXT ·__validate_one(SB), NOSPLIT, $0-40
 	NO_LOCAL_POINTERS
 
 _entry:
@@ -2371,10 +2371,11 @@ _validate_one:
 	MOVD s+0(FP), R0
 	MOVD p+8(FP), R1
 	MOVD m+16(FP), R2
+	MOVD flags+24(FP), R3
 	MOVD ·_subr__validate_one(SB), R11
 	WORD $0x1000005e // adr x30, .+8
 	JMP (R11)
-	MOVD R0, ret+24(FP)
+	MOVD R0, ret+32(FP)
 	RET
 
 _stack_grow:

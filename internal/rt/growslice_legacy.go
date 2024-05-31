@@ -19,9 +19,41 @@
 package rt
 
 import (
-    _ `unsafe`
+    `unsafe`
 )
 
 //go:linkname GrowSlice runtime.growslice
 //goland:noinspection GoUnusedParameter
 func GrowSlice(et *GoType, old GoSlice, cap int) GoSlice
+
+//go:linkname makeslice runtime.makeslice
+//goland:noinspection GoUnusedParameter
+func makeslice(et *GoType, len int, cap int) unsafe.Pointer
+
+func MakeSlice(oldPtr unsafe.Pointer, et *GoType, newLen int) *GoSlice {
+	if newLen == 0 {
+		return &GoSlice{
+			Ptr: ZSTPtr,
+			Len: 0,
+			Cap: 0,
+		}
+	}
+
+	if *(*unsafe.Pointer)(oldPtr) == nil {
+		return &GoSlice{
+			Ptr: makeslice(et, newLen, newLen),
+			Len: newLen,
+			Cap: newLen,
+		}
+	}
+
+	old := (*GoSlice)(oldPtr)
+	if old.Cap >= newLen {
+		old.Len = newLen
+		return old
+	}
+
+	new := GrowSlice(et, *old, newLen)
+	new.Len = newLen
+	return &new
+}
