@@ -1,4 +1,4 @@
-// +build !amd64,!arm64 go1.23 !go1.16 arm64,!go1.20
+// +build !amd64,!arm64 go1.23 !go1.17 arm64,!go1.20
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -30,7 +30,7 @@ import (
 )
 
 func init() {
-     println("WARNING: sonic/decoder only supports (Go1.16~1.22 && CPU amd64) or (go1.20~1.22 && CPU arm64), but your environment is not suitable")
+     println("WARNING: sonic/decoder only supports (go1.17~1.22 && CPU amd64) or (go1.20~1.22 && CPU arm64), but your environment is not suitable")
 }
 
 const (
