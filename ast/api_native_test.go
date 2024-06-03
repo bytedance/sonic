@@ -1,3 +1,4 @@
+//go:build (amd64 && go1.17 && !go1.23) || (arm64 && go1.20 && !go1.23)
 // +build amd64,go1.17,!go1.23 arm64,go1.20,!go1.23
 
 /*
