@@ -26,9 +26,19 @@ import (
 
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/encoder`
+	enc `github.com/bytedance/sonic/internal/encoder`
+	`github.com/bytedance/sonic/internal/envs`
+
     `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/rt`
 )
+
+func init() {
+	envs.EnableOptDec()
+	envs.EnableFastMap()
+	enc.ForceUseVM()
+	println("Warning: enable all optimize here, only used in test now")
+}
 
 type frozenConfig struct {
     Config
