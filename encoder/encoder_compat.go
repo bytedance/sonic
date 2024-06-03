@@ -1,4 +1,4 @@
-// +build !amd64 !go1.16 go1.23
+// +build !amd64 !go1.17 go1.23
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -28,7 +28,7 @@ import (
 )
 
 func init() {
-    println("WARNING:(encoder) sonic only supports Go1.16~1.22 && CPU amd64, but your environment is not suitable")
+    println("WARNING:(encoder) sonic only supports go1.17~1.22 && CPU amd64, but your environment is not suitable")
 }
 
 // EnableFallback indicates if encoder use fallback

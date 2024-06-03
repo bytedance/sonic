@@ -218,7 +218,7 @@ func TestDecodeCorrupt(t *testing.T) {
         if err == nil {
             t.Fatalf("%#v", d)
         }
-        if !strings.Contains(err.Error(), "invalid char"){
+        if !strings.Contains(err.Error(), "Syntax error"){
             t.Fatal(err.Error())
         }
     }

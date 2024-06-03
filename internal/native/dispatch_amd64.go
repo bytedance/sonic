@@ -87,6 +87,10 @@ var (
     __ValidateUTF8 func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer) (ret int)
 
     __ValidateUTF8Fast func(s unsafe.Pointer) (ret int)
+
+	__ParseWithPadding func(parser unsafe.Pointer) (ret int)
+
+	__LookupSmallKey func(key  unsafe.Pointer, table  unsafe.Pointer, lowerOff int) (index int)
 )
 
 //go:nosplit
@@ -159,6 +163,16 @@ func ValidateUTF8Fast(s *string) (ret int) {
     return __ValidateUTF8Fast(rt.NoEscape(unsafe.Pointer(s)))
 }
 
+//go:nosplit
+func ParseWithPadding(parser unsafe.Pointer) (ret int) {
+    return __ParseWithPadding(rt.NoEscape(unsafe.Pointer(parser)))
+}
+
+//go:nosplit
+func LookupSmallKey(key *string, table *[]byte, lowerOff int) (index int) {
+    return __LookupSmallKey(rt.NoEscape(unsafe.Pointer(key)), rt.NoEscape(unsafe.Pointer(table)), lowerOff)
+}
+
 func useSSE() {
     sse.Use()
     S_f64toa      = sse.S_f64toa
@@ -192,6 +206,8 @@ func useSSE() {
     __ValidateOne = sse.F_validate_one
     __ValidateUTF8= sse.F_validate_utf8
     __ValidateUTF8Fast = sse.F_validate_utf8_fast
+	__ParseWithPadding = sse.F_parse_with_padding
+	__LookupSmallKey = sse.F_lookup_small_key
 }
 
 
@@ -228,6 +244,8 @@ func useAVX() {
     __ValidateOne = avx.F_validate_one
     __ValidateUTF8= avx.F_validate_utf8
     __ValidateUTF8Fast = avx.F_validate_utf8_fast
+	__ParseWithPadding = avx.F_parse_with_padding
+	__LookupSmallKey = avx.F_lookup_small_key
 }
 
 func useAVX2() {
@@ -263,6 +281,8 @@ func useAVX2() {
     __ValidateOne = avx2.F_validate_one
     __ValidateUTF8= avx2.F_validate_utf8
     __ValidateUTF8Fast = avx2.F_validate_utf8_fast
+	__ParseWithPadding = avx2.F_parse_with_padding
+	__LookupSmallKey = avx2.F_lookup_small_key
 }
 
 
