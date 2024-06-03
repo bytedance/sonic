@@ -1,5 +1,5 @@
-//go:build goexperiment.swisstable || (!go1.16 && go1.23)
-// +build goexperiment.swisstable !go1.16,go1.23
+//go:build goexperiment.swisstable || (!go1.17 && go1.23)
+// +build goexperiment.swisstable !go1.17,go1.23
 
 // 	Most Codes are copied from Go1.20.4. Modified parts pls see comments with #MODIFIED
 
