@@ -17,15 +17,22 @@
 package api
 
 import (
-    `reflect`
+	"reflect"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-	`github.com/bytedance/sonic/internal/decoder/consts`
-	`github.com/bytedance/sonic/internal/decoder/errors`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/bytedance/sonic/option`
+	"github.com/bytedance/sonic/internal/decoder/consts"
+	"github.com/bytedance/sonic/internal/decoder/errors"
+	"github.com/bytedance/sonic/internal/decoder/optdec"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
 )
+
+func ForceAllOpt() {
+	decodeImpl = optdec.Decode
+	pretouchImpl = optdec.Pretouch
+	rt.EnbaleFastMap = true
+}
 
 const (
 	_F_allow_control = consts.F_allow_control
