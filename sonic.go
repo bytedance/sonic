@@ -1,4 +1,5 @@
-// +build amd64,go1.16,!go1.23
+//go:build (amd64 && go1.17 && !go1.23) || (arm64 && go1.20 && !go1.23)
+// +build amd64,go1.17,!go1.23 arm64,go1.20,!go1.23
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -25,9 +26,19 @@ import (
 
     `github.com/bytedance/sonic/decoder`
     `github.com/bytedance/sonic/encoder`
+	enc `github.com/bytedance/sonic/internal/encoder`
+	`github.com/bytedance/sonic/internal/envs`
+
     `github.com/bytedance/sonic/option`
     `github.com/bytedance/sonic/internal/rt`
 )
+
+func init() {
+	envs.EnableOptDec()
+	envs.EnableFastMap()
+	enc.ForceUseVM()
+	println("Warning: enable all optimize here, only used in test now")
+}
 
 type frozenConfig struct {
     Config

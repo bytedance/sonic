@@ -51,7 +51,7 @@ func fuzzHtmlEscape(t *testing.T, data []byte){
 func fuzzStream(t *testing.T, data []byte) {
 	r := bytes.NewBuffer(data)
 	dc := decoder.NewStreamDecoder(r)
-	dc.ValidateString()
+	decoderEnableValidateString(dc)
 	r1 := bytes.NewBuffer(data)
 	dc1 := decoder.NewStreamDecoder(r1)
 

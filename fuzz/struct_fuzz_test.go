@@ -1,3 +1,4 @@
+//go:build go1.18
 // +build go1.18
 
 /*
@@ -19,16 +20,19 @@
 package sonic_fuzz
 
 import (
-	`encoding/json`
-	`math/rand`
-	`fmt`
-	`reflect`
-	`strconv`
-	`strings`
-	`testing`
+	"encoding/json"
+	"fmt"
+	"math/rand"
+	"reflect"
+	"strconv"
+	"strings"
+	"testing"
+	"unicode"
 
-	`github.com/bytedance/sonic`
-	`github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 func generateNullType() reflect.Type {
@@ -134,9 +138,51 @@ func Map2StructType(m map[string]interface{}, maxDepth int) reflect.Type {
 
 const _MAX_STRUCT_DEPTH = 30
 
+
+func isAscii(s string) bool {
+	for i :=0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
+}
+
+var letters = []byte("_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func genRandString(n int) string {
+    b := make([]byte, n)
+    for i := range b {
+        b[i] = letters[rand.Intn(len(letters))]
+    }
+    return rt.Mem2Str(b)
+}
+
+func removeNonAscii(m map[string]interface{}) ([]byte, map[string]interface{}) {
+	m2 := make(map[string]interface{}, len(m))
+	for k, v := range m {
+		if !isAscii(k) {
+			// filled with random ascii
+			m[genRandString(len(k))] = v
+		}
+		m2[k] = v
+	}
+
+	// marshal to json
+	data2, err := json.Marshal(m2)
+	if err != nil {
+		panic("remashal failed")
+	}
+	return data2, m2
+}
+
 // fuzzDynamicStruct is schema-based fuzz testing, 
 // a struct type is a JSON schema.
 func fuzzDynamicStruct(t *testing.T, data []byte, v map[string]interface{}) {
+	// for most case, tag is always ascii
+	if rand.Intn(1000) % 3  != 0 {
+		data, v = removeNonAscii(v)
+	}
 	typ  := Map2StructType(v, _MAX_STRUCT_DEPTH)
 	sv  := reflect.New(typ).Interface()
 	jv  := reflect.New(typ).Interface()
@@ -148,11 +194,11 @@ func fuzzDynamicStruct(t *testing.T, data []byte, v map[string]interface{}) {
 	// Unmarshal fuzz
 	serr := target.Unmarshal(data, &sv)
 	jerr := json.Unmarshal(data, &jv)
-	require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", typ)
+	require.Equalf(t, serr != nil, jerr != nil, "different error in sonic unmarshal %v", typ, spew.Sdump(serr), spew.Sdump(jerr), string(data))
 	if serr != nil {
 		return
 	}
-	require.Equal(t, sv, jv, "different result in sonic unmarshal %v", typ)
+	require.Equal(t, jv, sv, "different result in sonic unmarshal %v", typ, string(data))
 
 	// Marshal fuzz
 	sout, serr := target.Marshal(sv)

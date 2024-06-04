@@ -246,7 +246,7 @@ func TestEncoder_Marshal_EscapeHTML_LargeJson(t *testing.T) {
     require.NoError(t, err1)
     buf2, err2 :=json.Marshal(&_BindingValue)
     require.NoError(t, err2)
-    require.Equal(t, buf1, buf2)
+    require.Equal(t, string(buf1), string(buf2))
 }
 
 var _GenericValue interface{}
