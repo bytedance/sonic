@@ -20,7 +20,7 @@ package sonic
 
 import (
     `bytes`
-    `encoding/json`
+    `github.com/clarketm/json`
     `io`
     `reflect`
 
