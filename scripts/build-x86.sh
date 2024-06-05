@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -xe
+
 # Define the directories
 SRC_DIR="native"
 TMP_DIR="output"
@@ -10,21 +12,27 @@ CC=clang
 if [ "$1" != "" ]; then
     CC=$1
 fi
-echo $CC
 
-CPU_ARCS=("sse" "avx" "avx2")
+CPU_ARCS=("sse" "avx2")
+
+# used for check the generated assembly
+# `vpcmpeqb` is the necessary instruction in native codes when using avx2
+CHECK_ARCS=("xmm" "vpcmpeqb")
+
 CLAGS=(
-    "-msse -mno-sse4 -mno-avx -mno-avx2 -mpclmul" 
-    "-mno-sse4 -mavx -mpclmul -mno-avx2 -DUSE_AVX=1 -DUSE_AVX2=0"
-    "-mno-sse4 -mavx -mpclmul -mavx2 -DUSE_AVX=1 -DUSE_AVX2=1" 
-    )
+    "-msse -mpclmul -mno-sse4 -mno-avx -mno-avx2" 
+    "-mno-sse4 -mavx -mpclmul -mavx2 -DUSE_AVX2=1" 
+)
 
 i=0
 for arc in "${CPU_ARCS[@]}"; do
-    echo "arch: $arc"
     # Create the output directory if it doesn't exist
     out_dir="$OUT_DIR/$arc"
     tmp_dir="$TMP_DIR/$arc"
+
+    # remove old files and create new
+    rm -vrf $out_dir
+    rm -vrf $tmp_dir
     mkdir -p $out_dir
     mkdir -p $tmp_dir
 
@@ -40,15 +48,19 @@ for arc in "${CPU_ARCS[@]}"; do
         asm_file="$tmp_dir/${base_name}.s"
     
         # Compile the source file into an assembly file
-        echo "$CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -mstack-alignment=0 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o $asm_file $src_file"
         $CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -Wall -Werror -S -o $asm_file $src_file
 
         # Execute asm2asm tool
-        echo "python3 $TOOL_DIR/asm2asm.py -r $out_dir/${base_name}.go $asm_file"
         python3 $TOOL_DIR/asm2asm.py -r $out_dir/${base_name}.go $asm_file
 
     done
 
-    ((i++))
+    # should check the output assembly files
+    if ! grep -rq ${CHECK_ARCS[$i]} $out_dir; then
+        echo "compiled instructions is incorret, pleas check again"
+        exit 1
+    fi
+
+    ((i=i+1))
 
 done

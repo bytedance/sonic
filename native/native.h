@@ -30,6 +30,13 @@
 #include <immintrin.h>
 #endif
 
+
+#if defined(__clang__)
+#else
+#error "only support clang compiler"
+#endif
+
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <stdbool.h>
