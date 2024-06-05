@@ -20,7 +20,6 @@ import (
     `unsafe`
 
     `github.com/bytedance/sonic/internal/cpu`
-    `github.com/bytedance/sonic/internal/native/avx`
     `github.com/bytedance/sonic/internal/native/avx2`
     `github.com/bytedance/sonic/internal/native/sse`
     `github.com/bytedance/sonic/internal/native/types`
@@ -194,42 +193,6 @@ func useSSE() {
     __ValidateUTF8Fast = sse.F_validate_utf8_fast
 }
 
-
-func useAVX() {
-    avx.Use()
-    S_f64toa      = avx.S_f64toa
-    __F64toa      = avx.F_f64toa
-    S_f32toa      = avx.S_f32toa
-    __F64toa      = avx.F_f64toa
-    S_i64toa      = avx.S_i64toa
-    __I64toa      = avx.F_i64toa
-    S_u64toa      = avx.S_u64toa
-    __U64toa      = avx.F_u64toa
-    S_lspace      = avx.S_lspace
-    S_quote       = avx.S_quote
-    __Quote       = avx.F_quote
-    S_unquote     = avx.S_unquote
-    __Unquote     = avx.F_unquote
-    S_value       = avx.S_value
-    __Value       = avx.F_value
-    S_vstring     = avx.S_vstring
-    S_vnumber     = avx.S_vnumber
-    S_vsigned     = avx.S_vsigned
-    S_vunsigned   = avx.S_vunsigned
-    S_skip_one    = avx.S_skip_one
-    __SkipOne     = avx.F_skip_one
-    __SkipOneFast = avx.F_skip_one_fast
-    S_skip_array  = avx.S_skip_array
-    S_skip_object = avx.S_skip_object
-    S_skip_number = avx.S_skip_number
-    S_get_by_path = avx.S_get_by_path
-    __GetByPath   = avx.F_get_by_path
-    __HTMLEscape  = avx.F_html_escape
-    __ValidateOne = avx.F_validate_one
-    __ValidateUTF8= avx.F_validate_utf8
-    __ValidateUTF8Fast = avx.F_validate_utf8_fast
-}
-
 func useAVX2() {
     avx2.Use()
     S_f64toa      = avx2.S_f64toa
@@ -267,13 +230,11 @@ func useAVX2() {
 
 
 func init() {
- if cpu.HasAVX2 {
-    useAVX2()
- } else if cpu.HasAVX {
-    useAVX()
- } else if cpu.HasSSE {
-    useSSE()
- } else {
-    panic("Unsupported CPU, maybe it's too old to run Sonic.")
- }
+	if cpu.HasAVX2 {
+		useAVX2()
+	} else if cpu.HasSSE {
+		useSSE()
+	} else {
+		panic("Unsupported CPU, lacks of AVX2 or SSE CPUID Flag. maybe it's too old to run Sonic.")
+	}
 }
