@@ -25,6 +25,7 @@ CLAGS=(
 )
 
 i=0
+
 for arc in "${CPU_ARCS[@]}"; do
     # Create the output directory if it doesn't exist
     out_dir="$OUT_DIR/$arc"
@@ -52,7 +53,6 @@ for arc in "${CPU_ARCS[@]}"; do
 
         # Execute asm2asm tool
         python3 $TOOL_DIR/asm2asm.py -r $out_dir/${base_name}.go $asm_file
-
     done
 
     # should check the output assembly files

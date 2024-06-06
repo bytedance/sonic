@@ -40,9 +40,9 @@ var (
     debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 )
 
+
 func TestMain(m *testing.M) {
     Use()
-    
     go func ()  {
         if !debugAsyncGC {
             return

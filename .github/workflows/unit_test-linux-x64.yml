@@ -28,6 +28,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: PCSP Test
+        run: python3 ./scripts/test_pcsp.py
+    
       - name: Unit Test
         run: |
           go test -race -covermode=atomic -coverprofile=coverage.txt ./...
