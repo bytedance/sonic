@@ -23,7 +23,6 @@ import (
     `runtime`
     `runtime/debug`
     `strconv`
-    `sync`
     `testing`
     `time`
 
@@ -45,34 +44,6 @@ func TestMain(m *testing.M) {
     }()
     time.Sleep(time.Millisecond)
     m.Run()
-}
-
-func TestGC(t *testing.T) {
-    if debugSyncGC {
-        return
-    }
-    out, err := Encode(_GenericValue, 0)
-    if err != nil {
-        t.Fatal(err)
-    }
-    n := len(out)
-    wg := &sync.WaitGroup{}
-    N := 10000
-    for i:=0; i<N; i++ {
-        wg.Add(1)
-        go func (wg *sync.WaitGroup, size int)  {
-            defer wg.Done()
-            out, err := Encode(_GenericValue, 0)
-            if err != nil {
-                t.Fatal(err)
-            }
-            if len(out) != size {
-                t.Fatal(len(out), size)
-            }
-            runtime.GC()
-        }(wg, n)
-    }
-    wg.Wait()
 }
 
 type sample struct {

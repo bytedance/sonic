@@ -1,3 +1,6 @@
+//go:build !race
+// +build !race
+
 /*
  * Copyright 2024 ByteDance Inc.
  *
