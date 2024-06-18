@@ -30,6 +30,15 @@ import (
     `github.com/stretchr/testify/require`
 )
 
+var visitorTestCases = []struct {
+    name string
+    jsonStr string
+} {
+    {"default", _TwitterJson},
+    {"issue_case01", "[1193.6419677734375]"},
+    {"issue653", `{"v0": 0, "m0": {}, "v1": 1, "a0": [], "v2": 2}`},
+}
+
 type visitorNodeDiffTest struct {
     t   *testing.T
     str string
@@ -328,12 +337,11 @@ func TestVisitor_NodeDiff(t *testing.T) {
         return writer
     }
 
-    t.Run("default", func(t *testing.T) {
-        suite.Run(t, _TwitterJson, newTracer(t))
-    })
-    t.Run("issue_case01", func(t *testing.T) {
-        suite.Run(t, `[1193.6419677734375]`, newTracer(t))
-    })
+    for _, c := range visitorTestCases {
+        t.Run(c.name, func(t *testing.T) {
+            suite.Run(t, c.jsonStr, newTracer(t))
+        })
+    }
 }
 
 type visitorUserNode interface {
@@ -640,12 +648,11 @@ func TestVisitor_UserNodeDiff(t *testing.T) {
     var d1 visitorUserNodeASTDecoder
     var d2 visitorUserNodeVisitorDecoder
 
-    t.Run("default", func(t *testing.T) {
-        testUserNodeDiff(t, &d1, &d2, _TwitterJson)
-    })
-    t.Run("issue_case01", func(t *testing.T) {
-        testUserNodeDiff(t, &d1, &d2, `[1193.6419677734375]`)
-    })
+    for _, c := range visitorTestCases {
+        t.Run(c.name, func(t *testing.T) {
+            testUserNodeDiff(t, &d1, &d2, c.jsonStr)
+        })
+    }
 }
 
 type skipVisitor struct {

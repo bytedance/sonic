@@ -251,6 +251,7 @@ func (self *traverser) decodeObject() error {
 
     /* check for empty object */
     if self.parser.s[self.parser.p] == '}' {
+        self.parser.p++
         return self.visitor.OnObjectEnd()
     }
 
@@ -326,6 +327,6 @@ func (self *traverser) decodeString(iv int64, ep int) error {
     return self.visitor.OnString(out)
 }
 
-// If visitor return this error on `OnObjectBegin()` or `OnArrayBegin()`, 
+// If visitor return this error on `OnObjectBegin()` or `OnArrayBegin()`,
 // the transverer will skip entiry object or array
 var VisitOPSkip = errors.New("")
