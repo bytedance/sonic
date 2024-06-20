@@ -17,13 +17,16 @@
 package ast
 
 import (
-    `encoding/json`
-    `fmt`
-    `strconv`
-    `unsafe`
-    
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"sync"
+
+	// "sync"
+	"unsafe"
+
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
@@ -56,6 +59,8 @@ type Node struct {
     t types.ValueType
     l uint
     p unsafe.Pointer
+    safe bool
+    m sync.RWMutex
 }
 
 // UnmarshalJSON is just an adapter to json.Unmarshaler.
@@ -787,6 +792,10 @@ func (self *Node) AddAny(val interface{}) error {
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
 func (self *Node) GetByPath(path ...interface{}) *Node {
+    if self.safe {
+        self.m.RLock()
+        defer self.m.RUnlock()
+    }
     if !self.Valid() {
         return self
     }
