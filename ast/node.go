@@ -17,13 +17,14 @@
 package ast
 
 import (
-    `encoding/json`
-    `fmt`
-    `strconv`
-    `unsafe`
-    
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"sync"
+	"unsafe"
+
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
@@ -53,9 +54,11 @@ const (
 )
 
 type Node struct {
+    b bool
     t types.ValueType
     l uint
     p unsafe.Pointer
+    m sync.RWMutex
 }
 
 // UnmarshalJSON is just an adapter to json.Unmarshaler.
