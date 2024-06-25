@@ -54,18 +54,43 @@ const (
 )
 
 type Node struct {
-    b bool
     t types.ValueType
     l uint
     p unsafe.Pointer
-    m sync.RWMutex
+    m *sync.RWMutex
+}
+
+func (self *Node) tryLock() {
+    if self != nil && self.m != nil {
+        self.m.Lock()
+    }
+}
+
+func (self *Node) tryUnlock() {
+    if self != nil && self.m != nil {
+        self.m.Unlock()
+    }
+}
+
+func (self *Node) tryRLock() {
+    if self != nil && self.m != nil {
+        self.m.RLock()
+    }
+}
+
+func (self *Node) tryRUnlock() {
+    if self != nil && self.m != nil {
+        self.m.RUnlock()
+    }
 }
 
 // UnmarshalJSON is just an adapter to json.Unmarshaler.
 // If you want better performance, use Searcher.GetByPath() directly
 func (self *Node) UnmarshalJSON(data []byte) (err error) {
+    self.tryLock()
     *self = NewRaw(string(data))
-    return self.Check()
+    self.tryUnlock()
+    return self.check()
 }
 
 /** Node Type Accessor **/
@@ -82,21 +107,47 @@ func (self *Node) UnmarshalJSON(data []byte) (err error) {
 //    V_STRING = 7 (json value string)
 //    V_NUMBER = 33 (json value number )
 //    V_ANY    = 34 (golang interface{})
-func (self Node) Type() int {
-    return int(self.t & _MASK_LAZY & _MASK_RAW)
+func (self Node) Type() (ret int) {
+    self.tryRLock()
+    ret = int(self.t & _MASK_LAZY & _MASK_RAW)
+    self.tryRUnlock()
+    return
 }
 
-func (self Node) itype() types.ValueType {
+func (self Node) itype() (ret types.ValueType) {
     return self.t & _MASK_LAZY & _MASK_RAW
 }
 
 // Exists returns false only if the self is nil or empty node V_NONE
 func (self *Node) Exists() bool {
-    return self.Valid() && self.t != _V_NONE
+    if self == nil {
+        return false
+    }
+    self.tryRLock()
+    ret := self.t != V_ERROR && self.t != _V_NONE
+    self.tryRUnlock()
+    return ret
+}
+
+func (self *Node) exists() bool {
+    if self == nil {
+        return false
+    }
+    return self.t != V_ERROR && self.t != _V_NONE
 }
 
 // Valid reports if self is NOT V_ERROR or nil
 func (self *Node) Valid() bool {
+    if self == nil {
+        return false
+    }
+    self.tryRLock()
+    ret := self.t != V_ERROR
+    self.tryRUnlock()
+    return ret
+}
+
+func (self *Node) valid() bool {
     if self == nil {
         return false
     }
@@ -109,6 +160,24 @@ func (self *Node) Valid() bool {
 func (self *Node)  Check() error {
     if self == nil {
         return ErrNotExist
+    } else {
+        self.tryRLock()
+        if self.t != V_ERROR {
+            self.tryRUnlock()
+            return nil
+        } else {
+            self.tryRUnlock()
+            return self
+        }
+    }
+}
+
+// Check checks if the node itself is valid, and return:
+//   - ErrNotExist If the node is nil
+//   - Its underlying error If the node is V_ERROR
+func (self *Node)  check() error {
+    if self == nil {
+        return ErrNotExist
     } else if self.t != V_ERROR {
         return nil
     } else {
@@ -117,8 +186,16 @@ func (self *Node)  Check() error {
 }
 
 // IsRaw returns true if node's underlying value is raw json
-func (self Node) IsRaw() bool {
+func (self Node) isRaw() bool {
     return self.t&_V_RAW != 0
+}
+
+// IsRaw returns true if node's underlying value is raw json
+func (self Node) IsRaw() bool {
+    self.tryRLock()
+    ret := self.t&_V_RAW != 0
+    self.tryRUnlock()
+    return ret
 }
 
 func (self *Node) isLazy() bool {
@@ -136,21 +213,40 @@ func (self *Node) Raw() (string, error) {
     if self == nil {
         return "", ErrNotExist
     }
-    if !self.IsRaw() {
+    self.tryRLock()
+    if !self.isRaw() {
+        self.tryRUnlock()
         buf, err := self.MarshalJSON()
         return rt.Mem2Str(buf), err
     }
-    return self.toString(), nil
+    ret := self.toString()
+    self.tryRUnlock()
+    return ret, nil
 }
 
+// NOTICE: self.m.RLock() must be called before!!!
 func (self *Node) checkRaw() error {
-    if err := self.Check(); err != nil {
-        return err
+    if self == nil {
+        return ErrNotExist
     }
-    if self.IsRaw() {
+    
+    self.tryRLock()
+    if self.t == V_ERROR {
+        self.tryRUnlock()
+        return self
+    } else if self.isRaw() {
+        self.tryRUnlock()
+        self.tryLock()
         self.parseRaw(false)
+        self.tryUnlock()
+        if self.t == V_ERROR {
+            return self
+        }
+        return nil
+    } else {
+        self.tryRUnlock()
+        return nil
     }
-    return self.Check()
 }
 
 // Bool returns bool value represented by this node, 
@@ -498,6 +594,8 @@ func (self *Node) Len() (int, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
     }
+    self.tryRLock()
+    defer self.tryRUnlock()
     if self.t == types.V_ARRAY || self.t == types.V_OBJECT || self.t == _V_ARRAY_LAZY || self.t == _V_OBJECT_LAZY || self.t == types.V_STRING {
         return int(self.l), nil
     } else if self.t == _V_NONE || self.t == types.V_NULL {
@@ -516,6 +614,8 @@ func (self *Node) Cap() (int, error) {
     if err := self.checkRaw(); err != nil {
         return 0, err
     }
+    self.tryRLock()
+    defer self.tryRUnlock()
     switch self.t {
     case types.V_ARRAY: return (*linkedNodes)(self.p).Cap(), nil
     case types.V_OBJECT: return (*linkedPairs)(self.p).Cap(), nil
@@ -530,10 +630,10 @@ func (self *Node) Cap() (int, error) {
 //
 // If self is V_NONE or V_NULL, it becomes V_OBJECT and sets the node at the key.
 func (self *Node) Set(key string, node Node) (bool, error) {
-    if err := self.Check(); err != nil {
+    if err := self.check(); err != nil {
         return false, err
     }
-    if err := node.Check(); err != nil {
+    if err := node.check(); err != nil {
         return false, err 
     }
     
@@ -546,7 +646,7 @@ func (self *Node) Set(key string, node Node) (bool, error) {
 
     p := self.Get(key)
 
-    if !p.Exists() {
+    if !p.exists() {
         // self must be fully-loaded here
         if self.len() == 0 {
             *self = newObject(new(linkedPairs))
@@ -556,7 +656,7 @@ func (self *Node) Set(key string, node Node) (bool, error) {
         self.l++
         return false, nil
 
-    } else if err := p.Check(); err != nil {
+    } else if err := p.check(); err != nil {
         return false, err
     } 
 
@@ -579,9 +679,9 @@ func (self *Node) Unset(key string) (bool, error) {
         return false, err
     }
     p, i := self.skipKey(key)
-    if !p.Exists() {
+    if !p.exists() {
         return false, nil
-    } else if err := p.Check(); err != nil {
+    } else if err := p.check(); err != nil {
         return false, err
     }
     self.removePairAt(i)
@@ -592,10 +692,10 @@ func (self *Node) Unset(key string) (bool, error) {
 //
 // The index must be within self's children.
 func (self *Node) SetByIndex(index int, node Node) (bool, error) {
-    if err := self.Check(); err != nil {
+    if err := self.check(); err != nil {
         return false, err 
     }
-    if err := node.Check(); err != nil {
+    if err := node.check(); err != nil {
         return false, err 
     }
 
@@ -605,9 +705,9 @@ func (self *Node) SetByIndex(index int, node Node) (bool, error) {
     }
 
     p := self.Index(index)
-    if !p.Exists() {
+    if !p.exists() {
         return false, ErrNotExist
-    } else if err := p.Check(); err != nil {
+    } else if err := p.check(); err != nil {
         return false, err
     }
 
@@ -650,7 +750,7 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
         return false, ErrUnsupportType
     }
 
-    if !p.Exists() {
+    if !p.exists() {
         return false, ErrNotExist
     }
 
@@ -672,7 +772,7 @@ func (self *Node) UnsetByIndex(index int) (bool, error) {
 //
 // If self is V_NONE or V_NULL, it becomes V_ARRAY and sets the node at index 0.
 func (self *Node) Add(node Node) error {
-    if err := self.Check(); err != nil {
+    if err := self.check(); err != nil {
         return err
     }
 
@@ -708,7 +808,7 @@ func (self *Node) Pop() error {
         }
         // remove tail unset nodes
         for i := s.Len()-1; i >= 0; i-- {
-            if s.At(i).Exists() {
+            if s.At(i).exists() {
                 s.Pop()
                 self.l--
                 break
@@ -723,7 +823,7 @@ func (self *Node) Pop() error {
         }
         // remove tail unset nodes
         for i := s.Len()-1; i >= 0; i-- {
-            if p := s.At(i); p != nil && p.Value.Exists() {
+            if p := s.At(i); p != nil && p.Value.exists() {
                 s.Pop()
                 self.l--
                 break
@@ -757,7 +857,7 @@ func (self *Node) Move(dst, src int) error {
         di, si := dst, src
         // find real pos of src and dst
         for i := 0; i < l; i++ {
-            if s.At(i).Exists() {
+            if s.At(i).exists() {
                 di--
                 si--
             }
@@ -790,7 +890,7 @@ func (self *Node) AddAny(val interface{}) error {
 // Note, the api expects the json is well-formed at least,
 // otherwise it may return unexpected result.
 func (self *Node) GetByPath(path ...interface{}) *Node {
-    if !self.Valid() {
+    if !self.valid() {
         return self
     }
     var s = self
@@ -798,12 +898,12 @@ func (self *Node) GetByPath(path ...interface{}) *Node {
         switch p := p.(type) {
         case int:
             s = s.Index(p)
-            if !s.Valid() {
+            if !s.valid() {
                 return s
             }
         case string:
             s = s.Get(p)
-            if !s.Valid() {
+            if !s.valid() {
                 return s
             }
         default:
@@ -884,14 +984,17 @@ func (self *Node) IndexOrGetWithIdx(idx int, key string) (*Node, int) {
 
 // Map loads all keys of an object node
 func (self *Node) Map() (map[string]interface{}, error) {
+    self.tryRLock()
     if self.isAny() {
         any := self.packAny()
+        self.tryRUnlock()
         if v, ok := any.(map[string]interface{}); ok {
             return v, nil
         } else {
             return nil, ErrUnsupportType
         }
     }
+    self.tryRUnlock()
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil, err
     }
@@ -903,14 +1006,17 @@ func (self *Node) Map() (map[string]interface{}, error) {
 
 // MapUseNumber loads all keys of an object node, with numeric nodes casted to json.Number
 func (self *Node) MapUseNumber() (map[string]interface{}, error) {
+    self.tryRLock()
     if self.isAny() {
         any := self.packAny()
+        self.tryRUnlock()
         if v, ok := any.(map[string]interface{}); ok {
             return v, nil
         } else {
             return nil, ErrUnsupportType
         }
     }
+    self.tryRUnlock()
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil, err
     }
@@ -923,20 +1029,26 @@ func (self *Node) MapUseNumber() (map[string]interface{}, error) {
 // MapUseNode scans both parsed and non-parsed chidren nodes, 
 // and map them by their keys
 func (self *Node) MapUseNode() (map[string]Node, error) {
+    self.tryRLock()
     if self.isAny() {
         any := self.packAny()
+        self.tryRUnlock()
         if v, ok := any.(map[string]Node); ok {
             return v, nil
         } else {
             return nil, ErrUnsupportType
         }
     }
+    self.tryRUnlock()
     if err := self.should(types.V_OBJECT, "an object"); err != nil {
         return nil, err
     }
+    self.tryLock()
     if err := self.skipAllKey(); err != nil {
+        self.tryUnlock()
         return nil, err
     }
+    self.tryUnlock()
     return self.toGenericObjectUseNode()
 }
 
@@ -972,9 +1084,15 @@ func (self *Node) SortKeys(recurse bool) error {
     if err := self.checkRaw(); err != nil {
         return err
     }
+    self.tryRLock()
     if self.itype() == types.V_OBJECT {
-        return self.sortKeys(recurse)
+        self.tryRUnlock()
+        self.tryLock()
+        ret := self.sortKeys(recurse)
+        self.tryUnlock()
+        return ret
     } else if self.itype() == types.V_ARRAY {
+        self.tryRUnlock()
         var err error
         err2 := self.ForEach(func(path Sequence, node *Node) bool {
             it := node.itype()
@@ -991,6 +1109,7 @@ func (self *Node) SortKeys(recurse bool) error {
         }
         return err2
     } else {
+        self.tryRUnlock()
         return nil
     }
 }
@@ -1029,14 +1148,17 @@ func (self *Node) sortKeys(recurse bool) (err error) {
 
 // Array loads all indexes of an array node
 func (self *Node) Array() ([]interface{}, error) {
+    self.tryRLock()
     if self.isAny() {
         any := self.packAny()
+        self.tryRUnlock()
         if v, ok := any.([]interface{}); ok {
             return v, nil
         } else {
             return nil, ErrUnsupportType
         }
     }
+    self.tryRUnlock()
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
@@ -1048,14 +1170,17 @@ func (self *Node) Array() ([]interface{}, error) {
 
 // ArrayUseNumber loads all indexes of an array node, with numeric nodes casted to json.Number
 func (self *Node) ArrayUseNumber() ([]interface{}, error) {
+    self.tryRLock()
     if self.isAny() {
         any := self.packAny()
+        self.tryRUnlock()
         if v, ok := any.([]interface{}); ok {
             return v, nil
         } else {
             return nil, ErrUnsupportType
         }
     }
+    self.tryRUnlock()
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
@@ -1070,18 +1195,23 @@ func (self *Node) ArrayUseNumber() ([]interface{}, error) {
 func (self *Node) ArrayUseNode() ([]Node, error) {
     if self.isAny() {
         any := self.packAny()
+        self.tryRUnlock()
         if v, ok := any.([]Node); ok {
             return v, nil
         } else {
             return nil, ErrUnsupportType
         }
     }
+    self.tryRUnlock()
     if err := self.should(types.V_ARRAY, "an array"); err != nil {
         return nil, err
     }
+    self.tryLock()
     if err := self.skipAllIndex(); err != nil {
+        self.tryUnlock()
         return nil, err
     }
+    self.tryUnlock()
     return self.toGenericArrayUseNode()
 }
 
@@ -1117,37 +1247,53 @@ func (self *Node) Interface() (interface{}, error) {
     if err := self.checkRaw(); err != nil {
         return nil, err
     }
+    self.tryRLock()
     switch self.t {
-        case V_ERROR         : return nil, self.Check()
-        case types.V_NULL    : return nil, nil
-        case types.V_TRUE    : return true, nil
-        case types.V_FALSE   : return false, nil
-        case types.V_ARRAY   : return self.toGenericArray()
-        case types.V_OBJECT  : return self.toGenericObject()
-        case types.V_STRING  : return self.toString(), nil
+        case V_ERROR         : 
+            e := self.check()
+            self.tryRUnlock()
+            return nil, e
+        case types.V_NULL    : self.tryRUnlock(); return nil, nil
+        case types.V_TRUE    : self.tryRUnlock(); return true, nil
+        case types.V_FALSE   : self.tryRUnlock(); return false, nil
+        case types.V_ARRAY   :
+            ret, err := self.toGenericArray()
+            self.tryRUnlock()
+            return ret, err
+        case types.V_OBJECT  :
+            ret, err := self.toGenericObject()
+            self.tryRUnlock()
+            return ret, err
+        case types.V_STRING  :
+            ret := self.toString()
+            self.tryRUnlock()
+            return ret, nil
         case _V_NUMBER       : 
             v, err := self.toFloat64()
+            self.tryRUnlock()
             if err != nil {
                 return nil, err
             }
             return v, nil
         case _V_ARRAY_LAZY   :
+            self.tryRUnlock()
             if err := self.loadAllIndex(); err != nil {
                 return nil, err
             }
             return self.toGenericArray()
         case _V_OBJECT_LAZY  :
+            self.tryRUnlock()
             if err := self.loadAllKey(); err != nil {
                 return nil, err
             }
             return self.toGenericObject()
         case _V_ANY:
             switch v := self.packAny().(type) {
-                case Node : return v.Interface()
-                case *Node: return v.Interface()
-                default   : return v, nil
+                case Node : self.tryRUnlock(); return v.Interface()
+                case *Node: self.tryRUnlock(); return v.Interface()
+                default   : self.tryRUnlock(); return v, nil
             }
-        default              : return nil,  ErrUnsupportType
+        default              : self.tryRUnlock(); return nil,  ErrUnsupportType
     }
 }
 
@@ -1162,7 +1308,7 @@ func (self *Node) InterfaceUseNumber() (interface{}, error) {
         return nil, err
     }
     switch self.t {
-        case V_ERROR         : return nil, self.Check()
+        case V_ERROR         : return nil, self.check()
         case types.V_NULL    : return nil, nil
         case types.V_TRUE    : return true, nil
         case types.V_FALSE   : return false, nil
@@ -1204,16 +1350,16 @@ func (self *Node) InterfaceUseNode() (interface{}, error) {
                 return nil, err
             }
             return self.toGenericObjectUseNode()
-        default              : return *self, self.Check()
+        default              : return *self, self.check()
     }
 }
 
 // LoadAll loads all the node's children and children's children as parsed.
 // After calling it, the node can be safely used on concurrency
 func (self *Node) LoadAll() error {
-    if self.IsRaw() {
+    if self.isRaw() {
         self.parseRaw(true)
-        return self.Check()
+        return self.check()
     }
 
     switch self.itype() {
@@ -1224,10 +1370,10 @@ func (self *Node) LoadAll() error {
         }
         for i := 0; i < e; i++ {
             n := self.nodeAt(i)
-            if n.IsRaw() {
+            if n.isRaw() {
                 n.parseRaw(true)
             }
-            if err := n.Check(); err != nil {
+            if err := n.check(); err != nil {
                 return err
             }
         }
@@ -1239,16 +1385,16 @@ func (self *Node) LoadAll() error {
         }
         for i := 0; i < e; i++ {
             n := self.pairAt(i)
-            if n.Value.IsRaw() {
+            if n.Value.isRaw() {
                 n.Value.parseRaw(true)
             }
-            if err := n.Value.Check(); err != nil {
+            if err := n.Value.check(); err != nil {
                 return err
             }
         }
         return nil
     default:
-        return self.Check()
+        return self.check()
     }
 }
 
@@ -1265,7 +1411,7 @@ func (self *Node) Load() error {
     case _V_OBJECT_LAZY:
         return self.skipAllKey()
     default:
-        return self.Check()
+        return self.check()
     }
 }
 
@@ -1292,7 +1438,7 @@ func (self *Node) nodeAt(i int) *Node {
             // some nodes got unset, iterate to skip them
             for j:=0; j<l; j++ {
                 v := p.At(j)
-                if v.Exists() {
+                if v.exists() {
                     i--
                 }
                 if i < 0 {
@@ -1316,7 +1462,7 @@ func (self *Node) pairAt(i int) *Pair {
             // some nodes got unset, iterate to skip them
             for j:=0; j<l; j++ {
                 v := p.At(j)
-                if v != nil && v.Value.Exists() {
+                if v != nil && v.Value.exists() {
                     i--
                 }
                 if i < 0 {
@@ -1386,7 +1532,7 @@ func (self *Node) skipKey(key string) (*Node, int) {
 
     // lazy load
     for last, i := self.skipNextPair(), nb; last != nil; last, i = self.skipNextPair(), i+1 {
-        if last.Value.Check() != nil {
+        if last.Value.check() != nil {
             return &last.Value, -1
         }
         if last.Key == key {
@@ -1409,7 +1555,7 @@ func (self *Node) skipIndex(index int) *Node {
 
     // lazy load
     for last := self.skipNextNode(); last != nil; last = self.skipNextNode(){
-        if last.Check() != nil {
+        if last.check() != nil {
             return last
         }
         if self.len() > index {
@@ -1431,7 +1577,7 @@ func (self *Node) skipIndexPair(index int) *Pair {
 
     // lazy load
     for last := self.skipNextPair(); last != nil; last = self.skipNextPair(){
-        if last.Value.Check() != nil {
+        if last.Value.check() != nil {
             return last
         }
         if self.len() > index {
@@ -1443,6 +1589,8 @@ func (self *Node) skipIndexPair(index int) *Pair {
 }
 
 func (self *Node) loadAllIndex() error {
+    self.tryLock()
+    defer self.tryUnlock()
     if !self.isLazy() {
         return nil
     }
@@ -1457,6 +1605,8 @@ func (self *Node) loadAllIndex() error {
 }
 
 func (self *Node) loadAllKey() error {
+    self.tryLock()
+    defer self.tryUnlock()
     if !self.isLazy() {
         return nil
     }

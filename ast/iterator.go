@@ -66,17 +66,31 @@ func (self *Iterator) Len() int {
 
 // HasNext reports if it is the end of iteration or has error.
 func (self *Iterator) HasNext() bool {
+    if self == nil || self.p == nil {
+        return false
+    }
+    self.p.tryRLock()
     if !self.p.isLazy() {
-        return self.p.Valid() && self.i < self.p.len()
+        ret := self.p.valid() && self.i < self.p.len()
+        self.p.tryRUnlock()
+        return ret
     } else if self.p.t == _V_ARRAY_LAZY {
-        return self.p.skipNextNode().Valid()
+        self.p.tryRUnlock()
+        self.p.tryLock()
+        n := self.p.skipNextNode()
+        self.p.tryUnlock()
+        return n.valid()
     } else if self.p.t == _V_OBJECT_LAZY {
+        self.p.tryRUnlock()
+        self.p.tryLock()
         pair := self.p.skipNextPair()
+        self.p.tryUnlock()
         if pair == nil {
             return false
         }
-        return pair.Value.Valid()
+        return pair.Value.valid()
     }
+    self.p.tryRUnlock()
     return false
 }
 
@@ -95,9 +109,11 @@ next_start:
     if !self.HasNext() {
         return nil
     } else {
+        self.p.tryRLock()
         n := self.p.nodeAt(self.i)
+        self.p.tryRUnlock()
         self.i++
-        if !n.Exists() {
+        if !n.exists() {
             goto next_start
         }
         return n
@@ -120,9 +136,11 @@ next_start:
     if !self.HasNext() {
         return nil
     } else {
+        self.p.tryRLock()
         n := self.p.pairAt(self.i)
+        self.p.tryRUnlock()
         self.i++
-        if n == nil || !n.Value.Exists() {
+        if n == nil || !n.Value.exists() {
             goto next_start
         }
         return n
@@ -168,8 +186,10 @@ type Scanner func(path Sequence, node *Node) bool
 // 
 // NOTICE: A unsetted node WON'T trigger sc, but its index still counts into Path.Index
 func (self *Node) ForEach(sc Scanner) error {
+    self.tryLock()
     switch self.itype() {
     case types.V_ARRAY:
+        self.tryRUnlock()
         iter, err := self.Values()
         if err != nil {
             return err
@@ -194,10 +214,11 @@ func (self *Node) ForEach(sc Scanner) error {
             v = iter.next()
         }
     default:
-        if self.Check() != nil {
+        if self.check() != nil {
             return self
         }
         sc(Sequence{-1, nil}, self)
     }
     return nil
 }
+

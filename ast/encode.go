@@ -93,7 +93,11 @@ var bytesPool   = sync.Pool{}
 
 func (self *Node) MarshalJSON() ([]byte, error) {
     buf := newBuffer()
+
+    self.tryLock()
     err := self.encode(buf)
+    self.tryUnlock()
+
     if err != nil {
         freeBuffer(buf)
         return nil, err
@@ -120,12 +124,12 @@ func freeBuffer(buf *[]byte) {
 }
 
 func (self *Node) encode(buf *[]byte) error {
-    if self.IsRaw() {
+    if self.isRaw() {
         return self.encodeRaw(buf)
     }
-    switch self.Type() {
+    switch int(self.itype()) {
         case V_NONE  : return ErrNotExist
-        case V_ERROR : return self.Check()
+        case V_ERROR : return self.check()
         case V_NULL  : return self.encodeNull(buf)
         case V_TRUE  : return self.encodeTrue(buf)
         case V_FALSE : return self.encodeFalse(buf)
@@ -196,7 +200,7 @@ func (self *Node) encodeArray(buf *[]byte) error {
     var started bool
     for i := 0; i < nb; i++ {
         n := self.nodeAt(i)
-        if !n.Exists() {
+        if !n.exists() {
             continue
         }
         if started {
@@ -242,7 +246,7 @@ func (self *Node) encodeObject(buf *[]byte) error {
     var started bool
     for i := 0; i < nb; i++ {
         n := self.pairAt(i)
-        if n == nil || !n.Value.Exists() {
+        if n == nil || !n.Value.exists() {
             continue
         }
         if started {
