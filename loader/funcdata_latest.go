@@ -1,5 +1,5 @@
-// go:build go1.18 && !go1.23
-// +build go1.18,!go1.23
+// go:build go1.18 && !go1.24
+// +build go1.18,!go1.24
 
 /*
  * Copyright 2021 ByteDance Inc.
