@@ -33,6 +33,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMain(m *testing.M) {
+	encoder.ForceUseJit()
+	m.Run()
+}
 
 func TestAssembler_CompileAndLoad(t *testing.T) {
 	p, err := encoder.NewCompiler().Compile(reflect.TypeOf((*bool)(nil)), true)

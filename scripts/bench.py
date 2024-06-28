@@ -114,6 +114,8 @@ def main():
         help='benchmark the count')
     argparser.add_argument('-go', '--go_bin_path', dest='gobin', required=False,
         help='benchmark the count')
+    argparser.add_argument('-envs', '--envs', dest='envs', required=False,
+        help='the environments')
     args = argparser.parse_args()
     
     global gobin 
@@ -142,7 +144,7 @@ def main():
 
     if not target:
         (fd, target) = tempfile.mkstemp(".target.txt")
-        run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix, gbench_args, target))
+        run("%s %s %s ./... 2>&1 | tee %s" %(args.envs, gbench_prefix, gbench_args, target))
 
 if __name__ == "__main__":
     main()

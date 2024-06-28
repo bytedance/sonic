@@ -21,6 +21,7 @@ import (
 	"unicode"
 	"unsafe"
 
+	"github.com/bytedance/sonic/internal/envs"
 	"github.com/bytedance/sonic/internal/native"
 	"github.com/bytedance/sonic/internal/resolver"
 	"github.com/bytedance/sonic/internal/rt"
@@ -58,7 +59,7 @@ func NewFieldLookup(fields []resolver.FieldMeta) FieldLookup {
 
 	if n <= 8 {
 		f =  NewSmallFieldMap(n)
-	} else if n <= 128 && isAsc {
+	} else if envs.UseFastMap && n <= 128 && isAsc {
 		f =   NewNormalFieldMap(n)
 	} else {
 		f =   NewFallbackFieldMap(n)

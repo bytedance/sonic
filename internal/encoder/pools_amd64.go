@@ -27,13 +27,19 @@ import (
 	"github.com/bytedance/sonic/option"
 )
 
+
+func ForceUseJit() {
+	x86.SetCompiler(makeEncoderX86)
+	pretouchType = pretouchTypeX86
+	encodeTypedPointer = x86.EncodeTypedPointer
+	vars.UseVM = false
+}
+
 func init() {
 	if vars.UseVM {
 		ForceUseVM()
 	} else {
-		x86.SetCompiler(makeEncoderX86)
-		encodeTypedPointer = x86.EncodeTypedPointer
-		pretouchType = pretouchTypeX86
+		ForceUseJit()
 	}
 }
 

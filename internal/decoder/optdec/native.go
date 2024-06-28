@@ -1,6 +1,7 @@
 package optdec
 
 import (
+	"reflect"
 	"unsafe"
 
 	"sync"
@@ -171,6 +172,8 @@ func (p *Parser) JsonBytes() []byte {
 	}
 }
 
+var nodeType = rt.UnpackType(reflect.TypeOf(node{}))
+
 func (p *Parser) parse() ErrorCode {
 	var offset uintptr
 	// when decode into struct, we should decode number as possible
@@ -182,21 +185,30 @@ func (p *Parser) parse() ErrorCode {
 	// fast path with limited node buffer
 	err := ErrorCode(native.ParseWithPadding(unsafe.Pointer(p)))
 	if err != SONIC_VISIT_FAILED {
-		goto ret;
+		p.options = old
+		return err
 	}
 
-	// fallback parse
-	// maybe node buf is not enough, continue
+	// node buf is not enough, continue parse
+	// the maxCap is always meet all valid JSON
+	maxCap := len(p.Json) / 2 + 2 
+	slice := rt.GoSlice{
+		Ptr: rt.Mallocgc(uintptr(maxCap) * nodeType.Size, nodeType, false),
+		Len: maxCap,
+		Cap: maxCap,
+	}
+	offset = p.nbuf.ncur - p.nbuf.nstart
+	rt.Memmove(unsafe.Pointer(slice.Ptr), unsafe.Pointer(&p.nodes[0]), offset)
 	p.backup = p.nodes
-	p.nodes = make([]node, len(p.Json) / 2 + 2, len(p.Json) / 2 + 2)
-	copy(p.nodes, p.backup)
-	offset = (p.nbuf.ncur - p.nbuf.nstart) / unsafe.Sizeof(node{})
+	p.nodes = *(*[]node)(unsafe.Pointer(&slice))
+
+	// update node cursor
 	p.nbuf.nstart = uintptr(unsafe.Pointer(&p.nodes[0]))
 	p.nbuf.nend = p.nbuf.nstart + uintptr(cap(p.nodes)) * unsafe.Sizeof(node{})
-	p.nbuf.ncur = uintptr(unsafe.Pointer(&p.nodes[offset]))
-	err = ErrorCode(native.ParseWithPadding(unsafe.Pointer(p)))
+	p.nbuf.ncur = p.nbuf.nstart + offset
 
-ret:
+	// continue parse json
+	err = ErrorCode(native.ParseWithPadding(unsafe.Pointer(p)))
 	p.options = old
 	return err
 }

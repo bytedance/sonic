@@ -205,8 +205,12 @@ static always_inline void value_inc(uint64_t* typ) {
     *typ += (1 << TYPE_BITS);
 }
 
-static always_inline uint64_t get_type(uint64_t typ) {
-    return typ & TYPE_MASK;
+static always_inline uint64_t get_type(node* node) {
+    return node->typ & TYPE_MASK;
+}
+
+static always_inline uint64_t get_pos(node* node) {
+    return node->typ >> POS_BITS;
 }
 
 static always_inline size_t get_count(uint64_t typ) {
@@ -588,7 +592,7 @@ retry_decode:
 
 // positive is length
 // negative is - error_code
-static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, bool disable_surrogates_error) {
+static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, uint64_t opts) {
     string_block block;
     uint8_t* start = *cur;
     v256u v;
@@ -606,7 +610,7 @@ static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, boo
             break;
         }
 
-        if (unlikely(has_unescaped(&block))) {
+        if (unlikely((opts & F_VALIDATE_STRING) != 0 && has_unescaped(&block))) {
             *cur += trailing_zeros(block.esc);
             return -SONIC_CONTROL_CHAR;
         }
@@ -664,7 +668,7 @@ find_and_move:
         }
     }
 
-    if (unlikely(has_unescaped(&block))) {
+    if (unlikely((opts & F_VALIDATE_STRING) != 0 && has_unescaped(&block))) {
         *cur += trailing_zeros(block.esc);
         return -SONIC_CONTROL_CHAR;
     }
@@ -1027,7 +1031,7 @@ static uint64_t PADDING_SIZE = 64;
 
 static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) {
     uint8_t** cur   = rdr->cur(rdr->ctx);
-    uint8_t* start  = *cur;
+    uint8_t* start  = (uint8_t*)(slf->start);
     uint64_t* state = NULL;
     long slen       = 0;
     bool neg        = false;
@@ -1063,7 +1067,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
                 goto arr_val;
             }
             default: {
-                if (get_type(node_buf_parent(nodes)->typ) == OBJECT) {
+                if (get_type(node_buf_parent(nodes)) == OBJECT) {
                     if (top_is_key(nodes)) {
                         goto obj_val;
                     } else {
@@ -1115,7 +1119,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, true);
+            slen = parse_string_inplace(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
@@ -1150,7 +1154,7 @@ obj_key:
     // parse key
     pos = offset_from(*cur);
 
-    slen = parse_string_inplace(cur, &has_esc, true);
+    slen = parse_string_inplace(cur, &has_esc, slf->opt);
     if (slen < 0) {
         err =  (error_code)(-slen);
         return err;
@@ -1178,10 +1182,7 @@ obj_val:
             }
             goto obj_key;
         case '[':
-            state = vis->on_array_start(ctx, pos);
-            if (state == NULL) {
-                return SONIC_EOF;
-            }
+            check_state(vis->on_array_start(ctx, pos));
             c = skip_space(&slf->nbk, rdr);
             if (c == ']') {
                 state = vis->on_array_end(ctx, 0);
@@ -1206,7 +1207,7 @@ obj_val:
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, true);
+            slen = parse_string_inplace(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
@@ -1251,7 +1252,7 @@ scope_end:
     }
 
     c = skip_space(&slf->nbk, rdr);
-    if (get_type(*state) == OBJECT) {
+    if (((*state) & TYPE_MASK) == OBJECT) {
         goto obj_cont;
     } else {
         goto arr_cont;
@@ -1294,7 +1295,7 @@ arr_val:
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, true);
+            slen = parse_string_inplace(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }

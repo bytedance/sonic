@@ -5,6 +5,7 @@ import (
 	"math"
 	"unsafe"
 
+	"github.com/bytedance/sonic/internal/envs"
 	"github.com/bytedance/sonic/internal/rt"
 )
 
@@ -67,7 +68,6 @@ type efacePool struct{
 	t64   		rt.T64Pool
 	tslice 		rt.TslicePool
 	tstring 	rt.TstringPool
-	efaceMap    rt.MapPool
 	efaceSlice  rt.SlicePool
 }
 
@@ -84,13 +84,13 @@ func newEfacePool(stat *jsonStat, useNumber bool) *efacePool {
 		t64: rt.NewT64Pool(nums),
 		tslice: rt.NewTslicePool(int(stat.array)),
 		tstring: rt.NewTstringPool(strs),
-		efaceMap: rt.NewMapPool(rt.MapEfaceMapType, int(stat.object), int(stat.object_keys)),
 		efaceSlice: rt.NewPool(rt.AnyType, int(stat.array_elems)),
 	}
 }
 
 func (self *efacePool) GetMap(hint int) unsafe.Pointer {
-	return unsafe.Pointer(self.efaceMap.GetMap(hint))
+	m := make(map[string]interface{}, hint)
+	return *(*unsafe.Pointer)(unsafe.Pointer(&m))
 }
 
 func (self *efacePool) GetSlice(hint int) unsafe.Pointer {
@@ -116,7 +116,7 @@ func (self *efacePool) ConvTnum(val json.Number, dst unsafe.Pointer) {
 /********************************************************/
 
 func canUseFastMap( opts uint64, root *rt.GoType) bool {
-	return rt.EnbaleFastMap && (opts & (1 << _F_copy_string)) == 0 &&  (opts & (1 << _F_use_int64)) == 0  && (root == rt.AnyType || root == rt.MapEfaceType || root == rt.SliceEfaceType) 
+	return envs.UseFastMap && (opts & (1 << _F_copy_string)) == 0 &&  (opts & (1 << _F_use_int64)) == 0  && (root == rt.AnyType || root == rt.MapEfaceType || root == rt.SliceEfaceType) 
 }
 
 func NewContext(json string, pos int, opts uint64, root *rt.GoType) (Context, error) {
@@ -193,8 +193,8 @@ func (val Node) Next() uintptr {
 		return PtrOffset(val.cptr, 1)
 	}
 	cobj := ptrCast(val.cptr)
-	offset := int(uint64(cobj.val) >> ConLenBits)
-	return PtrOffset(val.cptr, uintptr(offset))
+	offset := int64(uint64(cobj.val) >> ConLenBits)
+	return PtrOffset(val.cptr, offset)
 }
 
 func (val *Node) next() {
@@ -1299,6 +1299,6 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 }
 
 //go:nosplit
-func PtrOffset(ptr uintptr, off uintptr) uintptr {
-	return ptr + off * unsafe.Sizeof(node{})
+func PtrOffset(ptr uintptr, off int64) uintptr {
+	return uintptr(int64(ptr) + off * int64(unsafe.Sizeof(node{})))
 }

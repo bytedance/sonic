@@ -12,11 +12,11 @@ const (
 )
 
 const (
-    _stack__parse_with_padding = 200
+    _stack__parse_with_padding = 192
 )
 
 const (
-    _size__parse_with_padding = 48776
+    _size__parse_with_padding = 49036
 )
 
 var (
@@ -28,15 +28,15 @@ var (
         {0xc, 32},
         {0xd, 40},
         {0x14, 48},
-        {0x3b47, 200},
-        {0x3b48, 48},
-        {0x3b4a, 40},
-        {0x3b4c, 32},
-        {0x3b4e, 24},
-        {0x3b50, 16},
-        {0x3b51, 8},
-        {0x3b55, 0},
-        {0xbe88, 200},
+        {0x1930, 192},
+        {0x1931, 48},
+        {0x1933, 40},
+        {0x1935, 32},
+        {0x1937, 24},
+        {0x1939, 16},
+        {0x193a, 8},
+        {0x193e, 0},
+        {0xbf8c, 192},
     }
 )
 
