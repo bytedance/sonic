@@ -23,6 +23,7 @@ import (
 	"github.com/bytedance/sonic/internal/encoder/ir"
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/encoder/vm"
+	"github.com/bytedance/sonic/internal/envs"
 	"github.com/bytedance/sonic/internal/resolver"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/option"
@@ -33,6 +34,12 @@ func ForceUseVM() {
 	pretouchType = pretouchTypeVM
 	encodeTypedPointer = vm.EncodeTypedPointer
 	vars.UseVM = true
+}
+
+func init() {
+	if envs.UseEncodeVM {
+		ForceUseVM()
+	}
 }
 
 var encodeTypedPointer func(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars.Stack, fv uint64) error
