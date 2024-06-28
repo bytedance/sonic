@@ -588,7 +588,7 @@ retry_decode:
 
 // positive is length
 // negative is - error_code
-static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, bool disable_surrogates_error) {
+static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, uint64_t opts) {
     string_block block;
     uint8_t* start = *cur;
     v256u v;
@@ -606,7 +606,7 @@ static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, boo
             break;
         }
 
-        if (unlikely(has_unescaped(&block))) {
+        if (unlikely((opts & F_VALIDATE_STRING) != 0 && has_unescaped(&block))) {
             *cur += trailing_zeros(block.esc);
             return -SONIC_CONTROL_CHAR;
         }
@@ -664,7 +664,7 @@ find_and_move:
         }
     }
 
-    if (unlikely(has_unescaped(&block))) {
+    if (unlikely((opts & F_VALIDATE_STRING) != 0 && has_unescaped(&block))) {
         *cur += trailing_zeros(block.esc);
         return -SONIC_CONTROL_CHAR;
     }
@@ -1115,7 +1115,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, true);
+            slen = parse_string_inplace(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
@@ -1150,7 +1150,7 @@ obj_key:
     // parse key
     pos = offset_from(*cur);
 
-    slen = parse_string_inplace(cur, &has_esc, true);
+    slen = parse_string_inplace(cur, &has_esc, slf->opt);
     if (slen < 0) {
         err =  (error_code)(-slen);
         return err;
@@ -1206,7 +1206,7 @@ obj_val:
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, true);
+            slen = parse_string_inplace(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
@@ -1294,7 +1294,7 @@ arr_val:
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, true);
+            slen = parse_string_inplace(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
