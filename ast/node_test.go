@@ -287,14 +287,14 @@ func TestTypeCast(t *testing.T) {
         {"Map", Node{}, map[string]interface{}(nil), ErrUnsupportType},
         {"Map", NewAny(map[string]Node{"a": NewNumber("1")}), map[string]interface{}(nil), ErrUnsupportType},
         {"Map", NewAny(map[string]interface{}{"a": 1}), map[string]interface{}{"a": 1}, nil},
-        {"Map", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]interface{}{"a": float64(1.0)}, nil},
+        {"Map", NewObject([]Pair{NewPair("a", NewNumber("1"))}), map[string]interface{}{"a": float64(1.0)}, nil},
         {"MapUseNode", Node{}, map[string]Node(nil), ErrUnsupportType},
         {"MapUseNode", NewAny(map[string]interface{}{"a": 1}), map[string]Node(nil), ErrUnsupportType},
         {"MapUseNode", NewAny(map[string]Node{"a": NewNumber("1")}), map[string]Node{"a": NewNumber("1")}, nil},
-        {"MapUseNode", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]Node{"a": NewNumber("1")}, nil},
+        {"MapUseNode", NewObject([]Pair{NewPair("a", NewNumber("1"))}), map[string]Node{"a": NewNumber("1")}, nil},
         {"MapUseNumber", Node{}, map[string]interface{}(nil), ErrUnsupportType},
         {"MapUseNumber", NewAny(map[string]interface{}{"a": 1}), map[string]interface{}{"a": 1}, nil},
-        {"MapUseNumber", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]interface{}{"a": json.Number("1")}, nil},
+        {"MapUseNumber", NewObject([]Pair{NewPair("a", NewNumber("1"))}), map[string]interface{}{"a": json.Number("1")}, nil},
         {"Array", Node{}, []interface{}(nil), ErrUnsupportType},
         {"Array", NewAny([]interface{}{1}), []interface{}{1}, nil},
         {"Array", NewArray([]Node{NewNumber("1")}), []interface{}{float64(1.0)}, nil},
@@ -506,7 +506,7 @@ func TestTypeCast(t *testing.T) {
         {"Cap", NewAny(0), 0, ErrUnsupportType},
         {"Cap", NewNull(), 0, nil},
         {"Cap", NewRaw(`[1]`), _DEFAULT_NODE_CAP, nil},
-        {"Cap", NewObject([]Pair{{"", NewNull()}}), _DEFAULT_NODE_CAP, nil},
+        {"Cap", NewObject([]Pair{NewPair("", NewNull())}), _DEFAULT_NODE_CAP, nil},
         {"Cap", NewRaw(`{"a":1}`), _DEFAULT_NODE_CAP, nil},
     }
     lazyArray.skipAllIndex()
@@ -1762,7 +1762,7 @@ func BenchmarkSliceUnsetByIndex(b *testing.B) {
 }
 
 func BenchmarkNodeAdd(b *testing.B) {
-    n := NewObject([]Pair{{"test", NewNumber("1")}})
+    n := NewObject([]Pair{NewPair("test", NewNumber("1"))})
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := NewArray([]Node{})
@@ -1771,7 +1771,7 @@ func BenchmarkNodeAdd(b *testing.B) {
 }
 
 func BenchmarkSliceAdd(b *testing.B) {
-    n := NewObject([]Pair{{"test", NewNumber("1")}})
+    n := NewObject([]Pair{NewPair("test", NewNumber("1"))})
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := []Node{}
@@ -1780,7 +1780,7 @@ func BenchmarkSliceAdd(b *testing.B) {
 }
 
 func BenchmarkMapAdd(b *testing.B) {
-    n := NewObject([]Pair{{"test", NewNumber("1")}})
+    n := NewObject([]Pair{NewPair("test", NewNumber("1"))})
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := map[string]Node{}

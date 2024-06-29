@@ -17,14 +17,24 @@
 package ast
 
 import (
-    `fmt`
+	"fmt"
 
-    `github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 type Pair struct {
+    hash  uint64
     Key   string
     Value Node
+}
+
+func NewPair(key string, val Node) Pair {
+    return Pair{
+        hash: caching.StrHash(key),
+        Key: key,
+        Value: val,
+    }
 }
 
 // Values returns iterator for array's children traversal
