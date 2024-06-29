@@ -301,6 +301,19 @@ exist, err := root.UnsetByIndex(1) // exist == true
 println(root.Get("key4").Check()) // "value not exist"
 ```
 
+#### SearchOption
+```go
+opts := ast.SearchOption{ CopyReturn: true ... }
+val, err := ast.GetWithOption(JSON, opts, "key"...)
+```
+`Searcher` provides some options for use to meet different needs:
+- CopyReturn
+Indicate the searcher to copy the result JSON string instead of refer from the input. This can help to reduce memory usage if you cache the results
+- ConcurentRead
+Since `ast.Node` use `Lazy-Load` design, it doesn't support Concurrently-Read by default. If you want to read it concurrently, please specify it.
+- ValidateJSON
+Indicate the searcher to validate the entire JSON. This option is enabled by default.
+
 #### Serialize
 
 To encode `ast.Node` as json, use `MarshalJson()` or `json.Marshal()` (MUST pass the node's pointer)

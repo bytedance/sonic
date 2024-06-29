@@ -141,7 +141,7 @@ func TestEncodeNode(t *testing.T) {
     if string(ret) != data {
         t.Fatal(string(ret))
     }
-    root.loadAllKey()
+    root.Load()
     ret, err = root.MarshalJSON()
     if err != nil {
         t.Fatal(err)
@@ -228,7 +228,7 @@ func BenchmarkEncodeLoad_Sonic(b *testing.B) {
     if e != 0 {
         b.Fatal(root)
     }
-    root.loadAllKey()
+    root.Load()
     _, err := root.MarshalJSON()
     if err != nil {
         b.Fatal(err)

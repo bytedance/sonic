@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGC_Search(t *testing.T) {
@@ -52,6 +53,72 @@ func TestGC_Search(t *testing.T) {
 		}(wg)
 	}
 	wg.Wait()
+}
+
+
+func TestNodeRace(t *testing.T) {
+
+    src := `{"1":1,"2": [ 1 , 1 , { "3" : 1 , "4" : [] } ] }`
+    s := NewSearcher(src)
+    s.ConcurrentRead = true
+    node, _ := s.GetByPath()
+
+    cases := []struct{
+        path []interface{}
+        exp []string
+        scalar bool
+        lv int
+    }{
+        {[]interface{}{"1"}, []string{`1`}, true, 0},
+        {[]interface{}{"2"}, []string{`[ 1 , 1 , { "3" : 1 , "4" : [] } ]`, `[1,1,{ "3" : 1 , "4" : [] }]`, `[1,1,{"3":1,"4":[]}]`}, false, 3},
+        {[]interface{}{"2", 1}, []string{`1`}, true, 1},
+        {[]interface{}{"2", 2}, []string{`{ "3" : 1 , "4" : [] }`, `{"3":1,"4":[]}`}, false, 2},
+        {[]interface{}{"2", 2, "3"}, []string{`1`}, true, 0},
+        {[]interface{}{"2", 2, "4"}, []string{`[]`}, false, 0},
+    }
+
+    wg := sync.WaitGroup{}
+    start := sync.RWMutex{}
+    start.Lock()
+
+    P := 100
+    for i := range cases {
+        // println(i)
+        c := cases[i]
+        for j := 0; j < P; j++ {
+            wg.Add(1)
+            go func ()  {
+                defer wg.Done()
+                start.RLock()
+                n := node.GetByPath(c.path...)
+                _ = n.TypeSafe()
+                v, err := n.Raw()
+                iv, _ := n.Int64()
+                lv, _ := n.Len()
+                _, e := n.Interface()
+				e2 := n.SortKeys(false)
+                require.NoError(t, err)
+                require.NoError(t, e)
+                require.NoError(t, e2)
+                if c.scalar {
+                    require.Equal(t, int64(1), iv)
+                } else {
+                    require.Equal(t, c.lv, lv)
+                }
+                eq := false
+                for _, exp := range c.exp {
+                    if exp == v {
+                        eq = true
+                        break
+                    }
+                }
+                require.True(t, eq)
+            }()
+        }
+    }
+
+    start.Unlock()
+    wg.Wait()
 }
 
 func TestExportErrorInvalidChar(t *testing.T) {
@@ -325,6 +392,22 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
 	}
 }
 
+func BenchmarkGetOneSafe_Sonic(b *testing.B) {
+	b.SetBytes(int64(len(_TwitterJson)))
+	ast := NewSearcher(_TwitterJson)
+	ast.ConcurrentRead = true
+	for i := 0; i < b.N; i++ {
+		node, err := ast.GetByPath("statuses", 3, "id")
+		if err != nil {
+			b.Fatal(err)
+		}
+		x, _ := node.Int64()
+		if x != 249279667666817024 {
+			b.Fatal(node.Interface())
+		}
+	}
+}
+
 func BenchmarkGetFull_Sonic(b *testing.B) {
 	ast := NewSearcher(_TwitterJson)
 	b.SetBytes(int64(len(_TwitterJson)))
@@ -357,6 +440,24 @@ func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
 	b.SetBytes(int64(len(_TwitterJson)))
 	b.RunParallel(func(pb *testing.PB) {
 		ast := NewSearcher(_TwitterJson)
+		for pb.Next() {
+			node, err := ast.GetByPath("statuses", 3, "id")
+			if err != nil {
+				b.Fatal(err)
+			}
+			x, _ := node.Int64()
+			if x != 249279667666817024 {
+				b.Fatal(node.Interface())
+			}
+		}
+	})
+}
+
+func BenchmarkGetOneSafe_Parallel_Sonic(b *testing.B) {
+	b.SetBytes(int64(len(_TwitterJson)))
+	b.RunParallel(func(pb *testing.PB) {
+		ast := NewSearcher(_TwitterJson)
+		ast.ConcurrentRead = true
 		for pb.Next() {
 			node, err := ast.GetByPath("statuses", 3, "id")
 			if err != nil {
