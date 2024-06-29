@@ -574,7 +574,7 @@ func (self *Node) Set(key string, node Node) (bool, error) {
     }
     
     if self.t == _V_NONE || self.t == types.V_NULL {
-        *self = NewObject([]Pair{{key, node}})
+        *self = NewObject([]Pair{NewPair(key, node)})
         return false, nil
     } else if self.itype() != types.V_OBJECT {
         return false, ErrUnsupportType
@@ -588,7 +588,7 @@ func (self *Node) Set(key string, node Node) (bool, error) {
             *self = newObject(new(linkedPairs))
         }
         s := (*linkedPairs)(self.p)
-        s.Push(Pair{key, node})
+        s.Push(NewPair(key, node))
         self.l++
         return false, nil
 
@@ -1766,6 +1766,8 @@ func NewArray(v []Node) Node {
     return newArray(s)
 }
 
+const _Threshold_Index = _DEFAULT_NODE_CAP
+
 func newArray(v *linkedNodes) Node {
     return Node{
         t: types.V_ARRAY,
@@ -1789,6 +1791,9 @@ func NewObject(v []Pair) Node {
 }
 
 func newObject(v *linkedPairs) Node {
+    if v.size > _Threshold_Index {
+        v.BuildIndex()
+    }
     return Node{
         t: types.V_OBJECT,
         l: uint(v.Len()),
@@ -1797,6 +1802,9 @@ func newObject(v *linkedPairs) Node {
 }
 
 func (self *Node) setObject(v *linkedPairs) {
+    if v.size > _Threshold_Index {
+        v.BuildIndex()
+    }
     self.t = types.V_OBJECT
     self.l = uint(v.Len())
     self.p = unsafe.Pointer(v)

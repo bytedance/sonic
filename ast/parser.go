@@ -253,7 +253,7 @@ func (self *Parser) decodeObject(ret *linkedPairs) (Node, types.ParsingError) {
 
         /* add the value to result */
         // FIXME: ret's address may change here, thus previous referred node in ret may be invalid !!
-        ret.Push(Pair{Key: key, Value: val})
+        ret.Push(NewPair(key, val))
         self.p = self.lspace(self.p)
 
         /* check for EOF */
@@ -549,7 +549,7 @@ func (self *Node) skipNextPair() (*Pair) {
 
     /* check for EOF */
     if parser.p = parser.lspace(sp); parser.p >= ns {
-        return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_EOF))}
+        return newErrorPair(parser.syntaxError(types.ERR_EOF))
     }
 
     /* check for empty object */
@@ -566,7 +566,7 @@ func (self *Node) skipNextPair() (*Pair) {
 
     /* decode the key */
     if njs = parser.decodeValue(); njs.Vt != types.V_STRING {
-        return &Pair{"", *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
+        return newErrorPair(parser.syntaxError(types.ERR_INVALID_CHAR))
     }
 
     /* extract the key */
@@ -576,34 +576,34 @@ func (self *Node) skipNextPair() (*Pair) {
     /* check for escape sequence */
     if njs.Ep != -1 {
         if key, err = unquote(key); err != 0 {
-            return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
+            return newErrorPair(parser.syntaxError(err))
         }
     }
 
     /* expect a ':' delimiter */
     if err = parser.delim(); err != 0 {
-        return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
+        return newErrorPair(parser.syntaxError(err))
     }
 
     /* skip the value */
     if start, err := parser.skipFast(); err != 0 {
-        return &Pair{key, *newSyntaxError(parser.syntaxError(err))}
+        return newErrorPair(parser.syntaxError(err))
     } else {
         t := switchRawType(parser.s[start])
         if t == _V_NONE {
-            return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
+            return newErrorPair(parser.syntaxError(types.ERR_INVALID_CHAR))
         }
         val = newRawNode(parser.s[start:parser.p], t, false)
     }
 
     /* add the value to result */
-    ret.Push(Pair{Key: key, Value: val})
+    ret.Push(NewPair(key, val))
     self.l++
     parser.p = parser.lspace(parser.p)
 
     /* check for EOF */
     if parser.p >= ns {
-        return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_EOF))}
+        return newErrorPair(parser.syntaxError(types.ERR_EOF))
     }
 
     /* check for the next character */
@@ -616,7 +616,7 @@ func (self *Node) skipNextPair() (*Pair) {
         self.setObject(ret)
         return ret.At(ret.Len()-1)
     default:
-        return &Pair{key, *newSyntaxError(parser.syntaxError(types.ERR_INVALID_CHAR))}
+        return newErrorPair(parser.syntaxError(types.ERR_INVALID_CHAR))
     }
 }
 
