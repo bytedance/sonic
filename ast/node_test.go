@@ -17,18 +17,18 @@
 package ast
 
 import (
-    `bytes`
-    `encoding/json`
-    `errors`
-    `fmt`
-    `reflect`
-    `strconv`
-    `testing`
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"reflect"
+	"strconv"
+	"testing"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNodeSortKeys(t *testing.T) {
@@ -151,20 +151,21 @@ func TestLoadAll(t *testing.T) {
     if err = root.Load(); err != nil {
         t.Fatal(err)
     }
-    if root.len() != 3 {
-        t.Fatal(root.len())
+    
+    if l, _ := root.Len(); l != 3 {
+        t.Fatal(root.Len())
     }
 
     c := root.Get("c")
-    if !c.IsRaw() {
+    if !c.isRaw() {
         t.Fatal(err)
     }
     err = c.LoadAll()
     if err != nil {
         t.Fatal(err)
     }
-    if c.len() != 2 {
-        t.Fatal(c.len())
+    if l, _ := c.Len(); l != 2 {
+        t.Fatal(c.Len())
     }
     c1 := c.nodeAt(0)
     if n, err := c1.Int64(); err != nil || n != 1 {
@@ -174,47 +175,47 @@ func TestLoadAll(t *testing.T) {
     a := root.pairAt(0)
     if a.Key != "a" {
         t.Fatal(a.Key)
-    } else if !a.Value.IsRaw() {
+    } else if !a.Value.isRaw() {
         t.Fatal(a.Value.itype())
-    } else if n, err := a.Value.Len(); n != 0 || err != nil {
+    } else if n, err := a.Value.Len(); n != 2 || err != nil {
         t.Fatal(n, err)
     }
     if err := a.Value.Load(); err != nil {
         t.Fatal(err)
     }
-    if a.Value.len() != 2 {
-        t.Fatal(a.Value.len())
+    if l, _ := a.Value.Len(); l != 2 {
+        t.Fatal(a.Value.Len())
     }
     a1 := a.Value.Get("1")
-    if !a1.IsRaw() {
+    if !a1.isRaw() {
         t.Fatal(a1)
     }
     a.Value.LoadAll()
-    if a1.t != types.V_ARRAY || a1.len() != 1 {
-        t.Fatal(a1.t, a1.len())
+    if l, _ := a1.Len(); a1.t != types.V_ARRAY || l != 1 {
+        t.Fatal(a1.t)
     }
 
     b := root.pairAt(1)
     if b.Key != "b" {
         t.Fatal(b.Key)
-    } else if !b.Value.IsRaw() {
+    } else if !b.Value.isRaw() {
         t.Fatal(b.Value.itype())
-    } else if n, err := b.Value.Len(); n != 0 || err != nil {
+    } else if n, err := b.Value.Len(); n != 2 || err != nil {
         t.Fatal(n, err)
     }
     if err := b.Value.Load(); err != nil {
         t.Fatal(err)
     }
-    if b.Value.len() != 2 {
-        t.Fatal(b.Value.len())
+    if l, _ := b.Value.Len(); l != 2 {
+        t.Fatal(b.Value.Len())
     }
     b1 := b.Value.Index(0)
-    if !b1.IsRaw() {
+    if !b1.isRaw() {
         t.Fatal(b1)
     }
     b.Value.LoadAll()
-    if b1.t != types.V_OBJECT || b1.len() != 1 {
-        t.Fatal(a1.t, a1.len())
+    if l, _ := b1.Len(); b1.t != types.V_OBJECT || l != 1 {
+        t.Fatal(a1.Len())
     }
 }
 
@@ -699,12 +700,12 @@ func TestCheckError_Empty(t *testing.T) {
         t.Fatal()
     }
 
-    n := newRawNode("[hello]", types.V_ARRAY)
+    n := newRawNode("[hello]", types.V_ARRAY, false)
     n.parseRaw(false)
     if n.Check() != nil {
         t.Fatal(n.Check())
     }
-    n = newRawNode("[hello]", types.V_ARRAY)
+    n = newRawNode("[hello]", types.V_ARRAY, false)
     n.parseRaw(true)
     p := NewParser("[hello]")
     p.noLazy = true
@@ -735,7 +736,7 @@ func TestCheckError_Empty(t *testing.T) {
     if e != nil {
         t.Fatal(e)
     }
-    exist, e := a.Set("d", newRawNode("x", types.V_OBJECT))
+    exist, e := a.Set("d", newRawNode("x", types.V_OBJECT, false))
     if exist || e != nil {
         t.Fatal(err)
     }
@@ -746,7 +747,7 @@ func TestCheckError_Empty(t *testing.T) {
     if d.Check() == nil {
         t.Fatal(d)
     }
-    exist, e = a.Set("e", newRawNode("[}", types.V_ARRAY))
+    exist, e = a.Set("e", newRawNode("[}", types.V_ARRAY, false))
     if e != nil {
         t.Fatal(e)
     }
@@ -839,7 +840,7 @@ func TestUnset(t *testing.T) {
     *entities = NewRaw(string(out))
 
     hashtags := entities.Get("hashtags").Index(0)
-    hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
+    hashtags.Set("text2", NewRaw(`{}`))
     exist, err = hashtags.Unset("indices") // NOTICE: Unset() won't change node.Len() here
     if !exist || err != nil || hashtags.len() != 2 {
         t.Fatal(hashtags.len())

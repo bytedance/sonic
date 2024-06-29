@@ -301,6 +301,19 @@ exist, err := root.UnsetByIndex(1) // exist == true
 println(root.Get("key4").Check()) // "value not exist"
 ```
 
+#### SearchOption
+```go
+opts := ast.SearchOption{ CopyReturn: true ... }
+val, err := ast.GetWithOption(JSON, opts, "key"...)
+```
+`Searcher` provides some options for use to meet different needs:
+- CopyReturn
+Indicate the searcher to copy the result JSON string instead of refer from the input. This can help to reduce memory usage if you cache the results
+- ConcurentRead
+Since `ast.Node` use `Lazy-Load` design, it doesn't support Concurrently-Read by default. If you want to read it concurrently, please specify it.
+- ValidateJSON
+Indicate the searcher to validate the entire JSON. This option is enabled by default.
+
 #### Serialize
 
 To encode `ast.Node` as json, use `MarshalJson()` or `json.Marshal()` (MUST pass the node's pointer)
@@ -465,6 +478,7 @@ However, `ast.Node` is designed for partially processing JSON string. It has som
 For better performance, in previous case the `ast.Visitor` will be the better choice. It performs JSON decoding like `Unmarshal()` and you can directly use your final types to represents a JSON AST without any intermediate representations.
 
 But `ast.Visitor` is not a very handy API. You might need to write a lot of code to implement your visitor and carefully maintain the tree hierarchy during decoding. Please read the comments in [ast/visitor.go](https://github.com/bytedance/sonic/blob/main/ast/visitor.go) carefully if you decide to use this API.
+
 
 ## Community
 
