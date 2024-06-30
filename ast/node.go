@@ -1766,7 +1766,7 @@ func NewArray(v []Node) Node {
     return newArray(s)
 }
 
-const _Threshold_Index = _DEFAULT_NODE_CAP
+const _Threshold_Index = 16
 
 func newArray(v *linkedNodes) Node {
     return Node{

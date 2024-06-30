@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/bytedance/sonic/internal/native/types"
@@ -271,7 +272,7 @@ func TestTypeCast(t *testing.T) {
     }
     var nonEmptyErr error = errors.New("")
     a1 := NewAny(1)
-    lazyArray, _ := NewParser("[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]").Parse()
+    lazyArray, _ := NewParser("["+strings.Repeat("1,", _DEFAULT_NODE_CAP)+"1]").Parse()
     lazyObject, _ := NewParser(`{"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16}`).Parse()
     var cases = []tcase{
         {"Interface", Node{}, interface{}(nil), ErrUnsupportType},
@@ -512,10 +513,10 @@ func TestTypeCast(t *testing.T) {
     lazyArray.skipAllIndex()
     lazyObject.skipAllKey()
     cases = append(cases,
-        tcase{"Len", lazyArray, 17, nil},
+        tcase{"Len", lazyArray, _DEFAULT_NODE_CAP+1, nil},
         tcase{"Len", lazyObject, 17, nil},
-        tcase{"Cap", lazyArray, _DEFAULT_NODE_CAP * 3, nil},
-        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP * 3, nil},
+        tcase{"Cap", lazyArray, _DEFAULT_NODE_CAP*2, nil},
+        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*2, nil},
     )
 
     for i, c := range cases {

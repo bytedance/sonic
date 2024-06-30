@@ -26,7 +26,7 @@ import (
 )
 
 const (
-    _DEFAULT_NODE_CAP int = 8
+    _DEFAULT_NODE_CAP int = 16
     _APPEND_GROW_SHIFT = 1
 )
 
