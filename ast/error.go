@@ -17,6 +17,10 @@ func newError(err types.ParsingError, msg string) *Node {
     }
 }
 
+func newErrorPair(err SyntaxError) *Pair {
+   return &Pair{0, "", *newSyntaxError(err)}
+}
+
 // Error returns error message if the node is invalid
 func (self Node) Error() string {
     if self.t != V_ERROR {

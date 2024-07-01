@@ -17,12 +17,10 @@
 package ast
 
 import (
-    `sync`
-    `unicode/utf8`
-)
+	"sync"
+	"unicode/utf8"
 
-const (
-    _MaxBuffer = 1024    // 1KB buffer size
+	"github.com/bytedance/sonic/option"
 )
 
 func quoteString(e *[]byte, s string) {
@@ -109,7 +107,7 @@ func newBuffer() *[]byte {
     if ret := bytesPool.Get(); ret != nil {
         return ret.(*[]byte)
     } else {
-        buf := make([]byte, 0, _MaxBuffer)
+        buf := make([]byte, 0, option.DefaultAstEncoderBufferSize)
         return &buf
     }
 }
@@ -120,10 +118,10 @@ func freeBuffer(buf *[]byte) {
 }
 
 func (self *Node) encode(buf *[]byte) error {
-    if self.IsRaw() {
+    if self.isRaw() {
         return self.encodeRaw(buf)
     }
-    switch self.Type() {
+    switch int(self.itype()) {
         case V_NONE  : return ErrNotExist
         case V_ERROR : return self.Check()
         case V_NULL  : return self.encodeNull(buf)
@@ -139,9 +137,14 @@ func (self *Node) encode(buf *[]byte) error {
 }
 
 func (self *Node) encodeRaw(buf *[]byte) error {
-    raw, err := self.Raw()
-    if err != nil {
-        return err
+    lock := self.rlock()
+    if !self.isRaw() {
+        self.runlock()
+        return self.encode(buf)
+    }
+    raw := self.toString()
+    if lock {
+        self.runlock()
     }
     *buf = append(*buf, raw...)
     return nil

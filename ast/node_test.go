@@ -17,18 +17,19 @@
 package ast
 
 import (
-    `bytes`
-    `encoding/json`
-    `errors`
-    `fmt`
-    `reflect`
-    `strconv`
-    `testing`
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
+	"testing"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNodeSortKeys(t *testing.T) {
@@ -151,20 +152,21 @@ func TestLoadAll(t *testing.T) {
     if err = root.Load(); err != nil {
         t.Fatal(err)
     }
-    if root.len() != 3 {
-        t.Fatal(root.len())
+    
+    if l, _ := root.Len(); l != 3 {
+        t.Fatal(root.Len())
     }
 
     c := root.Get("c")
-    if !c.IsRaw() {
+    if !c.isRaw() {
         t.Fatal(err)
     }
     err = c.LoadAll()
     if err != nil {
         t.Fatal(err)
     }
-    if c.len() != 2 {
-        t.Fatal(c.len())
+    if l, _ := c.Len(); l != 2 {
+        t.Fatal(c.Len())
     }
     c1 := c.nodeAt(0)
     if n, err := c1.Int64(); err != nil || n != 1 {
@@ -174,47 +176,47 @@ func TestLoadAll(t *testing.T) {
     a := root.pairAt(0)
     if a.Key != "a" {
         t.Fatal(a.Key)
-    } else if !a.Value.IsRaw() {
+    } else if !a.Value.isRaw() {
         t.Fatal(a.Value.itype())
-    } else if n, err := a.Value.Len(); n != 0 || err != nil {
+    } else if n, err := a.Value.Len(); n != 2 || err != nil {
         t.Fatal(n, err)
     }
     if err := a.Value.Load(); err != nil {
         t.Fatal(err)
     }
-    if a.Value.len() != 2 {
-        t.Fatal(a.Value.len())
+    if l, _ := a.Value.Len(); l != 2 {
+        t.Fatal(a.Value.Len())
     }
     a1 := a.Value.Get("1")
-    if !a1.IsRaw() {
+    if !a1.isRaw() {
         t.Fatal(a1)
     }
     a.Value.LoadAll()
-    if a1.t != types.V_ARRAY || a1.len() != 1 {
-        t.Fatal(a1.t, a1.len())
+    if l, _ := a1.Len(); a1.t != types.V_ARRAY || l != 1 {
+        t.Fatal(a1.t)
     }
 
     b := root.pairAt(1)
     if b.Key != "b" {
         t.Fatal(b.Key)
-    } else if !b.Value.IsRaw() {
+    } else if !b.Value.isRaw() {
         t.Fatal(b.Value.itype())
-    } else if n, err := b.Value.Len(); n != 0 || err != nil {
+    } else if n, err := b.Value.Len(); n != 2 || err != nil {
         t.Fatal(n, err)
     }
     if err := b.Value.Load(); err != nil {
         t.Fatal(err)
     }
-    if b.Value.len() != 2 {
-        t.Fatal(b.Value.len())
+    if l, _ := b.Value.Len(); l != 2 {
+        t.Fatal(b.Value.Len())
     }
     b1 := b.Value.Index(0)
-    if !b1.IsRaw() {
+    if !b1.isRaw() {
         t.Fatal(b1)
     }
     b.Value.LoadAll()
-    if b1.t != types.V_OBJECT || b1.len() != 1 {
-        t.Fatal(a1.t, a1.len())
+    if l, _ := b1.Len(); b1.t != types.V_OBJECT || l != 1 {
+        t.Fatal(a1.Len())
     }
 }
 
@@ -270,7 +272,7 @@ func TestTypeCast(t *testing.T) {
     }
     var nonEmptyErr error = errors.New("")
     a1 := NewAny(1)
-    lazyArray, _ := NewParser("[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]").Parse()
+    lazyArray, _ := NewParser("["+strings.Repeat("1,", _DEFAULT_NODE_CAP)+"1]").Parse()
     lazyObject, _ := NewParser(`{"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16}`).Parse()
     var cases = []tcase{
         {"Interface", Node{}, interface{}(nil), ErrUnsupportType},
@@ -286,14 +288,14 @@ func TestTypeCast(t *testing.T) {
         {"Map", Node{}, map[string]interface{}(nil), ErrUnsupportType},
         {"Map", NewAny(map[string]Node{"a": NewNumber("1")}), map[string]interface{}(nil), ErrUnsupportType},
         {"Map", NewAny(map[string]interface{}{"a": 1}), map[string]interface{}{"a": 1}, nil},
-        {"Map", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]interface{}{"a": float64(1.0)}, nil},
+        {"Map", NewObject([]Pair{NewPair("a", NewNumber("1"))}), map[string]interface{}{"a": float64(1.0)}, nil},
         {"MapUseNode", Node{}, map[string]Node(nil), ErrUnsupportType},
         {"MapUseNode", NewAny(map[string]interface{}{"a": 1}), map[string]Node(nil), ErrUnsupportType},
         {"MapUseNode", NewAny(map[string]Node{"a": NewNumber("1")}), map[string]Node{"a": NewNumber("1")}, nil},
-        {"MapUseNode", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]Node{"a": NewNumber("1")}, nil},
+        {"MapUseNode", NewObject([]Pair{NewPair("a", NewNumber("1"))}), map[string]Node{"a": NewNumber("1")}, nil},
         {"MapUseNumber", Node{}, map[string]interface{}(nil), ErrUnsupportType},
         {"MapUseNumber", NewAny(map[string]interface{}{"a": 1}), map[string]interface{}{"a": 1}, nil},
-        {"MapUseNumber", NewObject([]Pair{{"a", NewNumber("1")}}), map[string]interface{}{"a": json.Number("1")}, nil},
+        {"MapUseNumber", NewObject([]Pair{NewPair("a", NewNumber("1"))}), map[string]interface{}{"a": json.Number("1")}, nil},
         {"Array", Node{}, []interface{}(nil), ErrUnsupportType},
         {"Array", NewAny([]interface{}{1}), []interface{}{1}, nil},
         {"Array", NewArray([]Node{NewNumber("1")}), []interface{}{float64(1.0)}, nil},
@@ -505,16 +507,16 @@ func TestTypeCast(t *testing.T) {
         {"Cap", NewAny(0), 0, ErrUnsupportType},
         {"Cap", NewNull(), 0, nil},
         {"Cap", NewRaw(`[1]`), _DEFAULT_NODE_CAP, nil},
-        {"Cap", NewObject([]Pair{{"", NewNull()}}), _DEFAULT_NODE_CAP, nil},
+        {"Cap", NewObject([]Pair{NewPair("", NewNull())}), _DEFAULT_NODE_CAP, nil},
         {"Cap", NewRaw(`{"a":1}`), _DEFAULT_NODE_CAP, nil},
     }
     lazyArray.skipAllIndex()
     lazyObject.skipAllKey()
     cases = append(cases,
-        tcase{"Len", lazyArray, 17, nil},
+        tcase{"Len", lazyArray, _DEFAULT_NODE_CAP+1, nil},
         tcase{"Len", lazyObject, 17, nil},
-        tcase{"Cap", lazyArray, _DEFAULT_NODE_CAP * 3, nil},
-        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP * 3, nil},
+        tcase{"Cap", lazyArray, _DEFAULT_NODE_CAP*2, nil},
+        tcase{"Cap", lazyObject, _DEFAULT_NODE_CAP*2, nil},
     )
 
     for i, c := range cases {
@@ -699,12 +701,12 @@ func TestCheckError_Empty(t *testing.T) {
         t.Fatal()
     }
 
-    n := newRawNode("[hello]", types.V_ARRAY)
+    n := newRawNode("[hello]", types.V_ARRAY, false)
     n.parseRaw(false)
     if n.Check() != nil {
         t.Fatal(n.Check())
     }
-    n = newRawNode("[hello]", types.V_ARRAY)
+    n = newRawNode("[hello]", types.V_ARRAY, false)
     n.parseRaw(true)
     p := NewParser("[hello]")
     p.noLazy = true
@@ -735,7 +737,7 @@ func TestCheckError_Empty(t *testing.T) {
     if e != nil {
         t.Fatal(e)
     }
-    exist, e := a.Set("d", newRawNode("x", types.V_OBJECT))
+    exist, e := a.Set("d", newRawNode("x", types.V_OBJECT, false))
     if exist || e != nil {
         t.Fatal(err)
     }
@@ -746,7 +748,7 @@ func TestCheckError_Empty(t *testing.T) {
     if d.Check() == nil {
         t.Fatal(d)
     }
-    exist, e = a.Set("e", newRawNode("[}", types.V_ARRAY))
+    exist, e = a.Set("e", newRawNode("[}", types.V_ARRAY, false))
     if e != nil {
         t.Fatal(e)
     }
@@ -839,7 +841,7 @@ func TestUnset(t *testing.T) {
     *entities = NewRaw(string(out))
 
     hashtags := entities.Get("hashtags").Index(0)
-    hashtags.Set("text2", newRawNode(`{}`, types.V_OBJECT))
+    hashtags.Set("text2", NewRaw(`{}`))
     exist, err = hashtags.Unset("indices") // NOTICE: Unset() won't change node.Len() here
     if !exist || err != nil || hashtags.len() != 2 {
         t.Fatal(hashtags.len())
@@ -1761,7 +1763,7 @@ func BenchmarkSliceUnsetByIndex(b *testing.B) {
 }
 
 func BenchmarkNodeAdd(b *testing.B) {
-    n := NewObject([]Pair{{"test", NewNumber("1")}})
+    n := NewObject([]Pair{NewPair("test", NewNumber("1"))})
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := NewArray([]Node{})
@@ -1770,7 +1772,7 @@ func BenchmarkNodeAdd(b *testing.B) {
 }
 
 func BenchmarkSliceAdd(b *testing.B) {
-    n := NewObject([]Pair{{"test", NewNumber("1")}})
+    n := NewObject([]Pair{NewPair("test", NewNumber("1"))})
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := []Node{}
@@ -1779,7 +1781,7 @@ func BenchmarkSliceAdd(b *testing.B) {
 }
 
 func BenchmarkMapAdd(b *testing.B) {
-    n := NewObject([]Pair{{"test", NewNumber("1")}})
+    n := NewObject([]Pair{NewPair("test", NewNumber("1"))})
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         node := map[string]Node{}

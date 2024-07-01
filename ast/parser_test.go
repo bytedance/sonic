@@ -17,16 +17,16 @@
 package ast
 
 import (
-    `encoding/json`
-    `os`
-    `runtime`
-    `runtime/debug`
-    `sync`
-    `testing`
-    `time`
+	"encoding/json"
+	"os"
+	"runtime"
+	"runtime/debug"
+	"sync"
+	"testing"
+	"time"
 
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -312,6 +312,46 @@ func BenchmarkParseOne_Parallel_Sonic(b *testing.B) {
         for pb.Next() {
             ast, _ := NewParser(_TwitterJson).Parse()
             _, _ = ast.Get("statuses").Index(2).Get("id").Int64()
+        }
+    })
+}
+
+func BenchmarkParseNoLazy_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
+    b.ResetTimer()
+    ast := NewRawConcurrentRead(_TwitterJson)
+    for i := 0; i < b.N; i++ {
+        node := ast.GetByPath("statuses",  3)
+        if node.Check() != nil {
+            b.Fail()
+        }
+    }
+}
+
+func BenchmarkParseNoLazy_Parallel_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
+    b.ResetTimer()
+    ast := NewRawConcurrentRead(_TwitterJson)
+    b.RunParallel(func(p *testing.PB) {
+        for p.Next() {
+            node := ast.GetByPath("statuses",  3)
+            if node.Check() != nil {
+                b.Fail()
+            }
+        }
+    })
+}
+
+func BenchmarkNodeRaw_Parallel_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(_TwitterJson)))
+    b.ResetTimer()
+    ast := NewRawConcurrentRead(_TwitterJson)
+    b.RunParallel(func(p *testing.PB) {
+        for p.Next() {
+            node := ast.GetByPath("statuses",  3)
+            if _, e := node.Raw(); e != nil {
+                b.Fatal(e)
+            }
         }
     })
 }
