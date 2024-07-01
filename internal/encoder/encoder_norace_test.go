@@ -21,13 +21,14 @@ package encoder
 
 import (
     `runtime`
-
     `sync`
     `testing`
+
+	`github.com/bytedance/sonic/internal/encoder/vars`
 )
 
 func TestGC(t *testing.T) {
-    if debugSyncGC {
+    if !vars.DebugAsyncGC {
         return
     }
     out, err := Encode(_GenericValue, 0)

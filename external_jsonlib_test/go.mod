@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/bytedance/gopkg v0.0.0-20240531030433-5df24c0168e2 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect

@@ -49,7 +49,6 @@ ast/bench.sh
 
 !testdata/*.json.gz
 fuzz/testdata
-*__debug_bin
-
-*.pprof
+*__debug_bin*
+*pprof
 *coverage.txt

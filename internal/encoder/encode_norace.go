@@ -19,26 +19,6 @@
 
 package encoder
 
-import (
-    `runtime`
-
-    `github.com/bytedance/sonic/internal/rt`
-)
-
-
-func encodeInto(buf *[]byte, val interface{}, opts Options) error {
-    stk := newStack()
-    efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
-
-    /* return the stack into pool */
-    if err != nil {
-        resetStack(stk)
-    }
-    freeStack(stk)
-
-    /* avoid GC ahead */
-    runtime.KeepAlive(buf)
-    runtime.KeepAlive(efv)
-    return err
+func encodeIntoCheckRace(buf *[]byte, val interface{}, opts Options) error {
+	return encodeInto(buf, val, opts)
 }

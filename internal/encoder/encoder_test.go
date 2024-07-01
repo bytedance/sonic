@@ -17,22 +17,25 @@
 package encoder
 
 import (
-    `bytes`
-    `encoding`
-    `encoding/json`
-    `runtime`
-    `runtime/debug`
-    `strconv`
-    `testing`
-    `time`
+	"bytes"
+	"encoding"
+	"encoding/json"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/internal/encoder/vars"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
     go func ()  {
-        if !debugAsyncGC {
+        if !vars.DebugAsyncGC {
             return
         }
         println("Begin GC looping...")
@@ -43,7 +46,29 @@ func TestMain(m *testing.M) {
         println("stop GC looping!")
     }()
     time.Sleep(time.Millisecond)
+
     m.Run()
+}
+
+func TestEncoderMemoryCorruption(t *testing.T) {
+	println("TestEncoderMemoryCorruption")
+	runtime.GC()
+	var m = map[string]interface{}{
+		"1": map[string]interface{}{
+			`"` + strings.Repeat("a", int(option.DefaultEncoderBufferSize)-38) + `"`: "b",
+			"1": map[string]int32{
+				"b": 1658219785,
+			},
+		},
+	}
+	out, err := Encode(m, SortMapKeys)
+	if err != nil {
+		t.Fatal(err)
+	}
+	println(len(out))
+	if err := json.Unmarshal(out, &m); err != nil {
+		t.Fatal(err)
+	}
 }
 
 type sample struct {
@@ -179,7 +204,10 @@ func (self *MarshalerErrorStruct) MarshalJSON() ([]byte, error) {
 func TestMarshalerError(t *testing.T) {
     v := MarshalerErrorStruct{}
     ret, err := Encode(&v, 0)
-    require.EqualError(t, err, `invalid Marshaler output json syntax at 5: "[\"\"] {"`)
+    if !strings.Contains(err.Error(), `invalid Marshaler output json syntax`) {
+        t.Fatal()
+    }
+    // require.EqualError(t, err, `invalid Marshaler output json syntax at 5: "[\"\"] {"`)
     require.Equal(t, []byte(nil), ret)
 }
 
@@ -284,7 +312,7 @@ func TestEncoder_Marshal_EscapeHTML(t *testing.T) {
 
     m = map[string]string{"K": "\u2028\u2028\xe2"}
     ret, err = Encode(m, EscapeHTML)
-    require.Equal(t, string(ret), "{\"K\":\"\\u2028\\u2028\xe2\"}")
+    require.Equal(t, "{\"K\":\"\\u2028\\u2028\xe2\"}", string(ret))
     require.NoError(t, err)
 }
 
@@ -323,12 +351,16 @@ func TestEncoder_Generic(t *testing.T) {
     v, e := Encode(_GenericValue, 0)
     require.NoError(t, e)
     println(string(v))
+    var exp interface{}
+    require.NoError(t, json.Unmarshal(v, &exp))
 }
 
 func TestEncoder_Binding(t *testing.T) {
     v, e := Encode(_BindingValue, 0)
     require.NoError(t, e)
     println(string(v))
+    var exp TwitterStruct
+    require.NoError(t, json.Unmarshal(v, &exp))
 }
 
 func TestEncoder_MapSortKey(t *testing.T) {

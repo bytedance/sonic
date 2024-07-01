@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "../native.h"
 #include <sys/types.h>
 
 #ifdef LOG_LEVEL
@@ -31,7 +32,7 @@
 
 // Note: this code is on cross-compile, so we can't use System-specific Predefined Macros here.
 #if USE_APPLE
-static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
+static alwa void __attribute__((naked)) write_syscall(const char *s, size_t n)
 {
     asm volatile(
         "movq %rsi, %rdx"
@@ -48,7 +49,7 @@ static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
         "\n");
 }
 #else
-static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
+static always_inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
 {
     asm volatile(
         "movq %rsi, %rdx"
@@ -66,12 +67,12 @@ static inline void __attribute__((naked)) write_syscall(const char *s, size_t n)
 }
 #endif
 
-static inline void printch(const char ch)
+static always_inline void printch(const char ch)
 {
     write_syscall(&ch, 1);
 }
 
-static inline void printstr(const char *s)
+static always_inline void printstr(const char *s)
 {
     size_t n = 0;
     const char *p = s;
@@ -80,7 +81,7 @@ static inline void printstr(const char *s)
     write_syscall(s, n);
 }
 
-static inline void printint(int64_t v)
+static always_inline void printint(int64_t v)
 {
     char neg = 0;
     char buf[32] = {};
@@ -108,7 +109,7 @@ sig:
     printstr(p);
 }
 
-static inline void printuint(uint64_t v)
+static always_inline void printuint(uint64_t v)
 {
     char buf[32] = {};
     char *p = &buf[31];
@@ -127,7 +128,7 @@ static inline void printuint(uint64_t v)
 
 static const char tab[] = "0123456789abcdef";
 
-static inline void printhex(uintptr_t v)
+static always_inline void printhex(uintptr_t v)
 {
     if (v == 0)
     {
@@ -147,7 +148,7 @@ static inline void printhex(uintptr_t v)
 
 #define MAX_BUF_LEN 1000
 
-static inline void printbytes(GoSlice *s)
+static always_inline void printbytes(GoSlice *s)
 {
     printch('[');
     int i = 0;
@@ -166,7 +167,7 @@ static inline void printbytes(GoSlice *s)
     printch(']');
 }
 
-static inline void printgostr(GoString *s)
+static always_inline void printgostr(GoString *s)
 {
     printch('"');
     if (s->len < MAX_BUF_LEN)
@@ -180,7 +181,7 @@ static inline void printgostr(GoString *s)
     printch('"');
 }
 
-static inline void do_xprintf(const char *fmt, ...)
+static always_inline void do_xprintf(const char *fmt, ...)
 {
     __builtin_va_list va;
     char buf[256] = {};

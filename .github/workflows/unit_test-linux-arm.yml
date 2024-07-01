@@ -1,0 +1,42 @@
+name: Unit Test Linux arm
+
+on: push
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        # TODO: 1.17.x, 1.18.x, 1.19.x not supported because golang asm bug
+        go-version: [1.20.x, 1.21.x, 1.22.x]
+    runs-on: [arm]
+    steps:
+      - name: Clear repository
+        run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Unit Test
+        run: |
+          go test -race -covermode=atomic -coverprofile=coverage.txt  $(go list ./... | grep -v -E 'loader|jit|avx|x86|sse')
+
+      - name: external
+        run: |
+          cd ./external_jsonlib_test
+          GOMAXPROCS=4 go test -v -race ./...
+      
+      - name: Codecov
+        run: bash <(curl -s https://codecov.io/bash)
