@@ -116,8 +116,10 @@ func newBuffer() *bytes.Buffer {
 }
 
 func freeBytes(p []byte) {
-    p = p[:0]
-    bytesPool.Put(p)
+    if option.CanSizeResue(cap(p)) {
+        p = p[:0]
+        bytesPool.Put(p)
+    }
 }
 
 func freeStack(p *_Stack) {
