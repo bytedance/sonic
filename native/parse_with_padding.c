@@ -205,8 +205,12 @@ static always_inline void value_inc(uint64_t* typ) {
     *typ += (1 << TYPE_BITS);
 }
 
-static always_inline uint64_t get_type(uint64_t typ) {
-    return typ & TYPE_MASK;
+static always_inline uint64_t get_type(node* node) {
+    return node->typ & TYPE_MASK;
+}
+
+static always_inline uint64_t get_pos(node* node) {
+    return node->typ >> POS_BITS;
 }
 
 static always_inline size_t get_count(uint64_t typ) {
@@ -1027,7 +1031,7 @@ static uint64_t PADDING_SIZE = 64;
 
 static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) {
     uint8_t** cur   = rdr->cur(rdr->ctx);
-    uint8_t* start  = *cur;
+    uint8_t* start  = (uint8_t*)(slf->start);
     uint64_t* state = NULL;
     long slen       = 0;
     bool neg        = false;
@@ -1063,7 +1067,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
                 goto arr_val;
             }
             default: {
-                if (get_type(node_buf_parent(nodes)->typ) == OBJECT) {
+                if (get_type(node_buf_parent(nodes)) == OBJECT) {
                     if (top_is_key(nodes)) {
                         goto obj_val;
                     } else {
@@ -1251,7 +1255,7 @@ scope_end:
     }
 
     c = skip_space(&slf->nbk, rdr);
-    if (get_type(*state) == OBJECT) {
+    if (((*state) & TYPE_MASK) == OBJECT) {
         goto obj_cont;
     } else {
         goto arr_cont;

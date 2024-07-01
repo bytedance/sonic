@@ -16,7 +16,7 @@ const (
 )
 
 const (
-    _size__parse_with_padding = 49032
+    _size__parse_with_padding = 49036
 )
 
 var (
@@ -36,7 +36,7 @@ var (
         {0x1939, 16},
         {0x193a, 8},
         {0x193e, 0},
-        {0xbf88, 192},
+        {0xbf8c, 192},
     }
 )
 

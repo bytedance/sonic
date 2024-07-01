@@ -193,8 +193,8 @@ func (val Node) Next() uintptr {
 		return PtrOffset(val.cptr, 1)
 	}
 	cobj := ptrCast(val.cptr)
-	offset := int(uint64(cobj.val) >> ConLenBits)
-	return PtrOffset(val.cptr, uintptr(offset))
+	offset := int64(uint64(cobj.val) >> ConLenBits)
+	return PtrOffset(val.cptr, offset)
 }
 
 func (val *Node) next() {
@@ -1299,6 +1299,6 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 }
 
 //go:nosplit
-func PtrOffset(ptr uintptr, off uintptr) uintptr {
-	return ptr + off * unsafe.Sizeof(node{})
+func PtrOffset(ptr uintptr, off int64) uintptr {
+	return uintptr(int64(ptr) + off * int64(unsafe.Sizeof(node{})))
 }

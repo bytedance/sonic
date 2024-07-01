@@ -8,12 +8,8 @@ TMP_DIR="output"
 OUT_DIR="internal/native"
 TOOL_DIR="tools/asm2asm"
 TMPL_DIR="internal/native"
-# EXTRA_CLAGS="-DDEBUG"
-
+EXTRA_CLAGS=$1
 CC=clang
-if [ "$1" != "" ]; then
-    CC=$1
-fi
 
 CPU_ARCS=("sse" "avx2")
 
@@ -52,7 +48,7 @@ for arc in "${CPU_ARCS[@]}"; do
     
         # Compile the source file into an assembly file
         # -Wall -Werror 
-        $CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib -O3 -S -o $asm_file $src_file
+        $CC ${CLAGS[$i]} -target x86_64-apple-macos11 -mno-red-zone -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -nostdlib  ${EXTRA_CLAGS} -O3 -S -o $asm_file $src_file
 
         # Execute asm2asm tool
         python3 $TOOL_DIR/asm2asm.py -r $out_dir/${base_name}.go $asm_file

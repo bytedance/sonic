@@ -9,6 +9,7 @@ import (
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/utf8"
+	"github.com/bytedance/gopkg/lang/dirtmake"
 )
 
 
@@ -173,6 +174,7 @@ func (p *Parser) JsonBytes() []byte {
 
 func (p *Parser) parse() ErrorCode {
 	var offset uintptr
+	var slice []byte
 	// when decode into struct, we should decode number as possible
 	old := p.options
 	if !p.isEface {
@@ -188,12 +190,14 @@ func (p *Parser) parse() ErrorCode {
 	// fallback parse
 	// maybe node buf is not enough, continue
 	p.backup = p.nodes
-	p.nodes = make([]node, len(p.Json) / 2 + 2, len(p.Json) / 2 + 2)
-	copy(p.nodes, p.backup)
-	offset = (p.nbuf.ncur - p.nbuf.nstart) / unsafe.Sizeof(node{})
+	slice = dirtmake.Bytes(0, (len(p.Json) / 2 + 2) * int(unsafe.Sizeof(node{})))
+	(*rt.GoSlice)(unsafe.Pointer(&slice)).Cap = len(p.Json) / 2 + 2;
+	p.nodes = *(*[]node)(unsafe.Pointer(&slice))
+	p.nodes = append(p.nodes, p.backup...)
+	offset = p.nbuf.ncur - p.nbuf.nstart
 	p.nbuf.nstart = uintptr(unsafe.Pointer(&p.nodes[0]))
 	p.nbuf.nend = p.nbuf.nstart + uintptr(cap(p.nodes)) * unsafe.Sizeof(node{})
-	p.nbuf.ncur = uintptr(unsafe.Pointer(&p.nodes[offset]))
+	p.nbuf.ncur = p.nbuf.nstart + offset
 	err = ErrorCode(native.ParseWithPadding(unsafe.Pointer(p)))
 
 ret:
