@@ -26,9 +26,9 @@ var (
     // DefaultAstBufferSize is the initial buffer size of ast.Node.MarshalJSON()
     DefaultAstBufferSize  uint = 4 * 1024
 
-    // LimitDecoderBufferSize indicates the max pool buffer size, in case of OOM.
+    // LimitBufferSize indicates the max pool buffer size, in case of OOM.
     // See issue https://github.com/bytedance/sonic/issues/614
-    LimitDecoderBufferSize uint = 1024 * 1024
+    LimitBufferSize uint = 1024 * 1024
 )
 
 // CompileOptions includes all options for encoder or decoder compiler.
@@ -93,5 +93,5 @@ func WithCompileMaxInlineDepth(depth int) CompileOption {
 
 // CanSizeResue
 func CanSizeResue(cap int) bool {
-    return cap <= int(LimitDecoderBufferSize)
+    return cap <= int(LimitBufferSize)
 }
