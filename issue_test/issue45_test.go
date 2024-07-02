@@ -17,10 +17,12 @@
 package issue_test
 
 import (
-    . `github.com/bytedance/sonic`
-    `fmt`
-    `sync`
-    `testing`
+	"fmt"
+	"sync"
+	"testing"
+
+	. "github.com/bytedance/sonic"
+	"github.com/bytedance/sonic/decoder"
 )
 
 func ExtractJson(idx int, body interface{}) {
@@ -88,4 +90,16 @@ func TestExtracJson(t *testing.T) {
 
     wg.Wait()
     close(resultChan)
+}
+
+func TestUnknown(t *testing.T) {
+    var extra1 = "{\"province\":\"四川\"}"
+    var obj = struct{
+        A string
+    }{}
+    dec := decoder.NewDecoder(extra1)
+	dec.UseNumber()
+	if err := dec.Decode(&obj); err != nil {
+        t.Fatal(err)
+    }
 }
