@@ -20,7 +20,7 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/bytedance/sonic/internal/encoder/alg"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 const (
@@ -32,7 +32,7 @@ func quoteString(e *[]byte, s string) {
     start := 0
     for i := 0; i < len(s); {
         if b := s[i]; b < utf8.RuneSelf {
-            if alg.SafeSet[b] {
+            if rt.SafeSet[b] {
                 i++
                 continue
             }
@@ -56,8 +56,8 @@ func quoteString(e *[]byte, s string) {
                 // user-controlled strings are rendered into JSON
                 // and served to some browsers.
                 *e = append(*e, `u00`...)
-                *e = append(*e, alg.Hex[b>>4])
-                *e = append(*e, alg.Hex[b&0xF])
+                *e = append(*e, rt.Hex[b>>4])
+                *e = append(*e, rt.Hex[b&0xF])
             }
             i++
             start = i
@@ -78,7 +78,7 @@ func quoteString(e *[]byte, s string) {
                 *e = append(*e, s[start:i]...)
             }
             *e = append(*e, `\u202`...)
-            *e = append(*e, alg.Hex[c&0xF])
+            *e = append(*e, rt.Hex[c&0xF])
             i += size
             start = i
             continue

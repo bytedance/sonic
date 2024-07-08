@@ -55,7 +55,7 @@ func Quote(e []byte, s string, double bool) []byte {
 
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
-			if SafeSet[b] {
+			if rt.SafeSet[b] {
 				i++
 				continue
 			}
@@ -79,8 +79,8 @@ func Quote(e []byte, s string, double bool) []byte {
 				// user-controlled strings are rendered into JSON
 				// and served to some browsers.
 				e = append(e, `u00`...)
-				e = append(e, Hex[b>>4])
-				e = append(e, Hex[b&0xF])
+				e = append(e, rt.Hex[b>>4])
+				e = append(e, rt.Hex[b&0xF])
 			}
 			i++
 			start = i
@@ -101,7 +101,7 @@ func Quote(e []byte, s string, double bool) []byte {
 				e = append(e, s[start:i]...)
 			}
 			e = append(e, `\u202`...)
-			e = append(e, Hex[c&0xF])
+			e = append(e, rt.Hex[c&0xF])
 			i += size
 			start = i
 			continue
