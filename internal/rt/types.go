@@ -10,9 +10,6 @@ func AsGoType(t uintptr) *GoType {
 	return (*GoType)(unsafe.Pointer(t))
 }
 
-//go:linkname zerobase runtime.zerobase
-var zerobase uintptr
-
 var (
 	BoolType				= UnpackType(reflect.TypeOf(false))
 	ByteType                = UnpackType(reflect.TypeOf(byte(0)))
@@ -45,6 +42,4 @@ var (
 	MapStringType    		= UnpackType(reflect.TypeOf(map[string]string(nil)))
 
 	MapEfaceMapType    		= MapType(UnpackType(reflect.TypeOf(map[string]interface{}(nil))))
-
-	ZSTPtr    = unsafe.Pointer(&zerobase)
 )
