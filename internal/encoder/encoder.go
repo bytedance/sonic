@@ -53,7 +53,8 @@ const (
     NoQuoteTextMarshaler Options = 1 << alg.BitNoQuoteTextMarshaler
 
     // NoNullSliceOrMap indicates all empty Array or Object are encoded as '[]' or '{}',
-    // instead of 'null'
+    // instead of 'null'. 
+    // NOTE: The priority of this option is lower than json tag `omitempty`.
     NoNullSliceOrMap     Options = 1 << alg.BitNoNullSliceOrMap
 
     // ValidateString indicates that encoder should validate the input string
@@ -69,6 +70,9 @@ const (
   
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
+
+    // Encode Infinity or Nan float into `null`, instead of returning an error.
+    EncodeNullForInfOrNan Options = 1 << alg.BitEncodeNullForInfOrNan
 )
 
 // Encoder represents a specific set of encoder configurations.

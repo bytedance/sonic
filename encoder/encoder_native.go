@@ -70,6 +70,9 @@ const (
 
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = encoder.CompatibleWithStd
+
+    // Encode Infinity or Nan float into `null`, instead of returning an error.
+    EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
 )
 
 

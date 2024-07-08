@@ -869,12 +869,18 @@ func (self *Assembler) _asm_OP_f32(_ *ir.Instr) {
 	self.Emit("MOVL", jit.Ptr(_SP_p, 0), _AX)  // MOVL     (SP.p), AX
 	self.Emit("ANDL", jit.Imm(_FM_exp32), _AX) // ANDL     $_FM_exp32, AX
 	self.Emit("XORL", jit.Imm(_FM_exp32), _AX) // XORL     $_FM_exp32, AX
-	self.Sjmp("JZ", _LB_error_nan_or_infinite) // JZ       _error_nan_or_infinite
+	self.Sjmp("JNZ",  "_encode_normal_f32_{n}")// JNZ      _encode_normal_f32_{n}
+	self.Emit("BTQ", jit.Imm(alg.BitEncodeNullForInfOrNan), _ARG_fv) // BTQ ${BitEncodeNullForInfOrNan}, fv
+	self.Sjmp("JNC", _LB_error_nan_or_infinite) // JNC     _error_nan_or_infinite
+	self._asm_OP_null(nil)
+	self.Sjmp("JMP", "_encode_f32_end_{n}")    // JMP      _encode_f32_end_{n}
+	self.Link("_encode_normal_f32_{n}")
 	self.save_c()                              // SAVE     $C_regs
 	self.rbuf_di()                             // MOVQ     RP, DI
 	self.Emit("MOVSS", jit.Ptr(_SP_p, 0), _X0) // MOVSS    (SP.p), X0
-	self.call_c(_F_f32toa)                     // CALL_C   f64toa
+	self.call_c(_F_f32toa)                     // CALL_C   f32toa
 	self.Emit("ADDQ", _AX, _RL)                // ADDQ     AX, RL
+	self.Link("_encode_f32_end_{n}")
 }
 
 func (self *Assembler) _asm_OP_f64(_ *ir.Instr) {
@@ -883,12 +889,18 @@ func (self *Assembler) _asm_OP_f64(_ *ir.Instr) {
 	self.Emit("MOVQ", jit.Imm(_FM_exp64), _CX) // MOVQ   $_FM_exp64, CX
 	self.Emit("ANDQ", _CX, _AX)                // ANDQ   CX, AX
 	self.Emit("XORQ", _CX, _AX)                // XORQ   CX, AX
-	self.Sjmp("JZ", _LB_error_nan_or_infinite) // JZ     _error_nan_or_infinite
+	self.Sjmp("JNZ",  "_encode_normal_f64_{n}")// JNZ    _encode_normal_f64_{n}
+	self.Emit("BTQ", jit.Imm(alg.BitEncodeNullForInfOrNan), _ARG_fv) // BTQ ${BitEncodeNullForInfOrNan}, fv
+	self.Sjmp("JNC", _LB_error_nan_or_infinite)// JNC    _error_nan_or_infinite
+	self._asm_OP_null(nil)
+	self.Sjmp("JMP", "_encode_f64_end_{n}")    // JMP    _encode_f64_end_{n}
+	self.Link("_encode_normal_f64_{n}")
 	self.save_c()                              // SAVE   $C_regs
 	self.rbuf_di()                             // MOVQ   RP, DI
 	self.Emit("MOVSD", jit.Ptr(_SP_p, 0), _X0) // MOVSD  (SP.p), X0
 	self.call_c(_F_f64toa)                     // CALL_C f64toa
 	self.Emit("ADDQ", _AX, _RL)                // ADDQ   AX, RL
+	self.Link("_encode_f64_end_{n}")
 }
 
 func (self *Assembler) _asm_OP_str(_ *ir.Instr) {

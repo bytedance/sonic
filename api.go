@@ -77,6 +77,9 @@ type Config struct {
     
     // NoEncoderNewline indicates that the encoder should not add a newline after every message
     NoEncoderNewline bool
+
+    // Encode Infinity or Nan float into `null`, instead of returning an error.
+    EncodeNullForInfOrNan bool
 }
  
 var (

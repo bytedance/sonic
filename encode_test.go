@@ -1199,3 +1199,29 @@ func TestEncoder_RandomInvalidUtf8(t *testing.T) {
         testEncodeInvalidUtf8(t, genRandJsonRune(maxLen))
     }
 }
+
+func TestMarshalInfOrNan(t *testing.T) {
+    tests := [] interface{}{
+        math.Inf(1), math.Inf(-1), math.NaN(), float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.NaN()), []interface{}{math.Inf(1), math.Inf(-1), math.NaN(), float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.NaN())},
+
+		[]float64{math.Inf(1), math.Inf(-1), math.NaN()},
+		[]float32{float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.NaN())},
+    }
+
+    allowNanInf := Config {
+        EncodeNullForInfOrNan: true,
+    }.Froze()
+    for _, tt := range tests {
+        b, err := allowNanInf.Marshal(tt)
+        assert.Nil(t, err)
+        if len(b) == 4 {
+            assert.Equal(t, string(b), "null")
+        } else {
+            println(string(b))
+        }
+
+        b, err = Marshal(tt)
+        assert.NotNil(t, err)
+        assert.True(t, strings.Contains(err.Error(), "json: unsupported value: NaN or ±Infinite"))
+    }
+}
