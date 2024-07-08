@@ -17,8 +17,10 @@
 package rt
 
 import (
-    `unsafe`
-    `reflect`
+	"reflect"
+	"unsafe"
+
+	"github.com/bytedance/sonic/option"
 )
 
 //go:nosplit
@@ -145,4 +147,9 @@ func MoreStack(size uintptr)
 //go:nosplit
 func Add(ptr unsafe.Pointer, off uintptr) unsafe.Pointer {
     return unsafe.Pointer(uintptr(ptr) + off)
+}
+
+// CanSizeResue
+func CanSizeResue(cap int) bool {
+    return cap <= int(option.LimitBufferSize)
 }

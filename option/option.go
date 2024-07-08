@@ -18,10 +18,17 @@ package option
 
 var (
     // DefaultDecoderBufferSize is the initial buffer size of StreamDecoder
-    DefaultDecoderBufferSize  uint = 128 * 1024
+    DefaultDecoderBufferSize  uint = 4 * 1024
 
     // DefaultEncoderBufferSize is the initial buffer size of Encoder
-    DefaultEncoderBufferSize  uint = 128 * 1024
+    DefaultEncoderBufferSize  uint = 4 * 1024
+
+    // DefaultAstBufferSize is the initial buffer size of ast.Node.MarshalJSON()
+    DefaultAstBufferSize  uint = 4 * 1024
+
+    // LimitBufferSize indicates the max pool buffer size, in case of OOM.
+    // See issue https://github.com/bytedance/sonic/issues/614
+    LimitBufferSize uint = 1024 * 1024
 )
 
 // CompileOptions includes all options for encoder or decoder compiler.
@@ -83,4 +90,3 @@ func WithCompileMaxInlineDepth(depth int) CompileOption {
             o.MaxInlineDepth = depth
         }
 }
- 

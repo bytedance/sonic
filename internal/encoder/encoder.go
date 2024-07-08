@@ -192,10 +192,14 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
     }
 
     /* make a copy of the result */
-    ret = make([]byte, len(*buf))
-    copy(ret, *buf)
-
-    vars.FreeBytes(buf)
+    if rt.CanSizeResue(cap(*buf)) {
+        ret = make([]byte, len(*buf))
+        copy(ret, *buf)
+        vars.FreeBytes(buf)
+    } else {
+        ret = *buf
+    }
+    
     /* return the buffer into pool */
     return ret, nil
 }
@@ -269,21 +273,25 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
     /* indent the JSON */
     buf = vars.NewBuffer()
     err = json.Indent(buf, *out, prefix, indent)
+    vars.FreeBytes(out)
 
     /* check for errors */
     if err != nil {
-        vars.FreeBytes(out)
         vars.FreeBuffer(buf)
         return nil, err
     }
 
     /* copy to the result buffer */
-    ret := make([]byte, buf.Len())
-    copy(ret, buf.Bytes())
-
-    /* return the buffers into pool */
-    vars.FreeBytes(out)
-    vars.FreeBuffer(buf)
+    var ret []byte
+    if rt.CanSizeResue(cap(buf.Bytes())) {
+        ret = make([]byte, buf.Len())
+        copy(ret, buf.Bytes())
+        /* return the buffers into pool */
+        vars.FreeBuffer(buf)
+    } else {
+        ret = buf.Bytes()
+    }
+    
     return ret, nil
 }
 
