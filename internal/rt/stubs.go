@@ -124,3 +124,6 @@ func GetMap64Assign(vt reflect.Type) Map64Assign {
 	}
 }
 
+
+var emptyBytes = make([]byte, 0, 0)
+var EmptySlice = *(*GoSlice)(unsafe.Pointer(&emptyBytes))

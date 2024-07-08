@@ -18,7 +18,6 @@ package ast
 
 import (
     `unsafe`
-    `unicode/utf8`
 
     `github.com/bytedance/sonic/internal/rt`
 )
@@ -36,14 +35,6 @@ func unsafe_NewArray(typ *rt.GoType, n int) unsafe.Pointer
 func mem2ptr(s []byte) unsafe.Pointer {
     return (*rt.GoSlice)(unsafe.Pointer(&s)).Ptr
 }
-
-var (
-    //go:linkname safeSet encoding/json.safeSet
-    safeSet [utf8.RuneSelf]bool
-
-    //go:linkname hex encoding/json.hex
-    hex string
-)
 
 //go:linkname unquoteBytes encoding/json.unquoteBytes
 func unquoteBytes(s []byte) (t []byte, ok bool)

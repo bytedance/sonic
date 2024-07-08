@@ -1,5 +1,5 @@
-//go:build go1.20 && !go1.22
-// +build go1.20,!go1.22
+//go:build go1.20 && !go1.23
+// +build go1.20,!go1.23
 
 package rt
 
@@ -7,20 +7,13 @@ import (
 	"unsafe"
 )
 
-//go:linkname roundupsize  runtime.roundupsize
-func roundupsize(size uintptr) uintptr
-
 //go:linkname makeslice runtime.makeslice
 //goland:noinspection GoUnusedParameter
 func makeslice(et *GoType, len int, cap int) unsafe.Pointer
 
 func MakeSlice(oldPtr unsafe.Pointer, et *GoType, newLen int) *GoSlice {
 	if newLen == 0 {
-		return &GoSlice{
-			Ptr: ZSTPtr,
-			Len: 0,
-			Cap: 0,
-		}
+		return &EmptySlice
 	}
 
 	if *(*unsafe.Pointer)(oldPtr) == nil {

@@ -1653,7 +1653,7 @@ func NewBytes(src []byte) Node {
     if len(src) == 0 {
         panic("empty src bytes")
     }
-    out := encodeBase64(src)
+    out := rt.EncodeBase64(src)
     return NewString(out)
 }
 

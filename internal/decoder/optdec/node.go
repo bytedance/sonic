@@ -967,11 +967,7 @@ func AsEfaceFast(iter *NodeIter, ctx *Context) interface{} {
 			val = sp
 			goto _arr_val;
 		} else {
-			ctx.efacePool.ConvTSlice(rt.GoSlice{
-				Ptr: rt.ZSTPtr,
-				Len: 0,
-				Cap: 0,
-			}, rt.SliceEfaceType, unsafe.Pointer(&root))
+			ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, unsafe.Pointer(&root))
 		}
 	case KStringCommon: 	ctx.efacePool.ConvTstring(node.StringRef(ctx), unsafe.Pointer(&root))
 	case KStringEscaped:	ctx.efacePool.ConvTstring(node.StringCopyEsc(ctx), unsafe.Pointer(&root))  
@@ -993,9 +989,8 @@ _object_key:
 	} else {
 		key = node.StringCopyEsc(ctx)
 	}
-	// interface{} slot in map bucket
 
-	//println("key is **", key, "** mp is ", mp)
+	// interface{} slot in map bucket
 	val = rt.Mapassign_faststr(rt.MapEfaceMapType, mp, key)
 	vt = &(*rt.GoEface)(val).Type
 	vp = &(*rt.GoEface)(val).Value
@@ -1021,11 +1016,7 @@ _object_key:
 		case KArray:
 			newSize := node.Array().Len()
 			if newSize == 0 {
-				ctx.efacePool.ConvTSlice(rt.GoSlice{
-					Ptr: rt.ZSTPtr,
-					Len: 0,
-					Cap: 0,
-				}, rt.SliceEfaceType, val)
+				ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, val)
 				break;
 			}
 
@@ -1124,11 +1115,7 @@ _arr_val:
 		case KArray:
 			newSize := node.Array().Len()
 			if newSize == 0 {
-				ctx.efacePool.ConvTSlice(rt.GoSlice{
-					Ptr: rt.ZSTPtr,
-					Len: newSize,
-					Cap: newSize,
-				}, rt.SliceEfaceType, val)
+				ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, val)
 				break;
 			}
 			
