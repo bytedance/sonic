@@ -43,8 +43,50 @@ func FuzzMain(f *testing.F) {
     f.Fuzz(fuzzMain)
 }
 
+type testFuzzCase struct {
+	data []byte
+	newf func () interface{}
+}
+
+func testJson(t *testing.T, data []byte, newf func() interface{}) {
+	jv := newf()
+	jerr := json.Unmarshal(data, jv)
+	sv := newf()
+	serr := sonic.Unmarshal(data, sv)
+	require.Equal(t, jerr == nil, serr == nil)
+	spew.Dump(jv, sv)
+	require.Equal(t, jv, sv)
+}
+
+var testFuzzCases = []testFuzzCase{
+	{
+		data: []byte(`{"x":"","":"","$$$$$ſ":"","RRRRRſ":"","ppppſ":"","ŝ":"","Ţ":"","ţ":"","Ť":"","Ũ":"","Ŭ":"","Ű":"","ų":"","Ŷ":"","Ÿ":"","ź":"","Ż":"","ſ":"","ſſ":"","ǿ":"","ɿ":"","տ":"","ٿſ":"","ڵ":""}`),
+		newf: func() interface{} {
+			return new(struct { F0 ***string; F1 string "json:\"ڵ,omitempty\""; F2 *string; F3 string; p4 string; F4 **string; F5 string; F6 *string "json:\"-\""; F7 ***string; F8 string; p9 string; F9 string; p10 string; F10 **string "json:\"Ŷ,\""; F11 **string "json:\"Ż,omitempty\""; F12 **string "json:\"ſ,\""; F13 ***string; F14 *string; p15 *string; F15 string "json:\"-\""; p16 string; F16 **string "json:\"ſſ,omitempty\""; F17 **string "json:\"ɿ,omitempty\""; p18 **string; F18 *string "json:\"-\""; F19 **string "json:\"RRRRRſ,omitempty\""; F20 ***string; p21 ***string; F21 string "json:\"ź,omitempty\""; p22 string })
+		},
+	},
+	{
+		data: []byte(`{"":"","$$$$$ſ":"","RRRRRſ":"","ppppſ":"","ŝ":"","Ţ":"","ţ":"","Ť":"","Ũ":"","Ŭ":"","Ű":"","ų":"","Ŷ":"","Ÿ":"","ź":"","Ż":"","ſ":"","ſſ":"","ǿ":"","ɿ":"","տ":"","ٿſ":"","ڵ":""}`),
+		newf:  func() interface{} {
+				return new(struct { F6 **string "json:\"x,\""; F7 string; p8 string; F8 *string; F9 string "json:\"ٿſ,omitempty\""; p10 string; F10 **string "json:\"-\""; F11 string "json:\"$$$$$ſ,\""; p12 string; F12 *string; p13 *string; F13 *string "json:\"Ű,\""; p14 *string; F14 **string; F15 string "json:\"Ż,omitempty\""; F16 string "json:\"-\""; p17 string; F17 **string "json:\"-\""; F18 string "json:\"ppppſ,\""; F19 ***string "json:\"Ţ,omitempty\""; p20 ***string; F20 ***string; F21 *string })
+			},
+	},
+	{
+		// FIXME: encoding/json has bugs because the limited dbuf capcaity is 800?
+		data: []byte("[53333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333353333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333e-913]"),
+		newf: func() interface{} { return new([]interface{}) },
+	},
+	{
+		data: []byte("10000000000000000000"),
+		newf: func () interface{} { return new(uint64) },
+	},
+}
+
 // Used for debug falied fuzz corpus
-func TestCorpus(t *testing.T) {
+func TestFuzzCases(t *testing.T) {
+	for _, c := range testFuzzCases {
+		testJson(t, c.data, c.newf)
+	}
     fuzzMain(t, []byte("[1\x00"))
     fuzzMain(t, []byte("\"\\uDE1D\\uDE1D\\uDEDD\\uDE1D\\uDE1D\\uDE1D\\uDE1D\\uDEDD\\uDE1D\""))
     // fuzzMain(t, []byte(`{"":null}`))
@@ -82,7 +124,7 @@ func fuzzMain(t *testing.T, data []byte) {
         if jerr != nil {
             continue
         }
-        require.Equal(t, sv, jv, dump(data, jv, jerr, sv, serr))
+        require.Equal(t, sv, jv, dump(string(data), jv, jerr, sv, serr))
     
         v := jv
         sout, serr := target.Marshal(v)
@@ -116,14 +158,13 @@ func fuzzMain(t *testing.T, data []byte) {
         }
 
         if m, ok := sv.(*map[string]interface{}); ok {
-            fuzzDynamicStruct(t, jout, *m)
             fuzzASTGetFromObject(t, jout, *m)
+            fuzzDynamicStruct(t, jout, *m)
         }
         if a, ok := sv.(*[]interface{}); ok {
             fuzzASTGetFromArray(t, jout, *a)
         }
     }
-
 }
 
 

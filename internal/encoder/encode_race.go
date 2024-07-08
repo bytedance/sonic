@@ -21,9 +21,6 @@ package encoder
 
 import (
     `encoding/json`
-    `runtime`
-
-    `github.com/bytedance/sonic/internal/rt`
 )
 
 
@@ -31,23 +28,8 @@ func helpDetectDataRace(val interface{}) {
     _, _ = json.Marshal(val)
 }
 
-func encodeInto(buf *[]byte, val interface{}, opts Options) error {
-
-
-    stk := newStack()
-    efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
-
-    /* return the stack into pool */
-    if err != nil {
-        resetStack(stk)
-    }
-    freeStack(stk)
-
-    /* avoid GC ahead */
-    runtime.KeepAlive(buf)
-    runtime.KeepAlive(efv)
-
+func encodeIntoCheckRace(buf *[]byte, val interface{}, opts Options) error {
+	err := encodeInto(buf, val, opts)
     /* put last to make the panic from sonic will always be caught at first */
     helpDetectDataRace(val)
     return err

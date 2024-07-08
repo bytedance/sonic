@@ -26,6 +26,14 @@
     }
 #endif
 
+#if defined(__amd64__) || defined(__x86_64__)
+    #define breakpoint()    __asm__ __volatile__("int3")
+#elif defined(__aarch64__)
+    #define breakpoint()    __asm__ __volatile__("brk #0")
+#else
+    #define breakpoint()    ((void)0)
+#endif
+
 #ifndef DEBUG
     #define xassert(expr)     ((void)0)
 #else

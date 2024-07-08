@@ -25,7 +25,6 @@ import (
     `testing`
     `time`
 
-    `github.com/davecgh/go-spew/spew`
     `github.com/stretchr/testify/assert`
     `github.com/stretchr/testify/require`
 )
@@ -218,7 +217,7 @@ func TestDecodeCorrupt(t *testing.T) {
         if err == nil {
             t.Fatalf("%#v", d)
         }
-        if !strings.Contains(err.Error(), "invalid char"){
+        if !(strings.Contains(err.Error(), "Syntax error") || strings.Contains(err.Error(), "invalid character")) {
             t.Fatal(err.Error())
         }
     }
@@ -287,7 +286,6 @@ func TestDecoder_Binding(t *testing.T) {
     assert.NoError(t, err)
     assert.Equal(t, len(TwitterJson), pos)
     assert.Equal(t, _BindingValue, v, 0)
-    spew.Dump(v)
 }
 
 

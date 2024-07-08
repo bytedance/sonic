@@ -1,4 +1,4 @@
-// +build !amd64,!arm64 go1.23 !go1.16 arm64,!go1.20
+// +build !amd64,!arm64 go1.23 !go1.17 arm64,!go1.20
 
 /*
 * Copyright 2022 ByteDance Inc.
@@ -27,7 +27,7 @@ import (
 )
 
 func init() {
-    println("WARNING:(ast) sonic only supports Go1.16~1.22, but your environment is not suitable")
+    println("WARNING:(ast) sonic only supports go1.17~1.22, but your environment is not suitable")
 }
 
 func quote(buf *[]byte, val string) {
