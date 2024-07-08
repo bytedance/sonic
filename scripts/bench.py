@@ -19,8 +19,6 @@ import os
 import subprocess
 import argparse
 
-gbench_prefix = "SONIC_NO_ASYNC_GC=1 %s test -benchmem -run=none "
-
 def run(cmd):
     print(cmd)
     if os.system(cmd):
@@ -72,8 +70,7 @@ def compare(args):
         return None
 
     # benchmark current branch    
-    (fd, target) = tempfile.mkstemp(".target.txt")
-    run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix % "go", args, target))
+    target = run_bench(args, "target")
     
    
     # trying to switch to the latest main branch
@@ -81,18 +78,13 @@ def compare(args):
     if current_branch != "main":
         run("git checkout main")
     run("git pull --allow-unrelated-histories origin main")
+
     # benchmark main branch
-    (fd, main) = tempfile.mkstemp(".main.txt")
-    if gobin != "go":
-        # change GOROOT
-        run("export GOROOT=%s" % gobin)
-        run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix % (gobin+"/bin/go")), args, main)
-    else:
-        run("%s %s ./... 2>&1 | tee %s" %(gbench_prefix % "go", args, main))
+    main = run_bench(args, "main")
 
     # diff the result
     # benchstat = "go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat"
-    run( "benchstat -sort=delta %s %s"%(main, target))
+    run( "benchstat %s %s"%(main, target))
     run("git checkout -- .")
 
     # restore branch
@@ -102,49 +94,23 @@ def compare(args):
     run("patch -p1 < %s" % (diff))
     return target
 
+def run_bench(args, name):
+    (fd, fname) = tempfile.mkstemp(".%s.txt"%name)
+    run("%s 2>&1 | tee %s" %(args.cmd, fname))
+    return fname
+
+
 def main():
-    argparser = argparse.ArgumentParser(description='Tools to test the performance. Example: ./bench.py -b Decoder_Generic_Sonic -c')
-    argparser.add_argument('-b', '--bench', dest='filter', required=False,
-        help='Specify the filter for golang benchmark')
-    argparser.add_argument('-c', '--compare', dest='compare', action='store_true', required=False,
-        help='Compare with the main benchmarking')
-    argparser.add_argument('-t', '--times', dest='times', required=False,
-        help='benchmark the times')
-    argparser.add_argument('-r', '--repeat_times', dest='count', required=False,
-        help='benchmark the count')
-    argparser.add_argument('-go', '--go_bin_path', dest='gobin', required=False,
-        help='benchmark the count')
-    argparser.add_argument('-envs', '--envs', dest='envs', required=False,
-        help='the environments')
+    argparser = argparse.ArgumentParser(description='Tools to test the performance. Example: ./bench.py "go test -bench=. ./..."')
+    argparser.add_argument('cmd', type=str, help='Golang benchmark command')
+    argparser.add_argument('-c', '--compare', dest='compare', action='store_true',
+        help='Compare the current branch with the main branch')
     args = argparser.parse_args()
-    
-    global gobin 
-    if args.gobin:
-        gobin = args.gobin
-    else:
-        gobin = "go"
-    
-    if args.filter:
-        gbench_args = "-bench=%s"%(args.filter)
-    else:
-        gbench_args = "-bench=."
-        
-    if args.times:
-        gbench_args += " -benchtime=%s"%(args.times)
-        
-    if args.count:
-        gbench_args += " -count=%s"%(args.count)
-    else:
-        gbench_args += " -count=10"
 
     if args.compare:
-        target = compare(gbench_args)
+        compare(args)
     else:
-        target = None
-
-    if not target:
-        (fd, target) = tempfile.mkstemp(".target.txt")
-        run("%s %s %s ./... 2>&1 | tee %s" %(args.envs, gbench_prefix, gbench_args, target))
+        run_bench(args, "target")
 
 if __name__ == "__main__":
     main()
