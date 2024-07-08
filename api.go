@@ -157,6 +157,13 @@ func Marshal(val interface{}) ([]byte, error) {
     return ConfigDefault.Marshal(val)
 }
 
+// MarshalIndent is like Marshal but applies Indent to format the output.
+// Each JSON element in the output will begin on a new line beginning with prefix
+// followed by one or more copies of indent according to the indentation nesting.
+func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
+    return ConfigDefault.MarshalIndent(v, prefix, indent)
+}
+
 // MarshalString returns the JSON encoding string of v.
 func MarshalString(val interface{}) (string, error) {
     return ConfigDefault.MarshalToString(val)
