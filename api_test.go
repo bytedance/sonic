@@ -49,3 +49,21 @@ func TestValid(t *testing.T) {
         require.Equal(t, tc.expected, Valid([]byte(tc.data)), tc.data)
     }
 }
+
+
+func TestIdent(t *testing.T) {
+    foo := struct {
+        Name string
+        Age  int
+    }{
+        Name: "sonic",
+        Age:  20,
+    }
+
+    out, err := MarshalIndent(&foo, "", "  ")
+    require.Nil(t, err)
+    require.Equal(t, `{
+  "Name": "sonic",
+  "Age": 20
+}`, string(out))
+}
