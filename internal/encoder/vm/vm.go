@@ -159,12 +159,20 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 		case ir.OP_f32:
 			v := *(*float32)(p)
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
+				if flags&(1<<alg.BitEncodeNullForInfOrNan) != 0 {
+					buf = append(buf, 'n', 'u', 'l', 'l')
+					continue
+				}
 				return vars.ERR_nan_or_infinite
 			}
 			buf = alg.F32toa(buf, v)
 		case ir.OP_f64:
 			v := *(*float64)(p)
 			if math.IsNaN(v) || math.IsInf(v, 0) {
+				if flags&(1<<alg.BitEncodeNullForInfOrNan) != 0 {
+					buf = append(buf, 'n', 'u', 'l', 'l')
+					continue
+				}
 				return vars.ERR_nan_or_infinite
 			}
 			buf = alg.F64toa(buf, v)

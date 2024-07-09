@@ -65,6 +65,9 @@ func (cfg Config) Froze() API {
     if cfg.NoEncoderNewline {
         api.encoderOpts |= encoder.NoEncoderNewline
     }
+    if cfg.EncodeNullForInfOrNan {
+        api.encoderOpts |= encoder.EncodeNullForInfOrNan
+    }
 
     // configure decoder options:
     if cfg.UseInt64 {
