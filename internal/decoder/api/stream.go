@@ -47,6 +47,12 @@ var bufPool = sync.Pool{
     },
 }
 
+func freeBytes(buf []byte) {
+    if rt.CanSizeResue(cap(buf)) {
+        bufPool.Put(buf[:0])
+    }
+}
+
 // NewStreamDecoder adapts to encoding/json.NewDecoder API.
 //
 // NewStreamDecoder returns a new decoder that reads from r.
@@ -105,7 +111,7 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
             // no remain valid bytes, thus we just recycle buffer
             mem := self.buf
             self.buf = nil
-            bufPool.Put(mem[:0])
+            freeBytes(mem)
         } else {
             // println("keep")
             // remain undecoded bytes, move them onto head
@@ -178,7 +184,7 @@ func (self *StreamDecoder) setErr(err error) {
     self.err = err
     mem := self.buf[:0]
     self.buf = nil
-    bufPool.Put(mem)
+    freeBytes(mem)
 }
 
 func (self *StreamDecoder) peek() (byte, error) {

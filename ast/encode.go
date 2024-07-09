@@ -21,10 +21,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/bytedance/sonic/internal/rt"
-)
-
-const (
-    _MaxBuffer = 1024    // 1KB buffer size
+    "github.com/bytedance/sonic/option"
 )
 
 func quoteString(e *[]byte, s string) {
@@ -100,10 +97,14 @@ func (self *Node) MarshalJSON() ([]byte, error) {
         freeBuffer(buf)
         return nil, err
     }
-
-    ret := make([]byte, len(*buf))
-    copy(ret, *buf)
-    freeBuffer(buf)
+    var ret []byte
+    if !rt.CanSizeResue(cap(*buf)) {
+        ret = *buf
+    } else {
+        ret = make([]byte, len(*buf))
+        copy(ret, *buf)
+        freeBuffer(buf)
+    }
     return ret, err
 }
 
@@ -111,12 +112,15 @@ func newBuffer() *[]byte {
     if ret := bytesPool.Get(); ret != nil {
         return ret.(*[]byte)
     } else {
-        buf := make([]byte, 0, _MaxBuffer)
+        buf := make([]byte, 0, option.DefaultAstBufferSize)
         return &buf
     }
 }
 
 func freeBuffer(buf *[]byte) {
+    if !rt.CanSizeResue(cap(*buf)) {
+        return
+    }
     *buf = (*buf)[:0]
     bytesPool.Put(buf)
 }

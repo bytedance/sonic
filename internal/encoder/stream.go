@@ -38,11 +38,10 @@ func NewStreamEncoder(w io.Writer) *StreamEncoder {
 
 // Encode encodes interface{} as JSON to io.Writer
 func (enc *StreamEncoder) Encode(val interface{}) (err error) {
-    buf := vars.NewBytes()
-    out := *buf
+    out := vars.NewBytes()
 
     /* encode into the buffer */
-    err = EncodeInto(&out, val, enc.Opts)
+    err = EncodeInto(out, val, enc.Opts)
     if err != nil {
         goto free_bytes
     }
@@ -50,7 +49,7 @@ func (enc *StreamEncoder) Encode(val interface{}) (err error) {
     if enc.indent != "" || enc.prefix != "" {
         /* indent the JSON */
         buf := vars.NewBuffer()
-        err = json.Indent(buf, out, enc.prefix, enc.indent)
+        err = json.Indent(buf, *out, enc.prefix, enc.indent)
         if err != nil {
             vars.FreeBuffer(buf)
             goto free_bytes
@@ -71,9 +70,10 @@ func (enc *StreamEncoder) Encode(val interface{}) (err error) {
     } else {
         /* copy into io.Writer */
         var n int
-        for len(out) > 0 {
-            n, err = enc.w.Write(out)
-            out = out[n:]
+        buf := *out
+        for len(buf) > 0 {
+            n, err = enc.w.Write(buf)
+            buf = buf[n:]
             if err != nil {
                 goto free_bytes
             }
@@ -86,7 +86,6 @@ func (enc *StreamEncoder) Encode(val interface{}) (err error) {
     }
 
 free_bytes:
-    *buf = out
-    vars.FreeBytes(buf)
+    vars.FreeBytes(out)
     return err
 }
