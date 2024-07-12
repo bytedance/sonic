@@ -131,12 +131,17 @@ var o1 = map[string]interface{}{
 var o2 = 1
 var w = bytes.NewBuffer(nil)
 var enc = sonic.ConfigDefault.NewEncoder(w)
+
 enc.Encode(o1)
-enc.Encode(o2)
 fmt.Println(w.String())
 // Output:
 // {"a":"b"}
+
+enc.Encode(o2)
+fmt.Println(w.String())
+// Output:
 // 1
+
 ```
 
 - decoder
