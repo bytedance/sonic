@@ -58,7 +58,7 @@ const (
 func GoPanic(code int, val unsafe.Pointer) {
     switch(code){
     case PanicNilPointerOfNonEmptyString:
-        panic(fmt.Sprintf("val: %#v has nil pointer while its length is not zero!", (*rt.GoString)(val)))
+        panic(fmt.Sprintf("val: %#v has nil pointer while its length is not zero!\nThis is a nil pointer exception (NPE) problem. There might be a data race issue. It is recommended to execute the tests related to the code with the `-race` compile flag to detect the problem.", (*rt.GoString)(val)))
     default:
         panic("encoder error!")
     }
