@@ -27,6 +27,8 @@ import (
     `github.com/bytedance/sonic/option`
 )
 
+const apiKind = 0
+
 type frozenConfig struct {
     Config
 }

@@ -30,6 +30,8 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
+const apiKind = 1
+
 type frozenConfig struct {
     Config
     encoderOpts encoder.Options
