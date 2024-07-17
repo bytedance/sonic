@@ -20,8 +20,13 @@ package rt
 
 import "unsafe"
 
-func GrowSlice(et *GoType, old GoSlice, cap int) GoSlice {
-	s := growslice(old.Ptr, cap, old.Cap, cap - old.Len, et)
+// Growslice to newCap, not append length
+// Note: the [old, newCap) will not be zeroed if et does not have any ptr data.
+func GrowSlice(et *GoType, old GoSlice, newCap int) GoSlice {
+	if newCap < old.Len {
+		panic("growslice's newCap is smaller than old length")
+	}
+	s := growslice(old.Ptr, newCap, old.Cap, newCap - old.Len, et)
 	s.Len = old.Len
 	return s
 }
