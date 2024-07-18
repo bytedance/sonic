@@ -23,6 +23,11 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
+const (
+	UseStdJSON = iota
+	UseSonicJSON
+)
+
 // APIKind is the kind of API, 0 is std json, 1 is sonic.
 const APIKind = apiKind
 
