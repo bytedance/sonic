@@ -23,6 +23,14 @@ import (
     `github.com/bytedance/sonic/internal/rt`
 )
 
+const (
+	UseStdJSON = iota
+	UseSonicJSON
+)
+
+// APIKind is the kind of API, 0 is std json, 1 is sonic.
+const APIKind = apiKind
+
 // Config is a combination of sonic/encoder.Options and sonic/decoder.Options
 type Config struct {
     // EscapeHTML indicates encoder to escape all HTML characters 
