@@ -52,8 +52,6 @@ type Parser struct {
     dbuf        *byte
 }
 
-// var noLazy = option.AstSafeConcurrentRead
-
 /** Parser Private Methods **/
 
 func (self *Parser) delim() types.ParsingError {

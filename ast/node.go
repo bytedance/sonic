@@ -88,7 +88,7 @@ func (self Node) Type() int {
     return int(self.t & _MASK_LAZY & _MASK_RAW)
 }
 
-// Type returns json type represented by the node
+// Type concurrently-safe returns json type represented by the node
 // It will be one of belows:
 //    V_NONE   = 0 (empty node, key not exists)
 //    V_ERROR  = 1 (error node)
@@ -139,6 +139,7 @@ func (self *Node)  Check() error {
 }
 
 // isRaw returns true if node's underlying value is raw json
+//
 // Deprecated: not concurent safe
 func (self Node) IsRaw() bool {
     return self.t & _V_RAW != 0
@@ -154,7 +155,7 @@ func (self *Node) isLazy() bool {
 }
 
 func (self *Node) isAny() bool {
-    return self != nil && self.t == _V_ANY
+    return self != nil && self.loadt() == _V_ANY
 }
 
 /** Simple Value Methods **/
@@ -1446,11 +1447,10 @@ func (self *Node) loadAllIndex(loadOnce bool) error {
     parser, stack := self.getParserAndArrayStack()
     if !loadOnce {
         parser.noLazy = true
-        *self, err = parser.decodeArray(&stack.v)
     } else {
         parser.loadOnce = true
-        *self, err = parser.decodeArray(&stack.v)
     }
+    *self, err = parser.decodeArray(&stack.v)
     if err != 0 {
         return parser.ExportError(err)
     }

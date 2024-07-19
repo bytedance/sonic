@@ -92,6 +92,7 @@ func TestNodeRace(t *testing.T) {
                 start.RLock()
                 n := node.GetByPath(c.path...)
                 _ = n.TypeSafe()
+                _ = n.isAny()
                 v, err := n.Raw()
                 iv, _ := n.Int64()
                 lv, _ := n.Len()

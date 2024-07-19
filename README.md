@@ -282,6 +282,20 @@ sub := root.Get("key3").Index(2).Int64() // == 3
 
 **Tip**: since `Index()` uses offset to locate data, which is much faster than scanning like `Get()`, we suggest you use it as much as possible. And sonic also provides another API `IndexOrGet()` to underlying use offset as well as ensure the key is matched.
 
+#### SearchOption
+`Searcher` provides some options for user to meet different needs:
+```go
+opts := ast.SearchOption{ CopyReturn: true ... }
+val, err := sonic.GetWithOptions(JSON, opts, "key")
+```
+- CopyReturn
+Indicate the searcher to copy the result JSON string instead of refer from the input. This can help to reduce memory usage if you cache the results
+- ConcurentRead
+Since `ast.Node` use `Lazy-Load` design, it doesn't support Concurrently-Read by default. If you want to read it concurrently, please specify it.
+- ValidateJSON
+Indicate the searcher to validate the entire JSON. This option is enabled by default, which slow down the search speed a little.
+
+
 #### Set/Unset
 
 Modify the json content by Set()/Unset()
@@ -300,20 +314,6 @@ println(alias1 == alias2) // true
 exist, err := root.UnsetByIndex(1) // exist == true
 println(root.Get("key4").Check()) // "value not exist"
 ```
-
-#### SearchOption
-```go
-opts := ast.SearchOption{ CopyReturn: true ... }
-val, err := ast.GetWithOption(JSON, opts, "key"...)
-```
-`Searcher` provides some options for use to meet different needs:
-- CopyReturn
-Indicate the searcher to copy the result JSON string instead of refer from the input. This can help to reduce memory usage if you cache the results
-- ConcurentRead
-Since `ast.Node` use `Lazy-Load` design, it doesn't support Concurrently-Read by default. If you want to read it concurrently, please specify it.
-- ValidateJSON
-Indicate the searcher to validate the entire JSON. This option is enabled by default.
-
 #### Serialize
 
 To encode `ast.Node` as json, use `MarshalJson()` or `json.Marshal()` (MUST pass the node's pointer)
