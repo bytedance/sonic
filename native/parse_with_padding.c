@@ -244,9 +244,9 @@ static always_inline bool top_is_key(node_buf* buf) {
 
 static always_inline bool node_on_null(void* ctx, size_t pos) {
     node_buf* buf = (node_buf*)ctx;
-    node_buf_grow(buf, 1);
     buf->cur->typ = node_pack_type(KNULL, pos);
     buf->cur++;
+    node_buf_grow(buf, 1);
     return true;
 }
 
@@ -1143,6 +1143,8 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
             break;
         default: err =  SONIC_INVALID_CHAR;
     }
+        
+    check_error();
     check_visit();
     return err;
 

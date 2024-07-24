@@ -32,6 +32,18 @@ func TestParseNativeRetryLargeJson(t *testing.T) {
 		assert.Equal(t, int(p.nbuf.stat.number), 1 << 20 + 1)
 	})
 
+	t.Run("ObjectNull", func (t *testing.T)  {
+		data := "{" + strings.Repeat("\"a\":null,", 1 << 20) + "\"a\":null}"
+		p := newParser(data, 0, 0)
+		ecode := p.parse()
+		defer p.free()
+		assert.Equal(t, int(ecode), 0)
+		assert.Equal(t, int(p.Pos()), len(data))
+		assert.Equal(t, int(p.nbuf.stat.object),  1)
+		assert.Equal(t, int(p.nbuf.stat.object_keys), 1 << 20 + 1)
+		assert.Equal(t, int(p.nbuf.stat.max_depth), 1)
+	})
+
 	t.Run("Object2", func (t *testing.T)  {
 		data := "{\"top\": {" + strings.Repeat("\"a\":1,", 1 << 20) + "\"a\":1}, \"final\": true}"
 		p := newParser(data, 0, 0)

@@ -1,6 +1,7 @@
 package optdec
 
 import (
+	"fmt"
 	"reflect"
 	"unsafe"
 
@@ -174,8 +175,12 @@ func (p *Parser) JsonBytes() []byte {
 
 var nodeType = rt.UnpackType(reflect.TypeOf(node{}))
 
+//go:inline
+func calMaxNodeCap(jsonSize int) int {
+	return jsonSize / 2 + 2
+}
+
 func (p *Parser) parse() ErrorCode {
-	var offset uintptr
 	// when decode into struct, we should decode number as possible
 	old := p.options
 	if !p.isEface {
@@ -189,15 +194,22 @@ func (p *Parser) parse() ErrorCode {
 		return err
 	}
 
+	// check OoB here
+	println("retyru origin json is ", p.Json)
+	offset := p.nbuf.ncur - p.nbuf.nstart
+	curLen :=  offset / unsafe.Sizeof(node{})
+	if curLen != uintptr(len(p.nodes)) {
+		panic(fmt.Sprintf("current len: %d, real len: %d cap: %d", curLen, len(p.nodes), cap(p.nodes)))
+	}
+
 	// node buf is not enough, continue parse
 	// the maxCap is always meet all valid JSON
-	maxCap := len(p.Json) / 2 + 2 
+	maxCap := calMaxNodeCap(len(p.Json))
 	slice := rt.GoSlice{
 		Ptr: rt.Mallocgc(uintptr(maxCap) * nodeType.Size, nodeType, false),
 		Len: maxCap,
 		Cap: maxCap,
 	}
-	offset = p.nbuf.ncur - p.nbuf.nstart
 	rt.Memmove(unsafe.Pointer(slice.Ptr), unsafe.Pointer(&p.nodes[0]), offset)
 	p.backup = p.nodes
 	p.nodes = *(*[]node)(unsafe.Pointer(&slice))
