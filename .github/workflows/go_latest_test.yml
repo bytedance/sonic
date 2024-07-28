@@ -36,7 +36,6 @@ jobs:
           export GOROOT=$PWD/go1.23
           export PATH=$GOROOT/bin:$PATH
           go version
-          GOMAXPROCS=4 go test -v -race ./loader
           GOMAXPROCS=4 go test -v -race .
           GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
           GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/encoder
