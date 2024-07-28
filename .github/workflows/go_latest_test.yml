@@ -29,4 +29,15 @@ jobs:
       - name: script
         run: |
           sh ./scripts/go_latest.sh go1.23rc2
+          PWD=$(pwd)
+          export GOROOT=$PWD/go1.23rc2
+          export PATH=$GOROOT/bin:$PATH
+          go version
+          GOMAXPROCS=4 go test -v -race ./loader
+          GOMAXPROCS=4 go test -v -race .
+          GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/ast
+          GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/encoder
+          GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/decoder
+          GOMAXPROCS=4 go test -v -race github.com/bytedance/sonic/issue_test
+
 
