@@ -26,9 +26,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: script
+      - name: build go
+        run: sh ./scripts/go_latest.sh go1.23
+        continue-on-error: true
+
+      - name: test
         run: |
-          sh ./scripts/go_latest.sh go1.23
           PWD=$(pwd)
           export GOROOT=$PWD/go1.23
           export PATH=$GOROOT/bin:$PATH
