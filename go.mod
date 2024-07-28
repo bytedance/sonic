@@ -11,3 +11,5 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670
 )
+
+replace github.com/bytedance/sonic/loader => ./loader
