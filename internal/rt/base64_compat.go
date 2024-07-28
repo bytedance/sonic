@@ -1,4 +1,4 @@
-// +build !amd64 !go1.17 go1.23
+// +build !amd64 !go1.17 go1.24
 
 package rt
 
