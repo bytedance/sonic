@@ -3,7 +3,7 @@ module github.com/bytedance/sonic
 go 1.16
 
 require (
-	github.com/bytedance/sonic/loader v0.1.1
+	github.com/bytedance/sonic/loader v0.2.0
 	github.com/cloudwego/base64x v0.1.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/klauspost/cpuid/v2 v2.0.9

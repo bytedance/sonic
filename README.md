@@ -6,7 +6,7 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 
 ## Requirement
 
-- Go 1.16~1.22
+- Go 1.16~1.23
 - Linux / MacOS / Windows(need go1.17 above)
 - Amd64 ARCH
 

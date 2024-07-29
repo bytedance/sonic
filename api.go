@@ -24,7 +24,9 @@ import (
 )
 
 const (
+    // UseStdJSON indicates you are using fallback implementation (encoding/json)
 	UseStdJSON = iota
+    // UseSonicJSON indicates you are using real sonic implementation
 	UseSonicJSON
 )
 
