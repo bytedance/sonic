@@ -11,3 +11,9 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670
 )
+
+require (
+	github.com/cloudwego/iasm v0.2.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
