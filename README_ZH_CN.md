@@ -260,7 +260,7 @@ fmt.Printf("%+v", data) // {A:0 B:1}
 
 ### `Ast.Node`
 
-Sonic/ast.Node 是完全独立的 JSON 抽象语法树库。它实现了序列化和反序列化，并提供了获取和修改通用数据的鲁棒的 API。
+Sonic/ast.Node 是完全独立的 JSON 抽象语法树库。它实现了序列化和反序列化，并提供了获取和修改JSON数据的鲁棒的 API。
 
 #### 查找/索引
 
@@ -281,6 +281,19 @@ sub := root.Get("key3").Index(2).Int64() // == 3
 ```
 
 **注意**：由于 `Index()` 使用偏移量来定位数据，比使用扫描的 `Get()` 要快的多，建议尽可能的使用 `Index` 。 Sonic 也提供了另一个 API， `IndexOrGet()` ，以偏移量为基础并且也确保键的匹配。
+
+#### 查找选项
+`ast.Searcher`提供了一些选项，以满足用户的不同需求:
+```
+opts:= ast.SearchOption{CopyReturn: true…}
+Val, err:= sonic。gettwithoptions (JSON, opts， "key")
+```
+- CopyReturn
+指示搜索器复制结果JSON字符串，而不是从输入引用。如果用户缓存结果，这有助于减少内存使用
+- ConcurentRead
+因为`ast.Node`使用`Lazy-Load`设计，默认不支持并发读取。如果您想同时读取，请指定它。
+- ValidateJSON
+指示搜索器来验证整个JSON。默认情况下启用该选项, 但是对于查找速度有一定影响。
 
 #### 修改
 

@@ -34,7 +34,7 @@ func makeNodes(l int) []Node {
 func makePairs(l int) []Pair {
     r := make([]Pair, l)
     for i := 0; i < l; i++ {
-        r[i] = Pair{strconv.Itoa(i), NewBool(true)}
+        r[i] = NewPair(strconv.Itoa(i), NewBool(true))
     }
     return r
 }
@@ -53,23 +53,23 @@ func Test_linkedPairs_Push(t *testing.T) {
             name: "add empty",
             args: args{
                 in: []Pair{},
-                v: Pair{"a", NewBool(true)},
-                exp: []Pair{Pair{"a", NewBool(true)}},
+                v: NewPair("a", NewBool(true)),
+                exp: []Pair{NewPair("a", NewBool(true))},
             },
         },
         {
             name: "add one",
             args: args{
-                in: []Pair{{"a", NewBool(false)}},
-                v: Pair{"b", NewBool(true)},
-                exp: []Pair{{"a", NewBool(false)}, {"b", NewBool(true)}},
+                in: []Pair{NewPair("a", NewBool(false))},
+                v: NewPair("b", NewBool(true)),
+                exp: []Pair{NewPair("a", NewBool(false)), NewPair("b", NewBool(true))},
             },
         },
         {
             name: "add _DEFAULT_NODE_CAP",
             args: args{
                 in: makePairs(_DEFAULT_NODE_CAP),
-                v: Pair{strconv.Itoa(_DEFAULT_NODE_CAP), NewBool(true)},
+                v: NewPair(strconv.Itoa(_DEFAULT_NODE_CAP), NewBool(true)),
                 exp: makePairs(_DEFAULT_NODE_CAP+1),
             },
         },
