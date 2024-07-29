@@ -6,9 +6,9 @@
 
 ## 依赖
 
-- Go 1.16~1.22
-- Linux / MacOS / Windows（需要 Go1.17 以上）
-- Amd64 架构
+- Go: 1.17~1.23
+- OS: Linux / MacOS / Windows
+- CPU: AMD64 / ARM64（需要 Go1.20 以上）
 
 ## 接口
 

@@ -27,7 +27,7 @@ import (
 )
 
 func init() {
-    println("WARNING:(ast) sonic only supports go1.17~1.22, but your environment is not suitable")
+    println("WARNING:(ast) sonic only supports go1.17~1.23, but your environment is not suitable")
 }
 
 func quote(buf *[]byte, val string) {
