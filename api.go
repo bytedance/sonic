@@ -209,6 +209,14 @@ func Get(src []byte, path ...interface{}) (ast.Node, error) {
     return GetCopyFromString(rt.Mem2Str(src), path...)
 }
 
+//GetWithOptions searches and locates the given path from src json,
+// with specific options of ast.Searcher
+func GetWithOptions(src []byte, opts ast.SearchOptions, path ...interface{}) (ast.Node, error) {
+    s := ast.NewSearcher(rt.Mem2Str(src))
+    s.SearchOptions = opts
+    return s.GetByPath(path...)
+}
+
 // GetFromString is same with Get except src is string.
 //
 // WARNING: The returned JSON is **Referenced** from the input. 
