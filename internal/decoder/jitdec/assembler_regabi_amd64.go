@@ -1105,15 +1105,16 @@ func (self *_Assembler) unmarshal_func(t reflect.Type, fn obj.Addr, deref bool) 
     self.Emit("MOVQ" , _ARG_sv_p, _CX)          // MOVQ    sv.p, CX
     self.Emit("MOVQ" , _ARG_sv_n, _DI)          // MOVQ    sv.n, DI
     self.call_go(fn)                            // CALL_GO ${fn}
-    self.Emit("CMPQ", _ET, _I_json_MismatchTypeError)          // check if MismatchedError
-    self.Sjmp("JNE" , "_check_error_{n}")                
+    self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
+    self.Sjmp("JZ"  , "_unmarshal_func_end_{n}")               // JNZ     _error
+    self.Emit("MOVQ", _I_json_MismatchTypeError, _CX)             // MOVQ    ET, VAR.et
+    self.Emit("CMPQ", _ET, _CX)          // check if MismatchedError
+    self.Sjmp("JNE" , _LB_error)                
     self.Emit("MOVQ", jit.Type(t), _CX)        // store current type 
     self.Emit("MOVQ", _CX, _VAR_et)             // store current type 
     self.Emit("MOVQ", _VAR_ic, _IC)             // recover the pos
     self.Emit("XORL", _ET, _ET)
-    self.Link("_check_error_{n}")
-    self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
-    self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
+    self.Link("_unmarshal_func_end_{n}")
 }
 
 /** Dynamic Decoding Routine **/
