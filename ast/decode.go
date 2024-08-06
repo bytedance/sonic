@@ -29,8 +29,10 @@ import (
 // Hack: this is used for both checking space and cause firendly compile errors in 32-bit arch.
 const _Sonic_Not_Support_32Bit_Arch__Checking_32Bit_Arch_Here = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
 
+var bytesNull   = []byte("null")
+
 const (
-    bytesNull   = "null"
+    strNull   = "null"
     bytesTrue   = "true"
     bytesFalse  = "false"
     bytesObject = "{}"
@@ -64,7 +66,7 @@ func decodeNull(src string, pos int) (ret int) {
     if ret > len(src) {
         return -int(types.ERR_EOF)
     }
-    if src[pos:ret] == bytesNull {
+    if src[pos:ret] == strNull {
         return ret
     } else {
         return -int(types.ERR_INVALID_CHAR)
