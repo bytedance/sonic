@@ -972,11 +972,13 @@ var (
 
 var (
     _F_decodeJsonUnmarshaler obj.Addr
+    _F_decodeJsonUnmarshalerQuoted obj.Addr
     _F_decodeTextUnmarshaler obj.Addr
 )
 
 func init() {
     _F_decodeJsonUnmarshaler = jit.Func(decodeJsonUnmarshaler)
+    _F_decodeJsonUnmarshalerQuoted = jit.Func(decodeJsonUnmarshalerQuoted)
     _F_decodeTextUnmarshaler = jit.Func(decodeTextUnmarshaler)
 }
 
@@ -1061,14 +1063,15 @@ var (
     _F_skip_number = jit.Imm(int64(native.S_skip_number))
 )
 
-func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool) {
+func (self *_Assembler) unmarshal_json(t reflect.Type, deref bool, f obj.Addr) {
     self.call_sf(_F_skip_one)                                   // CALL_SF   skip_one
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ     AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)                     // JS        _parse_error_v
+    self.Emit("MOVQ", _IC, _VAR_ic)                             // store for mismatche error skip
     self.slice_from_r(_AX, 0)                                   // SLICE_R   AX, $0
     self.Emit("MOVQ" , _DI, _ARG_sv_p)                          // MOVQ      DI, sv.p
     self.Emit("MOVQ" , _SI, _ARG_sv_n)                          // MOVQ      SI, sv.n
-    self.unmarshal_func(t, _F_decodeJsonUnmarshaler, deref)     // UNMARSHAL json, ${t}, ${deref}
+    self.unmarshal_func(t, f, deref)     // UNMARSHAL json, ${t}, ${deref}
 }
 
 func (self *_Assembler) unmarshal_text(t reflect.Type, deref bool) {
@@ -1103,7 +1106,15 @@ func (self *_Assembler) unmarshal_func(t reflect.Type, fn obj.Addr, deref bool) 
     self.Emit("MOVQ" , _ARG_sv_n, _DI)          // MOVQ    sv.n, DI
     self.call_go(fn)                            // CALL_GO ${fn}
     self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
-    self.Sjmp("JNZ"  , _LB_error)               // JNZ     _error
+    self.Sjmp("JZ"  , "_unmarshal_func_end_{n}")               // JNZ     _error
+    self.Emit("MOVQ", _I_json_MismatchTypeError, _CX)             // MOVQ    ET, VAR.et
+    self.Emit("CMPQ", _ET, _CX)          // check if MismatchedError
+    self.Sjmp("JNE" , _LB_error)                
+    self.Emit("MOVQ", jit.Type(t), _CX)        // store current type 
+    self.Emit("MOVQ", _CX, _VAR_et)             // store current type 
+    self.Emit("MOVQ", _VAR_ic, _IC)             // recover the pos
+    self.Emit("XORL", _ET, _ET)
+    self.Link("_unmarshal_func_end_{n}")
 }
 
 /** Dynamic Decoding Routine **/
@@ -1774,11 +1785,19 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_unmarshal(p *_Instr) {
-    self.unmarshal_json(p.vt(), true)
+    if iv := p.i64(); iv != 0 {
+        self.unmarshal_json(p.vt(), true, _F_decodeJsonUnmarshalerQuoted)
+    } else {
+        self.unmarshal_json(p.vt(), true, _F_decodeJsonUnmarshaler)
+    }
 }
 
 func (self *_Assembler) _asm_OP_unmarshal_p(p *_Instr) {
-    self.unmarshal_json(p.vt(), false)
+    if iv := p.i64(); iv != 0 {
+        self.unmarshal_json(p.vt(), false, _F_decodeJsonUnmarshalerQuoted)
+    } else {
+        self.unmarshal_json(p.vt(), false, _F_decodeJsonUnmarshaler)
+    }
 }
 
 func (self *_Assembler) _asm_OP_unmarshal_text(p *_Instr) {
