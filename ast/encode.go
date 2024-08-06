@@ -91,6 +91,10 @@ func quoteString(e *[]byte, s string) {
 var bytesPool   = sync.Pool{}
 
 func (self *Node) MarshalJSON() ([]byte, error) {
+	if self == nil {
+		return bytesNull, nil
+	}
+
     buf := newBuffer()
     err := self.encode(buf)
     if err != nil {
@@ -159,7 +163,7 @@ func (self *Node) encodeRaw(buf *[]byte) error {
 }
 
 func (self *Node) encodeNull(buf *[]byte) error {
-    *buf = append(*buf, bytesNull...)
+    *buf = append(*buf, strNull...)
     return nil
 }
 
