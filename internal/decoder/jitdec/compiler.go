@@ -563,6 +563,11 @@ func (self *_Compiler) checkMarshaler(p *_Program, vt reflect.Type, flags int, e
         return true
     }
 
+    if flags == checkMarshalerFlags_quoted {
+        // text marshaler shouldn't be supported for quoted string
+        return false
+    }
+
     /* check for `encoding.TextMarshaler` with pointer receiver */
     if pt.Implements(encodingTextUnmarshalerType) {
         if exec {
@@ -972,7 +977,7 @@ func (self *_Compiler) compileStructFieldStrUnmarshal(p *_Program, vt reflect.Ty
 }
 
 func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Type) {
-    // according to std, Unmarshaler should be called before stringize
+    // according to std, json.Unmarshaler should be called before stringize
     // see https://github.com/bytedance/sonic/issues/670
     if self.checkMarshaler(p, vt, checkMarshalerFlags_quoted, false) {
         self.compileStructFieldStrUnmarshal(p, vt)
