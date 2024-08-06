@@ -34,7 +34,6 @@ type compiler struct {
 	counts  int
 	opts 	option.CompileOptions
 	namedPtr bool
-	
 }
 
 func newCompiler() *compiler {
@@ -114,7 +113,7 @@ func (c *compiler) compile(vt reflect.Type) decFunc {
 		}
 	}
 
-	dec := c.tryCompilePtrUnmarshaler(vt)
+	dec := c.tryCompilePtrUnmarshaler(vt, false)
 	if dec != nil {
 		return dec
 	}
@@ -420,22 +419,31 @@ func (c *compiler) compileMapKey(vt reflect.Type) decKey {
 }
 
 // maybe vt is a named type, and not a pointer receiver, see issue 379  
-func (c *compiler) tryCompilePtrUnmarshaler(vt reflect.Type) decFunc {
+func (c *compiler) tryCompilePtrUnmarshaler(vt reflect.Type, strOpt bool) decFunc {
 	pt := reflect.PtrTo(vt)
 
 	/* check for `json.Unmarshaler` with pointer receiver */
 	if pt.Implements(jsonUnmarshalerType) {
 		return &unmarshalJSONDecoder{
 			typ: rt.UnpackType(pt),
+			strOpt: strOpt,
 		}
 	}
 
 	/* check for `encoding.TextMarshaler` with pointer receiver */
 	if pt.Implements(encodingTextUnmarshalerType) {
+		/* TextUnmarshal not support ,strig tag */
+		if strOpt {
+			panicForInvalidStrType(vt)
+		}
 		return &unmarshalTextDecoder{
 			typ: rt.UnpackType(pt),
 		}
 	}
 
 	return nil
+}
+
+func panicForInvalidStrType(vt reflect.Type) {
+	panic(error_type(rt.UnpackType(vt)))
 }

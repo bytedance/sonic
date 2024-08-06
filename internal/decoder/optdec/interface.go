@@ -131,7 +131,8 @@ func (d *unmarshalTextDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *contex
 }
 
 type unmarshalJSONDecoder struct {
-	typ *rt.GoType
+	typ 	*rt.GoType
+	strOpt	bool
 }
 
 func (d *unmarshalJSONDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
@@ -140,15 +141,28 @@ func (d *unmarshalJSONDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *contex
 		Value: vp,
 	}))
 
+	var input []byte
+	if d.strOpt && node.IsNull() {
+		input = []byte("null")
+	} else if d.strOpt {
+		s, ok := node.AsStringText(ctx)
+		if !ok {
+			return error_mismatch(node, ctx, d.typ.Pack())
+		}
+		input = s
+	} else {
+		input = []byte(node.AsRaw(ctx))
+	}
+
 	// fast path
 	if u, ok :=  v.(json.Unmarshaler); ok {
-		return u.UnmarshalJSON([]byte(node.AsRaw(ctx)))
+		return u.UnmarshalJSON((input))
 	}
 
 	// slow path
 	rv := reflect.ValueOf(v)
 	if u, ok := rv.Interface().(json.Unmarshaler); ok {
-		return u.UnmarshalJSON([]byte(node.AsRaw(ctx)))
+		return u.UnmarshalJSON(input)
 	}
 
 	return error_type(d.typ)

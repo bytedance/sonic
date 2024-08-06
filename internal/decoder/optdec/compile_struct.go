@@ -39,7 +39,43 @@ func (c *compiler) compileIntStringOption(vt reflect.Type) decFunc {
 	panic("unreachable")
 }
 
+func isInteger(vt reflect.Type) bool {
+	switch vt.Kind() {
+		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr, reflect.Int: return true
+		default: return false
+	}
+}
+
+func (c *compiler) assertStringOptTypes(vt reflect.Type) {
+	if c.depth > _CompileMaxDepth {
+		panic(*stackOverflow)
+	}
+
+	c.depth += 1
+	defer func ()  {
+		c.depth -= 1
+	}()
+
+	if isInteger(vt) {
+		return
+	}
+
+	switch vt.Kind() {
+	case reflect.String, reflect.Bool, reflect.Float32, reflect.Float64:
+		return
+	case reflect.Ptr: c.assertStringOptTypes(vt.Elem())
+	default:
+		panicForInvalidStrType(vt)
+	}
+}
+
 func (c *compiler) compileFieldStringOption(vt reflect.Type) decFunc {
+	c.assertStringOptTypes(vt)
+	unmDec := c.tryCompilePtrUnmarshaler(vt, true)
+	if unmDec != nil { 
+		return unmDec
+	} 
+
 	switch vt.Kind() {
 	case reflect.String:
 		if vt == jsonNumberType {
@@ -80,7 +116,8 @@ func (c *compiler) compileFieldStringOption(vt reflect.Type) decFunc {
 			deref: c.compileFieldStringOption(vt.Elem()),
 		}
 	default:
-		panic("string options should appliy only to fields of string, floating point, integer, or boolean types.")
+		panicForInvalidStrType(vt)
+		return nil
 	}
 }
 
