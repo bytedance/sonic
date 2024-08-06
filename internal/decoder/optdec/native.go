@@ -195,7 +195,6 @@ func (p *Parser) parse() ErrorCode {
 	}
 
 	// check OoB here
-	println("retyru origin json is ", p.Json)
 	offset := p.nbuf.ncur - p.nbuf.nstart
 	curLen :=  offset / unsafe.Sizeof(node{})
 	if curLen != uintptr(len(p.nodes)) {
