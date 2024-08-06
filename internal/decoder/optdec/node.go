@@ -46,16 +46,11 @@ func (s *bounedStack) Pop() (unsafe.Pointer, int, bool){
 	isObj := (s.stack[s.index].remain & (uint64(1) << 63)) != 0
 	s.stack[s.index].con = nil
 	s.stack[s.index].remain = 0
-	//println("pop inex is ", s.index, " len is ", len(s.stack), " p is ", con, " isobj ", isObj,  " remain is ", remain)
 	return con, int(remain), isObj
 }
 
 //go:nosplit
 func (s *bounedStack) Push(p unsafe.Pointer, remain int, isObj bool) {
-	//println("push inex is ", s.index, " len is ", len(s.stack), " p is ", p, " isobj ", isObj, " remain is ", remain)
-	// if s.index >= len(s.stack) {
-	// 	panic("slice len")
-	// }
 	s.stack[s.index].con = p
 	s.stack[s.index].remain = uint64(remain)
 	if isObj {
@@ -1034,7 +1029,6 @@ _object_key:
 			val = newSp
 			isObj = false
 			size = newSize
-			////println("new array size is ", newSize)
 			goto _arr_val;
 		case KStringCommon:
 			ctx.efacePool.ConvTstring(node.StringRef(ctx), val)
@@ -1084,7 +1078,6 @@ _object_key:
 		goto _object_key;
 	} else {
 		val = rt.PtrAdd(parent, rt.AnyType.Size)
-		//println("parent1 is ", parent, "val is ", val)
 		goto _arr_val;
 	}
 
@@ -1158,7 +1151,6 @@ _arr_val:
 
 	// check size 
 	size -= 1
-	////println("remain arr size is ", size)
 	if size != 0 {
 		val = rt.PtrAdd(val, rt.AnyType.Size)
 		goto _arr_val;
@@ -1166,9 +1158,6 @@ _arr_val:
 
 
 	parent, size, isObj = ctx.Stack.Pop()
-
-
-	////println("parent is  ", parent, "remain is ", size, " is obj ", isObj)
 
 	// parent is empty
 	if parent == nil {
@@ -1189,7 +1178,6 @@ _arr_val:
 		goto _object_key;
 	} else {
 		val = rt.PtrAdd(parent, rt.AnyType.Size)
-		//println("parent2 is ", parent, "val is ", val)
 		goto _arr_val;
 	}
 }

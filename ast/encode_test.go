@@ -120,7 +120,23 @@ func TestEncodeValue(t *testing.T) {
     }
 }
 
+func BenchmarkNil(b *testing.B) {
+	for i:=0; i<b.N; i++ {
+		null := (*Node)(nil)
+		_, _ = null.MarshalJSON()
+	}
+}
+
 func TestEncodeNode(t *testing.T) {
+	null := (*Node)(nil)
+	js, err := null.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(js) != "null" {
+		t.Fatal(string(js))
+	}
+
     data := `{"a":[{},[],-0.1,true,false,null,""],"b":0,"c":true,"d":false,"e":null,"g":""}`
     root, e := NewSearcher(data).GetByPath()
     if e != nil {
