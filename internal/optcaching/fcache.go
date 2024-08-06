@@ -236,9 +236,7 @@ func (self *NormalFieldMap) getCaseInsensitive(name string) int {
 	offset := int(*(*int32)(unsafe.Pointer(uintptr(p) + uintptr(5 * len(name) + 1)))) + self.lowOffset
 	for i := 0; i < cnt; i++ {
 		key := rt.Mem2Str(self.keys[offset: offset + len(name)])
-		println("compare with loer is ---> ket is ", key, lower)
 		if key == lower {
-			println("compare with loer is ---> ket is inde is ", key, lower, int(self.keys[offset + len(name)]))
 			return int(self.keys[offset + len(name)])
 		}
 		offset += len(name) + 1

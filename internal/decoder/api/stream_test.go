@@ -308,7 +308,6 @@ func BenchmarkDecodeStream_Sonic(b *testing.B) {
         var str = _Double_JSON + strings.Repeat(" ", int(DefaultBufferSize-10)) + _Double_JSON
         b.ResetTimer()
         for i:=0; i<b.N; i++ {
-            // println("loop")
             var r1 = strings.NewReader(str)
             var v1 map[string]interface{}
             dc := NewStreamDecoder(r1)
@@ -334,7 +333,6 @@ func BenchmarkDecodeStream_Sonic(b *testing.B) {
     b.Run("small", func (b *testing.B) {
         var str = _SMALL_JSON
         for i:=0; i<b.N; i++ {
-            // println("one loop")
             var r1 = strings.NewReader(str)
             var v1 interface{}
             dc := NewStreamDecoder(r1)

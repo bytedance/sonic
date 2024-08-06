@@ -67,25 +67,16 @@ func NewStreamDecoder(r io.Reader) *StreamDecoder {
 func (self *StreamDecoder) Decode(val interface{}) (err error) {
     // read more data into buf
     if self.More() {
-        // println(string(self.buf))
         var s = self.scanp
     try_skip:
         var e = len(self.buf)
-        // println("s:", s, "e:", e, "scanned:",self.scanned, "scanp:",self.scanp, self.buf)
         var src = rt.Mem2Str(self.buf[s:e])
-        // if len(src) > 5 {
-        //     println(src[:5], src[len(src)-5:])
-        // } else {
-        //     println(src)
-        // }
         // try skip
         var x = 0;
         if y := native.SkipOneFast(&src, &x); y < 0 {
             if self.readMore()  {
-                // println("more")
                 goto try_skip
             } else {
-                // println("no more")
                 err = SyntaxError{e, self.s, types.ParsingError(-s), ""}
                 self.setErr(err)
                 return
@@ -95,7 +86,6 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
             e = x + s
         }
         
-        // println("decode: ", s, e)
         // must copy string here for safety
         self.Decoder.Reset(string(self.buf[s:e]))
         err = self.Decoder.Decode(val)
@@ -107,13 +97,11 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
         self.scanp = e
         _, empty := self.scan()
         if empty {
-            // println("recycle")
             // no remain valid bytes, thus we just recycle buffer
             mem := self.buf
             self.buf = nil
             freeBytes(mem)
         } else {
-            // println("keep")
             // remain undecoded bytes, move them onto head
             n := copy(self.buf, self.buf[self.scanp:])
             self.buf = self.buf[:n]
@@ -129,7 +117,6 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
 // InputOffset returns the input stream byte offset of the current decoder position. 
 // The offset gives the location of the end of the most recently returned token and the beginning of the next token.
 func (self *StreamDecoder) InputOffset() int64 {
-    // println("input offset",self.scanned, self.scanp)
     return self.scanned + int64(self.scanp)
 }
 
@@ -243,12 +230,10 @@ func realloc(buf *[]byte) bool {
     l := uint(len(*buf))
     c := uint(cap(*buf))
     if c == 0 {
-        // println("use pool!")
        *buf = bufPool.Get().([]byte)
        return true
     }
     if c - l <= c >> minLeftBufferShift {
-        // println("realloc!")
         e := l+(l>>minLeftBufferShift)
         if e <= c {
             e = c*2
