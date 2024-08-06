@@ -271,6 +271,13 @@ func newInsVt(op _Op, vt reflect.Type) _Instr {
     }
 }
 
+func newInsVtI(op _Op, vt reflect.Type, iv int) _Instr {
+    return _Instr {
+        u: packOp(op) | rt.PackInt(iv),
+        p: unsafe.Pointer(rt.UnpackType(vt)),
+    }
+}
+
 func newInsVf(op _Op, vf *caching.FieldMap) _Instr {
     return _Instr {
         u: packOp(op),
@@ -452,6 +459,10 @@ func (self *_Program) rtt(op _Op, vt reflect.Type) {
     *self = append(*self, newInsVt(op, vt))
 }
 
+func (self *_Program) rtti(op _Op, vt reflect.Type, iv int) {
+    *self = append(*self, newInsVtI(op, vt, iv))
+}
+
 func (self *_Program) fmv(op _Op, vf *caching.FieldMap) {
     *self = append(*self, newInsVf(op, vf))
 }
@@ -527,35 +538,49 @@ func (self *_Compiler) compile(vt reflect.Type) (ret _Program, err error) {
     return
 }
 
-func (self *_Compiler) checkMarshaler(p *_Program, vt reflect.Type) bool {
+const (
+    checkMarshalerFlags_quoted = 1
+)
+
+func (self *_Compiler) checkMarshaler(p *_Program, vt reflect.Type, flags int, exec bool) bool {
     pt := reflect.PtrTo(vt)
 
     /* check for `json.Unmarshaler` with pointer receiver */
     if pt.Implements(jsonUnmarshalerType) {
-        p.rtt(_OP_unmarshal_p, pt)
+        if exec {
+            p.add(_OP_lspace)
+            p.rtti(_OP_unmarshal_p, pt, flags)
+        }
         return true
     }
 
     /* check for `json.Unmarshaler` */
     if vt.Implements(jsonUnmarshalerType) {
-        p.add(_OP_lspace)
-        self.compileUnmarshalJson(p, vt)
+        if exec {
+            p.add(_OP_lspace)
+            self.compileUnmarshalJson(p, vt, flags)
+        }
         return true
     }
 
     /* check for `encoding.TextMarshaler` with pointer receiver */
     if pt.Implements(encodingTextUnmarshalerType) {
-        p.add(_OP_lspace)
-        self.compileUnmarshalTextPtr(p, pt)
+        if exec {
+            p.add(_OP_lspace)
+            self.compileUnmarshalTextPtr(p, pt, flags)
+        }
         return true
     }
 
     /* check for `encoding.TextUnmarshaler` */
     if vt.Implements(encodingTextUnmarshalerType) {
-        p.add(_OP_lspace)
-        self.compileUnmarshalText(p, vt)
+        if exec {
+            p.add(_OP_lspace)
+            self.compileUnmarshalText(p, vt, flags)
+        }
         return true
     }
+
     return false
 }
 
@@ -567,7 +592,7 @@ func (self *_Compiler) compileOne(p *_Program, sp int, vt reflect.Type) {
         return
     }
 
-    if self.checkMarshaler(p, vt) {
+    if self.checkMarshaler(p, vt, 0, true) {
         return
     }
 
@@ -690,7 +715,7 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
 
     /* dereference all the way down */
     for et.Kind() == reflect.Ptr {
-        if self.checkMarshaler(p, et) {
+        if self.checkMarshaler(p, et, 0, true) {
             return
         }
         et = et.Elem()
@@ -938,7 +963,22 @@ end_of_object:
     p.pin(skip)
 }
 
+func (self *_Compiler) compileStructFieldStrUnmarshal(p *_Program, vt reflect.Type) {
+    p.add(_OP_lspace)
+    n0 := p.pc()
+    p.add(_OP_is_null)
+    self.checkMarshaler(p, vt, checkMarshalerFlags_quoted, true)
+    p.pin(n0)
+}
+
 func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Type) {
+    // according to std, Unmarshaler should be called before stringize
+    // see https://github.com/bytedance/sonic/issues/670
+    if self.checkMarshaler(p, vt, checkMarshalerFlags_quoted, false) {
+        self.compileStructFieldStrUnmarshal(p, vt)
+        return
+    }
+
     n1 := -1
     ft := vt
     sv := false
@@ -1106,7 +1146,7 @@ func (self *_Compiler) compileUnmarshalEnd(p *_Program, vt reflect.Type, i int) 
     p.pin(j)
 }
 
-func (self *_Compiler) compileUnmarshalJson(p *_Program, vt reflect.Type) {
+func (self *_Compiler) compileUnmarshalJson(p *_Program, vt reflect.Type, flags int) {
     i := p.pc()
     v := _OP_unmarshal
     p.add(_OP_is_null)
@@ -1117,11 +1157,11 @@ func (self *_Compiler) compileUnmarshalJson(p *_Program, vt reflect.Type) {
     }
 
     /* call the unmarshaler */
-    p.rtt(v, vt)
+    p.rtti(v, vt, flags)
     self.compileUnmarshalEnd(p, vt, i)
 }
 
-func (self *_Compiler) compileUnmarshalText(p *_Program, vt reflect.Type) {
+func (self *_Compiler) compileUnmarshalText(p *_Program, vt reflect.Type, iv int) {
     i := p.pc()
     v := _OP_unmarshal_text
     p.add(_OP_is_null)
@@ -1134,15 +1174,15 @@ func (self *_Compiler) compileUnmarshalText(p *_Program, vt reflect.Type) {
     }
 
     /* call the unmarshaler */
-    p.rtt(v, vt)
+    p.rtti(v, vt, iv)
     self.compileUnmarshalEnd(p, vt, i)
 }
 
-func (self *_Compiler) compileUnmarshalTextPtr(p *_Program, vt reflect.Type) {
+func (self *_Compiler) compileUnmarshalTextPtr(p *_Program, vt reflect.Type, iv int) {
     i := p.pc()
     p.add(_OP_is_null)
     p.chr(_OP_match_char, '"')
-    p.rtt(_OP_unmarshal_text_p, vt)
+    p.rtti(_OP_unmarshal_text_p, vt, iv)
     p.pin(i)
 }
 

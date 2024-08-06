@@ -127,31 +127,40 @@ func (self *Compiler) compileOne(p *ir.Program, sp int, vt reflect.Type, pv bool
 	}
 }
 
-func (self *Compiler) compileRec(p *ir.Program, sp int, vt reflect.Type, pv bool) {
-	pr := self.pv
+func (self *Compiler) tryCompileMarshaler(p *ir.Program, vt reflect.Type, pv bool) bool {
 	pt := reflect.PtrTo(vt)
 
 	/* check for addressable `json.Marshaler` with pointer receiver */
 	if pv && pt.Implements(vars.JsonMarshalerType) {
 		addMarshalerOp(p, ir.OP_marshal_p, pt, vars.JsonMarshalerType)
-		return
+		return true
 	}
 
 	/* check for `json.Marshaler` */
 	if vt.Implements(vars.JsonMarshalerType) {
 		self.compileMarshaler(p, ir.OP_marshal, vt, vars.JsonMarshalerType)
-		return
+		return true
 	}
 
 	/* check for addressable `encoding.TextMarshaler` with pointer receiver */
 	if pv && pt.Implements(vars.EncodingTextMarshalerType) {
 		addMarshalerOp(p, ir.OP_marshal_text_p, pt, vars.EncodingTextMarshalerType)
-		return
+		return true
 	}
 
 	/* check for `encoding.TextMarshaler` */
 	if vt.Implements(vars.EncodingTextMarshalerType) {
 		self.compileMarshaler(p, ir.OP_marshal_text, vt, vars.EncodingTextMarshalerType)
+		return true
+	}
+
+	return false
+}
+
+func (self *Compiler) compileRec(p *ir.Program, sp int, vt reflect.Type, pv bool) {
+	pr := self.pv
+
+	if self.tryCompileMarshaler(p, vt, pv) {
 		return
 	}
 
@@ -485,6 +494,12 @@ func (self *Compiler) compileStructBody(p *ir.Program, sp int, vt reflect.Type) 
 }
 
 func (self *Compiler) compileStructFieldStr(p *ir.Program, sp int, vt reflect.Type) {
+	// NOTICE: according to encoding/json, Marshaler type has higher priority than string option
+	// see issue: 
+	if self.tryCompileMarshaler(p, vt, self.pv) {
+		return
+	}
+
 	pc := -1
 	ft := vt
 	sv := false
