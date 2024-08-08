@@ -1,5 +1,3 @@
-// +build !amd64,!arm64 go1.24 !go1.17 arm64,!go1.20
-
 /*
 * Copyright 2023 ByteDance Inc.
 *
@@ -28,10 +26,6 @@ import (
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/bytedance/sonic/option`
 )
-
-func init() {
-     println("WARNING: sonic/decoder only supports (Go1.17~1.23 && CPU amd64) or (go1.20~1.23 && CPU arm64), but your environment is not suitable")
-}
 
 const (
      _F_use_int64       = 0
