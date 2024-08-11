@@ -30,7 +30,6 @@ jobs:
         run: |
           export SONIC_NO_ASYNC_GC=1
           export SONIC_BENCH_SINGLE=1
-          ./scripts/bench.py -c -t 0.05 "go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Encoder|Decoder)_(Generic|Binding)_Sonic' ./..."
+          ./scripts/bench.py -c -t 0.05 "go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Encoder|Decoder)_(Generic|Binding)_Sonic' ./decoder"
           ./scripts/bench.py -c -t 0.05 "go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast"
-          cd ./generic_test
-          ../scripts/bench.py -c -t 0.05 "go test -run ^$ -count=10 -benchmem -bench 'Benchmark' ."
+          ./scripts/bench.py -c -t 0.05 "go test -run ^$ -count=10 -benchmem -bench 'Benchmark' ./generic_test"
