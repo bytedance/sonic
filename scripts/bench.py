@@ -166,6 +166,7 @@ def bench_diff(main, target, threshold=0.05):
 def main():
     argparser = argparse.ArgumentParser(description='Tools to test the performance. Example: ./bench.py "go test -bench=. ./..."')
     argparser.add_argument('cmd', type=str, help='Golang benchmark command')
+    argparser.add_argument('-d', type=str, dest='diff', help='diff bench')
     argparser.add_argument('-t', type=float, dest='threshold', default=0.1, help='diff bench threshold')
     argparser.add_argument('-c', '--compare', dest='compare', action='store_true',
         help='Compare the current branch with the main branch')
@@ -173,6 +174,9 @@ def main():
 
     if args.compare:
         compare(args)
+    elif args.diff:
+        target, base = args.diff.split(',')
+        bench_diff(target, base, args.threshold)
     else:
         run_bench(args, "target")
 
