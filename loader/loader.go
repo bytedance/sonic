@@ -35,3 +35,26 @@ type Loader struct {
     File string // file name
     Options 
 }
+
+ // LoadFuncs loads only one function as module, and returns the function pointer
+ //   - text: machine code
+ //   - funcName: function name
+ //   - frameSize: stack frame size. 
+ //   - argSize: argument total size (in bytes)
+ //   - argPtrs: indicates if a slot (8 Bytes) of arguments memory stores pointer, from low to high
+ //   - localPtrs: indicates if a slot (8 Bytes) of local variants memory stores pointer, from low to high
+ // 
+ // WARN: 
+ //   - the function MUST has fixed SP offset equaling to this, otherwise it go.gentraceback will fail
+ //   - the function MUST has only one stack map for all arguments and local variants
+ func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize int, argPtrs []bool, localPtrs []bool) Function {
+    panic("this is a fallback path, not implemented")
+ }
+ 
+ // Load loads given machine codes and corresponding function information into go moduledata
+ // and returns runnable function pointer
+ // WARN: this API is experimental, use it carefully
+ func Load(text []byte, funcs []Func, modulename string, filenames []string) (out []Function) {
+    panic("this is a fallback path, not implemented")
+ }
+ 
