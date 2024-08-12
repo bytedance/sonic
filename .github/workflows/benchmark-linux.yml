@@ -32,7 +32,6 @@ jobs:
           export SONIC_BENCH_SINGLE=1
           go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Encoder|Decoder)_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target.out
           go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target.out
-          go test -run ^$ -count=5 -benchmem -bench 'Benchmark' ./generic_test >> /var/tmp/sonic_bench_target.out
 
       - name: Checkout main
         uses: actions/checkout@v2
@@ -45,7 +44,6 @@ jobs:
           export SONIC_BENCH_SINGLE=1
           go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Encoder|Decoder)_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_main.out
           go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_main.out
-          go test -run ^$ -count=5 -benchmem -bench 'Benchmark' ./generic_test >> /var/tmp/sonic_bench_main.out
 
       - name: Diff bench
         run: ./scripts/bench.py -t 0.05 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
