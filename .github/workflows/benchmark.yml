@@ -1,4 +1,4 @@
-name: Benchmark Linux-X64
+name: Benchmark
 
 on: pull_request
 
@@ -32,6 +32,9 @@ jobs:
           export SONIC_BENCH_SINGLE=1
           go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Encoder|Decoder)_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target.out
           go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target.out
+
+      - name: Clear repository
+        run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
 
       - name: Checkout main
         uses: actions/checkout@v2
