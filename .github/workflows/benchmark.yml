@@ -49,4 +49,7 @@ jobs:
           go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_main.out
 
       - name: Diff bench
-        run: ./scripts/bench.py -t 0.05 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
+        run: |
+          go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat
+          benchstat -format=csv /var/tmp/sonic_bench_target.out /var/tmp/sonic_bench_main.out
+      #   run: ./scripts/bench.py -t 0.05 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
