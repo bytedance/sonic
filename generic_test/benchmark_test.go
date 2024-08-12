@@ -33,6 +33,7 @@ import (
 var (
     validFlag = os.Getenv("SONIC_VALID_GENERIC_BENCH")  != ""
     pretouchFlag = os.Getenv("SONIC_NO_PRETOUCH_BENCH") == ""
+    benchSingle = os.Getenv("SONIC_BENCH_SINGLE") != ""
 )
 
 type jsonLibEntry struct {
@@ -49,6 +50,15 @@ var jsonLibs = []jsonLibEntry {
     {"GoJson", gojson.Marshal, gojson.Unmarshal},
     {"JsonIter", jsoniter.Marshal, jsoniter.Unmarshal},
     {"JsonIterStd", jsoniter.ConfigCompatibleWithStandardLibrary.Marshal, jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal},
+}
+
+func init() {
+    if benchSingle {
+        jsonLibs = []jsonLibEntry {
+            {"Sonic", sonic.Marshal, sonic.Unmarshal},
+            {"SonicStd", sonic.ConfigStd.Marshal, sonic.ConfigStd.Unmarshal},
+        }
+    }
 }
 
 func BenchmarkUnmarshalConcrete(b *testing.B)     { 

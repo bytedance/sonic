@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import csv
+import io
 import tempfile
 import os
 import subprocess
@@ -81,10 +83,6 @@ def compare(args):
 
     # benchmark main branch
     main = run_bench(args, "main")
-
-    # diff the result
-    # benchstat = "go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat"
-    run( "benchstat %s %s"%(main, target))
     run("git checkout -- .")
 
     # restore branch
@@ -92,6 +90,9 @@ def compare(args):
         run("git checkout %s"%(current_branch))
         
     run("patch -p1 < %s" % (diff))
+    
+    # diff the result
+    bench_diff(main, target, args.threshold)
     return target
 
 def run_bench(args, name):
@@ -99,16 +100,83 @@ def run_bench(args, name):
     run("%s 2>&1 | tee %s" %(args.cmd, fname))
     return fname
 
+def bench_diff(main, target, threshold=0.05):
+    run("go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat")
+    csv_content = run_s( "benchstat -format=csv %s %s"%(main, target))
+    print("benchstat: %s"%csv_content)
+    
+    # filter out invalid lines
+    valid_headers = {',sec/op,CI,sec/op,CI,vs base,P', ',B/s,CI,B/s,CI,vs base,P'}
+    valid_blocks = []
+    current_block = []
+    parsing = False
+
+    # Filter out valid CSV blocks
+    for line in csv_content.splitlines():
+        if line in valid_headers:
+            if current_block:
+                valid_blocks.append('\n'.join(current_block))
+            current_block = [line]
+            parsing = True
+        elif parsing:
+            if line.strip() == '':
+                parsing = False
+                if current_block:
+                    valid_blocks.append('\n'.join(current_block))
+                current_block = []
+            else:
+                current_block.append(line)
+
+    if current_block:
+        valid_blocks.append('\n'.join(current_block))
+        
+    # Parse each valid CSV block
+    significant_decline = []
+    for block in valid_blocks:
+        csv_reader = csv.DictReader(io.StringIO(block))
+        for row in csv_reader:
+            benchmark = row['']
+            vs_base = row['vs base']
+            if benchmark == 'geomean':
+                continue
+            
+            # Skip rows without a valid "vs base" value
+            if not vs_base or vs_base == '~':
+                continue
+
+            # Convert "vs base" to a float percentage
+            try:
+                vs_base_percentage = float(vs_base.strip('%')) / 100
+            except ValueError:
+                continue
+
+            # Check if the decline is significant
+            if vs_base_percentage < 0 and -vs_base_percentage > threshold:
+                significant_decline.append({
+                    'benchmark': benchmark,
+                    'vs_base': vs_base_percentage
+                })
+
+    if significant_decline:
+        print("found significant decline! %s %f"%(significant_decline[0]['benchmark'], significant_decline[0]['vs_base']))
+        exit(2)
+        
+    return
 
 def main():
     argparser = argparse.ArgumentParser(description='Tools to test the performance. Example: ./bench.py "go test -bench=. ./..."')
     argparser.add_argument('cmd', type=str, help='Golang benchmark command')
+    argparser.add_argument('-d', type=str, dest='diff', help='diff bench')
+    argparser.add_argument('-t', type=float, dest='threshold', default=0.1, help='diff bench threshold')
     argparser.add_argument('-c', '--compare', dest='compare', action='store_true',
         help='Compare the current branch with the main branch')
     args = argparser.parse_args()
 
     if args.compare:
         compare(args)
+    elif args.diff:
+        target, base = args.diff.split(',')
+        bench_diff(target, base, args.threshold)
     else:
         run_bench(args, "target")
 

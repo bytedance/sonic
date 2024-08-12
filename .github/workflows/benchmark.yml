@@ -1,0 +1,55 @@
+name: Benchmark
+
+on: pull_request
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [X64, arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Clear repository
+        run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Benchmark Target
+        run: |
+          export SONIC_NO_ASYNC_GC=1
+          export SONIC_BENCH_SINGLE=1
+          go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Encoder|Decoder)_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target.out
+          go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target.out
+
+      - name: Clear repository
+        run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+
+      - name: Checkout main
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      
+      - name: Benchmark main
+        run: |
+          export SONIC_NO_ASYNC_GC=1
+          export SONIC_BENCH_SINGLE=1
+          go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Encoder|Decoder)_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_main.out
+          go test -run ^$ -count=10 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_main.out
+
+      - name: Diff bench
+        run: |
+          go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat
+          benchstat -format=csv /var/tmp/sonic_bench_target.out /var/tmp/sonic_bench_main.out
+      #   run: ./scripts/bench.py -t 0.05 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
