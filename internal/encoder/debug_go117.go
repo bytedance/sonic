@@ -1,3 +1,4 @@
+//go:build go1.17 && !go1.23
 // +build go1.17,!go1.23
 
 /*
@@ -19,14 +20,15 @@
 package encoder
 
 import (
-    `fmt`
-    `os`
-    `runtime`
-    `strings`
-    `unsafe`
+	"fmt"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/twitchyliquid64/golang-asm/obj`
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 const _FP_debug = 128
@@ -71,6 +73,19 @@ func println_wrapper(i int, op1 int, op2 int){
 
 func print(i int){
     println(i)
+}
+
+var _F_check_int64 = jit.Func(checkInt64)
+
+func checkInt64(i int64, s string) {
+    // println("checkInt64", i, s)
+    a, err := strconv.ParseInt(s, 10, 64)
+    if err != nil {
+        panic(err)
+    }
+    if a != i {
+        panic(fmt.Sprintf("checkInt64: %d != %d", a, i))
+    }
 }
 
 func gc() {

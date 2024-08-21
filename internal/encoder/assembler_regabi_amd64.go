@@ -356,7 +356,19 @@ func (self *_Assembler) store_int(nd int, fn obj.Addr, ins string) {
     self.rbuf_di()                          // MOVQ   RP, DI
     self.Emit(ins, jit.Ptr(_SP_p, 0), _SI)  // $ins   (SP.p), SI
     self.call_c(fn)                         // CALL_C $fn
+    if fn == _F_i64toa {
+        self.check_int64(ins)
+    } else {
+        self.Emit("ADDQ", _AX, _RL)             // ADDQ   AX, RL
+    }
+}
+
+func (self *_Assembler) check_int64(ins string) {
+    self.Emit("LEAQ", jit.Sib(_RP, _RL, 1, 0), _BX) 
+    self.Emit("MOVQ", _AX, _CX)
     self.Emit("ADDQ", _AX, _RL)             // ADDQ   AX, RL
+    self.Emit(ins, jit.Ptr(_SP_p, 0), _AX)
+    self.call_go(_F_check_int64)
 }
 
 func (self *_Assembler) store_str(s string) {
