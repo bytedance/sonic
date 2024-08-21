@@ -58,6 +58,14 @@ def clear_files():
     run_cmd("rm -vrf ./internal/native/sse/traceback_test.go")
     run_cmd("rm -vrf ./internal/native/avx2/traceback_test.go")
 
+def check_ge_go_1_23() -> bool:
+    ver = os.getenv("GOVERSION")
+    if ver is None:
+        print("Cannot get go version")
+        exit(1)
+    major, minor, _ = ver.split('.')
+    return int(major) > 1 or int(minor) >= 23
+
 def main():
     TRACE_TEST_FILE = "./internal/native/traceback_test.mock_tmpl"
     pattern = "*_text_amd64.go"
@@ -74,9 +82,12 @@ def main():
     run_cmd("sed -e 's/{{PACKAGE}}/sse/g' %s > ./internal/native/sse/traceback_test.go" %TRACE_TEST_FILE)
     run_cmd("sed -e 's/{{PACKAGE}}/avx2/g' %s > ./internal/native/avx2/traceback_test.go" %TRACE_TEST_FILE)
 
+    # check whether we need an extra ldflags
+    ext_flag = ' -ldflags=-checklinkname=0 ' if check_ge_go_1_23() else ' '
+
     # test the pcsp with Golang
     run_cmd("go version")
-    run_cmd("go test -v -run=TestTraceback ./... > test.log")
+    run_cmd(f"go test -v{ext_flag}-run=TestTraceback ./... > test.log")
     run_cmd("grep -q \"runtime: \" test.log && exit 1 || exit 0")
 
     clear_files()
