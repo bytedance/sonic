@@ -36,6 +36,7 @@ const (
     _PtrBytes   = _PTR_SIZE / 8
     _FsmOffset  = (_MaxStack + 1) * _PtrBytes
     _DbufOffset = _FsmOffset + int64(unsafe.Sizeof(types.StateMachine{})) + types.MAX_RECURSE * _PtrBytes
+    _EpOffset   = _DbufOffset + _MaxDigitNums
     _StackSize  = unsafe.Sizeof(_Stack{})
 )
 
@@ -53,6 +54,7 @@ type _Stack struct {
     mm types.StateMachine
     vp [types.MAX_RECURSE]unsafe.Pointer
     dp [_MaxDigitNums]byte
+    ep unsafe.Pointer
 }
 
 type _Decoder func(

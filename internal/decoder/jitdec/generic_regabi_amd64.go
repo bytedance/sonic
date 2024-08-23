@@ -186,7 +186,6 @@ var (
     _T_slice   = jit.Type(reflect.TypeOf(([]interface{})(nil)))
     _T_string  = jit.Type(reflect.TypeOf(""))
     _T_number  = jit.Type(reflect.TypeOf(json.Number("")))
-    _T_miserr  = jit.Type(reflect.TypeOf(MismatchTypeError{}))
     _T_float64 = jit.Type(reflect.TypeOf(float64(0)))
 )
 
