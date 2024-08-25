@@ -12,11 +12,11 @@ const (
 )
 
 const (
-    _stack__validate_one = 160
+    _stack__validate_one = 152
 )
 
 const (
-    _size__validate_one = 10428
+    _size__validate_one = 10004
 )
 
 var (
@@ -28,15 +28,15 @@ var (
         {0xc, 32},
         {0xd, 40},
         {0x11, 48},
-        {0x26b7, 160},
-        {0x26b8, 48},
-        {0x26ba, 40},
-        {0x26bc, 32},
-        {0x26be, 24},
-        {0x26c0, 16},
-        {0x26c1, 8},
-        {0x26c2, 0},
-        {0x28bc, 160},
+        {0x25a7, 152},
+        {0x25a8, 48},
+        {0x25aa, 40},
+        {0x25ac, 32},
+        {0x25ae, 24},
+        {0x25b0, 16},
+        {0x25b1, 8},
+        {0x25b2, 0},
+        {0x2714, 152},
     }
 )
 
