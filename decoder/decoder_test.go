@@ -17,16 +17,17 @@
 package decoder
 
 import (
-    `encoding/json`
-    `runtime`
-    `runtime/debug`
-    `strings`
-    `sync`
-    `testing`
-    `time`
+	"encoding/json"
+	"fmt"
+	"runtime"
+	"runtime/debug"
+	"strings"
+	"sync"
+	"testing"
+	"time"
 
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -83,6 +84,53 @@ var _BindingValue TwitterStruct
 
 func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
+}
+
+func TestFastSkip(t *testing.T) {
+    type skiptype struct {
+        A int `json:"a"` // mismatched
+        B string `json:"-"` // ommited
+        C [1]float64 `json:"c"` // fast int
+        D struct {} `json:"d"` // empty struct
+        // Unknonwn
+    }
+    type C struct {
+        name string
+        json string
+        expTime float64
+    }
+    var compt = `[+`+TwitterJson+`,`+TwitterJson+`,`+TwitterJson+`,`+TwitterJson+`,`+TwitterJson+`,`+TwitterJson+`,`+TwitterJson+`,`+TwitterJson+`+]`
+    var cases = []C{
+        {"mismatched", `{"a":`+compt+`}`, 2},
+        {"ommited", `{"b":`+compt+`}`, 2},
+        // {"fast int", `{"c":[`+strings.Repeat("-1.23456e-19,", 2000)+`1]}`, 1.2},
+        {"unknown", `{"unknown":`+compt+`}`, 2},
+        {"empty", `{"d":`+compt+`}`, 2},
+    }
+    _ = NewDecoder(`{}`).Decode(&skiptype{})
+    for _, c := range cases {
+        t.Run(c.name, func(t *testing.T) {
+            var obj1, obj2 = &skiptype{}, &skiptype{}
+            // validate skip
+            d := NewDecoder(c.json)
+            t1 := time.Now()
+            err1 := d.Decode(obj1)
+            d1 := time.Since(t1)
+            // fask skip
+            d = NewDecoder(c.json)
+            d.SetOptions(OptionNoValidateJSON)
+            t2 := time.Now()
+            err2 := d.Decode(obj2)
+            d2 := time.Since(t2)
+
+            require.Equal(t, err1 == nil, err2 == nil)
+            require.Equal(t, obj1, obj2)
+            // fast skip must be 5x faster
+            println(d1, d2)
+            require.True(t, float64(d1)/float64(d2) >  c.expTime, fmt.Sprintf("%v/%v=%v", d1, d2, float64(d1)/float64(d2)))
+        })
+    }
+    // var data = `{"a":`+TwitterJson+`,"b":`+TwitterJson+`,"c":[`+strings.Repeat("1,", 1024)+`1], "d":`+TwitterJson+`, "UNKNOWN":`+TwitterJson+`}`
 }
 
 

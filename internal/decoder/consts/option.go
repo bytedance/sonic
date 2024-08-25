@@ -28,7 +28,7 @@ const (
     OptionDisableUnknown   Options = 1 << F_disable_unknown
     OptionCopyString       Options = 1 << F_copy_string
     OptionValidateString   Options = 1 << F_validate_string
-    OptionNoValidateRawJSON   Options = 1 << F_no_validate_json
+    OptionNoValidateJSON   Options = 1 << F_no_validate_json
 )
 
 const (

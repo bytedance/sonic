@@ -44,6 +44,7 @@ const (
     OptionDisableUnknown   = consts.OptionDisableUnknown
     OptionCopyString       = consts.OptionCopyString
     OptionValidateString   = consts.OptionValidateString
+    OptionNoValidateJSON   = consts.OptionNoValidateJSON
 )
 
 type (

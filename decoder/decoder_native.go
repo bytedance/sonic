@@ -43,6 +43,7 @@ const (
     OptionDisableUnknown   Options = api.OptionDisableUnknown
     OptionCopyString       Options = api.OptionCopyString
     OptionValidateString   Options = api.OptionValidateString
+    OptionNoValidateJSON   Options = api.OptionNoValidateJSON
 )
 
 // StreamDecoder is the decoder context object for streaming input.
