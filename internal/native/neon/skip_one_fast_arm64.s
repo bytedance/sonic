@@ -57,12 +57,12 @@ lCPI0_1:
 
 _skip_one_fast:
 	WORD $0xd10303ff  // sub	sp, sp, #192
-	WORD $0xa905effc  // stp	x28, x27, [sp, #88]
-	WORD $0xa906e7fa  // stp	x26, x25, [sp, #104]
-	WORD $0xa907dff8  // stp	x24, x23, [sp, #120]
-	WORD $0xa908d7f6  // stp	x22, x21, [sp, #136]
-	WORD $0xa909cff4  // stp	x20, x19, [sp, #152]
-	WORD $0xa90afbfd  // stp	fp, lr, [sp, #168]
+	WORD $0xa9056ffc  // stp	x28, x27, [sp, #80]
+	WORD $0xa90667fa  // stp	x26, x25, [sp, #96]
+	WORD $0xa9075ff8  // stp	x24, x23, [sp, #112]
+	WORD $0xa90857f6  // stp	x22, x21, [sp, #128]
+	WORD $0xa9094ff4  // stp	x20, x19, [sp, #144]
+	WORD $0xa90a7bfd  // stp	fp, lr, [sp, #160]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf940002b  // ldr	x11, [x1]
@@ -927,12 +927,12 @@ LBB0_115:
 LBB0_116:
 	WORD $0x92800000  // mov	x0, #-1
 LBB0_117:
-	WORD $0xa94afbfd  // ldp	fp, lr, [sp, #168]
-	WORD $0xa949cff4  // ldp	x20, x19, [sp, #152]
-	WORD $0xa948d7f6  // ldp	x22, x21, [sp, #136]
-	WORD $0xa947dff8  // ldp	x24, x23, [sp, #120]
-	WORD $0xa946e7fa  // ldp	x26, x25, [sp, #104]
-	WORD $0xa945effc  // ldp	x28, x27, [sp, #88]
+	WORD $0xa94a7bfd  // ldp	fp, lr, [sp, #160]
+	WORD $0xa9494ff4  // ldp	x20, x19, [sp, #144]
+	WORD $0xa94857f6  // ldp	x22, x21, [sp, #128]
+	WORD $0xa9475ff8  // ldp	x24, x23, [sp, #112]
+	WORD $0xa94667fa  // ldp	x26, x25, [sp, #96]
+	WORD $0xa9456ffc  // ldp	x28, x27, [sp, #80]
 	WORD $0x910303ff  // add	sp, sp, #192
 	WORD $0xd65f03c0  // ret
 LBB0_118:

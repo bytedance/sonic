@@ -56,36 +56,35 @@ lCPI0_1:
 // .byte 15
 
 _quote:
-	WORD $0xd10083ff  // sub	sp, sp, #32
-	WORD $0xa900fbfd  // stp	fp, lr, [sp, #8]
+	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf9400069  // ldr	x9, [x3]
 Lloh0:
-	WORD $0x1000ad68  // adr	x8, __DoubleQuoteTab $5548(%rip)
+	WORD $0x1000acc8  // adr	x8, __DoubleQuoteTab $5528(%rip)
 Lloh1:
 	WORD $0x91000108  // add	x8, x8, __DoubleQuoteTab@PAGEOFF $0(%rip)
 Lloh2:
-	WORD $0x10002d2a  // adr	x10, __SingleQuoteTab $1444(%rip)
+	WORD $0x10002c8a  // adr	x10, __SingleQuoteTab $1424(%rip)
 Lloh3:
 	WORD $0x9100014a  // add	x10, x10, __SingleQuoteTab@PAGEOFF $0(%rip)
 	WORD $0xf240009f  // tst	x4, #0x1
 	WORD $0x9a880148  // csel	x8, x10, x8, eq
 	WORD $0xeb010d3f  // cmp	x9, x1, lsl #3
-	WORD $0x54001b0a  // b.ge	LBB0_53 $864(%rip)
+	WORD $0x54001aea  // b.ge	LBB0_53 $860(%rip)
 	WORD $0xaa0203eb  // mov	x11, x2
 	WORD $0xaa0003ee  // mov	x14, x0
-	WORD $0xb4002a41  // cbz	x1, LBB0_76 $1352(%rip)
+	WORD $0xb4002a01  // cbz	x1, LBB0_76 $1344(%rip)
 	WORD $0xd100040c  // sub	x12, x0, #1
 	WORD $0x4f01e440  // movi.16b	v0, #34
 	WORD $0x4f02e781  // movi.16b	v1, #92
 	WORD $0x4f01e402  // movi.16b	v2, #32
 Lloh4:
-	WORD $0x10fffc8b  // adr	x11, lCPI0_0 $-112(%rip)
+	WORD $0x10fffcab  // adr	x11, lCPI0_0 $-108(%rip)
 Lloh5:
 	WORD $0x3dc00163  // ldr	q3, [x11, lCPI0_0@PAGEOFF] $0(%rip)
 Lloh6:
-	WORD $0x10fffccb  // adr	x11, lCPI0_1 $-104(%rip)
+	WORD $0x10fffceb  // adr	x11, lCPI0_1 $-100(%rip)
 Lloh7:
 	WORD $0x3dc00164  // ldr	q4, [x11, lCPI0_1@PAGEOFF] $0(%rip)
 	WORD $0xaa0003ed  // mov	x13, x0
@@ -203,7 +202,7 @@ LBB0_24:
 	WORD $0x8b0401ae  // add	x14, x13, x4
 	WORD $0x8b04016b  // add	x11, x11, x4
 	WORD $0xeb040021  // subs	x1, x1, x4
-	WORD $0x54001c20  // b.eq	LBB0_76 $900(%rip)
+	WORD $0x54001be0  // b.eq	LBB0_76 $892(%rip)
 	WORD $0xcb040129  // sub	x9, x9, x4
 	WORD $0x8b0d008d  // add	x13, x4, x13
 	WORD $0xcb0d018d  // sub	x13, x12, x13
@@ -213,7 +212,7 @@ LBB0_26:
 	WORD $0x8b0f016b  // add	x11, x11, x15
 	WORD $0xd10005ad  // sub	x13, x13, #1
 	WORD $0xd1000421  // sub	x1, x1, #1
-	WORD $0xb4001b01  // cbz	x1, LBB0_76 $864(%rip)
+	WORD $0xb4001ac1  // cbz	x1, LBB0_76 $856(%rip)
 LBB0_27:
 	WORD $0x394001cf  // ldrb	w15, [x14]
 	WORD $0x8b0f1111  // add	x17, x8, x15, lsl #4
@@ -221,7 +220,7 @@ LBB0_27:
 	WORD $0xb400032f  // cbz	x15, LBB0_35 $100(%rip)
 	WORD $0x93407def  // sxtw	x15, w15
 	WORD $0xeb0f0129  // subs	x9, x9, x15
-	WORD $0x54001b0b  // b.lt	LBB0_77 $864(%rip)
+	WORD $0x54001aab  // b.lt	LBB0_77 $852(%rip)
 	WORD $0xf10011e4  // subs	x4, x15, #4
 	WORD $0x5400010b  // b.lt	LBB0_31 $32(%rip)
 	WORD $0xb9400a25  // ldr	w5, [x17, #8]
@@ -320,23 +319,22 @@ LBB0_52:
 	WORD $0xcb0d0008  // sub	x8, x0, x13
 	WORD $0x8b040101  // add	x1, x8, x4
 	WORD $0xaa0103e0  // mov	x0, x1
-	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
-	WORD $0x910083ff  // add	sp, sp, #32
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_53:
 	WORD $0x4f01e440  // movi.16b	v0, #34
 	WORD $0x4f02e781  // movi.16b	v1, #92
 	WORD $0x4f01e402  // movi.16b	v2, #32
 Lloh8:
-	WORD $0x10ffe229  // adr	x9, lCPI0_0 $-956(%rip)
+	WORD $0x10ffe269  // adr	x9, lCPI0_0 $-948(%rip)
 Lloh9:
 	WORD $0x3dc00123  // ldr	q3, [x9, lCPI0_0@PAGEOFF] $0(%rip)
 Lloh10:
-	WORD $0x10ffe269  // adr	x9, lCPI0_1 $-948(%rip)
+	WORD $0x10ffe2a9  // adr	x9, lCPI0_1 $-940(%rip)
 Lloh11:
 	WORD $0x3dc00124  // ldr	q4, [x9, lCPI0_1@PAGEOFF] $0(%rip)
 Lloh12:
-	WORD $0x100110aa  // adr	x10, __EscTab $8724(%rip)
+	WORD $0x1001102a  // adr	x10, __EscTab $8708(%rip)
 Lloh13:
 	WORD $0x9100014a  // add	x10, x10, __EscTab@PAGEOFF $0(%rip)
 	WORD $0xaa0203e9  // mov	x9, x2
@@ -466,26 +464,23 @@ LBB0_75:
 	WORD $0xcb020128  // sub	x8, x9, x2
 	WORD $0xf9000068  // str	x8, [x3]
 	WORD $0xaa0103e0  // mov	x0, x1
-	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
-	WORD $0x910083ff  // add	sp, sp, #32
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_76:
 	WORD $0xcb020168  // sub	x8, x11, x2
 	WORD $0xf9000068  // str	x8, [x3]
 	WORD $0xcb0001c1  // sub	x1, x14, x0
 	WORD $0xaa0103e0  // mov	x0, x1
-	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
-	WORD $0x910083ff  // add	sp, sp, #32
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
 LBB0_77:
 	WORD $0xcb020168  // sub	x8, x11, x2
 	WORD $0xf9000068  // str	x8, [x3]
 	WORD $0xaa0d03e1  // mov	x1, x13
 	WORD $0xaa0103e0  // mov	x0, x1
-	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
-	WORD $0x910083ff  // add	sp, sp, #32
+	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
 	WORD $0xd65f03c0  // ret
-	WORD $0x00000000  // .p2align 3, 0x00
+	  // .p2align 3, 0x00
 __SingleQuoteTab:
 	WORD $0x00000006; WORD $0x00000000  // .quad 6
 	WORD $0x3030755c  // .asciz 4, '\\u0000\x00\x00'
