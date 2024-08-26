@@ -1,7 +1,6 @@
 //go:build (amd64 && go1.17 && !go1.24) || (arm64 && go1.20 && !go1.24)
 // +build amd64,go1.17,!go1.24 arm64,go1.20,!go1.24
 
-
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -21,14 +20,87 @@
 package decoder
 
 import (
-    `encoding/json`
-    _`strings`
-    `testing`
-    _`reflect`
+	"encoding/json"
+	"fmt"
+	_ "reflect"
+	"strings"
+	_ "strings"
+	"testing"
+	"time"
 
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+
+func BenchmarkSkipValidate(b *testing.B) {
+    type skiptype struct {
+        A int `json:"a"` // mismatched
+        B string `json:"-"` // ommited
+        C [1]int `json:"c"` // fast int
+        D struct {} `json:"d"` // empty struct
+        E map[string]int `json:"e"` // mismatched elem
+        // Unknonwn
+    }
+    type C struct {
+        name string
+        json string
+        expTime float64
+    }
+    var sam = map[int]interface{}{}
+    for i := 0; i < 1; i++ {
+        sam[i] = _BindingValue
+    }
+    comptd, err := json.Marshal(sam)
+    if err != nil {
+        b.Fatal("invalid json")
+    }
+    compt := string(comptd)
+    var cases = []C{
+        {"mismatched", `{"a":`+compt+`}`, 5},
+        {"ommited", `{"b":`+compt+`}`, 5},
+        {"number", `{"c":[`+strings.Repeat("-1.23456e-19,", 1000)+`1]}`, 1.5},
+        {"unknown", `{"unknown":`+compt+`}`, 5},
+        {"empty", `{"d":`+compt+`}`, 5},
+        {"mismatched elem", `{"e":`+compt+`}`, 5},
+    }
+    _ = NewDecoder(`{}`).Decode(&skiptype{})
+
+    var avg1, avg2 time.Duration
+    for _, c := range cases {
+        b.Run(c.name, func(b *testing.B) {
+            b.Run("validate", func(b *testing.B) {
+                b.ResetTimer()
+                t1 := time.Now()
+                for i := 0; i < b.N; i++ {
+                    var obj1 = &skiptype{}
+                    // validate skip
+                    d := NewDecoder(c.json)
+                    _ = d.Decode(obj1)
+                }
+                d1 := time.Since(t1)
+                avg1 = d1/time.Duration(b.N)
+            })
+            b.Run("fast", func(b *testing.B) {
+                b.ResetTimer()
+                t2 := time.Now()
+                for i := 0; i < b.N; i++ {
+                    var obj2 = &skiptype{}
+                    // fask skip
+                    d := NewDecoder(c.json)
+                    d.SetOptions(OptionNoValidateJSON)
+                    _ = d.Decode(obj2)
+                }
+                d2 := time.Since(t2)
+                avg2 = d2/time.Duration(b.N)
+            })
+            // fast skip must be expTime x faster
+            require.True(b, float64(avg1)/float64(avg2) >  c.expTime, fmt.Sprintf("%v/%v=%v", avg1, avg2, float64(avg1)/float64(avg2)))
+        })
+    }
+}
+
 
 func TestSkipMismatchTypeAmd64Error(t *testing.T) {
     // t.Run("struct", func(t *testing.T) {

@@ -42,6 +42,7 @@ const (
      _F_use_number      = types.B_USE_NUMBER
      _F_validate_string = types.B_VALIDATE_STRING
      _F_allow_control   = types.B_ALLOW_CONTROL
+     _F_no_validate_json   = types.B_NO_VALIDATE_JSON
 )
 
 type Options uint64
@@ -53,6 +54,7 @@ const (
      OptionDisableUnknown   Options = 1 << _F_disable_unknown
      OptionCopyString       Options = 1 << _F_copy_string
      OptionValidateString   Options = 1 << _F_validate_string
+     OptionNoValidateJSON   Options = 1 << _F_no_validate_json
 )
 
 func (self *Decoder) SetOptions(opts Options) {

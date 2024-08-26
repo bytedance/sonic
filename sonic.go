@@ -72,6 +72,9 @@ func (cfg Config) Froze() API {
     }
 
     // configure decoder options:
+    if cfg.NoValidateJSONSkip {
+        api.decoderOpts |= decoder.OptionNoValidateJSON
+    }
     if cfg.UseInt64 {
         api.decoderOpts |= decoder.OptionUseInt64
     }
