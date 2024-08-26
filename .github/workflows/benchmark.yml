@@ -50,6 +50,4 @@ jobs:
 
       - name: Diff bench
         run: |
-          go get golang.org/x/perf/cmd/benchstat && go install golang.org/x/perf/cmd/benchstat
-          benchstat -format=csv /var/tmp/sonic_bench_target.out /var/tmp/sonic_bench_main.out
-      #   run: ./scripts/bench.py -t 0.05 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
+          ./scripts/bench.py -t 0.10 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x

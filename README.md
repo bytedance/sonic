@@ -482,6 +482,12 @@ But `ast.Visitor` is not a very handy API. You might need to write a lot of code
 ### Buffer Size
 Sonic use memory pool in many places like `encoder.Encode`, `ast.Node.MarshalJSON` to improve performace, which may produce more memory usage (in-use) when server's load is high. See [issue 614](https://github.com/bytedance/sonic/issues/614). Therefore, we introduce some options to let user control the behavior of memory pool. See [option](https://pkg.go.dev/github.com/bytedance/sonic@v1.11.9/option#pkg-variables) package.
 
+### Faster JSON skip
+For compatibility. Sonic use FSM scanning to  validate JSON when decoding raw JSON or encoding `json.Marshaler`, which is much slower than SIMD-implemented skipping. If user has many redundant JSON value and DO NOT NEED to strictly validate JSON correctness, you can enable below options:
+- `Config.NoValidateSkipJSON`: for faster skipping JSON when decoding, such as unknown fields, mismatched values, and redundant array elements
+- `Config.NoValidateJSONMarshaler`: avoid validating JSON when encoding `json.Marshaler`
+- `SearchOption.ValidateJSON`: indicates if validate located JSON value when `Get`
+
 ## Community
 
 Sonic is a subproject of [CloudWeGo](https://www.cloudwego.io/). We are committed to building a cloud native ecosystem.
