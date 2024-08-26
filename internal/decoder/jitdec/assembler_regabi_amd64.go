@@ -1,3 +1,4 @@
+//go:build go1.17 && !go1.24
 // +build go1.17,!go1.24
 
 /*
@@ -19,18 +20,19 @@
 package jitdec
 
 import (
-    `encoding/json`
-    `fmt`
-    `math`
-    `reflect`
-    `unsafe`
+	"encoding/json"
+	"fmt"
+	"math"
+	"reflect"
+	"strings"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/caching`
-    `github.com/bytedance/sonic/internal/jit`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/twitchyliquid64/golang-asm/obj`
+	"github.com/bytedance/sonic/internal/caching"
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 /** Register Allocations
@@ -292,7 +294,6 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_array_clear_p    : (*_Assembler)._asm_OP_array_clear_p,
     _OP_slice_init       : (*_Assembler)._asm_OP_slice_init,
     _OP_slice_append     : (*_Assembler)._asm_OP_slice_append,
-    _OP_object_skip      : (*_Assembler)._asm_OP_object_skip,
     _OP_object_next      : (*_Assembler)._asm_OP_object_next,
     _OP_struct_field     : (*_Assembler)._asm_OP_struct_field,
     _OP_unmarshal        : (*_Assembler)._asm_OP_unmarshal,
@@ -312,6 +313,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_check_char_0     : (*_Assembler)._asm_OP_check_char_0,
     _OP_dismatch_err     : (*_Assembler)._asm_OP_dismatch_err,
     _OP_go_skip          : (*_Assembler)._asm_OP_go_skip,
+    _OP_skip_emtpy         : (*_Assembler)._asm_OP_skip_empty,
     _OP_add              : (*_Assembler)._asm_OP_add,
     _OP_check_empty      : (*_Assembler)._asm_OP_check_empty,
     _OP_debug            : (*_Assembler)._asm_OP_debug,
@@ -598,6 +600,28 @@ func (self *_Assembler) _asm_OP_go_skip(p *_Instr) {
     // self.Byte(0xcc)
     self.Emit("MOVQ", _R9, _VAR_pc)
     self.Sjmp("JMP"  , _LB_skip_one)            // JMP     _skip_one
+}
+
+var _F_IndexByte = jit.Func(strings.IndexByte)
+
+func (self *_Assembler) _asm_OP_skip_empty(p *_Instr) {
+    // self.Byte(0xcc)
+    self.call_sf(_F_skip_one)                   // CALL_SF skip_one
+    // self.Byte(0xcc)
+    self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
+    self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
+    self.Emit("BTQ", jit.Imm(_F_disable_unknown), _ARG_fv) 
+    self.Xjmp("JNC", p.vi())
+    self.Emit("LEAQ", jit.Sib(_IC, _AX, 1, 0), _BX)
+    self.Emit("MOVQ", _BX, _ARG_sv_n)
+    self.Emit("LEAQ", jit.Sib(_IP, _AX, 1, 0), _AX)
+    self.Emit("MOVQ", _AX, _ARG_sv_p)
+    self.Emit("MOVQ", jit.Imm(':'), _CX)
+    self.call_go(_F_IndexByte)
+    // self.Byte(0xcc)
+    self.Emit("TESTQ", _AX, _AX)
+    // disallow unknown field
+    self.Sjmp("JNS", _LB_field_error)
 }
 
 func (self *_Assembler) skip_one() {
@@ -1059,7 +1083,6 @@ func (self *_Assembler) mapassign_utext(t reflect.Type, addressable bool) {
 var (
     _F_skip_one = jit.Imm(int64(native.S_skip_one))
     _F_skip_array  = jit.Imm(int64(native.S_skip_array))
-    _F_skip_object = jit.Imm(int64(native.S_skip_object))
     _F_skip_number = jit.Imm(int64(native.S_skip_number))
 )
 
@@ -1707,12 +1730,6 @@ func (self *_Assembler) _asm_OP_slice_append(p *_Instr) {
     self.From("MULQ" , _CX)                             // MULQ    CX
     self.Emit("ADDQ" , _AX, _VP)                        // ADDQ    AX, VP
     self.Link("_append_slice_end_{n}")
-}
-
-func (self *_Assembler) _asm_OP_object_skip(_ *_Instr) {
-    self.call_sf(_F_skip_object)                // CALL_SF skip_object
-    self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
-    self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
 }
 
 func (self *_Assembler) _asm_OP_object_next(_ *_Instr) {
