@@ -12,51 +12,61 @@ TEXT ·__parse_with_padding_entry__(SB), NOSPLIT, $144
 	RET
 	  // .p2align 2, 0x00
 _padding_reader_next:
-	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xd10083ff  // sub	sp, sp, #32
+	WORD $0xa900fbfd  // stp	fp, lr, [sp, #8]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf9400008  // ldr	x8, [x0]
 	WORD $0x91000509  // add	x9, x8, #1
 	WORD $0xf9000009  // str	x9, [x0]
 	WORD $0x39c00100  // ldrsb	w0, [x8]
-	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
+	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
+	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
 _padding_reader_peek_n:
-	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xd10083ff  // sub	sp, sp, #32
+	WORD $0xa900fbfd  // stp	fp, lr, [sp, #8]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf9400000  // ldr	x0, [x0]
-	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
+	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
+	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
 _padding_reader_cur:
-	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xd10083ff  // sub	sp, sp, #32
+	WORD $0xa900fbfd  // stp	fp, lr, [sp, #8]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
-	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
+	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
+	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
 _padding_reader_remain:
-	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xd10083ff  // sub	sp, sp, #32
+	WORD $0xa900fbfd  // stp	fp, lr, [sp, #8]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf9400808  // ldr	x8, [x0, #16]
 	WORD $0xf9400009  // ldr	x9, [x0]
 	WORD $0xcb090100  // sub	x0, x8, x9
-	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
+	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
+	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00
 _padding_reader_eat:
-	WORD $0xa9be7bfd  // stp	fp, lr, [sp, #-32]!
+	WORD $0xd10083ff  // sub	sp, sp, #32
+	WORD $0xa900fbfd  // stp	fp, lr, [sp, #8]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf9400008  // ldr	x8, [x0]
 	WORD $0x8b010108  // add	x8, x8, x1
 	WORD $0xf9000008  // str	x8, [x0]
-	WORD $0xa8c27bfd  // ldp	fp, lr, [sp], #32
+	WORD $0xa940fbfd  // ldp	fp, lr, [sp, #8]
+	WORD $0x910083ff  // add	sp, sp, #32
 	WORD $0xd65f03c0  // ret
-	  // .p2align 4, 0x00
+	WORD $0x00000000; WORD $0x00000000  // .p2align 4, 0x00
 lCPI5_0:
 	WORD $0x00000020
 	WORD $0x00000000
@@ -129,12 +139,12 @@ lCPI5_3:
 	  // .p2align 2, 0x00
 _parse_with_padding:
 	WORD $0xd10283ff  // sub	sp, sp, #160
-	WORD $0xa9036ffc  // stp	x28, x27, [sp, #48]
-	WORD $0xa90467fa  // stp	x26, x25, [sp, #64]
-	WORD $0xa9055ff8  // stp	x24, x23, [sp, #80]
-	WORD $0xa90657f6  // stp	x22, x21, [sp, #96]
-	WORD $0xa9074ff4  // stp	x20, x19, [sp, #112]
-	WORD $0xa9087bfd  // stp	fp, lr, [sp, #128]
+	WORD $0xa903effc  // stp	x28, x27, [sp, #56]
+	WORD $0xa904e7fa  // stp	x26, x25, [sp, #72]
+	WORD $0xa905dff8  // stp	x24, x23, [sp, #88]
+	WORD $0xa906d7f6  // stp	x22, x21, [sp, #104]
+	WORD $0xa907cff4  // stp	x20, x19, [sp, #120]
+	WORD $0xa908fbfd  // stp	fp, lr, [sp, #136]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xa9478409  // ldp	x9, x1, [x0, #120]
@@ -1540,12 +1550,12 @@ LBB5_259:
 	WORD $0x7140051f  // cmp	w8, #1, lsl #12
 	WORD $0x1a828128  // csel	w8, w9, w2, hi
 	WORD $0x93407d00  // sxtw	x0, w8
-	WORD $0xa9487bfd  // ldp	fp, lr, [sp, #128]
-	WORD $0xa9474ff4  // ldp	x20, x19, [sp, #112]
-	WORD $0xa94657f6  // ldp	x22, x21, [sp, #96]
-	WORD $0xa9455ff8  // ldp	x24, x23, [sp, #80]
-	WORD $0xa94467fa  // ldp	x26, x25, [sp, #64]
-	WORD $0xa9436ffc  // ldp	x28, x27, [sp, #48]
+	WORD $0xa948fbfd  // ldp	fp, lr, [sp, #136]
+	WORD $0xa947cff4  // ldp	x20, x19, [sp, #120]
+	WORD $0xa946d7f6  // ldp	x22, x21, [sp, #104]
+	WORD $0xa945dff8  // ldp	x24, x23, [sp, #88]
+	WORD $0xa944e7fa  // ldp	x26, x25, [sp, #72]
+	WORD $0xa943effc  // ldp	x28, x27, [sp, #56]
 	WORD $0x910283ff  // add	sp, sp, #160
 	WORD $0xd65f03c0  // ret
 LBB5_260:

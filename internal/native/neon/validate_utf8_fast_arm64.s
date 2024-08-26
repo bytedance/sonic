@@ -13,7 +13,7 @@ TEXT ·__validate_utf8_fast_entry__(SB), NOSPLIT, $32
 	  // .p2align 2, 0x00
 _validate_utf8_fast:
 	WORD $0xd100c3ff  // sub	sp, sp, #48
-	WORD $0xa9017bfd  // stp	fp, lr, [sp, #16]
+	WORD $0xa901fbfd  // stp	fp, lr, [sp, #24]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xa9402408  // ldp	x8, x9, [x0]
@@ -96,28 +96,28 @@ LBB0_17:
 LBB0_18:
 	WORD $0x39c00151  // ldrsb	w17, [x10]
 	WORD $0x36ffff91  // tbz	w17, #31, LBB0_16 $-16(%rip)
-	WORD $0x390013bf  // strb	wzr, [fp, #4]
-	WORD $0x39000bbf  // strb	wzr, [fp, #2]
+	WORD $0x390053ff  // strb	wzr, [sp, #20]
+	WORD $0x39004bff  // strb	wzr, [sp, #18]
 	WORD $0xcb0a0122  // sub	x2, x9, x10
 	WORD $0xf1000844  // subs	x4, x2, #2
 	WORD $0x540001a3  // b.lo	LBB0_22 $52(%rip)
 	WORD $0x39400151  // ldrb	w17, [x10]
 	WORD $0x39400540  // ldrb	w0, [x10, #1]
-	WORD $0x390013b1  // strb	w17, [fp, #4]
+	WORD $0x390053f1  // strb	w17, [sp, #20]
 	WORD $0x91000943  // add	x3, x10, #2
-	WORD $0x91000ba1  // add	x1, fp, #2
+	WORD $0x91004be1  // add	x1, sp, #18
 	WORD $0xaa0403e2  // mov	x2, x4
 	WORD $0xb4000164  // cbz	x4, LBB0_23 $44(%rip)
 LBB0_21:
 	WORD $0x39400071  // ldrb	w17, [x3]
 	WORD $0x39000031  // strb	w17, [x1]
-	WORD $0x394013b1  // ldrb	w17, [fp, #4]
-	WORD $0x39400ba1  // ldrb	w1, [fp, #2]
+	WORD $0x394053f1  // ldrb	w17, [sp, #20]
+	WORD $0x39404be1  // ldrb	w1, [sp, #18]
 	WORD $0x14000007  // b	LBB0_24 $28(%rip)
 LBB0_22:
 	WORD $0x52800011  // mov	w17, #0
 	WORD $0x52800000  // mov	w0, #0
-	WORD $0x910013a1  // add	x1, fp, #4
+	WORD $0x910053e1  // add	x1, sp, #20
 	WORD $0xaa0a03e3  // mov	x3, x10
 	WORD $0xb5fffee2  // cbnz	x2, LBB0_21 $-36(%rip)
 LBB0_23:
@@ -146,13 +146,13 @@ LBB0_28:
 	WORD $0x17ffffd2  // b	LBB0_17 $-184(%rip)
 LBB0_29:
 	WORD $0xd2800000  // mov	x0, #0
-	WORD $0xa9417bfd  // ldp	fp, lr, [sp, #16]
+	WORD $0xa941fbfd  // ldp	fp, lr, [sp, #24]
 	WORD $0x9100c3ff  // add	sp, sp, #48
 	WORD $0xd65f03c0  // ret
 LBB0_30:
 	WORD $0xaa2a03e9  // mvn	x9, x10
 	WORD $0x8b080120  // add	x0, x9, x8
-	WORD $0xa9417bfd  // ldp	fp, lr, [sp, #16]
+	WORD $0xa941fbfd  // ldp	fp, lr, [sp, #24]
 	WORD $0x9100c3ff  // add	sp, sp, #48
 	WORD $0xd65f03c0  // ret
 	  // .p2align 2, 0x00

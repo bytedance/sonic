@@ -61,12 +61,12 @@ lCPI0_2:
 	  // .p2align 2, 0x00
 _get_by_path:
 	WORD $0xd10343ff  // sub	sp, sp, #208
-	WORD $0xa9066ffc  // stp	x28, x27, [sp, #96]
-	WORD $0xa90767fa  // stp	x26, x25, [sp, #112]
-	WORD $0xa9085ff8  // stp	x24, x23, [sp, #128]
-	WORD $0xa90957f6  // stp	x22, x21, [sp, #144]
-	WORD $0xa90a4ff4  // stp	x20, x19, [sp, #160]
-	WORD $0xa90b7bfd  // stp	fp, lr, [sp, #176]
+	WORD $0xa906effc  // stp	x28, x27, [sp, #104]
+	WORD $0xa907e7fa  // stp	x26, x25, [sp, #120]
+	WORD $0xa908dff8  // stp	x24, x23, [sp, #136]
+	WORD $0xa909d7f6  // stp	x22, x21, [sp, #152]
+	WORD $0xa90acff4  // stp	x20, x19, [sp, #168]
+	WORD $0xa90bfbfd  // stp	fp, lr, [sp, #184]
 	WORD $0xa93ffbfd  // stp	fp, lr, [sp, #-8]
 	WORD $0xd10023fd  // sub	fp, sp, #8
 	WORD $0xf9400448  // ldr	x8, [x2, #8]
@@ -4668,12 +4668,12 @@ LBB0_831:
 	WORD $0x92800028  // mov	x8, #-2
 LBB0_832:
 	WORD $0xaa0803e0  // mov	x0, x8
-	WORD $0xa94b7bfd  // ldp	fp, lr, [sp, #176]
-	WORD $0xa94a4ff4  // ldp	x20, x19, [sp, #160]
-	WORD $0xa94957f6  // ldp	x22, x21, [sp, #144]
-	WORD $0xa9485ff8  // ldp	x24, x23, [sp, #128]
-	WORD $0xa94767fa  // ldp	x26, x25, [sp, #112]
-	WORD $0xa9466ffc  // ldp	x28, x27, [sp, #96]
+	WORD $0xa94bfbfd  // ldp	fp, lr, [sp, #184]
+	WORD $0xa94acff4  // ldp	x20, x19, [sp, #168]
+	WORD $0xa949d7f6  // ldp	x22, x21, [sp, #152]
+	WORD $0xa948dff8  // ldp	x24, x23, [sp, #136]
+	WORD $0xa947e7fa  // ldp	x26, x25, [sp, #120]
+	WORD $0xa946effc  // ldp	x28, x27, [sp, #104]
 	WORD $0x910343ff  // add	sp, sp, #208
 	WORD $0xd65f03c0  // ret
 LBB0_833:
