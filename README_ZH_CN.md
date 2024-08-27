@@ -283,11 +283,14 @@ sub := root.Get("key3").Index(2).Int64() // == 3
 **注意**：由于 `Index()` 使用偏移量来定位数据，比使用扫描的 `Get()` 要快的多，建议尽可能的使用 `Index` 。 Sonic 也提供了另一个 API， `IndexOrGet()` ，以偏移量为基础并且也确保键的匹配。
 
 #### 查找选项
+
 `ast.Searcher`提供了一些选项，以满足用户的不同需求:
+
 ```
 opts:= ast.SearchOption{CopyReturn: true…}
 Val, err:= sonic。gettwithoptions (JSON, opts， "key")
 ```
+
 - CopyReturn
 指示搜索器复制结果JSON字符串，而不是从输入引用。如果用户缓存结果，这有助于减少内存使用
 - ConcurentRead
@@ -380,7 +383,9 @@ type Visitor interface {
 详细用法参看 [ast/visitor.go](https://github.com/bytedance/sonic/blob/main/ast/visitor.go)，我们还为 `UserNode` 实现了一个示例 `ast.Visitor`，你可以在 [ast/visitor_test.go](https://github.com/bytedance/sonic/blob/main/ast/visitor_test.go) 中找到它。
 
 ## 兼容性
+
 对于想要使用sonic来满足不同场景的开发人员，我们提供了一些集成配置:
+
 - `ConfigDefault`: sonic的默认配置 (`EscapeHTML=false`， `SortKeys=false`…) 保证性能同时兼顾安全性。
 - `ConfigStd`: 与 `encoding/json` 保证完全兼容的配置
 - `ConfigFastest`: 最快的配置(`NoQuoteTextMarshaler=true...`) 保证性能最优但是会缺少一些安全性检查（validate UTF8 等）
@@ -472,7 +477,16 @@ go someFunc(user)
 但是，`ast.Visitor` 并不是一个很易用的 API。你可能需要写大量的代码去实现自己的 `ast.Visitor`，并且需要在解析过程中仔细维护树的层级。如果你决定要使用这个 API，请先仔细阅读 [ast/visitor.go](https://github.com/bytedance/sonic/blob/main/ast/visitor.go) 中的注释。
 
 ### 缓冲区大小
+
 Sonic在许多地方使用内存池，如`encoder.Encode`, `ast.Node.MarshalJSON`等来提高性能，这可能会在服务器负载高时产生更多的内存使用(in-use)。参见[issue 614](https://github.com/bytedance/sonic/issues/614)。因此，我们引入了一些选项来让用户配置内存池的行为。参见[option](https://pkg.go.dev/github.com/bytedance/sonic@v1.11.9/option#pkg-variables)包。
+
+### 更快的 JSON Skip
+
+为了安全起见，在跳过原始JSON 时，sonic decoder 默认使用[FSM](native/skip_one.c)算法扫描来跳过同时校验 JSON。它相比[SIMD-searching-pair](native/skip_one_fast.c)算法跳过要慢得多(1~10倍)。如果用户有很多冗余的JSON值，并且不需要严格验证JSON的正确性，你可以启用以下选项:
+
+- `Config.NoValidateSkipJSON`: 用于在解码时更快地跳过JSON，例如未知字段，`json.RawMessage`，不匹配的值和冗余的数组元素等
+- `Config.NoValidateJSONMarshaler`: 编码JSON时避免验证JSON。封送拆收器
+- `SearchOption.ValidateJSON`: 指示当`Get`时是否验证定位的JSON值
 
 ## 社区
 

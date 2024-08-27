@@ -283,18 +283,20 @@ sub := root.Get("key3").Index(2).Int64() // == 3
 **Tip**: since `Index()` uses offset to locate data, which is much faster than scanning like `Get()`, we suggest you use it as much as possible. And sonic also provides another API `IndexOrGet()` to underlying use offset as well as ensure the key is matched.
 
 #### SearchOption
+
 `Searcher` provides some options for user to meet different needs:
+
 ```go
 opts := ast.SearchOption{ CopyReturn: true ... }
 val, err := sonic.GetWithOptions(JSON, opts, "key")
 ```
+
 - CopyReturn
 Indicate the searcher to copy the result JSON string instead of refer from the input. This can help to reduce memory usage if you cache the results
 - ConcurentRead
 Since `ast.Node` use `Lazy-Load` design, it doesn't support Concurrently-Read by default. If you want to read it concurrently, please specify it.
 - ValidateJSON
 Indicate the searcher to validate the entire JSON. This option is enabled by default, which slow down the search speed a little.
-
 
 #### Set/Unset
 
@@ -314,6 +316,7 @@ println(alias1 == alias2) // true
 exist, err := root.UnsetByIndex(1) // exist == true
 println(root.Get("key4").Check()) // "value not exist"
 ```
+
 #### Serialize
 
 To encode `ast.Node` as json, use `MarshalJson()` or `json.Marshal()` (MUST pass the node's pointer)
@@ -380,7 +383,9 @@ type Visitor interface {
 See [ast/visitor.go](https://github.com/bytedance/sonic/blob/main/ast/visitor.go) for detailed usage. We also implement a demo visitor for `UserNode` in [ast/visitor_test.go](https://github.com/bytedance/sonic/blob/main/ast/visitor_test.go).
 
 ## Compatibility
+
 For developers who want to use sonic to meet diffirent scenarios, we provide some integrated configs as `sonic.API`
+
 - `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run sonic fast meanwhile ensure security.
 - `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...)
 - `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic as fast as possible.
@@ -474,11 +479,14 @@ For better performance, in previous case the `ast.Visitor` will be the better ch
 But `ast.Visitor` is not a very handy API. You might need to write a lot of code to implement your visitor and carefully maintain the tree hierarchy during decoding. Please read the comments in [ast/visitor.go](https://github.com/bytedance/sonic/blob/main/ast/visitor.go) carefully if you decide to use this API.
 
 ### Buffer Size
+
 Sonic use memory pool in many places like `encoder.Encode`, `ast.Node.MarshalJSON` to improve performace, which may produce more memory usage (in-use) when server's load is high. See [issue 614](https://github.com/bytedance/sonic/issues/614). Therefore, we introduce some options to let user control the behavior of memory pool. See [option](https://pkg.go.dev/github.com/bytedance/sonic@v1.11.9/option#pkg-variables) package.
 
 ### Faster JSON skip
-For compatibility. Sonic use FSM scanning to  validate JSON when decoding raw JSON or encoding `json.Marshaler`, which is much slower than SIMD-implemented skipping. If user has many redundant JSON value and DO NOT NEED to strictly validate JSON correctness, you can enable below options:
-- `Config.NoValidateSkipJSON`: for faster skipping JSON when decoding, such as unknown fields, mismatched values, and redundant array elements
+
+For security, sonic use [FSM](native/skip_one.c) algorithm to  validate JSON when decoding raw JSON or encoding `json.Marshaler`, which is much slower (1~10x) than [SIMD-searching-pair](native/skip_one_fast.c) algorithm. If user has many redundant JSON value and DO NOT NEED to strictly validate JSON correctness, you can enable below options:
+
+- `Config.NoValidateSkipJSON`: for faster skipping JSON when decoding, such as unknown fields, json.Unmarshaler(json.RawMessage), mismatched values, and redundant array elements
 - `Config.NoValidateJSONMarshaler`: avoid validating JSON when encoding `json.Marshaler`
 - `SearchOption.ValidateJSON`: indicates if validate located JSON value when `Get`
 
