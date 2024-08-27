@@ -8,7 +8,7 @@ import (
 )
 
 const (
-    _entry__skip_one = 704
+    _entry__skip_one = 672
 )
 
 const (
@@ -16,7 +16,7 @@ const (
 )
 
 const (
-    _size__skip_one = 15888
+    _size__skip_one = 12508
 )
 
 var (
@@ -28,15 +28,15 @@ var (
         {0xc, 32},
         {0xd, 40},
         {0x14, 48},
-        {0x3b41, 208},
-        {0x3b42, 48},
-        {0x3b44, 40},
-        {0x3b46, 32},
-        {0x3b48, 24},
-        {0x3b4a, 16},
-        {0x3b4b, 8},
-        {0x3b4f, 0},
-        {0x3e10, 208},
+        {0x2ea6, 208},
+        {0x2ea7, 48},
+        {0x2ea9, 40},
+        {0x2eab, 32},
+        {0x2ead, 24},
+        {0x2eaf, 16},
+        {0x2eb0, 8},
+        {0x2eb4, 0},
+        {0x30dc, 208},
     }
 )
 

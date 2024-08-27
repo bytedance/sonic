@@ -1774,6 +1774,9 @@ static always_inline long fsm_exec_1(StateMachine *self, const GoString *src, lo
 #undef FSM_XERR
 
 static always_inline long skip_one_1(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
+    if (flags & F_NO_VALIDATE_JSON) {
+        return skip_one_fast_1(src, p);
+    }
     fsm_init(m, FSM_VAL);
     return fsm_exec_1(m, src, p, flags);
 }

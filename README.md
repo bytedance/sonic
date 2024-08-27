@@ -380,17 +380,11 @@ type Visitor interface {
 See [ast/visitor.go](https://github.com/bytedance/sonic/blob/main/ast/visitor.go) for detailed usage. We also implement a demo visitor for `UserNode` in [ast/visitor_test.go](https://github.com/bytedance/sonic/blob/main/ast/visitor_test.go).
 
 ## Compatibility
-
-Sonic **DOES NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. For developers who use sonic to build their applications in different environments, we have the following suggestions:
-
-- Developing on **Mac M1**: Make sure you have Rosetta 2 installed on your machine, and set `GOARCH=amd64` when building your application. Rosetta 2 can automatically translate x86 binaries to arm64 binaries and run x86 applications on Mac M1.
-- Developing on **Linux arm64**: You can install qemu and use the `qemu-x86_64 -cpu max` command to convert x86 binaries to amr64 binaries for applications built with sonic. The qemu can achieve a similar transfer effect to Rosetta 2 on Mac M1.
-
-For developers who want to use sonic on Linux arm64 without qemu, or those who want to handle JSON strictly consistent with `encoding/json`, we provide some compatible APIs as `sonic.API`
-
-- `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run on sonic-supporting environment. It will fall back to `encoding/json` with the corresponding config, and some options like `SortKeys=false` will be invalid.
-- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...) to run on sonic-supporting environment. It will fall back to `encoding/json`.
-- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic-supporting environment. It will fall back to `encoding/json` with the corresponding config, and some options will be invalid.
+For developers who want to use sonic to meet diffirent scenarios, we provide some integrated configs as `sonic.API`
+- `ConfigDefault`: the sonic's default config (`EscapeHTML=false`,`SortKeys=false`...) to run sonic fast meanwhile ensure security.
+- `ConfigStd`: the std-compatible config (`EscapeHTML=true`,`SortKeys=true`...)
+- `ConfigFastest`: the fastest config (`NoQuoteTextMarshaler=true`) to run on sonic as fast as possible.
+Sonic **DOES NOT** ensure to support all environments, due to the difficulty of developing high-performance codes. On non-sonic-supporting environment, the implementation will fall back to `encoding/json`. Thus beflow configs will all equal to `ConfigStd`.
 
 ## Tips
 
