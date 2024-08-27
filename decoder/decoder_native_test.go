@@ -41,6 +41,7 @@ func BenchmarkSkipValidate(b *testing.B) {
         C [1]int `json:"c"` // fast int
         D struct {} `json:"d"` // empty struct
         E map[string]int `json:"e"` // mismatched elem
+        F json.RawMessage `json:"f"` // unmarshaler
         // Unknonwn
     }
     type C struct {
@@ -64,6 +65,7 @@ func BenchmarkSkipValidate(b *testing.B) {
         {"unknown", `{"unknown":`+compt+`}`, 5},
         {"empty", `{"d":`+compt+`}`, 5},
         {"mismatched elem", `{"e":`+compt+`}`, 5},
+        {"unmarshaler", `{"f":`+compt+`}`, 3},
     }
     _ = NewDecoder(`{}`).Decode(&skiptype{})
 
