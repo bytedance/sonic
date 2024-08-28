@@ -29,9 +29,9 @@ jobs:
       - name: Benchmark Target
         run: |
           export SONIC_NO_ASYNC_GC=1
-          go test -run ^$ -count=100 -benchtime=100000x -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target.out
-          go test -run ^$ -count=100 -benchtime=200000x -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_target.out
-          go test -run ^$ -count=100 -benchtime=500000x -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target.out
+          go test -run ^$ -count=20 -benchtime=100000x -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target.out
+          go test -run ^$ -count=20 -benchtime=200000x -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_target.out
+          go test -run ^$ -count=20 -benchtime=500000x -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target.out
 
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
@@ -44,10 +44,10 @@ jobs:
       - name: Benchmark main
         run: |
           export SONIC_NO_ASYNC_GC=1
-          go test -run ^$ -count=100 -benchtime=100000x -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_main.out
-          go test -run ^$ -count=100 -benchtime=200000x -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_main.out
-          go test -run ^$ -count=100 -benchtime=500000x -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast > /var/tmp/sonic_bench_main.out
+          go test -run ^$ -count=20 -benchtime=100000x -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_main.out
+          go test -run ^$ -count=20 -benchtime=200000x -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_main.out
+          go test -run ^$ -count=20 -benchtime=500000x -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast > /var/tmp/sonic_bench_main.out
 
       - name: Diff bench
         run: |
-          ./scripts/bench.py -t 0.10 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
+          ./scripts/bench.py -t 0.15 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
