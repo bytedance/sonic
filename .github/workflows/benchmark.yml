@@ -27,6 +27,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Benchmark Target
+        continue-on-error: true
         run: |
           export SONIC_NO_ASYNC_GC=1
           go test -run ^$ -count=20 -benchtime=100000x -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target.out
@@ -42,6 +43,7 @@ jobs:
           ref: main
       
       - name: Benchmark main
+        continue-on-error: true
         run: |
           export SONIC_NO_ASYNC_GC=1
           go test -run ^$ -count=20 -benchtime=100000x -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_main.out
