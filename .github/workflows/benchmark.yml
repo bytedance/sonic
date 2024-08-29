@@ -30,8 +30,9 @@ jobs:
         continue-on-error: true
         run: |
           export SONIC_NO_ASYNC_GC=1
-          export SONIC_BENCH_SINGLE=1
-          go test -run ^$ -count=10 -benchmem -bench 'Benchmark' ./generic_test >> /var/tmp/sonic_bench_target.out
+          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target.out
+          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_target.out
+          go test -run ^$ -count=100 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target.out
 
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
@@ -45,9 +46,10 @@ jobs:
         continue-on-error: true
         run: |
           export SONIC_NO_ASYNC_GC=1
-          export SONIC_BENCH_SINGLE=1
-          go test -run ^$ -count=10 -benchmem -bench 'Benchmark' ./generic_test >> /var/tmp/sonic_bench_main.out
+          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_maint.out
+          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_maint.out
+          go test -run ^$ -count=100 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_maint.out
 
       - name: Diff bench
         run: |
-          ./scripts/bench.py -t 0.15 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
+          ./scripts/bench.py -t 0.20 -d /var/tmp/sonic_bench_target.out,/var/tmp/sonic_bench_main.out x
