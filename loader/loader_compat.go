@@ -19,24 +19,12 @@
 package loader
 
 
-// LoadFuncs loads only one function as module, and returns the function pointer
-//   - text: machine code
-//   - funcName: function name
-//   - frameSize: stack frame size. 
-//   - argSize: argument total size (in bytes)
-//   - argPtrs: indicates if a slot (8 Bytes) of arguments memory stores pointer, from low to high
-//   - localPtrs: indicates if a slot (8 Bytes) of local variants memory stores pointer, from low to high
-// 
-// WARN: 
-//   - the function MUST has fixed SP offset equaling to this, otherwise it go.gentraceback will fail
-//   - the function MUST has only one stack map for all arguments and local variants
+// Deprecated: not use it
 func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize int, argPtrs []bool, localPtrs []bool) Function {
-    panic("not implemented")
+    println("sonic/loader for high go version is not implemented")
 }
 
-// Load loads given machine codes and corresponding function information into go moduledata
-// and returns runnable function pointer
-// WARN: this API is experimental, use it carefully
+// Deprecated: not use it
 func Load(text []byte, funcs []Func, modulename string, filenames []string) (out []Function) {
-    panic("not implemented")
+    println("sonic/loader for high go version is not implemented")
 }
