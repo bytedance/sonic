@@ -84,6 +84,10 @@ type Config struct {
     // NoValidateJSONMarshaler indicates that the encoder should not validate the output string
     // after encoding the JSONMarshaler to JSON.
     NoValidateJSONMarshaler       bool
+
+    // NoValidateJSONSkip indicates the decoder should not validate the JSON value when skipping it,
+    // such as unknown-fields, mismatched-type, redundant elements..
+    NoValidateJSONSkip bool
     
     // NoEncoderNewline indicates that the encoder should not add a newline after every message
     NoEncoderNewline bool
@@ -109,6 +113,7 @@ var (
     ConfigFastest = Config{
         NoQuoteTextMarshaler: true,
         NoValidateJSONMarshaler: true,
+        NoValidateJSONSkip: true,
     }.Froze()
 )
  

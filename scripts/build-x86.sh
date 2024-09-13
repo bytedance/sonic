@@ -8,8 +8,12 @@ TMP_DIR="output"
 OUT_DIR="internal/native"
 TOOL_DIR="tools/asm2asm"
 TMPL_DIR="internal/native"
-EXTRA_CLAGS=$1
+EXTRA_CLAGS=$2
 CC=clang
+if [ "$1" != "" ]; then
+    CC=$1
+fi
+echo $CC
 
 CPU_ARCS=("sse" "avx2")
 

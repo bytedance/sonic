@@ -17,16 +17,16 @@
 package decoder
 
 import (
-    `encoding/json`
-    `runtime`
-    `runtime/debug`
-    `strings`
-    `sync`
-    `testing`
-    `time`
+	"encoding/json"
+	"runtime"
+	"runtime/debug"
+	"strings"
+	"sync"
+	"testing"
+	"time"
 
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -84,7 +84,6 @@ var _BindingValue TwitterStruct
 func init() {
     _ = json.Unmarshal([]byte(TwitterJson), &_BindingValue)
 }
-
 
 func TestSkipMismatchTypeError(t *testing.T) {
     t.Run("struct", func(t *testing.T) {

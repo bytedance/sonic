@@ -25,6 +25,7 @@ const (
 	_F_disable_urc = consts.F_disable_urc
 	_F_use_int64 = consts.F_use_int64
 	_F_use_number = consts.F_use_number
+	_F_no_validate_json = consts.F_no_validate_json
 	_F_validate_string = consts.F_validate_string
 )
 
