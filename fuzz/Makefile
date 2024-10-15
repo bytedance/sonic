@@ -5,7 +5,7 @@ fuzz:
 	mkdir -p ${corpusdir}
 	rm -rf ./go-fuzz-corpus
 	git clone https://github.com/dvyukov/go-fuzz-corpus.git ./go-fuzz-corpus/
-	go install golang.org/x/tools/cmd/file2fuzz@latest
+	go install golang.org/x/tools/cmd/file2fuzz@v0.10.0
 	file2fuzz -o ${corpusdir} ./go-fuzz-corpus/json/corpus/*  ./corpus/* 
 
 run:
