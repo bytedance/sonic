@@ -283,11 +283,14 @@ sub := root.Get("key3").Index(2).Int64() // == 3
 **注意**：由于 `Index()` 使用偏移量来定位数据，比使用扫描的 `Get()` 要快的多，建议尽可能的使用 `Index` 。 Sonic 也提供了另一个 API， `IndexOrGet()` ，以偏移量为基础并且也确保键的匹配。
 
 #### 查找选项
+
 `ast.Searcher`提供了一些选项，以满足用户的不同需求:
+
 ```
 opts:= ast.SearchOption{CopyReturn: true…}
 Val, err:= sonic。gettwithoptions (JSON, opts， "key")
 ```
+
 - CopyReturn
 指示搜索器复制结果JSON字符串，而不是从输入引用。如果用户缓存结果，这有助于减少内存使用
 - ConcurentRead
@@ -381,16 +384,12 @@ type Visitor interface {
 
 ## 兼容性
 
-由于开发高性能代码的困难性， Sonic **不**保证对所有环境的支持。对于在不同环境中使用 Sonic 构建应用程序的开发者，我们有以下建议：
+对于想要使用sonic来满足不同场景的开发人员，我们提供了一些集成配置:
 
-- 在 **Mac M1** 上开发：确保在您的计算机上安装了 Rosetta 2，并在构建时设置 `GOARCH=amd64` 。 Rosetta 2 可以自动将 x86 二进制文件转换为 arm64 二进制文件，并在 Mac M1 上运行 x86 应用程序。
-- 在 **Linux arm64** 上开发：您可以安装 qemu 并使用 `qemu-x86_64 -cpu max` 命令来将 x86 二进制文件转换为 arm64 二进制文件。qemu可以实现与Mac M1上的Rosetta 2类似的转换效果。
-
-对于希望在不使用 qemu 下使用 sonic 的开发者，或者希望处理 JSON 时与 `encoding/JSON` 严格保持一致的开发者，我们在 `sonic.API` 中提供了一些兼容性 API
-
-- `ConfigDefault`: 在支持 sonic 的环境下 sonic 的默认配置（`EscapeHTML=false`，`SortKeys=false`等）。行为与具有相应配置的 `encoding/json` 一致，一些选项，如 `SortKeys=false` 将无效。
-- `ConfigStd`: 在支持 sonic 的环境下与标准库兼容的配置（`EscapeHTML=true`，`SortKeys=true`等）。行为与 `encoding/json` 一致。
-- `ConfigFastest`: 在支持 sonic 的环境下运行最快的配置（`NoQuoteTextMarshaler=true`）。行为与具有相应配置的 `encoding/json` 一致，某些选项将无效。
+- `ConfigDefault`: sonic的默认配置 (`EscapeHTML=false`， `SortKeys=false`…) 保证性能同时兼顾安全性。
+- `ConfigStd`: 与 `encoding/json` 保证完全兼容的配置
+- `ConfigFastest`: 最快的配置(`NoQuoteTextMarshaler=true...`) 保证性能最优但是会缺少一些安全性检查（validate UTF8 等）
+Sonic **不**确保支持所有环境，由于开发高性能代码的困难。在不支持声音的环境中，实现将回落到 `encoding/json`。因此上述配置将全部等于`ConfigStd`。
 
 ## 注意事项
 
@@ -478,7 +477,16 @@ go someFunc(user)
 但是，`ast.Visitor` 并不是一个很易用的 API。你可能需要写大量的代码去实现自己的 `ast.Visitor`，并且需要在解析过程中仔细维护树的层级。如果你决定要使用这个 API，请先仔细阅读 [ast/visitor.go](https://github.com/bytedance/sonic/blob/main/ast/visitor.go) 中的注释。
 
 ### 缓冲区大小
+
 Sonic在许多地方使用内存池，如`encoder.Encode`, `ast.Node.MarshalJSON`等来提高性能，这可能会在服务器负载高时产生更多的内存使用(in-use)。参见[issue 614](https://github.com/bytedance/sonic/issues/614)。因此，我们引入了一些选项来让用户配置内存池的行为。参见[option](https://pkg.go.dev/github.com/bytedance/sonic@v1.11.9/option#pkg-variables)包。
+
+### 更快的 JSON Skip
+
+为了安全起见，在跳过原始JSON 时，sonic decoder 默认使用[FSM](native/skip_one.c)算法扫描来跳过同时校验 JSON。它相比[SIMD-searching-pair](native/skip_one_fast.c)算法跳过要慢得多(1~10倍)。如果用户有很多冗余的JSON值，并且不需要严格验证JSON的正确性，你可以启用以下选项:
+
+- `Config.NoValidateSkipJSON`: 用于在解码时更快地跳过JSON，例如未知字段，`json.RawMessage`，不匹配的值和冗余的数组元素等
+- `Config.NoValidateJSONMarshaler`: 编码JSON时避免验证JSON。封送拆收器
+- `SearchOption.ValidateJSON`: 指示当`Get`时是否验证定位的JSON值
 
 ## 社区
 

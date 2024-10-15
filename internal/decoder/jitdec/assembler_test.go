@@ -528,14 +528,7 @@ func TestAssembler_OpCode(t *testing.T) {
         src: "",
         exp: []int{123, 0},
         val: &[]int{123},
-    }, {
-        key: "_OP_object_skip",
-        ins: []_Instr{newInsOp(_OP_object_skip)},
-        src: `{"zxcv":[1,2.0],"asdf":[true,false,null,"asdf",{"qwer":345}]}`,
-        pos: 1,
-        vfn: func(i int, _ interface{}) { assert.Equal(t, 61, i) },
-        val: nil,
-    }, {
+    },{
         key: "_OP_object_next",
         ins: []_Instr{newInsOp(_OP_object_next)},
         src: `{"asdf":[1,2.0,true,false,null,"asdf",{"qwer":345}]}`,

@@ -920,162 +920,6 @@ parse_float:
     *p = i;
 }
 
-/** Value Skipping FSM **/
-
-#define FSM_VAL         0
-#define FSM_ARR         1
-#define FSM_OBJ         2
-#define FSM_KEY         3
-#define FSM_ELEM        4
-#define FSM_ARR_0       5
-#define FSM_OBJ_0       6
-
-#define FSM_DROP(v)     (v)->sp--
-#define FSM_REPL(v, t)  (v)->vt[(v)->sp - 1] = (t)
-
-#define FSM_CHAR(c)     do { if (ch != (c)) return -ERR_INVAL; } while (0)
-#define FSM_XERR(v)     do { long r = (v); if (r < 0) return r; } while (0)
-
-static always_inline void fsm_init(StateMachine *self, int vt) {
-    self->sp = 1;
-    self->vt[0] = vt;
-}
-
-static always_inline long fsm_push(StateMachine *self, int vt) {
-    if (self->sp >= MAX_RECURSE) {
-        return -ERR_RECURSE_MAX;
-    } else {
-        self->vt[self->sp++] = vt;
-        return 0;
-    }
-}
-
-static always_inline long fsm_exec_1(StateMachine *self, const GoString *src, long *p, uint64_t flags) {
-    int  vt;
-    char ch;
-    long vi = -1;
-
-    /* run until no more nested values */
-    while (self->sp) {
-        ch = advance_ns(src, p);
-        if (ch  == 0) {
-            return -ERR_EOF;
-        }
-        vt = self->vt[self->sp - 1];
-
-        /* set the start address if any */
-        if (vi == -1) {
-            vi = *p - 1;
-        }
-
-        /* check for special types */
-        switch (vt) {
-            default: {
-                FSM_DROP(self);
-                break;
-            }
-
-            /* arrays */
-            case FSM_ARR: {
-                switch (ch) {
-                    case ']' : FSM_DROP(self);                    continue;
-                    case ',' : FSM_XERR(fsm_push(self, FSM_VAL)); continue;
-                    default  : return -ERR_INVAL;
-                }
-            }
-
-            /* objects */
-            case FSM_OBJ: {
-                switch (ch) {
-                    case '}' : FSM_DROP(self);                    continue;
-                    case ',' : FSM_XERR(fsm_push(self, FSM_KEY)); continue;
-                    default  : return -ERR_INVAL;
-                }
-            }
-
-            /* object keys */
-            case FSM_KEY: {
-                FSM_CHAR('"');
-                FSM_REPL(self, FSM_ELEM);
-                FSM_XERR(skip_string_1(src, p, flags));
-                continue;
-            }
-
-            /* object element */
-            case FSM_ELEM: {
-                FSM_CHAR(':');
-                FSM_REPL(self, FSM_VAL);
-                continue;
-            }
-
-            /* arrays, first element */
-            case FSM_ARR_0: {
-                if (ch == ']') {
-                    FSM_DROP(self);
-                    continue;
-                } else {
-                    FSM_REPL(self, FSM_ARR);
-                    break;
-                }
-            }
-
-            /* objects, first pair */
-            case FSM_OBJ_0: {
-                switch (ch) {
-                    default: {
-                        return -ERR_INVAL;
-                    }
-
-                    /* empty object */
-                    case '}': {
-                        FSM_DROP(self);
-                        continue;
-                    }
-
-                    /* the quote of the first key */
-                    case '"': {
-                        FSM_REPL(self, FSM_OBJ);
-                        FSM_XERR(skip_string_1(src, p, flags));
-                        FSM_XERR(fsm_push(self, FSM_ELEM));
-                        continue;
-                    }
-                }
-            }
-        }
-
-        /* simple values */
-        switch (ch) {
-            case '0' : /* fallthrough */
-            case '1' : /* fallthrough */
-            case '2' : /* fallthrough */
-            case '3' : /* fallthrough */
-            case '4' : /* fallthrough */
-            case '5' : /* fallthrough */
-            case '6' : /* fallthrough */
-            case '7' : /* fallthrough */
-            case '8' : /* fallthrough */
-            case '9' : FSM_XERR(skip_positive_1(src, p));                     break;
-            case '-' : FSM_XERR(skip_negative_1(src, p));                     break;
-            case 'n' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_NULL)); break;
-            case 't' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_TRUE)); break;
-            case 'f' : FSM_XERR(advance_dword(src, p, 0, *p - 1, VS_ALSE)); break;
-            case '[' : FSM_XERR(fsm_push(self, FSM_ARR_0));                 break;
-            case '{' : FSM_XERR(fsm_push(self, FSM_OBJ_0));                 break;
-            case '"' : FSM_XERR(skip_string_1(src, p, flags));                break;
-            case  0  : return -ERR_EOF;
-            default  : return -ERR_INVAL;
-        }
-    }
-
-    /* all done */
-    return vi;
-}
-
-#undef FSM_DROP
-#undef FSM_REPL
-#undef FSM_CHAR
-#undef FSM_XERR
-
 #define check_bits(mv)                              \
     if (unlikely((v = mv & (mv - 1)) != 0)) {       \
         return -(sp - ss + __builtin_ctz(v) + 1);   \
@@ -1361,11 +1205,6 @@ static always_inline long skip_number_1(const GoString *src, long *p) {
     }
     *p = sp + r - ss;
     return i;
-}
-
-static always_inline long skip_one_1(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
-    fsm_init(m, FSM_VAL);
-    return fsm_exec_1(m, src, p, flags);
 }
 
 static always_inline uint64_t get_maskx64(const char *s, char c) {
@@ -1733,4 +1572,211 @@ static always_inline long match_key(const GoString *src, long *p, const GoString
         }
     };
     return sp == end && kp == ke;
+}
+
+/** Value Skipping FSM **/
+
+#define FSM_VAL         0
+#define FSM_ARR         1
+#define FSM_OBJ         2
+#define FSM_KEY         3
+#define FSM_ELEM        4
+#define FSM_ARR_0       5
+#define FSM_OBJ_0       6
+
+#define FSM_DROP(v)     (v)->sp--
+#define FSM_REPL(v, t)  (v)->vt[(v)->sp - 1] = (t)
+
+#define FSM_CHAR(c)     do { if (ch != (c)) return -ERR_INVAL; } while (0)
+#define FSM_XERR(v)     do { long r = (v); if (r < 0) return r; } while (0)
+
+static always_inline void fsm_init(StateMachine *self, int vt) {
+    self->sp = 1;
+    self->vt[0] = vt;
+}
+
+static always_inline long fsm_push(StateMachine *self, int vt) {
+    if (self->sp >= MAX_RECURSE) {
+        return -ERR_RECURSE_MAX;
+    } else {
+        self->vt[self->sp++] = vt;
+        return 0;
+    }
+}
+
+static always_inline long fsm_exec_1(StateMachine *self, const GoString *src, long *p, uint64_t flags) {
+    int  vt;
+    char ch;
+    long vi = -1;
+
+    /* run until no more nested values */
+    while (self->sp) {
+        ch = advance_ns(src, p);
+        if (ch  == 0) {
+            return -ERR_EOF;
+        }
+        vt = self->vt[self->sp - 1];
+
+        /* set the start address if any */
+        if (vi == -1) {
+            vi = *p - 1;
+        }
+
+        /* check for special types */
+        switch (vt) {
+            default: {
+                FSM_DROP(self);
+                break;
+            }
+
+            /* arrays */
+            case FSM_ARR: {
+                switch (ch) {
+                    case ']' : FSM_DROP(self);                    continue;
+                    case ',' : FSM_XERR(fsm_push(self, FSM_VAL)); continue;
+                    default  : return -ERR_INVAL;
+                }
+            }
+
+            /* objects */
+            case FSM_OBJ: {
+                switch (ch) {
+                    case '}' : FSM_DROP(self);                    continue;
+                    case ',' : FSM_XERR(fsm_push(self, FSM_KEY)); continue;
+                    default  : return -ERR_INVAL;
+                }
+            }
+
+            /* object keys */
+            case FSM_KEY: {
+                FSM_CHAR('"');
+                FSM_REPL(self, FSM_ELEM);
+                if (flags & F_NO_VALIDATE_JSON) {
+                    FSM_XERR(skip_string_fast(src, p));
+                } else {
+                    FSM_XERR(skip_string_1(src, p, flags));
+                }
+                continue;
+            }
+
+            /* object element */
+            case FSM_ELEM: {
+                FSM_CHAR(':');
+                FSM_REPL(self, FSM_VAL);
+                continue;
+            }
+
+            /* arrays, first element */
+            case FSM_ARR_0: {
+                if (ch == ']') {
+                    FSM_DROP(self);
+                    continue;
+                } else {
+                    FSM_REPL(self, FSM_ARR);
+                    break;
+                }
+            }
+
+            /* objects, first pair */
+            case FSM_OBJ_0: {
+                switch (ch) {
+                    default: {
+                        return -ERR_INVAL;
+                    }
+
+                    /* empty object */
+                    case '}': {
+                        FSM_DROP(self);
+                        continue;
+                    }
+
+                    /* the quote of the first key */
+                    case '"': {
+                        FSM_REPL(self, FSM_OBJ);
+                        if (flags & F_NO_VALIDATE_JSON) {
+                            FSM_XERR(skip_string_fast(src, p));
+                        } else {
+                            FSM_XERR(skip_string_1(src, p, flags));
+                        }
+                        FSM_XERR(fsm_push(self, FSM_ELEM));
+                        continue;
+                    }
+                }
+            }
+        }
+
+        /* simple values */
+        switch (ch) {
+            case '0' : /* fallthrough */
+            case '1' : /* fallthrough */
+            case '2' : /* fallthrough */
+            case '3' : /* fallthrough */
+            case '4' : /* fallthrough */
+            case '5' : /* fallthrough */
+            case '6' : /* fallthrough */
+            case '7' : /* fallthrough */
+            case '8' : /* fallthrough */
+            case '9' : {
+                if (flags & F_NO_VALIDATE_JSON) {
+                    FSM_XERR(skip_number_fast(src, p));
+                } else {
+                    FSM_XERR(skip_positive_1(src, p));    
+                }               
+                break;
+            }
+            case '-' : {
+                if (flags & F_NO_VALIDATE_JSON) {
+                    FSM_XERR(skip_number_fast(src, p));
+                } else {
+                    FSM_XERR(skip_negative_1(src, p));   
+                }
+                break;
+            }
+            case 'n' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_NULL)); break;
+            case 't' : FSM_XERR(advance_dword(src, p, 1, *p - 1, VS_TRUE)); break;
+            case 'f' : FSM_XERR(advance_dword(src, p, 0, *p - 1, VS_ALSE)); break;
+            case '[' : {
+                if (flags & F_NO_VALIDATE_JSON) {
+                    FSM_XERR(skip_array_fast(src, p));
+                } else {
+                    FSM_XERR(fsm_push(self, FSM_ARR_0));                 
+                }
+                break;
+            }
+            case '{' : {
+                if (flags & F_NO_VALIDATE_JSON) {
+                    FSM_XERR(skip_object_fast(src, p));
+                } else {
+                    FSM_XERR(fsm_push(self, FSM_OBJ_0));
+                }
+                break;
+            }
+            case '"' : {
+                if (flags & F_NO_VALIDATE_JSON) {
+                    FSM_XERR(skip_string_fast(src, p));
+                } else {
+                    FSM_XERR(skip_string_1(src, p, flags));
+                }               
+                break;
+            }
+            case  0  : return -ERR_EOF;
+            default  : return -ERR_INVAL;
+        }
+    }
+
+    /* all done */
+    return vi;
+}
+
+#undef FSM_DROP
+#undef FSM_REPL
+#undef FSM_CHAR
+#undef FSM_XERR
+
+static always_inline long skip_one_1(const GoString *src, long *p, StateMachine *m, uint64_t flags) {
+    if (flags & F_NO_VALIDATE_JSON) {
+        return skip_one_fast_1(src, p);
+    }
+    fsm_init(m, FSM_VAL);
+    return fsm_exec_1(m, src, p, flags);
 }

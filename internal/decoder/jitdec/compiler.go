@@ -77,7 +77,6 @@ const (
     _OP_array_clear_p
     _OP_slice_init
     _OP_slice_append
-    _OP_object_skip
     _OP_object_next
     _OP_struct_field
     _OP_unmarshal
@@ -97,6 +96,7 @@ const (
     _OP_check_char_0
     _OP_dismatch_err
     _OP_go_skip
+    _OP_skip_emtpy
     _OP_add
     _OP_check_empty
     _OP_debug
@@ -155,7 +155,6 @@ var _OpNames = [256]string {
     _OP_array_skip       : "array_skip",
     _OP_slice_init       : "slice_init",
     _OP_slice_append     : "slice_append",
-    _OP_object_skip      : "object_skip",
     _OP_object_next      : "object_next",
     _OP_struct_field     : "struct_field",
     _OP_unmarshal        : "unmarshal",
@@ -902,7 +901,24 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
     n := p.pc()
     p.add(_OP_is_null)
 
-    skip := self.checkIfSkip(p, vt, '{')
+    j := p.pc()
+    p.chr(_OP_check_char_0, '{')
+    p.rtt(_OP_dismatch_err, vt)
+
+    /* special case for empty object */
+    if len(fv) == 0 {
+        p.pin(j)
+        s := p.pc()
+        p.add(_OP_skip_emtpy)
+        p.pin(s)
+        p.pin(n)
+        return
+    }
+
+    skip := p.pc()
+    p.add(_OP_go_skip)
+    p.pin(j)
+    p.int(_OP_add, 1)
     
     p.add(_OP_save)
     p.add(_OP_lspace)
@@ -920,11 +936,6 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
     p.chr(_OP_check_char, '}')
     p.chr(_OP_match_char, ',')
 
-    /* special case of an empty struct */
-    if len(fv) == 0 {
-        p.add(_OP_object_skip)
-        goto end_of_object
-    }
 
     /* match the remaining fields */
     p.add(_OP_lspace)
@@ -960,7 +971,6 @@ func (self *_Compiler) compileStructBody(p *_Program, sp int, vt reflect.Type) {
         p.int(_OP_goto, y0)
     }
 
-end_of_object:
     p.pin(x)
     p.pin(y1)
     p.add(_OP_drop)
