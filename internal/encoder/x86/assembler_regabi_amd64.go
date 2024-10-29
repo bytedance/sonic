@@ -1050,8 +1050,9 @@ func (self *Assembler) _asm_OP_recurse(p *ir.Instr) {
 	self.Emit("MOVQ", _ST, _DI)     // MOVQ  ST, DI
 	self.Emit("MOVQ", _ARG_fv, _SI) // MOVQ  $fv, SI
 	if pv {
-		self.Emit("BTCQ", jit.Imm(alg.BitPointerValue), _SI) // BTCQ $1, SI
+		self.Emit("BTSQ", jit.Imm(alg.BitPointerValue), _SI) // BTSQ $1, SI
 	}
+
 	self.call_encoder(_F_encodeTypedPointer) // CALL  encodeTypedPointer
 	self.Emit("TESTQ", _ET, _ET)             // TESTQ ET, ET
 	self.Sjmp("JNZ", _LB_error)              // JNZ   _error
