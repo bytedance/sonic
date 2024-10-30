@@ -1,3 +1,5 @@
+// +build !bytedance_tango
+
 /*
  * Copyright 2023 ByteDance Inc.
  *
