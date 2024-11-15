@@ -295,6 +295,21 @@ func TestDecoder_MapWithIndirectElement(t *testing.T) {
     assert.Equal(t, [129]byte{1, 2, 3, 4, 5}, v[""].A)
 }
 
+func TestDecoder_OptionCaseSensitive(t *testing.T) {
+    var js = `{"a":1,"normallllll":1,"longllllllllllllllllllllllllllllllllll":1}`
+    type TS struct{
+        A int 
+        Normallllll int 
+        Longllllllllllllllllllllllllllllllllll int 
+    }
+    var obj = TS{}
+    d := NewDecoder(js)
+    d.SetOptions(OptionCaseSensitive)
+    err := d.Decode(&obj)
+    require.NoError(t, err)
+    require.Equal(t, TS{}, obj)
+}
+
 func BenchmarkDecoder_Generic_Sonic(b *testing.B) {
     var w interface{}
     _, _ = decode(TwitterJson, &w, true)
