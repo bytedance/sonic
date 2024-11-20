@@ -5,38 +5,42 @@ import (
 	"strconv"
 
 	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/utils"
 	"github.com/bytedance/sonic/internal/native/types"
 )
 
 
 func SkipNumberFast(json string, start int) (int, error) {
-	// find the number ending, we pasred in sonic-cpp, it alway valid
+	// find the number ending, we pasred in native, it alway valid
 	pos := start
 	for pos < len(json) && json[pos] != ']' && json[pos] != '}' && json[pos] != ',' {
 		if json[pos] >= '0' && json[pos] <= '9' || json[pos] == '.' || json[pos] == '-' || json[pos] == '+' || json[pos] == 'e' || json[pos] == 'E' {
 			pos += 1
 		} else {
-			return pos, error_syntax(pos, json, "invalid number")
+			break
 		}
 	}
 	return pos, nil
 }
 
-func ValidNumberFast(json string) error {
-	// find the number ending, we pasred in sonic-cpp, it alway valid
-	pos := 0
-	for pos < len(json) && json[pos] != ']' && json[pos] != '}' && json[pos] != ',' {
-		if json[pos] >= '0' && json[pos] <= '9' || json[pos] == '.' || json[pos] == '-' || json[pos] == '+' || json[pos] == 'e' || json[pos] == 'E' {
-			pos += 1
-		} else {
-			return error_syntax(pos, json, "invalid number")
-		}
+
+func isSpace(c byte) bool {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r'
+}
+
+// pos is the start index of the raw
+func ValidNumberFast(raw string) bool {
+	ret := utils.SkipNumber(raw, 0)
+	if ret < 0 {
+		return false
 	}
 
-	if pos == 0 {
-		return error_syntax(pos, json, "invalid number")
+	// check trainling chars
+	for ret < len(raw) {
+		return false
 	}
-	return nil
+
+	return true
 }
 
 func SkipOneFast2(json string, pos *int) (int, error) {

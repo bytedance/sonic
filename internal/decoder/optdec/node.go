@@ -509,12 +509,11 @@ func (val Node) AsNumber(ctx *Context) (json.Number, bool) {
 	// parse JSON string as number
 	if val.IsStr() {
 		s, _ := val.AsStr(ctx)
-		err := ValidNumberFast(s)
-		if err != nil {
+		if !ValidNumberFast(s) {
 			return "", false
+		} else {
+			return json.Number(s), true
 		}
-		
-		return json.Number(s), true
 	}
 
 	return val.NonstrAsNumber(ctx)

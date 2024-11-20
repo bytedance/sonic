@@ -2967,3 +2967,24 @@ func BenchmarkDecoderRawMessage(b *testing.B) {
         })
     })
 }
+
+
+func TestJsonNumber(t *testing.T) {
+    api := Config {
+        UseNumber: true,
+    }.Froze()
+
+
+    type Foo struct {
+        A json.Number `json:"a"`
+        B json.Number `json:"b"`
+        C json.Number `json:"c"`
+    }
+
+    data := []byte(`{"a": 1 , "b": "123", "c": "0.4e+56"}`)
+    var foo1, foo2 Foo
+    serr := api.Unmarshal(data, &foo1)
+    jerr := json.Unmarshal(data, &foo2)
+    assert.Equal(t, jerr, serr)
+    assert.Equal(t, foo2, foo1)
+}
