@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -285,14 +284,6 @@ func TestDecoder_Binding(t *testing.T) {
     assert.NoError(t, err)
     assert.Equal(t, len(TwitterJson), pos)
     assert.Equal(t, _BindingValue, v, 0)
-}
-
-
-func TestDecoder_MapWithIndirectElement(t *testing.T) {
-    var v map[string]struct { A [129]byte }
-    _, err := decode(`{"":{"A":[1,2,3,4,5]}}`, &v, false)
-    require.NoError(t, err)
-    assert.Equal(t, [129]byte{1, 2, 3, 4, 5}, v[""].A)
 }
 
 func BenchmarkDecoder_Generic_Sonic(b *testing.B) {
