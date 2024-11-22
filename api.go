@@ -77,7 +77,7 @@ type Config struct {
     // CopyString indicates decoder to decode string values by copying instead of referring.
     CopyString                    bool
 
-    // ValidateString indicates decoder and encoder to valid string values: decoder will return errors 
+    // ValidateString indicates decoder and encoder to validate string values: decoder will return errors 
     // when unescaped control chars(\u0000-\u001f) in the string value of JSON.
     ValidateString                bool
 
