@@ -33,6 +33,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDecoder_OptionCaseSensitive(t *testing.T) {
+    var js = `{"a":1,"normallllll":1,"longllllllllllllllllllllllllllllllllll":1}`
+    type TS struct{
+        A int 
+        Normallllll int 
+        Longllllllllllllllllllllllllllllllllll int 
+    }
+    var obj = TS{}
+    d := NewDecoder(js)
+    d.SetOptions(OptionCaseSensitive)
+    err := d.Decode(&obj)
+    require.NoError(t, err)
+    require.Equal(t, TS{}, obj)
+}
+
 
 func BenchmarkSkipValidate(b *testing.B) {
     type skiptype struct {
