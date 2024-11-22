@@ -158,8 +158,12 @@ const _HdrSize = _HdrSlot * 5
 func (self *NormalFieldMap) Get(name string, caseSensitive bool) int {
 	// small keys use native C
 	if len(name) <= 32 {
-		 _ = native.LookupSmallKey
-		return native.LookupSmallKey(&name, &self.keys, self.lowOffset);
+		_ = native.LookupSmallKey
+		lowOffset := self.lowOffset
+		if caseSensitive {
+			lowOffset = -1
+		}
+		return native.LookupSmallKey(&name, &self.keys, lowOffset);
 	}
 	return self.getLongKey(name, caseSensitive)
 }
