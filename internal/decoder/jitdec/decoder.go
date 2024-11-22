@@ -27,6 +27,7 @@ const (
 	_F_use_number = consts.F_use_number
 	_F_no_validate_json = consts.F_no_validate_json
 	_F_validate_string = consts.F_validate_string
+    _F_case_sensitive = consts.F_case_sensitive
 )
 
 var (
