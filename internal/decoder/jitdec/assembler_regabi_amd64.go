@@ -483,6 +483,7 @@ var (
     _V_stackOverflow              = jit.Imm(int64(uintptr(unsafe.Pointer(&stackOverflow))))
     _I_json_UnsupportedValueError = jit.Itab(_T_error, reflect.TypeOf(new(json.UnsupportedValueError)))
     _I_json_MismatchTypeError     = jit.Itab(_T_error, reflect.TypeOf(new(MismatchTypeError)))
+    _I_json_MismatchQuotedError   = jit.Itab(_T_error, reflect.TypeOf(new(MismatchQuotedError)))
 )
 
 func (self *_Assembler) type_error() {
@@ -1129,15 +1130,19 @@ func (self *_Assembler) unmarshal_func(t reflect.Type, fn obj.Addr, deref bool) 
     self.Emit("MOVQ" , _ARG_sv_n, _DI)          // MOVQ    sv.n, DI
     self.call_go(fn)                            // CALL_GO ${fn}
     self.Emit("TESTQ", _ET, _ET)                // TESTQ   ET, ET
-    self.Sjmp("JZ"  , "_unmarshal_func_end_{n}")               // JNZ     _error
-    self.Emit("MOVQ", _I_json_MismatchTypeError, _CX)             // MOVQ    ET, VAR.et
-    self.Emit("CMPQ", _ET, _CX)          // check if MismatchedError
-    self.Sjmp("JNE" , _LB_error)                
-    self.Emit("MOVQ", jit.Type(t), _CX)        // store current type 
-    self.Emit("MOVQ", _CX, _VAR_et)             // store current type 
-    self.Emit("MOVQ", _VAR_ic, _IC)             // recover the pos
-    self.Emit("XORL", _ET, _ET)
-    self.Link("_unmarshal_func_end_{n}")
+    if fn == _F_decodeJsonUnmarshalerQuoted {
+        self.Sjmp("JZ"  , "_unmarshal_func_end_{n}")            // JZ   _unmarshal_func_end_{n}
+        self.Emit("MOVQ", _I_json_MismatchQuotedError, _CX)     // MOVQ _I_json_MismatchQuotedError, CX
+        self.Emit("CMPQ", _ET, _CX)            // check if MismatchQuotedError
+        self.Sjmp("JNE" , _LB_error)           // JNE     _error
+        self.Emit("MOVQ", jit.Type(t), _CX)    // store current type 
+        self.Emit("MOVQ", _CX, _VAR_et)        // store current type as mismatched type
+        self.Emit("MOVQ", _VAR_ic, _IC)        // recover the pos at mismatched, continue to parse
+        self.Emit("XORL", _ET, _ET)            // clear ET
+        self.Link("_unmarshal_func_end_{n}")
+    } else {
+        self.Sjmp("JNE" , _LB_error)           // JNE     _error
+    }
 }
 
 /** Dynamic Decoding Routine **/

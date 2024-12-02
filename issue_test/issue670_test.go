@@ -30,7 +30,6 @@ func TestIssue670_JSONMarshaler(t *testing.T) {
 	so, _ := sonic.MarshalString(obj)
 	eo, _ := json.Marshal(obj)
 	assert.Equal(t, string(eo), so)
-	println(string(eo))
 }
 
 func TestIssue670_JSONUnmarshaler(t *testing.T) {
@@ -50,11 +49,8 @@ func TestIssue670_JSONUnmarshaler(t *testing.T) {
 
 func testUnmarshal(t *testing.T, eo []byte, rt reflect.Type, checkobj bool) {
 	obj := reflect.New(rt).Interface()
-	println(string(eo))
-	println("sonic")
 	es := sonic.Unmarshal(eo, obj)
 	obj2 := reflect.New(rt).Interface()
-	println("std")
 	ee := json.Unmarshal(eo, obj2)
 	assert.Equal(t, ee ==nil, es == nil, es)
 	if checkobj {
@@ -107,7 +103,6 @@ func (d *Date) UnmarshalJSON(in []byte) error {
 		return nil
 	}
 	
-	println("hook ", string(in))
 	t, err := time.Parse("2006-01-02", string(in))
 	if err != nil {
 		return err
@@ -125,7 +120,6 @@ type Issue670TextMarshaler struct {
 type Date2 int64
 
 func (d Date2) MarshalText() ([]byte, error) {
-	println("hook 1")
 	if d == 0 {
 		return []byte("null"), nil
 	}
@@ -133,7 +127,6 @@ func (d Date2) MarshalText() ([]byte, error) {
 }
 
 func (d *Date2) UnmarshalText(in []byte) error {
-	println("hook 2", string(in))
 	if string(in) == "null" {
 		*d = 0
 		return nil
