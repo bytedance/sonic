@@ -286,9 +286,9 @@ sub := root.Get("key3").Index(2).Int64() // == 3
 
 `ast.Searcher`提供了一些选项，以满足用户的不同需求:
 
-```
-opts:= ast.SearchOption{CopyReturn: true…}
-Val, err:= sonic。gettwithoptions (JSON, opts， "key")
+```go
+opts := ast.SearchOption{CopyReturn: true…}
+val, err := sonic.GetWithOptions(JSON, opts, "key")
 ```
 
 - CopyReturn
