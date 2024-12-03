@@ -10,7 +10,7 @@ import (
 )
 
 
-func SkipNumberFast(json string, start int) (int, error) {
+func SkipNumberFast(json string, start int) (int, bool) {
 	// find the number ending, we pasred in native, it alway valid
 	pos := start
 	for pos < len(json) && json[pos] != ']' && json[pos] != '}' && json[pos] != ',' {
@@ -20,7 +20,12 @@ func SkipNumberFast(json string, start int) (int, error) {
 			break
 		}
 	}
-	return pos, nil
+
+	// if not found number, return false
+	if pos == start {
+		return pos, false
+	}
+	return pos, true
 }
 
 

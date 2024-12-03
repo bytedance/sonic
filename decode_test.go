@@ -1009,6 +1009,8 @@ var unmarshalTests = []unmarshalTest{
         ptr: new(map[string]json.Number),
         err: fmt.Errorf("json: invalid number literal, trying to unmarshal %q into Number", `"invalid"`),
     },
+
+    // UTF-8 and string validation tests
     {in: `\u`, ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validateString: true},
     {in: `\u`, ptr: new(string), err: fmt.Errorf("json: invald char"), validateString: true},
 
@@ -1020,6 +1022,17 @@ var unmarshalTests = []unmarshalTest{
     {in: "\"\x00\"", ptr: new(string), out: "\x00", validateString: false},
     {in: "\"\xff\"", ptr: new(interface{}), out: interface{}("\xff"), validateString: false},
     {in: "\"\xff\"", ptr: new(string), out: "\xff", validateString: false},
+
+    // cases found by fuzz
+    {   
+        in: `{"H":{"A": {}}}`,
+        ptr: new(struct {
+            F0 struct {
+                F1 json.Number "json:\"a,omitempty\""
+            } "json:\"H,\""
+        }),
+        err: fmt.Errorf("Mismatch type json.Number with value object.."),
+    },
 }
 
 func trim(b []byte) []byte {
