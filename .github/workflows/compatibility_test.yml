@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.16.x, 1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x, 1.23.x]
-        os: [arm, X64]
+        os: [X64, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Clear repository
@@ -38,6 +38,3 @@ jobs:
 
       - name: ast
         run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic/ast
-      
-      - name: qemu
-        run: sh scripts/qemu.sh
