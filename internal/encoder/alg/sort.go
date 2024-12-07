@@ -46,7 +46,7 @@ func radixQsort(kvs []_MapPair, d, maxDepth int) {
         }
 
         // kvs[0:lt] < v = kvs[lt:gt] < kvs[gt:len(kvs)]
-        // Native implemention:
+        // Native implementation:
         //     radixQsort(kvs[:lt], d, maxDepth)
         //     if p > -1 {
         //         radixQsort(kvs[lt:gt], d+1, maxDepth)

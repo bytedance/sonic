@@ -1,0 +1,13 @@
+name: Lint
+
+on: pull_request
+
+jobs:
+  misc:
+    runs-on: [self-hosted, X64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: spell check
+        run: |
+          pip install codespell==2.3.0
+          git grep --cached -l '' | xargs codespell  --skip 'fuzz/*,*_test.tmpl,testdata/*,*_test.go,go.mod,go.sum,*.gz' --ignore-words=.github/workflows/.ignore_words

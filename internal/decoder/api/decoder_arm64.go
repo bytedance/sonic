@@ -30,7 +30,7 @@ var (
 
 
 func init() {
-    // whe in aarch64. we enable all optimize
+    // when in aarch64, we enable all optimization
 	envs.EnableOptDec()
 	envs.EnableFastMap()
 }

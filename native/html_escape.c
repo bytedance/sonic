@@ -36,7 +36,7 @@ ssize_t html_escape(const char *sp, ssize_t nb, char *dp, ssize_t *dn) {
             break;
         }
 
-        /* mark cur postion */
+        /* mark cur position */
         cur = sp;
 
         /* check for \u2028 and \u2029, binary is \xe2\x80\xa8 and \xe2\x80\xa9 */

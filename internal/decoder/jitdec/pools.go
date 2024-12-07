@@ -63,8 +63,8 @@ type _Decoder func(
     vp unsafe.Pointer,
     sb *_Stack,
     fv uint64,
-    sv string, // DO NOT pass value to this arguement, since it is only used for local _VAR_sv
-    vk unsafe.Pointer, // DO NOT pass value to this arguement, since it is only used for local _VAR_vk
+    sv string, // DO NOT pass value to this argument, since it is only used for local _VAR_sv
+    vk unsafe.Pointer, // DO NOT pass value to this argument, since it is only used for local _VAR_vk
 ) (int, error)
 
 var _KeepAlive struct {

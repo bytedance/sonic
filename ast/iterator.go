@@ -173,7 +173,7 @@ type Scanner func(path Sequence, node *Node) bool
 // ForEach scans one V_OBJECT node's children from JSON head to tail, 
 // and pass the Sequence and Node of corresponding JSON value.
 //
-// Especailly, if the node is not V_ARRAY or V_OBJECT, 
+// Especially, if the node is not V_ARRAY or V_OBJECT,
 // the node itself will be returned and Sequence.Index == -1.
 // 
 // NOTICE: A unsetted node WON'T trigger sc, but its index still counts into Path.Index
