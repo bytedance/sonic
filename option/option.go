@@ -68,7 +68,7 @@ type CompileOption func(o *CompileOptions)
 //
 // For deep nested struct (depth exceeds MaxInlineDepth), 
 // try to set more loops to completely compile, 
-// thus reduce JIT unstability in the first hit.
+// thus reduce JIT instability in the first hit.
 func WithCompileRecursiveDepth(loop int) CompileOption {
     return func(o *CompileOptions) {
             if loop < 0 {

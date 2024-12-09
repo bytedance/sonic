@@ -372,7 +372,7 @@ func (val Node) ParseF64(ctx *Context) (float64, bool) {
 }
 
 func (val Node) ParseString(ctx *Context) (string, bool) {
-	// shoud not use AsStrRef
+	// should not use AsStrRef
 	s, ok := val.AsStr(ctx)
 	if !ok {
 		return "", false
@@ -391,7 +391,7 @@ func (val Node) ParseString(ctx *Context) (string, bool) {
 
 
 func (val Node) ParseNumber(ctx *Context) (json.Number, bool) {
-	// shoud not use AsStrRef
+	// should not use AsStrRef
 	s, ok := val.AsStr(ctx)
 	if !ok {
 		return json.Number(""), false

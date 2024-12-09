@@ -37,7 +37,7 @@ static const option _F_USE_NUMBER = 1; // types.B_USE_NUMBER
 static const option _F_VALIDATE_STR = 5; // types.B_VALIDATE_STRING
 static const option _F_ALLOW_CTL = 31; // types.B_ALLOW_CONTROL
 
-// NOTE: only enbale these flags in sonic-rs.
+// NOTE: only enable these flags in sonic-rs.
 static const option F_USE_NUMBER        = 1 << _F_USE_NUMBER;
 static const option F_USE_INT64         = 1 << _F_USE_INT64;
 static const option F_VALIDATE_STRING   = 1 << _F_VALIDATE_STR;
@@ -636,7 +636,7 @@ escape:
         return -SONIC_INVALID_ESCAPED_UTF;
     }
 
-    // check continous escaped char
+    // check continuous escaped char
     if (**cur == '\\') {
         goto escape;
     }
@@ -739,7 +739,7 @@ static always_inline error_code parse_number(uint8_t** cur, parse_num* num, bool
         }
 
         if (**cur == '.') {
-            // skip continous zeros
+            // skip continuous zeros
             *cur += 1;
             uint8_t* dot_pos = *cur;
             should_digit(**cur);

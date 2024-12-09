@@ -177,7 +177,7 @@ func (c *compiler) compilePtr(vt reflect.Type) decFunc {
 	c.enter(vt)
 	defer c.exit(vt)
 
-	// specail logic for Named Ptr, issue 379
+	// special logic for Named Ptr, issue 379
 	if reflect.PtrTo(vt.Elem()) != vt {
 		c.namedPtr = true
 		return &ptrDecoder{
@@ -432,7 +432,7 @@ func (c *compiler) tryCompilePtrUnmarshaler(vt reflect.Type, strOpt bool) decFun
 
 	/* check for `encoding.TextMarshaler` with pointer receiver */
 	if pt.Implements(encodingTextUnmarshalerType) {
-		/* TextUnmarshal not support ,strig tag */
+		/* TextUnmarshal not support, string tag */
 		if strOpt {
 			panicForInvalidStrType(vt)
 		}
