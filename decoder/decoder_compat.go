@@ -1,3 +1,4 @@
+//go:build (!amd64 && !arm64) || go1.24 || !go1.17 || (arm64 && !go1.20)
 // +build !amd64,!arm64 go1.24 !go1.17 arm64,!go1.20
 
 /*
@@ -19,14 +20,15 @@
 package decoder
 
 import (
-    `bytes`
-    `encoding/json`
-    `io`
-    `reflect`
-    `unsafe`
+	"bytes"
+	"encoding/json"
+	"io"
+	"reflect"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/option`
+	"github.com/bytedance/sonic/internal/decoder/consts"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/option"
 )
 
 func init() {
@@ -34,15 +36,16 @@ func init() {
 }
 
 const (
-     _F_use_int64       = 0
-     _F_disable_urc     = 2
-     _F_disable_unknown = 3
-     _F_copy_string     = 4
+     _F_use_int64       = consts.F_use_int64
+     _F_disable_urc     = consts.F_disable_unknown
+     _F_disable_unknown = consts.F_disable_unknown
+     _F_copy_string     = consts.F_copy_string
  
-     _F_use_number      = types.B_USE_NUMBER
-     _F_validate_string = types.B_VALIDATE_STRING
-     _F_allow_control   = types.B_ALLOW_CONTROL
-     _F_no_validate_json   = types.B_NO_VALIDATE_JSON
+     _F_use_number      = consts.F_use_number
+     _F_validate_string = consts.F_validate_string
+     _F_allow_control   = consts.F_allow_control
+     _F_no_validate_json = consts.F_no_validate_json
+     _F_case_sensitive  = consts.F_case_sensitive
 )
 
 type Options uint64
@@ -55,6 +58,7 @@ const (
      OptionCopyString       Options = 1 << _F_copy_string
      OptionValidateString   Options = 1 << _F_validate_string
      OptionNoValidateJSON   Options = 1 << _F_no_validate_json
+     OptionCaseSensitive    Options = 1 << _F_case_sensitive
 )
 
 func (self *Decoder) SetOptions(opts Options) {
