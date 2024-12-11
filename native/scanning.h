@@ -349,7 +349,7 @@ static always_inline int _mm256_get_mask(__m256i v, __m256i t) {
     return _mm256_movemask_epi8(_mm256_cmpeq_epi8(v, t));
 }
 
-// contrl char: 0x00 ~ 0x1F
+// control char: 0x00 ~ 0x1F
 static always_inline int _mm256_cchars_mask(__m256i v) {
     __m256i e1 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(-1));
     __m256i e2 = _mm256_cmpgt_epi8 (v, _mm256_set1_epi8(31));
@@ -367,7 +367,7 @@ static always_inline int _mm_get_mask(__m128i v, __m128i t) {
     return _mm_movemask_epi8(_mm_cmpeq_epi8(v, t));
 }
 
-// contrl char: 0x00 ~ 0x1F
+// control char: 0x00 ~ 0x1F
 static always_inline int _mm_cchars_mask(__m128i v) {
     __m128i e1 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(-1));
     __m128i e2 = _mm_cmpgt_epi8 (v, _mm_set1_epi8(31));
@@ -800,7 +800,7 @@ static always_inline double atof_fast(uint64_t man, int exp, int sgn, int trunc,
 
 static bool always_inline is_overflow(uint64_t man, int sgn, int exp10) {
     /* the former exp10 != 0 means man has overflowed
-     * the later euqals to man*sgn < INT64_MIN or > INT64_MAX */
+     * the latter equals to man*sgn < INT64_MIN or > INT64_MAX */
     return exp10 != 0 ||
         ((man >> 63) == 1 && ((uint64_t)sgn & man) != (1ull << 63));
 }

@@ -140,7 +140,7 @@ func (self *Node)  Check() error {
 
 // isRaw returns true if node's underlying value is raw json
 //
-// Deprecated: not concurent safe
+// Deprecated: not concurrent safe
 func (self Node) IsRaw() bool {
     return self.t & _V_RAW != 0
 }
@@ -440,7 +440,7 @@ func (self *Node) String() (string, error) {
     }
 }
 
-// StrictString returns string value (unescaped), includeing V_STRING, V_ANY of string.
+// StrictString returns string value (unescaped), including V_STRING, V_ANY of string.
 // In other cases, it will return empty string.
 func (self *Node) StrictString() (string, error) {
     if err := self.checkRaw(); err != nil {
@@ -509,7 +509,7 @@ func (self *Node) Float64() (float64, error) {
     }
 }
 
-// Float64 exports underlying float64 value, includeing V_NUMBER, V_ANY 
+// Float64 exports underlying float64 value, including V_NUMBER, V_ANY
 func (self *Node) StrictFloat64() (float64, error) {
     if err := self.checkRaw(); err != nil {
         return 0.0, err
@@ -527,7 +527,7 @@ func (self *Node) StrictFloat64() (float64, error) {
     }
 }
 
-/** Sequencial Value Methods **/
+/** Sequential Value Methods **/
 
 // Len returns children count of a array|object|string node
 // WARN: For partially loaded node, it also works but only counts the parsed children
@@ -611,7 +611,7 @@ func (self *Node) Unset(key string) (bool, error) {
     if err := self.should(types.V_OBJECT); err != nil {
         return false, err
     }
-    // NOTICE: must get acurate length before deduct
+    // NOTICE: must get accurate length before deduct
     if err := self.skipAllKey(); err != nil {
         return false, err
     }
@@ -657,7 +657,7 @@ func (self *Node) SetAnyByIndex(index int, val interface{}) (bool, error) {
     return self.SetByIndex(index, NewAny(val))
 }
 
-// UnsetByIndex REOMVE (softly) the node of given index.
+// UnsetByIndex REMOVE (softly) the node of given index.
 //
 // WARN: this will change address of elements, which is a dangerous action.
 // Use Unset() for object or Pop() for array instead.
@@ -957,7 +957,7 @@ func (self *Node) MapUseNumber() (map[string]interface{}, error) {
     return self.toGenericObjectUseNumber()
 }
 
-// MapUseNode scans both parsed and non-parsed chidren nodes, 
+// MapUseNode scans both parsed and non-parsed children nodes,
 // and map them by their keys
 func (self *Node) MapUseNode() (map[string]Node, error) {
     if self.isAny() {
@@ -1102,7 +1102,7 @@ func (self *Node) ArrayUseNumber() ([]interface{}, error) {
     return self.toGenericArrayUseNumber()
 }
 
-// ArrayUseNode copys both parsed and non-parsed chidren nodes, 
+// ArrayUseNode copies both parsed and non-parsed children nodes,
 // and indexes them by original order
 func (self *Node) ArrayUseNode() ([]Node, error) {
     if self.isAny() {
@@ -1147,9 +1147,9 @@ func (self *Node) unsafeArray() (*linkedNodes, error) {
     return (*linkedNodes)(self.p), nil
 }
 
-// Interface loads all children under all pathes from this node,
+// Interface loads all children under all paths from this node,
 // and converts itself as generic type.
-// WARN: all numberic nodes are casted to float64
+// WARN: all numeric nodes are casted to float64
 func (self *Node) Interface() (interface{}, error) {
     if err := self.checkRaw(); err != nil {
         return nil, err
@@ -1193,7 +1193,7 @@ func (self *Node) packAny() interface{} {
 }
 
 // InterfaceUseNumber works same with Interface()
-// except numberic nodes  are casted to json.Number
+// except numeric nodes are casted to json.Number
 func (self *Node) InterfaceUseNumber() (interface{}, error) {
     if err := self.checkRaw(); err != nil {
         return nil, err
