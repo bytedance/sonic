@@ -77,7 +77,12 @@ func (cfg frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([
 
 // UnmarshalFromString is implemented by sonic
 func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
-    r := bytes.NewBufferString(buf)
+    return cfg.Unmarshal([]byte(buf), val)
+}
+
+// Unmarshal is implemented by sonic
+func (cfg frozenConfig) Unmarshal(buf []byte, val interface{}) error {
+    r := bytes.NewBuffer(buf)
     dec := json.NewDecoder(r)
     if cfg.UseNumber {
         dec.UseNumber()
@@ -86,11 +91,6 @@ func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
         dec.DisallowUnknownFields()
     }
     return dec.Decode(val)
-}
-
-// Unmarshal is implemented by sonic
-func (cfg frozenConfig) Unmarshal(buf []byte, val interface{}) error {
-    return cfg.UnmarshalFromString(string(buf), val)
 }
 
 // NewEncoder is implemented by sonic
