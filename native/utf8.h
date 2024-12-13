@@ -131,7 +131,7 @@ static always_inline long write_error(int pos, StateMachine *m, size_t msize) {
     return 0;
 }
 
-// scalar code, error position should excesss 4096
+// scalar code, error position should excess 4096
 static always_inline long validate_utf8_with_errors(const char *src, long len, long *p, StateMachine *m) {
     const char* start = src + *p;
     const char* end = src + len;
@@ -437,14 +437,14 @@ static always_inline long validate_utf8_errors(const GoString* s) {
             return;
         }
 
-        // frist 64 bytes is ascii, next 64 bytes must be utf8
+        // first 64 bytes is ascii, next 64 bytes must be utf8
         if (likely(is_ascii(reducer1))) {
             checker->error = _mm256_or_si256(checker->error, checker->prev_incomplete);
             check64_utf(checker, start + 64);
             return;
         }
 
-        // frist 64 bytes has utf8, next 64 bytes 
+        // first 64 bytes has utf8, next 64 bytes
         check64_utf(checker, start);
         if (unlikely(is_ascii(reducer2))) {
             checker->error = _mm256_or_si256(checker->error, checker->prev_incomplete);

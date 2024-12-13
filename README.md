@@ -211,7 +211,7 @@ ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"
 
 ### Compact Format
 
-Sonic encodes primitive objects (struct/map...) as compact-format JSON by default, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DONOT** compacting them for performance concerns. We provide the option `encoder.CompactMarshaler` to add compacting process.
+Sonic encodes primitive objects (struct/map...) as compact-format JSON by default, except marshaling `json.RawMessage` or `json.Marshaler`: sonic ensures validating their output JSON but **DO NOT** compacting them for performance concerns. We provide the option `encoder.CompactMarshaler` to add compacting process.
 
 ### Print Error
 
@@ -480,7 +480,7 @@ But `ast.Visitor` is not a very handy API. You might need to write a lot of code
 
 ### Buffer Size
 
-Sonic use memory pool in many places like `encoder.Encode`, `ast.Node.MarshalJSON` to improve performace, which may produce more memory usage (in-use) when server's load is high. See [issue 614](https://github.com/bytedance/sonic/issues/614). Therefore, we introduce some options to let user control the behavior of memory pool. See [option](https://pkg.go.dev/github.com/bytedance/sonic@v1.11.9/option#pkg-variables) package.
+Sonic use memory pool in many places like `encoder.Encode`, `ast.Node.MarshalJSON` to improve performance, which may produce more memory usage (in-use) when server's load is high. See [issue 614](https://github.com/bytedance/sonic/issues/614). Therefore, we introduce some options to let user control the behavior of memory pool. See [option](https://pkg.go.dev/github.com/bytedance/sonic@v1.11.9/option#pkg-variables) package.
 
 ### Faster JSON skip
 

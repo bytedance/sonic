@@ -49,7 +49,7 @@ def run_r(cmd):
     return data.decode("utf-8") 
 
 def compare(args):
-    # detech current branch.
+    # detect current branch.
     # result = run_r("git branch")
     current_branch = run_s("git status | head -n1 | sed 's/On branch //'")
     # for br in result.split('\n'):
@@ -58,14 +58,14 @@ def compare(args):
     #         break
 
     if not current_branch:
-        print ("Failed to detech current branch")
+        print ("Failed to detect current branch")
         return None
     
     # get the current diff
     (fd, diff) = tempfile.mkstemp()
     run("git diff > %s"%diff)
 
-    # early return if currrent is main branch.
+    # early return if current is main branch.
     print ("Current branch: %s"%(current_branch))
     if current_branch == "main":
         print ("Cannot compare at the main branch.Please build a new branch")

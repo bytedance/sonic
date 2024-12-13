@@ -423,7 +423,7 @@ static always_inline ssize_t memcchr_p32(const char *s, ssize_t nb, char *p) {
     _mm256_zeroupper();
 #endif
 
-    /* initialze with '\\' */
+    /* initialize with '\\' */
     __m128i x;
     __m128i y;
     __m128i a = _mm_set1_epi8('\\');
