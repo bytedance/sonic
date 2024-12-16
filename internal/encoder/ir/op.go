@@ -39,10 +39,12 @@ const (
 	OP_i16
 	OP_i32
 	OP_i64
+	OP_i
 	OP_u8
 	OP_u16
 	OP_u32
 	OP_u64
+	OP_ui
 	OP_f32
 	OP_f64
 	OP_str
@@ -102,10 +104,12 @@ var OpNames = [256]string{
 	OP_i16:            "i16",
 	OP_i32:            "i32",
 	OP_i64:            "i64",
+	OP_i:              "i",
 	OP_u8:             "u8",
 	OP_u16:            "u16",
 	OP_u32:            "u32",
 	OP_u64:            "u64",
+	OP_ui:             "ui",
 	OP_f32:            "f32",
 	OP_f64:            "f64",
 	OP_str:            "str",
@@ -201,12 +205,26 @@ func OP_is_zero_ints() Op {
 
 type Instr struct {
 	o Op
+	co Op
+	mapKey bool
 	u int            // union {op: 8, _: 8, vi: 48}, vi maybe int or len(str)
 	p unsafe.Pointer // maybe GoString.Ptr, or *GoType
 }
 
-func NewInsOp(op Op) Instr {
-	return Instr{o: op}
+func NewInsOp(op Op, compatOp ...Op) Instr {
+	i := Instr{o: op, co: op}
+	if len(compatOp) == 1 {
+		i.co = compatOp[0]
+	}
+	return i
+}
+
+func NewInsKeyOp(op Op, compatOp ...Op) Instr {
+	i := Instr{o: op, co: op, mapKey: true}
+	if len(compatOp) == 1 {
+		i.co = compatOp[0]
+	}
+	return i
 }
 
 func NewInsVi(op Op, vi int) Instr {
@@ -269,6 +287,14 @@ func NewInsVp(op Op, vt reflect.Type, pv bool) Instr {
 
 func (self Instr) Op() Op {
 	return Op(self.o)
+}
+
+func (self Instr) CompatOp() Op {
+	return Op(self.co)
+}
+
+func (self Instr) IsMapKey() bool {
+	return self.mapKey
 }
 
 func (self Instr) Vi() int {
@@ -434,14 +460,14 @@ func (self Program) Rel(v []int) {
 	}
 }
 
-func (self *Program) Add(op Op) {
-	*self = append(*self, NewInsOp(op))
+func (self *Program) Add(op Op, co ...Op) {
+	*self = append(*self, NewInsOp(op, co...))
 }
 
-func (self *Program) Key(op Op) {
+func (self *Program) Key(op Op, co ...Op) {
 	*self = append(*self,
 		NewInsVi(OP_byte, '"'),
-		NewInsOp(op),
+		NewInsKeyOp(op, co...),
 		NewInsVi(OP_byte, '"'),
 	)
 }
