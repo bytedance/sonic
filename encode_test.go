@@ -1225,3 +1225,119 @@ func TestMarshalInfOrNan(t *testing.T) {
         assert.True(t, strings.Contains(err.Error(), "json: unsupported value: NaN or ±Infinite"))
     }
 }
+
+func TestUint64ToString(t *testing.T) {
+	int64ptr := int64(432556670863027541)
+	uint64ptr := uint64(12372850276778298372)
+	cases := []struct {
+		name        string
+		val         any
+		exceptTrue  string
+		exceptFalse string
+	}{
+		{
+			name: "normal_map",
+			val: map[string]any{
+				"int":    int(12),
+				"int64":  int64(34),
+				"uint64": uint64(56),
+			},
+			exceptTrue:  `{"int":12,"int64":34,"uint64":"56"}`,
+			exceptFalse: `{"int":12,"int64":34,"uint64":56}`,
+		},
+		{
+			name: "int_key_map",
+			val: map[int64]any{
+				int64(12): int(12),
+				int64(34): int64(34),
+				int64(56): uint64(56),
+			},
+			exceptTrue:  `{"12":12,"34":34,"56":"56"}`,
+			exceptFalse: `{"12":12,"34":34,"56":56}`,
+		},
+        {
+			name: "uint_key_map",
+			val: map[uint64]any{
+				uint64(12): int(12),
+				uint64(34): int64(34),
+				uint64(56): uint64(56),
+			},
+			exceptTrue:  `{"12":12,"34":34,"56":"56"}`,
+			exceptFalse: `{"12":12,"34":34,"56":56}`,
+		},
+		{
+			name: "normal_struct",
+			val: struct {
+				Int    int    `json:"int"`
+				Int64  int64  `json:"int64"`
+				Uint64 uint64 `json:"uint64"`
+			}{
+				Int:    int(12),
+				Int64:  int64(34),
+				Uint64: uint64(56),
+			},
+			exceptTrue:  `{"int":12,"int64":34,"uint64":"56"}`,
+			exceptFalse: `{"int":12,"int64":34,"uint64":56}`,
+		},
+		{
+			name: "normal_slice",
+			val: []any{
+				int(12), int64(34), uint64(56),
+			},
+			exceptTrue:  `[12,34,"56"]`,
+			exceptFalse: `[12,34,56]`,
+		},
+		{
+			name:        "single_int64",
+			val:         int64(34),
+			exceptTrue:  `34`,
+			exceptFalse: `34`,
+		},
+		{
+			name:        "single_uint64",
+			val:         uint64(56),
+			exceptTrue:  `"56"`,
+			exceptFalse: `56`,
+		},
+		{
+			name: "int64ptr",
+			val: struct {
+				Map map[string]any
+			}{map[string]any{"val": struct {
+				Int64Ptr  any
+				Uint64Ptr any
+				Int64     any
+				Uint64    any
+			}{
+				Int64Ptr:  &int64ptr,
+				Uint64Ptr: &uint64ptr,
+				Int64:     int64(123),
+				Uint64:    uint64(456),
+			}}},
+			exceptTrue: `{"Map":{"val":{"Int64Ptr":432556670863027541,` +
+				`"Uint64Ptr":"12372850276778298372","Int64":123,"Uint64":"456"}}}`,
+			exceptFalse: `{"Map":{"val":{"Int64Ptr":432556670863027541,` +
+				`"Uint64Ptr":12372850276778298372,"Int64":123,"Uint64":456}}}`,
+		},
+	}
+
+	check := func(t *testing.T, except string, testRes []byte) {
+		var tmp1 any
+		assert.Nil(t, Unmarshal([]byte(testRes), &tmp1))
+		var tmp2 any
+		assert.Nil(t, Unmarshal([]byte(except), &tmp2))
+		assert.Equal(t, tmp2, tmp1)
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			b, e := Config{Uint64ToString: true}.Froze().Marshal(c.val)
+			assert.Nil(t, e)
+			check(t, c.exceptTrue, b)
+
+			b, e = Config{Uint64ToString: false}.Froze().Marshal(c.val)
+			assert.Nil(t, e)
+			check(t, c.exceptFalse, b)
+		})
+	}
+}

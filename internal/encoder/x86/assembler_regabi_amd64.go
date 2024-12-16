@@ -860,8 +860,21 @@ func (self *Assembler) _asm_OP_u32(_ *ir.Instr) {
 	self.store_int(16, _F_u64toa, "MOVLQZX")
 }
 
-func (self *Assembler) _asm_OP_u64(_ *ir.Instr) {
+func (self *Assembler) _asm_OP_u64(i *ir.Instr) {
+	if i.CompatOp() == ir.OP_i || i.IsMapKey() {
+		self.store_int(20, _F_u64toa, "MOVQ")
+		return
+	}
+	self.Emit("BTQ", jit.Imm(int64(alg.BitUint64ToString)), _ARG_fv)
+	self.Sjmp("JC", "_ui64_to_string{n}")
 	self.store_int(20, _F_u64toa, "MOVQ")
+	self.Sjmp("JMP", "_ui64_to_string_end{n}")
+	self.Link("_ui64_to_string{n}")
+
+	self.add_char('"')
+	self.store_int(20, _F_u64toa, "MOVQ")
+	self.add_char('"')
+	self.Link("_ui64_to_string_end{n}")
 }
 
 func (self *Assembler) _asm_OP_f32(_ *ir.Instr) {

@@ -152,8 +152,18 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*uint32)(p)
 			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u64:
+			quote := false
+			if ins.CompatOp() == ir.OP_u64 &&
+				!ins.IsMapKey() &&
+				flags&(1<<alg.BitUint64ToString) != 0 {
+				buf = append(buf, '"')
+				quote = true
+			}
 			v := *(*uint64)(p)
 			buf = alg.U64toa(buf, uint64(v))
+			if quote {
+				buf = append(buf, '"')
+			}
 		case ir.OP_f32:
 			v := *(*float32)(p)
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
