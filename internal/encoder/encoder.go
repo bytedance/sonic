@@ -73,6 +73,9 @@ const (
 
     // Encode Infinity or Nan float into `null`, instead of returning an error.
     EncodeNullForInfOrNan Options = 1 << alg.BitEncodeNullForInfOrNan
+
+    // Uint64 into strings on Marshal
+    Uint64ToString Options = 1 << alg.BitUint64ToString
 )
 
 // Encoder represents a specific set of encoder configurations.

@@ -94,6 +94,9 @@ type Config struct {
 
     // Encode Infinity or Nan float into `null`, instead of returning an error.
     EncodeNullForInfOrNan bool
+
+	// Uint64 into strings on Marshal
+	Uint64ToString bool
 }
  
 var (

@@ -70,6 +70,9 @@ func (cfg Config) Froze() API {
     if cfg.EncodeNullForInfOrNan {
         api.encoderOpts |= encoder.EncodeNullForInfOrNan
     }
+    if cfg.Uint64ToString {
+        api.encoderOpts |= encoder.Uint64ToString
+    }
 
     // configure decoder options:
     if cfg.NoValidateJSONSkip {
