@@ -8,9 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: spell check
-        run: |
-          # the python version in self-hosted runner is 3.7, which is not supported by the latest get-pip.py
-          python3 <(curl -s https://bootstrap.pypa.io/pip/3.7/get-pip.py)
-          pip install codespell==2.3.0
-          # ignore test files, go project names, binary files via `--skip` and special var/regex via `--ignore-words`
-          git grep --cached -l '' | xargs codespell  --skip 'fuzz/*,*_test.tmpl,testdata/*,*_test.go,go.mod,go.sum,*.gz' --ignore-words=.github/workflows/.ignore_words
+        uses: codespell-project/actions-codespell@v2
