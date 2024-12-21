@@ -18,7 +18,7 @@
 
 #include "native.h"
 
-/* decimical shift witout overflow, e.g. 9 << 61 overflow */
+/* decimical shift without overflow, e.g. 9 << 61 overflow */
 #define MAX_SHIFT 60
 
 /* Decimal represent the integer or float
@@ -90,7 +90,7 @@ static always_inline void decimal_set(Decimal *d, const char *s, ssize_t len, ch
                 d->d[d->nd] = s[i];
                 d->nd++;
             } else if (s[i] != '0') {
-                /* truncat the remaining digits */
+                /* truncate the remaining digits */
                 d->trunc = 1;
             }
         } else if (s[i] == '.') {
@@ -367,7 +367,7 @@ static always_inline int decimal_to_f64(Decimal *d, double *val) {
     /* Our range is [0.5,1) but floating point range is [1,2) */
     exp2 --;
 
-    /* Minimum exp2 for doulbe is -1022.
+    /* Minimum exp2 for double is -1022.
      * If the exponent is smaller, move it up and
      * adjust d accordingly.
      */

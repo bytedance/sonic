@@ -30,7 +30,7 @@ type Decoder = api.Decoder
 // SyntaxError represents json syntax error
 type SyntaxError = api.SyntaxError
 
-// MismatchTypeError represents dismatching between json and object
+// MismatchTypeError represents mismatching between json and object
 type MismatchTypeError = api.MismatchTypeError
 
 // Options for decode.

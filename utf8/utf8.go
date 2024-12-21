@@ -29,7 +29,7 @@ func CorrectWith(dst []byte, src []byte, repl string) []byte {
     sstr := rt.Mem2Str(src)
     sidx := 0
 
-    /* state machine records the invalid postions */
+    /* state machine records the invalid positions */
     m := types.NewStateMachine()
     m.Sp = 0 // invalid utf8 numbers
 
