@@ -1226,13 +1226,14 @@ func TestMarshalInfOrNan(t *testing.T) {
     }
 }
 
-func TestUint64ToString(t *testing.T) {
+func TestUint64OrInt64ToString(t *testing.T) {
 	int64ptr := int64(432556670863027541)
 	uint64ptr := uint64(12372850276778298372)
 	cases := []struct {
 		name        string
 		val         interface{}
-		exceptTrue  string
+		exceptUint64ToStr  string
+		exceptInt64ToStr  string
 		exceptFalse string
 	}{
 		{
@@ -1242,7 +1243,8 @@ func TestUint64ToString(t *testing.T) {
 				"int64":  int64(34),
 				"uint64": uint64(56),
 			},
-			exceptTrue:  `{"int":12,"int64":34,"uint64":"56"}`,
+			exceptUint64ToStr:  `{"int":12,"int64":34,"uint64":"56"}`,
+			exceptInt64ToStr:  `{"int":12,"int64":"34","uint64":56}`,
 			exceptFalse: `{"int":12,"int64":34,"uint64":56}`,
 		},
 		{
@@ -1252,7 +1254,8 @@ func TestUint64ToString(t *testing.T) {
 				int64(34): int64(34),
 				int64(56): uint64(56),
 			},
-			exceptTrue:  `{"12":12,"34":34,"56":"56"}`,
+			exceptUint64ToStr:  `{"12":12,"34":34,"56":"56"}`,
+			exceptInt64ToStr:  `{"12":12,"34":"34","56":56}`,
 			exceptFalse: `{"12":12,"34":34,"56":56}`,
 		},
 		{
@@ -1262,7 +1265,8 @@ func TestUint64ToString(t *testing.T) {
 				uint64(34): int64(34),
 				uint64(56): uint64(56),
 			},
-			exceptTrue:  `{"12":12,"34":34,"56":"56"}`,
+			exceptUint64ToStr:  `{"12":12,"34":34,"56":"56"}`,
+			exceptInt64ToStr:  `{"12":12,"34":"34","56":56}`,
 			exceptFalse: `{"12":12,"34":34,"56":56}`,
 		},
 		{
@@ -1276,7 +1280,8 @@ func TestUint64ToString(t *testing.T) {
 				Int64:  int64(34),
 				Uint64: uint64(56),
 			},
-			exceptTrue:  `{"int":12,"int64":34,"uint64":"56"}`,
+			exceptUint64ToStr:  `{"int":12,"int64":34,"uint64":"56"}`,
+			exceptInt64ToStr:  `{"int":12,"int64":"34","uint64":56}`,
 			exceptFalse: `{"int":12,"int64":34,"uint64":56}`,
 		},
 		{
@@ -1284,19 +1289,22 @@ func TestUint64ToString(t *testing.T) {
 			val: []interface{}{
 				int(12), int64(34), uint64(56),
 			},
-			exceptTrue:  `[12,34,"56"]`,
+			exceptUint64ToStr:  `[12,34,"56"]`,
+			exceptInt64ToStr:  `[12,"34",56]`,
 			exceptFalse: `[12,34,56]`,
 		},
 		{
 			name:        "single_int64",
 			val:         int64(34),
-			exceptTrue:  `34`,
+			exceptUint64ToStr:  `34`,
+			exceptInt64ToStr:  `"34"`,
 			exceptFalse: `34`,
 		},
 		{
 			name:        "single_uint64",
 			val:         uint64(56),
-			exceptTrue:  `"56"`,
+			exceptUint64ToStr:  `"56"`,
+			exceptInt64ToStr:  `56`,
 			exceptFalse: `56`,
 		},
 		{
@@ -1314,8 +1322,10 @@ func TestUint64ToString(t *testing.T) {
 				Int64:     int64(123),
 				Uint64:    uint64(456),
 			}}},
-			exceptTrue: `{"Map":{"val":{"Int64Ptr":432556670863027541,` +
+			exceptUint64ToStr: `{"Map":{"val":{"Int64Ptr":432556670863027541,` +
 				`"Uint64Ptr":"12372850276778298372","Int64":123,"Uint64":"456"}}}`,
+			exceptInt64ToStr: `{"Map":{"val":{"Int64Ptr":"432556670863027541",` +
+				`"Uint64Ptr":12372850276778298372,"Int64":"123","Uint64":456}}}`,
 			exceptFalse: `{"Map":{"val":{"Int64Ptr":432556670863027541,` +
 				`"Uint64Ptr":12372850276778298372,"Int64":123,"Uint64":456}}}`,
 		},
@@ -1333,9 +1343,13 @@ func TestUint64ToString(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			b, e := Config{Uint64ToString: true}.Froze().Marshal(c.val)
 			assert.Nil(t, e)
-			check(t, c.exceptTrue, b)
+			check(t, c.exceptUint64ToStr, b)
 
-			b, e = Config{Uint64ToString: false}.Froze().Marshal(c.val)
+            b, e = Config{Int64ToString: true}.Froze().Marshal(c.val)
+			assert.Nil(t, e)
+			check(t, c.exceptInt64ToStr, b)
+
+			b, e = Config{}.Froze().Marshal(c.val)
 			assert.Nil(t, e)
 			check(t, c.exceptFalse, b)
 		})

@@ -189,7 +189,7 @@ func (self *Compiler) compileOps(p *ir.Program, sp int, vt reflect.Type) {
 	case reflect.Int64:
 		p.Add(ir.OP_i64)
 	case reflect.Uint:
-		p.Add(ir.OP_uint(), ir.OP_ui)
+		p.Add(ir.OP_uint(), ir.OP_u)
 	case reflect.Uint8:
 		p.Add(ir.OP_u8)
 	case reflect.Uint16:
@@ -311,7 +311,7 @@ func (self *Compiler) compileMapBodyTextKey(p *ir.Program, vk reflect.Type) {
 	case reflect.Int64:
 		p.Key(ir.OP_i64)
 	case reflect.Uint:
-		p.Key(ir.OP_uint(), ir.OP_ui)
+		p.Key(ir.OP_uint(), ir.OP_u)
 	case reflect.Uint8:
 		p.Key(ir.OP_u8)
 	case reflect.Uint16:

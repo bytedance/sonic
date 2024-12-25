@@ -27,6 +27,7 @@ const (
     BitNoEncoderNewline 
     BitEncodeNullForInfOrNan
 	BitUint64ToString
+	BitInt64ToString
 	
     BitPointerValue = 63
 )

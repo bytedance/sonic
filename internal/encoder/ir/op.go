@@ -43,7 +43,7 @@ const (
 	OP_u16
 	OP_u32
 	OP_u64
-	OP_ui
+	OP_u
 	OP_f32
 	OP_f64
 	OP_str
@@ -106,7 +106,7 @@ var OpNames = [256]string{
 	OP_u16:            "u16",
 	OP_u32:            "u32",
 	OP_u64:            "u64",
-	OP_ui:             "ui",
+	OP_u:              "u",
 	OP_f32:            "f32",
 	OP_f64:            "f64",
 	OP_str:            "str",
