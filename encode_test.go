@@ -1240,58 +1240,63 @@ func TestUint64OrInt64ToString(t *testing.T) {
 			name: "normal_map",
 			val: map[string]interface{}{
 				"int":    int(12),
+				"uint":   uint(99),
 				"int64":  int64(34),
 				"uint64": uint64(56),
 			},
-			exceptUint64ToStr:  `{"int":12,"int64":34,"uint64":"56"}`,
-			exceptInt64ToStr:  `{"int":12,"int64":"34","uint64":56}`,
-			exceptFalse: `{"int":12,"int64":34,"uint64":56}`,
+			exceptUint64ToStr:  `{"int":12,"uint":99,"int64":34,"uint64":"56"}`,
+			exceptInt64ToStr:  `{"int":12,"uint":99,"int64":"34","uint64":56}`,
+			exceptFalse: `{"int":12,"uint":99,"int64":34,"uint64":56}`,
 		},
 		{
 			name: "int_key_map",
 			val: map[int64]interface{}{
 				int64(12): int(12),
+				int64(99): uint(99),
 				int64(34): int64(34),
 				int64(56): uint64(56),
 			},
-			exceptUint64ToStr:  `{"12":12,"34":34,"56":"56"}`,
-			exceptInt64ToStr:  `{"12":12,"34":"34","56":56}`,
-			exceptFalse: `{"12":12,"34":34,"56":56}`,
+			exceptUint64ToStr:  `{"12":12,"99":99,"34":34,"56":"56"}`,
+			exceptInt64ToStr:  `{"12":12,"99":99,"34":"34","56":56}`,
+			exceptFalse: `{"12":12,"99":99,"34":34,"56":56}`,
 		},
 		{
 			name: "uint_key_map",
 			val: map[uint64]interface{}{
 				uint64(12): int(12),
+				uint64(99): uint(99),
 				uint64(34): int64(34),
 				uint64(56): uint64(56),
 			},
-			exceptUint64ToStr:  `{"12":12,"34":34,"56":"56"}`,
-			exceptInt64ToStr:  `{"12":12,"34":"34","56":56}`,
-			exceptFalse: `{"12":12,"34":34,"56":56}`,
+			exceptUint64ToStr:  `{"12":12,"99":99,"34":34,"56":"56"}`,
+			exceptInt64ToStr:  `{"12":12,"99":99,"34":"34","56":56}`,
+			exceptFalse: `{"12":12,"99":99,"34":34,"56":56}`,
 		},
 		{
 			name: "normal_struct",
 			val: struct {
 				Int    int    `json:"int"`
+                Uint   uint   `json:"uint"`
 				Int64  int64  `json:"int64"`
 				Uint64 uint64 `json:"uint64"`
 			}{
 				Int:    int(12),
+                Uint:   uint(99),
 				Int64:  int64(34),
 				Uint64: uint64(56),
 			},
-			exceptUint64ToStr:  `{"int":12,"int64":34,"uint64":"56"}`,
-			exceptInt64ToStr:  `{"int":12,"int64":"34","uint64":56}`,
-			exceptFalse: `{"int":12,"int64":34,"uint64":56}`,
+			exceptUint64ToStr:  `{"int":12,"uint":99,"int64":34,"uint64":"56"}`,
+			exceptInt64ToStr:  `{"int":12,"uint":99,"int64":"34","uint64":56}`,
+			exceptFalse: `{"int":12,"uint":99,"int64":34,"uint64":56}`,
 		},
 		{
 			name: "normal_slice",
 			val: []interface{}{
-				int(12), int64(34), uint64(56),
+				int(12), uint(99), int64(34), uint64(56),
 			},
-			exceptUint64ToStr:  `[12,34,"56"]`,
-			exceptInt64ToStr:  `[12,"34",56]`,
-			exceptFalse: `[12,34,56]`,
+			exceptUint64ToStr:  `[12,99,34,"56"]`,
+			exceptInt64ToStr:  `[12,99,"34",56]`,
+			exceptFalse: `[12,99,34,56]`,
 		},
 		{
 			name:        "single_int64",
