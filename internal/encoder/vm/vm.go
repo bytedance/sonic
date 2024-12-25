@@ -139,8 +139,17 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*int32)(p)
 			buf = alg.I64toa(buf, int64(v))
 		case ir.OP_i64:
-			v := *(*int64)(p)
-			buf = alg.I64toa(buf, int64(v))
+			if ins.CompatOp() == ir.OP_i || 
+				ins.IsMapKey() ||
+				flags&(1<<alg.BitInt64ToString) == 0 {
+				v := *(*int64)(p)
+				buf = alg.I64toa(buf, int64(v))
+				continue
+			}
+			buf = append(buf, '"')
+			v := *(*uint64)(p)
+			buf = alg.U64toa(buf, uint64(v))
+			buf = append(buf, '"')
 		case ir.OP_u8:
 			v := *(*uint8)(p)
 			buf = alg.U64toa(buf, uint64(v))
@@ -151,7 +160,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*uint32)(p)
 			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u64:
-			if ins.CompatOp() == ir.OP_i || 
+			if ins.CompatOp() == ir.OP_u || 
 				ins.IsMapKey() ||
 				flags&(1<<alg.BitUint64ToString) == 0 {
 				v := *(*uint64)(p)
