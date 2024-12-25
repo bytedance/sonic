@@ -148,8 +148,8 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 				continue
 			}
 			buf = append(buf, '"')
-			v := *(*uint64)(p)
-			buf = alg.U64toa(buf, uint64(v))
+			v := *(*int64)(p)
+			buf = alg.I64toa(buf, int64(v))
 			buf = append(buf, '"')
 		case ir.OP_u8:
 			v := *(*uint8)(p)
