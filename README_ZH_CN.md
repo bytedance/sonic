@@ -389,7 +389,7 @@ type Visitor interface {
 - `ConfigDefault`: sonic的默认配置 (`EscapeHTML=false`， `SortKeys=false`…) 保证性能同时兼顾安全性。
 - `ConfigStd`: 与 `encoding/json` 保证完全兼容的配置
 - `ConfigFastest`: 最快的配置(`NoQuoteTextMarshaler=true...`) 保证性能最优但是会缺少一些安全性检查（validate UTF8 等）
-Sonic **不**确保支持所有环境，由于开发高性能代码的困难。在不支持声音的环境中，实现将回落到 `encoding/json`。因此上述配置将全部等于`ConfigStd`。
+Sonic **不**确保支持所有环境，由于开发高性能代码的困难。在不支持sonic的环境中，实现将回落到 `encoding/json`。因此上述配置将全部等于`ConfigStd`。
 
 ## 注意事项
 

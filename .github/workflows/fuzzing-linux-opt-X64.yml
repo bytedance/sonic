@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
         matrix:
-          os: [arm, X64]
+          os: [macos-latest, X64]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Clear repository
