@@ -482,13 +482,18 @@ But `ast.Visitor` is not a very handy API. You might need to write a lot of code
 
 Sonic use memory pool in many places like `encoder.Encode`, `ast.Node.MarshalJSON` to improve performance, which may produce more memory usage (in-use) when server's load is high. See [issue 614](https://github.com/bytedance/sonic/issues/614). Therefore, we introduce some options to let user control the behavior of memory pool. See [option](https://pkg.go.dev/github.com/bytedance/sonic@v1.11.9/option#pkg-variables) package.
 
-### Faster JSON skip
+### Faster JSON Skip
 
 For security, sonic use [FSM](native/skip_one.c) algorithm to  validate JSON when decoding raw JSON or encoding `json.Marshaler`, which is much slower (1~10x) than [SIMD-searching-pair](native/skip_one_fast.c) algorithm. If user has many redundant JSON value and DO NOT NEED to strictly validate JSON correctness, you can enable below options:
 
 - `Config.NoValidateSkipJSON`: for faster skipping JSON when decoding, such as unknown fields, json.Unmarshaler(json.RawMessage), mismatched values, and redundant array elements
 - `Config.NoValidateJSONMarshaler`: avoid validating JSON when encoding `json.Marshaler`
 - `SearchOption.ValidateJSON`: indicates if validate located JSON value when `Get`
+
+## JSON-Path Support (GJSON)
+
+[Gjson](https://github.com/tidwall/gjson) has provided a comprehensive and popular JSON-Path API, and
+ a lot of older codes heavily relies on it. Therefore, we provides a wrapper libary, which combines gjson's API with sonic's SIMD algorithm to boost up the performance. See [gjson](https://github.com/cloudwego/gjson).
 
 ## Community
 
