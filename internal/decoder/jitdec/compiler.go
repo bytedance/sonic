@@ -736,7 +736,7 @@ func (self *_Compiler) compilePtr(p *_Program, sp int, et reflect.Type) {
         self.tab[et] = true
 
         /* not inline the pointer type
-        * recursing the defined pointer type's elem will casue issue379.
+        * recursing the defined pointer type's elem will cause issue379.
         */
         self.compileOps(p, sp, et)
     }

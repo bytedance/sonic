@@ -673,7 +673,7 @@ func (self *Assembler) encode_string(doubleQuote bool) {
 	self.Sjmp("JMP", _LB_panic)
 	self.Link("_str_next_{n}")
 
-	/* openning quote, check for double quote */
+	/* opening quote, check for double quote */
 	if !doubleQuote {
 		self.check_size_r(_AX, 2) // SIZE $2
 		self.add_char('"')        // CHAR $'"'

@@ -477,7 +477,7 @@ class Instruction:
         # return '\n\t'.join(r)
 
         if (n % 4 != 0):
-            raise RuntimeError("Unkown instruction which not encoding 4 bytes: %s " % comments, buf)
+            raise RuntimeError("Unknown instruction which not encoding 4 bytes: %s " % comments, buf)
 
         while i < n - 3:
             r.append('WORD $0x%08x' % int.from_bytes(buf[i:i + 4], 'little'))
@@ -567,7 +567,7 @@ class Pcsp:
         self.out.append((self.pc - self.entry, self.sp))
         # sort by pc
         self.out.sort(key=lambda x: x[0])
-        # NOTICE: first pair {1, 0} to be compitable with golang
+        # NOTICE: first pair {1, 0} to be compatible with golang
         tmp = [(1, 0)]
         lpc, lsp = 0, -1
         for pc, sp in self.out:
@@ -927,7 +927,7 @@ class Command:
 
             # invalid hexadecimal character
             elif esc in (ESC_HEX0, ESC_HEX1):
-                raise SyntaxError('invalid hexdecimal character: ' + repr(nch))
+                raise SyntaxError('invalid hexadecimal character: ' + repr(nch))
 
             # octal escape characters
             elif esc in (ESC_OCT1, ESC_OCT2) and nch.lower() in string.octdigits:
@@ -1329,7 +1329,7 @@ class BasicBlock:
         if instr_size == 8 or instr_size == 4:
             return
 
-        # All instrs are IntInstr, golang asm only suuport WORD and DWORD for arm. We need
+        # All instrs are IntInstr, golang asm only support WORD and DWORD for arm. We need
         # combine them as 4-bytes RawInstr and align block
         nb = [] # new body
         raw_buf = [];
@@ -1374,7 +1374,7 @@ class BasicBlock:
         block.prevs.append(self)
 
     @classmethod
-    def annonymous(cls) -> 'BasicBlock':
+    def anonymous(cls) -> 'BasicBlock':
         return cls('// bb.%d' % Counter.next(), weak = False)
 
 CLANG_JUMPTABLE_LABLE = 'LJTI'
@@ -1392,7 +1392,7 @@ class CodeSection:
         self.dead   = False
         self.labels = {}
         self.export = False
-        self.blocks = [BasicBlock.annonymous()]
+        self.blocks = [BasicBlock.anonymous()]
         self.jmptabs = {}
         self.funcs = {}
         self.bsmap_ = {}
@@ -1451,7 +1451,7 @@ class CodeSection:
 
     def _split(self, jmp: BasicBlock):
         self.jump = True
-        link = BasicBlock.annonymous()
+        link = BasicBlock.anonymous()
         self.labels[link.name] = link
         self.block.link_to(link)
         self.block.jump_to(jmp)
@@ -1505,7 +1505,7 @@ class CodeSection:
         else:
             self.block.body.append(BranchInstr(instr))
 
-    # it seems to not be able to specify stack aligment inside the Go ASM so we
+    # it seems to not be able to specify stack alignment inside the Go ASM so we
     # need to replace the aligned instructions with unaligned one if either of it's
     # operand is an RBP relative addressing memory operand
 
@@ -1645,7 +1645,7 @@ class CodeSection:
                     elif name == 'str':
                         diff = -self._mk_align(operands[3])
                     else:
-                        raise RuntimeError("An instruction adjsut sp but bot processed: %s" % ins.instr.asm_code)
+                        raise RuntimeError("An instruction adjust sp but bot processed: %s" % ins.instr.asm_code)
 
                 cursp += diff
 
@@ -2092,7 +2092,7 @@ class Assembler:
         # self.out.append('\tMOVD R29, -8(RSP)')
         # self.out.append('\tSUB $8, RSP, R29')
 
-        # intialize all the arguments
+        # initialize all the arguments
         for arg in proto.args:
             offs += arg.size
             op, reg = REG_MAP[arg.creg.reg]

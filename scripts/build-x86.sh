@@ -60,7 +60,7 @@ for arc in "${CPU_ARCS[@]}"; do
 
     # should check the output assembly files
     if ! grep -rq ${CHECK_ARCS[$i]} $out_dir; then
-        echo "compiled instructions is incorret, pleas check again"
+        echo "compiled instructions is incorrect, please check again"
         exit 1
     fi
 
