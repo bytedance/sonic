@@ -492,8 +492,8 @@ For security, sonic use [FSM](native/skip_one.c) algorithm to  validate JSON whe
 
 ## JSON-Path Support (GJSON)
 
-[Gjson](https://github.com/tidwall/gjson) has provided a comprehensive and popular JSON-Path API, and
- a lot of older codes heavily relies on it. Therefore, we provides a wrapper library, which combines gjson's API with sonic's SIMD algorithm to boost up the performance. See [gjson](https://github.com/cloudwego/gjson).
+[tidwall/gjson](https://github.com/tidwall/gjson) has provided a comprehensive and popular JSON-Path API, and
+ a lot of older codes heavily relies on it. Therefore, we provides a wrapper library, which combines gjson's API with sonic's SIMD algorithm to boost up the performance. See [cloudwego/gjson](https://github.com/cloudwego/gjson).
 
 ## Community
 
