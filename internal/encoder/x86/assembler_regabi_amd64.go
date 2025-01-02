@@ -92,6 +92,7 @@ const (
 const (
 	_FM_exp32 = 0x7f800000
 	_FM_exp64 = 0x7ff0000000000000
+	_FM_maxint64 = 1<<63 - 1
 )
 
 const (
@@ -877,20 +878,38 @@ func (self *Assembler) _asm_OP_u32(_ *ir.Instr) {
 }
 
 func (self *Assembler) _asm_OP_u64(i *ir.Instr) {
-	if i.CompatOp() == ir.OP_u || i.IsMapKey() {
+	if i.IsMapKey() {
 		self.store_int(20, _F_u64toa, "MOVQ")
 		return
 	}
-	self.Emit("BTQ", jit.Imm(int64(alg.BitUint64ToString)), _ARG_fv)
-	self.Sjmp("JC", "_ui64_to_string{n}")
-	self.store_int(20, _F_u64toa, "MOVQ")
-	self.Sjmp("JMP", "_ui64_to_string_end{n}")
-	self.Link("_ui64_to_string{n}")
 
+	if i.CompatOp() == ir.OP_u64 { // current value type == uint64
+		self.Emit("BTQ", jit.Imm(int64(alg.BitUint64ToString)), _ARG_fv)
+		self.Sjmp("JC", "_u64_force_to_string{n}")
+	}
+
+	if ir.OP_uint() == ir.OP_u64 { // intSize == 64
+		self.Emit("BTQ", jit.Imm(int64(alg.BitUintExceedToString)), _ARG_fv)
+		self.Sjmp("JNC", "_u64_keep_integer{n}")
+
+		self.Emit("MOVQ", jit.Ptr(_SP_p, 0), _AX)
+		self.Emit("MOVQ", jit.Imm(_FM_maxint64), _BX)
+		self.Emit("CMPQ", _AX, _BX)
+		self.Sjmp("JBE", "_u64_keep_integer{n}")
+		self.Sjmp("JMP", "_u64_force_to_string{n}")
+	} else {
+		self.Sjmp("JMP", "_u64_keep_integer{n}")
+	}
+
+	self.Link("_u64_force_to_string{n}")
 	self.add_char('"')
 	self.store_int(20, _F_u64toa, "MOVQ")
 	self.add_char('"')
-	self.Link("_ui64_to_string_end{n}")
+	self.Sjmp("JMP", "_u64_to_string_end{n}")
+
+	self.Link("_u64_keep_integer{n}")
+	self.store_int(20, _F_u64toa, "MOVQ")
+	self.Link("_u64_to_string_end{n}")
 }
 
 func (self *Assembler) _asm_OP_f32(_ *ir.Instr) {

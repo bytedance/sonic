@@ -1227,136 +1227,270 @@ func TestMarshalInfOrNan(t *testing.T) {
 }
 
 func TestUint64OrInt64ToString(t *testing.T) {
-	int64ptr := int64(432556670863027541)
-	uint64ptr := uint64(12372850276778298372)
-	cases := []struct {
-		name        string
-		val         interface{}
-		exceptUint64ToStr  string
-		exceptInt64ToStr  string
-		exceptFalse string
-	}{
-		{
-			name: "normal_map",
-			val: map[string]interface{}{
-				"int":    int(12),
-				"uint":   uint(99),
-				"int64":  int64(34),
-				"uint64": uint64(56),
-			},
-			exceptUint64ToStr:  `{"int":12,"uint":99,"int64":34,"uint64":"56"}`,
-			exceptInt64ToStr:  `{"int":12,"uint":99,"int64":"34","uint64":56}`,
-			exceptFalse: `{"int":12,"uint":99,"int64":34,"uint64":56}`,
-		},
-		{
-			name: "int_key_map",
-			val: map[int64]interface{}{
-				int64(12): int(12),
-				int64(99): uint(99),
-				int64(34): int64(34),
-				int64(56): uint64(56),
-			},
-			exceptUint64ToStr:  `{"12":12,"99":99,"34":34,"56":"56"}`,
-			exceptInt64ToStr:  `{"12":12,"99":99,"34":"34","56":56}`,
-			exceptFalse: `{"12":12,"99":99,"34":34,"56":56}`,
-		},
-		{
-			name: "uint_key_map",
-			val: map[uint64]interface{}{
-				uint64(12): int(12),
-				uint64(99): uint(99),
-				uint64(34): int64(34),
-				uint64(56): uint64(56),
-			},
-			exceptUint64ToStr:  `{"12":12,"99":99,"34":34,"56":"56"}`,
-			exceptInt64ToStr:  `{"12":12,"99":99,"34":"34","56":56}`,
-			exceptFalse: `{"12":12,"99":99,"34":34,"56":56}`,
-		},
-		{
-			name: "normal_struct",
-			val: struct {
-				Int    int    `json:"int"`
-                Uint   uint   `json:"uint"`
-				Int64  int64  `json:"int64"`
-				Uint64 uint64 `json:"uint64"`
-			}{
-				Int:    int(12),
-                Uint:   uint(99),
-				Int64:  int64(34),
-				Uint64: uint64(56),
-			},
-			exceptUint64ToStr:  `{"int":12,"uint":99,"int64":34,"uint64":"56"}`,
-			exceptInt64ToStr:  `{"int":12,"uint":99,"int64":"34","uint64":56}`,
-			exceptFalse: `{"int":12,"uint":99,"int64":34,"uint64":56}`,
-		},
-		{
-			name: "normal_slice",
-			val: []interface{}{
-				int(12), uint(99), int64(34), uint64(56),
-			},
-			exceptUint64ToStr:  `[12,99,34,"56"]`,
-			exceptInt64ToStr:  `[12,99,"34",56]`,
-			exceptFalse: `[12,99,34,56]`,
-		},
-		{
-			name:        "single_int64",
-			val:         int64(34),
-			exceptUint64ToStr:  `34`,
-			exceptInt64ToStr:  `"34"`,
-			exceptFalse: `34`,
-		},
-		{
-			name:        "single_uint64",
-			val:         uint64(56),
-			exceptUint64ToStr:  `"56"`,
-			exceptInt64ToStr:  `56`,
-			exceptFalse: `56`,
-		},
-		{
-			name: "int64ptr",
-			val: struct {
-				Map map[string]interface{}
-			}{map[string]interface{}{"val": struct {
-				Int64Ptr  interface{}
-				Uint64Ptr interface{}
-				Int64     interface{}
-				Uint64    interface{}
-			}{
-				Int64Ptr:  &int64ptr,
-				Uint64Ptr: &uint64ptr,
-				Int64:     int64(123),
-				Uint64:    uint64(456),
-			}}},
-			exceptUint64ToStr: `{"Map":{"val":{"Int64Ptr":432556670863027541,` +
-				`"Uint64Ptr":"12372850276778298372","Int64":123,"Uint64":"456"}}}`,
-			exceptInt64ToStr: `{"Map":{"val":{"Int64Ptr":"432556670863027541",` +
-				`"Uint64Ptr":12372850276778298372,"Int64":"123","Uint64":456}}}`,
-			exceptFalse: `{"Map":{"val":{"Int64Ptr":432556670863027541,` +
-				`"Uint64Ptr":12372850276778298372,"Int64":123,"Uint64":456}}}`,
-		},
-	}
+    int64ptr := int64(1)
+    intptr := int(1)
+    uintPtr := uint(1)
 
-	check := func(t *testing.T, except string, testRes []byte) {
-		var tmp1 interface{}
-		assert.Nil(t, Unmarshal([]byte(testRes), &tmp1))
-		var tmp2 interface{}
-		assert.Nil(t, Unmarshal([]byte(except), &tmp2))
-		assert.Equal(t, tmp2, tmp1)
-	}
+    uint64Lptr := uint64(9223372036854775806)
+    uint64Eptr := uint64(9223372036854775807)
+    uint64Gptr := uint64(9223372036854775808)
+    uintLptr := uint(9223372036854775806)
+    uintEptr := uint(9223372036854775807)
+    uintGptr := uint(9223372036854775808)
+    cases := []struct {
+        name        string
+        val         interface{}
+        exceptUint64ToStr  string
+        exceptInt64ToStr  string
+        exceptUIntExToStr  string
+        exceptFalse string
+    }{
+        {
+            name: "normal_map",
+            val: map[string]interface{}{
+                "int":    int(12),
+                "uint":   uint(99),
+                "int64":  int64(34),
+                "uint64": uint64(56),
+                "exceedUint": uint(9223372036854775808),
+                "exceedUint64": uint64(9223372036854775808),
+                "eqMaxInt64Uint64": uint64(9223372036854775807),
+                "eqMaxInt64Uint": uint(9223372036854775807),
+                "lsMaxInt64Uint64": uint64(9223372036854775806),
+                "lsMaxInt64Uint": uint(9223372036854775806),
+            },
+            exceptUint64ToStr:  `{"eqMaxInt64Uint":9223372036854775807,"eqMaxInt64Uint64":"9223372036854775807",`+
+                `"exceedUint":9223372036854775808,"exceedUint64":"9223372036854775808",`+
+                `"int":12,"int64":34,`+
+                `"lsMaxInt64Uint":9223372036854775806,"lsMaxInt64Uint64":"9223372036854775806",`+
+                `"uint":99,"uint64":"56"}`,
+            exceptInt64ToStr:  `{"eqMaxInt64Uint":9223372036854775807,"eqMaxInt64Uint64":9223372036854775807,`+
+                `"exceedUint":9223372036854775808,"exceedUint64":9223372036854775808,`+
+                `"int":12,"int64":"34",`+
+                `"lsMaxInt64Uint":9223372036854775806,"lsMaxInt64Uint64":9223372036854775806,`+
+                `"uint":99,"uint64":56}`,
+            exceptUIntExToStr:  `{"eqMaxInt64Uint":9223372036854775807,"eqMaxInt64Uint64":9223372036854775807,`+
+                `"exceedUint":"9223372036854775808","exceedUint64":"9223372036854775808",`+
+                `"int":12,"int64":34,`+
+                `"lsMaxInt64Uint":9223372036854775806,"lsMaxInt64Uint64":9223372036854775806,`+
+                `"uint":99,"uint64":56}`,
+            exceptFalse:  `{"eqMaxInt64Uint":9223372036854775807,"eqMaxInt64Uint64":9223372036854775807,`+
+                `"exceedUint":9223372036854775808,"exceedUint64":9223372036854775808,`+
+                `"int":12,"int64":34,`+
+                `"lsMaxInt64Uint":9223372036854775806,"lsMaxInt64Uint64":9223372036854775806,`+
+                `"uint":99,"uint64":56}`,
+        },
+        {
+            name: "int64_key_map",
+            val: map[int64]interface{}{
+                int64(1): 1, 
+                int64(2): 2,
+                int64(3): 3,
+                int64(4): 4,
+            },
+            exceptUint64ToStr:  `{"1":1,"2":2,"3":3,"4":4}`,
+            exceptInt64ToStr:  `{"1":1,"2":2,"3":3,"4":4}`,
+            exceptUIntExToStr:  `{"1":1,"2":2,"3":3,"4":4}`,
+            exceptFalse: `{"1":1,"2":2,"3":3,"4":4}`,
+        },
+        {
+            name: "uint64_key_map",
+            val: map[uint64]interface{}{
+                uint64(12): 1,
+                uint64(99): 1,
+                uint64(34): 1,
+                uint64(9223372036854775806): 1,
+                uint64(9223372036854775807): 1,
+                uint64(9223372036854775808): 1,
+            },
+            exceptUint64ToStr:  `{"12":1,"34":1,"9223372036854775806":1,"9223372036854775807":1,"9223372036854775808":1,"99":1}`,
+            exceptInt64ToStr:  `{"12":1,"34":1,"9223372036854775806":1,"9223372036854775807":1,"9223372036854775808":1,"99":1}`,
+            exceptUIntExToStr:  `{"12":1,"34":1,"9223372036854775806":1,"9223372036854775807":1,"9223372036854775808":1,"99":1}`,
+            exceptFalse: `{"12":1,"34":1,"9223372036854775806":1,"9223372036854775807":1,"9223372036854775808":1,"99":1}`,
+        },
+        {
+            name: "uint_key_map",
+            val: map[uint]interface{}{
+                uint(12): int(12),
+                uint(99): uint(99),
+                uint(34): int64(34),
+                uint(56): uint64(56),
+                uint(9223372036854775806): uint64(10),
+                uint(9223372036854775807): uint64(10),
+                uint(9223372036854775808): uint64(10),
+            },
+            exceptUint64ToStr:  `{"12":12,"34":34,"56":"56","9223372036854775806":"10","9223372036854775807":"10","9223372036854775808":"10","99":99}`,
+            exceptInt64ToStr:  `{"12":12,"34":"34","56":56,"9223372036854775806":10,"9223372036854775807":10,"9223372036854775808":10,"99":99}`,
+            exceptUIntExToStr:  `{"12":12,"34":34,"56":56,"9223372036854775806":10,"9223372036854775807":10,"9223372036854775808":10,"99":99}`,
+            exceptFalse: `{"12":12,"34":34,"56":56,"9223372036854775806":10,"9223372036854775807":10,"9223372036854775808":10,"99":99}`,
+        },
+        {
+            name: "normal_struct",
+            val: struct {
+                Int     int    `json:"int"`
+                Int64   int64  `json:"int64"`
+                Uint    uint   `json:"uint"`
+                UintL   uint   `json:"uintl"`
+                UintE   uint   `json:"uinte"`
+                UintG   uint   `json:"uintg"`
+                Uint64  uint64 `json:"uint64"`
+                Uint64L uint64 `json:"uint64l"`
+                Uint64E uint64 `json:"uint64e"`
+                Uint64G uint64 `json:"uint64g"`
+            }{
+                Int:     int(1),
+                Int64:   int64(2),
+                Uint:    uint(1),
+                UintL:   uint(9223372036854775806),
+                UintE:   uint(9223372036854775807),
+                UintG:   uint(9223372036854775808),
+                Uint64:  uint64(1),
+                Uint64L: uint64(9223372036854775806),
+                Uint64E: uint64(9223372036854775807),
+                Uint64G: uint64(9223372036854775808),
+            },
+            exceptUint64ToStr:  `{"int":1,"int64":2,`+
+                `"uint":1,"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":9223372036854775808,`+
+                `"uint64":"1","uint64l":"9223372036854775806","uint64e":"9223372036854775807","uint64g":"9223372036854775808"}`,
+            exceptInt64ToStr:  `{"int":1,"int64":"2",`+
+                `"uint":1,"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":9223372036854775808,`+
+                `"uint64":1,"uint64l":9223372036854775806,"uint64e":9223372036854775807,"uint64g":9223372036854775808}`,
+            exceptUIntExToStr: `{"int":1,"int64":2,`+
+                `"uint":1,"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":"9223372036854775808",`+
+                `"uint64":1,"uint64l":9223372036854775806,"uint64e":9223372036854775807,"uint64g":"9223372036854775808"}`,
+            exceptFalse: `{"int":1,"int64":2,`+
+                `"uint":1,"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":9223372036854775808,`+
+                `"uint64":1,"uint64l":9223372036854775806,"uint64e":9223372036854775807,"uint64g":9223372036854775808}`,
+        },
+        {
+            name: "normal_slice",
+            val: []interface{}{
+                int(12), uint(99), int64(34), uint64(56), uint(9223372036854775806), uint(9223372036854775807), uint(9223372036854775808),
+                uint64(9223372036854775806), uint64(9223372036854775807), uint64(9223372036854775808),
+            },
+            exceptUint64ToStr:  `[12,99,34,"56",`+
+                `9223372036854775806,9223372036854775807,9223372036854775808,`+
+                `"9223372036854775806","9223372036854775807","9223372036854775808"]`,
+            exceptInt64ToStr:  `[12,99,"34",56,`+
+                `9223372036854775806,9223372036854775807,9223372036854775808,`+
+                `9223372036854775806,9223372036854775807,9223372036854775808]`,
+            exceptUIntExToStr: `[12,99,34,56,`+
+                `9223372036854775806,9223372036854775807,"9223372036854775808",`+
+                `9223372036854775806,9223372036854775807,"9223372036854775808"]`,
+            exceptFalse: `[12,99,34,56,`+
+                `9223372036854775806,9223372036854775807,9223372036854775808,`+
+                `9223372036854775806,9223372036854775807,9223372036854775808]`,
+        },
+        {
+            name:        "single_int64",
+            val:         int64(34),
+            exceptUint64ToStr:  `34`,
+            exceptInt64ToStr:  `"34"`,
+            exceptUIntExToStr: `34`,
+            exceptFalse: `34`,
+        },
+        {
+            name:        "single_uint64",
+            val:         uint64(56),
+            exceptUint64ToStr:  `"56"`,
+            exceptInt64ToStr:  `56`,
+            exceptUIntExToStr:  `56`,
+            exceptFalse: `56`,
+        },
+        {
+            name:        "single_uint64g",
+            val:         uint64(9223372036854775808),
+            exceptUint64ToStr:  `"9223372036854775808"`,
+            exceptInt64ToStr:  `9223372036854775808`,
+            exceptUIntExToStr:  `"9223372036854775808"`,
+            exceptFalse: `9223372036854775808`,
+        },
+        {
+            name:        "single_uintg",
+            val:         uint64(9223372036854775808),
+            exceptUint64ToStr:  `"9223372036854775808"`,
+            exceptInt64ToStr:  `9223372036854775808`,
+            exceptUIntExToStr:  `"9223372036854775808"`,
+            exceptFalse: `9223372036854775808`,
+        },
+        {
+            name: "normal_struct_ptr_val",
+            val: struct {
+                Int     *int    `json:"int"`
+                Int64   *int64  `json:"int64"`
+                Uint    *uint   `json:"uint"`
+                UintL   *uint   `json:"uintl"`
+                UintE   *uint   `json:"uinte"`
+                UintG   *uint   `json:"uintg"`
+                Uint64L *uint64 `json:"uint64l"`
+                Uint64E *uint64 `json:"uint64e"`
+                Uint64G *uint64 `json:"uint64g"`
+            }{
+                Int:     &intptr,
+                Int64:   &int64ptr,
+                Uint:    &uintPtr,
+                UintL:   &uintLptr,
+                UintE:   &uintEptr,
+                UintG:   &uintGptr,
+                Uint64L: &uint64Lptr,
+                Uint64E: &uint64Eptr,
+                Uint64G: &uint64Gptr,
+            },
+            exceptUint64ToStr:  `{"int":1,"int64":1,"uint":1,`+
+                `"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":9223372036854775808,`+
+                `"uint64l":"9223372036854775806","uint64e":"9223372036854775807","uint64g":"9223372036854775808"}`,
+            exceptInt64ToStr:  `{"int":1,"int64":"1","uint":1,`+
+                `"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":9223372036854775808,`+
+                `"uint64l":9223372036854775806,"uint64e":9223372036854775807,"uint64g":9223372036854775808}`,
+            exceptUIntExToStr: `{"int":1,"int64":1,"uint":1,`+
+                `"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":"9223372036854775808",`+
+                `"uint64l":9223372036854775806,"uint64e":9223372036854775807,"uint64g":"9223372036854775808"}`,
+            exceptFalse: `{"int":1,"int64":1,"uint":1,`+
+                `"uintl":9223372036854775806,"uinte":9223372036854775807,"uintg":9223372036854775808,`+
+                `"uint64l":9223372036854775806,"uint64e":9223372036854775807,"uint64g":9223372036854775808}`,
+        },
+    }
 
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			b, e := Config{Uint64ToString: true}.Froze().Marshal(c.val)
-			assert.Nil(t, e)
-			check(t, c.exceptUint64ToStr, b)
+    for _, c := range cases {
+        t.Run(c.name, func(t *testing.T) {
+            t.Run("uint64ToStr", func(t *testing.T) {
+                b, e := Config{Uint64ToString: true, SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptUint64ToStr, string(b))
+            })
 
-            b, e = Config{Int64ToString: true}.Froze().Marshal(c.val)
-			assert.Nil(t, e)
-			check(t, c.exceptInt64ToStr, b)
+            t.Run("int64ToStr", func(t *testing.T) {
+                b, e := Config{Int64ToString: true, SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptInt64ToStr, string(b))
+            })
+            t.Run("uintExceedToStr", func(t *testing.T) {
+                b, e := Config{UintExceedToString: true, SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptUIntExToStr, string(b))
+            })
 
-			b, e = Config{}.Froze().Marshal(c.val)
-			assert.Nil(t, e)
-			check(t, c.exceptFalse, b)
-		})
-	}
+            t.Run("noIntegerToStr", func(t *testing.T) {
+                b, e := Config{SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptFalse, string(b))
+            })
+        })
+    }
+}
+
+func TestUintExceedToString(t *testing.T) {
+    val := map[string]interface{}{
+        "a": uint(18446744073709551611),
+        "b": uint(1),
+        "l": uint(9223372036854775806), // maxInt64 - 1
+        "e": uint(9223372036854775807), // maxInt64
+        "g": uint(9223372036854775808), // maxInt64 + 1
+        "l1": uint64(9223372036854775806), // maxInt64 - 1
+        "e1": uint64(9223372036854775807), // maxInt64
+        "g1": uint64(9223372036854775808), // maxInt64 + 1
+    }
+    fmt.Println(val)
+    b, e := Config{UintExceedToString: true}.Froze().Marshal(val)
+    fmt.Println(string(b), e)
 }

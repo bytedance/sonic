@@ -97,10 +97,12 @@ type Config struct {
 
     // CaseSensitive indicates that the decoder should not ignore the case of object keys.
     CaseSensitive bool
-	// Uint64 into strings on Marshal
-	// Uint64 or Int64 into strings on Marshal
-	Uint64ToString bool
-	Int64ToString bool
+    // Uint64 or Int64 into strings on Marshal
+    Uint64ToString bool
+    Int64ToString bool
+    // UintExceedToString when intSize == 64, if the value of type uint or uint64 exceeds MaxInt64, 
+    // automatically convert it to a string.
+    UintExceedToString bool
 }
  
 var (
