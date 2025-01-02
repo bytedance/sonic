@@ -84,7 +84,7 @@ func NewSmallFieldMap (hint int) *SmallFieldMap {
 
 func (self *SmallFieldMap) Set(fields []resolver.FieldMeta) {
 	if len(fields) > 8 {
-		panic("small field map shoud use in small struct")
+		panic("small field map should use in small struct")
 	}
 
 	for i, f := range fields {
@@ -254,7 +254,7 @@ type keysInfo struct {
 
 func (self *NormalFieldMap) Set(fields []resolver.FieldMeta) {
 	if len(fields) <=8 || len(fields) > 128 {
-		panic("normal field map shoud use in small struct")
+		panic("normal field map should use in small struct")
 	}
 
 	// allocate the flat map in []byte
@@ -278,7 +278,7 @@ func (self *NormalFieldMap) Set(fields []resolver.FieldMeta) {
 
 	}
 
-	// add a padding size at last to make it firendly for SIMD.
+	// add a padding size at last to make it friendly for SIMD.
 	self.keys = make([]byte, _HdrSize + 2 * kvLen, _HdrSize + 2 * kvLen + _PaddingSize)
 	self.lowOffset = _HdrSize + kvLen
 

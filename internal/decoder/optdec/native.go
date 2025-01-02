@@ -61,13 +61,13 @@ type node struct {
 	val uint64
 }
 
-// should consitent with native/parser.c
+// should consistent with native/parser.c
 type _nospaceBlock struct {
 	_ [8]byte
 	_ [8]byte
 }
 
-// should consitent with native/parser.c
+// should consistent with native/parser.c
 type nodeBuf struct {
 	ncur    uintptr
 	parent  int64
@@ -84,7 +84,7 @@ func (self *nodeBuf) init(nodes []node) {
 	self.parent = -1
 }
 
-// should consitent with native/parser.c
+// should consistent with native/parser.c
 type Parser struct {
 	Json    string
 	padded	[]byte

@@ -153,7 +153,7 @@ func MakeSlice(oldPtr unsafe.Pointer, et *GoType, newLen int) *GoSlice {
 
 	new := GrowSlice(et, *old, newLen)
 
-	// we sould clear the memory from [oldLen:newLen]
+	// we should clear the memory from [oldLen:newLen]
 	if et.PtrData == 0 {
 		oldlenmem := uintptr(old.Len) * et.Size
 		newlenmem := uintptr(newLen) * et.Size

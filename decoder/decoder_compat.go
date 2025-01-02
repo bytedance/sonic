@@ -192,5 +192,5 @@ func (s SyntaxError) Error() string {
      return (*json.SyntaxError)(unsafe.Pointer(&s)).Error()
 }
 
-// MismatchTypeError represents dismatching between json and object
+// MismatchTypeError represents mismatching between json and object
 type MismatchTypeError json.UnmarshalTypeError

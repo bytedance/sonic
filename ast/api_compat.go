@@ -34,7 +34,7 @@ func quote(buf *[]byte, val string) {
     quoteString(buf, val)
 }
 
-// unquote unescapes a internal JSON string (it doesn't count quotas at the begining and end)
+// unquote unescapes an internal JSON string (it doesn't count quotas at the beginning and end)
 func unquote(src string) (string, types.ParsingError) {
     sp := rt.IndexChar(src, -1)
     out, ok := unquoteBytes(rt.BytesFrom(sp, len(src)+2, len(src)+2))
