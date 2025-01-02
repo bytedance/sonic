@@ -73,6 +73,13 @@ const (
 
     // Encode Infinity or Nan float into `null`, instead of returning an error.
     EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
+
+	// Uint64 or Int64 into strings on Marshal
+	Uint64ToString Options = encoder.Uint64ToString
+	Int64ToString Options = encoder.Int64ToString
+    // UintExceedToString when intSize == 64, if the value of type uint or uint64 exceeds MaxInt64, 
+    // automatically convert it to a string.
+	UintExceedToString Options = encoder.UintExceedToString
 )
 
 
