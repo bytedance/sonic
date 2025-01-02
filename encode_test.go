@@ -1478,19 +1478,3 @@ func TestUint64OrInt64ToString(t *testing.T) {
         })
     }
 }
-
-func TestUintExceedToString(t *testing.T) {
-    val := map[string]interface{}{
-        "a": uint(18446744073709551611),
-        "b": uint(1),
-        "l": uint(9223372036854775806), // maxInt64 - 1
-        "e": uint(9223372036854775807), // maxInt64
-        "g": uint(9223372036854775808), // maxInt64 + 1
-        "l1": uint64(9223372036854775806), // maxInt64 - 1
-        "e1": uint64(9223372036854775807), // maxInt64
-        "g1": uint64(9223372036854775808), // maxInt64 + 1
-    }
-    fmt.Println(val)
-    b, e := Config{UintExceedToString: true}.Froze().Marshal(val)
-    fmt.Println(string(b), e)
-}
