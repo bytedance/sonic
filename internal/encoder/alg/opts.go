@@ -28,6 +28,7 @@ const (
     BitEncodeNullForInfOrNan
 	BitUint64ToString
 	BitInt64ToString
+    BitUintExceedToString
 	
     BitPointerValue = 63
 )

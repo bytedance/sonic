@@ -161,17 +161,27 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*uint32)(p)
 			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u64:
-			if ins.CompatOp() == ir.OP_u || 
-				ins.IsMapKey() ||
-				flags&(1<<alg.BitUint64ToString) == 0 {
+			if ins.IsMapKey() {
 				v := *(*uint64)(p)
 				buf = alg.U64toa(buf, uint64(v))
 				continue
 			}
-			buf = append(buf, '"')
+			quote := false
 			v := *(*uint64)(p)
+
+			if (ins.CompatOp() == ir.OP_u64 && // current value type == uint64
+				flags&(1<<alg.BitUint64ToString) != 0) || 
+				(v > uint64(math.MaxInt64) &&
+					flags&(1<<alg.BitUintExceedToString) != 0) {
+				quote = true
+			}
+			if quote {
+				buf = append(buf, '"')
+			}
 			buf = alg.U64toa(buf, uint64(v))
-			buf = append(buf, '"')
+			if quote {
+				buf = append(buf, '"')
+			}
 		case ir.OP_f32:
 			v := *(*float32)(p)
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
