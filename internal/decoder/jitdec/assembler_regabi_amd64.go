@@ -1804,6 +1804,9 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ   AX, AX
     self.Sjmp("JNS"  , "_end_{n}")                              // JNS     _end_{n}
     self.Link("_unknown_{n}")
+    // HACK: because `_VAR_sr` maybe used in `F_vstring`, so we should clear here again for `_OP_switch`.
+    self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
+    self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
     self.Emit("BTQ"  , jit.Imm(_F_disable_unknown), _ARG_fv)    // BTQ     ${_F_disable_unknown}, fv
     self.Sjmp("JC"   , _LB_field_error)                         // JC      _field_error
     self.Link("_end_{n}")                                       // _end_{n}:

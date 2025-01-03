@@ -81,7 +81,6 @@ func TestDecoder_OptionCaseSensitiveForManyKeys(t *testing.T) {
 
         var obj2 = TS{}
         d := NewDecoder(js)
-        // d.SetOptions(OptionCaseSensitive)
         err2 := d.Decode(&obj2)
         require.NoError(t, err2)
         require.Equal(t, obj, obj2)
