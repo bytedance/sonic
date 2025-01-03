@@ -33,6 +33,67 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDecoder_OptionCaseSensitive(t *testing.T) {
+    var js = `{"a":1,"normallllll":1,"longllllllllllllllllllllllllllllllllll":1}`
+    type TS struct{
+        A int 
+        Normallllll int 
+        Longllllllllllllllllllllllllllllllllll int 
+    }
+    var obj = TS{}
+    d := NewDecoder(js)
+    d.SetOptions(OptionCaseSensitive)
+    err := d.Decode(&obj)
+    require.NoError(t, err)
+    require.Equal(t, TS{}, obj)
+}
+
+
+func TestDecoder_MapWithIndirectElement(t *testing.T) {
+    var v map[string]struct { A [129]byte }
+    _, err := decode(`{"":{"A":[1,2,3,4,5]}}`, &v, false)
+    require.NoError(t, err)
+    assert.Equal(t, [129]byte{1, 2, 3, 4, 5}, v[""].A)
+}
+
+func TestDecoder_OptionCaseSensitiveForManyKeys(t *testing.T) {
+    var js = `{"a":1,"b":2,"C":3,"DD":4,"eE":5,"fF":6,"G":7,"H":8,"I":9,"J":10,"K":11,"L":12,"M":13}`
+    type TS struct{
+        A int
+        B int
+        C int `json:"c"`
+        Dd int `json:"dd"`
+        Ee int `json:"ee"`
+        Ff int `json:"Ff"`
+        G int `json:"g"`
+        H int `json:"h"`
+        I int `json:"i"`
+        J int `json:"j"`
+        K int `json:"k"`
+        L int `json:"l"`
+        M int `json:"m"`
+    }
+
+    {
+        var obj = TS{}
+        err := json.Unmarshal([]byte(js), &obj)
+        require.NoError(t, err)
+
+        var obj2 = TS{}
+        d := NewDecoder(js)
+        err2 := d.Decode(&obj2)
+        require.NoError(t, err2)
+        require.Equal(t, obj, obj2)
+    }
+
+    var obj = TS{}
+    d := NewDecoder(js)
+    d.SetOptions(OptionCaseSensitive)
+    err := d.Decode(&obj)
+    require.NoError(t, err)
+    require.Equal(t, TS{}, obj)
+}
+
 
 func BenchmarkSkipValidate(b *testing.B) {
     type skiptype struct {
