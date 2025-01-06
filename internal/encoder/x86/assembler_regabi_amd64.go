@@ -92,7 +92,11 @@ const (
 const (
 	_FM_exp32 = 0x7f800000
 	_FM_exp64 = 0x7ff0000000000000
-	_FM_maxint64 = 1<<63 - 1
+)
+
+const (
+	_IMax_53 = 1<<53
+	_IMin_53 = -1<<53
 )
 
 const (
@@ -846,21 +850,42 @@ func (self *Assembler) _asm_OP_i32(_ *ir.Instr) {
 }
 
 func (self *Assembler) _asm_OP_i64(i *ir.Instr) {
-	if i.CompatOp() == ir.OP_i || i.IsMapKey() {
+	if i.IsMapKey() {
 		self.store_int(21, _F_i64toa, "MOVQ")
 		return
 	}
-	self.Emit("BTQ", jit.Imm(int64(alg.BitInt64ToString)), _ARG_fv)
-	self.Sjmp("JC", "_i64_to_string{n}")
-	self.store_int(21, _F_i64toa, "MOVQ")
-	self.Sjmp("JMP", "_i64_to_string_end{n}")
-	self.Link("_i64_to_string{n}")
 
+	if i.CompatOp() == ir.OP_i64 { // current value type == int64
+		self.Emit("BTQ", jit.Imm(int64(alg.BitInt64ToString)), _ARG_fv)
+		self.Sjmp("JC", "_i64_force_to_string{n}")
+	}
+
+	if ir.OP_int() == ir.OP_i64 { // intSize == 64
+		self.Emit("BTQ", jit.Imm(int64(alg.BitIntegerExceed53BitToString)), _ARG_fv)
+		self.Sjmp("JNC", "_i64_keep_integer{n}")
+
+		self.Emit("MOVQ", jit.Ptr(_SP_p, 0), _AX)
+		self.Emit("MOVQ", jit.Imm(_IMax_53), _BX)
+		self.Emit("CMPQ", _AX, _BX)
+		self.Sjmp("JG", "_i64_force_to_string{n}")
+		self.Emit("MOVQ", jit.Imm(_IMin_53), _CX)
+		self.Emit("CMPQ", _AX, _CX)
+		self.Sjmp("JGE", "_i64_keep_integer{n}")
+		self.Sjmp("JMP", "_i64_force_to_string{n}")
+	} else {
+		self.Sjmp("JMP", "_i64_keep_integer{n}")
+	}
+
+	self.Link("_i64_force_to_string{n}")
 	self.add_char('"')
 	self.store_int(21, _F_i64toa, "MOVQ")
 	self.add_char('"')
+	self.Sjmp("JMP", "_i64_to_string_end{n}")
+
+	self.Link("_i64_keep_integer{n}")
+	self.store_int(21, _F_i64toa, "MOVQ")
+
 	self.Link("_i64_to_string_end{n}")
-	
 }
 
 func (self *Assembler) _asm_OP_u8(_ *ir.Instr) {
@@ -887,11 +912,11 @@ func (self *Assembler) _asm_OP_u64(i *ir.Instr) {
 	}
 
 	if ir.OP_uint() == ir.OP_u64 { // intSize == 64
-		self.Emit("BTQ", jit.Imm(int64(alg.BitUintExceedToString)), _ARG_fv)
+		self.Emit("BTQ", jit.Imm(int64(alg.BitIntegerExceed53BitToString)), _ARG_fv)
 		self.Sjmp("JNC", "_u64_keep_integer{n}")
 
 		self.Emit("MOVQ", jit.Ptr(_SP_p, 0), _AX)
-		self.Emit("MOVQ", jit.Imm(_FM_maxint64), _BX)
+		self.Emit("MOVQ", jit.Imm(_IMax_53), _BX)
 		self.Emit("CMPQ", _AX, _BX)
 		self.Sjmp("JBE", "_u64_keep_integer{n}")
 		self.Sjmp("JMP", "_u64_force_to_string{n}")
