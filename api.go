@@ -100,9 +100,9 @@ type Config struct {
     // Uint64 or Int64 into strings on Marshal
     Uint64ToString bool
     Int64ToString bool
-    // UintExceedToString when intSize == 64, if the value of type uint or uint64 exceeds MaxInt64, 
+    // IntegerExceed53BitToString when intSize == 64, if the value of type integer exceeds 1<<53, 
     // automatically convert it to a string.
-    UintExceedToString bool
+    IntegerExceed53BitToString bool
 }
  
 var (
