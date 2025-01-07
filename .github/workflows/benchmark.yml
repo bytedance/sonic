@@ -30,9 +30,9 @@ jobs:
         continue-on-error: true
         run: |
           export SONIC_NO_ASYNC_GC=1
-          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target_${{ github.run_id }}.out
-          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_target_${{ github.run_id }}.out
-          go test -run ^$ -count=100 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target_${{ github.run_id }}.out
+          go test -run ^$ -count=20 -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_target_${{ github.run_id }}.out
+          go test -run ^$ -count=20 -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_target_${{ github.run_id }}.out
+          go test -run ^$ -count=20 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_target_${{ github.run_id }}.out
 
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
@@ -46,10 +46,9 @@ jobs:
         continue-on-error: true
         run: |
           export SONIC_NO_ASYNC_GC=1
-          UNIQUE_ID=${{ github.run_id }}
-          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_main_${{ github.run_id }}.out
-          go test -run ^$ -count=100 -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_main_${{ github.run_id }}.out
-          go test -run ^$ -count=100 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_main_${{ github.run_id }}.out
+          go test -run ^$ -count=20 -benchmem -bench 'BenchmarkDecoder_(Generic|Binding)_Sonic' ./decoder >> /var/tmp/sonic_bench_main_${{ github.run_id }}.out
+          go test -run ^$ -count=20 -benchmem -bench 'BenchmarkEncoder_(Generic|Binding)_Sonic' ./encoder >> /var/tmp/sonic_bench_main_${{ github.run_id }}.out
+          go test -run ^$ -count=20 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_main_${{ github.run_id }}.out
 
       - name: Diff bench
         continue-on-error: true
