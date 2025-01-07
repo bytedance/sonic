@@ -10,4 +10,4 @@ jobs:
       - name: spell check
         uses: codespell-project/actions-codespell@v2
         with:
-          exclude_file: loader/internal/iasm
+          skip: loader/internal/iasm/obj/macho.go,loader/internal/iasm/obj/macho.go,loader/internal/iasm/obj/macho.go,loader/internal/iasm/obj/macho.go,loader/internal/iasm/x86_64/encodings.go:720,loader/internal/iasm/x86_64/program.go:115,loader/internal/iasm/x86_64/program.go:472,loader/internal/iasm/x86_64/program.go:472,loader/internal/iasm/expr/ast.go:23,loader/internal/iasm/expr/errors.go:40

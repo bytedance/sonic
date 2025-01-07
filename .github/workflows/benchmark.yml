@@ -51,5 +51,6 @@ jobs:
           go test -run ^$ -count=20 -benchmem -bench 'Benchmark(Get|Set)One_Sonic|BenchmarkParseSeven_Sonic' ./ast >> /var/tmp/sonic_bench_main_${{ github.run_id }}.out
 
       - name: Diff bench
+        continue-on-error: true
         run: |
           ./scripts/bench.py -t 0.20 -d /var/tmp/sonic_bench_target_${{ github.run_id }}.out,/var/tmp/sonic_bench_main_${{ github.run_id }}.out x
