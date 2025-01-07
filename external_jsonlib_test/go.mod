@@ -13,7 +13,7 @@ require (
 )
 
 require (
-	github.com/bytedance/sonic/loader v0.2.2-0.20250105060703-1ee5fa8eb417 // indirect
+	github.com/bytedance/sonic/loader v0.2.2 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
