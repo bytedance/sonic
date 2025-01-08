@@ -1794,7 +1794,7 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , _R8, _VAR_sr)                            // MOVQ    R8, sr
     self.Sjmp("JMP"  , "_end_{n}")                              // JMP     _end_{n}
     self.Link("_try_lowercase_{n}")                             // _try_lowercase_{n}:
-    self.Emit("BTQ"  , jit.Imm(_F_case_sensitive), _ARG_fv)     // check if enble option CaseSensitive
+    self.Emit("BTQ"  , jit.Imm(_F_case_sensitive), _ARG_fv)     // check if enable option CaseSensitive
     self.Sjmp("JC"   , "_unknown_{n}")                         
     self.Emit("MOVQ" , jit.Imm(referenceFields(p.vf())), _AX)   // MOVQ    ${p.vf()}, AX
     self.Emit("MOVQ", _ARG_sv_p, _BX)                            // MOVQ   sv, BX
