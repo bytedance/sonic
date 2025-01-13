@@ -44,6 +44,7 @@ const (
     OptionCopyString       Options = api.OptionCopyString
     OptionValidateString   Options = api.OptionValidateString
     OptionNoValidateJSON   Options = api.OptionNoValidateJSON
+    OptionCaseSensitive    Options = api.OptionCaseSensitive
 )
 
 // StreamDecoder is the decoder context object for streaming input.

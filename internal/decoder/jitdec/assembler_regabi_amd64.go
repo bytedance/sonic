@@ -1794,6 +1794,8 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , _R8, _VAR_sr)                            // MOVQ    R8, sr
     self.Sjmp("JMP"  , "_end_{n}")                              // JMP     _end_{n}
     self.Link("_try_lowercase_{n}")                             // _try_lowercase_{n}:
+    self.Emit("BTQ"  , jit.Imm(_F_case_sensitive), _ARG_fv)     // check if enable option CaseSensitive
+    self.Sjmp("JC"   , "_unknown_{n}")                         
     self.Emit("MOVQ" , jit.Imm(referenceFields(p.vf())), _AX)   // MOVQ    ${p.vf()}, AX
     self.Emit("MOVQ", _ARG_sv_p, _BX)                            // MOVQ   sv, BX
     self.Emit("MOVQ", _ARG_sv_n, _CX)                            // MOVQ   sv, CX
@@ -1801,6 +1803,10 @@ func (self *_Assembler) _asm_OP_struct_field(p *_Instr) {
     self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, _VAR_sr
     self.Emit("TESTQ", _AX, _AX)                                // TESTQ   AX, AX
     self.Sjmp("JNS"  , "_end_{n}")                              // JNS     _end_{n}
+    self.Link("_unknown_{n}")
+    // HACK: because `_VAR_sr` maybe used in `F_vstring`, so we should clear here again for `_OP_switch`.
+    self.Emit("MOVQ" , jit.Imm(-1), _AX)                        // MOVQ    $-1, AX
+    self.Emit("MOVQ" , _AX, _VAR_sr)                            // MOVQ    AX, sr
     self.Emit("BTQ"  , jit.Imm(_F_disable_unknown), _ARG_fv)    // BTQ     ${_F_disable_unknown}, fv
     self.Sjmp("JC"   , _LB_field_error)                         // JC      _field_error
     self.Link("_end_{n}")                                       // _end_{n}:

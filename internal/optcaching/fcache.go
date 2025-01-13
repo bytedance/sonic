@@ -32,7 +32,7 @@ const _PaddingSize =  32
 
 type FieldLookup interface {
 	Set(fields []resolver.FieldMeta)
-	Get(name string) int
+	Get(name string, caseSensitive bool) int
 }
 
 func isAscii(s string) bool {
@@ -93,13 +93,15 @@ func (self *SmallFieldMap) Set(fields []resolver.FieldMeta) {
 	}
 }
 
-func (self *SmallFieldMap) Get(name string) int {
+func (self *SmallFieldMap) Get(name string, caseSensitive bool) int {
 	for i, k := range self.keys {
 		if len(k) == len(name) && k == name {
 			return i
 		}
 	}
-
+	if caseSensitive {
+		return -1
+	}
 	name = strings.ToLower(name)
 	for i, k := range self.lowerKeys {
 		if len(k) == len(name) && k == name {
@@ -153,16 +155,20 @@ const _HdrSlot = 33
 const _HdrSize = _HdrSlot * 5
 
 // use native SIMD to accelerate it
-func (self *NormalFieldMap) Get(name string) int {
+func (self *NormalFieldMap) Get(name string, caseSensitive bool) int {
 	// small keys use native C
 	if len(name) <= 32 {
-		 _ = native.LookupSmallKey
-		return native.LookupSmallKey(&name, &self.keys, self.lowOffset);
+		_ = native.LookupSmallKey
+		lowOffset := self.lowOffset
+		if caseSensitive {
+			lowOffset = -1
+		}
+		return native.LookupSmallKey(&name, &self.keys, lowOffset);
 	}
-	return self.getLongKey(name)
+	return self.getLongKey(name, caseSensitive)
 }
 
-func (self *NormalFieldMap) getLongKey(name string) int {
+func (self *NormalFieldMap) getLongKey(name string, caseSensitive bool) int {
 	for _, k := range self.longKeys {
 		if len(k.key) != len(name) {
 			continue;
@@ -170,6 +176,10 @@ func (self *NormalFieldMap) getLongKey(name string) int {
 		if k.key == name {
 			return int(k.index)
 		}
+	}
+
+	if caseSensitive {
+		return -1
 	}
 
 	lower := strings.ToLower(name)
@@ -329,11 +339,13 @@ type FallbackFieldMap struct {
 	 }
  }
  
- func (self *FallbackFieldMap) Get(name string) int {
+ func (self *FallbackFieldMap) Get(name string, caseSensitive bool) int {
 	 if i, ok := self.inner[name]; ok {
 		 return i
-	 } else {
+	 } else if !caseSensitive {
 		 return self.getCaseInsensitive(name)
+	 } else {
+		return -1
 	 }
  }
  
