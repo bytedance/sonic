@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+#
+# Copyright 2025 ByteDance Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# This file is used by sync.sh for trimming x86_64/instructions.go and x86_64/instructions_table.go
+
+filename = "x86_64/instructions.go"
+print("trimming", filename)
+
+keep_methods = {
+    "ADDQ",
+    "CALLQ",
+    "CMPQ",
+    "JBE",
+    "JMP",
+    "LEAQ",
+    "MOVQ",
+    "MOVSD",
+    "MOVSS",
+    "RET",
+    "SUBQ",
+    "XORPS",
+
+    # for _test.go
+    "VPERMIL2PD",
+    "MOVSLQ",
+    "JMPQ",
+}
+lines = []
+keep = True
+
+for line in open(filename):
+    if line.startswith("//") and "performs" in line:
+        method = line.split(" ")[1]
+        if method in keep_methods:
+            keep = True
+        keep = method in keep_methods
+    if keep:
+        lines.append(line.rstrip())
+
+with open(filename, "w") as f:
+    f.write("\n".join(lines))
+
+
+filename = "x86_64/instructions_table.go"
+print("trimming", filename)
+
+keep_before = "// Instructions"
+lines = []
+keep = True
+
+for line in open(filename):
+    if keep and keep_before in line:
+        keep = False
+    if keep:
+        lines.append(line.rstrip())
+
+with open(filename, "w") as f:
+    f.write("\n".join(lines))

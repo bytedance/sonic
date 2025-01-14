@@ -20,27 +20,28 @@
 package sonic
 
 import (
-    `bytes`
-    `encoding`
-    `encoding/json`
-    `errors`
-    `fmt`
-    `image`
-    `math`
-    `math/big`
-    `math/rand`
-    `net`
-    `reflect`
-    `strconv`
-    `strings`
-    `testing`
-    `time`
-    `unsafe`
+	"bytes"
+	"encoding"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"image"
+	"math"
+	"math/big"
+	"math/rand"
+	"net"
+	"reflect"
+	"runtime"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+	"unsafe"
 
-    `github.com/bytedance/sonic/decoder`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/decoder"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/assert"
 )
 
 type T struct {
@@ -1008,6 +1009,8 @@ var unmarshalTests = []unmarshalTest{
         ptr: new(map[string]json.Number),
         err: fmt.Errorf("json: invalid number literal, trying to unmarshal %q into Number", `"invalid"`),
     },
+
+    // UTF-8 and string validation tests
     {in: `\u`, ptr: new(interface{}), err: fmt.Errorf("json: invald char"), validateString: true},
     {in: `\u`, ptr: new(string), err: fmt.Errorf("json: invald char"), validateString: true},
 
@@ -1019,6 +1022,17 @@ var unmarshalTests = []unmarshalTest{
     {in: "\"\x00\"", ptr: new(string), out: "\x00", validateString: false},
     {in: "\"\xff\"", ptr: new(interface{}), out: interface{}("\xff"), validateString: false},
     {in: "\"\xff\"", ptr: new(string), out: "\xff", validateString: false},
+
+    // cases found by fuzz
+    {   
+        in: `{"H":{"A": {}}}`,
+        ptr: new(struct {
+            F0 struct {
+                F1 json.Number "json:\"a,omitempty\""
+            } "json:\"H,\""
+        }),
+        err: fmt.Errorf("Mismatch type json.Number with value object.."),
+    },
 }
 
 func trim(b []byte) []byte {
@@ -2814,4 +2828,176 @@ func TestUseNumber(t *testing.T) {
             t.Errorf("Test %d, %#v\ngot:\n   %#v\nexp:\n   nil\n", i, tt, serr)
         }
     }
+}
+
+
+func BenchmarkDecoderRawMessage(b *testing.B) {
+    data := `    {
+      "coordinates": null,
+      "favorited": false,
+      "truncated": false,
+      "created_at": "Mon Sep 24 03:35:21 +0000 2012",
+      "id_str": "250075927172759552",
+      "entities": {
+        "urls": [
+ 
+        ],
+        "hashtags": [
+          {
+            "text": "freebandnames",
+            "indices": [
+              20,
+              34
+            ]
+          }
+        ],
+        "user_mentions": [
+ 
+        ]
+      },
+      "in_reply_to_user_id_str": null,
+      "contributors": null,
+      "text": "Aggressive Ponytail #freebandnames",
+      "metadata": {
+        "iso_language_code": "en",
+        "result_type": "recent"
+      },
+      "retweet_count": 0,
+      "in_reply_to_status_id_str": null,
+      "id": 250075927172759552,
+      "geo": null,
+      "retweeted": false,
+      "in_reply_to_user_id": null,
+      "place": null,
+      "user": {
+        "profile_sidebar_fill_color": "DDEEF6",
+        "profile_sidebar_border_color": "C0DEED",
+        "profile_background_tile": false,
+        "name": "Sean Cummings",
+        "profile_image_url": "https://a0.twimg.com/profile_images/2359746665/1v6zfgqo8g0d3mk7ii5s_normal.jpeg",
+        "created_at": "Mon Apr 26 06:01:55 +0000 2010",
+        "location": "LA, CA",
+        "follow_request_sent": null,
+        "profile_link_color": "0084B4",
+        "is_translator": false,
+        "id_str": "137238150",
+        "entities": {
+          "url": {
+            "urls": [
+              {
+                "expanded_url": null,
+                "url": "",
+                "indices": [
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          "description": {
+            "urls": [
+ 
+            ]
+          }
+        },
+        "default_profile": true,
+        "contributors_enabled": false,
+        "favourites_count": 0,
+        "url": null,
+        "profile_image_url_https": "https://si0.twimg.com/profile_images/2359746665/1v6zfgqo8g0d3mk7ii5s_normal.jpeg",
+        "utc_offset": -28800,
+        "id": 137238150,
+        "profile_use_background_image": true,
+        "listed_count": 2,
+        "profile_text_color": "333333",
+        "lang": "en",
+        "followers_count": 70,
+        "protected": false,
+        "notifications": null,
+        "profile_background_image_url_https": "https://si0.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_color": "C0DEED",
+        "verified": false,
+        "geo_enabled": true,
+        "time_zone": "Pacific Time (US & Canada)",
+        "description": "Born 330 Live 310",
+        "default_profile_image": false,
+        "profile_background_image_url": "https://a0.twimg.com/images/themes/theme1/bg.png",
+        "statuses_count": 579,
+        "friends_count": 110,
+        "following": null,
+        "show_all_inline_media": false,
+        "screen_name": "sean_cummings"
+      },
+      "in_reply_to_screen_name": null,
+      "source": "<a href=\"//itunes.apple.com/us/app/twitter/id409789998?mt=12%5C%22\" rel=\"\\\"nofollow\\\"\">Twitter for Mac</a>",
+      "in_reply_to_status_id": null
+    }`
+
+    bench := func(b *testing.B, run func(b *testing.B) ) {
+        b.ResetTimer()
+        b.ReportAllocs()
+        b.SetBytes(int64(len(data)))
+        for i := 0; i < b.N; i++ {
+            run(b)
+        }
+        runtime.GC()
+    }
+
+    b.Run("StdRawMessage", func(b *testing.B) {
+        bench(b, func(b *testing.B) {
+            var obj map[string]json.RawMessage
+            dc := decoder.NewDecoder(data)
+            dc.SetOptions(decoder.OptionUseNumber)
+            if err := dc.Decode(&obj); err!= nil {
+                b.Fatal(err.Error())
+            }
+            _ = obj
+        })
+    })
+
+    b.Run("NocopyRawMessage", func(b *testing.B) {
+        bench(b, func(b *testing.B) {
+            var obj map[string]NoCopyRawMessage
+            dc := decoder.NewDecoder(data)
+            dc.SetOptions(decoder.OptionUseNumber)
+            if err := dc.Decode(&obj); err!= nil {
+                b.Fatal(err.Error())
+            }
+            _ = obj
+        })
+    })
+
+
+    b.Run("NocopyRawMessageWithoutValidation", func(b *testing.B) {
+        bench(b, func(b *testing.B) {
+            var obj map[string]NoCopyRawMessage
+            dc := decoder.NewDecoder(data)
+            dc.SetOptions(decoder.OptionNoValidateJSON | decoder.OptionUseNumber)
+            if err := dc.Decode(&obj); err!= nil {
+                b.Fatal(err.Error())
+            }
+            _ = obj
+        })
+    })
+}
+
+
+func TestJsonNumber(t *testing.T) {
+    api := Config {
+        UseNumber: true,
+    }.Froze()
+
+
+    type Foo struct {
+        A json.Number `json:"a"`
+        B json.Number `json:"b"`
+        C json.Number `json:"c"`
+    }
+
+    data := []byte(`{"a": 1 , "b": "123", "c": "0.4e+56"}`)
+    var foo1, foo2 Foo
+    serr := api.Unmarshal(data, &foo1)
+    jerr := json.Unmarshal(data, &foo2)
+    assert.Equal(t, jerr, serr)
+    assert.Equal(t, foo2, foo1)
 }

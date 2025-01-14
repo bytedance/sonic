@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"unsafe"
 
+	"github.com/bytedance/sonic/internal/decoder/consts"
 	caching "github.com/bytedance/sonic/internal/optcaching"
 	"github.com/bytedance/sonic/internal/resolver"
 )
@@ -38,7 +39,7 @@ func (d *structDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) erro
 		next = val.Next()
 
 		// find field idx
-		idx := d.fieldMap.Get(key)
+		idx := d.fieldMap.Get(key, ctx.Options()&uint64(consts.OptionCaseSensitive) != 0)
         if idx == -1 {
             if Options(ctx.Options())&OptionDisableUnknown != 0 {
                 return error_field(key)

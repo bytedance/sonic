@@ -286,9 +286,9 @@ sub := root.Get("key3").Index(2).Int64() // == 3
 
 `ast.Searcher`提供了一些选项，以满足用户的不同需求:
 
-```
-opts:= ast.SearchOption{CopyReturn: true…}
-Val, err:= sonic。gettwithoptions (JSON, opts， "key")
+```go
+opts := ast.SearchOption{CopyReturn: true…}
+val, err := sonic.GetWithOptions(JSON, opts, "key")
 ```
 
 - CopyReturn
@@ -389,7 +389,7 @@ type Visitor interface {
 - `ConfigDefault`: sonic的默认配置 (`EscapeHTML=false`， `SortKeys=false`…) 保证性能同时兼顾安全性。
 - `ConfigStd`: 与 `encoding/json` 保证完全兼容的配置
 - `ConfigFastest`: 最快的配置(`NoQuoteTextMarshaler=true...`) 保证性能最优但是会缺少一些安全性检查（validate UTF8 等）
-Sonic **不**确保支持所有环境，由于开发高性能代码的困难。在不支持声音的环境中，实现将回落到 `encoding/json`。因此上述配置将全部等于`ConfigStd`。
+Sonic **不**确保支持所有环境，由于开发高性能代码的困难。在不支持sonic的环境中，实现将回落到 `encoding/json`。因此上述配置将全部等于`ConfigStd`。
 
 ## 注意事项
 

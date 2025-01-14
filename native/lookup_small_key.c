@@ -130,6 +130,10 @@ long lookup_small_key(GoString* key, GoSlice* table, long lower_off) {
     }
 
 case_sensitve:
+    if (lower_off == -1) {
+        return -_NOT_FOUND;
+    }
+    
     offset = lower_off + *(uint32_t*)(meta + 1);
     p = table->buf + offset;
     to_lower(lower, (uint8_t*)(key->buf), 32);

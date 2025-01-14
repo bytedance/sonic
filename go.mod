@@ -3,7 +3,7 @@ module github.com/bytedance/sonic
 go 1.17
 
 require (
-	github.com/bytedance/sonic/loader v0.2.0
+	github.com/bytedance/sonic/loader v0.2.2
 	github.com/cloudwego/base64x v0.1.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/klauspost/cpuid/v2 v2.0.9
@@ -13,7 +13,6 @@ require (
 )
 
 require (
-	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
