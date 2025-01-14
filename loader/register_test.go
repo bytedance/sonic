@@ -21,17 +21,16 @@ import (
     "sync"
 )
 
-func Test_registerModuleLockFree(t *testing.T) {
-    n, parallel := 1000, 8
-    head := moduledata{}
-    tail := &head
+func Test_registerModuleRace(t *testing.T) {
+    n, parallel := 100, 8
+    s := &moduledata{}
+    registerModule(s)
     wg := sync.WaitGroup{}
     wg.Add(parallel)
     filler := func(n int) {
         defer wg.Done()
         for i := 0; i < n; i++ {
-            m := &moduledata{}
-            registerModuleLockFree(&tail, m)
+            registerModule(&moduledata{})
         }
     }
     for i := 0; i < parallel; i++ {
@@ -39,7 +38,7 @@ func Test_registerModuleLockFree(t *testing.T) {
     }
     wg.Wait()
     i := 0
-    for p := head.next; p != nil; p = p.next {
+    for p := s.next; p != nil; p = p.next {
         i += 1
     }
     if i != parallel * n {
