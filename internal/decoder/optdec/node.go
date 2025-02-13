@@ -551,7 +551,7 @@ func (val Node) AsRaw(ctx *Context) string {
 		node := ptrCast(val.cptr)
 		len := int(node.val)
 		offset := val.Position()
-		// add start abd end quote
+		// add start and end quote
 		ref := rt.Str2Mem(ctx.Parser.Json)[offset-1 : offset+len+1]
 		return rt.Mem2Str(ref)
 	case KRawNumber: fallthrough
