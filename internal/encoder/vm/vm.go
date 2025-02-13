@@ -26,7 +26,6 @@ import (
 	"github.com/bytedance/sonic/internal/encoder/ir"
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
-	"github.com/bytedance/sonic/internal/base64"
 )
 
 const (
@@ -176,7 +175,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			buf = alg.F64toa(buf, v)
 		case ir.OP_bin:
 			v := *(*[]byte)(p)
-			buf = base64.EncodeBase64(buf, v)
+			buf = rt.EncodeBase64(buf, v)
 		case ir.OP_quote:
 			v := *(*string)(p)
 			buf = alg.Quote(buf, v, true)
