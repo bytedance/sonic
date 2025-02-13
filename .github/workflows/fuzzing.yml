@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Fuzz sonic
-        run: |
-          cd ./fuzz
-          make fuzz
-          make runopt 
+        run: ./scripts/fuzz.sh run
+
+      - name: Fuzz sonic VM
+        run: ./scripts/fuzz.sh runopt
