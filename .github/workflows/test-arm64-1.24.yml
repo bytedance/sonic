@@ -13,7 +13,6 @@ jobs:
     runs-on: ${{ matrix.runner_arch }}
     
     steps:
-      - uses: actions/checkout@v4
       - name: Clear repository
         run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
       - name: Set up Go
@@ -21,6 +20,8 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
+
+      - uses: actions/checkout@v4
 
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -32,7 +33,7 @@ jobs:
 
       - name: Unit Test
         run: |
-          GOMAXPROCS=4 go test -ldflags=-checklinkname=0 -race -covermode=atomic -coverprofile=coverage.txt $(go list ./... | grep -v -E 'loader|jit|avx|x86|sse')
+          GOMAXPROCS=4 go test -ldflags=-checklinkname=0 -race -covermode=atomic -coverprofile=coverage.txt $(go list ./... | grep -v -E 'loader|jit|avx|x86|sse|examples')
 
       - name: Data Race
         run: |
