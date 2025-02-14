@@ -192,3 +192,6 @@ func ConvTstring(v string) unsafe.Pointer
 //goland:noinspection GoUnusedParameter
 func Mapassign_fast64ptr(t *GoMapType, h unsafe.Pointer, k unsafe.Pointer) unsafe.Pointer
 
+//go:noescape
+//go:linkname Strhash runtime.strhash
+func Strhash(_ unsafe.Pointer, _ uintptr) uintptr
