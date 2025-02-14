@@ -14,6 +14,9 @@ jobs:
     runs-on: ${{ matrix.runner_arch }}
     
     steps:
+      - name: Clear repository
+        run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+      
       - uses: actions/checkout@v4
 
       - name: Set up Go
