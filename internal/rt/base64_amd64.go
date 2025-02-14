@@ -3,6 +3,7 @@
 package rt
 
 import (
+	_ "unsafe"
 	"github.com/cloudwego/base64x"
 )
 
@@ -35,3 +36,9 @@ func EncodeBase64(buf []byte, src []byte) []byte {
 	buf = append(buf, '"')
 	return buf
 }
+
+//go:linkname SubrB64Decode github.com/cloudwego/base64x._subr__b64decode
+var SubrB64Decode uintptr
+
+//go:linkname SubrB64Encode github.com/cloudwego/base64x._subr__b64encode
+var SubrB64Encode uintptr

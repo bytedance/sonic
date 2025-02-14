@@ -6,7 +6,6 @@ on: pull_request
 jobs:
   build:
     strategy:
-      max-parallel: 4
       matrix:
         go-version: [1.24.x]
         runner_arch: [ubuntu-latest]

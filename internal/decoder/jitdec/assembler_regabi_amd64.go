@@ -456,7 +456,7 @@ func (self *_Assembler) call_vf(fn obj.Addr) {
 /** Assembler Error Handlers **/
 
 var (
-    _F_convT64        = jit.Func(convT64)
+    _F_convT64        = jit.Func(rt.ConvT64)
     _F_error_wrap     = jit.Func(error_wrap)
     _F_error_type     = jit.Func(error_type)
     _F_error_field    = jit.Func(error_field)
@@ -662,7 +662,7 @@ func (self *_Assembler) skip_key_value() {
 
 var (
     _T_byte     = jit.Type(byteType)
-    _F_mallocgc = jit.Func(mallocgc)
+    _F_mallocgc = jit.Func(rt.Mallocgc)
 )
 
 func (self *_Assembler) malloc_AX(nb obj.Addr, ret obj.Addr) {
@@ -964,8 +964,8 @@ func (self *_Assembler) unquote_twice(p obj.Addr, n obj.Addr, stack bool) {
 /** Memory Clearing Routines **/
 
 var (
-    _F_memclrHasPointers    = jit.Func(memclrHasPointers)
-    _F_memclrNoHeapPointers = jit.Func(memclrNoHeapPointers)
+    _F_memclrHasPointers    = jit.Func(rt.MemclrHasPointers)
+    _F_memclrNoHeapPointers = jit.Func(rt.MemclrNoHeapPointers)
 )
 
 func (self *_Assembler) mem_clear_fn(ptrfree bool) {
@@ -989,10 +989,10 @@ func (self *_Assembler) mem_clear_rem(size int64, ptrfree bool) {
 /** Map Assigning Routines **/
 
 var (
-    _F_mapassign           = jit.Func(mapassign)
-    _F_mapassign_fast32    = jit.Func(mapassign_fast32)
-    _F_mapassign_faststr   = jit.Func(mapassign_faststr)
-    _F_mapassign_fast64ptr = jit.Func(mapassign_fast64ptr)
+    _F_mapassign           = jit.Func(rt.Mapassign)
+    _F_mapassign_fast32    = jit.Func(rt.Mapassign_fast32)
+    _F_mapassign_faststr   = jit.Func(rt.Mapassign_faststr)
+    _F_mapassign_fast64ptr = jit.Func(rt.Mapassign_fast64ptr)
 )
 
 var (
@@ -1183,12 +1183,12 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
 /** OpCode Assembler Functions **/
 
 var (
-    _F_memequal         = jit.Func(memequal)
-    _F_memmove          = jit.Func(memmove)
+    _F_memequal         = jit.Func(rt.MemEqual)
+    _F_memmove          = jit.Func(rt.Memmove)
     _F_growslice        = jit.Func(rt.GrowSlice)
-    _F_makeslice        = jit.Func(makeslice)
-    _F_makemap_small    = jit.Func(makemap_small)
-    _F_mapassign_fast64 = jit.Func(mapassign_fast64)
+    _F_makeslice        = jit.Func(rt.MakeSliceStd)
+    _F_makemap_small    = jit.Func(rt.MakemapSmall)
+    _F_mapassign_fast64 = jit.Func(rt.Mapassign_fast64)
 )
 
 var (
@@ -1197,7 +1197,7 @@ var (
 )
 
 var (
-    _F_b64decode   = jit.Imm(int64(_subr__b64decode))
+    _F_b64decode   = jit.Imm(int64(rt.SubrB64Decode))
     _F_decodeValue = jit.Imm(int64(_subr_decode_value))
 )
 
@@ -1547,7 +1547,7 @@ func (self *_Assembler) _asm_OP_map_key_i32(p *_Instr) {
     self.parse_signed(int32Type, "", p.vi())                                                     // PARSE     int32
     self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32)     // RANGE     int32
     self.match_char('"')
-    if vt := p.vt(); !mapfast(vt) {
+    if vt := p.vt(); !rt.IsMapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)                                  // MAPASSIGN int32, mapassign, st.Iv
     } else {
         self.Emit("MOVQ", _CX, _AX)                                         // MOVQ CX, AX
@@ -1558,7 +1558,7 @@ func (self *_Assembler) _asm_OP_map_key_i32(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_i64(p *_Instr) {
     self.parse_signed(int64Type, "", p.vi())                                 // PARSE     int64
     self.match_char('"')
-    if vt := p.vt(); !mapfast(vt) {
+    if vt := p.vt(); !rt.IsMapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)              // MAPASSIGN int64, mapassign, st.Iv
     } else {
         self.Emit("MOVQ", _VAR_st_Iv, _AX)              // MOVQ      st.Iv, AX
@@ -1584,7 +1584,7 @@ func (self *_Assembler) _asm_OP_map_key_u32(p *_Instr) {
     self.parse_unsigned(uint32Type, "", p.vi())                                       // PARSE     uint32
     self.range_unsigned_CX(_I_uint32, _T_uint32, math.MaxUint32)   // RANGE     uint32
     self.match_char('"')
-    if vt := p.vt(); !mapfast(vt) {
+    if vt := p.vt(); !rt.IsMapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)                      // MAPASSIGN uint32, vt.Iv
     } else {
         self.Emit("MOVQ", _CX, _AX)                             // MOVQ CX, AX
@@ -1595,7 +1595,7 @@ func (self *_Assembler) _asm_OP_map_key_u32(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_u64(p *_Instr) {
     self.parse_unsigned(uint64Type, "", p.vi())                                       // PARSE     uint64
     self.match_char('"')
-    if vt := p.vt(); !mapfast(vt) {
+    if vt := p.vt(); !rt.IsMapfast(vt) {
         self.mapassign_std(vt, _VAR_st_Iv)                      // MAPASSIGN uint64, vt.Iv
     } else {
         self.Emit("MOVQ", _VAR_st_Iv, _AX)                      // MOVQ      st.Iv, AX
@@ -1620,7 +1620,7 @@ func (self *_Assembler) _asm_OP_map_key_f64(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_str(p *_Instr) {
     self.parse_string()                          // PARSE     STRING
     self.unquote_once(_ARG_sv_p, _ARG_sv_n, true, true)      // UNQUOTE   once, sv.p, sv.n
-    if vt := p.vt(); !mapfast(vt) {
+    if vt := p.vt(); !rt.IsMapfast(vt) {
         self.valloc(vt.Key(), _DI)
         self.Emit("MOVOU", _ARG_sv, _X0)
         self.Emit("MOVOU", _X0, jit.Ptr(_DI, 0))
