@@ -33,7 +33,10 @@ func MemEqual(a unsafe.Pointer, b unsafe.Pointer, size uintptr) bool
 func Mapiternext(it *GoMapIterator)
 
 //go:linkname Mapiterinit runtime.mapiterinit
-func Mapiterinit(t *GoMapType, m *GoMap, it *GoMapIterator)
+func Mapiterinit(t *GoMapType, m unsafe.Pointer, it *GoMapIterator)
+
+//go:linkname Maplen reflect.maplen
+func Maplen(h unsafe.Pointer) int 
 
 //go:linkname IsValidNumber encoding/json.isValidNumber
 func IsValidNumber(s string) bool

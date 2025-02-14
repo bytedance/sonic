@@ -201,13 +201,13 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			}
 			buf = *b
 		case ir.OP_is_zero_map:
-			v := *(**rt.GoMap)(p)
-			if v == nil || v.Count == 0 {
+			v := *(*unsafe.Pointer)(p)
+			if v == nil || rt.Maplen(v) == 0 {
 				pc = ins.Vi()
 				continue
 			}
 		case ir.OP_map_iter:
-			v := *(**rt.GoMap)(p)
+			v := *(*unsafe.Pointer)(p)
 			vt := ins.Vr()
 			it, err := alg.IteratorStart(rt.MapType(vt), v, flags)
 			if err != nil {
