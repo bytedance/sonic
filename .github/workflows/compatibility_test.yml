@@ -28,13 +28,13 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: main
-        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic
+        run: go test -race -v -gcflags="all=-l" ./
 
       - name: decoder
-        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic/decoder
+        run: go test -race -v -gcflags="all=-l" ./decoder
 
       - name: encoder
-        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic/encoder
+        run: go test -race -v -gcflags="all=-l" ./encoder
 
       - name: ast
-        run: go test -race -v -gcflags="all=-l" github.com/bytedance/sonic/ast
+        run: go test -race -v -gcflags="all=-l" ./ast
