@@ -132,7 +132,6 @@ func resolveFields(vt reflect.Type) []FieldMeta {
         }
 
         /* dump the field path */
-        fmt.Println(fv)
         for _, i := range fv.index {
             kind := F_offset
             fval := item.Field(i)
@@ -186,7 +185,6 @@ var (
 )
 
 func ResolveStruct(vt reflect.Type) []FieldMeta {
-    println(vt.Name())
     var ok bool
     var fm []FieldMeta
 
@@ -210,7 +208,6 @@ func ResolveStruct(vt reflect.Type) []FieldMeta {
     }
 
     /* resolve the field */
-    println(vt.Name())
     fm = resolveFields(vt)
     fieldCache[vt] = fm
     return fm
