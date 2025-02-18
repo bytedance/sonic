@@ -486,13 +486,21 @@ typedef struct {
     uint32_t  esc;
 } string_block;
 
-static always_inline string_block string_block_new(uint8_t* s) {
+static always_inline string_block string_block_new(uint8_t* s, uint64_t opts) {
     v256u v = v256_loadu((uint8_t*)s);
-    return (string_block){
-        .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
-        .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
-        .esc = mask256_tobitmask(v256_le(v, v256_splat('\x1f')))
-    };
+    if (unlikely((opts & F_VALIDATE_STRING) != 0)) {
+        return (string_block){
+            .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
+            .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
+            .esc = mask256_tobitmask(v256_le(v, v256_splat('\x1f')))
+        };
+    } else {
+        return (string_block){
+            .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
+            .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
+            .esc = 0
+        };
+    }
 }
 
 static always_inline bool has_quote_first(string_block* block) {
@@ -599,7 +607,7 @@ static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, uin
 
     // breakpoint();
     while (true) {
-        block = string_block_new(*cur);
+        block = string_block_new(*cur, opts);
         if (has_quote_first(&block)) {
             *cur += trailing_zeros(block.quote) + 1; // skip the quote char
             *has_esc = false;
@@ -643,11 +651,7 @@ escape:
 
 find_and_move:
     v = v256_loadu((uint8_t*)*cur);
-    block =  (string_block){
-        .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
-        .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
-        .esc = mask256_tobitmask(v256_le(v, v256_splat('\x1f')))
-    };
+    block = string_block_new(*cur, opts);
 
     if (has_quote_first(&block)) {
         // while **src != b'"' {

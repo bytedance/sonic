@@ -1,10 +1,10 @@
 package issue_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/bytedance/sonic"
+	"github.com/stretchr/testify/assert"
 )
 
 type myfoo struct{}
@@ -13,5 +13,6 @@ func TestIssue739(t *testing.T) {
 	var bar myfoo
 	s := `{"a":"b
 c"}`
-	fmt.Println(sonic.ConfigDefault.UnmarshalFromString(s, &bar))
+	assert.NoError(t, sonic.ConfigDefault.UnmarshalFromString(s, &bar))
+	assert.Error(t, sonic.ConfigStd.UnmarshalFromString(s, &bar))
 }

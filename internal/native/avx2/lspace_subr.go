@@ -16,7 +16,7 @@ const (
 )
 
 const (
-    _size__lspace = 240
+    _size__lspace = 232
 )
 
 var (
@@ -24,11 +24,11 @@ var (
         {0x1, 0},
         {0xbb, 8},
         {0xbf, 0},
-        {0xd0, 8},
-        {0xd4, 0},
-        {0xdb, 8},
-        {0xdf, 0},
-        {0xf0, 8},
+        {0xc8, 8},
+        {0xcc, 0},
+        {0xd3, 8},
+        {0xd7, 0},
+        {0xe8, 8},
     }
 )
 
