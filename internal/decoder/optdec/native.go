@@ -61,6 +61,10 @@ type node struct {
 	val uint64
 }
 
+func (node *node) dump() {
+
+}
+
 // should consistent with native/parser.c
 type _nospaceBlock struct {
 	_ [8]byte
@@ -74,6 +78,7 @@ type nodeBuf struct {
 	depth   uint64
 	nstart  uintptr
 	nend    uintptr
+	iskey   bool
 	stat    jsonStat
 }
 

@@ -194,6 +194,7 @@ typedef struct {
     uint64_t     depth;
     node*        start;
     const node*  end;
+    bool         is_key;
     json_stat    stat;
 } node_buf;
 
@@ -1072,7 +1073,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
             }
             default: {
                 if (get_type(node_buf_parent(nodes)) == OBJECT) {
-                    if (top_is_key(nodes)) {
+                    if (nodes->is_key) {
                         goto obj_val;
                     } else {
                         c = skip_space(&slf->nbk, rdr);
@@ -1149,7 +1150,10 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
     }
         
     check_error();
-    check_visit();
+    if (unlikely(!visited)) {
+        return SONIC_VISIT_FAILED;
+    }
+    // check_visit();
     return err;
 
 obj_key:
@@ -1162,7 +1166,7 @@ obj_key:
 
     slen = parse_string_inplace(cur, &has_esc, slf->opt);
     if (slen < 0) {
-        err =  (error_code)(-slen);
+        err = (error_code)(-slen);
         return err;
     }
 
@@ -1172,7 +1176,10 @@ obj_key:
     }
 
     visited = vis->on_key(ctx, pos, slen, has_esc);
-    check_visit();
+    if (unlikely(!visited)) {
+        ((node_buf*)(ctx))->is_key = true;
+        return SONIC_VISIT_FAILED;
+    }
 
 obj_val:
     // parse value
