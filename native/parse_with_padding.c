@@ -1150,10 +1150,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
     }
         
     check_error();
-    if (unlikely(!visited)) {
-        return SONIC_VISIT_FAILED;
-    }
-    // check_visit();
+    check_visit();
     return err;
 
 obj_key:
