@@ -94,15 +94,36 @@ func TestFuzzCases(t *testing.T) {
 
 var target = sonic.ConfigStd
 
+func fuzzInvalidJson(t *testing.T, data []byte) {
+    for _, typ := range []func() interface{}{
+        func() interface{} { return new(interface{}) },
+        func() interface{} { return new(map[string]interface{}) },
+        func() interface{} { return new([]interface{}) },
+        func() interface{} { return new(string) },
+        func() interface{} { return new(int64) },
+        func() interface{} { return new(uint64) },
+        func() interface{} { return new(float64) },
+        func() interface{} { return new(json.Number) },
+        func() interface{} { return new(S) },
+    } {
+        // to check memory corruption
+        var sv = typ()
+        _ = sonic.Unmarshal(data, sv)
+    }
+}
+
 func fuzzMain(t *testing.T, data []byte) {
     fuzzValidate(t, data)
     fuzzHtmlEscape(t, data)
     // fuzz ast get api, should not panic here.
     fuzzAst(t, data)
+
     // Only fuzz the validate json here.
     if !json.Valid(data) {
+        fuzzInvalidJson(t, data)
         return
     }
+
     fuzzStream(t, data)
     for i, typ := range []func() interface{}{
         func() interface{} { return new(interface{}) },
