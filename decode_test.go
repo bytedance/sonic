@@ -1133,10 +1133,28 @@ func TestMarshalEmbeds(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
     for i, tt := range unmarshalTests {
-        if !json.Valid([]byte(tt.in)) {
-            continue
+        // construct decoder
+        dec := decoder.NewDecoder(tt.in)
+        if tt.useNumber {
+            dec.UseNumber()
         }
-        if tt.ptr == nil {
+        if tt.disallowUnknownFields {
+            dec.DisallowUnknownFields()
+        }
+        if tt.validateString {
+            dec.ValidateString()
+        }
+
+        // check decode result for invalid jsons
+        if !json.Valid([]byte(tt.in)) || tt.ptr == nil {
+            var sv interface{}
+            err := dec.Decode(&sv)
+            if err == nil && tt.err != nil {
+                err = dec.CheckTrailings()
+                if err == nil && tt.err != nil {
+                    t.Errorf("test json #%d: %v, %v, want %v", i, tt.in, err, tt.err)
+                }
+            }
             continue
         }
 
@@ -1147,7 +1165,6 @@ func TestUnmarshal(t *testing.T) {
         }
         typ = typ.Elem()
 
-        // v = new(right-type)
         v := reflect.New(typ)
 
         if !reflect.DeepEqual(tt.ptr, v.Interface()) {
@@ -1161,16 +1178,6 @@ func TestUnmarshal(t *testing.T) {
             continue
         }
 
-        dec := decoder.NewDecoder(tt.in)
-        if tt.useNumber {
-            dec.UseNumber()
-        }
-        if tt.disallowUnknownFields {
-            dec.DisallowUnknownFields()
-        }
-        if tt.validateString {
-            dec.ValidateString()
-        }
         if err := dec.Decode(v.Interface()); (err == nil) != (tt.err == nil) {
             spew.Dump(tt)
             t.Fatalf("#%d: %v, want %v", i, err, tt.err)

@@ -9,7 +9,7 @@ OUT_DIR="internal/native"
 TOOL_DIR="tools/asm2asm"
 TMPL_DIR="internal/native"
 EXTRA_CLAGS=$2
-CC=clang
+CC=clang-13
 if [ "$1" != "" ]; then
     CC=$1
 fi
