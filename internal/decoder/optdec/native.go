@@ -74,6 +74,7 @@ type nodeBuf struct {
 	depth   uint64
 	nstart  uintptr
 	nend    uintptr
+	iskey   bool
 	stat    jsonStat
 }
 
@@ -196,14 +197,14 @@ func (p *Parser) parse() ErrorCode {
 
 	// check OoB here
 	offset := p.nbuf.ncur - p.nbuf.nstart
-	curLen :=  offset / unsafe.Sizeof(node{})
-	if curLen != uintptr(len(p.nodes)) {
+	curLen :=  int(offset / unsafe.Sizeof(node{}))
+	if curLen != len(p.nodes) {
 		panic(fmt.Sprintf("current len: %d, real len: %d cap: %d", curLen, len(p.nodes), cap(p.nodes)))
 	}
 
 	// node buf is not enough, continue parse
 	// the maxCap is always meet all valid JSON
-	maxCap := calMaxNodeCap(len(p.Json))
+	maxCap := curLen + calMaxNodeCap(len(p.Json) - int(p.cur - p.start))
 	slice := rt.GoSlice{
 		Ptr: rt.Mallocgc(uintptr(maxCap) * nodeType.Size, nodeType, false),
 		Len: maxCap,

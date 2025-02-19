@@ -194,6 +194,7 @@ typedef struct {
     uint64_t     depth;
     node*        start;
     const node*  end;
+    bool         is_key;
     json_stat    stat;
 } node_buf;
 
@@ -486,13 +487,21 @@ typedef struct {
     uint32_t  esc;
 } string_block;
 
-static always_inline string_block string_block_new(uint8_t* s) {
+static always_inline string_block string_block_new(uint8_t* s, uint64_t opts) {
     v256u v = v256_loadu((uint8_t*)s);
-    return (string_block){
-        .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
-        .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
-        .esc = mask256_tobitmask(v256_le(v, v256_splat('\x1f')))
-    };
+    if (unlikely((opts & F_VALIDATE_STRING) != 0)) {
+        return (string_block){
+            .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
+            .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
+            .esc = mask256_tobitmask(v256_le(v, v256_splat('\x1f')))
+        };
+    } else {
+        return (string_block){
+            .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
+            .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
+            .esc = 0
+        };
+    }
 }
 
 static always_inline bool has_quote_first(string_block* block) {
@@ -599,7 +608,7 @@ static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, uin
 
     // breakpoint();
     while (true) {
-        block = string_block_new(*cur);
+        block = string_block_new(*cur, opts);
         if (has_quote_first(&block)) {
             *cur += trailing_zeros(block.quote) + 1; // skip the quote char
             *has_esc = false;
@@ -643,11 +652,7 @@ escape:
 
 find_and_move:
     v = v256_loadu((uint8_t*)*cur);
-    block =  (string_block){
-        .bs = mask256_tobitmask(v256_eq(v, v256_splat('\\'))),
-        .quote = mask256_tobitmask(v256_eq(v, v256_splat('"'))),
-        .esc = mask256_tobitmask(v256_le(v, v256_splat('\x1f')))
-    };
+    block = string_block_new(*cur, opts);
 
     if (has_quote_first(&block)) {
         // while **src != b'"' {
@@ -1068,7 +1073,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
             }
             default: {
                 if (get_type(node_buf_parent(nodes)) == OBJECT) {
-                    if (top_is_key(nodes)) {
+                    if (nodes->is_key) {
                         goto obj_val;
                     } else {
                         c = skip_space(&slf->nbk, rdr);
@@ -1158,7 +1163,7 @@ obj_key:
 
     slen = parse_string_inplace(cur, &has_esc, slf->opt);
     if (slen < 0) {
-        err =  (error_code)(-slen);
+        err = (error_code)(-slen);
         return err;
     }
 
@@ -1168,7 +1173,10 @@ obj_key:
     }
 
     visited = vis->on_key(ctx, pos, slen, has_esc);
-    check_visit();
+    if (unlikely(!visited)) {
+        ((node_buf*)(ctx))->is_key = true;
+        return SONIC_VISIT_FAILED;
+    }
 
 obj_val:
     // parse value

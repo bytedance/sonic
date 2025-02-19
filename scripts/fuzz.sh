@@ -66,7 +66,7 @@ run_fuzz() {
     log_info "Running basic fuzz test..."
     export SONIC_FUZZ_MEM_LIMIT=2
     export GOMAXPROCS=2
-    go test "$compile_flag" -fuzz="${TEST_NAME}" -v -fuzztime 15m "${FUZZ_DIR}"
+    cd "${FUZZ_DIR}" && go test "$compile_flag" -fuzz="${TEST_NAME}" -v -fuzztime 15m 
 }
 
 run_optimized_fuzz() {
@@ -76,7 +76,7 @@ run_optimized_fuzz() {
     export SONIC_USE_FASTMAP=1 
     export SONIC_ENCODER_USE_VM=1
     export GOMAXPROCS=2
-    go test "$compile_flag" -fuzz="${TEST_NAME}" -v -fuzztime 15m "${FUZZ_DIR}"
+    cd "${FUZZ_DIR}" && go test "$compile_flag" -fuzz="${TEST_NAME}" -v -fuzztime 15m 
 }
 
 cleanup() {

@@ -14,7 +14,8 @@ jobs:
     
     steps:
       - name: Clear repository
-        run: sudo rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+        run: rm -fr $GITHUB_WORKSPACE && mkdir $GITHUB_WORKSPACE
+
       - uses: actions/checkout@v4
 
       - name: Set up Go

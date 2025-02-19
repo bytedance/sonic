@@ -5,8 +5,14 @@ on: pull_request
 jobs:
   build:
     strategy:
+        max-parallel: 2
         matrix:
+          mode: [run, runopt]
           os: [ubuntu-latest, ubuntu-24.04-arm]
+          exclude:
+            - os: ubuntu-24.04-arm
+              mode: runopt
+
     runs-on: ${{ matrix.os }}
     steps:
       - name: Clear repository
@@ -27,7 +33,5 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Fuzz sonic
-        run: ./scripts/fuzz.sh run
+        run: ./scripts/fuzz.sh ${{ matrix.mode }}
 
-      - name: Fuzz sonic VM
-        run: ./scripts/fuzz.sh runopt
