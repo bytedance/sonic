@@ -2,7 +2,6 @@ package optdec
 
 import (
 	"encoding"
-	"encoding/json"
 	"math"
 	"reflect"
 	"unsafe"
@@ -354,15 +353,6 @@ func decodeKeyI16(dec *mapDecoder, raw string, ctx *context) (interface{}, error
 	return int16(ret), nil
 }
 
-func decodeKeyJSONUnmarshaler(dec *mapDecoder, raw string, _ *context) (interface{}, error) {
-	ret := reflect.New(dec.mapType.Key.Pack()).Interface()
-	err := ret.(json.Unmarshaler).UnmarshalJSON([]byte(raw))
-	if err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
 func decodeKeyTextUnmarshaler(dec *mapDecoder, raw string, ctx *context) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
@@ -374,6 +364,29 @@ func decodeKeyTextUnmarshaler(dec *mapDecoder, raw string, ctx *context) (interf
 		return nil, err
 	}
 	return ret, nil
+}
+
+func decodeFloat32Key(dec *mapDecoder, raw string, _ *context) (interface{}, error) {
+	key, err := Unquote(raw)
+	if err != nil {
+		return nil, err
+	}
+	ret, err := ParseF64(key)
+	if err != nil {
+		return nil, err
+	}
+	if ret > math.MaxFloat32 || ret < -math.MaxFloat32 {
+		return nil, error_value(key, dec.mapType.Key.Pack())
+	}
+	return float32(ret), nil
+}
+
+func decodeFloat64Key(dec *mapDecoder, raw string, _ *context) (interface{}, error) {
+	key, err := Unquote(raw)
+	if err != nil {
+		return nil, err
+	}
+	return ParseF64(key)
 }
 
 type mapDecoder struct {
