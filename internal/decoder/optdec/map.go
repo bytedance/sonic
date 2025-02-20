@@ -359,7 +359,7 @@ func decodeKeyTextUnmarshaler(dec *mapDecoder, raw string, ctx *context) (interf
 		return nil, err
 	}
 	ret := reflect.New(dec.mapType.Key.Pack()).Interface()
-	err = ret.(encoding.TextUnmarshaler).UnmarshalText([]byte(key))
+	err = ret.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(key))
 	if err != nil {
 		return nil, err
 	}
