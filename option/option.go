@@ -41,10 +41,10 @@ type CompileOptions struct {
 }
 
 var (
-    // Default value(3) means the compiler only inline 3 layers of nested struct. 
+    // Default value(2) means the compiler only inline 2 layers of nested struct. 
     // when the depth exceeds, the compiler will recurse 
     // and compile subsequent structs when they are decoded 
-    DefaultMaxInlineDepth = 3
+    DefaultMaxInlineDepth = 2
 
     // Default value(1) means `Pretouch()` will be recursively executed once,
     // if any nested struct is left (depth exceeds MaxInlineDepth)
