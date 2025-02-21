@@ -26,12 +26,12 @@ jobs:
       - name: main
         run: |
           set GOMAXPROCS=4
-          go test -v -race github.com/bytedance/sonic
+          go test -v -race ./
 
       - name: ast
         run: |
           set GOMAXPROCS=4
-          go test -v -race github.com/bytedance/sonic/ast
+          go test -v -race ./ast
 
       - name: external
         run: |

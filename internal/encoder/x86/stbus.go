@@ -27,9 +27,6 @@ import (
 	_ "github.com/cloudwego/base64x"
 )
 
-//go:linkname _subr__b64encode github.com/cloudwego/base64x._subr__b64encode
-var _subr__b64encode uintptr
-
 var compiler func(*rt.GoType, ... interface{}) (interface{}, error)
 
 func SetCompiler(c func(*rt.GoType, ... interface{}) (interface{}, error)) {

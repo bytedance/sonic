@@ -102,7 +102,7 @@ func newStack() *_Stack {
 }
 
 func resetStack(p *_Stack) {
-    memclrNoHeapPointers(unsafe.Pointer(p), _StackSize)
+    rt.MemclrNoHeapPointers(unsafe.Pointer(p), _StackSize)
 }
 
 func freeStack(p *_Stack) {
