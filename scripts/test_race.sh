@@ -13,5 +13,4 @@ if ! grep -q "WARNING: DATA RACE" ./test_race.log; then
     echo "TEST FAILED: should data race here"
     exit 1
 fi
-mv race_test.go race_test_go
-rm -vrf test_race.log
+rm -vrf race_test.go test_race.log
