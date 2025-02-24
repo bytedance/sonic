@@ -2162,6 +2162,8 @@ func TestSkipArrayObjects(t *testing.T) {
 // slices, and arrays.
 // Issues 4900 and 8837, among others.
 func TestPrefilled(t *testing.T) {
+    var one int = 1
+    var two int = 2
     // Values here change, cannot reuse table across runs.
     var prefillTests = []struct {
         in  string
@@ -2184,6 +2186,11 @@ func TestPrefilled(t *testing.T) {
             out: &[]int{2},
         },
         {
+            in:  `[2]`,
+            ptr: &[]int{1, 3},
+            out: &[]int{2},
+        },
+        {
             in:  `[2, 3]`,
             ptr: &[]int{1},
             out: &[]int{2, 3},
@@ -2198,6 +2205,17 @@ func TestPrefilled(t *testing.T) {
             ptr: &[...]int{1, 2},
             out: &[...]int{3, 0},
         },
+        {
+            in:  `[2]`,
+            ptr: &[]interface{}{&one, 2.0},
+            out: &[]interface{}{&two},
+        },
+        // TODO(rfc): different with encoding/json
+        // {
+        //     in:  `{"a": 2}`,
+        //     ptr: &map[string]interface{}{"a": &one, "b": int(2)},
+        //     out: &map[string]interface{}{"a": 2.0, "b": int(2)},
+        // },
     }
 
     for _, tt := range prefillTests {
