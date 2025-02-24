@@ -95,7 +95,18 @@ func (d *sliceEfaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) 
 		return nil
 	}
 
-	return node.AsSliceEface(ctx, vp)
+	/* if slice is empty, just call `AsSliceEface` */
+	if ((*rt.GoSlice)(vp)).Len == 0 {
+		return node.AsSliceEface(ctx, vp)
+	}
+	
+	decoder := sliceDecoder{
+		elemType: rt.AnyType,
+		elemDec:  &efaceDecoder{},
+		typ:      rt.SliceEfaceType.Pack(),
+	}
+
+	return decoder.FromDom(vp, node, ctx)
 }
 
 type sliceI32Decoder struct {
