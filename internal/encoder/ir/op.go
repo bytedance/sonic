@@ -24,6 +24,7 @@ import (
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/encoder/vars"
+	"github.com/bytedance/sonic/internal/resolver"
 	"github.com/bytedance/sonic/internal/rt"
 )
 
@@ -80,6 +81,7 @@ const (
 	OP_marshal_text_p
 	OP_cond_set
 	OP_cond_testc
+	OP_is_zero
 )
 
 const (
@@ -229,6 +231,11 @@ type typAndTab struct {
 	itab *rt.GoItab
 }
 
+type typAndField struct {
+	vt reflect.Type
+	fv *resolver.FieldMeta
+}
+
 func NewInsVtab(op Op, vt reflect.Type, itab *rt.GoItab) Instr {
 	return Instr{
 		o: op,
@@ -236,6 +243,13 @@ func NewInsVtab(op Op, vt reflect.Type, itab *rt.GoItab) Instr {
 			vt: rt.UnpackType(vt),
 			itab: itab,
 		}),
+	}
+}
+
+func NewInsField(op Op, fv *resolver.FieldMeta) Instr {
+	return Instr{
+		o: op,
+		p: unsafe.Pointer(fv),
 	}
 }
 
@@ -261,6 +275,10 @@ func (self Instr) Vi() int {
 
 func (self Instr) Vf() uint8 {
 	return (*rt.GoType)(self.p).KindFlags
+}
+
+func (self Instr) VField() (*resolver.FieldMeta) {
+	return (*resolver.FieldMeta)(self.p)
 }
 
 func (self Instr) Vs() (v string) {
@@ -440,6 +458,10 @@ func (self *Program) Vp(op Op, vt reflect.Type, pv bool) {
 
 func (self *Program) Vtab(op Op, vt reflect.Type, itab *rt.GoItab) {
 	*self = append(*self, NewInsVtab(op, vt, itab))
+}
+
+func (self *Program) VField(op Op, fv *resolver.FieldMeta) {
+	*self = append(*self, NewInsField(op, fv))
 }
 
 func (self Program) Disassemble() string {

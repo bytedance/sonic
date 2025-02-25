@@ -29,6 +29,7 @@ type OffsetType int
 const (
     F_omitempty FieldOpts = 1 << iota
     F_stringize
+    F_omitzero
 )
 
 const (
@@ -47,6 +48,7 @@ type FieldMeta struct {
     Path []Offset
     Opts FieldOpts
     Type reflect.Type
+    IsZero func(reflect.Value) bool
 }
 
 func (self *FieldMeta) String() string {
@@ -131,6 +133,11 @@ func resolveFields(vt reflect.Type) []FieldMeta {
             opts |= F_omitempty
         }
 
+        /* get the "omitzero" */
+        if fv.omitZero {
+            opts |= F_omitzero
+        }
+
         /* dump the field path */
         for _, i := range fv.index {
             kind := F_offset
@@ -168,6 +175,11 @@ func resolveFields(vt reflect.Type) []FieldMeta {
             Path: path,
             Name: fv.name,
         })
+
+         /* get the "omitzero" */
+         if fv.omitZero {
+            ret[len(ret)-1].IsZero = fv.isZero
+        }
     }
 
     /* optimize the offsets */
