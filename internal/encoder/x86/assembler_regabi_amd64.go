@@ -265,6 +265,7 @@ var _OpFuncTab = [256]func(*Assembler, *ir.Instr){
 	ir.OP_marshal_text_p: (*Assembler)._asm_OP_marshal_text_p,
 	ir.OP_cond_set:       (*Assembler)._asm_OP_cond_set,
 	ir.OP_cond_testc:     (*Assembler)._asm_OP_cond_testc,
+	ir.OP_is_zero:        (*Assembler)._asm_OP_is_zero,
 }
 
 func (self *Assembler) instr(v *ir.Instr) {
@@ -1095,6 +1096,20 @@ func (self *Assembler) _asm_OP_is_zero_map(p *ir.Instr) {
 	self.Xjmp("JZ", p.Vi())                        // JZ    p.Vi()
 	self.Emit("CMPQ", jit.Ptr(_AX, 0), jit.Imm(0)) // CMPQ  (AX), $0
 	self.Xjmp("JE", p.Vi())                        // JE    p.Vi()
+}
+
+var (
+	_F_is_zero = jit.Func(alg.IsZero)
+	_T_reflect_Type = rt.UnpackIface(reflect.Type(nil))
+)
+
+func (self *Assembler) _asm_OP_is_zero(p *ir.Instr) {
+	fv := p.VField()
+	self.Emit("MOVQ", _SP_p, _AX) // ptr
+	self.Emit("MOVQ", jit.ImmPtr(unsafe.Pointer(fv)), _BX) // fv
+	self.call_go(_F_is_zero) // CALL  $fn
+	self.Emit("CMPB", _AX, jit.Imm(0)) // CMPB (SP.p), $0
+	self.Xjmp("JNE", p.Vi())                          // JE   p.Vi()
 }
 
 func (self *Assembler) _asm_OP_goto(p *ir.Instr) {

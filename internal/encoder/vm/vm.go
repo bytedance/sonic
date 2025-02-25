@@ -283,6 +283,12 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 				pc = ins.Vi()
 				continue
 			}
+		case ir.OP_is_zero:
+			fv := ins.VField()
+			if alg.IsZero(p, fv) {
+				pc = ins.Vi()
+				continue
+			}
 		case ir.OP_is_zero_1:
 			if *(*uint8)(p) == 0 {
 				pc = ins.Vi()

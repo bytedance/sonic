@@ -49,3 +49,12 @@ type StdStructFields struct {
 //go:noescape
 //go:linkname typeFields encoding/json.typeFields
 func typeFields(_ reflect.Type) StdStructFields
+
+func handleOmitZero(fv StdField, fm *FieldMeta) {
+    if fv.omitZero {
+        println("omit zero, field: ", fv.name)
+        fm.Opts |= F_omitzero
+        fm.IsZero = fv.isZero
+    }
+}
+

@@ -1,3 +1,4 @@
+//go:build !go1.21
 // +build !go1.21
 
 /*
@@ -46,3 +47,5 @@ type StdStructFields struct {
 //go:noescape
 //go:linkname typeFields encoding/json.typeFields
 func typeFields(_ reflect.Type) StdStructFields
+
+func handleOmitZero(f StdField, fv *FieldMeta) {}
