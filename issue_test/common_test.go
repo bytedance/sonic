@@ -29,3 +29,10 @@ func assertUnmarshal(t *testing.T, api sonic.API, input []byte, newfn func() int
 	assert.Equal(t, jv, sv)
 	assert.Equal(t, serr == nil, jerr == nil)
 }
+
+func assertMarshal(t *testing.T, api sonic.API, v interface{}) {
+	sout, serr := api.Marshal(&v)
+	jout, jerr := json.Marshal(&v)
+	assert.Equal(t, jerr == nil, serr == nil, jerr)
+	assert.Equal(t, jout, sout, v)
+}
