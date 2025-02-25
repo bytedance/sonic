@@ -440,7 +440,8 @@ func (self *Compiler) compileStructBody(p *ir.Program, sp int, vt reflect.Type) 
 	p.Add(ir.OP_cond_set)
 
 	/* compile each field */
-	for _, fv := range resolver.ResolveStruct(vt) {
+	fvs := resolver.ResolveStruct(vt)
+	for i, fv := range fvs {
 		var s []int
 		var o resolver.Offset
 
@@ -463,7 +464,12 @@ func (self *Compiler) compileStructBody(p *ir.Program, sp int, vt reflect.Type) 
 		/* check for "omitempty" option */
 		if fv.Type.Kind() != reflect.Struct && fv.Type.Kind() != reflect.Array && (fv.Opts&resolver.F_omitempty) != 0 {
 			s = append(s, p.PC())
-			self.compileStructFieldZero(p, fv.Type)
+			self.compileStructFieldEmpty(p, fv.Type)
+		}
+		/* check for "omitzero" option */
+		if fv.Opts&resolver.F_omitzero != 0 {
+			s = append(s, p.PC())
+			p.VField(ir.OP_is_zero, &fvs[i])
 		}
 
 		/* add the comma if not the first element */
@@ -574,7 +580,7 @@ func (self *Compiler) compileStructFieldStr(p *ir.Program, sp int, vt reflect.Ty
 	}
 }
 
-func (self *Compiler) compileStructFieldZero(p *ir.Program, vt reflect.Type) {
+func (self *Compiler) compileStructFieldEmpty(p *ir.Program, vt reflect.Type) {
 	switch vt.Kind() {
 	case reflect.Bool:
 		p.Add(ir.OP_is_zero_1)
