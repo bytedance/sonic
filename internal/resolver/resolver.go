@@ -17,10 +17,10 @@
 package resolver
 
 import (
-    `fmt`
-    `reflect`
-    `strings`
-    `sync`
+	"fmt"
+	"reflect"
+	"strings"
+	"sync"
 )
 
 type FieldOpts int

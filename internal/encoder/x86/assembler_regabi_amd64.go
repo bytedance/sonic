@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.24
-// +build go1.17,!go1.24
+//go:build go1.17 && !go1.25
+// +build go1.17,!go1.25
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -757,7 +757,7 @@ var (
 	_F_f32toa    = jit.Imm(int64(native.S_f32toa))
 	_F_i64toa    = jit.Imm(int64(native.S_i64toa))
 	_F_u64toa    = jit.Imm(int64(native.S_u64toa))
-	_F_b64encode = jit.Imm(int64(_subr__b64encode))
+	_F_b64encode = jit.Imm(int64(rt.SubrB64Encode))
 )
 
 var (
