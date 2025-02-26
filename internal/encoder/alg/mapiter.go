@@ -165,19 +165,20 @@ func IteratorNext(p *MapIterator) {
     p.ki++
 }
 
-func IteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*MapIterator, error) {
+func IteratorStart(t *rt.GoMapType, m unsafe.Pointer, fv uint64) (*MapIterator, error) {
     it := newIterator()
     rt.Mapiterinit(t, m, &it.It)
+    count := rt.Maplen(m)
 
     /* check for key-sorting, empty map don't need sorting */
-    if m.Count == 0 || (fv & (1<<BitSortMapKeys)) == 0 {
+    if count == 0 || (fv & (1<<BitSortMapKeys)) == 0 {
         it.ki = -1
         return it, nil
     }
 
     /* pre-allocate space if needed */
-    if m.Count > it.kv.Cap {
-        it.kv = rt.GrowSlice(iteratorPair, it.kv, m.Count)
+    if count > it.kv.Cap {
+        it.kv = rt.GrowSlice(iteratorPair, it.kv, count)
     }
 
     /* dump all the key-value pairs */
@@ -189,7 +190,7 @@ func IteratorStart(t *rt.GoMapType, m *rt.GoMap, fv uint64) (*MapIterator, error
     }
 
     /* sort the keys, map with only 1 item don't need sorting */
-    if it.ki = 1; m.Count > 1 {
+    if it.ki = 1; count > 1 {
         radixQsort(it.data(), 0, maxDepth(it.kv.Len))
     }
 

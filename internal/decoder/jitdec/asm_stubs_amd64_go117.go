@@ -20,21 +20,16 @@ import (
     `strconv`
     `unsafe`
 
+    `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/twitchyliquid64/golang-asm/obj`
     `github.com/twitchyliquid64/golang-asm/obj/x86`
 )
 
-//go:linkname _runtime_writeBarrier runtime.writeBarrier
-var _runtime_writeBarrier uintptr
-
-//go:linkname gcWriteBarrierAX runtime.gcWriteBarrier
-func gcWriteBarrierAX()
-
 var (
-    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&rt.RuntimeWriteBarrier))))
 
-    _F_gcWriteBarrierAX = jit.Func(gcWriteBarrierAX)
+    _F_gcWriteBarrierAX = jit.Func(rt.GcWriteBarrierAX)
 )
 
 func (self *_Assembler) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
