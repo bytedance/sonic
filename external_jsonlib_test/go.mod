@@ -10,6 +10,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/tidwall/gjson v1.14.3
 	github.com/tidwall/sjson v1.2.5
+	github.com/valyala/fastjson v1.6.4
 )
 
 require (
