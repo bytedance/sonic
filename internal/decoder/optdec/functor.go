@@ -279,3 +279,16 @@ func (d *recuriveDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) er
 	}
 	return dec.FromDom(vp, node, ctx)
 }
+
+type unsupportedTypeDecoder struct {
+	typ *rt.GoType
+}
+
+
+func (d *unsupportedTypeDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
+	if node.IsNull() {
+		return nil
+	}
+	return error_unsuppoted(d.typ)
+}
+

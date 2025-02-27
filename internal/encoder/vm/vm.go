@@ -338,6 +338,8 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			if err := alg.EncodeJsonMarshaler(&buf, *(*json.Marshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
 				return err
 			}
+		case ir.OP_unsupported:
+			return vars.Error_unsuppoted(ins.GoType())
 		default:
 			panic(fmt.Sprintf("not implement %s at %d", ins.Op().String(), pc))
 		}
@@ -347,13 +349,6 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 	return nil
 }
 
-// func to_buf(w unsafe.Pointer, l int, c int) []byte {
-// 	return rt.BytesFrom(unsafe.Pointer(uintptr(w)-uintptr(l)), l, c)
-// }
-
-// func from_buf(buf []byte) (unsafe.Pointer, int, int) {
-// 	return rt.IndexByte(buf, len(buf)), len(buf), cap(buf)
-// }
 
 func has_opts(opts uint64, bit int) bool {
 	return opts & (1<<bit) != 0

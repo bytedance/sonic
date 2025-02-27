@@ -169,7 +169,9 @@ func (c *compiler) compileBasic(vt reflect.Type) decFunc {
 	case reflect.Struct:
 		return c.compileStruct(vt)
 	default:
-		panic(&json.UnmarshalTypeError{Type: vt})
+		return &unsupportedTypeDecoder{
+			typ: rt.UnpackType(vt),
+		}
 	}
 }
 

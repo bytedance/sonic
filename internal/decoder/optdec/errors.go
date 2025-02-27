@@ -70,4 +70,10 @@
 		 Msg: msg,
 	 }
  }
+
+ func error_unsuppoted(typ *rt.GoType) error {
+	return &json.UnsupportedTypeError{
+		Type: typ.Pack(),
+	}
+}
  

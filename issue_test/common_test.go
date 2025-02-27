@@ -37,9 +37,12 @@ func assertUnmarshal(t *testing.T, api sonic.API, cas unmTestCase) {
 	assert.Equal(t, serr == nil, jerr == nil, spew.Sdump(jerr, serr))
 }
 
-func assertMarshal(t *testing.T, api sonic.API, obj  interface{}) {
+func assertMarshal(t *testing.T, api sonic.API, obj  interface{}, args ...interface{}) {
 	sout, serr := api.Marshal(&obj)
 	jout, jerr := json.Marshal(&obj)
 	assert.Equal(t, jerr == nil, serr == nil, spew.Sdump(jerr, serr))
 	assert.Equal(t, jout, sout, spew.Sdump(jout, sout))
+	if len(args) > 0 && args[0].(bool) {
+		spew.Dump(string(jout), jerr)
+	}
 }

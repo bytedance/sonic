@@ -265,6 +265,7 @@ var _OpFuncTab = [256]func(*Assembler, *ir.Instr){
 	ir.OP_marshal_text_p: (*Assembler)._asm_OP_marshal_text_p,
 	ir.OP_cond_set:       (*Assembler)._asm_OP_cond_set,
 	ir.OP_cond_testc:     (*Assembler)._asm_OP_cond_testc,
+	ir.OP_unsupported:    (*Assembler)._asm_OP_unsupported,
 }
 
 func (self *Assembler) instr(v *ir.Instr) {
@@ -1185,6 +1186,15 @@ func (self *Assembler) _asm_OP_cond_set(_ *ir.Instr) {
 func (self *Assembler) _asm_OP_cond_testc(p *ir.Instr) {
 	self.Emit("BTRQ", jit.Imm(_S_cond), _SP_f) // BTRQ $_S_cond, SP.f
 	self.Xjmp("JC", p.Vi())
+}
+
+var _F_error_unsupported = jit.Func(vars.Error_unsuppoted)
+
+func (self *Assembler) _asm_OP_unsupported(i *ir.Instr) {
+	typ := int64(uintptr(unsafe.Pointer(i.GoType())))
+	self.Emit("MOVQ", jit.Imm(typ), _AX)
+	self.call_go(_F_error_unsupported)
+	self.Sjmp("JMP", _LB_error)
 }
 
 func (self *Assembler) print_gc(i int, p1 *ir.Instr, p2 *ir.Instr) {

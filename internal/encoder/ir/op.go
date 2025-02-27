@@ -80,6 +80,7 @@ const (
 	OP_marshal_text_p
 	OP_cond_set
 	OP_cond_testc
+	OP_unsupported
 )
 
 const (
@@ -141,6 +142,7 @@ var OpNames = [256]string{
 	OP_marshal_text_p: "marshal_text_p",
 	OP_cond_set:       "cond_set",
 	OP_cond_testc:     "cond_testc",
+	OP_unsupported:    "unsupported type",
 }
 
 func (self Op) String() string {
@@ -271,6 +273,10 @@ func (self Instr) Vs() (v string) {
 
 func (self Instr) Vk() reflect.Kind {
 	return (*rt.GoType)(self.p).Kind()
+}
+
+func (self Instr) GoType() *rt.GoType {
+	return (*rt.GoType)(self.p)
 }
 
 func (self Instr) Vt() reflect.Type {
