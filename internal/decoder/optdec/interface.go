@@ -19,14 +19,19 @@ func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error
 	}
 
 	eface := *(*rt.GoEface)(vp)
-
-	// not pointer type, or nil pointer, or *interface{}
-	if eface.Value == nil || eface.Type.Kind() != reflect.Ptr || rt.PtrElem(eface.Type) == anyType {
+	/*
+	 not pointer type, or nil pointer, or self-pointed interface{}, such as 
+		```go
+		var v interface{}
+		v = &v
+		return v
+		``` see `issue758_test.go`.
+	*/
+	if eface.Value == nil || eface.Type.Kind() != reflect.Ptr || eface.Value == vp {
 		ret, err := node.AsEface(ctx)
 		if err != nil {
 			return err
 		}
-	
 		*(*interface{})(vp) = ret
 		return nil
 	}
@@ -54,6 +59,7 @@ type ifaceDecoder struct {
 }
 
 func (d *ifaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
+
 	if node.IsNull() {
 		*(*unsafe.Pointer)(vp) = nil
 		return nil
@@ -65,9 +71,12 @@ func (d *ifaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error
 	}
 
 	vt := iface.Itab.Vt
+	if vt.Kind() != reflect.Ptr {
+		return error_type(d.typ)
+	}
 
-	// not pointer type, or nil pointer, or *interface{}
-	if vp == nil || vt.Kind() != reflect.Ptr || rt.PtrElem(vt) == anyType {
+	// nil pointer
+	if vp == nil {
 		ret, err := node.AsEface(ctx)
 		if err != nil {
 			return err

@@ -16,23 +16,30 @@ package issue_test
 
 import (
 	"testing"
-
 	"encoding/json"
+
 	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/assert"
 )
 
-func assertUnmarshal(t *testing.T, api sonic.API, input []byte, newfn func() interface{}) {
-	sv, jv := newfn(), newfn()
-	serr := api.Unmarshal(input, sv)
-	jerr := json.Unmarshal(input, jv)
-	assert.Equal(t, jv, sv)
-	assert.Equal(t, serr == nil, jerr == nil)
+type unmTestCase struct {
+	name string
+	data []byte
+	newfn func() interface{}
 }
 
-func assertMarshal(t *testing.T, api sonic.API, v interface{}) {
-	sout, serr := api.Marshal(&v)
-	jout, jerr := json.Marshal(&v)
-	assert.Equal(t, jerr == nil, serr == nil, jerr)
-	assert.Equal(t, jout, sout, v)
+func assertUnmarshal(t *testing.T, api sonic.API, cas unmTestCase) {
+	sv, jv := cas.newfn(), cas.newfn()
+	serr := api.Unmarshal(cas.data, sv)
+	jerr := json.Unmarshal(cas.data, jv)
+	assert.Equal(t, jv, sv, spew.Sdump(jv, sv))
+	assert.Equal(t, serr == nil, jerr == nil, spew.Sdump(jerr, serr))
+}
+
+func assertMarshal(t *testing.T, api sonic.API, obj  interface{}) {
+	sout, serr := api.Marshal(&obj)
+	jout, jerr := json.Marshal(&obj)
+	assert.Equal(t, jerr == nil, serr == nil, spew.Sdump(jerr, serr))
+	assert.Equal(t, jout, sout, spew.Sdump(jout, sout))
 }
