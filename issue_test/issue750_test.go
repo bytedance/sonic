@@ -26,6 +26,9 @@ func genSlice() interface{} {
 }
 
 func TestSlicePointer_Issue750(t *testing.T) {
-	assertUnmarshal(t, sonic.ConfigStd, []byte(`[["one","2"]]`), genSlice)
-
+	assertUnmarshal(t, sonic.ConfigStd, unmTestCase{
+		name: "non-empty eface slice",
+		newfn: genSlice,
+		data: []byte(`["one","2"]`),
+	})
 }
