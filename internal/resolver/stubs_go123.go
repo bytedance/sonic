@@ -1,4 +1,5 @@
-// +build !go1.21
+//go:build go1.21 && !go1.24
+// +build go1.21,!go1.24
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -27,7 +28,6 @@ import (
 type StdField struct {
     name        string
     nameBytes   []byte
-    equalFold   func()
     nameNonEsc  string
     nameEscHTML string
     tag         bool
@@ -40,9 +40,12 @@ type StdField struct {
 
 type StdStructFields struct {
     list      []StdField
-    nameIndex map[string]int
+    nameIndex map[string]*StdField
+    byFoldedName map[string]*StdField
 }
 
 //go:noescape
 //go:linkname typeFields encoding/json.typeFields
 func typeFields(_ reflect.Type) StdStructFields
+
+func handleOmitZero(f StdField, fv *FieldMeta) {}
