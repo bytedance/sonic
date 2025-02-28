@@ -26,6 +26,13 @@ import (
     jsoniter `github.com/json-iterator/go`
     `github.com/tidwall/gjson`
     `github.com/tidwall/sjson`
+    fastjson "github.com/valyala/fastjson"
+)
+
+
+const (
+    expectedID = 249279667666817024
+    expectMetaCount = 4
 )
 
 func BenchmarkGetOne_Gjson(b *testing.B) {
@@ -33,7 +40,7 @@ func BenchmarkGetOne_Gjson(b *testing.B) {
     for i := 0; i < b.N; i++ {
         ast := gjson.Get(TwitterJson, "statuses.3.id")
         node := ast.Int()
-        if node != 249279667666817024 {
+        if node != expectedID {
             b.Fail()
         }
     }
@@ -45,7 +52,7 @@ func BenchmarkGetOne_Jsoniter(b *testing.B) {
     for i := 0; i < b.N; i++ {
         ast := jsoniter.Get(data, "statuses", 3, "id")
         node := ast.ToInt()
-        if node != 249279667666817024 {
+        if node != expectedID {
             b.Fail()
         }
     }
@@ -60,7 +67,7 @@ func BenchmarkGetOne_Sonic(b *testing.B) {
             b.Fatal(err)
         }
         x, _ := node.Int64()
-        if x != 249279667666817024 {
+        if x != expectedID {
             b.Fatal(node.Interface())
         }
     }
@@ -77,7 +84,7 @@ func BenchmarkGetOne_Parallel_Sonic(b *testing.B) {
                 b.Fatal(err)
             }
             x, _ := node.Int64()
-            if x != 249279667666817024 {
+            if x != expectedID {
                 b.Fatal(node.Interface())
             }
         }
@@ -90,7 +97,7 @@ func BenchmarkGetOne_Parallel_Gjson(b *testing.B) {
         for pb.Next() {
             ast := gjson.Get(TwitterJson, "statuses.3.id")
             node := ast.Int()
-            if node != 249279667666817024 {
+            if node != expectedID {
                 b.Fail()
             }
         }
@@ -104,7 +111,7 @@ func BenchmarkGetOne_Parallel_Jsoniter(b *testing.B) {
         for pb.Next() {
             ast := jsoniter.Get(data, "statuses", 3, "id")
             node := ast.ToInt()
-            if node != 249279667666817024 {
+            if node != expectedID {
                 b.Fail()
             }
         }
@@ -179,14 +186,13 @@ func BenchmarkSetOne_Parallel_Jsoniter(b *testing.B) {
 func BenchmarkGetByKeys_Sonic(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     ast := ast.NewSearcher(TwitterJson)
-    const _count = 4
     for i := 0; i < b.N; i++ {
         node, err := ast.GetByPath("search_metadata", "count")
         if err != nil {
             b.Fatal(err)
         }
         x, _ := node.Int64()
-        if x != _count {
+        if x != expectMetaCount {
             b.Fatal(node.Interface())
         }
     }
@@ -196,14 +202,62 @@ func BenchmarkGetByKeys_Sonic(b *testing.B) {
 func BenchmarkGetByKeys_JsonParser(b *testing.B) {
     b.SetBytes(int64(len(TwitterJson)))
     data := []byte(TwitterJson)
-    const _count = 4
     for i := 0; i < b.N; i++ {
         value, err := jsonparser.GetInt(data, "search_metadata", "count")
         if err != nil {
             b.Fatal(err)
         }
-        if value != _count {
+        if value != expectMetaCount {
             b.Fatal(value)
         }
     }
+}
+
+func BenchmarkGetOne_Fastjson(b *testing.B) {
+    data := []byte(TwitterJson)
+    b.ResetTimer()
+    b.SetBytes(int64(len(data)))
+    
+    for i := 0; i < b.N; i++ {
+        var p fastjson.Parser
+        v, err := p.ParseBytes(data)
+        if err != nil {
+            b.Fatal(err)
+        }
+        
+        statuses := v.GetArray("statuses")
+        if len(statuses) < 4 {
+            b.Fatal("array too short")
+        }
+        id := statuses[3].GetInt64("id")
+        if id != expectedID {
+            b.Fatalf("expected %d, got %d", expectedID, id)
+        }
+    }
+}
+
+
+func BenchmarkGetOne_Parallel_Fastjson(b *testing.B) {
+    data := []byte(TwitterJson)
+    b.SetBytes(int64(len(data)))
+    b.ResetTimer()
+    
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var p fastjson.Parser
+            v, err := p.ParseBytes(data)
+            if err != nil {
+                b.Fatal(err)
+            }
+            
+            statuses := v.GetArray("statuses")
+            if len(statuses) < 4 {
+                b.Fatal("array too short")
+            }
+            id := statuses[3].GetInt64("id")
+            if id != expectedID {
+                b.Fatalf("expected %d, got %d", expectedID, id)
+            }
+        }
+    })
 }

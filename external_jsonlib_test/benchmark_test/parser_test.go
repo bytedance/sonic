@@ -19,8 +19,10 @@ package benchmark_test
 import (
     `testing`
 
+    `github.com/bytedance/sonic/ast`
     jsoniter `github.com/json-iterator/go`
     `github.com/tidwall/gjson`
+    fastjson `github.com/valyala/fastjson`
 )
 
 func BenchmarkParser_Gjson(b *testing.B) {
@@ -231,6 +233,140 @@ func BenchmarkParseSeven_Parallel_Jsoniter(b *testing.B) {
             if node.LastError() != nil {
                 b.Fail()
             }
+        }
+    })
+}
+
+
+func BenchmarkParseSeven_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        ast, _ := ast.NewParser(TwitterJson).Parse()
+        node := ast.GetByPath("statuses", 3, "id")
+        node = ast.GetByPath("statuses",  3, "user", "entities","description")
+        node = ast.GetByPath("statuses",  3, "user", "entities","url","urls")
+        node = ast.GetByPath("statuses",  3, "user", "entities","url")
+        node = ast.GetByPath("statuses",  3, "user", "created_at")
+        node = ast.GetByPath("statuses",  3, "user", "name")
+        node = ast.GetByPath("statuses",  3, "text")
+        if node.Check() != nil {
+            b.Fail()
+        }
+    }
+}
+
+func BenchmarkParseSeven_Parallel_Sonic(b *testing.B) {
+    b.SetBytes(int64(len(TwitterJson)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            ast, _ := ast.NewParser(TwitterJson).Parse()
+            node := ast.GetByPath("statuses", 3, "id")
+            node = ast.GetByPath("statuses",  3, "user", "entities","description")
+            node = ast.GetByPath("statuses",  3, "user", "entities","url","urls")
+            node = ast.GetByPath("statuses",  3, "user", "entities","url")
+            node = ast.GetByPath("statuses",  3, "user", "created_at")
+            node = ast.GetByPath("statuses",  3, "user", "name")
+            node = ast.GetByPath("statuses",  3, "text")
+            if node.Check() != nil {
+                b.Fail()
+            }
+        }
+    })
+}
+
+func BenchmarkParseOne_Fastjson(b *testing.B) {
+    data := []byte(TwitterJson)
+    var p fastjson.Parser
+    v, err := p.ParseBytes(data)
+    if err != nil {
+        b.Fatal(err)
+    }
+    id := v.Get("statuses").GetArray()[2].GetInt64("id")
+    if id != 249289491129438208 {
+        b.Fatal("value mismatch")
+    }
+    
+    b.SetBytes(int64(len(data)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var p fastjson.Parser
+        v, _ := p.ParseBytes(data)
+        _ = v.Get("statuses").GetArray()[2].GetInt64("id")
+    }
+}
+
+
+func BenchmarkParseOne_Parallel_Fastjson(b *testing.B) {
+    data := []byte(TwitterJson)
+    b.SetBytes(int64(len(data)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var p fastjson.Parser
+            v, _ := p.ParseBytes(data)
+            _ = v.Get("statuses").GetArray()[2].GetInt64("id")
+        }
+    })
+}
+
+func BenchmarkParseSeven_Fastjson(b *testing.B) {
+    data := []byte(TwitterJson)
+    var p fastjson.Parser
+    v, err := p.ParseBytes(data)
+    if err != nil {
+        b.Fatal(err)
+    }
+    
+    statuses := v.GetArray("statuses")
+    if len(statuses) < 4 {
+        b.Fatal("insufficient statuses")
+    }
+    status := statuses[3]
+    
+    checks := []func(*fastjson.Value){
+        func(v *fastjson.Value) { v.GetInt64("id") },
+        func(v *fastjson.Value) { v.Get("user").Get("entities").GetStringBytes("description") },
+        func(v *fastjson.Value) { v.Get("user").Get("entities").Get("url").GetArray("urls") },
+        func(v *fastjson.Value) { v.Get("user").Get("entities").Get("url") },
+        func(v *fastjson.Value) { v.Get("user").GetStringBytes("created_at") },
+        func(v *fastjson.Value) { v.Get("user").GetStringBytes("name") },
+        func(v *fastjson.Value) { v.GetStringBytes("text") },
+    }
+    
+    for _, check := range checks {
+        check(status)
+    }
+    
+    b.SetBytes(int64(len(data)))
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        var p fastjson.Parser
+        v, _ := p.ParseBytes(data)
+        status := v.GetArray("statuses")[3]
+        for _, check := range checks {
+            check(status)
+        }
+    }
+}
+
+func BenchmarkParseSeven_Parallel_Fastjson(b *testing.B) {
+    data := []byte(TwitterJson)
+    b.SetBytes(int64(len(data)))
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            var p fastjson.Parser
+            v, _ := p.ParseBytes(data)
+            status := v.GetArray("statuses")[3]
+            status.GetInt64("id")
+            status.Get("user").Get("entities").GetStringBytes("description")
+            status.Get("user").Get("entities").Get("url").GetArray("urls")
+            status.Get("user").Get("entities").Get("url")
+            status.Get("user").GetStringBytes("created_at")
+            status.Get("user").GetStringBytes("name")
+            status.GetStringBytes("text")
         }
     })
 }
