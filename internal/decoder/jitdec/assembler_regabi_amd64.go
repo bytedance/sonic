@@ -313,9 +313,10 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_check_char_0     : (*_Assembler)._asm_OP_check_char_0,
     _OP_dismatch_err     : (*_Assembler)._asm_OP_dismatch_err,
     _OP_go_skip          : (*_Assembler)._asm_OP_go_skip,
-    _OP_skip_emtpy         : (*_Assembler)._asm_OP_skip_empty,
+    _OP_skip_emtpy       : (*_Assembler)._asm_OP_skip_empty,
     _OP_add              : (*_Assembler)._asm_OP_add,
     _OP_check_empty      : (*_Assembler)._asm_OP_check_empty,
+    _OP_unsupported      : (*_Assembler)._asm_OP_unsupported,
     _OP_debug            : (*_Assembler)._asm_OP_debug,
 }
 
@@ -1263,6 +1264,11 @@ func (self *_Assembler) _asm_OP_dyn(p *_Instr) {
     self.Emit("LEAQ"   , jit.Ptr(_VP, 8), _DI)              // LEAQ    8(VP), DI
     self.decode_dynamic(_CX, _DI)                           // DECODE  CX, DI
     self.Link("_decode_end_{n}")                            // _decode_end_{n}:
+}
+
+func (self *_Assembler) _asm_OP_unsupported(p *_Instr) {
+    self.Emit("MOVQ", jit.Type(p.vt()), _ET)               // MOVQ    ${p.vt()}, ET
+    self.Sjmp("JMP" , _LB_type_error)                      // JMP     _LB_type_error
 }
 
 func (self *_Assembler) _asm_OP_str(_ *_Instr) {

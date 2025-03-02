@@ -5,6 +5,8 @@ import (
 	"github.com/bytedance/sonic"
 )
 
+var _emptyFunc func()
+
 func TestIssue755_NilEfaceWithDirectValue(t *testing.T) {
 	tests := []interface{} {
 		struct {
@@ -14,6 +16,7 @@ func TestIssue755_NilEfaceWithDirectValue(t *testing.T) {
 			Foo func()
 		}{},
 		chan int(nil),
+		_emptyFunc,
 	}
 	for _, v := range(tests) {
 		assertMarshal(t, sonic.ConfigDefault, v)

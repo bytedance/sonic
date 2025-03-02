@@ -47,6 +47,10 @@ func Error_number(number json.Number) error {
     }
 }
 
+func Error_unsuppoted(typ *rt.GoType) error {
+	return &json.UnsupportedTypeError{Type: typ.Pack() }
+}
+
 func Error_marshaler(ret []byte, pos int) error {
     return fmt.Errorf("invalid Marshaler output json syntax at %d: %q", pos, ret)
 }

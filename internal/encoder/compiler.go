@@ -219,7 +219,7 @@ func (self *Compiler) compileOps(p *ir.Program, sp int, vt reflect.Type) {
 	case reflect.Struct:
 		self.compileStruct(p, sp, vt)
 	default:
-		panic(vars.Error_type(vt))
+		self.compileUnsupportedType(p, vt)
 	}
 }
 
@@ -643,6 +643,11 @@ func (self *Compiler) compileInterface(p *ir.Program, vt reflect.Type) {
 	p.Add(ir.OP_null)
 	p.Pin(e)
 }
+
+func (self *Compiler) compileUnsupportedType(p *ir.Program, vt reflect.Type) {
+	p.Rtt(ir.OP_unsupported, vt)
+}
+
 
 func (self *Compiler) compileMarshaler(p *ir.Program, op ir.Op, vt reflect.Type, mt reflect.Type) {
 	pc := p.PC()

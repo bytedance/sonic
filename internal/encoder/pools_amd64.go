@@ -17,7 +17,6 @@
 package encoder
 
 import (
-	"errors"
 	"reflect"
 	"unsafe"
 
@@ -52,29 +51,11 @@ var _KeepAlive struct {
 	frame [x86.FP_offs]byte
 }
 
-var errCallShadow = errors.New("DON'T CALL THIS!")
-
-// Faker func of _Encoder, used to export its stackmap as _Encoder's
-func _Encoder_Shadow(rb *[]byte, vp unsafe.Pointer, sb *vars.Stack, fv uint64) (err error) {
-	// align to assembler_amd64.go: x86.FP_offs
-	var frame [x86.FP_offs]byte
-
-	// must keep all args and frames noticeable to GC
-	_KeepAlive.rb = rb
-	_KeepAlive.vp = vp
-	_KeepAlive.sb = sb
-	_KeepAlive.fv = fv
-	_KeepAlive.err = err
-	_KeepAlive.frame = frame
-
-	return errCallShadow
-}
-
 func makeEncoderX86(vt *rt.GoType, ex ...interface{}) (interface{}, error) {
 	pp, err := NewCompiler().Compile(vt.Pack(), ex[0].(bool))
 	if err != nil {
 		return nil, err
-	} 
+	}
 	as := x86.NewAssembler(pp)
 	as.Name = vt.String()
 	return as.Load(), nil
