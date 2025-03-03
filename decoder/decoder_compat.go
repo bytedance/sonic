@@ -22,7 +22,9 @@ package decoder
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"unsafe"
 
@@ -32,7 +34,7 @@ import (
 )
 
 func init() {
-     println("WARNING: sonic/decoder only supports (Go1.17~1.23 && CPU amd64) or (go1.20~1.23 && CPU arm64), but your environment is not suitable")
+	fmt.Fprintln(os.Stderr, "WARNING: sonic/decoder only supports (Go1.17~1.23 && CPU amd64) or (go1.20~1.23 && CPU arm64), but your environment is not suitable")
 }
 
 const (
