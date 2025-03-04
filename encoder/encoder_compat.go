@@ -19,9 +19,9 @@
 package encoder
 
 import (
-	`io`
-	`fmt`
-	`os`
+    `io`
+    `fmt`
+    `os`
     `bytes`
     `encoding/json`
     `reflect`
@@ -30,7 +30,7 @@ import (
 )
 
 func init() {
-fmt.Fprintln(os.Stderr,"WARNING:(encoder) sonic only supports (Go1.17~1.23 && CPU amd64) or (G01.20~1.23  && CPU arm64) , but your environment is not suitable")
+    fmt.Fprintln(os.Stderr, "WARNING:(encoder) sonic only supports (Go1.17~1.23 && CPU amd64) or (G01.20~1.23  && CPU arm64) , but your environment is not suitable")
 }
 
 // EnableFallback indicates if encoder use fallback

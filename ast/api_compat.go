@@ -20,8 +20,8 @@ package ast
 
 import (
     `encoding/json`
-	`fmt`
-	`os`
+    `fmt`
+    `os`
     `unicode/utf8`
 
     `github.com/bytedance/sonic/internal/native/types`
@@ -29,7 +29,7 @@ import (
 )
 
 func init() {
-	fmt.Fprintln(os.Stderr, "WARNING:(ast) sonic only supports go1.17~1.23, but your environment is not suitable")
+    fmt.Fprintln(os.Stderr, "WARNING:(ast) sonic only supports go1.17~1.23, but your environment is not suitable")
 }
 
 func quote(buf *[]byte, val string) {
