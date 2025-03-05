@@ -82,7 +82,11 @@ func (d *arrayDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error
 	/* zero rest of array */
 	ptr := unsafe.Pointer(uintptr(vp) + uintptr(i)*d.elemType.Size)
 	n := uintptr(d.len-i) * d.elemType.Size
-	rt.ClearMemory(d.elemType, ptr, n)
+
+	/* the boundary pointer may points to another unknown object, so we need to avoid using it */
+	if n != 0 {
+		rt.ClearMemory(d.elemType, ptr, n)
+	}
 	return gerr
 }
 
