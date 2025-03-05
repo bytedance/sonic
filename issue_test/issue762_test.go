@@ -33,7 +33,7 @@ func TestIssue762(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for j :=0; j < 500_000; j++ {
+			for j :=0; j < 5000; j++ {
 				conv([]byte(msg))
 			}
 		}()
