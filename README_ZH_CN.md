@@ -6,9 +6,9 @@
 
 ## 依赖
 
-- Go: 1.17~1.23
+- Go: 1.17~1.24
 - OS: Linux / MacOS / Windows
-- CPU: AMD64 / ARM64（需要 Go1.20 以上）
+- CPU: AMD64 / (ARM64, 需要 Go1.20 以上）
 
 ## 接口
 

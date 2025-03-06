@@ -6,9 +6,9 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 
 ## Requirement
 
-- Go: 1.17~1.23
+- Go: 1.17~1.24
 - OS: Linux / MacOS / Windows
-- CPU: AMD64 / ARM64(need go1.20 above)
+- CPU: AMD64 / (ARM64, need go1.20 above)
 
 ## Features
 

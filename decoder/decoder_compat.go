@@ -22,19 +22,18 @@ package decoder
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/decoder/consts"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/option"
+	"github.com/bytedance/sonic/internal/compat"
 )
 
 func init() {
-	fmt.Fprintln(os.Stderr, "WARNING: sonic/decoder only supports (Go1.17~1.23 && CPU amd64) or (go1.20~1.23 && CPU arm64), but your environment is not suitable")
+     compat.Warn("sonic/decoder")
 }
 
 const (
