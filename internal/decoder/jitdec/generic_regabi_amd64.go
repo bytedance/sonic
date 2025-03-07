@@ -1,4 +1,4 @@
-// +build go1.17,!go1.24
+// +build go1.17,!go1.25
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -27,6 +27,7 @@ import (
     `github.com/bytedance/sonic/internal/native`
     `github.com/bytedance/sonic/internal/native/types`
     `github.com/twitchyliquid64/golang-asm/obj`
+    `github.com/bytedance/sonic/internal/rt`
 )
 
 /** Crucial Registers:
@@ -173,8 +174,8 @@ var (
 )
 
 var (
-    _F_convTslice    = jit.Func(convTslice)
-    _F_convTstring   = jit.Func(convTstring)
+    _F_convTslice    = jit.Func(rt.ConvTslice)
+    _F_convTstring   = jit.Func(rt.ConvTstring)
     _F_invalid_vtype = jit.Func(invalid_vtype)
 )
 
@@ -725,5 +726,5 @@ var (
 
 //go:nosplit
 func invalid_vtype(vt types.ValueType) {
-    throw(fmt.Sprintf("invalid value type: %d", vt))
+    rt.Throw(fmt.Sprintf("invalid value type: %d", vt))
 }

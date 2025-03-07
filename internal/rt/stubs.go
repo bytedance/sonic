@@ -24,12 +24,19 @@ import (
 //go:noescape
 //go:linkname Memmove runtime.memmove
 func Memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
+//go:noescape
+//go:linkname MemEqual runtime.memequal
+//goland:noinspection GoUnusedParameter
+func MemEqual(a unsafe.Pointer, b unsafe.Pointer, size uintptr) bool
 
 //go:linkname Mapiternext runtime.mapiternext
 func Mapiternext(it *GoMapIterator)
 
 //go:linkname Mapiterinit runtime.mapiterinit
-func Mapiterinit(t *GoMapType, m *GoMap, it *GoMapIterator)
+func Mapiterinit(t *GoMapType, m unsafe.Pointer, it *GoMapIterator)
+
+//go:linkname Maplen reflect.maplen
+func Maplen(h unsafe.Pointer) int 
 
 //go:linkname IsValidNumber encoding/json.isValidNumber
 func IsValidNumber(s string) bool
@@ -71,6 +78,9 @@ func Mallocgc(size uintptr, typ *GoType, needzero bool) unsafe.Pointer
 
 //go:linkname Makemap reflect.makemap
 func Makemap(*GoType, int) unsafe.Pointer
+
+//go:linkname MakemapSmall runtime.makemap_small
+func MakemapSmall() unsafe.Pointer
 
 //go:linkname Mapassign runtime.mapassign
 //goland:noinspection GoUnusedParameter
@@ -128,9 +138,9 @@ func GetMap64Assign(vt reflect.Type) Map64Assign {
 var emptyBytes = make([]byte, 0, 0)
 var EmptySlice = *(*GoSlice)(unsafe.Pointer(&emptyBytes))
 
-//go:linkname makeslice runtime.makeslice
+//go:linkname MakeSliceStd runtime.makeslice
 //goland:noinspection GoUnusedParameter
-func makeslice(et *GoType, len int, cap int) unsafe.Pointer
+func MakeSliceStd(et *GoType, len int, cap int) unsafe.Pointer
 
 func MakeSlice(oldPtr unsafe.Pointer, et *GoType, newLen int) *GoSlice {
 	if newLen == 0 {
@@ -139,7 +149,7 @@ func MakeSlice(oldPtr unsafe.Pointer, et *GoType, newLen int) *GoSlice {
 
 	if *(*unsafe.Pointer)(oldPtr) == nil {
 		return &GoSlice{
-			Ptr: makeslice(et, newLen, newLen),
+			Ptr: MakeSliceStd(et, newLen, newLen),
 			Len: newLen,
 			Cap: newLen,
 		}
@@ -163,3 +173,28 @@ func MakeSlice(oldPtr unsafe.Pointer, et *GoType, newLen int) *GoSlice {
 	new.Len = newLen
 	return &new
 }
+
+//go:nosplit
+//go:linkname Throw runtime.throw
+//goland:noinspection GoUnusedParameter
+func Throw(s string)
+
+//go:linkname ConvT64 runtime.convT64
+//goland:noinspection GoUnusedParameter
+func ConvT64(v uint64) unsafe.Pointer
+
+//go:linkname ConvTslice runtime.convTslice
+//goland:noinspection GoUnusedParameter
+func ConvTslice(v []byte) unsafe.Pointer
+
+//go:linkname ConvTstring runtime.convTstring
+//goland:noinspection GoUnusedParameter
+func ConvTstring(v string) unsafe.Pointer
+
+//go:linkname Mapassign_fast64ptr runtime.mapassign_fast64ptr
+//goland:noinspection GoUnusedParameter
+func Mapassign_fast64ptr(t *GoMapType, h unsafe.Pointer, k unsafe.Pointer) unsafe.Pointer
+
+//go:noescape
+//go:linkname Strhash runtime.strhash
+func Strhash(_ unsafe.Pointer, _ uintptr) uintptr

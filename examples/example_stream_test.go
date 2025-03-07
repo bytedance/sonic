@@ -1,3 +1,5 @@
+// +build !go1.24
+
 package example
 
 import (

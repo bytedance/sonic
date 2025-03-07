@@ -26,7 +26,6 @@ import (
 	"github.com/bytedance/sonic/internal/encoder/ir"
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
-	"github.com/bytedance/sonic/internal/base64"
 )
 
 const (
@@ -176,7 +175,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			buf = alg.F64toa(buf, v)
 		case ir.OP_bin:
 			v := *(*[]byte)(p)
-			buf = base64.EncodeBase64(buf, v)
+			buf = rt.EncodeBase64(buf, v)
 		case ir.OP_quote:
 			v := *(*string)(p)
 			buf = alg.Quote(buf, v, true)
@@ -202,13 +201,13 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			}
 			buf = *b
 		case ir.OP_is_zero_map:
-			v := *(**rt.GoMap)(p)
-			if v == nil || v.Count == 0 {
+			v := *(*unsafe.Pointer)(p)
+			if v == nil || rt.Maplen(v) == 0 {
 				pc = ins.Vi()
 				continue
 			}
 		case ir.OP_map_iter:
-			v := *(**rt.GoMap)(p)
+			v := *(*unsafe.Pointer)(p)
 			vt := ins.Vr()
 			it, err := alg.IteratorStart(rt.MapType(vt), v, flags)
 			if err != nil {
@@ -281,6 +280,12 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 		case ir.OP_cond_testc:
 			if has_opts(f, _S_cond) {
 				f &= ^uint64(1 << _S_cond)
+				pc = ins.Vi()
+				continue
+			}
+		case ir.OP_is_zero:
+			fv := ins.VField()
+			if alg.IsZero(p, fv) {
 				pc = ins.Vi()
 				continue
 			}

@@ -1,8 +1,9 @@
-// +build amd64,go1.17,!go1.24
+// +build amd64,go1.17,!go1.25
 
 package rt
 
 import (
+	_ "unsafe"
 	"github.com/cloudwego/base64x"
 )
 
@@ -15,6 +16,29 @@ func DecodeBase64(raw []byte) ([]byte, error) {
 	return ret[:n], nil
 }
 
-func EncodeBase64(src []byte) string {
+func EncodeBase64ToString(src []byte) string {
     return base64x.StdEncoding.EncodeToString(src)
 }
+
+func EncodeBase64(buf []byte, src []byte) []byte {
+	if len(src) == 0 {
+		return append(buf, '"', '"')
+	}
+	buf = append(buf, '"')
+	need := base64x.StdEncoding.EncodedLen(len(src))
+	if cap(buf) - len(buf) < need {
+		tmp := make([]byte, len(buf), len(buf) + need*2)
+		copy(tmp, buf)
+		buf = tmp
+	}
+	base64x.StdEncoding.Encode(buf[len(buf):cap(buf)], src)
+	buf = buf[:len(buf) + need]
+	buf = append(buf, '"')
+	return buf
+}
+
+//go:linkname SubrB64Decode github.com/cloudwego/base64x._subr__b64decode
+var SubrB64Decode uintptr
+
+//go:linkname SubrB64Encode github.com/cloudwego/base64x._subr__b64encode
+var SubrB64Encode uintptr

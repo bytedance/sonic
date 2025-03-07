@@ -1,4 +1,4 @@
-// +build go1.21,!go1.24
+// +build go1.21,!go1.25
 
 // Copyright 2023 CloudWeGo Authors
 //
@@ -20,25 +20,19 @@ import (
     `strconv`
     `unsafe`
 
+    `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/internal/jit`
     `github.com/twitchyliquid64/golang-asm/obj`
     `github.com/twitchyliquid64/golang-asm/obj/x86`
 )
 
-//go:linkname _runtime_writeBarrier runtime.writeBarrier
-var _runtime_writeBarrier uintptr
-
-//go:nosplit
-//go:linkname gcWriteBarrier2 runtime.gcWriteBarrier2
-func gcWriteBarrier2()
-
 // Notice: gcWriteBarrier must use R11 register!!
 var _R11 = _IC
 
 var (
-    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&_runtime_writeBarrier))))
+    _V_writeBarrier = jit.Imm(int64(uintptr(unsafe.Pointer(&rt.RuntimeWriteBarrier))))
 
-    _F_gcWriteBarrier2 = jit.Func(gcWriteBarrier2)
+    _F_gcWriteBarrier2 = jit.Func(rt.GcWriteBarrier2)
 )
 
 func (self *_Assembler) WritePtrAX(i int, rec obj.Addr, saveDI bool) {
