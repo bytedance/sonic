@@ -8,5 +8,5 @@ import (
 )
 
 func Warn(prefix string) {
-    fmt.Fprintf(os.Stderr, "WARNING: %s only supports (go1.17~1.24 && amd64 CPU) or (go1.20~1.24 && CPU arm64 CPU), but your environment is not suitable and will fallback to encoding/json\n", prefix)
+    fmt.Fprintf(os.Stderr, "WARNING: %s only supports (go1.17~1.24 && amd64 CPU) or (go1.20~1.24 && arm64 CPU), but your environment is not suitable and will fallback to encoding/json\n", prefix)
 }
