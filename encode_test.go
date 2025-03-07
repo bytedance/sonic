@@ -1225,3 +1225,394 @@ func TestMarshalInfOrNan(t *testing.T) {
         assert.True(t, strings.Contains(err.Error(), "json: unsupported value: NaN or ±Infinite"))
     }
 }
+
+func TestIntegerToString(t *testing.T) {
+    int64ptr := int64(1)
+    intptr := int(1)
+    uintPtr := uint(1)
+
+    uint64Lptr := uint64(9007199254740991)
+    uint64Eptr := uint64(9007199254740992)
+    uint64Gptr := uint64(9007199254740993)
+    uintLptr := uint(9007199254740991)
+    uintEptr := uint(9007199254740992)
+    uintGptr := uint(9007199254740993)
+
+    int64Lptr := int64(-9007199254740991)
+    int64Eptr := int64(-9007199254740992)
+    int64Gptr := int64(-9007199254740993)
+    intLptr := int(-9007199254740991)
+    intEptr := int(-9007199254740992)
+    intGptr := int(-9007199254740993)
+    cases := []struct {
+        name        string
+        val         interface{}
+        exceptUint64ToStr  string
+        exceptInt64ToStr  string
+        exceptExceedToStr  string
+        exceptFalse string
+    }{
+        {
+            name: "normal_map",
+            val: map[string]interface{}{
+                "int":    int(12),
+                "uint":   uint(99),
+                "int64":  int64(34),
+                "uint64": uint64(56),
+                "exceedUint": uint(9007199254740993),
+                "exceedUint64": uint64(9007199254740993),
+                "eqMaxUint64": uint64(9007199254740992),
+                "eqMaxUint": uint(9007199254740992),
+                "lsMaxUint64": uint64(9007199254740991),
+                "lsMaxUint": uint(9007199254740991),
+            },
+            exceptUint64ToStr:  `{"eqMaxUint":9007199254740992,"eqMaxUint64":"9007199254740992",`+
+                `"exceedUint":9007199254740993,"exceedUint64":"9007199254740993",`+
+                `"int":12,"int64":34,`+
+                `"lsMaxUint":9007199254740991,"lsMaxUint64":"9007199254740991",`+
+                `"uint":99,"uint64":"56"}`,
+            exceptInt64ToStr:  `{"eqMaxUint":9007199254740992,"eqMaxUint64":9007199254740992,`+
+                `"exceedUint":9007199254740993,"exceedUint64":9007199254740993,`+
+                `"int":12,"int64":"34",`+
+                `"lsMaxUint":9007199254740991,"lsMaxUint64":9007199254740991,`+
+                `"uint":99,"uint64":56}`,
+            exceptExceedToStr:  `{"eqMaxUint":9007199254740992,"eqMaxUint64":9007199254740992,`+
+                `"exceedUint":"9007199254740993","exceedUint64":"9007199254740993",`+
+                `"int":12,"int64":34,`+
+                `"lsMaxUint":9007199254740991,"lsMaxUint64":9007199254740991,`+
+                `"uint":99,"uint64":56}`,
+            exceptFalse:  `{"eqMaxUint":9007199254740992,"eqMaxUint64":9007199254740992,`+
+                `"exceedUint":9007199254740993,"exceedUint64":9007199254740993,`+
+                `"int":12,"int64":34,`+
+                `"lsMaxUint":9007199254740991,"lsMaxUint64":9007199254740991,`+
+                `"uint":99,"uint64":56}`,
+        },
+        {
+            name: "normal_map_minus",
+            val: map[string]interface{}{
+                "int":    int(12),
+                "int64":  int64(34),
+                "exceedInt": int(-9007199254740993),
+                "exceedInt64": int64(-9007199254740993),
+                "eqMaxInt": int(-9007199254740992),
+                "eqMaxInt64": int64(-9007199254740992),
+                "lsMaxInt64": int64(-9007199254740991),
+                "lsMaxInt": int(-9007199254740991),
+            },
+            exceptUint64ToStr:  `{"eqMaxInt":-9007199254740992,"eqMaxInt64":-9007199254740992,`+
+                `"exceedInt":-9007199254740993,"exceedInt64":-9007199254740993,`+
+                `"int":12,"int64":34,`+
+                `"lsMaxInt":-9007199254740991,"lsMaxInt64":-9007199254740991}`,
+            exceptInt64ToStr:  `{"eqMaxInt":-9007199254740992,"eqMaxInt64":"-9007199254740992",`+
+                `"exceedInt":-9007199254740993,"exceedInt64":"-9007199254740993",`+
+                `"int":12,"int64":"34",`+
+                `"lsMaxInt":-9007199254740991,"lsMaxInt64":"-9007199254740991"}`,
+            exceptExceedToStr:  `{"eqMaxInt":-9007199254740992,"eqMaxInt64":-9007199254740992,`+
+                `"exceedInt":"-9007199254740993","exceedInt64":"-9007199254740993",`+
+                `"int":12,"int64":34,`+
+                `"lsMaxInt":-9007199254740991,"lsMaxInt64":-9007199254740991}`,
+            exceptFalse:  `{"eqMaxInt":-9007199254740992,"eqMaxInt64":-9007199254740992,`+
+                `"exceedInt":-9007199254740993,"exceedInt64":-9007199254740993,`+
+                `"int":12,"int64":34,`+
+                `"lsMaxInt":-9007199254740991,"lsMaxInt64":-9007199254740991}`,
+        },
+        {
+            name: "int64_key_map",
+            val: map[int64]interface{}{
+                int64(1): 1, 
+                int64(2): 2,
+                int64(3): 3,
+                int64(4): 4,
+            },
+            exceptUint64ToStr:  `{"1":1,"2":2,"3":3,"4":4}`,
+            exceptInt64ToStr:  `{"1":1,"2":2,"3":3,"4":4}`,
+            exceptExceedToStr:  `{"1":1,"2":2,"3":3,"4":4}`,
+            exceptFalse: `{"1":1,"2":2,"3":3,"4":4}`,
+        },
+        {
+            name: "minus_int64_key_map",
+            val: map[int64]interface{}{
+                int64(-9007199254740991): 1, 
+                int64(-9007199254740992): 2,
+                int64(-9007199254740993): 3,
+            },
+            exceptUint64ToStr:  `{"-9007199254740991":1,"-9007199254740992":2,"-9007199254740993":3}`,
+            exceptInt64ToStr:  `{"-9007199254740991":1,"-9007199254740992":2,"-9007199254740993":3}`,
+            exceptExceedToStr:  `{"-9007199254740991":1,"-9007199254740992":2,"-9007199254740993":3}`,
+            exceptFalse: `{"-9007199254740991":1,"-9007199254740992":2,"-9007199254740993":3}`,
+        },
+        {
+            name: "uint64_key_map",
+            val: map[uint64]interface{}{
+                uint64(12): 1,
+                uint64(99): 1,
+                uint64(34): 1,
+                uint64(9007199254740991): 1,
+                uint64(9007199254740992): 1,
+                uint64(9007199254740993): 1,
+            },
+            exceptUint64ToStr:  `{"12":1,"34":1,"9007199254740991":1,"9007199254740992":1,"9007199254740993":1,"99":1}`,
+            exceptInt64ToStr:  `{"12":1,"34":1,"9007199254740991":1,"9007199254740992":1,"9007199254740993":1,"99":1}`,
+            exceptExceedToStr:  `{"12":1,"34":1,"9007199254740991":1,"9007199254740992":1,"9007199254740993":1,"99":1}`,
+            exceptFalse: `{"12":1,"34":1,"9007199254740991":1,"9007199254740992":1,"9007199254740993":1,"99":1}`,
+        },
+        {
+            name: "uint_key_map",
+            val: map[uint]interface{}{
+                uint(12): int(12),
+                uint(99): uint(99),
+                uint(34): int64(34),
+                uint(56): uint64(56),
+                uint(9007199254740991): uint64(10),
+                uint(9007199254740992): uint64(10),
+                uint(9007199254740993): uint64(10),
+            },
+            exceptUint64ToStr:  `{"12":12,"34":34,"56":"56","9007199254740991":"10","9007199254740992":"10","9007199254740993":"10","99":99}`,
+            exceptInt64ToStr:  `{"12":12,"34":"34","56":56,"9007199254740991":10,"9007199254740992":10,"9007199254740993":10,"99":99}`,
+            exceptExceedToStr:  `{"12":12,"34":34,"56":56,"9007199254740991":10,"9007199254740992":10,"9007199254740993":10,"99":99}`,
+            exceptFalse: `{"12":12,"34":34,"56":56,"9007199254740991":10,"9007199254740992":10,"9007199254740993":10,"99":99}`,
+        },
+        {
+            name: "normal_struct",
+            val: struct {
+                Int     int    `json:"int"`
+                Int64   int64  `json:"int64"`
+                Uint    uint   `json:"uint"`
+                UintL   uint   `json:"uintl"`
+                UintE   uint   `json:"uinte"`
+                UintG   uint   `json:"uintg"`
+                Uint64  uint64 `json:"uint64"`
+                Uint64L uint64 `json:"uint64l"`
+                Uint64E uint64 `json:"uint64e"`
+                Uint64G uint64 `json:"uint64g"`
+            }{
+                Int:     int(1),
+                Int64:   int64(2),
+                Uint:    uint(1),
+                UintL:   uint(9007199254740991),
+                UintE:   uint(9007199254740992),
+                UintG:   uint(9007199254740993),
+                Uint64:  uint64(1),
+                Uint64L: uint64(9007199254740991),
+                Uint64E: uint64(9007199254740992),
+                Uint64G: uint64(9007199254740993),
+            },
+            exceptUint64ToStr:  `{"int":1,"int64":2,`+
+                `"uint":1,"uintl":9007199254740991,"uinte":9007199254740992,"uintg":9007199254740993,`+
+                `"uint64":"1","uint64l":"9007199254740991","uint64e":"9007199254740992","uint64g":"9007199254740993"}`,
+            exceptInt64ToStr:  `{"int":1,"int64":"2",`+
+                `"uint":1,"uintl":9007199254740991,"uinte":9007199254740992,"uintg":9007199254740993,`+
+                `"uint64":1,"uint64l":9007199254740991,"uint64e":9007199254740992,"uint64g":9007199254740993}`,
+            exceptExceedToStr: `{"int":1,"int64":2,`+
+                `"uint":1,"uintl":9007199254740991,"uinte":9007199254740992,"uintg":"9007199254740993",`+
+                `"uint64":1,"uint64l":9007199254740991,"uint64e":9007199254740992,"uint64g":"9007199254740993"}`,
+            exceptFalse: `{"int":1,"int64":2,`+
+                `"uint":1,"uintl":9007199254740991,"uinte":9007199254740992,"uintg":9007199254740993,`+
+                `"uint64":1,"uint64l":9007199254740991,"uint64e":9007199254740992,"uint64g":9007199254740993}`,
+        },
+        {
+            name: "minus_struct",
+            val: struct {
+                Int     int    `json:"int"`
+                IntL    int    `json:"intl"`
+                IntE    int    `json:"inte"`
+                IntG    int    `json:"intg"`
+                Int64   int64  `json:"int64"`
+                Int64L  int64  `json:"int64l"`
+                Int64E  int64  `json:"int64e"`
+                Int64G  int64  `json:"int64g"`
+            }{
+                Int:     10,
+                IntL:    int(-9007199254740991),
+                IntE:    int(-9007199254740992),
+                IntG:    int(-9007199254740993),
+                Int64:   int64(1),
+                Int64L:  int64(-9007199254740991),
+                Int64E:  int64(-9007199254740992),
+                Int64G:  int64(-9007199254740993),
+            },
+            exceptUint64ToStr:  `{"int":10,"intl":-9007199254740991,"inte":-9007199254740992,"intg":-9007199254740993,`+
+                `"int64":1,"int64l":-9007199254740991,"int64e":-9007199254740992,"int64g":-9007199254740993}`,
+            exceptInt64ToStr:  `{"int":10,"intl":-9007199254740991,"inte":-9007199254740992,"intg":-9007199254740993,`+
+                `"int64":"1","int64l":"-9007199254740991","int64e":"-9007199254740992","int64g":"-9007199254740993"}`,
+            exceptExceedToStr: `{"int":10,"intl":-9007199254740991,"inte":-9007199254740992,"intg":"-9007199254740993",`+
+                `"int64":1,"int64l":-9007199254740991,"int64e":-9007199254740992,"int64g":"-9007199254740993"}`,
+            exceptFalse: `{"int":10,"intl":-9007199254740991,"inte":-9007199254740992,"intg":-9007199254740993,`+
+                `"int64":1,"int64l":-9007199254740991,"int64e":-9007199254740992,"int64g":-9007199254740993}`,
+        },
+        {
+            name: "normal_slice",
+            val: []interface{}{
+                int(12), uint(99), int64(34), uint64(56), uint(9007199254740991), uint(9007199254740992), uint(9007199254740993),
+                uint64(9007199254740991), uint64(9007199254740992), uint64(9007199254740993),
+            },
+            exceptUint64ToStr:  `[12,99,34,"56",`+
+                `9007199254740991,9007199254740992,9007199254740993,`+
+                `"9007199254740991","9007199254740992","9007199254740993"]`,
+            exceptInt64ToStr:  `[12,99,"34",56,`+
+                `9007199254740991,9007199254740992,9007199254740993,`+
+                `9007199254740991,9007199254740992,9007199254740993]`,
+            exceptExceedToStr: `[12,99,34,56,`+
+                `9007199254740991,9007199254740992,"9007199254740993",`+
+                `9007199254740991,9007199254740992,"9007199254740993"]`,
+            exceptFalse: `[12,99,34,56,`+
+                `9007199254740991,9007199254740992,9007199254740993,`+
+                `9007199254740991,9007199254740992,9007199254740993]`,
+        },
+        {
+            name: "minus_normal_slice",
+            val: []interface{}{
+                int(12), int64(99), 
+                int(-9007199254740991), int(-9007199254740992), int(-9007199254740993),
+                int64(-9007199254740991), int64(-9007199254740992), int64(-9007199254740993),
+            },
+            exceptUint64ToStr:  `[12,99,`+
+                `-9007199254740991,-9007199254740992,-9007199254740993,`+
+                `-9007199254740991,-9007199254740992,-9007199254740993]`,
+            exceptInt64ToStr:  `[12,"99",`+
+                `-9007199254740991,-9007199254740992,-9007199254740993,`+
+                `"-9007199254740991","-9007199254740992","-9007199254740993"]`,
+            exceptExceedToStr: `[12,99,`+
+                `-9007199254740991,-9007199254740992,"-9007199254740993",`+
+                `-9007199254740991,-9007199254740992,"-9007199254740993"]`,
+            exceptFalse: `[12,99,`+
+                `-9007199254740991,-9007199254740992,-9007199254740993,`+
+                `-9007199254740991,-9007199254740992,-9007199254740993]`,
+        },
+        {
+            name:        "single_int64",
+            val:         int64(34),
+            exceptUint64ToStr:  `34`,
+            exceptInt64ToStr:  `"34"`,
+            exceptExceedToStr: `34`,
+            exceptFalse: `34`,
+        },
+        {
+            name:        "minus_single_int64",
+            val:         int64(-9007199254740993),
+            exceptUint64ToStr:  `-9007199254740993`,
+            exceptInt64ToStr:  `"-9007199254740993"`,
+            exceptExceedToStr: `"-9007199254740993"`,
+            exceptFalse: `-9007199254740993`,
+        },
+        {
+            name:        "single_uint64",
+            val:         uint64(56),
+            exceptUint64ToStr:  `"56"`,
+            exceptInt64ToStr:  `56`,
+            exceptExceedToStr:  `56`,
+            exceptFalse: `56`,
+        },
+        {
+            name:        "single_uint64g",
+            val:         uint64(9007199254740993),
+            exceptUint64ToStr:  `"9007199254740993"`,
+            exceptInt64ToStr:  `9007199254740993`,
+            exceptExceedToStr:  `"9007199254740993"`,
+            exceptFalse: `9007199254740993`,
+        },
+        {
+            name:        "single_uintg",
+            val:         uint64(9007199254740993),
+            exceptUint64ToStr:  `"9007199254740993"`,
+            exceptInt64ToStr:  `9007199254740993`,
+            exceptExceedToStr:  `"9007199254740993"`,
+            exceptFalse: `9007199254740993`,
+        },
+        {
+            name: "minus_struct_ptr_val",
+            val: struct {
+                Int    *int   `json:"int"`
+                IntL   *int   `json:"intl"`
+                IntE   *int   `json:"inte"`
+                IntG   *int   `json:"intg"`
+                Int64L *int64 `json:"int64l"`
+                Int64E *int64 `json:"int64e"`
+                Int64G *int64 `json:"int64g"`
+            }{
+                Int:    &intptr,
+                IntL:   &intLptr,
+                IntE:   &intEptr,
+                IntG:   &intGptr,
+                Int64L: &int64Lptr,
+                Int64E: &int64Eptr,
+                Int64G: &int64Gptr,
+            },
+            exceptUint64ToStr:  `{"int":1,`+
+                `"intl":-9007199254740991,"inte":-9007199254740992,"intg":-9007199254740993,`+
+                `"int64l":-9007199254740991,"int64e":-9007199254740992,"int64g":-9007199254740993}`,
+            exceptInt64ToStr:  `{"int":1,`+
+                `"intl":-9007199254740991,"inte":-9007199254740992,"intg":-9007199254740993,`+
+                `"int64l":"-9007199254740991","int64e":"-9007199254740992","int64g":"-9007199254740993"}`,
+            exceptExceedToStr: `{"int":1,`+
+                `"intl":-9007199254740991,"inte":-9007199254740992,"intg":"-9007199254740993",`+
+                `"int64l":-9007199254740991,"int64e":-9007199254740992,"int64g":"-9007199254740993"}`,
+            exceptFalse: `{"int":1,`+
+                `"intl":-9007199254740991,"inte":-9007199254740992,"intg":-9007199254740993,`+
+                `"int64l":-9007199254740991,"int64e":-9007199254740992,"int64g":-9007199254740993}`,
+        },
+        {
+            name: "normal_struct_ptr_val",
+            val: struct {
+                Int     *int    `json:"int"`
+                Int64   *int64  `json:"int64"`
+                Uint    *uint   `json:"uint"`
+                UintL   *uint   `json:"uintl"`
+                UintE   *uint   `json:"uinte"`
+                UintG   *uint   `json:"uintg"`
+                Uint64L *uint64 `json:"uint64l"`
+                Uint64E *uint64 `json:"uint64e"`
+                Uint64G *uint64 `json:"uint64g"`
+            }{
+                Int:     &intptr,
+                Int64:   &int64ptr,
+                Uint:    &uintPtr,
+                UintL:   &uintLptr,
+                UintE:   &uintEptr,
+                UintG:   &uintGptr,
+                Uint64L: &uint64Lptr,
+                Uint64E: &uint64Eptr,
+                Uint64G: &uint64Gptr,
+            },
+            exceptUint64ToStr:  `{"int":1,"int64":1,"uint":1,`+
+                `"uintl":9007199254740991,"uinte":9007199254740992,"uintg":9007199254740993,`+
+                `"uint64l":"9007199254740991","uint64e":"9007199254740992","uint64g":"9007199254740993"}`,
+            exceptInt64ToStr:  `{"int":1,"int64":"1","uint":1,`+
+                `"uintl":9007199254740991,"uinte":9007199254740992,"uintg":9007199254740993,`+
+                `"uint64l":9007199254740991,"uint64e":9007199254740992,"uint64g":9007199254740993}`,
+            exceptExceedToStr: `{"int":1,"int64":1,"uint":1,`+
+                `"uintl":9007199254740991,"uinte":9007199254740992,"uintg":"9007199254740993",`+
+                `"uint64l":9007199254740991,"uint64e":9007199254740992,"uint64g":"9007199254740993"}`,
+            exceptFalse: `{"int":1,"int64":1,"uint":1,`+
+                `"uintl":9007199254740991,"uinte":9007199254740992,"uintg":9007199254740993,`+
+                `"uint64l":9007199254740991,"uint64e":9007199254740992,"uint64g":9007199254740993}`,
+        },
+    }
+
+    for _, c := range cases {
+        t.Run(c.name, func(t *testing.T) {
+            t.Run("uint64ToStr", func(t *testing.T) {
+                b, e := Config{Uint64ToString: true, SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptUint64ToStr, string(b))
+            })
+
+            t.Run("int64ToStr", func(t *testing.T) {
+                b, e := Config{Int64ToString: true, SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptInt64ToStr, string(b))
+            })
+            t.Run("uintExceedToStr", func(t *testing.T) {
+                b, e := Config{IntegerExceed53BitToString: true, SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptExceedToStr, string(b))
+            })
+
+            t.Run("noIntegerToStr", func(t *testing.T) {
+                b, e := Config{SortMapKeys: true}.Froze().Marshal(c.val)
+                assert.Nil(t, e)
+                assert.Equal(t, c.exceptFalse, string(b))
+            })
+        })
+    }
+}
