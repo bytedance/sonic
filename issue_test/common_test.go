@@ -29,12 +29,15 @@ type unmTestCase struct {
 	newfn func() interface{}
 }
 
-func assertUnmarshal(t *testing.T, api sonic.API, cas unmTestCase) {
+func assertUnmarshal(t *testing.T, api sonic.API, cas unmTestCase, args ...interface{}) {
 	sv, jv := cas.newfn(), cas.newfn()
 	serr := api.Unmarshal(cas.data, sv)
 	jerr := json.Unmarshal(cas.data, jv)
 	assert.Equal(t, jv, sv, spew.Sdump(jv, sv))
 	assert.Equal(t, serr == nil, jerr == nil, spew.Sdump(jerr, serr))
+	if len(args) > 0 && args[0].(bool) {
+		spew.Dump(sv, serr, jv, jerr)
+	}
 }
 
 func assertMarshal(t *testing.T, api sonic.API, obj  interface{}, args ...interface{}) {
