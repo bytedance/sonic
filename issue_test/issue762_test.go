@@ -1,8 +1,6 @@
 package issue_test
 
 import (
-	// Uncomment this to see expected behavior.
-	// sonic "encoding/json"
 	"log"
 	"sync"
 	"testing"
