@@ -600,7 +600,6 @@ func (self *_Assembler) _asm_OP_dismatch_err(p *_Instr) {
 func (self *_Assembler) _asm_OP_go_skip(p *_Instr) {
     self.Byte(0x4c, 0x8d, 0x0d)         // LEAQ (PC), R9
     self.Xref(p.vi(), 4)
-    // self.Byte(0xcc)
     self.Emit("MOVQ", _R9, _VAR_pc)
     self.Sjmp("JMP"  , _LB_skip_one)            // JMP     _skip_one
 }
@@ -608,9 +607,7 @@ func (self *_Assembler) _asm_OP_go_skip(p *_Instr) {
 var _F_IndexByte = jit.Func(strings.IndexByte)
 
 func (self *_Assembler) _asm_OP_skip_empty(p *_Instr) {
-    // self.Byte(0xcc)
     self.call_sf(_F_skip_one)                   // CALL_SF skip_one
-    // self.Byte(0xcc)
     self.Emit("TESTQ", _AX, _AX)                // TESTQ   AX, AX
     self.Sjmp("JS"   , _LB_parsing_error_v)     // JS      _parse_error_v
     self.Emit("BTQ", jit.Imm(_F_disable_unknown), _ARG_fv) 
@@ -621,7 +618,6 @@ func (self *_Assembler) _asm_OP_skip_empty(p *_Instr) {
     self.Emit("MOVQ", _AX, _ARG_sv_p)
     self.Emit("MOVQ", jit.Imm(':'), _CX)
     self.call_go(_F_IndexByte)
-    // self.Byte(0xcc)
     self.Emit("TESTQ", _AX, _AX)
     // disallow unknown field
     self.Sjmp("JNS", _LB_field_error)
@@ -1255,13 +1251,32 @@ func (self *_Assembler) _asm_OP_any(_ *_Instr) {
 func (self *_Assembler) _asm_OP_dyn(p *_Instr) {
     self.Emit("MOVQ"   , jit.Type(p.vt()), _ET)             // MOVQ    ${p.vt()}, ET
     self.Emit("CMPQ"   , jit.Ptr(_VP, 8), jit.Imm(0))       // CMPQ    8(VP), $0
-    self.Sjmp("JE"     , _LB_type_error)                    // JE      _type_error
+    self.Sjmp("JNE"     , "_decode_dyn_non_nil_{n}")                    // JE      _type_error
+
+    /* if nil iface, call skip one */
+    self.Emit("MOVQ", _IC, _VAR_ic)
+    self.Emit("MOVQ", _ET, _VAR_et)
+    self.Byte(0x4c, 0x8d, 0x0d)       
+    self.Sref("_decode_end_{n}", 4)
+    self.Emit("MOVQ", _R9, _VAR_pc)
+    self.Sjmp("JMP"  , _LB_skip_one)
+
+    self.Link("_decode_dyn_non_nil_{n}")                    // _decode_dyn_non_nil_{n}:
     self.Emit("MOVQ"   , jit.Ptr(_VP, 0), _CX)              // MOVQ    (VP), CX
     self.Emit("MOVQ"   , jit.Ptr(_CX, 8), _CX)              // MOVQ    8(CX), CX
     self.Emit("MOVBLZX", jit.Ptr(_CX, _Gt_KindFlags), _DX)  // MOVBLZX _Gt_KindFlags(CX), DX
     self.Emit("ANDL"   , jit.Imm(rt.F_kind_mask), _DX)      // ANDL    ${F_kind_mask}, DX
     self.Emit("CMPL"   , _DX, jit.Imm(_Vk_Ptr))             // CMPL    DX, ${reflect.Ptr}
-    self.Sjmp("JNE"    , _LB_type_error)                    // JNE     _type_error
+    self.Sjmp("JE"    , "_decode_dyn_ptr_{n}")              // JNE     _type_error
+
+    self.Emit("MOVQ", _IC, _VAR_ic)
+    self.Emit("MOVQ", _ET, _VAR_et)
+    self.Byte(0x4c, 0x8d, 0x0d)       
+    self.Sref("_decode_end_{n}", 4)
+    self.Emit("MOVQ", _R9, _VAR_pc)
+    self.Sjmp("JMP"  , _LB_skip_one)
+
+    self.Link("_decode_dyn_ptr_{n}")                        // _decode_dyn_ptr_{n}:
     self.Emit("LEAQ"   , jit.Ptr(_VP, 8), _DI)              // LEAQ    8(VP), DI
     self.decode_dynamic(_CX, _DI)                           // DECODE  CX, DI
     self.Link("_decode_end_{n}")                            // _decode_end_{n}:

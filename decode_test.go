@@ -42,6 +42,7 @@ import (
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type T struct {
@@ -1186,6 +1187,7 @@ func TestUnmarshal(t *testing.T) {
             continue
         }
         if !reflect.DeepEqual(v.Elem().Interface(), tt.out) {
+            require.Equal(t, v.Elem().Interface(), tt.out)
             t.Errorf("#%d: mismatch\nhave: %#+v\nwant: %#+v", i, v.Elem().Interface(), tt.out)
             data, _ := Marshal(v.Elem().Interface())
             println(string(data))
@@ -2042,9 +2044,11 @@ func TestUnmarshalTypeError(t *testing.T) {
     for _, item := range decodeTypeErrorTests {
         err := Unmarshal([]byte(item.src), item.dest)
         if _, ok := err.(*json.UnmarshalTypeError); !ok {
-            if _, ok = err.(decoder.SyntaxError); !ok {
-                t.Errorf("expected type error for Unmarshal(%q, type %T): got %T",
-                    item.src, item.dest, err)
+            if _, ok := err.(*decoder.MismatchTypeError); !ok {
+                if _, ok = err.(decoder.SyntaxError); !ok {
+                    t.Errorf("expected type error for Unmarshal(%q, type %T): got %T",
+                        item.src, item.dest, err)
+                }
             }
         }
     }
