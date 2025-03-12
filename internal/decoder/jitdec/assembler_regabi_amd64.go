@@ -271,6 +271,7 @@ var _OpFuncTab = [256]func(*_Assembler, *_Instr) {
     _OP_nil_1            : (*_Assembler)._asm_OP_nil_1,
     _OP_nil_2            : (*_Assembler)._asm_OP_nil_2,
     _OP_nil_3            : (*_Assembler)._asm_OP_nil_3,
+    _OP_empty_bytes      : (*_Assembler)._asm_OP_empty_bytes,
     _OP_deref            : (*_Assembler)._asm_OP_deref,
     _OP_index            : (*_Assembler)._asm_OP_index,
     _OP_is_null          : (*_Assembler)._asm_OP_is_null,
@@ -1492,6 +1493,19 @@ func (self *_Assembler) _asm_OP_nil_3(_ *_Instr) {
     self.Emit("PXOR" , _X0, _X0)                // PXOR  X0, X0
     self.Emit("MOVOU", _X0, jit.Ptr(_VP, 0))    // MOVOU X0, (VP)
     self.Emit("MOVQ" , _AX, jit.Ptr(_VP, 16))   // MOVOU AX, 16(VP)
+}
+
+var (
+    bytes []byte = make([]byte, 0)
+    zerobytes = (*rt.GoSlice)(unsafe.Pointer(&bytes)).Ptr
+    _ZERO_PTR = jit.Imm(int64(uintptr(zerobytes)))
+)
+
+func (self *_Assembler) _asm_OP_empty_bytes(_ *_Instr) {
+    self.Emit("MOVQ", _ZERO_PTR, _AX)
+    self.Emit("PXOR" , _X0, _X0)
+    self.Emit("MOVQ", _AX,  jit.Ptr(_VP, 0))
+    self.Emit("MOVOU", _X0, jit.Ptr(_VP, 8))
 }
 
 func (self *_Assembler) _asm_OP_deref(p *_Instr) {

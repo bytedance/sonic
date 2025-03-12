@@ -54,6 +54,7 @@ const (
     _OP_nil_1
     _OP_nil_2
     _OP_nil_3
+    _OP_empty_bytes
     _OP_deref
     _OP_index
     _OP_is_null
@@ -135,6 +136,7 @@ var _OpNames = [256]string {
     _OP_nil_1            : "nil_1",
     _OP_nil_2            : "nil_2",
     _OP_nil_3            : "nil_3",
+    _OP_empty_bytes      : "empty bytes",
     _OP_deref            : "deref",
     _OP_index            : "index",
     _OP_is_null          : "is_null",
@@ -828,12 +830,19 @@ func (self *_Compiler) compileSliceBin(p *_Program, sp int, vt reflect.Type) {
     self.compileSliceBody(p, sp, vt.Elem())
     y := p.pc()
     p.add(_OP_goto)
+
+    // unmarshal `null` and `"` is different
     p.pin(i)
-    p.pin(k)
     p.add(_OP_nil_3)
+    y2 := p.pc()
+    p.add(_OP_goto)
+
+    p.pin(k)
+    p.add(_OP_empty_bytes)
     p.pin(x)
     p.pin(skip)
     p.pin(y)
+    p.pin(y2)
 }
 
 func (self *_Compiler) compileSliceList(p *_Program, sp int, vt reflect.Type) {
