@@ -183,12 +183,8 @@ func (d *sliceBytesDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) 
 	}
 
 	s, err := node.AsSliceBytes(ctx)
-	if err != nil {
-		return err
-	}
-
 	*(*[]byte)(vp) = s
-	return nil
+	return err
 }
 
 type sliceBytesUnmarshalerDecoder struct {

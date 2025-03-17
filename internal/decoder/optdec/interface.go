@@ -13,12 +13,9 @@ type efaceDecoder struct {
 }
 
 func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
-	if node.IsNull() {
-		*(*interface{})(vp) = interface{}(nil)
-		return nil
-	}
+	/* check the defined pointer type for issue 379 */
+	eface := (*rt.GoEface)(vp)
 
-	eface := *(*rt.GoEface)(vp)
 	/*
 	 not pointer type, or nil pointer, or self-pointed interface{}, such as 
 		```go
@@ -36,14 +33,24 @@ func (d *efaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error
 		return nil
 	}
 
+	if node.IsNull() {
+		if eface.Type.Indirect() || (!eface.Type.Indirect() &&  eface.Type.Pack().Elem().Kind() != reflect.Ptr) {
+			*(*interface{})(vp) = nil
+			return nil
+		}
+	}
+
 	etp := rt.PtrElem(eface.Type)
 	vp = eface.Value
 
-	/* check the defined pointer type for issue 379 */
 	if eface.Type.IsNamed() {
+		// check named pointer type, avoid call its `Unmarshaler`
 		newp := vp
 		etp = eface.Type
 		vp = unsafe.Pointer(&newp)
+	} else if !eface.Type.Indirect() {
+		// check direct value
+		etp = rt.UnpackType(eface.Type.Pack().Elem())
 	}
 
 	dec, err := findOrCompile(etp)
@@ -59,7 +66,6 @@ type ifaceDecoder struct {
 }
 
 func (d *ifaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
-
 	if node.IsNull() {
 		*(*unsafe.Pointer)(vp) = nil
 		return nil
@@ -71,21 +77,9 @@ func (d *ifaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error
 	}
 
 	vt := iface.Itab.Vt
-	if vt.Kind() != reflect.Ptr {
+	if vt.Kind() != reflect.Ptr || iface.Value == nil {
 		return error_type(d.typ)
 	}
-
-	// nil pointer
-	if vp == nil {
-		ret, err := node.AsEface(ctx)
-		if err != nil {
-			return err
-		}
-	
-		*(*interface{})(vp) = ret
-		return nil
-	}
-
 
 	etp := rt.PtrElem(vt)
 	vp = iface.Value

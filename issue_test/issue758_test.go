@@ -4,12 +4,8 @@ import (
 	"testing"
 
 	"github.com/bytedance/sonic"
-	"encoding/json"
 )
 
-var _ = json.Marshal
-
-var _ = sonic.Marshal
 
 func TestIssue758_UnmarshalIntoAnyPointer(t *testing.T) {
 	for _, cas := range []unmTestCase {
@@ -104,7 +100,7 @@ func TestIssue758_UnmarshalIntoAnyPointer(t *testing.T) {
 			},
 		},
 		{
-			name: "iface type",
+			name: "iface type should be error",
 			data: []byte(`{"id": "2"}`),
 			newfn: func() interface{} {
 				var a MockEface = fooEface3{}
@@ -113,13 +109,42 @@ func TestIssue758_UnmarshalIntoAnyPointer(t *testing.T) {
 				return &b
 			},
 		},
+		{
+			name: "non-nil iface type as struct field",
+			data: []byte(`{"id": {"id": "2"},"name": "name"}`),
+			newfn: func() interface{} {
+				obj := WrapperEface {
+				}
+				foo := fooEface{}
+				obj.Id = &foo
+				return &obj
+			},
+		},
+		{
+			name: "non-nil iface type as struct field",
+			data: []byte(`{"name": "name", "id": null}`),
+			newfn: func() interface{} {
+				obj := WrapperEface {
+				}
+				a := "123"
+				foo := fooEface{
+					Id: &a,
+				}
+				obj.Id = &foo
+				return &obj
+			},
+		},
 	} {
 		t.Run(cas.name, func(t *testing.T) {
-			assertUnmarshal(t, sonic.ConfigDefault, cas)
+			assertUnmarshal(t, sonic.ConfigDefault, cas, true)
 		})
 	}
 }
 
+type WrapperEface struct {
+	Name string `json:"name"`
+	Id MockEface `json:"id"`
+}
 
 type MockEface interface {
 	MyMock()
