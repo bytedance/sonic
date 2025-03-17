@@ -2,6 +2,7 @@ package optdec
 
 import (
 	"encoding"
+	"encoding/json"
 	"math"
 	"reflect"
 	"unsafe"
@@ -291,9 +292,9 @@ func (d *mapU64KeyDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) e
 
 /** Decoder for generic cases */
 
-type decKey func(dec *mapDecoder, raw string, ctx *context) (interface{}, error)
+type decKey func(dec *mapDecoder, raw string) (interface{}, error)
 
-func decodeKeyU8(dec *mapDecoder, raw string, ctx *context) (interface{}, error) {
+func decodeKeyU8(dec *mapDecoder, raw string) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
 		return nil, err
@@ -308,7 +309,7 @@ func decodeKeyU8(dec *mapDecoder, raw string, ctx *context) (interface{}, error)
 	return uint8(ret), nil
 }
 
-func decodeKeyU16(dec *mapDecoder, raw string, ctx *context) (interface{}, error) {
+func decodeKeyU16(dec *mapDecoder, raw string) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
 		return nil, err
@@ -323,7 +324,7 @@ func decodeKeyU16(dec *mapDecoder, raw string, ctx *context) (interface{}, error
 	return uint16(ret), nil
 }
 
-func decodeKeyI8(dec *mapDecoder, raw string, ctx *context) (interface{}, error) {
+func decodeKeyI8(dec *mapDecoder, raw string) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
 		return nil, err
@@ -338,7 +339,7 @@ func decodeKeyI8(dec *mapDecoder, raw string, ctx *context) (interface{}, error)
 	return int8(ret), nil
 }
 
-func decodeKeyI16(dec *mapDecoder, raw string, ctx *context) (interface{}, error) {
+func decodeKeyI16(dec *mapDecoder, raw string) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
 		return nil, err
@@ -353,7 +354,7 @@ func decodeKeyI16(dec *mapDecoder, raw string, ctx *context) (interface{}, error
 	return int16(ret), nil
 }
 
-func decodeKeyTextUnmarshaler(dec *mapDecoder, raw string, ctx *context) (interface{}, error) {
+func decodeKeyTextUnmarshaler(dec *mapDecoder, raw string) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
 		return nil, err
@@ -366,7 +367,7 @@ func decodeKeyTextUnmarshaler(dec *mapDecoder, raw string, ctx *context) (interf
 	return ret, nil
 }
 
-func decodeFloat32Key(dec *mapDecoder, raw string, _ *context) (interface{}, error) {
+func decodeFloat32Key(dec *mapDecoder, raw string) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
 		return nil, err
@@ -381,12 +382,25 @@ func decodeFloat32Key(dec *mapDecoder, raw string, _ *context) (interface{}, err
 	return float32(ret), nil
 }
 
-func decodeFloat64Key(dec *mapDecoder, raw string, _ *context) (interface{}, error) {
+func decodeFloat64Key(dec *mapDecoder, raw string) (interface{}, error) {
 	key, err := Unquote(raw)
 	if err != nil {
 		return nil, err
 	}
 	return ParseF64(key)
+}
+
+func decodeJsonNumberKey(dec *mapDecoder, raw string) (interface{}, error) {
+	// skip the quote
+	raw = raw[1:len(raw)-1]
+	end, ok := SkipNumberFast(raw, 0)
+
+	// check trailing chars
+	if !ok || end != len(raw) {
+		return nil, error_value(raw, rt.JsonNumberType.Pack())
+	}
+	
+	return json.Number(raw[0:end]), nil
 }
 
 type mapDecoder struct {
@@ -402,8 +416,8 @@ func (d *mapDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	}
 
 	obj, ok := node.AsObj()
-	if !ok {
-		return	error_mismatch(node, ctx, d.mapType.Pack())
+	if !ok || d.keyDec == nil {
+		return error_mismatch(node, ctx, d.mapType.Pack())
 	}
 
 	// allocate map
@@ -417,7 +431,8 @@ func (d *mapDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	for i := 0; i < obj.Len(); i++ {
 		keyn := NewNode(next)
 		raw := keyn.AsRaw(ctx)
-		key, err := d.keyDec(d, raw, ctx)
+
+		key, err := d.keyDec(d, raw)
 		if err != nil {
 			if gerr == nil {
 				gerr = error_mismatch(keyn, ctx, d.mapType.Pack())
