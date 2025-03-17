@@ -33,6 +33,11 @@ const (
 	_S_init
 )
 
+const (
+	_IMax_53 = 1<<53
+	_IMin_53 = -1<<53
+)
+
 var (
 	_T_json_Marshaler         = rt.UnpackType(vars.JsonMarshalerType)
 	_T_encoding_TextMarshaler = rt.UnpackType(vars.EncodingTextMarshalerType)
@@ -139,8 +144,28 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*int32)(p)
 			buf = alg.I64toa(buf, int64(v))
 		case ir.OP_i64:
+			if ins.IsMapKey() {
+				v := *(*int64)(p)
+				buf = alg.I64toa(buf, int64(v))
+				continue
+			}
+			quote := false
 			v := *(*int64)(p)
+
+			if (ins.CompatOp() == ir.OP_i64 && // current value type == int64
+				flags&(1<<alg.BitInt64ToString) != 0) || 
+				((v > int64(_IMax_53) || v < int64(_IMin_53)) &&
+					flags&(1<<alg.BitIntegerExceed53BitToString) != 0) {
+				quote = true
+			}
+
+			if quote {
+				buf = append(buf, '"')
+			}
 			buf = alg.I64toa(buf, int64(v))
+			if quote {
+				buf = append(buf, '"')
+			}
 		case ir.OP_u8:
 			v := *(*uint8)(p)
 			buf = alg.U64toa(buf, uint64(v))
@@ -151,8 +176,27 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*uint32)(p)
 			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u64:
+			if ins.IsMapKey() {
+				v := *(*uint64)(p)
+				buf = alg.U64toa(buf, uint64(v))
+				continue
+			}
+			quote := false
 			v := *(*uint64)(p)
+
+			if (ins.CompatOp() == ir.OP_u64 && // current value type == uint64
+				flags&(1<<alg.BitUint64ToString) != 0) || 
+				(v > uint64(_IMax_53) &&
+					flags&(1<<alg.BitIntegerExceed53BitToString) != 0) {
+				quote = true
+			}
+			if quote {
+				buf = append(buf, '"')
+			}
 			buf = alg.U64toa(buf, uint64(v))
+			if quote {
+				buf = append(buf, '"')
+			}
 		case ir.OP_f32:
 			v := *(*float32)(p)
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
