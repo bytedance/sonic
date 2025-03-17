@@ -1,7 +1,6 @@
 package optdec
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 
@@ -265,7 +264,7 @@ func (c *compiler) compileSlice(vt reflect.Type) decFunc {
 	if et.IsUint64() {
 		return &sliceU64Decoder{}
 	}
-	if et.Kind() == reflect.String {
+	if et.Kind() == reflect.String && et != rt.JsonNumberType {
 		return &sliceStringDecoder{}
 	}
 
@@ -345,7 +344,7 @@ func (c *compiler) compileMap(vt reflect.Type) decFunc {
 	// Some common integer map later
 	mt := rt.MapType(rt.UnpackType(vt))
 
-	if mt.Key.Kind() == reflect.String {
+	if mt.Key.Kind() == reflect.String && mt.Key != rt.JsonNumberType {
 		return &mapStrKeyDecoder{
 			mapType: mt,
 			assign: rt.GetMapStrAssign(vt),
@@ -420,8 +419,13 @@ func (c *compiler) compileMapKey(vt reflect.Type) decKey {
 		return decodeFloat32Key
 	case reflect.Float64:
 		return decodeFloat64Key
+	case reflect.String:
+		if rt.UnpackType(vt.Key()) == rt.JsonNumberType {
+			return decodeJsonNumberKey
+		}
+		fallthrough
 	default:
-		panic(&json.UnmarshalTypeError{Type: vt})
+		return nil
 	}
 }
 

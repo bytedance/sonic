@@ -36,7 +36,7 @@ func assertUnmarshal(t *testing.T, api sonic.API, cas unmTestCase, args ...inter
 	assert.Equal(t, jv, sv, spew.Sdump(jv, sv))
 	assert.Equal(t, serr == nil, jerr == nil, spew.Sdump(jerr, serr))
 	if len(args) > 0 && args[0].(bool) {
-		spew.Dump(sv, serr, jv, jerr)
+		spew.Dump(jv, jerr, sv, serr)
 	}
 }
 
