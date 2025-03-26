@@ -90,6 +90,9 @@ func (cfg Config) Froze() API {
     if cfg.ValidateString {
         api.decoderOpts |= decoder.OptionValidateString
     }
+    if cfg.CaseSensitive {
+        api.decoderOpts |= decoder.OptionCaseSensitive
+    }
     return api
 }
 
