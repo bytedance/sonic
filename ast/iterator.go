@@ -176,7 +176,7 @@ type Scanner func(path Sequence, node *Node) bool
 // Especially, if the node is not V_ARRAY or V_OBJECT,
 // the node itself will be returned and Sequence.Index == -1.
 // 
-// NOTICE: A unsetted node WON'T trigger sc, but its index still counts into Path.Index
+// NOTICE: An unset node WON'T trigger sc, but its index still counts into Path.Index
 func (self *Node) ForEach(sc Scanner) error {
     if err := self.checkRaw(); err != nil {
         return err

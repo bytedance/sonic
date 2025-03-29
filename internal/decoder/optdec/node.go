@@ -12,7 +12,7 @@ import (
 type Context struct {
 	Parser      *Parser
 	efacePool   *efacePool
-	Stack       bounedStack
+	Stack       boundedStack
 	Utf8Inv     bool
 }
 
@@ -26,20 +26,20 @@ type parentStat struct {
 	con 	unsafe.Pointer
 	remain	uint64
 }
-type bounedStack struct {
+type boundedStack struct {
 	stack []parentStat
 	index int
 }
 
-func newStack(size int) bounedStack {
-	return bounedStack{
+func newStack(size int) boundedStack {
+	return boundedStack{
 		stack: make([]parentStat, size + 2),
 		index: 0,
 	}
 }
 
 //go:nosplit
-func (s *bounedStack) Pop() (unsafe.Pointer, int, bool){
+func (s *boundedStack) Pop() (unsafe.Pointer, int, bool){
 	s.index--
 	con := s.stack[s.index].con
 	remain := s.stack[s.index].remain &^ (uint64(1) << 63)
@@ -50,7 +50,7 @@ func (s *bounedStack) Pop() (unsafe.Pointer, int, bool){
 }
 
 //go:nosplit
-func (s *bounedStack) Push(p unsafe.Pointer, remain int, isObj bool) {
+func (s *boundedStack) Push(p unsafe.Pointer, remain int, isObj bool) {
 	s.stack[s.index].con = p
 	s.stack[s.index].remain = uint64(remain)
 	if isObj {
@@ -1253,7 +1253,7 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 		if ctx.Parser.options & (1 << _F_use_number) != 0 {
 			num, ok := node.AsNumber(ctx)
 			if !ok {
-				// skip the unmacthed type
+				// skip the unmatched type
 				*node = NewNode(node.Next())
 				return nil, newUnmatched(node.Position(), rt.JsonNumberType)
 			} else {
@@ -1275,13 +1275,13 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 				return f, nil
 			}
 		
-			// skip the unmacthed type
+			// skip the unmatched type
 			*node = NewNode(node.Next())
 			return nil, newUnmatched(node.Position(), rt.Int64Type)
 		} else {
 			num, ok := node.AsF64(ctx)
 			if !ok {
-				// skip the unmacthed type
+				// skip the unmatched type
 				*node = NewNode(node.Next())
 				return nil, newUnmatched(node.Position(), rt.Float64Type)
 			} else {

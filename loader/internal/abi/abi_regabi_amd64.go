@@ -258,7 +258,7 @@ func (self *Frame) emitExchangeArgs(p *Program) {
 				iregArgs = append(iregArgs, v)
 			}
 		} else {
-			panic("not support stack-assgined arguments now")
+			panic("not support stack-assigned arguments now")
 		}
 	}
 	if xregArgs > len(xregOrderC) {

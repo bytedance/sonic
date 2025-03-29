@@ -884,7 +884,7 @@ func TestUnset(t *testing.T) {
     require.Equal(t, []interface{}{interface{}(nil), true}, umses)
 
     v1, _ := ums.Index(0).Interface()
-    v2, _ := ums.Index(1).Interface() // NOTICE: unseted index 1 still can be find here
+    v2, _ := ums.Index(1).Interface() // NOTICE: unset index 1 still can be find here
     v3, _ := ums.Index(2).Interface()
     if v1 != nil {
         t.Fatal()

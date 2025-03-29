@@ -28,7 +28,7 @@ type OmitEmptyInterface struct {
 }
 
 func TestOmitEmptyInterface(t *testing.T) {
-    // non-enmpty type
+    // non-empty type
     var data *string
         resp := &OmitEmptyInterface{
         ErrCode: 123,

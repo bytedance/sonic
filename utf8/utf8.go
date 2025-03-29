@@ -62,7 +62,7 @@ func CorrectWith(dst []byte, src []byte, repl string) []byte {
     return dst
 }
 
-// Validate is a simd-accelereated drop-in replacement for the standard library's utf8.Valid.
+// Validate is a simd-accelerated drop-in replacement for the standard library's utf8.Valid.
 func Validate(src []byte) bool {
 	if src == nil {
 		return true

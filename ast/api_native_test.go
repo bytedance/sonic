@@ -169,8 +169,8 @@ func Test_Export(t *testing.T) {
 		{"string", args{`[" "]  ,2]`, []interface{}{0}}, 1, 4, V_STRING, false, true},
 		{"object", args{`[{"":""}  ,2]`, []interface{}{0}}, 1, 8, V_OBJECT, false, true},
 		{"object", args{`[{x}  ,2]`, []interface{}{0}}, 1, 4, V_OBJECT, false, false},
-		{"arrauy", args{`[[{}]  ,2]`, []interface{}{0}}, 1, 5, V_ARRAY, false, true},
-		{"arrauy", args{`[[xx]  ,2]`, []interface{}{0}}, 1, 5, V_ARRAY, false, false},
+		{"array", args{`[[{}]  ,2]`, []interface{}{0}}, 1, 5, V_ARRAY, false, true},
+		{"array", args{`[[xx]  ,2]`, []interface{}{0}}, 1, 5, V_ARRAY, false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

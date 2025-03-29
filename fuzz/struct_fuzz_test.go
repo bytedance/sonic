@@ -171,7 +171,7 @@ func removeNonAscii(m map[string]interface{}) ([]byte, map[string]interface{}) {
 	// marshal to json
 	data2, err := json.Marshal(m2)
 	if err != nil {
-		panic("remashal failed")
+		panic("remarshal failed")
 	}
 	return data2, m2
 }

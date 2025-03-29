@@ -63,7 +63,7 @@ func (self *Parser) delim() types.ParsingError {
         return types.ERR_EOF
     }
 
-    /* check for the delimtier */
+    /* check for the delimiter */
     if self.s[p] != ':' {
         return types.ERR_INVALID_CHAR
     }
@@ -82,7 +82,7 @@ func (self *Parser) object() types.ParsingError {
         return types.ERR_EOF
     }
 
-    /* check for the delimtier */
+    /* check for the delimiter */
     if self.s[p] != '{' {
         return types.ERR_INVALID_CHAR
     }
@@ -101,7 +101,7 @@ func (self *Parser) array() types.ParsingError {
         return types.ERR_EOF
     }
 
-    /* check for the delimtier */
+    /* check for the delimiter */
     if self.s[p] != '[' {
         return types.ERR_INVALID_CHAR
     }
@@ -638,7 +638,7 @@ func Loads(src string) (int, interface{}, error) {
     }
 }
 
-// LoadsUseNumber parse all json into interface{}, with numeric nodes casted to json.Number
+// LoadsUseNumber parse all json into interface{}, with numeric nodes cast to json.Number
 func LoadsUseNumber(src string) (int, interface{}, error) {
     ps := &Parser{s: src}
     np, err := ps.Parse()
