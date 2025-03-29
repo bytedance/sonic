@@ -33,7 +33,7 @@ So, **can some crucial calculation functions be written in another language with
 C/Clang is an ideal compilation tool (internal integration LLVM). But the key is how to embed the optimized assembly into Golang.
 
 ### How to use Gjson well?
-We also found that [gjson](https://github.com/tidwall/gjson) has a huge advantage in single-key lookup scenarios. This is because its lookup is implemented by a **lazy-load mechanism**, which subtlely skips passing-by values and effectively reduces a lot of unnecessary parsing. Practical application has proved that making good use of this feature in product can indeed bring benefits. But when it comes to multi-key lookup, Gjson does worse event than std,  which is a side effect of its skipping mechanism - **searching for the same path leads to repeated parsing** (skip is also a lightweight parsing). Therefore, the accurate adaptation of practical scenarios is the key.
+We also found that [gjson](https://github.com/tidwall/gjson) has a huge advantage in single-key lookup scenarios. This is because its lookup is implemented by a **lazy-load mechanism**, which subtly skips passing-by values and effectively reduces a lot of unnecessary parsing. Practical application has proved that making good use of this feature in product can indeed bring benefits. But when it comes to multi-key lookup, Gjson does worse event than std,  which is a side effect of its skipping mechanism - **searching for the same path leads to repeated parsing** (skip is also a lightweight parsing). Therefore, the accurate adaptation of practical scenarios is the key.
 
 ## Design
 Based on the above questions, our design is easy to implement:

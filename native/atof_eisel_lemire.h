@@ -103,7 +103,7 @@ static always_inline bool atof_eisel_lemire64_1(uint64_t mant, int exp10, int sg
             merged_hi ++;
         }
 
-        /* Still ambigunous */
+        /* Still ambiguous */
         if ((merged_hi & 0x1FF) == 0x1FF && (merged_lo + 1) == 0 && (y.lo + mant) < mant) {
             return false;
         }

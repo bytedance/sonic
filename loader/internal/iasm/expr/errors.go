@@ -37,7 +37,7 @@ func (self *SyntaxError) Error() string {
 	return fmt.Sprintf("Syntax error at position %d: %s", self.Pos, self.Reason)
 }
 
-// RuntimeError is an error which would occure at run time.
+// RuntimeError is an error which would occur at run time.
 type RuntimeError struct {
 	Reason string
 }
