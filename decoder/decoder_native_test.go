@@ -98,7 +98,7 @@ func TestDecoder_OptionCaseSensitiveForManyKeys(t *testing.T) {
 func BenchmarkSkipValidate(b *testing.B) {
     type skiptype struct {
         A int `json:"a"` // mismatched
-        B string `json:"-"` // ommited
+        B string `json:"-"` // omitted
         C [1]int `json:"c"` // fast int
         D struct {} `json:"d"` // empty struct
         E map[string]int `json:"e"` // mismatched elem
@@ -121,7 +121,7 @@ func BenchmarkSkipValidate(b *testing.B) {
     compt := string(comptd)
     var cases = []C{
         {"mismatched", `{"a":`+compt+`}`, 5},
-        {"ommited", `{"b":`+compt+`}`, 5},
+        {"omitted", `{"b":`+compt+`}`, 5},
         {"number", `{"c":[`+strings.Repeat("-1.23456e-19,", 1000)+`1]}`, 1.5},
         {"unknown", `{"unknown":`+compt+`}`, 5},
         {"empty", `{"d":`+compt+`}`, 5},

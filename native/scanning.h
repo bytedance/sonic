@@ -38,10 +38,10 @@ static const uint64_t MASK_VALIDATE_STRING = 1ull << 5;
 static const uint64_t MASK_ALLOW_CONTROL   = 1ull << 31;
 
 static const double P10_TAB[23] = {
-    /* <= the connvertion to double is not exact when less than 1 => */     1e-000,
+    /* <= the conversion to double is not exact when less than 1 => */     1e-000,
     1e+001, 1e+002, 1e+003, 1e+004, 1e+005, 1e+006, 1e+007, 1e+008, 1e+009, 1e+010,
     1e+011, 1e+012, 1e+013, 1e+014, 1e+015, 1e+016, 1e+017, 1e+018, 1e+019, 1e+020,
-    1e+021, 1e+022 /* <= the connvertion to double is not exact when larger,  => */
+    1e+021, 1e+022 /* <= the conversion to double is not exact when larger,  => */
 };
 
 static always_inline uint64_t add32(uint64_t v1, uint64_t v2, uint64_t *vo) {
@@ -788,7 +788,7 @@ static always_inline double atof_fast(uint64_t man, int exp, int sgn, int trunc,
         return true;
     }
 
-    /* A fast atof algorithm for high percison */
+    /* A fast atof algorithm for high precision */
     if (atof_eisel_lemire64_1(man, exp, sgn, val)) {
         if (!trunc || (atof_eisel_lemire64_1(man+1, exp, sgn, &val_up) && val_up == *val)) {
             return true;

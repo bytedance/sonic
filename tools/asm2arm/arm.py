@@ -367,7 +367,7 @@ class Instruction:
         imm_size = self.fixups[0].kind_info.bit_size
         imm_offset = self.fixups[0].kind_info.bit_offset
         if self.fixups[0].kind_info.is_pc_rel == 1:
-            # except adr and adrp, other PC-releative instructions need times 4
+            # except adr and adrp, other PC-relative instructions need times 4
             imm = imm >> 2
             # immediate bit size has 1-bit for sign
             self._check_offs_is_valid(imm_size - 1 + 2)
