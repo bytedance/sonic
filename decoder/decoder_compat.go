@@ -17,14 +17,15 @@
 package decoder
 
 import (
-    `bytes`
-    `encoding/json`
-    `io`
-    `reflect`
-    `unsafe`
+	"bytes"
+	"encoding/json"
+	"io"
+	"reflect"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/option`
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
 )
 
 const (
@@ -104,7 +105,7 @@ func (self *Decoder) CheckTrailings() error {
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
 func (self *Decoder) Decode(val interface{}) error {
-    r := bytes.NewBufferString(self.s)
+    r := bytes.NewBuffer(rt.Str2Mem(self.s))
    dec := json.NewDecoder(r)
    if (self.f & uint64(OptionUseNumber)) != 0  {
        dec.UseNumber()

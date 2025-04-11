@@ -22,6 +22,7 @@ import (
     `io`
     `reflect`
 
+    "github.com/bytedance/sonic/internal/rt"
     `github.com/bytedance/sonic/option`
 )
 
@@ -77,7 +78,8 @@ func (cfg frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([
 
 // UnmarshalFromString is implemented by sonic
 func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
-    return cfg.Unmarshal([]byte(buf), val)
+    // NOTE: decoder's buffer will be modified, so we can cast it to []byte
+    return cfg.Unmarshal(rt.Str2Mem(buf), val)
 }
 
 // Unmarshal is implemented by sonic
