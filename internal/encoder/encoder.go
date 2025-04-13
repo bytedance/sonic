@@ -218,7 +218,7 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
 func encodeInto(buf *[]byte, val interface{}, opts Options) error {
     stk := vars.NewStack()
     efv := rt.UnpackEface(val)
-    err := encodeTypedPointer(buf, efv.Type, &efv.Value, stk, uint64(opts))
+    err := encodeTypedPointer(buf, efv.Type, (*unsafe.Pointer)(rt.NoEscape(unsafe.Pointer(&efv.Value))), stk, uint64(opts))
 
     /* return the stack into pool */
     if err != nil {
