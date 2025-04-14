@@ -21,6 +21,7 @@ package alg
 
 import (
 	"runtime"
+	"strconv"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/native"
@@ -177,22 +178,9 @@ func F32toa(buf []byte, v float32) ([]byte) {
 }
 
 func I64toa(buf []byte, v int64) ([]byte) {
-	buf = rt.GuardSlice2(buf, 32)
-	ret := native.I64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-	if ret > 0 {
-		return buf[:len(buf)+ret]
-	} else {
-		return buf
-	}
+	return strconv.AppendInt(buf, v, 10)
 }
 
 func U64toa(buf []byte, v uint64) ([]byte) {
-	buf = rt.GuardSlice2(buf, 32)
-	ret := native.U64toa((*byte)(rt.IndexByte(buf, len(buf))), v)
-	if ret > 0 {
-		return buf[:len(buf)+ret]
-	} else {
-		return buf
-	}
+	return strconv.AppendUint(buf, v, 10)
 }
-
