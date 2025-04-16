@@ -119,8 +119,11 @@ func ReplacerAddOmitemptyfunc(field reflect.StructField, tag reflect.StructTag) 
 
 	// 查找 json tag
 	jsonTag, err := tags.Get("json")
-	if err != nil {
-		return reflect.StructTag(`json:",omitempty"`)
+	if jsonTag == nil {
+		if err := tags.Set(&structtag.Tag{Key: "json", Name: field.Name, Options: []string{"omitempty"}}); err != nil {
+			panic(err)
+		}
+		return reflect.StructTag(tags.String())
 	}
 
 	// 修改 json tag 的值

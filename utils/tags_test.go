@@ -27,9 +27,9 @@ import (
 func TestTagChanger_ReplaceTag(t *testing.T) {
 
 	type caseStruct struct {
-		A *int 
+		A *int  `xx:"yy"`
 		B map[int]struct{
-			C *int `json:"c"`
+			C *int `json:"c" xx:"yy"`
 		} 
 		D []struct{
 			E *int `json:"e"`
