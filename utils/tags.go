@@ -17,8 +17,11 @@
 package utils
 
 import (
+	"fmt"
 	"reflect"
+	"unsafe"
 
+	"github.com/bytedance/sonic"
 	"github.com/fatih/structtag"
 )
 
@@ -34,7 +37,7 @@ func NewTagChanger(replacer func(field reflect.StructField, tag reflect.StructTa
 	}
 }
 
-func (t *TagChanger) ReplaceTag(old reflect.Type) reflect.Type  {
+func (t *TagChanger) Replace(old reflect.Type) reflect.Type  {
     if t.types == nil {
         t.types = make(map[reflect.Type]reflect.Type)
     }
@@ -55,7 +58,7 @@ func (t *TagChanger) ReplaceTag(old reflect.Type) reflect.Type  {
     // 处理map类型
     if old.Kind() == reflect.Map {
         // 递归处理map的value类型
-        nn := t.ReplaceTag(old.Elem())
+        nn := t.Replace(old.Elem())
 		n := reflect.MapOf(old.Key(), nn)
 		t.types[old] = n
         return n
@@ -64,7 +67,7 @@ func (t *TagChanger) ReplaceTag(old reflect.Type) reflect.Type  {
     // 处理slice/array类型
     if old.Kind() == reflect.Slice || old.Kind() == reflect.Array {
         // 递归处理元素类型
-       nn := t.ReplaceTag(old.Elem())
+       nn := t.Replace(old.Elem())
        n := reflect.SliceOf(nn)
        t.types[old] = n
        return n
@@ -73,7 +76,7 @@ func (t *TagChanger) ReplaceTag(old reflect.Type) reflect.Type  {
     // 处理指针类型
     if old.Kind() == reflect.Ptr {
         // 递归处理指针指向的类型
-        nn := t.ReplaceTag(old.Elem())
+        nn := t.Replace(old.Elem())
         n := reflect.PtrTo(nn)
         t.types[old] = n
         return n
@@ -92,7 +95,7 @@ func (t *TagChanger) createFieldsWithReplacedTags(old reflect.Type) []reflect.St
         tag := oldField.Tag
 
         // 递归处理处理字段类型
-		fieldType := t.ReplaceTag(oldField.Type)
+		fieldType := t.Replace(oldField.Type)
 
         // 使用自定义的replace函数替换tag
         newTag := t.replacer(oldField, tag)
@@ -129,4 +132,29 @@ func ReplacerAddOmitemptyfunc(field reflect.StructField, tag reflect.StructTag) 
 	tags.Set(jsonTag)
 	newTag := tags.String()
 	return reflect.StructTag(newTag)
+}
+
+func MarshalWithTagChanger(t *TagChanger, v interface{}) ([]byte, error) {
+	// 先替换tag
+	oldType := reflect.TypeOf(v)
+	if oldType.Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("v must be a pointer")
+	}
+	newType := t.Replace(oldType)
+	newObj := reflect.NewAt(newType, unsafe.Pointer(reflect.ValueOf(v).UnsafeAddr())).Interface()
+
+	// 再序列化
+	return sonic.Marshal(newObj)
+}
+
+func UnmarshalWithTagChanger(t *TagChanger, data []byte, v interface{}) error {
+	// 先替换tag
+	oldType := reflect.TypeOf(v)
+	if oldType.Kind()!= reflect.Ptr {
+		return fmt.Errorf("v must be a pointer")
+	}
+	newType := t.Replace(oldType)
+	newObj := reflect.NewAt(newType, unsafe.Pointer(reflect.ValueOf(v).UnsafeAddr())).Interface()
+	// 再反序列化
+	return sonic.Unmarshal(data, newObj)
 }

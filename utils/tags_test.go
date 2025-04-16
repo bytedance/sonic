@@ -73,7 +73,7 @@ func TestTagChanger_ReplaceTag(t *testing.T) {
 				return
 			}
 			fmt.Println(string(oldJs))
-			got := tr.ReplaceTag(reflect.TypeOf(tt.args.old))
+			got := tr.Replace(reflect.TypeOf(tt.args.old))
 			gotObj := reflect.NewAt(got, unsafe.Pointer(&oldObj)).Interface()
 			js, err := json.Marshal(gotObj)
 			println(string(js))
