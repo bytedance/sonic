@@ -25,6 +25,9 @@ import (
 	"github.com/fatih/structtag"
 )
 
+// TagChanger is used to change the tag of a struct.
+//
+// WARNING: it is not thread-safe, must be used in a single thread or in initialization phase.
 type TagChanger struct {
 	types map[reflect.Type]reflect.Type // old -> new
 	replacer func(field reflect.StructField, tag reflect.StructTag) reflect.StructTag
@@ -37,52 +40,45 @@ func NewTagChanger(replacer func(field reflect.StructField, tag reflect.StructTa
 	}
 }
 
+// Replace returns the type whose tag is replaced by replacer.
+//
+// WARNING: it is not thread-safe, must be used in a single thread or in initialization phase.
 func (t *TagChanger) Replace(old reflect.Type) reflect.Type  {
     if t.types == nil {
         t.types = make(map[reflect.Type]reflect.Type)
     }
 
-    // 如果已经处理过该类型，直接返回
     if n, ok := t.types[old]; ok {
         return n
     }
 
-    // 处理结构体类型
     if old.Kind() == reflect.Struct {
-        // 创建一个新的结构体类型
         newType := reflect.StructOf(t.createFieldsWithReplacedTags(old))
         t.types[old] = newType
         return newType
     }
 
-    // 处理map类型
     if old.Kind() == reflect.Map {
-        // 递归处理map的value类型
         nn := t.Replace(old.Elem())
 		n := reflect.MapOf(old.Key(), nn)
 		t.types[old] = n
         return n
     }
 
-    // 处理slice/array类型
     if old.Kind() == reflect.Slice || old.Kind() == reflect.Array {
-        // 递归处理元素类型
        nn := t.Replace(old.Elem())
        n := reflect.SliceOf(nn)
        t.types[old] = n
        return n
     }
 
-    // 处理指针类型
     if old.Kind() == reflect.Ptr {
-        // 递归处理指针指向的类型
         nn := t.Replace(old.Elem())
         n := reflect.PtrTo(nn)
         t.types[old] = n
         return n
     }
 
-    // 其他类型直接返回
     return old
 }
 
@@ -94,10 +90,8 @@ func (t *TagChanger) createFieldsWithReplacedTags(old reflect.Type) []reflect.St
         oldField := old.Field(i)
         tag := oldField.Tag
 
-        // 递归处理处理字段类型
 		fieldType := t.Replace(oldField.Type)
 
-        // 使用自定义的replace函数替换tag
         newTag := t.replacer(oldField, tag)
 
         fields[i] = reflect.StructField{
@@ -110,14 +104,13 @@ func (t *TagChanger) createFieldsWithReplacedTags(old reflect.Type) []reflect.St
     return fields
 }
 
-
-func ReplacerAddOmitemptyfunc(field reflect.StructField, tag reflect.StructTag) reflect.StructTag {
+// ReplacerAddOmitempty is a replacer that adds "omitempty" to the json tag.
+func ReplacerAddOmitempty(field reflect.StructField, tag reflect.StructTag) reflect.StructTag {
 	tags, err := structtag.Parse(string(tag))
 	if err != nil {
 		return tag
 	}
 
-	// 查找 json tag
 	jsonTag, err := tags.Get("json")
 	if jsonTag == nil {
 		if err := tags.Set(&structtag.Tag{Key: "json", Name: field.Name, Options: []string{"omitempty"}}); err != nil {
@@ -126,38 +119,64 @@ func ReplacerAddOmitemptyfunc(field reflect.StructField, tag reflect.StructTag) 
 		return reflect.StructTag(tags.String())
 	}
 
-	// 修改 json tag 的值
 	if !jsonTag.HasOption("omitempty") {
 		jsonTag.Options = append(jsonTag.Options, "omitempty")
 	}
 
-	// 重新构建 tag
 	tags.Set(jsonTag)
 	newTag := tags.String()
 	return reflect.StructTag(newTag)
 }
 
-func MarshalWithTagChanger(t *TagChanger, v interface{}) ([]byte, error) {
-	// 先替换tag
+func ReplaceerAddStringInt64(field reflect.StructField, tag reflect.StructTag) reflect.StructTag {
+    typ := field.Type
+    if typ.Kind() == reflect.Ptr {
+    	typ = typ.Elem()
+    }
+    if typ.Kind() != reflect.Int64 && typ.Kind() != reflect.Uint64 {
+    	return tag
+    }
+
+	tags, err := structtag.Parse(string(tag))
+	if err != nil {
+		return tag
+	}
+
+	jsonTag, err := tags.Get("json")
+	if jsonTag == nil {
+		if err := tags.Set(&structtag.Tag{Key: "json", Name: field.Name, Options: []string{"string"}}); err != nil {
+			panic(err)
+		}
+		return reflect.StructTag(tags.String())
+	}
+
+	if !jsonTag.HasOption("string") {
+		jsonTag.Options = append(jsonTag.Options, "string")
+	}
+
+	tags.Set(jsonTag)
+	newTag := tags.String()
+	return reflect.StructTag(newTag)
+}
+
+// Marshal is used to marshal a struct whose tag is replaced by replacer into json.
+func (t *TagChanger) Marshal(v interface{}) ([]byte, error) {
 	oldType := reflect.TypeOf(v)
 	if oldType.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("v must be a pointer")
 	}
-	newType := t.Replace(oldType)
-	newObj := reflect.NewAt(newType, unsafe.Pointer(reflect.ValueOf(v).UnsafeAddr())).Interface()
-
-	// 再序列化
+	newType := t.Replace(oldType.Elem())
+	newObj := reflect.NewAt(newType, unsafe.Pointer(reflect.ValueOf(v).Pointer())).Interface()
 	return sonic.Marshal(newObj)
 }
 
-func UnmarshalWithTagChanger(t *TagChanger, data []byte, v interface{}) error {
-	// 先替换tag
+// Unmarshal is used to unmarshal json into a struct whose tag is replaced by replacer.
+func (t *TagChanger) Unmarshal(data []byte, v interface{}) error {
 	oldType := reflect.TypeOf(v)
 	if oldType.Kind()!= reflect.Ptr {
 		return fmt.Errorf("v must be a pointer")
 	}
-	newType := t.Replace(oldType)
-	newObj := reflect.NewAt(newType, unsafe.Pointer(reflect.ValueOf(v).UnsafeAddr())).Interface()
-	// 再反序列化
+	newType := t.Replace(oldType.Elem())
+	newObj := reflect.NewAt(newType, unsafe.Pointer(reflect.ValueOf(v).Pointer())).Interface()
 	return sonic.Unmarshal(data, newObj)
 }
