@@ -55,6 +55,7 @@ func TestIssue115_MarshalMapWithSort(t *testing.T) {
         { v: map[int64]int{1:-1, -2:2, 0:0}, want: `{"-2":2,"0":0,"1":-1}`},
         { v: map[uint]int{1:-1, ^uint(0):2, 0:0}, want: `{"0":0,"1":-1,"18446744073709551615":2}`},
         { v: map[uintptr]int{uintptr(0xf):0xf, uintptr(0x0):0}, want: `{"0":0,"15":15}`}, 
+        { v: map[bool]int{true:0xf, false:0}, want: `{"false":0,"true":15}`}, 
         { v: map[encoding.TextMarshaler]interface{}{
                nptext : nil,
                &ptext : struct{}{},

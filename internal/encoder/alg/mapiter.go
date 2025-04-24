@@ -97,17 +97,18 @@ func (self *MapIterator) append(t *rt.GoType, k unsafe.Pointer, v unsafe.Pointer
 
 func (self *MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kind, k unsafe.Pointer) error {
     switch v {
-        case reflect.Int       : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int)(k)), 10))      ; return nil
-        case reflect.Int8      : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int8)(k)), 10))     ; return nil
-        case reflect.Int16     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int16)(k)), 10))    ; return nil
-        case reflect.Int32     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int32)(k)), 10))    ; return nil
-        case reflect.Int64     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int64)(k)), 10))           ; return nil
+        case reflect.Int       : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int)(k)), 10))       ; return nil
+        case reflect.Int8      : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int8)(k)), 10))      ; return nil
+        case reflect.Int16     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int16)(k)), 10))     ; return nil
+        case reflect.Int32     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int32)(k)), 10))     ; return nil
+        case reflect.Int64     : p.k = rt.Mem2Str(strconv.AppendInt(p.m[:0], int64(*(*int64)(k)), 10))     ; return nil
         case reflect.Uint      : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uint)(k)), 10))    ; return nil
         case reflect.Uint8     : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uint8)(k)), 10))   ; return nil
         case reflect.Uint16    : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uint16)(k)), 10))  ; return nil
         case reflect.Uint32    : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uint32)(k)), 10))  ; return nil
-        case reflect.Uint64    : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uint64)(k)), 10))          ; return nil
+        case reflect.Uint64    : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uint64)(k)), 10))  ; return nil
         case reflect.Uintptr   : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uintptr)(k)), 10)) ; return nil
+        case reflect.Bool      : if *(*bool)(k) { p.k = "true" } else { p.k = "false" }; return nil
         case reflect.Interface : return self.appendInterface(p, t, k)
         case reflect.Struct, reflect.Ptr : return self.appendConcrete(p, t, k)
         default                : panic("unexpected map key type")
