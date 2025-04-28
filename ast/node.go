@@ -816,7 +816,7 @@ func (self *Node) Move(dst, src int) error {
     return nil
 }
 
-// SetAny wraps val with V_ANY node, and Add() the node.
+// AddAny wraps val with V_ANY node, and Add() the node.
 func (self *Node) AddAny(val interface{}) error {
     return self.Add(NewAny(val))
 }
