@@ -1193,7 +1193,7 @@ func TestNodeGet(t *testing.T) {
     }
     val, _ := root.Get("search_metadata").Get("max_id").Int64()
     if val != int64(250126199840518145) {
-        t.Fatalf("exp: %+v, got: %+v", 250126199840518145, val)
+        t.Fatalf("exp: %+v, got: %+v", int64(250126199840518145), val)
     }
 }
 
