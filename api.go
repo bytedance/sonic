@@ -97,12 +97,9 @@ type Config struct {
 
     // CaseSensitive indicates that the decoder should not ignore the case of object keys.
     CaseSensitive bool
-    // Uint64 or Int64 into strings on Marshal
-    Uint64ToString bool
+
+    // For avoiding integer-overflow in Javascript, marshal `int64|uint64 with abitary value` into string.
     Int64ToString bool
-    // IntegerExceed53BitToString when intSize == 64, if the value of type integer exceeds 1<<53, 
-    // automatically convert it to a string.
-    IntegerExceed53BitToString bool
 }
  
 var (

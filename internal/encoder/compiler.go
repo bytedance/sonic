@@ -179,7 +179,7 @@ func (self *Compiler) compileOps(p *ir.Program, sp int, vt reflect.Type) {
 	case reflect.Bool:
 		p.Add(ir.OP_bool)
 	case reflect.Int:
-		p.Add(ir.OP_int(), ir.OP_i)
+		p.Int(ir.OP_int(), ir.F_IS_GO_INT)
 	case reflect.Int8:
 		p.Add(ir.OP_i8)
 	case reflect.Int16:
@@ -189,7 +189,7 @@ func (self *Compiler) compileOps(p *ir.Program, sp int, vt reflect.Type) {
 	case reflect.Int64:
 		p.Add(ir.OP_i64)
 	case reflect.Uint:
-		p.Add(ir.OP_uint(), ir.OP_u)
+		p.Int(ir.OP_uint(), ir.F_IS_GO_INT)
 	case reflect.Uint8:
 		p.Add(ir.OP_u8)
 	case reflect.Uint16:
@@ -301,7 +301,7 @@ func (self *Compiler) compileMapBodyTextKey(p *ir.Program, vk reflect.Type) {
 	case reflect.Bool:
 		p.Key(ir.OP_bool)
 	case reflect.Int:
-		p.Key(ir.OP_int(), ir.OP_i)
+		p.Key(ir.OP_int())
 	case reflect.Int8:
 		p.Key(ir.OP_i8)
 	case reflect.Int16:
@@ -311,7 +311,7 @@ func (self *Compiler) compileMapBodyTextKey(p *ir.Program, vk reflect.Type) {
 	case reflect.Int64:
 		p.Key(ir.OP_i64)
 	case reflect.Uint:
-		p.Key(ir.OP_uint(), ir.OP_u)
+		p.Key(ir.OP_uint())
 	case reflect.Uint8:
 		p.Key(ir.OP_u8)
 	case reflect.Uint16:
