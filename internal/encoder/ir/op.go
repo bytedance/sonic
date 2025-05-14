@@ -205,6 +205,7 @@ type Instr struct {
 	p unsafe.Pointer // maybe GoString.Ptr, or *GoType
 }
 
+
 func NewInsOp(op Op) Instr {
 	return Instr{o: op}
 }
@@ -441,10 +442,15 @@ func (self *Program) Add(op Op) {
 func (self *Program) Key(op Op) {
 	*self = append(*self,
 		NewInsVi(OP_byte, '"'),
-		NewInsOp(op),
+		NewInsVi(op, F_QUOTE),
 		NewInsVi(OP_byte, '"'),
 	)
 }
+
+const (
+	F_QUOTE = 1 << iota
+	F_IS_GO_INT
+)
 
 func (self *Program) Int(op Op, vi int) {
 	*self = append(*self, NewInsVi(op, vi))

@@ -20,25 +20,26 @@
 package sonic
 
 import (
-    `bytes`
-    `encoding`
-    `encoding/json`
-    `fmt`
-    `log`
-    `math`
-    `os`
-    `reflect`
-    `regexp`
-    `runtime`
-    `runtime/debug`
-    `strconv`
-    `testing`
-    `time`
-    `unsafe`
-    `strings`
+	"bytes"
+	"encoding"
+	"encoding/json"
+	"fmt"
+	"log"
+	"math"
+	"os"
+	"reflect"
+	"regexp"
+	"runtime"
+	"runtime/debug"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+	"unsafe"
 
-    `github.com/bytedance/sonic/encoder`
-    `github.com/stretchr/testify/assert`
+	"github.com/bytedance/sonic/encoder"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -1223,5 +1224,95 @@ func TestMarshalInfOrNan(t *testing.T) {
         b, err = Marshal(tt)
         assert.NotNil(t, err)
         assert.True(t, strings.Contains(err.Error(), "json: unsupported value: NaN or ±Infinite"))
+    }
+}
+
+
+
+func TestIntegerToString(t *testing.T) {
+    int64ptr := int64(rt.MinJSInt)
+    uint64Ptr := uint64(rt.MaxJSInt)
+    intPtr := int(rt.MinJSInt)
+    uintPtr := uint(rt.MaxJSInt)
+    // uintLessMaxJSIntPtr := uint(rt.MaxJSInt-1)
+    // uintEqualMaxJSIntPtr := uint(rt.MaxJSInt)
+    // uintGreaterMaxJSIntPtr := uint(rt.MaxJSInt+1)
+    // intLessMinJSIntptr := int(rt.MinJSInt-1)
+    // intEqualMinJSIntPtr := int(rt.MinJSInt)
+    // intGreaterMinJSIntPtr := int(rt.MinJSInt+1)
+
+    // expectObj := `{"1":"-1","2":"1","3":9007199254740990,"4":9007199254740991,"5":"9007199254740992","6":"-9007199254740992","7":-9007199254740991,"8":-9007199254740990}`
+    expectObj := `{"1":"-9007199254740991","2":"9007199254740991","3":-9007199254740991,"4":9007199254740991}`
+    // expectArr := `["-1","1",9007199254740990,9007199254740991,"9007199254740992","-9007199254740992",-9007199254740991,-9007199254740990]`
+    expectArr := `["-9007199254740991","9007199254740991",-9007199254740991,9007199254740991]`
+
+    cases := []struct {
+        name        string
+        val         interface{}
+        expect  string
+    }{
+        {
+            name: "int_map",
+            val: map[int]interface{}{
+                1:  int64ptr,
+                2: uint64Ptr,
+                3: intPtr,
+                4: uintPtr,
+            },
+            expect: expectObj,
+        },
+        {
+            name: "uint64_map",
+            val: map[uint64]interface{}{
+                1:  int64ptr,
+                2: uint64Ptr,
+                3: intPtr,
+                4: uintPtr,
+            },
+            expect: expectObj,
+        },
+        {
+            name: "struct",
+            val: struct {
+                Int64   int64  `json:"1"`
+                Uint64  uint64   `json:"2"`
+                Int     int `json:"3"`
+                Uint    uint `json:"4"`
+            }{
+                Int64:   int64ptr,
+                Uint64:  uint64Ptr,
+                Int:     intPtr,
+                Uint:    uintPtr,
+            },
+            expect: expectObj,
+        },
+        {
+            name: "ptr_struct",
+            val: struct {
+                Int64   *int64  `json:"1"`
+                Uint64  *uint64   `json:"2"`
+                Int     *int `json:"3"`
+                Uint    *uint `json:"4"`
+            }{
+                Int64:   &int64ptr,
+                Uint64:  &uint64Ptr,
+                Int:     &intPtr,
+                Uint:    &uintPtr,
+            },
+            expect: expectObj,
+        },
+        {
+            name: "slice",
+            val: []interface{}{int64ptr, uint64Ptr, intPtr, uintPtr},
+            expect: expectArr,
+        },
+    }
+
+    for _, c := range cases {
+        t.Run(c.name, func(t *testing.T) {
+            b, e := Config{Int64ToString: true, SortMapKeys: true}.Froze().Marshal(c.val)
+            assert.Nil(t, e)
+            assert.Equal(t, c.expect, string(b))
+        })
     }
 }
