@@ -509,6 +509,23 @@ func (self *Node) Float64() (float64, error) {
     }
 }
 
+func (self *Node) StrictBool() (bool, error) {
+    if err := self.checkRaw(); err!= nil {
+        return false, err
+    }
+    switch self.t {
+        case types.V_TRUE     : return true, nil
+        case types.V_FALSE    : return false, nil
+        case _V_ANY           :
+            any := self.packAny()
+            switch v := any.(type) {
+                case bool   : return v, nil
+                default      : return false, ErrUnsupportType
+            }
+        default              : return false, ErrUnsupportType
+    }
+}
+
 // Float64 exports underlying float64 value, including V_NUMBER, V_ANY
 func (self *Node) StrictFloat64() (float64, error) {
     if err := self.checkRaw(); err != nil {
