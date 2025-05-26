@@ -73,6 +73,9 @@ const (
 
     // Encode Infinity or Nan float into `null`, instead of returning an error.
     EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
+
+    // For avoiding integer-overflow in Javascript, marshal `int64|uint64 with abitary value` into string.
+	Int64ToString Options = encoder.Int64ToString
 )
 
 
