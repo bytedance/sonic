@@ -17,16 +17,16 @@
 package api
 
 import (
-    `bytes`
-    `encoding/json`
-    `io`
-    `io/ioutil`
-    `strings`
-    `testing`
+	"bytes"
+	"encoding/json"
+	"io"
+	"io/ioutil"
+	"strings"
+	"testing"
 
-    `github.com/bytedance/sonic/option`
-    `github.com/stretchr/testify/assert`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/option"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -69,6 +69,47 @@ func TestStreamError(t *testing.T) {
         var obj interface{}
         require.NotNil(t, NewStreamDecoder(bytes.NewReader(qq)).Decode(&obj))
     }
+}
+
+func TestReaderError(t *testing.T) {
+    err := &SyntaxError{}
+    t.Run("half", func(t *testing.T) {
+        er := &ErrReader{err : err, src: `{"a":1`}
+        dc := NewStreamDecoder(er)
+        var v interface{}
+        e2 := dc.Decode(&v)
+        if e2 != err {
+            t.Fail()
+        }
+    })
+    t.Run("full", func(t *testing.T) {
+        er := &ErrReader{err : err, src: `{"a":1}`}
+        dc := NewStreamDecoder(er)
+        var v interface{}
+        e2 := dc.Decode(&v)
+        if e2 != nil {
+            t.Fail()
+        }
+        e3 := dc.Decode(&v)
+        if e3 != err {
+            t.Fail()
+        }
+    })
+}
+
+type ErrReader struct {
+    src string
+    read int
+    err error
+}
+
+func (er *ErrReader) Read(p []byte) (int, error) {
+    if er.read >= len(er.src) {
+        return 0, er.err
+    }
+    n := copy(p, []byte(er.src[er.read:]))
+    er.read += n
+    return n, nil
 }
 
 func TestDecodeEmpty(t *testing.T) {
