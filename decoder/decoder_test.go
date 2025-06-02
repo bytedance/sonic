@@ -18,6 +18,9 @@ package decoder
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"runtime"
 	"runtime/debug"
 	"strings"
@@ -42,6 +45,19 @@ func TestMain(m *testing.M) {
     }()
     time.Sleep(time.Millisecond)
     m.Run()
+}
+
+func TestHttpMaxBodyReader(t *testing.T) {
+    req, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(`{"foo":"bar", "bar":"foo"}`))
+    // 构造一个新的 response writer
+    resp := httptest.NewRecorder()
+   reader := http.MaxBytesReader(resp, req.Body, 10)
+   dc := NewStreamDecoder(reader)
+   var v interface{}
+   err := dc.Decode(&v)
+   if err != nil {
+       fmt.Printf("err: %#v\n", err)
+   }
 }
 
 func TestGC(t *testing.T) {
