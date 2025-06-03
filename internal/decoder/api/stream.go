@@ -79,8 +79,8 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
             }                
             if self.err == nil {
                 self.err = SyntaxError{e, self.s, types.ParsingError(-s), ""}
+                self.setErr(self.err)
             }
-            self.setErr(self.err)
             return self.err
         } else {
             s = y + s
