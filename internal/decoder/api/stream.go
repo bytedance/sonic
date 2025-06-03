@@ -76,11 +76,12 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
         if y := native.SkipOneFast(&src, &x); y < 0 {
             if self.readMore()  {
                 goto try_skip
-            } else {
-                err = SyntaxError{e, self.s, types.ParsingError(-s), ""}
-                self.setErr(err)
-                return
+            }                
+            if self.err == nil {
+                self.err = SyntaxError{e, self.s, types.ParsingError(-s), ""}
+                self.setErr(self.err)
             }
+            return self.err
         } else {
             s = y + s
             e = x + s
