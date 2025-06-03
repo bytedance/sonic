@@ -17,13 +17,13 @@
 package sonic
 
 import (
-    `bytes`
-    `encoding/json`
-    `reflect`
-    `testing`
+	"bytes"
+	"encoding/json"
+	"reflect"
+	"testing"
 
-    `github.com/bytedance/sonic/option`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/option"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCompatUnmarshalStd(t *testing.T) {
@@ -186,3 +186,21 @@ func TestGet(t *testing.T) {
     }
 }
 
+func TestUnmarshalWithTrailingChars(t *testing.T) {
+    for i, str := range([]string {
+        "123",
+        "123 ",
+        "{} [] ",
+        "{} [ ",
+        "[],",
+        "[]null",
+        "false null",
+    }) {
+        var msg1, msg2 json.RawMessage
+        err1 := json.Unmarshal([]byte(str), &msg1)
+        err2 := ConfigStd.UnmarshalFromString(str, &msg2)
+        require.Equal(t, err1 == nil, err2 == nil, i)
+        // sonic will not clear the unmarshaled value here, but encoding/json will
+        // require.Equal(t, msg1, msg2)
+    }
+}
