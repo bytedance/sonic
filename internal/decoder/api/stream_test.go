@@ -73,8 +73,8 @@ func TestStreamError(t *testing.T) {
 
 func TestReaderError(t *testing.T) {
     err := &SyntaxError{}
-    t.Run("half", func(t *testing.T) {
-        er := &ErrReader{err : err, src: `{"a":1`}
+    t.Run("middle", func(t *testing.T) {
+        er := &ErrReader{err : err, src: `{"a":1`+strings.Repeat(" ", int(option.DefaultDecoderBufferSize))}
         dc := NewStreamDecoder(er)
         var v interface{}
         e2 := dc.Decode(&v)
@@ -82,8 +82,8 @@ func TestReaderError(t *testing.T) {
             t.Fail()
         }
     })
-    t.Run("full", func(t *testing.T) {
-        er := &ErrReader{err : err, src: `{"a":1}`}
+    t.Run("after", func(t *testing.T) {
+        er := &ErrReader{err : err, src: `{"a":1}`+strings.Repeat(" ", int(option.DefaultDecoderBufferSize))}
         dc := NewStreamDecoder(er)
         var v interface{}
         e2 := dc.Decode(&v)
