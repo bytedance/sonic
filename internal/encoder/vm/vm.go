@@ -139,8 +139,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*int32)(p)
 			buf = alg.I64toa(buf, int64(v))
 		case ir.OP_i64:
-			v := *(*int64)(p)
-			buf = alg.I64toa(buf, int64(v))
+			buf = encode_i64(buf, ins, p, flags, false)
 		case ir.OP_u8:
 			v := *(*uint8)(p)
 			buf = alg.U64toa(buf, uint64(v))
@@ -151,8 +150,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*uint32)(p)
 			buf = alg.U64toa(buf, uint64(v))
 		case ir.OP_u64:
-			v := *(*uint64)(p)
-			buf = alg.U64toa(buf, uint64(v))
+			buf = encode_i64(buf, ins, p, flags, true)
 		case ir.OP_f32:
 			v := *(*float32)(p)
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
@@ -230,19 +228,9 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			}
 			p = it.It.K
 		case ir.OP_marshal_text:
-			vt, itab := ins.Vtab()
-			var it rt.GoIface
-			switch vt.Kind() {
-				case reflect.Interface        : 
-				if is_nil(p) {
-					buf = append(buf, 'n', 'u', 'l', 'l')
-					continue
-				}
-				it = rt.AssertI2I(_T_encoding_TextMarshaler, *(*rt.GoIface)(p))
-				case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
-				default                       : it = convT2I(p, !vt.Indirect(), itab)
-			}
-			if err := alg.EncodeTextMarshaler(&buf, *(*encoding.TextMarshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
+			var err error
+			buf, err = encode_marshaler(buf, ins, p, flags, _T_encoding_TextMarshaler)
+			if err!= nil {
 				return err
 			}
 		case ir.OP_marshal_text_p:
@@ -322,19 +310,9 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 				buf = append(buf, 'n', 'u', 'l', 'l')
 			}
 		case ir.OP_marshal:
-			vt, itab := ins.Vtab()
-			var it rt.GoIface
-			switch vt.Kind() {
-				case reflect.Interface        : 
-				if is_nil(p) {
-					buf = append(buf, 'n', 'u', 'l', 'l')
-					continue
-				}
-				it = rt.AssertI2I(_T_json_Marshaler, *(*rt.GoIface)(p))
-				case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
-				default                       : it = convT2I(p, !vt.Indirect(), itab)
-			}
-			if err := alg.EncodeJsonMarshaler(&buf, *(*json.Marshaler)(unsafe.Pointer(&it)), (flags)); err != nil {
+			var err error
+			buf, err = encode_marshaler(buf, ins, p, flags, _T_json_Marshaler)
+			if err!= nil {
 				return err
 			}
 		case ir.OP_marshal_p:
@@ -354,6 +332,55 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 	return nil
 }
 
+func encode_i64(buf []byte, ins *ir.Instr, p unsafe.Pointer, flags uint64, isUint bool) []byte {
+	fl := ins.Vi()
+	if fl & ir.F_QUOTE != 0 {
+		v := *(*int64)(p)
+		buf = alg.I64toa(buf, int64(v))
+		return buf
+	}
+
+	v := *(*int64)(p)
+	
+	quote := has_opts(flags, alg.BitInt64ToString) && (fl & ir.F_IS_GO_INT == 0) 
+
+	if quote {
+		buf = append(buf, '"')
+	}
+	if isUint {
+		buf = alg.U64toa(buf, uint64(v))
+	} else {
+		buf = alg.I64toa(buf, int64(v))
+	}
+	if quote {
+		buf = append(buf, '"')
+	}
+	return buf
+}
+
+func encode_marshaler(buf []byte, ins *ir.Instr, p unsafe.Pointer, flags uint64, t *rt.GoType) ([]byte, error) {
+	vt, itab := ins.Vtab()
+	var it rt.GoIface
+	switch vt.Kind() {
+		case reflect.Interface        : 
+		if is_nil(p) {
+			return append(buf, 'n', 'u', 'l', 'l'), nil
+		}
+		it = rt.AssertI2I(t, *(*rt.GoIface)(p))
+		case reflect.Ptr, reflect.Map : it = convT2I(p, true, itab)
+		default                       : it = convT2I(p, !vt.Indirect(), itab)
+	}
+	var err error
+	if t == _T_json_Marshaler {
+		err = alg.EncodeJsonMarshaler(&buf, *(*json.Marshaler)(unsafe.Pointer(&it)), (flags))
+	} else if t == _T_encoding_TextMarshaler {
+		err = alg.EncodeTextMarshaler(&buf, *(*encoding.TextMarshaler)(unsafe.Pointer(&it)), (flags))
+	}
+	if err != nil {
+		return buf, err
+	}
+	return buf, nil
+}
 
 func has_opts(opts uint64, bit int) bool {
 	return opts & (1<<bit) != 0

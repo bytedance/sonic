@@ -73,6 +73,9 @@ const (
 
     // Encode Infinity or Nan float into `null`, instead of returning an error.
     EncodeNullForInfOrNan Options = 1 << alg.BitEncodeNullForInfOrNan
+
+    // For avoiding integer-overflow in Javascript, marshal `int64|uint64 with abitary value` into string.
+    Int64ToString Options = 1 << alg.BitInt64ToString
 )
 
 // Encoder represents a specific set of encoder configurations.

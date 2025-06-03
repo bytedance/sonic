@@ -97,6 +97,9 @@ type Config struct {
 
     // CaseSensitive indicates that the decoder should not ignore the case of object keys.
     CaseSensitive bool
+
+    // For avoiding integer-overflow in Javascript, marshal `int64|uint64 with abitary value` into string.
+    Int64ToString bool
 }
  
 var (
