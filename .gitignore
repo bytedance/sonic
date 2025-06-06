@@ -53,3 +53,4 @@ fuzz/testdata
 *pprof
 *coverage.txt
 tools/venv/*
+bench_results/*
