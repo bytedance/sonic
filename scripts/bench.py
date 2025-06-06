@@ -19,7 +19,7 @@ import io
 import tempfile
 import os
 import re
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
 import argparse
@@ -265,75 +265,75 @@ def normalize_to_std(data, std_data):
     return normalized
 
 def plot_comparison(title, metrics, comparison_data, path):
-    """绘制性能对比图"""
-    test_cases = sorted(comparison_data["Std"].keys())
+    # """绘制性能对比图"""
+    # test_cases = sorted(comparison_data["Std"].keys())
     
-    # 准备性能数据
-    throughput_data = {}
-    allocs_data = {}
-    bytes_data = {}
-    time_data = {}
+    # # 准备性能数据
+    # throughput_data = {}
+    # allocs_data = {}
+    # bytes_data = {}
+    # time_data = {}
     
-    for lib in comparison_data:
-        throughput_data[lib] = [comparison_data[lib][tc][metrics] for tc in test_cases]
+    # for lib in comparison_data:
+    #     throughput_data[lib] = [comparison_data[lib][tc][metrics] for tc in test_cases]
 
     
-    # 创建图表
-    fig, (ax1) = plt.subplots(1, 1, figsize=(14, 16))
+    # # 创建图表
+    # fig, (ax1) = plt.subplots(1, 1, figsize=(14, 16))
     
-    # 性能对比图
-    x = np.arange(len(test_cases))
-    width = 0.2
-    multiplier = 0
-    
-    print("plot data ing")
-    for lib, values in throughput_data.items():
-        offset = width * multiplier
-        ax1.bar(x + offset, values, width, label=lib)
-        for i, v in enumerate(values):
-            ax1.text(i + offset, v + 0.1, f"{v:.1f}x", ha='center', fontsize=8)
-        multiplier += 1
-    
-    ax1.set_ylabel(metrics)
-    ax1.set_title(title)
-    ax1.set_xticks(x + width * (multiplier - 1) / 2)
-    ax1.set_xticklabels(test_cases, rotation=15, ha='right')
-    # ax1.axhline(y=1, color='gray', linestyle='--')
-    ax1.legend()
-    
-    # # 内存分配对比图
+    # # 性能对比图
+    # x = np.arange(len(test_cases))
+    # width = 0.2
     # multiplier = 0
-    # for lib, values in allocs_data.items():
+    
+    # print("plot data ing")
+    # for lib, values in throughput_data.items():
     #     offset = width * multiplier
-    #     ax2.bar(x + offset, values, width, label=lib)
+    #     ax1.bar(x + offset, values, width, label=lib)
     #     for i, v in enumerate(values):
-    #         ax2.text(i + offset, v + 0.01, f"{v:.3f}x", ha='center', fontsize=8)
+    #         ax1.text(i + offset, v + 0.1, f"{v:.1f}x", ha='center', fontsize=8)
     #     multiplier += 1
     
-    # ax2.set_ylabel('内存分配比例 (相对于标准库)')
-    # ax2.set_title('JSON 库内存分配对比')
-    # ax2.set_xticks(x + width * (multiplier - 1) / 2)
-    # ax2.set_xticklabels(test_cases, rotation=15, ha='right')
-    # ax2.axhline(y=1, color='gray', linestyle='--')
+    # ax1.set_ylabel(metrics)
+    # ax1.set_title(title)
+    # ax1.set_xticks(x + width * (multiplier - 1) / 2)
+    # ax1.set_xticklabels(test_cases, rotation=15, ha='right')
+    # # ax1.axhline(y=1, color='gray', linestyle='--')
+    # ax1.legend()
     
-    # # 内存使用对比图
-    # multiplier = 0
-    # for lib, values in bytes_data.items():
-    #     offset = width * multiplier
-    #     ax3.bar(x + offset, values, width, label=lib)
-    #     for i, v in enumerate(values):
-    #         ax3.text(i + offset, v + 0.01, f"{v:.3f}x", ha='center', fontsize=8)
-    #     multiplier += 1
+    # # # 内存分配对比图
+    # # multiplier = 0
+    # # for lib, values in allocs_data.items():
+    # #     offset = width * multiplier
+    # #     ax2.bar(x + offset, values, width, label=lib)
+    # #     for i, v in enumerate(values):
+    # #         ax2.text(i + offset, v + 0.01, f"{v:.3f}x", ha='center', fontsize=8)
+    # #     multiplier += 1
     
-    # ax3.set_ylabel('内存使用比例 (相对于标准库)')
-    # ax3.set_title('JSON 库内存使用对比')
-    # ax3.set_xticks(x + width * (multiplier - 1) / 2)
-    # ax3.set_xticklabels(test_cases, rotation=15, ha='right')
-    # ax3.axhline(y=1, color='gray', linestyle='--')
+    # # ax2.set_ylabel('内存分配比例 (相对于标准库)')
+    # # ax2.set_title('JSON 库内存分配对比')
+    # # ax2.set_xticks(x + width * (multiplier - 1) / 2)
+    # # ax2.set_xticklabels(test_cases, rotation=15, ha='right')
+    # # ax2.axhline(y=1, color='gray', linestyle='--')
     
-    plt.tight_layout()
-    plt.savefig(path)
-    plt.show()
+    # # # 内存使用对比图
+    # # multiplier = 0
+    # # for lib, values in bytes_data.items():
+    # #     offset = width * multiplier
+    # #     ax3.bar(x + offset, values, width, label=lib)
+    # #     for i, v in enumerate(values):
+    # #         ax3.text(i + offset, v + 0.01, f"{v:.3f}x", ha='center', fontsize=8)
+    # #     multiplier += 1
+    
+    # # ax3.set_ylabel('内存使用比例 (相对于标准库)')
+    # # ax3.set_title('JSON 库内存使用对比')
+    # # ax3.set_xticks(x + width * (multiplier - 1) / 2)
+    # # ax3.set_xticklabels(test_cases, rotation=15, ha='right')
+    # # ax3.axhline(y=1, color='gray', linestyle='--')
+    
+    # plt.tight_layout()
+    # plt.savefig(path)
+    # plt.show()
 
 def export_comparison_to_csv(csv_filename_base, metrics_key, comparison_data, path):
     """将对比数据导出为 CSV 文件"""
