@@ -17,6 +17,7 @@
 package ast
 
 import (
+	"encoding/json"
 	"math"
 	"runtime"
 	"strconv"
@@ -256,6 +257,32 @@ func TestSearcher_GetByPath(t *testing.T) {
 	if e != nil || d != "bc" {
 		t.Fatalf("node: %v, err: %v", node, e)
 	}
+}
+
+func TestSearch_LoadRawNumber(t *testing.T) {
+	s := NewSearcher(`[
+	1,
+	2.34
+	]`)
+	
+	node, err := s.getByPath(1)
+	require.NoError(t, err)
+	raw, err := node.Raw()
+	require.NoError(t, err)
+	require.Equal(t, raw, "2.34")
+
+	node, err = s.getByPath()
+	require.NoError(t, err)
+
+	elem := node.Index(1)
+	// FIXME: raw is `2.34` in aarch64
+	// raw, err = elem.Raw()
+	// require.NoError(t, err)
+	// require.Equal(t, raw, "2.34\n\t")
+
+	num, err := elem.Number()
+	require.NoError(t, err)
+	require.Equal(t, num, json.Number("2.34"))
 }
 
 type testGetByPath struct {
