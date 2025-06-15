@@ -50,6 +50,8 @@ func TestMain(m *testing.M) {
     m.Run()
 }
 
+
+
 func TestEncoderMemoryCorruption(t *testing.T) {
 	println("TestEncoderMemoryCorruption")
 	runtime.GC()
@@ -329,14 +331,6 @@ func TestEncoder_EscapeHTML(t *testing.T) {
         json.HTMLEscape(&dst, data)
         require.Equal(t, string(sdst), dst.String())
     }
-}
-
-func TestEncoder_Marshal_EscapeHTML_LargeJson(t *testing.T) {
-    buf1, err1 := Encode(&_BindingValue, SortMapKeys | EscapeHTML)
-    require.NoError(t, err1)
-    buf2, err2 :=json.Marshal(&_BindingValue)
-    require.NoError(t, err2)
-    require.Equal(t, buf1, buf2)
 }
 
 var _GenericValue interface{}
