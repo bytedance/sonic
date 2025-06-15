@@ -1,5 +1,5 @@
-//go:build go1.24 && !go1.25 && goexperiment.swissmap
-// +build go1.24,!go1.25,goexperiment.swissmap
+//go:build go1.24 && !go1.26 && goexperiment.swissmap
+// +build go1.24,!go1.26,goexperiment.swissmap
 
 package rt
 
