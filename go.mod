@@ -6,6 +6,7 @@ require (
 	github.com/bytedance/sonic/loader v0.2.5-0.20250615173055-5c2186ca22ef
 	github.com/cloudwego/base64x v0.1.5
 	github.com/davecgh/go-spew v1.1.1
+	github.com/fatih/structtag v1.2.0
 	github.com/klauspost/cpuid/v2 v2.0.9
 	github.com/stretchr/testify v1.8.1
 	github.com/twitchyliquid64/golang-asm v0.15.1
