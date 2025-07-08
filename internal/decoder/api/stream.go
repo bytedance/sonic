@@ -17,14 +17,15 @@
 package api
 
 import (
-    `bytes`
-    `io`
-    `sync`
+	"bytes"
+	"io"
+	"sync"
 
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    `github.com/bytedance/sonic/option`
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/internal/utils"
+	"github.com/bytedance/sonic/option"
 )
 
 var (
@@ -194,7 +195,7 @@ func (self *StreamDecoder) peek() (byte, error) {
 func (self *StreamDecoder) scan() (byte, bool) {
     for i := self.scanp; i < len(self.buf); i++ {
         c := self.buf[i]
-        if isSpace(c) {
+        if utils.IsSpace(c) {
             continue
         }
         self.scanp = i
@@ -203,9 +204,6 @@ func (self *StreamDecoder) scan() (byte, bool) {
     return 0, true
 }
 
-func isSpace(c byte) bool {
-    return types.SPACE_MASK & (1 << c) != 0
-}
 
 func (self *StreamDecoder) refill() error {
     // Make room to read more into the buffer.

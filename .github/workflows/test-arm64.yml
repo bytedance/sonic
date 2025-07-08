@@ -40,9 +40,11 @@ jobs:
         run: |
           ./scripts/test_race.sh
 
+      - name: Issue Test
+        run: GOMAXPROCS=4 go test -race ./issue_test
+
       - name: Generic Test
-        if: ${{ !startsWith(matrix.go-version, '1.17.') }}
-        run: GOMAXPROCS=4 go test -v -race ./generic_test
+        run: GOMAXPROCS=4 go test -race ./generic_test
 
       - name: Codecov
         run: bash <(curl -s https://codecov.io/bash)

@@ -12,15 +12,15 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package native
 
 import (
-	`unsafe`
+	"unsafe"
 
-	neon `github.com/bytedance/sonic/internal/native/neon`
-	`github.com/bytedance/sonic/internal/native/types`
+	neon "github.com/bytedance/sonic/internal/native/neon"
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 const (
@@ -87,8 +87,8 @@ func SkipOne(s *string, p *int, m *types.StateMachine, flags uint64) int
 
 //go:nosplit
 //go:noescape
-//go:linkname SkipOneFast github.com/bytedance/sonic/internal/native/neon.__skip_one_fast
-func SkipOneFast(s *string, p *int) int
+//go:linkname SkipOneFastTrailing github.com/bytedance/sonic/internal/native/neon.__skip_one_fast
+func SkipOneFastTrailing(s *string, p *int) int
 
 //go:nosplit
 //go:noescape

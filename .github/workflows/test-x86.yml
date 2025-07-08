@@ -7,7 +7,7 @@ jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x, 1.23.x, 1.24.x]
+        go-version: [1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x, 1.23.x, 1.24.x]
         runner_arch: [ubuntu-latest]
 
     runs-on: ${{ matrix.runner_arch }}
@@ -42,11 +42,14 @@ jobs:
       - name: Loader Test
         run: |
           cd ./loader
-          go test -v -race ./...
+          go test -race ./...
   
       - name: Data Race
         run: |
           ./scripts/test_race.sh
+
+      - name: Issue Test
+        run: GOMAXPROCS=4 go test -race ./issue_test
 
       - name: PCSP Test
         env:
@@ -54,11 +57,9 @@ jobs:
         run: python3 ./scripts/test_pcsp.py
 
       - name: Generic Test JIT
-        if: ${{ !startsWith(matrix.go-version, '1.17.') }}
-        run: GOMAXPROCS=4 go test -v -race ./generic_test
+        run: GOMAXPROCS=4 go test -race ./generic_test
 
       - name: Generic Test VM
-        if: ${{ !startsWith(matrix.go-version, '1.17.') }}
         run: GOMAXPROCS=4 SONIC_USE_OPTDEC=1 SONIC_USE_FASTMAP=1 SONIC_ENCODER_USE_VM=1 go test -v -race ./generic_test
 
       - name: Codecov

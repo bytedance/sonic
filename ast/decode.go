@@ -27,8 +27,6 @@ import (
 	"github.com/bytedance/sonic/internal/utils"
 )
 
-// Hack: this is used for both checking space and cause friendly compile errors in 32-bit arch.
-const _Sonic_Not_Support_32Bit_Arch__Checking_32Bit_Arch_Here = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
 
 var bytesNull   = []byte("null")
 
@@ -40,17 +38,13 @@ const (
     bytesArray  = "[]"
 )
 
-func isSpace(c byte) bool {
-    return (int(1<<c) & _Sonic_Not_Support_32Bit_Arch__Checking_32Bit_Arch_Here) != 0
-}
-
 //go:nocheckptr
 func skipBlank(src string, pos int) int {
     se := uintptr(rt.IndexChar(src, len(src)))
     sp := uintptr(rt.IndexChar(src, pos))
 
     for sp < se {
-        if !isSpace(*(*byte)(unsafe.Pointer(sp))) {
+        if !utils.IsSpace(*(*byte)(unsafe.Pointer(sp))) {
             break
         }
         sp += 1
