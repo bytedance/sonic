@@ -26,15 +26,15 @@ jobs:
       - name: main
         run: |
           set GOMAXPROCS=4
-          go test -v -race ./
+          go test -race ./
 
       - name: ast
         run: |
           set GOMAXPROCS=4
-          go test -v -race ./ast
+          go test -race ./ast
 
       - name: external
         run: |
           cd ./external_jsonlib_test
           set GOMAXPROCS=4
-          go test -v -race ./...
+          go test -race ./...

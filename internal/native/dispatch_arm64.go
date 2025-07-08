@@ -12,15 +12,15 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package native
 
 import (
-	`unsafe`
+	"unsafe"
 
-	neon `github.com/bytedance/sonic/internal/native/neon`
-	`github.com/bytedance/sonic/internal/native/types`
+	neon "github.com/bytedance/sonic/internal/native/neon"
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
 const (

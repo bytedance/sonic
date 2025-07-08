@@ -77,3 +77,11 @@ func SkipNumber(src string, pos int) (ret int) {
     runtime.KeepAlive(src)
     return int(uintptr(sp) - uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr))
 }
+
+// Hack: this is used for both checking space and cause friendly compile errors in 32-bit arch.
+const _Sonic_Not_Support_32Bit_Arch__Checking_32Bit_Arch_Here = (1 << ' ') | (1 << '\t') | (1 << '\r') | (1 << '\n')
+
+
+func IsSpace(c byte) bool {
+    return (int(1<<c) & _Sonic_Not_Support_32Bit_Arch__Checking_32Bit_Arch_Here) != 0
+}

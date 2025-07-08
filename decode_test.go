@@ -40,6 +40,7 @@ import (
 
 	"github.com/bytedance/sonic/decoder"
 	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/utils"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1388,12 +1389,9 @@ func TestUnmarshalPtrPtr(t *testing.T) {
     }
 }
 
-func isSpace(c byte) bool {
-    return c <= ' ' && (c == ' ' || c == '\t' || c == '\r' || c == '\n')
-}
 
 func noSpace(c rune) rune {
-    if isSpace(byte(c)) { // only used for ascii
+    if utils.IsSpace(byte(c)) { // only used for ascii
         return -1
     }
     return c

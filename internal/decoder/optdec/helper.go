@@ -28,11 +28,6 @@ func SkipNumberFast(json string, start int) (int, bool) {
 	return pos, true
 }
 
-
-func isSpace(c byte) bool {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r'
-}
-
 // pos is the start index of the raw
 func ValidNumberFast(raw string) bool {
 	ret := utils.SkipNumber(raw, 0)
@@ -54,10 +49,6 @@ func SkipOneFast(json string, pos int) (string, error) {
 		return "", error_syntax(pos, json, types.ParsingError(-start).Error())
 	}
 
-	// because the `SkipOneFast` ignored the trailing white spaces, should trim them
-	for isSpace(json[pos - 1]) && pos > start {
-		pos -= 1;
-	}
 	return json[start:pos], nil
 }
 

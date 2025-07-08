@@ -28,13 +28,13 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: main
-        run: go test -race -v -gcflags="all=-l" ./
+        run: go test -race -gcflags="all=-l" ./
 
       - name: decoder
-        run: go test -race -v -gcflags="all=-l" ./decoder
+        run: go test -race -gcflags="all=-l" ./decoder
 
       - name: encoder
-        run: go test -race -v -gcflags="all=-l" ./encoder
+        run: go test -race -gcflags="all=-l" ./encoder
 
       - name: ast
-        run: go test -race -v -gcflags="all=-l" ./ast
+        run: go test -race -gcflags="all=-l" ./ast

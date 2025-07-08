@@ -23,6 +23,7 @@ import (
 
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/internal/utils"
 )
 
 const (
@@ -113,13 +114,13 @@ func (self *Parser) array() types.ParsingError {
 
 func (self *Parser) lspace(sp int) int {
     ns := len(self.s)
-    for ; sp<ns && isSpace(self.s[sp]); sp+=1 {}
+    for ; sp<ns && utils.IsSpace(self.s[sp]); sp+=1 {}
 
     return sp
 }
 
 func (self *Parser) backward() {
-    for ; self.p >= 0 && isSpace(self.s[self.p]); self.p-=1 {}
+    for ; self.p >= 0 && utils.IsSpace(self.s[self.p]); self.p-=1 {}
 }
 
 func (self *Parser) decodeArray(ret *linkedNodes) (Node, types.ParsingError) {
@@ -692,7 +693,7 @@ func (self *Parser) ExportError(err types.ParsingError) error {
 }
 
 func backward(src string, i int) int {
-    for ; i>=0 && isSpace(src[i]); i-- {}
+    for ; i>=0 && utils.IsSpace(src[i]); i-- {}
     return i
 }
 
