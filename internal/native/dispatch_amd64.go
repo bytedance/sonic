@@ -118,7 +118,7 @@ func SkipOne(s *string, p *int, m *types.StateMachine, flags uint64) int {
 }
 
 //go:nosplit
-func SkipOneFastTrailing(s *string, p *int) int {
+func SkipOneFast(s *string, p *int) int {
     return __SkipOneFast(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)))
 }
 

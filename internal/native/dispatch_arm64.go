@@ -87,8 +87,8 @@ func SkipOne(s *string, p *int, m *types.StateMachine, flags uint64) int
 
 //go:nosplit
 //go:noescape
-//go:linkname SkipOneFastTrailing github.com/bytedance/sonic/internal/native/neon.__skip_one_fast
-func SkipOneFastTrailing(s *string, p *int) int
+//go:linkname SkipOneFast github.com/bytedance/sonic/internal/native/neon.__skip_one_fast
+func SkipOneFast(s *string, p *int) int
 
 //go:nosplit
 //go:noescape

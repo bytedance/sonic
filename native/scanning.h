@@ -1292,6 +1292,16 @@ static always_inline int get_structural_maskx16(const char *s) {
     return _mm_movemask_epi8(sv);
 }
 
+static always_inline bool is_space(char c) {
+    return c == ' ' || c == '\n' || c == '\r' || c == '\t';
+}
+
+static always_inline void backward_space_chars(const GoString *src, long *p) {
+    while (*p > 0 && is_space(src->buf[*p - 1])) {
+        (*p)--;
+    }
+}
+
 // skip the number at the next '}', ']' or ',' or the ending of json.
 static always_inline long skip_number_fast(const GoString *src, long *p) {
     size_t nb = src->len - *p;
@@ -1303,6 +1313,7 @@ static always_inline long skip_number_fast(const GoString *src, long *p) {
     while (likely(nb >= 32)) {
         if ((m = get_structural_maskx32(s))) {
             *p = s - src->buf + __builtin_ctzll(m);
+            backward_space_chars(src, p);
             return vi;
         }
         s += 32, nb -= 32;
@@ -1312,13 +1323,14 @@ static always_inline long skip_number_fast(const GoString *src, long *p) {
     while (likely(nb >= 16)) {
         if ((m = get_structural_maskx16(s))) {
             *p = s - src->buf + __builtin_ctzll(m);
+            backward_space_chars(src, p);
             return vi;
         }
         s += 16, nb -= 16;
     }
 
     while (likely(nb > 0)) {
-        if (*s == '}' || *s == ']' || *s == ',') {
+        if (*s == '}' || *s == ']' || *s == ',' || is_space(*s)) {
             *p = s - src->buf;
             return vi;
         }

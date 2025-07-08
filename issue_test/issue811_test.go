@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/bytedance/sonic"
-	"github.com/bytedance/sonic/internal/native"
 	"github.com/stretchr/testify/require"
 )
 
@@ -107,20 +106,3 @@ func TestGetNumberTrailing(t *testing.T) {
 	require.Equal(t, string(sortedData), `{"a":"v0","b":"v1","c":17512}`)
 }
 
-var s = ` { "a" : 1 , "b" : 222222 , "c" : 5241283468689 } `
-
-func BenchmarkSkipOneFast(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		p := 0
-		_ = native.SkipOneFast(&s, &p)
-		_ = p
-	}
-}
-
-func BenchmarkSkipOneFastTrailing(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		p := 0
-		_ = native.SkipOneFastTrailing(&s, &p)
-		_ = p
-	}
-}

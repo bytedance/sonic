@@ -374,10 +374,6 @@ typedef struct {
     uint64_t    bits;
 } nonspace_block;
 
-static always_inline bool is_space(char c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
-
 static always_inline void nonspace_block_init(nonspace_block* slf) {
     slf->bits = 0;
     slf->cur = NULL;
