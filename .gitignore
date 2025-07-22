@@ -47,7 +47,7 @@ junit.xml
 ast/test.out
 ast/bench.sh
 
-!testdata/*.json.gz
+!testdata/**/*.json.gz
 fuzz/testdata
 *__debug_bin*
 *pprof

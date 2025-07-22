@@ -16,7 +16,7 @@ const (
 )
 
 const (
-    _size__skip_one_fast = 3052
+    _size__skip_one_fast = 3072
 )
 
 var (
@@ -36,7 +36,7 @@ var (
         {0xa95, 16},
         {0xa96, 8},
         {0xa9a, 0},
-        {0xbec, 176},
+        {0xc00, 176},
     }
 )
 
