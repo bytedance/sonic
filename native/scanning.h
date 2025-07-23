@@ -29,7 +29,6 @@ static always_inline void vnumber_1(const GoString *src, long *p, JsonState *ret
 static always_inline long skip_string_1(const GoString *src, long *p, uint64_t flags);
 static always_inline long skip_positive_1(const GoString *src, long *p);
 static always_inline long skip_negative_1(const GoString *src, long *p);
-static always_inline ssize_t advance_escape_validate(const GoString *src, long p, int64_t *ep);
 
 static const uint64_t ODD_MASK  = 0xaaaaaaaaaaaaaaaa;
 static const uint64_t EVEN_MASK = 0x5555555555555555;
@@ -664,7 +663,8 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
             if (nb == 1) {
                 return -ERR_EOF;
             }
-
+            ep_setx(sp - ss)
+            
             // Validate the complete escape sequence
             long escape_pos = sp + 1 - src->buf; // position after backslash
             ssize_t new_pos = advance_escape_validate(src, escape_pos, ep);
@@ -1230,32 +1230,32 @@ static always_inline long skip_string_1(const GoString *src, long *p, uint64_t f
 }
 
 static always_inline long skip_negative_1(const GoString *src, long *p) {
-    long i = *p - 1;  // position of '-'
-    const char *ss = src->buf;
-    const char *sp = src->buf + *p;  // position after '-'
-    size_t nb = src->len - *p;  // remaining bytes after '-'
-    long r;
+    long i = *p; 
 
     /* check if there are digits after '-' */
+    long nb = src->len - i;
     if (unlikely(nb <= 0)) {
         *p = src->len;
-        return -ERR_EOF;
+        return -ERR_INVAL;
     }
 
-    if (unlikely(*sp > '9' || *sp < '0')) {
-        *p = sp - ss;
+    const char *sp = src->buf + i;  // position after '-'
+    if (unlikely(*sp < '0'|| *sp > '9')) {
         return -ERR_INVAL;
     }
 
     /* call do_skip_number on digits only (without '-') */
-    r = do_skip_number(sp, nb);
-    if (unlikely(r < 0)) {
-        *p = sp - (r + 1) - ss;
+    long r = do_skip_number(sp, nb);
+
+    /* check for errors */
+    if (r < 0) {
+        *p -= r + 1;
         return -ERR_INVAL;
     }
 
-    *p = sp + r - ss;
-    return i;
+    /* update value pointer */
+    *p += r;
+    return i - 1;
 }
 
 static always_inline long skip_positive_1(const GoString *src, long *p) {
