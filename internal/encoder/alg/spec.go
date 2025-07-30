@@ -61,7 +61,6 @@ func Valid(data []byte) (ok bool, start int) {
 
 var typeByte = rt.UnpackEface(byte(0)).Type
 
-//go:nocheckptr
 func Quote(buf []byte, val string, double bool) []byte {
 	if len(val) == 0 {
 		if double {
@@ -77,6 +76,8 @@ func Quote(buf []byte, val string, double bool) []byte {
 	}
 	sp := rt.IndexChar(val, 0)
 	nb := len(val)
+
+	buf = rt.GuardSlice2(buf, nb+1)
 	b := (*rt.GoSlice)(unsafe.Pointer(&buf))
 
 	// input buffer
@@ -104,7 +105,9 @@ func Quote(buf []byte, val string, double bool) []byte {
 		ret = ^ret
 		// update input buffer
 		nb -= ret
-		sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
+		if nb > 0 {
+			sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
+		}
 	}
 
 	runtime.KeepAlive(buf)

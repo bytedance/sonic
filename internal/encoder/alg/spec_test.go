@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"math/rand"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -30,8 +31,8 @@ import (
 func BenchmarkU64toa(b *testing.B) {
 	b.ReportAllocs()
 	buf := make([]byte, 0, 64)
-	for x :=0 ;x <= 62; x+=4  {
-		d := 1<<x
+	for x := 0; x <= 62; x += 4 {
+		d := 1 << x
 		b.Run("sonic-"+strconv.Itoa(d), func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -50,8 +51,8 @@ func BenchmarkU64toa(b *testing.B) {
 func BenchmarkI64toa(b *testing.B) {
 	b.ReportAllocs()
 	buf := make([]byte, 0, 64)
-	for x :=0 ;x <= 62; x+=4  {
-		d := 1<<x
+	for x := 0; x <= 62; x += 4 {
+		d := 1 << x
 		b.Run("sonic-"+strconv.Itoa(d), func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -70,9 +71,9 @@ func BenchmarkI64toa(b *testing.B) {
 func BenchmarkF64toa(b *testing.B) {
 	b.ReportAllocs()
 	buf := make([]byte, 0, 64)
-	for x :=0 ;x <= 62; x+=4  {
-		d := 1<<x
-		f := float64(d)+rand.Float64()
+	for x := 0; x <= 62; x += 4 {
+		d := 1 << x
+		f := float64(d) + rand.Float64()
 		b.Run("sonic-"+strconv.FormatFloat(f, 'g', -1, 64), func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -91,9 +92,9 @@ func BenchmarkF64toa(b *testing.B) {
 func BenchmarkF32toa(b *testing.B) {
 	b.ReportAllocs()
 	buf := make([]byte, 0, 64)
-	for x :=0 ;x <= 30; x+=2  {
-		d := 1<<x
-		f := float32(d)+rand.Float32()
+	for x := 0; x <= 30; x += 2 {
+		d := 1 << x
+		f := float32(d) + rand.Float32()
 		b.Run("sonic-"+strconv.FormatFloat(float64(f), 'g', -1, 32), func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -114,24 +115,24 @@ func BenchmarkQuote(b *testing.B) {
 	var runner = func(seed string) func(b *testing.B) {
 		return func(b *testing.B) {
 			buf := make([]byte, 0, len(seed)*1024*1024)
-			for l := 1; l< cap(buf)*10; l*=10 {
+			for l := 1; l < cap(buf)*10; l *= 10 {
 				src := strings.Repeat(seed, l)
 				b.Run("sonic-"+strconv.Itoa(len(src)), func(b *testing.B) {
 					b.ResetTimer()
-					for i:=0 ; i < b.N; i++ {
+					for i := 0; i < b.N; i++ {
 						_ = Quote(buf, src, false)
 					}
 				})
 				b.Run("std-"+strconv.Itoa(len(src)), func(b *testing.B) {
 					b.ResetTimer()
-					for i:=0 ; i < b.N; i++ {
+					for i := 0; i < b.N; i++ {
 						_ = strconv.AppendQuote(buf, src)
 					}
 				})
 			}
 		}
 	}
-	
+
 	b.Run("no quote", runner("abcdefghij"))
 	b.Run("1/10 quote", runner("abcdefghi\n"))
 	b.Run("1/5 quote", runner("abcd\nfghi\n"))
@@ -143,13 +144,13 @@ func BenchmarkValid(b *testing.B) {
 		return func(b *testing.B) {
 			b.Run("sonic", func(b *testing.B) {
 				b.ResetTimer()
-				for i:=0 ; i < b.N; i++ {
+				for i := 0; i < b.N; i++ {
 					_, _ = Valid(seed)
 				}
 			})
 			b.Run("std", func(b *testing.B) {
 				b.ResetTimer()
-				for i:=0 ; i < b.N; i++ {
+				for i := 0; i < b.N; i++ {
 					_ = json.Valid(seed)
 				}
 			})
@@ -166,22 +167,52 @@ func BenchmarkEscapeHTML(b *testing.B) {
 	var runner = func(seed []byte) func(b *testing.B) {
 		return func(b *testing.B) {
 			buf := make([]byte, 0, len(seed)*10)
-				b.Run("sonic", func(b *testing.B) {
-					b.ResetTimer()
-					for i:=0 ; i < b.N; i++ {
-						_ = HtmlEscape(buf, seed)
-					}
-				})
-				b.Run("std", func(b *testing.B) {
-					b.ResetTimer()
-					for i:=0 ; i < b.N; i++ {
-						bf := bytes.NewBuffer(buf)
-						json.HTMLEscape(bf, seed)
-					}
-				})
+			b.Run("sonic", func(b *testing.B) {
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					_ = HtmlEscape(buf, seed)
+				}
+			})
+			b.Run("std", func(b *testing.B) {
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					bf := bytes.NewBuffer(buf)
+					json.HTMLEscape(bf, seed)
+				}
+			})
 		}
 	}
-	
+
 	b.Run("small", runner([]byte(`{"a":"<>"}`)))
 	b.Run("large", runner([]byte(testdata.TwitterJson)))
+}
+
+func TestQuote(t *testing.T) {
+	type args struct {
+		buf    []byte
+		val    string
+		double bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want []byte
+	}{
+		{
+			name: "empty",
+			args: args{
+				buf:    make([]byte, 7, 8),
+				val:    "1",
+				double: false,
+			},
+			want: []byte{0, 0, 0, 0, 0, 0, 0, '"', '1', '"'},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Quote(tt.args.buf, tt.args.val, tt.args.double); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Quote() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

@@ -20,58 +20,22 @@
 package ast
 
 import (
-    `runtime`
-    `unsafe`
+	"runtime"
+	"unsafe"
 
-    `github.com/bytedance/sonic/encoder`
-    `github.com/bytedance/sonic/internal/native`
-    `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
-    uq `github.com/bytedance/sonic/unquote`
-    `github.com/bytedance/sonic/utf8`
+	"github.com/bytedance/sonic/encoder"
+	"github.com/bytedance/sonic/internal/encoder/alg"
+	"github.com/bytedance/sonic/internal/native"
+	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
+	uq "github.com/bytedance/sonic/unquote"
+	"github.com/bytedance/sonic/utf8"
 )
 
 var typeByte = rt.UnpackEface(byte(0)).Type
 
-//go:nocheckptr
 func quote(buf *[]byte, val string) {
-    *buf = append(*buf, '"')
-    if len(val) == 0 {
-        *buf = append(*buf, '"')
-        return
-    }
-
-    sp := rt.IndexChar(val, 0)
-    nb := len(val)
-    b := (*rt.GoSlice)(unsafe.Pointer(buf))
-
-    // input buffer
-    for nb > 0 {
-        // output buffer
-        dp := unsafe.Pointer(uintptr(b.Ptr) + uintptr(b.Len))
-        dn := b.Cap - b.Len
-        // call native.Quote, dn is byte count it outputs
-        ret := native.Quote(sp, nb, dp, &dn, 0)
-        // update *buf length
-        b.Len += dn
-
-        // no need more output
-        if ret >= 0 {
-            break
-        }
-
-        // double buf size
-        *b = rt.GrowSlice(typeByte, *b, b.Cap*2)
-        // ret is the complement of consumed input
-        ret = ^ret
-        // update input buffer
-        nb -= ret
-        sp = unsafe.Pointer(uintptr(sp) + uintptr(ret))
-    }
-
-    runtime.KeepAlive(buf)
-    runtime.KeepAlive(sp)
-    *buf = append(*buf, '"')
+    *buf = alg.Quote(*buf, val, false)
 }
 
 func unquote(src string) (string, types.ParsingError) {
