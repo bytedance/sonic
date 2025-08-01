@@ -12,11 +12,11 @@ const (
 )
 
 const (
-    _stack__get_by_path = 240
+    _stack__get_by_path = 208
 )
 
 const (
-    _size__get_by_path = 22296
+    _size__get_by_path = 22008
 )
 
 var (
@@ -28,15 +28,15 @@ var (
         {0xc, 32},
         {0xd, 40},
         {0x14, 48},
-        {0x4ca0, 240},
-        {0x4ca1, 48},
-        {0x4ca3, 40},
-        {0x4ca5, 32},
-        {0x4ca7, 24},
-        {0x4ca9, 16},
-        {0x4caa, 8},
-        {0x4cae, 0},
-        {0x5718, 240},
+        {0x4bcc, 208},
+        {0x4bcd, 48},
+        {0x4bcf, 40},
+        {0x4bd1, 32},
+        {0x4bd3, 24},
+        {0x4bd5, 16},
+        {0x4bd6, 8},
+        {0x4bda, 0},
+        {0x55f8, 208},
     }
 )
 

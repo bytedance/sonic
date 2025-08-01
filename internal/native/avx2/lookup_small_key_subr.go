@@ -12,11 +12,11 @@ const (
 )
 
 const (
-    _stack__lookup_small_key = 56
+    _stack__lookup_small_key = 52
 )
 
 const (
-    _size__lookup_small_key = 810
+    _size__lookup_small_key = 757
 )
 
 var (
@@ -27,16 +27,15 @@ var (
         {0xa, 24},
         {0xc, 32},
         {0xd, 40},
-        {0xe, 48},
-        {0x2fc, 56},
-        {0x2fd, 48},
-        {0x2ff, 40},
-        {0x301, 32},
-        {0x303, 24},
-        {0x305, 16},
-        {0x306, 8},
-        {0x30a, 0},
-        {0x32a, 56},
+        {0x11, 48},
+        {0x2e7, 52},
+        {0x2e8, 48},
+        {0x2ea, 40},
+        {0x2ec, 32},
+        {0x2ee, 24},
+        {0x2f0, 16},
+        {0x2f1, 8},
+        {0x2f5, 0},
     }
 )
 
