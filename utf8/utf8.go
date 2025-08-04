@@ -1,3 +1,6 @@
+//go:build (amd64 && go1.17 && !go1.26) || (arm64 && go1.20 && !go1.26)
+// +build amd64,go1.17,!go1.26 arm64,go1.20,!go1.26
+
 /*
  * Copyright 2022 ByteDance Inc.
  *

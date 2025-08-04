@@ -21,6 +21,7 @@ import (
     `errors`
 
     `github.com/bytedance/sonic/internal/native/types`
+    `github.com/bytedance/sonic/unquote`
 )
 
 // Visitor handles the callbacks during preorder traversal of a JSON AST.
@@ -270,7 +271,7 @@ func (self *traverser) decodeObject() error {
 
         /* check for escape sequence */
         if njs.Ep != -1 {
-            if key, err = unquote(key); err != 0 {
+            if key, err = unquote.String(key); err != 0 {
                 return err
             }
         }
@@ -320,7 +321,7 @@ func (self *traverser) decodeString(iv int64, ep int) error {
     }
 
     /* unquote the string */
-    out, err := unquote(s)
+    out, err := unquote.String(s)
     if err != 0 {
         return err
     }
