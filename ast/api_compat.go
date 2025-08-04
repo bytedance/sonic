@@ -23,7 +23,6 @@ import (
     `unicode/utf8`
 
     `github.com/bytedance/sonic/internal/native/types`
-    `github.com/bytedance/sonic/internal/rt`
     `github.com/bytedance/sonic/internal/compat`
 )
 
@@ -34,17 +33,6 @@ func init() {
 func quote(buf *[]byte, val string) {
     quoteString(buf, val)
 }
-
-// unquote unescapes an internal JSON string (it doesn't count quotas at the beginning and end)
-func unquote(src string) (string, types.ParsingError) {
-    sp := rt.IndexChar(src, -1)
-    out, ok := unquoteBytes(rt.BytesFrom(sp, len(src)+2, len(src)+2))
-    if !ok {
-        return "", types.ERR_INVALID_ESCAPE
-    }
-    return rt.Mem2Str(out), 0
-}
-
 
 func (self *Parser) decodeValue() (val types.JsonState) {
     e, v := decodeValue(self.s, self.p, self.dbuf == nil)

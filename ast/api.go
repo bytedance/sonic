@@ -23,23 +23,18 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/bytedance/sonic/encoder"
-	"github.com/bytedance/sonic/internal/encoder/alg"
-	"github.com/bytedance/sonic/internal/native"
-	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/bytedance/sonic/internal/rt"
-	uq "github.com/bytedance/sonic/unquote"
-	"github.com/bytedance/sonic/utf8"
+    "github.com/bytedance/sonic/encoder"
+    "github.com/bytedance/sonic/internal/encoder/alg"
+    "github.com/bytedance/sonic/internal/native"
+    "github.com/bytedance/sonic/internal/native/types"
+    "github.com/bytedance/sonic/internal/rt"
+    "github.com/bytedance/sonic/utf8"
 )
 
 var typeByte = rt.UnpackEface(byte(0)).Type
 
 func quote(buf *[]byte, val string) {
     *buf = alg.Quote(*buf, val, false)
-}
-
-func unquote(src string) (string, types.ParsingError) {
-    return uq.String(src)
 }
 
 func (self *Parser) decodeValue() (val types.JsonState) {

@@ -1,3 +1,5 @@
+// +build !amd64,!arm64 go1.26 !go1.17 arm64,!go1.20
+
 /*
  * Copyright 2021 ByteDance Inc.
  *
@@ -14,15 +16,22 @@
  * limitations under the License.
  */
 
-package ast
+package utf8
 
 import (
-	"unsafe"
+	"unicode/utf8"
 
 	"github.com/bytedance/sonic/internal/rt"
 )
 
-//go:nosplit
-func mem2ptr(s []byte) unsafe.Pointer {
-    return (*rt.GoSlice)(unsafe.Pointer(&s)).Ptr
+// ValidateFallback validates UTF-8 encoded bytes using standard library.
+// This is used when native UTF-8 validation is not available.
+func Validate(src []byte) bool {
+	return utf8.Valid(src)
+}
+
+// ValidateStringFallback validates UTF-8 encoded string using standard library.
+// This is used when native UTF-8 validation is not available.
+func ValidateString(src string) bool {
+	return utf8.Valid(rt.Str2Mem(src))
 }

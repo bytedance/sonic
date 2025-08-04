@@ -25,6 +25,7 @@ import (
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/internal/utils"
+	"github.com/bytedance/sonic/unquote"
 )
 
 
@@ -101,13 +102,13 @@ func decodeString(src string, pos int) (ret int, v string) {
         return ret, v
     }
 
-    vv, ok := unquoteBytes(rt.Str2Mem(src[pos:ret]))
-    if !ok {
+    result, err := unquote.String(src[pos:ret])
+    if err != 0 {
         return -int(types.ERR_INVALID_CHAR), ""
     }
 
     runtime.KeepAlive(src)
-    return ret, rt.Mem2Str(vv)
+    return ret, result
 }
 
 func decodeBinary(src string, pos int) (ret int, v []byte) {
@@ -543,7 +544,7 @@ func _DecodeString(src string, pos int, needEsc bool, validStr bool) (v string, 
             return str, p.p, true
         }
         /* unquote the string */
-        out, err := unquote(str)
+        out, err := unquote.String(str)
         /* check for errors */
         if err != 0 {
             return "", -int(err), true
