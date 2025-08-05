@@ -1240,7 +1240,7 @@ static always_inline long skip_negative_1(const GoString *src, long *p) {
     }
 
     const char *sp = src->buf + i;  // position after '-'
-    if (unlikely(*sp < '0'|| *sp > '9')) {
+    if (unlikely(*sp < '0' || *sp > '9')) {
         return -ERR_INVAL;
     }
 
