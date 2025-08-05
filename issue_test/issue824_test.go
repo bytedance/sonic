@@ -1,13 +1,3 @@
-package issue
-
-import (
-	"encoding/json"
-	"testing"
-
-	"github.com/bytedance/sonic"
-	"github.com/stretchr/testify/require"
-)
-
 /**
  * Copyright 2025 ByteDance Inc.
  *
@@ -24,9 +14,20 @@ import (
  * limitations under the License.
  */
 
+package issue
+
+import (
+	"encoding/json"
+	"testing"
+
+	"github.com/bytedance/sonic"
+	"github.com/stretchr/testify/require"
+)
+
+
 func TestFloatMap(t *testing.T) {
     js, err := sonic.ConfigStd.Marshal(map[float64]string{1: ""})
     js0, err0 := json.Marshal(map[float64]string{1: ""})
-	require.Equal(t, err0 == nil, err == nil)
-	require.Equal(t, string(js0), string(js))
+    require.Equal(t, err0 == nil, err == nil)
+    require.Equal(t, string(js0), string(js))
 }
