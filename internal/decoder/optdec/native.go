@@ -190,6 +190,7 @@ func (p *Parser) parse() ErrorCode {
 
 	// fast path with limited node buffer
 	err := ErrorCode(native.ParseWithPadding(unsafe.Pointer(p)))
+	println("err is ", err)
 	if err != SONIC_VISIT_FAILED {
 		p.options = old
 		return err

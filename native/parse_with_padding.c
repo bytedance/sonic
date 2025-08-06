@@ -58,8 +58,6 @@ static const uint32_t MAX_DEPTTH = 4096;
 
 // JSON Reader ----------------------------------------------------------------
 
-#define SONIC_NONE '\0'
-
 typedef struct {
     char        (*next)(void* ctx);
     uint8_t*    (*peek_n)(void* ctx, size_t n);
@@ -425,10 +423,8 @@ static always_inline char skip_space_impl(nonspace_block* slf, reader* rdr) {
     // some cases in pretty JSON(such as ` "name": "balabala" `)
     repeat_2(
         char c = rdr->next(rdr->ctx);
-        if (likely(c != SONIC_NONE)) {
-            if (likely(!is_space(c))) {
-                return c;
-            }
+        if (likely(!is_space(c))) {
+            return c;
         }
     );
 
@@ -464,15 +460,12 @@ static always_inline char skip_space_impl(nonspace_block* slf, reader* rdr) {
 
     // remain bytes, do with scalar code
     char c = rdr->next(rdr->ctx);
-    while (c != SONIC_NONE) {
-        if (!is_space(c)) {
-            return c;
-        }
+    while (is_space(c)) {
         c = rdr->next(rdr->ctx);
     }
 
     // not found non-space char until eof
-    return SONIC_NONE;
+    return c;
 }
 
 static always_inline char skip_space(nonspace_block* slf, reader* rdr) {

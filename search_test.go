@@ -221,6 +221,7 @@ func TestRandomData(t *testing.T) {
             return
         }
         lstr = string(b[:n])
+        spew.Dump(lstr)
         _, _ = ast.NewParser(lstr).Parse()
     }
 }

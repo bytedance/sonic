@@ -37,13 +37,13 @@ func TestIssue213(t *testing.T) {
     wg := sync.WaitGroup{}
     for i:=0;i<1000;i++{
         wg.Add(1)
-        go func(){
+        go func(t *testing.T){
             defer wg.Done()
             var o *ObjStruct
             if err := sonic.Unmarshal(bytes, &o); err != nil {
                 t.Fatal(err)
             }
-        }()
+        }(t)
     }
     wg.Wait()
 }
