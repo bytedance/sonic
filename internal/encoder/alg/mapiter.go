@@ -111,7 +111,7 @@ func (self *MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kind
         case reflect.Bool      : if *(*bool)(k) { p.k = "true" } else { p.k = "false" }; return nil
         case reflect.Interface : return self.appendInterface(p, t, k)
         case reflect.Struct, reflect.Ptr : return self.appendConcrete(p, t, k)
-        default                : panic("unexpected map key type")
+        default                : return vars.Error_type(t.Pack())
     }
 }
 
