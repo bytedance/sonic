@@ -84,15 +84,24 @@ func (self *MapIterator) data() (p []_MapPair) {
 func (self *MapIterator) append(t *rt.GoType, k unsafe.Pointer, v unsafe.Pointer) (err error) {
     p := self.add()
     p.v = v
+    tk := t.Kind()
 
-    /* check for strings */
-    if tk := t.Kind(); tk != reflect.String {
-        return self.appendGeneric(p, t, tk, k)
+    // followed as `encoding/json/emcode.go:resolveKeyName
+    if tk == reflect.String {
+        p.k = *(*string)(k)
+        return nil
     }
 
-    /* fast path for strings */
-    p.k = *(*string)(k)
-    return nil
+    // check if the key implements the encoding.TextMarshaler interface
+    if t.Pack().Implements(vars.EncodingTextMarshalerType) {
+        if tk != reflect.Interface {
+            return self.appendConcrete(p, t, k)
+        } else {
+            return self.appendInterface(p, t, k)
+        }
+    }
+
+    return self.appendGeneric(p, t, tk, k)
 }
 
 func (self *MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kind, k unsafe.Pointer) error {
@@ -109,34 +118,43 @@ func (self *MapIterator) appendGeneric(p *_MapPair, t *rt.GoType, v reflect.Kind
         case reflect.Uint64    : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uint64)(k)), 10))  ; return nil
         case reflect.Uintptr   : p.k = rt.Mem2Str(strconv.AppendUint(p.m[:0], uint64(*(*uintptr)(k)), 10)) ; return nil
         case reflect.Bool      : if *(*bool)(k) { p.k = "true" } else { p.k = "false" }; return nil
-        case reflect.Interface : return self.appendInterface(p, t, k)
-        case reflect.Struct, reflect.Ptr : return self.appendConcrete(p, t, k)
         default                : return vars.Error_type(t.Pack())
     }
 }
 
-func (self *MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
+func (self *MapIterator) appendConcrete(p *_MapPair, t *rt.GoType, k unsafe.Pointer) error {
     // compiler has already checked that the type implements the encoding.MarshalText interface
     if !t.Indirect() {
         k = *(*unsafe.Pointer)(k)
     }
+
+    // check the TextMarshaler interface
     eface := rt.GoEface{Value: k, Type: t}.Pack()
-    out, err := eface.(encoding.TextMarshaler).MarshalText()
+    e, ok := eface.(encoding.TextMarshaler)
+    if !ok {
+        return vars.Error_type(t.Pack())
+    }
+
+    // check for nil pointer
+    if t.Kind() == reflect.Ptr && k == nil {
+        p.k = ""
+        return nil
+    }
+    
+    out, err := e.MarshalText()
     if err != nil {
         return err
     }
     p.k = rt.Mem2Str(out)
-    return
+    return nil
 }
 
 func (self *MapIterator) appendInterface(p *_MapPair, t *rt.GoType, k unsafe.Pointer) (err error) {
     if len(rt.IfaceType(t).Methods) == 0 {
         panic("unexpected map key type")
-    } else if p.k, err = asText(k); err == nil {
-        return nil
-    } else {
-        return
     }
+    p.k, err = asText(k)
+    return
 }
 
 func IteratorStop(p *MapIterator) {
