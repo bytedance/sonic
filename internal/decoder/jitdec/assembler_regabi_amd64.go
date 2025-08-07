@@ -887,6 +887,17 @@ func (self *_Assembler) range_unsigned_CX(i *rt.GoItab, t *rt.GoType, v uint64) 
     self.Sjmp("JA"   , _LB_range_error)         // JA    _range_error
 }
 
+func (self *_Assembler) range_uint32_CX(i *rt.GoItab, t *rt.GoType) {
+    self.Emit("MOVQ" , _VAR_st_Iv, _CX)         // MOVQ  st.Iv, CX
+    self.Emit("MOVQ" , jit.Gitab(i), _ET)       // MOVQ  ${i}, ET
+    self.Emit("MOVQ" , jit.Gtype(t), _EP)       // MOVQ  ${t}, EP
+    self.Emit("TESTQ", _CX, _CX)                // TESTQ CX, CX
+    self.Sjmp("JS"   , _LB_range_error)         // JS    _range_error
+    self.Emit("MOVL" , _CX, _DX)                // MOVL  CX, DX
+    self.Emit("CMPQ" , _CX, _DX)                // CMPQ  CX, DX
+    self.Sjmp("JNE"  , _LB_range_error)         // JNZ   _range_error
+}
+
 /** String Manipulating Routines **/
 
 var (
@@ -1453,7 +1464,7 @@ func (self *_Assembler) _asm_OP_u16(_ *_Instr) {
 func (self *_Assembler) _asm_OP_u32(_ *_Instr) {
     var pin = "_u32_end_{n}"
     self.parse_unsigned(uint32Type, pin, -1)                                       // PARSE uint32
-    self.range_unsigned_CX(_I_uint32, _T_uint32, math.MaxUint32)   // RANGE uint32
+    self.range_uint32_CX(_I_uint32, _T_uint32)   // RANGE uint32
     self.Emit("MOVL", _CX, jit.Ptr(_VP, 0))                     // MOVL  CX, (VP)
     self.Link(pin)
 }
