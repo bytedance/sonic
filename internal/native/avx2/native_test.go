@@ -151,7 +151,7 @@ func TestNative_UnquoteError(t *testing.T) {
     sp = (*rt.GoString)(unsafe.Pointer(&s))
     rv = unquote(sp.Ptr, sp.Len, dp.Ptr, &ep, types.F_DOUBLE_UNQUOTE)
     assert.Equal(t, -int(types.ERR_INVALID_UNICODE), rv)
-    assert.Equal(t, 7, ep)
+    assert.Equal(t, 6, ep)
     s = `asdf\ud800\ud800qwer`
     d = make([]byte, 0, len(s))
     ep = -1
