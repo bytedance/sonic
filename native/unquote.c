@@ -35,29 +35,26 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
                 return -ERR_EOF;
             }
 
-            /* every quote must be a double quote */
-            if (c1 != '\\') {
-                *ep = sp - s - 1;
-                return -ERR_INVAL;
-            }
-
-            /* special case of '\\\\' and '\\\"' */
-            if (*sp == '\\') {
-                if (nr < 2) {
-                    *ep = x;
-                    return -ERR_EOF;
-                } else if (sp[1] != '"' && sp[1] != '\\') {
-                    *ep = sp - s + 1;
-                    return -ERR_INVAL;
-                } else {
-                    sp++;
-                    nb--;
+            /* deal with double escaped case */
+            if (c1 == '\\') {
+                /* special case of '\\\\' and '\\\"' */
+                if (*sp == '\\') {
+                    if (nr < 2) {
+                        *ep = x;
+                        return -ERR_EOF;
+                    } else if (sp[1] != '"' && sp[1] != '\\') {
+                        *ep = sp - s + 1;
+                        return -ERR_INVAL;
+                    } else {
+                        sp++;
+                        nb--;
+                    }
                 }
-            }
 
-            /* skip the second escape */
-            sp++;
-            nb--;
+                /* skip the second escape */
+                sp++;
+                nb--;
+            }
         }
 
         /* check for escape sequence */
@@ -124,17 +121,10 @@ ssize_t unquote(const char *sp, ssize_t nb, char *dp, ssize_t *ep, uint64_t flag
                     *ep = x;
                     return -ERR_EOF;
                 }
-            } else {
-                if (sp[0] == '\\') {
-                    nb--;
-                    sp++;
-                } else if (likely(flags & F_UNIREP)) {
-                    unirep(&dp);
-                    continue;
-                } else {
-                    *ep = sp - s - 4;
-                    return -ERR_UNICODE;
-                }
+            } else if (sp[0] == '\\') {
+                /* skip the double escape */
+                nb--;
+                sp++;
             }
         }
 
