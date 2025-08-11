@@ -41,7 +41,7 @@ func TestIssue213(t *testing.T) {
             defer wg.Done()
             var o *ObjStruct
             if err := sonic.Unmarshal(bytes, &o); err != nil {
-                t.Fatal(err)
+                panic(err)
             }
         }()
     }
