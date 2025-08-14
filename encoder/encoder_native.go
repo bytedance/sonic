@@ -71,7 +71,8 @@ const (
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = encoder.CompatibleWithStd
 
-    // Encode Infinity or Nan float into `null`, instead of returning an error.
+    // EncodeNullForInfOrNan encodes Infinity or NaN float values as 'null'
+    // instead of returning an error.
     EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
 )
 
@@ -80,12 +81,12 @@ var (
     // Encode returns the JSON encoding of val, encoded with opts.
     Encode = encoder.Encode
 
-    // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating a new one.
-    EncodeIndented = encoder.EncodeIndented
-
     // EncodeIndented is like Encode but applies Indent to format the output.
     // Each JSON element in the output will begin on a new line beginning with prefix
     // followed by one or more copies of indent according to the indentation nesting.
+    EncodeIndented = encoder.EncodeIndented
+
+    // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating a new one.
     EncodeInto = encoder.EncodeInto
 
     // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
