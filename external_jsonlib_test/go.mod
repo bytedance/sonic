@@ -7,13 +7,14 @@ require (
 	github.com/bytedance/sonic v1.11.5-alpha3
 	github.com/goccy/go-json v0.9.11
 	github.com/json-iterator/go v1.1.12
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.14.3
 	github.com/tidwall/sjson v1.2.5
 	github.com/valyala/fastjson v1.6.4
 )
 
 require (
+	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

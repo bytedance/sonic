@@ -28,6 +28,7 @@ import (
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/option"
+    "github.com/bytedance/gopkg/lang/dirtmake"
 )
 
 // Options is a set of encoding options.
@@ -193,7 +194,7 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
 
     /* make a copy of the result */
     if rt.CanSizeResue(cap(*buf)) {
-        ret = make([]byte, len(*buf))
+        ret = dirtmake.Bytes(len(*buf), len(*buf))
         copy(ret, *buf)
         vars.FreeBytes(buf)
     } else {
