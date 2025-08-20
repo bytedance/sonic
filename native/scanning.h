@@ -1349,6 +1349,7 @@ static always_inline long skip_container_fast(const GoString *src, long *p, char
     uint64_t lbrace = 0, rbrace = 0;
     size_t lnum = 0, rnum = 0, last_lnum = 0;
     uint64_t inquote = 0;
+    uint64_t tmp_rnum = 0;
 
     while (likely(nb >= 64)) {
 skip:
@@ -1358,21 +1359,32 @@ skip:
 
         /* traverse each right brace */
         last_lnum = lnum;
-        while (rbrace > 0) {
-            uint64_t lbrace_first = (rbrace - 1) & lbrace;
-            lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
-            bool is_closed = lnum <= rnum;
-            if (is_closed) {
-                *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
-                // *p is out-of-bound access here
-                if (*p > src->len) {
-                    *p = src->len;
-                    return -ERR_EOF;
+
+        /* fast path to skip brace*/
+        if (rbrace > 0) {
+
+            // rigth brace is less than left brace
+            tmp_rnum =  __builtin_popcountll((int64_t)rbrace);
+            if (tmp_rnum + rnum <= lnum) {
+                rnum += tmp_rnum;
+            } else {
+                while (rbrace > 0) {
+                    uint64_t lbrace_first = (rbrace - 1) & lbrace;
+                    lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
+                    bool is_closed = lnum <= rnum;
+                    if (is_closed) {
+                        *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
+                        // *p is out-of-bound access here
+                        if (*p > src->len) {
+                            *p = src->len;
+                            return -ERR_EOF;
+                        }
+                        return vi;
+                    }
+                    rbrace &= (rbrace - 1); // clear the lowest right brace
+                    rnum ++;
                 }
-                return vi;
             }
-            rbrace &= (rbrace - 1); // clear the lowest right brace
-            rnum ++;
         }
         lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
         s += 64, nb -= 64;

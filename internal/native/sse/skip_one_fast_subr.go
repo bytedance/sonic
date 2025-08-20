@@ -16,7 +16,7 @@ const (
 )
 
 const (
-    _size__skip_one_fast = 3460
+    _size__skip_one_fast = 3692
 )
 
 var (
@@ -28,15 +28,15 @@ var (
         {0xc, 32},
         {0xd, 40},
         {0x11, 48},
-        {0xcd6, 136},
-        {0xcd7, 48},
-        {0xcd9, 40},
-        {0xcdb, 32},
-        {0xcdd, 24},
-        {0xcdf, 16},
-        {0xce0, 8},
-        {0xce1, 0},
-        {0xd84, 136},
+        {0xd9e, 136},
+        {0xd9f, 48},
+        {0xda1, 40},
+        {0xda3, 32},
+        {0xda5, 24},
+        {0xda7, 16},
+        {0xda8, 8},
+        {0xda9, 0},
+        {0xe6c, 136},
     }
 )
 
