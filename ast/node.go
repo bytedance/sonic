@@ -64,8 +64,8 @@ type Node struct {
 // UnmarshalJSON is just an adapter to json.Unmarshaler.
 // If you want better performance, use Searcher.GetByPath() directly
 func (self *Node) UnmarshalJSON(data []byte) (err error) {
-    *self = NewRaw(string(data))
-    return self.Check()
+    *self = newRawNode(rt.Mem2Str(data), switchRawType(data[0]), false)
+    return nil
 }
 
 /** Node Type Accessor **/
