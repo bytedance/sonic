@@ -764,7 +764,7 @@ var (
 var (
 	_F_memmove       = jit.Func(rt.Memmove)
 	_F_error_number  = jit.Func(vars.Error_number)
-	_F_isValidNumber = jit.Func(rt.IsValidNumber)
+	_F_isValidNumber = jit.Func(alg.IsValidNumber)
 )
 
 var (

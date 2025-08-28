@@ -183,7 +183,7 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 			v := *(*json.Number)(p)
 			if v == "" {
 				buf = append(buf, '0')
-			} else if !rt.IsValidNumber(string(v)) {
+			} else if !alg.IsValidNumber(string(v)) {
 				return vars.Error_number(v)
 			} else {
 				buf = append(buf, v...)
