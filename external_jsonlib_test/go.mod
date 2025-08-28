@@ -7,7 +7,7 @@ require (
 	github.com/bytedance/sonic v1.11.5-alpha3
 	github.com/goccy/go-json v0.9.11
 	github.com/json-iterator/go v1.1.12
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/tidwall/gjson v1.14.3
 	github.com/tidwall/sjson v1.2.5
 	github.com/valyala/fastjson v1.6.4
