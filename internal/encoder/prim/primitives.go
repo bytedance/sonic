@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package alg
+package prim
 
 import (
 	"encoding"
@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"unsafe"
 
+	"github.com/bytedance/sonic/internal/encoder/alg"
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/resolver"
 	"github.com/bytedance/sonic/internal/rt"
@@ -70,11 +71,11 @@ func EncodeJsonMarshaler(buf *[]byte, val json.Marshaler, opt uint64) error {
 	if ret, err := val.MarshalJSON(); err != nil {
 		return err
 	} else {
-		if opt&(1<<BitCompactMarshaler) != 0 {
+		if opt&(1<<alg.BitCompactMarshaler) != 0 {
 			return Compact(buf, ret)
 		}
-		if opt&(1<<BitNoValidateJSONMarshaler) == 0 {
-			if ok, s := Valid(ret); !ok {
+		if opt&(1<<alg.BitNoValidateJSONMarshaler) == 0 {
+			if ok, s := alg.Valid(ret); !ok {
 				return vars.Error_marshaler(ret, s)
 			}
 		}
@@ -87,11 +88,11 @@ func EncodeTextMarshaler(buf *[]byte, val encoding.TextMarshaler, opt uint64) er
 	if ret, err := val.MarshalText(); err != nil {
 		return err
 	} else {
-		if opt&(1<<BitNoQuoteTextMarshaler) != 0 {
+		if opt&(1<<alg.BitNoQuoteTextMarshaler) != 0 {
 			*buf = append(*buf, ret...)
 			return nil
 		}
-		*buf = Quote(*buf, rt.Mem2Str(ret), false)
+		*buf = alg.Quote(*buf, rt.Mem2Str(ret), false)
 		return nil
 	}
 }
