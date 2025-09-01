@@ -663,6 +663,8 @@ var (
 func (self *Assembler) go_panic() {
 	self.Link(_LB_panic)
 	self.Emit("MOVQ", _SP_p, _BX)
+	self.Emit("MOVQ", _RP, _CX)
+	self.Emit("MOVQ", _RL, _DI)
 	self.call_go(_F_panic)
 }
 
