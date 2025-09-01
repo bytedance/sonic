@@ -19,6 +19,7 @@ package vars
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -71,6 +72,20 @@ func GoPanic(code int, val unsafe.Pointer, buf string) {
         sb.WriteString("\n")
     }
     sb.WriteString("JSON: ")
-    sb.WriteString(buf)
+    if len(buf) > maxJSONLength {
+        sb.WriteString(buf[len(buf)-maxJSONLength:])
+    } else {
+        sb.WriteString(buf)
+    }
     panic(sb.String())
+}
+
+var maxJSONLength = 1024
+
+func init() {
+    if v := os.Getenv("SONIC_PANIC_MAX_JSON_LENGTH"); v != "" {
+        if i, err := strconv.Atoi(v); err == nil {
+            maxJSONLength = i
+        }
+    }
 }
