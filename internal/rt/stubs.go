@@ -38,9 +38,6 @@ func Mapiterinit(t *GoMapType, m unsafe.Pointer, it *GoMapIterator)
 //go:linkname Maplen reflect.maplen
 func Maplen(h unsafe.Pointer) int 
 
-//go:linkname IsValidNumber encoding/json.isValidNumber
-func IsValidNumber(s string) bool
-
 //go:nosplit
 //go:linkname MemclrHasPointers runtime.memclrHasPointers
 //goland:noinspection GoUnusedParameter

@@ -22,13 +22,14 @@ import (
 
 	"github.com/bytedance/sonic/internal/encoder/alg"
 	"github.com/bytedance/sonic/internal/encoder/ir"
+	"github.com/bytedance/sonic/internal/encoder/prim"
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
 )
 
 func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars.Stack, fv uint64) error {
 	if vt == nil {
-		return alg.EncodeNil(buf)
+		return prim.EncodeNil(buf)
 	} else if pp, err := vars.FindOrCompile(vt, (fv&(1<<alg.BitPointerValue)) != 0, compiler); err != nil {
 		return err
 	} else if vt.Indirect() {

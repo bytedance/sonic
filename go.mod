@@ -1,6 +1,6 @@
 module github.com/bytedance/sonic
 
-go 1.17
+go 1.18
 
 require (
 	github.com/bytedance/gopkg v0.1.3
@@ -8,7 +8,7 @@ require (
 	github.com/cloudwego/base64x v0.1.6
 	github.com/davecgh/go-spew v1.1.1
 	github.com/klauspost/cpuid/v2 v2.2.9
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/twitchyliquid64/golang-asm v0.15.1
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670
 )
