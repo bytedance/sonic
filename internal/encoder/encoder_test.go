@@ -26,6 +26,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unsafe"
 
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
@@ -69,6 +70,24 @@ func TestEncoderMemoryCorruption(t *testing.T) {
 	if err := json.Unmarshal(out, &m); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestEncoderPanicString(t *testing.T) {
+    defer func() {
+        if r := recover(); r != nil {
+            println("recover")
+        } else {
+            t.Fatal("no panic")
+        }
+    }()
+    var s = struct{
+        A string
+        S string
+    }{
+        A: "a",
+    }
+    (*rt.GoString)(unsafe.Pointer(&s.S)).Len = 1
+    Encode(s, 0)
 }
 
 type sample struct {
