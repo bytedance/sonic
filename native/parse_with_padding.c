@@ -587,6 +587,135 @@ retry_decode:
     return 0;
 }
 
+#define get_string_block {                                       \
+    if (unlikely((opts & F_VALIDATE_STRING) != 0)) {             \
+        bsresult = svcmpeq_n_u8(pg, v, '\\');                    \
+        quoteresult = svcmpeq_n_u8(pg, v, '"');                  \
+        escresult =  svcmpeq_n_u8(pg, v, '\x1f');                \
+    } else {                                                     \
+        bsresult = svcmpeq_n_u8(pg, v, '\\');                    \
+        quoteresult = svcmpeq_n_u8(pg, v, '"');                  \
+        escresult = svpfalse_b();                                \                           
+    }}
+
+#define has_first_quote {                                                   \ 
+    svbool_t res = svorr_b_z(svptrue_b8(), bsresult, escresult);            \   
+	if (!svptest_any(svptrue_b8(), res)) {                                  \
+		temp = quoteresult;                                                 \
+	} else {                                                                \
+        temp = svbrkb_b_z(svptrue_b8(),  res);                              \ 
+        temp = svand_b_z(svptrue_b8(), temp, quoteresult);                  \ 
+    }                                                                       \
+}
+
+#define has_first_backslash {                                               \   
+	if (!svptest_any(svptrue_b8(), quoteresult)) {                          \
+		temp = bsresult;                                                    \
+	} else {                                                                \
+        temp = svbrkb_b_z(svptrue_b8(),  quoteresult);                      \ 
+        temp = svand_b_z(svptrue_b8(), temp, bsresult);                     \ 
+    }                                                                       \
+}
+
+#define has_first_unescaped {                                               \   
+	if (!svptest_any(svptrue_b8(), quoteresult)) {                          \
+		temp = escresult;                                                   \
+	} else {                                                                \
+        temp = svbrkb_b_z(svptrue_b8(),  quoteresult);                      \ 
+        temp = svand_b_z(svptrue_b8(), temp, escresult);                    \ 
+    }                                                                       \
+}
+
+static always_inline long parse_string_inplace_sve(uint8_t** cur, bool* has_esc, uint64_t opts) {
+    uint8_t* start = *cur;
+    svbool_t bsresult;
+    svbool_t quoteresult;
+    svbool_t escresult;
+    svbool_t temp;
+    svbool_t pg = svptrue_b8();
+    svuint8_t v;
+    while (true) {
+        v = svld1_u8(pg, (uint8_t*)(*cur));
+        get_string_block;
+        has_first_quote;
+        if (svptest_any(svptrue_b8(), temp)) {
+            *cur += svcntp_b8(svptrue_b8(), svbrkb_b_z(svptrue_b8(),  quoteresult)) + 1; // skip the quote char
+            *has_esc = false;
+            return *cur - start - 1;
+        }
+        has_first_backslash;
+        if (unlikely(svptest_any(svptrue_b8(), temp))) {
+            break;
+        }
+        has_first_unescaped;
+        if (unlikely((opts & F_VALIDATE_STRING) != 0 && svptest_any(svptrue_b8(), temp))) {
+            *cur += svcntp_b8(svptrue_b8(), svbrkb_b_z(svptrue_b8(),  escresult));
+            return -SONIC_CONTROL_CHAR;
+        }
+        *cur += 32;
+    }
+    // deal with the escaped string
+    *has_esc = true;
+	has_first_backslash;
+    *cur += svcntp_b8(svptrue_b8(), svbrkb_b_z(svptrue_b8(),  bsresult));
+    uint8_t* dst = *cur;
+    uint8_t esc;
+escape:
+    esc = *(*cur + 1);
+    if (likely(esc) != 'u') {
+        if (unlikely(ESCAPED_TAB[esc]) == 0) {
+            return -SONIC_INVALID_ESCAPED;
+        }
+        *cur += 2;
+        *dst++ = ESCAPED_TAB[esc];
+    } else if (handle_unicode((char**)cur, (char**)&dst) != 0) {
+        return -SONIC_INVALID_ESCAPED_UTF;
+    }
+    // check continuous escaped char
+    if (**cur == '\\') {
+        goto escape;
+    }
+find_and_move:
+    v = svld1_u8(pg, (uint8_t *)(*cur));
+    get_string_block;
+    has_first_quote;
+    if (svptest_any(svptrue_b8(), temp)) {
+        while (true) {
+            repeat_8( {
+                if (**cur != '"') {
+                    *dst++ = **cur;
+                    *cur += 1;
+                } else {
+                    *cur += 1;
+                    return dst - start;
+                }
+            });
+        }
+    }
+    has_first_unescaped;
+    if (unlikely((opts & F_VALIDATE_STRING) != 0 && svptest_any(svptrue_b8(), temp))) {
+        *cur += svcntp_b8(svptrue_b8(), svbrkb_b_z(svptrue_b8(),  escresult));
+        return -SONIC_CONTROL_CHAR;
+    }
+    has_first_backslash;
+    if (svptest_any(svptrue_b8(), temp)) {
+        while (true) {
+            repeat_8( {
+                if (**cur != '\\') {
+                    *dst++ = **cur;
+                    *cur += 1;
+                } else {
+                    goto escape;
+                }
+            });
+        }
+    }
+    svst1_u8(svptrue_b8(), dst, v);
+    *cur += 32;
+    dst += 32;
+    goto find_and_move;
+}
+
 // positive is length
 // negative is - error_code
 static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, uint64_t opts) {
@@ -1112,7 +1241,7 @@ static always_inline error_code parse(GoParser* slf, reader* rdr, visitor* vis) 
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, slf->opt);
+            slen = parse_string_inplace_sve(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
@@ -1149,7 +1278,7 @@ obj_key:
     // parse key
     pos = offset_from(*cur);
 
-    slen = parse_string_inplace(cur, &has_esc, slf->opt);
+    slen = parse_string_inplace_sve(cur, &has_esc, slf->opt);
     if (slen < 0) {
         err = (error_code)(-slen);
         return err;
@@ -1205,7 +1334,7 @@ obj_val:
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, slf->opt);
+            slen = parse_string_inplace_sve(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
@@ -1293,7 +1422,7 @@ arr_val:
             neg = false;
             break;
         case '"':
-            slen = parse_string_inplace(cur, &has_esc, slf->opt);
+            slen = parse_string_inplace_sve(cur, &has_esc, slf->opt);
             if (slen < 0) {
                 err =  (error_code)(-slen);
             }
