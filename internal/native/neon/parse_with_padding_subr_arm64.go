@@ -9,11 +9,11 @@ package neon
 func __parse_with_padding_entry__() uintptr
 
 var (
-    _subr__parse_with_padding uintptr = __parse_with_padding_entry__() + 248
+    _subr__parse_with_padding uintptr = __parse_with_padding_entry__() + 128
 )
 
 const (
-    _stack__parse_with_padding = 160
+    _stack__parse_with_padding = 112
 )
 
 var (
