@@ -1349,14 +1349,36 @@ static always_inline long skip_container_fast(const GoString *src, long *p, char
     uint64_t lbrace = 0, rbrace = 0;
     size_t lnum = 0, rnum = 0, last_lnum = 0;
     uint64_t inquote = 0;
-
+    uint32_t hi = 0;
+    uint32_t lo = 0;
     while (likely(nb >= 64)) {
 skip:
         inquote = get_string_maskx64(s, &prev_inquote, &prev_bs);
-        lbrace = get_maskx64(s, lc) & ~inquote;
-        rbrace = get_maskx64(s, rc) & ~inquote;
-
+        hi = (uint32_t)(inquote > 32);
+        lo = (uint32_t)(inquote & 0xFFFFFFFF);
+        lbrace = get_maskx32(s, lc) & ~lo;
+        rbrace = get_maskx32(s, rc) & ~lo;
         /* traverse each right brace */
+        last_lnum = lnum;
+        while (rbrace > 0) {
+            uint64_t lbrace_first = (rbrace - 1) & lbrace;
+            lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
+            bool is_closed = lnum <= rnum;
+            if (is_closed) {
+                *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
+                // *p is out-of-bound access here
+                if (*p > src->len) {
+                    *p = src->len;
+                    return -ERR_EOF;
+                }
+                return vi;
+            }
+            rbrace &= (rbrace - 1); // clear the lowest right brace
+            rnum ++;
+        }
+        lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
+        lbrace = get_maskx32(s, lc) & ~hi;
+        rbrace = get_maskx32(s, rc) & ~hi;
         last_lnum = lnum;
         while (rbrace > 0) {
             uint64_t lbrace_first = (rbrace - 1) & lbrace;
