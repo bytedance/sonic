@@ -22,29 +22,54 @@ import (
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/option"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCompiler_Compile(t *testing.T) {
-    p, err := NewCompiler().Compile(reflect.TypeOf(_BindingValue), false)
-    assert.Nil(t, err)
-    p.Disassemble()
+	p, err := NewCompiler().Compile(reflect.TypeOf(_BindingValue), false)
+	assert.Nil(t, err)
+	p.Disassemble()
 }
 
 func TestReflectDirect(t *testing.T) {
-    type A struct {
-        A int
-        B int
-    }
-    var a A
-    var b = &a
-    println("b:", unsafe.Pointer(b))
-    v := rt.UnpackEface(a)
-    vv := reflect.ValueOf(a)
-    _ = vv
-    println("v:", v.Type.KindFlags, v.Value)
-    pv := rt.UnpackEface(&a)
-    pvv := reflect.ValueOf(&a)
-    _ = pvv
-    println("pv:", pv.Type.KindFlags, pv.Value)
+	type A struct {
+		A int
+		B int
+	}
+	var a A
+	var b = &a
+	println("b:", unsafe.Pointer(b))
+	v := rt.UnpackEface(a)
+	vv := reflect.ValueOf(a)
+	_ = vv
+	println("v:", v.Type.KindFlags, v.Value)
+	pv := rt.UnpackEface(&a)
+	pvv := reflect.ValueOf(&a)
+	_ = pvv
+	println("pv:", pv.Type.KindFlags, pv.Value)
+}
+
+func TestPretouchTypeVM(t *testing.T) {
+	type subA struct{}
+	type subB struct{}
+	type subC struct{}
+	type data struct {
+		SubA subA
+		SubB subB
+		SubC subC
+	}
+
+	sub, err := pretouchTypeVM(
+		reflect.TypeOf(data{}),
+		option.CompileOptions{
+			MaxInlineDepth: 1,
+			RecursiveDepth: 1000,
+		},
+		0,
+	)
+	assert.NoError(t, err)
+	assert.Contains(t, sub, reflect.TypeOf(subA{}))
+	assert.Contains(t, sub, reflect.TypeOf(subB{}))
+	assert.Contains(t, sub, reflect.TypeOf(subC{}))
 }
