@@ -646,9 +646,9 @@ func (self *_Compiler) compileUnsupportedType(p *_Program, vt reflect.Type) {
 }
 
 func (self *_Compiler) compileMap(p *_Program, sp int, vt reflect.Type) {
-    if reflect.PtrTo(vt.Key()).Implements(encodingTextUnmarshalerType) {
+    if vt.Key().Kind() != reflect.Interface && reflect.PtrTo(vt.Key()).Implements(encodingTextUnmarshalerType) {
         self.compileMapOp(p, sp, vt, _OP_map_key_utext_p)
-    } else if vt.Key().Implements(encodingTextUnmarshalerType) {
+    } else if vt.Key().Kind() != reflect.Interface && vt.Key().Implements(encodingTextUnmarshalerType) {
         self.compileMapOp(p, sp, vt, _OP_map_key_utext)
     } else {
         self.compileMapUt(p, sp, vt)
