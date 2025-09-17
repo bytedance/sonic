@@ -29,7 +29,17 @@ var (
     // LimitBufferSize indicates the max pool buffer size, in case of OOM.
     // See issue https://github.com/bytedance/sonic/issues/614
     LimitBufferSize uint = 1024 * 1024
+
+    // FastGrowSliceFactor is used to speed up slice-growth and reduce corresponding cost.
+    // It only works when the slice size is smaller than FastGrowSliceThreshold
+    FastGrowSliceFactor uint = 2
+    // FastGrowSliceThreshold is used for enabling FastGrowSliceFactor.
+    // When the slice size is smaller than FastGrowSliceThreshold,
+    // the slice will be grown by FastGrowSliceFactor times.
+    FastGrowSliceThreshold uint = 1024 * 1024
 )
+
+
 
 // CompileOptions includes all options for encoder or decoder compiler.
 type CompileOptions struct {
