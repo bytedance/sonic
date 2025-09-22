@@ -1353,6 +1353,50 @@ static always_inline long skip_container_fast(const GoString *src, long *p, char
     while (likely(nb >= 64)) {
 skip:
         inquote = get_string_maskx64(s, &prev_inquote, &prev_bs);
+#if defined(ARCH_ARM64)
+        uint32_t hi = (uint32_t)(inquote > 32);
+        uint32_t lo = (uint32_t)(inquote & 0xFFFFFFFF);
+        lbrace = get_maskx32(s, lc) & ~lo;
+        rbrace = get_maskx32(s, rc) & ~lo;
+        last_lnum = lnum;
+        while (rbrace > 0) {
+            uint64_t lbrace_first = (rbrace - 1) & lbrace;
+            lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
+            bool is_closed = lnum <= rnum;
+            if (is_closed) {
+                *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
+                // *p is out-of-bound access here
+                if (*p > src->len) {
+                    *p = src->len;
+                    return -ERR_EOF;
+                }
+                return vi;
+            }
+            rbrace &= (rbrace - 1); // clear the lowest right brace
+            rnum ++;
+        }
+        lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
+        lbrace = get_maskx32(s, lc) & ~hi;
+        rbrace = get_maskx32(s, rc) & ~hi;
+        last_lnum = lnum;
+        while (rbrace > 0) {
+            uint64_t lbrace_first = (rbrace - 1) & lbrace;
+            lnum = last_lnum + __builtin_popcountll((int64_t)lbrace_first);
+            bool is_closed = lnum <= rnum;
+            if (is_closed) {
+                *p = src->len - nb + __builtin_ctzll(rbrace) + 1;
+                // *p is out-of-bound access here
+                if (*p > src->len) {
+                    *p = src->len;
+                    return -ERR_EOF;
+                }
+                return vi;
+            }
+            rbrace &= (rbrace - 1); // clear the lowest right brace
+            rnum ++;
+        }
+        lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
+#else
         lbrace = get_maskx64(s, lc) & ~inquote;
         rbrace = get_maskx64(s, rc) & ~inquote;
 
@@ -1375,6 +1419,7 @@ skip:
             rnum ++;
         }
         lnum = last_lnum + __builtin_popcountll((int64_t)lbrace);
+#endif
         s += 64, nb -= 64;
     }
 
