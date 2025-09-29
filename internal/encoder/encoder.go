@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"reflect"
 	"runtime"
-	"unsafe"
 
 	"github.com/bytedance/gopkg/lang/dirtmake"
 	"github.com/bytedance/sonic/internal/encoder/alg"
@@ -180,16 +179,7 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
 	}
 
 	/* htmlescape or correct UTF-8 if opts enable */
-	old := buf
-	*buf = encodeFinish(*old, opts)
-	pbuf := ((*rt.GoSlice)(unsafe.Pointer(buf))).Ptr
-	pold := ((*rt.GoSlice)(unsafe.Pointer(old))).Ptr
-
-	/* return when allocated a new buffer */
-	if pbuf != pold {
-		vars.FreeBytes(old)
-		return *buf, nil
-	}
+	encodeFinish(buf, opts)
 
 	/* make a copy of the result */
 	if rt.CanSizeResue(cap(*buf)) {
@@ -211,7 +201,7 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
 	if err != nil {
 		return err
 	}
-	*buf = encodeFinish(*buf, opts)
+	encodeFinish(buf, opts)
 	return err
 }
 
@@ -232,14 +222,19 @@ func encodeInto(buf *[]byte, val interface{}, opts Options) error {
 	return err
 }
 
-func encodeFinish(buf []byte, opts Options) []byte {
+func encodeFinish(buf *[]byte, opts Options) {
 	if opts&EscapeHTML != 0 {
-		buf = HTMLEscape(nil, buf)
+		dst := vars.NewBytes()
+		// put the result bytes to buf and the old buf to dst to return to the pool.
+		// we cannot return buf to the pool because it will be used by the caller.
+		*buf, *dst = HTMLEscape(*dst, *buf), *buf
+		vars.FreeBytes(dst)
 	}
-	if (opts&ValidateString != 0) && !utf8.Validate(buf) {
-		buf = utf8.CorrectWith(nil, buf, `\ufffd`)
+	if (opts&ValidateString != 0) && !utf8.Validate(*buf) {
+		dst := vars.NewBytes()
+		*buf, *dst = utf8.CorrectWith(*dst, *buf, `\ufffd`), *buf
+		vars.FreeBytes(dst)
 	}
-	return buf
 }
 
 // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
