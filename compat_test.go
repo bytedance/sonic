@@ -18,189 +18,228 @@ package sonic
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"io"
+	"os"
 	"reflect"
 	"testing"
 
+	"github.com/bytedance/sonic/internal/envs"
 	"github.com/bytedance/sonic/option"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCompatUnmarshalStd(t *testing.T) {
-    var sobj = map[string]interface{}{}
-    var jobj = map[string]interface{}{}
-    var data = []byte(`{"a":1.00000001E-10}`)
-    var str = string(data)
-    serr := ConfigStd.UnmarshalFromString(str, &sobj)
-    jerr := json.Unmarshal(data, &jobj)
-    require.Equal(t, jerr, serr)
-    require.Equal(t, jobj, sobj)
-    data[2] = '0'
-    require.Equal(t, jobj, sobj)
+	var sobj = map[string]interface{}{}
+	var jobj = map[string]interface{}{}
+	var data = []byte(`{"a":1.00000001E-10}`)
+	var str = string(data)
+	serr := ConfigStd.UnmarshalFromString(str, &sobj)
+	jerr := json.Unmarshal(data, &jobj)
+	require.Equal(t, jerr, serr)
+	require.Equal(t, jobj, sobj)
+	data[2] = '0'
+	require.Equal(t, jobj, sobj)
 
-    sobj = map[string]interface{}{}
-    jobj = map[string]interface{}{}
-    data = []byte(`{"a":1}`)
-    cfg := Config{
-        UseNumber: true,
-    }.Froze()
-    serr = cfg.Unmarshal(data, &sobj)
-    dec := json.NewDecoder(bytes.NewBuffer(data))
-    dec.UseNumber()
-    jerr = dec.Decode(&jobj)
-    require.Equal(t, jerr, serr)
-    require.Equal(t, jobj, sobj)
+	sobj = map[string]interface{}{}
+	jobj = map[string]interface{}{}
+	data = []byte(`{"a":1}`)
+	cfg := Config{
+		UseNumber: true,
+	}.Froze()
+	serr = cfg.Unmarshal(data, &sobj)
+	dec := json.NewDecoder(bytes.NewBuffer(data))
+	dec.UseNumber()
+	jerr = dec.Decode(&jobj)
+	require.Equal(t, jerr, serr)
+	require.Equal(t, jobj, sobj)
 
-    x := struct{
-        A json.Number
-        B json.Number
-    }{}
-    y := struct{
-        A json.Number
-        B json.Number
-    }{}
-    data = []byte(`{"A":"1", "C":-1, "B":1}`)
-    cfg = Config{
-        DisallowUnknownFields: true,
-    }.Froze()
-    serr = cfg.Unmarshal(data, &x)
-    dec = json.NewDecoder(bytes.NewBuffer(data))
-    dec.UseNumber()
-    dec.DisallowUnknownFields()
-    jerr = dec.Decode(&y)
-    require.Equal(t, jerr, serr)
-    // require.Equal(t, y, x)
+	x := struct {
+		A json.Number
+		B json.Number
+	}{}
+	y := struct {
+		A json.Number
+		B json.Number
+	}{}
+	data = []byte(`{"A":"1", "C":-1, "B":1}`)
+	cfg = Config{
+		DisallowUnknownFields: true,
+	}.Froze()
+	serr = cfg.Unmarshal(data, &x)
+	dec = json.NewDecoder(bytes.NewBuffer(data))
+	dec.UseNumber()
+	dec.DisallowUnknownFields()
+	jerr = dec.Decode(&y)
+	require.Equal(t, jerr, serr)
+	// require.Equal(t, y, x)
 }
 
 func TestCompatMarshalStd(t *testing.T) {
-    t.Parallel()
-    var obj = map[string]interface{}{
-        "c": json.RawMessage(" [ \"<&>\" ] "),
-        "b": json.RawMessage(" [ ] "),
-    }
-    sout, serr := ConfigStd.Marshal(obj)
-    jout, jerr := json.Marshal(obj)
-    require.Equal(t, jerr, serr)
-    require.Equal(t, string(jout), string(sout))
+	t.Parallel()
+	var obj = map[string]interface{}{
+		"c": json.RawMessage(" [ \"<&>\" ] "),
+		"b": json.RawMessage(" [ ] "),
+	}
+	sout, serr := ConfigStd.Marshal(obj)
+	jout, jerr := json.Marshal(obj)
+	require.Equal(t, jerr, serr)
+	require.Equal(t, string(jout), string(sout))
 
-    obj = map[string]interface{}{
-        "a": json.RawMessage(" [} "),
-    }
-    sout, serr = ConfigStd.Marshal(obj)
-    jout, jerr = json.Marshal(obj)
-    require.NotNil(t, jerr)
-    require.NotNil(t, serr)
-    require.Equal(t, string(jout), string(sout))
+	obj = map[string]interface{}{
+		"a": json.RawMessage(" [} "),
+	}
+	sout, serr = ConfigStd.Marshal(obj)
+	jout, jerr = json.Marshal(obj)
+	require.NotNil(t, jerr)
+	require.NotNil(t, serr)
+	require.Equal(t, string(jout), string(sout))
 
-    obj = map[string]interface{}{
-        "a": json.RawMessage("1"),
-    }
-    sout, serr = ConfigStd.MarshalIndent(obj, "xxxx", "  ")
-    jout, jerr = json.MarshalIndent(obj, "xxxx", "  ")
-    require.Equal(t, jerr, serr)
-    require.Equal(t, string(jout), string(sout))
+	obj = map[string]interface{}{
+		"a": json.RawMessage("1"),
+	}
+	sout, serr = ConfigStd.MarshalIndent(obj, "xxxx", "  ")
+	jout, jerr = json.MarshalIndent(obj, "xxxx", "  ")
+	require.Equal(t, jerr, serr)
+	require.Equal(t, string(jout), string(sout))
 }
 
 func TestCompatEncoderStd(t *testing.T) {
-    var o = map[string]interface{}{
-        "a": "<>",
-        "b": json.RawMessage(" [ ] "),
-    }
-    var w1 = bytes.NewBuffer(nil)
-    var w2 = bytes.NewBuffer(nil)
-    var enc1 = json.NewEncoder(w1)
-    var enc2 = ConfigStd.NewEncoder(w2)
+	var o = map[string]interface{}{
+		"a": "<>",
+		"b": json.RawMessage(" [ ] "),
+	}
+	var w1 = bytes.NewBuffer(nil)
+	var w2 = bytes.NewBuffer(nil)
+	var enc1 = json.NewEncoder(w1)
+	var enc2 = ConfigStd.NewEncoder(w2)
 
-    require.Nil(t, enc1.Encode(o))
-    require.Nil(t, enc2.Encode(o))
-    require.Equal(t, w1.String(), w2.String())
+	require.Nil(t, enc1.Encode(o))
+	require.Nil(t, enc2.Encode(o))
+	require.Equal(t, w1.String(), w2.String())
 
-    enc1.SetEscapeHTML(true)
-    enc2.SetEscapeHTML(true)
-    enc1.SetIndent("\n", "  ")
-    enc2.SetIndent("\n", "  ")
-    require.Nil(t, enc1.Encode(o))
-    require.Nil(t, enc2.Encode(o))
-    require.Equal(t, w1.String(), w2.String())
+	enc1.SetEscapeHTML(true)
+	enc2.SetEscapeHTML(true)
+	enc1.SetIndent("\n", "  ")
+	enc2.SetIndent("\n", "  ")
+	require.Nil(t, enc1.Encode(o))
+	require.Nil(t, enc2.Encode(o))
+	require.Equal(t, w1.String(), w2.String())
 
-    enc1.SetEscapeHTML(false)
-    enc2.SetEscapeHTML(false)
-    enc1.SetIndent("", "")
-    enc2.SetIndent("", "")
-    require.Nil(t, enc1.Encode(o))
-    require.Nil(t, enc2.Encode(o))
-    require.Equal(t, w1.String(), w2.String())
+	enc1.SetEscapeHTML(false)
+	enc2.SetEscapeHTML(false)
+	enc1.SetIndent("", "")
+	enc2.SetIndent("", "")
+	require.Nil(t, enc1.Encode(o))
+	require.Nil(t, enc2.Encode(o))
+	require.Equal(t, w1.String(), w2.String())
 }
 
 func TestCompatDecoderStd(t *testing.T) {
-    var o1 = map[string]interface{}{}
-    var o2 = map[string]interface{}{}
-    var s = `{"a":"b"} {"1":"2"} a {}`
-    var w1 = bytes.NewBuffer([]byte(s))
-    var w2 = bytes.NewBuffer([]byte(s))
-    var enc1 = json.NewDecoder(w1)
-    var enc2 = ConfigStd.NewDecoder(w2)
+	var o1 = map[string]interface{}{}
+	var o2 = map[string]interface{}{}
+	var s = `{"a":"b"} {"1":"2"} a {}`
+	var w1 = bytes.NewBuffer([]byte(s))
+	var w2 = bytes.NewBuffer([]byte(s))
+	var enc1 = json.NewDecoder(w1)
+	var enc2 = ConfigStd.NewDecoder(w2)
 
-    require.Equal(t, enc1.More(), enc2.More())
-    require.Nil(t, enc1.Decode(&o1))
-    require.Nil(t, enc2.Decode(&o2))
-    require.Equal(t, w1.String(), w2.String())
+	require.Equal(t, enc1.More(), enc2.More())
+	require.Nil(t, enc1.Decode(&o1))
+	require.Nil(t, enc2.Decode(&o2))
+	require.Equal(t, w1.String(), w2.String())
 
-    require.Equal(t, enc1.More(), enc2.More())
-    require.Nil(t, enc1.Decode(&o1))
-    require.Nil(t, enc2.Decode(&o2))
-    require.Equal(t, w1.String(), w2.String())
+	require.Equal(t, enc1.More(), enc2.More())
+	require.Nil(t, enc1.Decode(&o1))
+	require.Nil(t, enc2.Decode(&o2))
+	require.Equal(t, w1.String(), w2.String())
 
-    require.Equal(t, enc1.More(), enc2.More())
-    require.NotNil(t, enc1.Decode(&o1))
-    require.NotNil(t, enc2.Decode(&o2))
-    require.Equal(t, w1.String(), w2.String())
+	require.Equal(t, enc1.More(), enc2.More())
+	require.NotNil(t, enc1.Decode(&o1))
+	require.NotNil(t, enc2.Decode(&o2))
+	require.Equal(t, w1.String(), w2.String())
 }
 
 func TestPretouch(t *testing.T) {
-    var v map[string]interface{}
-    if err := Pretouch(reflect.TypeOf(v)); err != nil {
-        t.Errorf("err:%v", err)
-    }
+	var v map[string]interface{}
+	if err := Pretouch(reflect.TypeOf(v)); err != nil {
+		t.Errorf("err:%v", err)
+	}
 
-    if err := Pretouch(reflect.TypeOf(v),
-       option.WithCompileRecursiveDepth(1),
-       option.WithCompileMaxInlineDepth(2),
-    ); err != nil {
-        t.Errorf("err:%v", err)
-    }
+	if err := Pretouch(reflect.TypeOf(v),
+		option.WithCompileRecursiveDepth(1),
+		option.WithCompileMaxInlineDepth(2),
+	); err != nil {
+		t.Errorf("err:%v", err)
+	}
 }
 
 func TestGet(t *testing.T) {
-    var data = `{"a":"b"}`
-    r, err := GetFromString(data, "a")
-    if err != nil {
-        t.Fatal(err)
-    }
-    v, err := r.String()
-    if err != nil {
-        t.Fatal(err)
-    }
-    if v != "b" {
-        t.Fatal(v)
-    }
+	var data = `{"a":"b"}`
+	r, err := GetFromString(data, "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	v, err := r.String()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v != "b" {
+		t.Fatal(v)
+	}
 }
 
 func TestUnmarshalWithTrailingChars(t *testing.T) {
-    for i, str := range([]string {
-        "123",
-        "123 ",
-        "{} [] ",
-        "{} [ ",
-        "[],",
-        "[]null",
-        "false null",
-    }) {
-        var msg1, msg2 json.RawMessage
-        err1 := json.Unmarshal([]byte(str), &msg1)
-        err2 := ConfigStd.UnmarshalFromString(str, &msg2)
-        require.Equal(t, err1 == nil, err2 == nil, i)
-        // sonic will not clear the unmarshaled value here, but encoding/json will
-        // require.Equal(t, msg1, msg2)
-    }
+	for i, str := range []string{
+		"123",
+		"123 ",
+		"{} [] ",
+		"{} [ ",
+		"[],",
+		"[]null",
+		"false null",
+	} {
+		var msg1, msg2 json.RawMessage
+		err1 := json.Unmarshal([]byte(str), &msg1)
+		err2 := ConfigStd.UnmarshalFromString(str, &msg2)
+		require.Equal(t, err1 == nil, err2 == nil, i)
+		// sonic will not clear the unmarshaled value here, but encoding/json will
+		// require.Equal(t, msg1, msg2)
+	}
+}
+
+func TestUnmarshalJSONSuite(t *testing.T) {
+	if envs.UseOptDec {
+		t.Skip("this test still fails in OPTDEC") // FIXME: fix the optdec issues
+	}
+
+	gzFile, err := os.Open("testdata/JSONTestSuite/testdata.json.gz")
+	require.NoError(t, err)
+	defer gzFile.Close()
+
+	gzReader, err := gzip.NewReader(gzFile)
+	require.NoError(t, err)
+	defer gzReader.Close()
+
+	data, err := io.ReadAll(gzReader)
+	require.NoError(t, err)
+
+	var tests map[string]string
+	err = json.Unmarshal(data, &tests)
+	require.NoError(t, err)
+
+	for name, tt := range tests {
+		b := []byte(tt)
+		t.Run(name, func(t *testing.T) {
+			serr := ConfigStd.Unmarshal(b, new(json.RawMessage))
+			jerr := json.Unmarshal(b, new(json.RawMessage))
+			assert.Equal(t, jerr != nil, serr != nil, "json: %v, sonic: %v", jerr, serr)
+
+			serr = ConfigStd.Unmarshal(b, new(interface{}))
+			jerr = json.Unmarshal(b, new(interface{}))
+			assert.Equal(t, jerr != nil, serr != nil, "json: %v, sonic: %v", jerr, serr)
+		})
+	}
 }

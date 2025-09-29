@@ -379,6 +379,76 @@ static always_inline int _mm_nonascii_mask(__m128i v) {
     return _mm_movemask_epi8(v);
 }
 
+// Validate escape sequence starting after backslash
+// Returns: position after escape sequence on success, negative error code on failure
+// p should point to the character after '\'
+// ep is updated with error position if validation fails
+static always_inline ssize_t advance_escape_validate(const GoString *src, long p, int64_t *ep) {
+    const char *sp = src->buf + p;
+    size_t nb = src->len - p;
+
+    if (nb == 0) {
+        *ep = p - 1; // Point to the backslash
+        return -ERR_EOF;
+    }
+
+    char esc_char = *sp;
+
+    switch (esc_char) {
+        case '"':
+        case '\\':
+        case '/':
+        case 'b':
+        case 'f':
+        case 'n':
+        case 'r':
+        case 't':
+            // Valid single-character escapes
+            return p + 1; // position after escape character
+
+        case 'u': {
+            // Unicode escape sequence validation
+            if (nb < 5) { // need 'u' + 4 hex digits
+                *ep = p - 1; // Point to the backslash
+                return -ERR_EOF;
+            }
+
+            // Check if next 4 characters are valid hex digits
+            if (!unhex16_is(sp + 1)) {
+                *ep = p - 1; // Point to the backslash
+                return -ERR_INVAL;
+            }
+
+            // Decode the Unicode code point
+            uint32_t codepoint = unhex16_fast(sp + 1);
+
+            // Check if this is a high surrogate and if there's a valid surrogate pair
+            if (codepoint >= 0xD800 && codepoint <= 0xDBFF) {
+                // High surrogate - check if followed by valid low surrogate
+                if (nb >= 11 && sp[5] == '\\' && sp[6] == 'u' && unhex16_is(sp + 7)) {
+                    // Decode the second code point
+                    uint32_t second_codepoint = unhex16_fast(sp + 7);
+
+                    // If it's a valid low surrogate, consume both
+                    if (second_codepoint >= 0xDC00 && second_codepoint <= 0xDFFF) {
+                        return p + 11; // position after '\uXXXX\uXXXX'
+                    }
+                }
+                // High surrogate alone or with invalid following sequence - just consume the first one
+                return p + 5; // position after '\uXXXX'
+            }
+
+            // Any other unicode escape (including lone low surrogates) is allowed
+            return p + 5; // position after '\uXXXX'
+        }
+
+        default:
+            // Invalid escape character (covers \x, \U, \a, etc.)
+            *ep = p - 1; // Point to the backslash
+            return -ERR_INVAL;
+    }
+}
+
 static always_inline ssize_t advance_string_validate(const GoString *src, long p, int64_t *ep) {
     char     ch;
     uint64_t m0, m1, m2;
@@ -594,7 +664,18 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
                 return -ERR_EOF;
             }
             ep_setx(sp - ss)
-            sp += 2, nb -= 2;
+            
+            // Validate the complete escape sequence
+            long escape_pos = sp + 1 - src->buf; // position after backslash
+            ssize_t new_pos = advance_escape_validate(src, escape_pos, ep);
+            if (new_pos < 0) {
+                return new_pos;
+            }
+
+            // Move past the validated escape sequence
+            long consumed = new_pos - escape_pos;
+            sp += consumed + 1; // +1 for the backslash
+            nb -= consumed + 1;
             continue;
         }
 
@@ -1149,8 +1230,22 @@ static always_inline long skip_string_1(const GoString *src, long *p, uint64_t f
 }
 
 static always_inline long skip_negative_1(const GoString *src, long *p) {
-    long i = *p;
-    long r = do_skip_number(src->buf + i, src->len - i);
+    long i = *p; 
+
+    /* check if there are digits after '-' */
+    long nb = src->len - i;
+    if (unlikely(nb <= 0)) {
+        *p = src->len;
+        return -ERR_INVAL;
+    }
+
+    const char *sp = src->buf + i;  // position after '-'
+    if (unlikely(*sp < '0' || *sp > '9')) {
+        return -ERR_INVAL;
+    }
+
+    /* call do_skip_number on digits only (without '-') */
+    long r = do_skip_number(sp, nb);
 
     /* check for errors */
     if (r < 0) {
