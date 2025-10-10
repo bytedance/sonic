@@ -180,7 +180,7 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
     }
 
     /* htmlescape or correct UTF-8 if opts enable */
-    encodeFinish(buf, opts)
+    encodeFinishWithPool(buf, opts)
 
     /* make a copy of the result */
     if rt.CanSizeResue(cap(*buf)) {
@@ -202,7 +202,7 @@ func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
     if err != nil {
         return err
     }
-    encodeFinish(buf, opts)
+    *buf = encodeFinish(*buf, opts)
     return err
 }
 
@@ -223,7 +223,17 @@ func encodeInto(buf *[]byte, val interface{}, opts Options) error {
     return err
 }
 
-func encodeFinish(buf *[]byte, opts Options) {
+func encodeFinish(buf []byte, opts Options) []byte {
+    if opts & EscapeHTML != 0 {
+        buf = HTMLEscape(nil, buf)
+    }
+    if (opts & ValidateString != 0) && !utf8.Validate(buf) {
+        buf = utf8.CorrectWith(nil, buf, `\ufffd`)
+    }
+    return buf
+}
+
+func encodeFinishWithPool(buf *[]byte, opts Options) {
     if opts & EscapeHTML != 0 {
         dst := vars.NewBytes()
         // put the result bytes to buf and the old buf to dst to return to the pool.
@@ -237,7 +247,6 @@ func encodeFinish(buf *[]byte, opts Options) {
         vars.FreeBytes(dst)
     }
 }
-
 
 // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
 // characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029
