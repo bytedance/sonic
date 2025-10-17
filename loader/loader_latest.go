@@ -41,9 +41,17 @@ func (self Loader) LoadOne(text []byte, funcName string, frameSize int, argSize 
         ArgsSize: int32(argSize),
     }
 
-    // NOTICE: suppose the function has fixed SP offset equaling to frameSize, thus make only one pcsp pair
+    // NOTICE: suppose the function has fixed SP offset equaling to frameSize, the pattern is as follows:
+    // ```
+    // PC 0: subq $frameSize, %rsp
+    // PC 7: xxx
+    // PC size - 1: addq $frameSize, %rsp
+    // PC size: ret
+    // ```
     fn.Pcsp = &Pcdata{
-        {PC: size, Val: int32(frameSize)},
+        {PC: 0x7, Val: 0},
+        {PC: size - 1, Val: int32(frameSize)},
+        {PC: size, Val: 0},
     }
 
     if self.NoPreempt {
