@@ -145,6 +145,12 @@ func CreateProgramCache() *ProgramCache {
     }
 }
 
+func (self *ProgramCache) Reset() {
+    self.m.Lock()
+    defer self.m.Unlock()
+    self.p = unsafe.Pointer(newProgramMap())
+}
+
 func (self *ProgramCache) Get(vt *rt.GoType) interface{} {
     return (*_ProgramMap)(atomic.LoadPointer(&self.p)).get(vt)
 }

@@ -1,3 +1,6 @@
+//go:build !race && amd64 && !go1.23
+// +build !race,amd64,!go1.23
+
 /*
 * Copyright 2025 ByteDance Inc.
 *

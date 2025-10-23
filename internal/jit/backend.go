@@ -133,7 +133,8 @@ func pcdelta(ctxt *obj.Link, p *obj.Prog) uint32 {
     return uint32(p.Pc / int64(ctxt.Arch.MinLC))
 }
 
-// NOTE: 
+// NOTE: copied from https://github.com/twitchyliquid64/golang-asm/blob/8d7f1f783b11f9a00f5bcdfcae17f5ac8f22512e/obj/x86/obj6.go#L811.
+// we add two instructions such as subq/addq %rsp, $imm to the table.
 func (self *Backend) GetPcspTable(ctxt *obj.Link, cursym *obj.LSym, newprog obj.ProgAlloc) loader.Pcdata {
     pcdata := loader.Pcdata{}
     var deltasp int32

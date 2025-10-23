@@ -31,13 +31,13 @@ jobs:
             ${{ github.workspace }}/go.sum
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-      - name: Disable checklinkname in Go 1.25
-        if: matrix.go-version == '1.25.x'
-        run: echo "GODEBUG=checklinkname=0" >> $GITHUB_ENV
-
       - name: Unit Test JIT
         run: |
           GOMAXPROCS=4 go test -race -covermode=atomic -coverprofile=coverage.txt ./...
+
+      - name: Unit Test JIT PCSP
+        run: |
+          GOMAXPROCS=4 go test  -v ./internal/decoder/jitdec 
 
       - name: Unit Test VM
         run: |

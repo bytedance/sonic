@@ -49,6 +49,10 @@ var (
 	programCache = caching.CreateProgramCache()
 )
 
+func ResetProgramCache() {
+	programCache.Reset()
+}
+
 func NewBytes() *[]byte {
 	if ret := bytesPool.Get(); ret != nil {
 		return ret.(*[]byte)
