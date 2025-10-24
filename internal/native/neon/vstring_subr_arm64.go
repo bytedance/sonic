@@ -13,7 +13,7 @@ var (
 )
 
 const (
-    _stack__vstring = 48
+    _stack__vstring = 144
 )
 
 var (
