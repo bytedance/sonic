@@ -5,4 +5,5 @@ go 1.16
 require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/stretchr/testify v1.10.0
+	github.com/bytedance/sonic v1.11.5
 )
