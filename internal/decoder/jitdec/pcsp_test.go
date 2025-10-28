@@ -17,13 +17,14 @@
 * limitations under the License.
  */
 
- package jitdec
+package jitdec
 
 import (
 	"testing"
 	"unsafe"
 
-    "github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/internal/jit"
+	"github.com/bytedance/sonic/loader"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -139,7 +140,13 @@ func sonicSigTrap(info unsafe.Pointer, c *sigctxt, gp unsafe.Pointer) bool {
 
 func TestAssembler_PCSP(t *testing.T) {
     testSigtrap = sonicSigTrap
-    f := new(_MockDecoder).Load()
+    a := new(_MockDecoder)
+	f := a.Load()
+	assert.Equal(t, a.Pcdata, loader.Pcdata{
+		{Val: int32(0), PC: 7}, // subq instruction
+		{Val: int32(_VD_size), PC: 40}, // addq instruction
+		{Val: int32(0), PC: 42}, // ret instructions
+	})
     pos, err := f("", 0, nil, nil, 0, "", nil)
     require.NoError(t, err)
     assert.Equal(t, 199, pos)
