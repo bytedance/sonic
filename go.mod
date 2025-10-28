@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/bytedance/gopkg v0.1.3
-	github.com/bytedance/sonic/loader v0.3.0
+	github.com/bytedance/sonic/loader v0.4.0
 	github.com/cloudwego/base64x v0.1.6
 	github.com/davecgh/go-spew v1.1.1
 	github.com/klauspost/cpuid/v2 v2.2.9
