@@ -126,11 +126,11 @@ func max(a, b int32) int32 {
 	return b
 }
 
-func pcdelta(ctxt *obj.Link, p *obj.Prog) uint32 {
-    if p.Link != nil {
-        return uint32(p.Link.Pc / int64(ctxt.Arch.MinLC))
+func nextPc(p *obj.Prog) uint32 {
+    if p.Link != nil && p.Pc + int64(p.Isize) != p.Link.Pc {
+        panic("p.PC + p.Isize != p.Link.PC")
     }
-    return uint32(p.Pc / int64(ctxt.Arch.MinLC))
+    return uint32(p.Pc + int64(p.Isize))
 }
 
 // NOTE: copied from https://github.com/twitchyliquid64/golang-asm/blob/8d7f1f783b11f9a00f5bcdfcae17f5ac8f22512e/obj/x86/obj6.go#L811.
@@ -140,47 +140,48 @@ func (self *Backend) GetPcspTable(ctxt *obj.Link, cursym *obj.LSym, newprog obj.
     var deltasp int32
     var maxdepth int32
     foundRet := false
-	for p := cursym.Func.Text; p != nil; p = p.Link {
+    p := cursym.Func.Text
+	for ; p != nil; p = p.Link {
         if foundRet {
             break
         }
 		switch p.As {
 		default: continue
 		case x86.APUSHL, x86.APUSHFL:
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
 			deltasp += 4
             maxdepth = max(maxdepth, deltasp)
 			continue
 
 		case x86.APUSHQ, x86.APUSHFQ:
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
             deltasp += 8
             maxdepth = max(maxdepth, deltasp)
 			continue
 
 		case x86.APUSHW, x86.APUSHFW:
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
             deltasp += 2
             maxdepth = max(maxdepth, deltasp)
 			continue
 
 		case x86.APOPL, x86.APOPFL:
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
             deltasp -= 4
 			continue
 
 		case x86.APOPQ, x86.APOPFQ:
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
             deltasp -= 8
 			continue
 
 		case x86.APOPW, x86.APOPFW:
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
             deltasp -= 2
 			continue
 
 		case x86.AADJSP:
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
 			deltasp += int32(p.From.Offset)
             maxdepth = max(maxdepth, deltasp)
 			continue
@@ -188,7 +189,7 @@ func (self *Backend) GetPcspTable(ctxt *obj.Link, cursym *obj.LSym, newprog obj.
         case x86.ASUBQ:
             // subq %rsp, $imm
             if p.To.Reg == x86.REG_SP && p.To.Type == obj.TYPE_REG {
-                pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+                pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
                 deltasp += int32(p.From.Offset)
                 maxdepth = max(maxdepth, deltasp)
             }
@@ -196,7 +197,7 @@ func (self *Backend) GetPcspTable(ctxt *obj.Link, cursym *obj.LSym, newprog obj.
         case x86.AADDQ:
             // addq %rsp, $imm
             if p.To.Reg == x86.REG_SP && p.To.Type == obj.TYPE_REG {
-                pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+                pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
                 deltasp -= int32(p.From.Offset)
             }
             continue
@@ -204,10 +205,15 @@ func (self *Backend) GetPcspTable(ctxt *obj.Link, cursym *obj.LSym, newprog obj.
             if deltasp != 0 {
                 panic("unbalanced PUSH/POP")
             }
-            pcdata = append(pcdata, loader.Pcvalue{PC: pcdelta(ctxt, p), Val: int32(deltasp)})
+            pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
             foundRet = true
 		}
 	}
-    pcdata = append(pcdata, loader.Pcvalue{PC: uint32(cursym.Size), Val: int32(maxdepth)})
+
+    // the instructions after the RET instruction
+    if p != nil {
+        pcdata = append(pcdata, loader.Pcvalue{PC: uint32(cursym.Size), Val: int32(maxdepth)})
+    }
+    
     return pcdata
 }
