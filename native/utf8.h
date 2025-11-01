@@ -38,7 +38,11 @@
 #include "test/xassert.h"
 #include "test/xprintf.h"
 
-static inline ssize_t valid_utf8_4byte(uint32_t ubin) {
+#if defined(__SVE__)
+    #include <arm_sve.h>
+#endif
+
+static ssize_t valid_utf8_4byte(uint32_t ubin) {
     /*
      Each unicode code point is encoded as 1 to 4 bytes in UTF-8 encoding,
      we use 4-byte mask and pattern value to validate UTF-8 byte sequence,
@@ -209,7 +213,7 @@ static always_inline long validate_utf8_errors(const GoString* s) {
 }
 
 // SIMD implementation
-#if USE_AVX2
+#if defined(USE_AVX2)
 
     static always_inline __m256i simd256_shr(const __m256i input, const int shift) {
         __m256i shifted = _mm256_srli_epi16(input, shift);
@@ -460,8 +464,8 @@ static always_inline long validate_utf8_errors(const GoString* s) {
     static always_inline void check_remain(utf8_checker* checker, const uint8_t* start, const uint8_t* end) {
         uint8_t buffer[64] = {0};
         int i = 0;
-        while (start < end) {
-            buffer[i++] = *(start++);
+	    while (start < end) {
+	        buffer[i++] = *(start++);
         };
         check64(checker, buffer);
         check_eof(checker);
@@ -490,4 +494,316 @@ static always_inline long validate_utf8_errors(const GoString* s) {
         check_remain(&checker, start, end);
         return check_error(&checker) ? -1 : 0;
     }
+
+#elif defined(__SVE__)
+
+static always_inline svuint8_t simd256_shr(const svuint8_t input, const int shift) {
+    svuint16_t shifted = svlsr_n_u16_z(svptrue_b16(), svreinterpret_u16_u8(input), shift);
+    return svand_n_u8_z(svptrue_b8(), svreinterpret_u8_u16(shifted), (0xFF >> shift));
+}
+
+#define simd256_prev(input, prev, N) svext_u8(prev, input, (32-(N)));
+
+static always_inline svuint8_t must_be_2_3_continuation(const svuint8_t prev2, const svuint8_t prev3) {
+    svuint8_t is_third_byte = svqsub_u8(prev2, svdup_n_u8(0b11100000u-1)); // Only 111_____ will be > 0
+    svuint8_t is_fourth_byte = svqsub_u8(prev3, svdup_n_u8(0b11110000u-1)); // Only 1111____ will be > 0
+    svuint8_t or_result = svorr_u8_z(svptrue_b8(), is_third_byte, is_fourth_byte);
+    return svsel_u8(svcmpgt_n_u8(svptrue_b8(), or_result, 0), svdup_u8(0xFF), svdup_u8(0x00));
+}
+
+static always_inline svuint8_t simd256_lookup16(const svuint8_t input, const uint8_t* table) {
+    svuint8_t svarr = svld1rq_u8(svptrue_b8(), table);
+    svuint8_t idx = svand_n_u8_z(svptrue_b8(), input, 0x0F);
+    return svtbl_u8(svarr, idx);
+}
+
+ //
+  // Return nonzero if there are incomplete multibyte characters at the end of the block:
+  // e.g. if there is a 4-byte character, but it's 3 bytes from the end.
+  //
+      static always_inline  svuint8_t is_incomplete(const svuint8_t input) {
+    // If the previous input's last 3 bytes match this, they're too short (they ended at EOF):
+    // ... 1111____ 111_____ 11______
+      const uint8_t tab[32] = {
+      255, 255, 255, 255, 255, 255, 255, 255,
+      255, 255, 255, 255, 255, 255, 255, 255,
+      255, 255, 255, 255, 255, 255, 255, 255,
+      255, 255, 255, 255, 255, 0b11110000u-1, 0b11100000u-1, 0b11000000u-1};
+        const svuint8_t max_value = svld1_u8(svptrue_b8(), &tab[0]);
+        return svsub_u8_z(svptrue_b8(), input, max_value);
+    }
+
+  static always_inline svuint8_t check_special_cases(const svuint8_t input, const svuint8_t prev1) {
+    // Bit 0 = Too Short (lead byte/ASCII followed by lead byte/ASCII)
+    // Bit 1 = Too Long (ASCII followed by continuation)
+    // Bit 2 = Overlong 3-byte
+    // Bit 4 = Surrogate
+    // Bit 5 = Overlong 2-byte
+    // Bit 7 = Two Continuations
+     static const uint8_t TOO_SHORT   = 1<<0; // 11______ 0_______
+                                                // 11______ 11______
+     static const uint8_t TOO_LONG    = 1<<1; // 0_______ 10______
+     static const uint8_t OVERLONG_3  = 1<<2; // 11100000 100_____
+     static const uint8_t SURROGATE   = 1<<4; // 11101101 101_____
+     static const uint8_t OVERLONG_2  = 1<<5; // 1100000_ 10______
+     static const uint8_t TWO_CONTS   = 1<<7; // 10______ 10______
+     static const uint8_t TOO_LARGE   = 1<<3; // 11110100 1001____
+                                                // 11110100 101_____
+                                                // 11110101 1001____
+                                                // 11110101 101_____
+                                                // 1111011_ 1001____
+                                                // 1111011_ 101_____
+                                                // 11111___ 1001____
+                                                // 11111___ 101_____
+    static const uint8_t TOO_LARGE_1000 = 1<<6;
+                                                // 11110101 1000____
+                                                // 1111011_ 1000____
+                                                // 11111___ 1000____
+    static const uint8_t OVERLONG_4  = 1<<6; // 11110000 1000____
+
+    const svuint8_t prev1_shr4 = simd256_shr(prev1, 4);
+    static const uint8_t tab1[16] = {
+              // 0_______ ________ <ASCII in byte 1>
+      TOO_LONG, TOO_LONG, TOO_LONG, TOO_LONG,
+      TOO_LONG, TOO_LONG, TOO_LONG, TOO_LONG,
+      // 10______ ________ <continuation in byte 1>
+      TWO_CONTS, TWO_CONTS, TWO_CONTS, TWO_CONTS,
+      // 1100____ ________ <two byte lead in byte 1>
+      TOO_SHORT | OVERLONG_2,
+      // 1101____ ________ <two byte lead in byte 1>
+      TOO_SHORT,
+      // 1110____ ________ <three byte lead in byte 1>
+      TOO_SHORT | OVERLONG_3 | SURROGATE,
+      // 1111____ ________ <four+ byte lead in byte 1>
+      TOO_SHORT | TOO_LARGE | TOO_LARGE_1000 | OVERLONG_4,
+    };
+    svuint8_t byte_1_high = simd256_lookup16(prev1_shr4, tab1);
+    
+
+    const uint8_t CARRY = TOO_SHORT | TOO_LONG | TWO_CONTS; // These all have ____ in byte 1 .
+    svuint8_t prev1_low = svand_n_u8_z(svptrue_b8(), prev1, 0x0F);
+    static const uint8_t tab2[16] = {
+      // ____0000 ________
+      CARRY | OVERLONG_3 | OVERLONG_2 | OVERLONG_4,
+      // ____0001 ________
+      CARRY | OVERLONG_2,
+      // ____001_ ________
+      CARRY,
+      CARRY,
+
+      // ____0100 ________
+      CARRY | TOO_LARGE,
+      // ____0101 ________
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      // ____011_ ________
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+
+      // ____1___ ________
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      // ____1101 ________
+      CARRY | TOO_LARGE | TOO_LARGE_1000 | SURROGATE,
+      CARRY | TOO_LARGE | TOO_LARGE_1000,
+      CARRY | TOO_LARGE | TOO_LARGE_1000
+    };
+    svuint8_t byte_1_low = simd256_lookup16(prev1_low, tab2);
+    
+
+    const svuint8_t input_shr4 = simd256_shr(input, 4);
+    static const uint8_t tab3[16] = {
+      // ________ 0_______ <ASCII in byte 2>
+      TOO_SHORT, TOO_SHORT, TOO_SHORT, TOO_SHORT,
+      TOO_SHORT, TOO_SHORT, TOO_SHORT, TOO_SHORT,
+
+      // ________ 1000____
+      TOO_LONG | OVERLONG_2 | TWO_CONTS | OVERLONG_3 | TOO_LARGE_1000 | OVERLONG_4,
+      // ________ 1001____
+      TOO_LONG | OVERLONG_2 | TWO_CONTS | OVERLONG_3 | TOO_LARGE,
+      // ________ 101_____
+      TOO_LONG | OVERLONG_2 | TWO_CONTS | SURROGATE  | TOO_LARGE,
+      TOO_LONG | OVERLONG_2 | TWO_CONTS | SURROGATE  | TOO_LARGE,
+
+      // ________ 11______
+      TOO_SHORT, TOO_SHORT, TOO_SHORT, TOO_SHORT
+    };
+    svuint8_t byte_2_high = simd256_lookup16(input_shr4, tab3);
+     
+
+    return svand_u8_z(svptrue_b8(), svand_u8_z(svptrue_b8(), byte_1_high, byte_1_low), byte_2_high);
+  }
+
+    static always_inline svuint8_t check_multibyte_lengths(const svuint8_t input, const svuint8_t prev_input, const svuint8_t sc) {
+    svuint8_t prev2 = simd256_prev(input, prev_input, 2);
+    svuint8_t prev3 = simd256_prev(input, prev_input, 3);
+    
+    
+    svuint8_t must23 = must_be_2_3_continuation(prev2, prev3);
+    
+    svuint8_t must23_80 = svand_n_u8_z(svptrue_b8(), must23, 0x80);
+    
+    return sveor_u8_z(svptrue_b8(), must23_80, sc);
+  }
+
+
+    // Check whether the current bytes are valid UTF-8.
+    static always_inline svuint8_t check_utf8_bytes(const svuint8_t input, const svuint8_t prev_input) {
+        // Flip prev1...prev3 so we can easily determine if they are 2+, 3+ or 4+ lead bytes
+        // (2, 3, 4-byte leads become large positive numbers instead of small negative numbers)
+        svuint8_t prev1 = simd256_prev(input, prev_input, 1);
+        svuint8_t sc    = check_special_cases(input, prev1);
+        svuint8_t ret  = check_multibyte_lengths(input, prev_input, sc);
+        return ret;
+    }
+
+    static always_inline bool is_ascii(const svuint8_t input) {
+      svbool_t bit7 = svcmpge_n_u8(svptrue_b8(), input, 0x80);
+      uint32_t *p = (uint32_t*)&bit7;
+      return (*p) == 0;
+    }
+
+    typedef struct {
+      uint8_t err[32];
+      uint8_t prev_incom[32];
+      uint8_t prev_input[32];
+    } utf8_checker;
+
+    static always_inline void utf8_checker_init(utf8_checker* checker) {
+      svst1_u8(svptrue_b8(), checker->err, svdup_u8(0));
+      svst1_u8(svptrue_b8(), checker->prev_incom, svdup_u8(0));
+      svst1_u8(svptrue_b8(), checker->prev_input, svdup_u8(0));
+    }
+
+    static always_inline bool check_error(utf8_checker* checker) {
+      return svptest_any(svptrue_b8(), svcmpne(svptrue_b8(), svld1_u8(svptrue_b8(), checker->err), svdup_n_u8(0)));
+    }
+
+    static always_inline void check64_utf(utf8_checker* checker, const uint8_t* start) {
+        svuint8_t input = svld1_u8(svptrue_b8(), start);
+        svuint8_t input2 = svld1_u8(svptrue_b8(), start + 32);
+        // check utf-8 chars
+        svuint8_t error1 = check_utf8_bytes(input, svld1_u8(svptrue_b8(), checker->prev_input));
+        svuint8_t error2 = check_utf8_bytes(input2, input);
+        svst1_u8(svptrue_b8(),
+		 checker->err,
+		 svorr_u8_z(svptrue_b8(), svld1_u8(svptrue_b8(), checker->err), svorr_u8_z(svptrue_b8(), error1, error2)));
+	svst1_u8(svptrue_b8(), checker->prev_input, input2);
+	svst1_u8(svptrue_b8(), checker->prev_incom, is_incomplete(input2));
+    }
+
+    static always_inline void check64(utf8_checker *checker, const uint8_t* start) {
+        // fast path for contiguous ASCII
+        svuint8_t input = svld1_u8(svptrue_b8(), start);
+        svuint8_t input2 = svld1_u8(svptrue_b8(), start + 32);
+        svuint8_t reducer = svorr_u8_z(svptrue_b8(), input, input2);
+        // check utf-8
+        if (likely(is_ascii(reducer))) {
+	  svst1_u8(svptrue_b8(),
+		   checker->err,
+		   svorr_u8_z(svptrue_b8(), svld1_u8(svptrue_b8(), checker->err), svld1_u8(svptrue_b8(), checker->prev_incom)));
+            return;
+        }
+        check64_utf(checker, start);
+    }
+
+    static always_inline void check128(utf8_checker *checker, const uint8_t* start) {
+        // fast path for contiguous ASCII
+        svuint8_t input = svld1_u8(svptrue_b8(), start);
+        svuint8_t input2 = svld1_u8(svptrue_b8(), start + 32);
+        svuint8_t input3 = svld1_u8(svptrue_b8(), start + 64);
+        svuint8_t input4 = svld1_u8(svptrue_b8(), start + 96);
+        
+        svuint8_t reducer1 = svorr_u8_z(svptrue_b8(), input, input2);
+        svuint8_t reducer2 = svorr_u8_z(svptrue_b8(), input3, input4);
+        svuint8_t reducer  = svorr_u8_z(svptrue_b8(), reducer1, reducer2);
+
+        // full 128 bytes are ascii
+        if (likely(is_ascii(reducer))) {
+	  svst1_u8(svptrue_b8(),
+		   checker->err,
+		   svorr_u8_z(svptrue_b8(), svld1_u8(svptrue_b8(), checker->err), svld1_u8(svptrue_b8(), checker->prev_incom)));
+            return;
+        }
+
+        // first 64 bytes is ascii, next 64 bytes must be utf8
+        if (likely(is_ascii(reducer1))) {
+	    svst1_u8(svptrue_b8(),
+	  	   checker->err,
+	  	   svorr_u8_z(svptrue_b8(), svld1_u8(svptrue_b8(), checker->err), svld1_u8(svptrue_b8(), checker->prev_incom)));
+	    check64_utf(checker, start + 64);
+            return;
+        }
+
+        // first 64 bytes has utf8, next 64 bytes
+        check64_utf(checker, start);
+        if (unlikely(is_ascii(reducer2))) {
+	  svst1_u8(svptrue_b8(),
+		   checker->err,
+		   svorr_u8_z(svptrue_b8(), svld1_u8(svptrue_b8(), checker->err), svld1_u8(svptrue_b8(), checker->prev_incom)));
+        } else {
+            check64_utf(checker, start + 64);
+        }
+    }
+
+    static always_inline void check_eof(utf8_checker *checker) {
+      svst1_u8(svptrue_b8(),
+	       checker->err,
+	       svorr_u8_z(svptrue_b8(), svld1_u8(svptrue_b8(), checker->err), svld1_u8(svptrue_b8(), checker->prev_incom)));
+    }
+
+    static always_inline void check_remain(utf8_checker *checker, const uint8_t* start, const uint8_t* end) {
+        uint8_t buffer[64] = {0};
+        int i = 0;
+        uint16_t *p1 = buffer, *p2 = start, *p3 = end;
+        switch ((end - start) % 4) {
+                case 0:
+            uint32_t *q1 = buffer, *q2 = start, *q3 = end;
+            while (q2 < q3) {
+            *(q1++) = *(q2++);
+            }
+            break;
+        case 2:
+            uint16_t *p1 = buffer, *p2 = start, *p3 = end;
+            while (p2 < p3) {
+                *(p1++) = *(p2++);
+            }
+            break;
+        default:
+            while (start < end) {
+                buffer[i++] = *(start++);
+            }
+            break;
+        }
+            check64(checker, buffer);
+            check_eof(checker);
+    }
+
+    static always_inline long validate_utf8_sve(const GoString* s) {
+        xassert(s->buf != NULL || s->len != 0);
+        const uint8_t* start = (const uint8_t*)(s->buf);
+        const uint8_t* end   = (const uint8_t*)(s->buf + s->len);
+        /* check eof */
+        if (s->len == 0) {
+            return 0;
+        }
+        utf8_checker checker;
+	utf8_checker_init(&checker);
+	
+        while (start < (end - 128)) {
+            check128(&checker, start);
+            if (check_error(&checker)) {
+            }
+            start += 128;
+        };
+        while (start < end - 64) {
+            check64(&checker, start);
+            start += 64;
+        }
+        check_remain(&checker, start, end);
+        return check_error(&checker) ? -1 : 0;
+    }
+
 #endif
