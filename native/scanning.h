@@ -24,6 +24,11 @@
 #include "atof_native.h"
 #include "atof_eisel_lemire.h"
 
+#if defined(__SVE__)
+    #include <arm_sve.h>
+#endif
+
+
 static always_inline long skip_number_1(const GoString *src, long *p);
 static always_inline void vnumber_1(const GoString *src, long *p, JsonState *ret);
 static always_inline long skip_string_1(const GoString *src, long *p, uint64_t flags);
@@ -169,6 +174,19 @@ static always_inline ssize_t advance_string_default(const GoString *src, long p,
     uint32_t s1;
     uint32_t t0;
     uint32_t t1;
+#elif defined(__SVE__)
+    svuint8_t v0;
+    svuint8_t v1;
+    __m256i q0;
+    __m256i q1;
+    __m256i x0;
+    __m256i x1;
+    svuint8_t cq = svdup_n_u8(0x22); //'"'
+    svuint8_t cx = svdup_n_u8(0x5C); //'\\'
+    uint32_t s0;
+    uint32_t s1;
+    uint32_t t0;
+    uint32_t t1;
 #else
     /* initialize vectors */
     __m128i v0;
@@ -219,6 +237,19 @@ static always_inline ssize_t advance_string_default(const GoString *src, long p,
         t1 = _mm256_movemask_epi8 (x1);
         m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
+#elif defined(__SVE__)
+        v0 = svld1_u8(svptrue_b8(), (const void *)(sp +  0));
+        v1 = svld1_u8(svptrue_b8(), (const void *)(sp + 32));
+        svbool_t q0_pg = svcmpeq_u8(svptrue_b8(), v0, cq);
+        svbool_t q1_pg = svcmpeq_u8(svptrue_b8(), v1, cq);
+        svbool_t x0_pg = svcmpeq_u8(svptrue_b8(), v0, cx);
+        svbool_t x1_pg = svcmpeq_u8(svptrue_b8(), v1, cx);
+        uint32_t *bit7_q0 = (uint32_t *)&q0_pg;
+        uint32_t *bit7_q1 = (uint32_t *)&q1_pg;
+        uint32_t *bit7_x0 = (uint32_t *)&x0_pg;
+        uint32_t *bit7_x1 = (uint32_t *)&x1_pg;
+        m0 = ((uint64_t)(*bit7_q1) << 32) | (uint64_t)(*bit7_q0);
+        m1 = ((uint64_t)(*bit7_x1) << 32) | (uint64_t)(*bit7_x0);
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -273,6 +304,14 @@ static always_inline ssize_t advance_string_default(const GoString *src, long p,
         t0 = _mm256_movemask_epi8 (x0);
         m0 = (uint64_t)s0;
         m1 = (uint64_t)t0;
+#elif defined(__SVE__)
+        v0 = svld1_u8(svptrue_b8(), (uint8_t *)(sp));
+        svbool_t q0_pg = svcmpeq(svptrue_b8(), v0, cq);
+        svbool_t x0_pg = svcmpeq(svptrue_b8(), v0, cx);
+        uint32_t *bit7_q0 = (uint32_t *)&q0_pg;
+        uint32_t *bit7_x0 = (uint32_t *)&x0_pg;
+        m0 = (uint64_t)(*bit7_q0);
+        m1 = (uint64_t)(*bit7_x0);
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -359,6 +398,23 @@ static always_inline int _mm256_cchars_mask(__m256i v) {
 // ascii: 0x00 ~ 0x7F
 static always_inline int _mm256_nonascii_mask(__m256i v) {
     return _mm256_movemask_epi8(v);
+}
+
+#elif defined(__SVE__)
+
+static always_inline int _mm256_get_mask(svint8_t v, svint8_t t) {
+    svbool_t pg = svcmpeq_s8(svptrue_b8(), v, t);
+    uint32_t *p = (uint32_t *)&pg;
+    return *p;
+}
+
+// control char: 0x00 ~ 0x1F
+static always_inline int _mm256_cchars_mask(svint8_t v) {
+    svbool_t e1pg = svcmpgt_n_s8(svptrue_b8(), v, -1);
+    svbool_t e2pg = svcmpgt_n_s8(svptrue_b8(), v, 31);
+    uint32_t *bit7_e1 = (uint32_t *)&e1pg;
+    uint32_t *bit7_e2 = (uint32_t *)&e2pg;
+    return ~(*bit7_e2) & (*bit7_e1);
 }
 
 #endif
@@ -488,6 +544,15 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
     uint32_t s0, s1;
     uint32_t t0, t1;
     uint32_t c0, c1;
+#elif defined(__SVE__)
+    svint8_t v0;
+    svint8_t v1;
+    svint8_t cq = svdup_n_s8(0x22); //'"
+    svint8_t cx = svdup_n_s8(0x5C); // '\\'
+    /* partial masks */
+    uint32_t s0, s1;
+    uint32_t t0, t1;
+    uint32_t c0, c1;
 #else
     /* initialize vectors */
     __m128i v0;
@@ -524,6 +589,18 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
         m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
         m2 = ((uint64_t)c1 << 32) | (uint64_t)c0;
+#elif defined(__SVE__)
+        v0 = svld1_s8(svptrue_b8(), (const void *)(sp +  0));
+        v1 = svld1_s8(svptrue_b8(), (const void *)(sp + 32));
+        s0 = _mm256_get_mask(v0, cq);
+        s1 = _mm256_get_mask(v1, cq);
+        t0 = _mm256_get_mask(v0, cx);
+        t1 = _mm256_get_mask(v1, cx);
+        c0 = _mm256_cchars_mask(v0);
+        c1 = _mm256_cchars_mask(v1);
+        m0 = ((uint64_t)s1 << 32) | s0;
+        m1 = ((uint64_t)t1 << 32) | t0;
+        m2 = ((uint64_t)c1 << 32) | c0;
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -587,6 +664,14 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
     if (likely(nb >= 32)) {
 #if USE_AVX2
         v0 = _mm256_loadu_si256   ((const void *)sp);
+        s0 = _mm256_get_mask (v0, cq);
+        t0 = _mm256_get_mask (v0, cx);
+        c0 = _mm256_cchars_mask(v0);
+        m0 = (uint64_t)s0;
+        m1 = (uint64_t)t0;
+        m2 = (uint64_t)c0;
+#elif defined(__SVE__)
+        v0 = svld1_s8(svptrue_b8(), (const int8_t *)(sp));
         s0 = _mm256_get_mask (v0, cq);
         t0 = _mm256_get_mask (v0, cx);
         c0 = _mm256_cchars_mask(v0);
@@ -1106,6 +1191,65 @@ static always_inline long do_skip_number(const char *sp, size_t nb) {
         /* clear the upper half to prevent AVX-SSE transition penalty */
         _mm256_zeroupper();
     }
+#elif defined(__SVE__)
+    if (likely(nb >= 32)) {
+        do {
+            svint8_t sb = svld1_s8(svptrue_b8(), (int8_t *)sp);
+            svbool_t i0_b = svcmpgt_n_s8(svptrue_b8(), sb, '/');
+            uint32_t *bit7_i0 = (uint32_t *)&i0_b;
+            svbool_t i9_b = svcmpgt_n_s8(svptrue_b8(), sb, '9');
+            uint32_t *bit7_i9 = (uint32_t *)&i9_b;
+            svbool_t id_b = svcmpeq_n_s8(svptrue_b8(), sb, '.');
+            uint32_t *bit7_id = (uint32_t *)&id_b;
+            svbool_t il_b = svcmpeq_n_s8(svptrue_b8(), sb, 'e');
+            uint32_t *bit7_il = (uint32_t *)&il_b;
+            svbool_t iu_b = svcmpeq_n_s8(svptrue_b8(), sb, 'E');
+            uint32_t *bit7_iu = (uint32_t *)&iu_b;
+            svbool_t ip_b = svcmpeq_n_s8(svptrue_b8(), sb, '+');
+            uint32_t *bit7_ip = (uint32_t *)&ip_b;
+            svbool_t im_b = svcmpeq_n_s8(svptrue_b8(), sb, '-');
+            uint32_t *bit7_im = (uint32_t *)&im_b;
+            uint32_t bit_iv = ~(*bit7_i9) & (*bit7_i0);
+            uint32_t bit_ie = (*bit7_il) | (*bit7_iu);
+            uint32_t bit_is = (*bit7_ip) | (*bit7_im);
+            uint32_t bit_rt = bit_iv | (*bit7_id);
+            uint32_t bit_ru = bit_ie | bit_is;
+            uint32_t bit_rv = bit_rt | bit_ru;
+
+            uint32_t md = *bit7_id;
+            uint32_t me = bit_ie;
+            uint32_t ms = bit_is;
+            uint32_t mr = bit_rv;
+
+            /* mismatch position */
+            uint32_t v;
+            uint32_t i = __builtin_ctzll(~(uint64_t)mr | 0x0100000000);
+
+            /* mask out excess characters */
+            if (i != 32) {
+                md &= (1 << i) - 1;
+                me &= (1 << i) - 1;
+                ms &= (1 << i) - 1;
+            }
+            /* check & update decimal point, exponent and sign index */
+            check_bits(md)
+            check_bits(me)
+            check_bits(ms)
+            check_vidx(di, md)
+            check_vidx(ei, me)
+            check_vidx(si, ms)
+
+            /* check for valid number */
+            if (i != 32) {
+                sp += i;
+                goto check_index;
+            }
+            /* move to next block */
+            sp += 32;
+            nb -= 32;
+        } while (nb >= 32);
+    }
+
 #endif
 
     /* can do with SSE */
@@ -1309,6 +1453,15 @@ static always_inline uint64_t get_maskx64(const char *s, char c) {
     uint32_t m0 = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, _mm256_set1_epi8(c)));
     uint32_t m1 = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, _mm256_set1_epi8(c))); 
     return ((uint64_t)(m1) << 32) | (uint64_t)(m0);
+#elif defined(__SVE__)
+    svbool_t pg = svptrue_b8();
+    svuint8_t v0 = svld1_u8(pg, (const uint8_t *)s);
+    svuint8_t v1 = svld1_u8(pg, (const uint8_t *)(s + 32));
+    svbool_t cmp0_pg = svcmpeq_n_u8(pg, v0, c);
+    uint32_t *m0 = (uint32_t *)&cmp0_pg;
+    svbool_t cmp1_pg = svcmpeq_n_u8(pg, v1, c);
+    uint32_t *m1 = (uint32_t *)&cmp1_pg;
+    return ((uint64_t)(*m1) << 32) | (uint64_t)(*m0);
 #else
     __m128i v0 = _mm_loadu_si128((__m128i const*)s);
     __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
@@ -1327,6 +1480,11 @@ static always_inline uint64_t get_maskx32(const char *s, char c) {
     __m256i v0 = _mm256_loadu_si256((__m256i const *)s);
     uint64_t m0 = (unsigned)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, _mm256_set1_epi8(c)));
     return m0;
+#elif defined(__SVE__)
+    svuint8_t v0 = svld1_u8(svptrue_b8(), (const uint8_t *)s);
+    svbool_t cmp_pg = svcmpeq_n_u8(svptrue_b8(), v0, c);
+    uint32_t *bit7 = (uint32_t *)&cmp_pg;
+    return (uint64_t)(*bit7);
 #else
     __m128i v0 = _mm_loadu_si128((__m128i const*)s);
     __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
@@ -1376,6 +1534,17 @@ static always_inline int get_structural_maskx32(const char *s) {
     __m256i sv = _mm256_or_si256(_mm256_or_si256(e1, e2), e3);
     return _mm256_movemask_epi8(sv);
 }
+#elif defined(__SVE__)
+static always_inline int get_structural_maskx32(const char *s) {
+    svuint8_t v = svld1_u8(svptrue_b8(), s);
+    svbool_t e1_pg = svcmpeq_n_u8(svptrue_b8(), v, '}');
+    svbool_t e2_pg = svcmpeq_n_u8(svptrue_b8(), v, ']');
+    svbool_t e3_pg = svcmpeq_n_u8(svptrue_b8(), v, ',');
+    uint32_t *bit7_e1 = (uint32_t *)&e1_pg;
+    uint32_t *bit7_e2 = (uint32_t *)&e2_pg;
+    uint32_t *bit7_e3 = (uint32_t *)&e3_pg;
+    return (*bit7_e1) | (*bit7_e2) | (*bit7_e3);
+}
 #endif
 
 static always_inline int get_structural_maskx16(const char *s) {
@@ -1405,6 +1574,15 @@ static always_inline long skip_number_fast(const GoString *src, long *p) {
     int m = 0;
 
 #if USE_AVX2
+    while (likely(nb >= 32)) {
+        if ((m = get_structural_maskx32(s))) {
+            *p = s - src->buf + __builtin_ctzll(m);
+            backward_space_chars(src, p);
+            return vi;
+        }
+        s += 32, nb -= 32;
+    }
+#elif defined(__SVE__)
     while (likely(nb >= 32)) {
         if ((m = get_structural_maskx32(s))) {
             *p = s - src->buf + __builtin_ctzll(m);
@@ -1599,6 +1777,29 @@ static always_inline bool xmemcmpeq(const char * s1, const char * s2, size_t n) 
         __m256i  v1   = _mm256_loadu_si256((const void *)s1);
         __m256i  v2   = _mm256_loadu_si256((const void *)s2);
         uint32_t mask = ~((uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, v2)));
+        bool eq = (mask == 0) || (__builtin_ctzll(mask) >= n);
+        return eq;
+    }
+#elif defined(__SVE__)
+    while (n >= 32) {
+        svint8_t v1   = svld1_s8(svptrue_b8(), (const int8_t *)s1);
+        svint8_t v2   = svld1_s8(svptrue_b8(), (const int8_t *)s2);
+        svbool_t pg = svcmpeq_s8(svptrue_b8(), v1, v2);
+        uint32_t *p = (uint32_t *)&pg;
+        if (~(*p)) return false;
+        s1 += 32;
+        s2 += 32;
+        n  -= 32;
+    };
+    c1 = vec_cross_page(s1, 32);
+    c2 = vec_cross_page(s2, 32);
+    // not cross page
+    if (!c1 && !c2) {
+        svint8_t v1   = svld1_s8(svptrue_b8(), (const int8_t *)s1);
+        svint8_t v2   = svld1_s8(svptrue_b8(), (const int8_t *)s2);
+        svbool_t pg1 = svcmpeq_s8(svptrue_b8(), v1, v2);
+        uint32_t *p = (uint32_t *)&pg1;
+        uint32_t mask = ~(*p);
         bool eq = (mask == 0) || (__builtin_ctzll(mask) >= n);
         return eq;
     }
