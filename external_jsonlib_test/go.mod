@@ -3,6 +3,7 @@ module github.com/bytedance/sonic/external_jsonlib_test
 go 1.18
 
 require (
+	github.com/bitly/go-simplejson v0.5.1
 	github.com/buger/jsonparser v1.1.1
 	github.com/bytedance/sonic v1.11.5-alpha3
 	github.com/goccy/go-json v0.9.11

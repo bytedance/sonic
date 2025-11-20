@@ -138,6 +138,17 @@ func (self *Node)  Check() error {
     }
 }
 
+
+func (self *Node) checkFast() error {
+    if self == nil {
+        return ErrNotExist
+    } else if self.t != V_ERROR {
+        return nil
+    } else {
+        return self
+    }
+}
+
 // isRaw returns true if node's underlying value is raw json
 //
 // Deprecated: not concurrent safe
@@ -181,13 +192,20 @@ func (self *Node) Raw() (string, error) {
 }
 
 func (self *Node) checkRaw() error {
-    if err := self.Check(); err != nil {
-        return err
+    if self == nil {
+        return ErrNotExist
     }
-    if self.isRaw() {
+
+    t := self.loadt()
+    if t == V_ERROR {
+        return self
+    }
+
+    if t & _V_RAW != 0 {
         self.parseRaw(false)
     }
-    return self.Check()
+
+   return self.checkFast()
 }
 
 // Bool returns bool value represented by this node, 
@@ -587,8 +605,10 @@ func (self *Node) Set(key string, node Node) (bool, error) {
     if err := self.checkRaw(); err != nil {
         return false, err
     }
-    if err := node.Check(); err != nil {
-        return false, err 
+
+    // check the node, not use Check() to avoid unescape the node parameter
+    if node.t == V_ERROR {
+        return false, node
     }
     
     if self.t == _V_NONE || self.t == types.V_NULL {
