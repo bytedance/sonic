@@ -27,8 +27,7 @@ import (
 )
 
 const (
-    _MinLC uint8 = 1
-    _PtrSize uint8 = 8
+	_PtrSize uint8 = 8
 )
 
 const (

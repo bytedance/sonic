@@ -31,16 +31,20 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-    // defer func() {
-    //     if r := recover(); r != nil {
-    //         runtime.GC()
-    //         if r != "hook1" {
-    //             t.Fatal("not right panic:" + r.(string))
-    //         }
-    //     } else {
-    //         t.Fatal("not panic")
-    //     }
-    // }()
+	if runtime.GOARCH != "amd64" {
+		t.Skip("This test uses AMD64-specific bytecode")
+	}
+
+	// defer func() {
+	//     if r := recover(); r != nil {
+	//         runtime.GC()
+	//         if r != "hook1" {
+	//             t.Fatal("not right panic:" + r.(string))
+	//         }
+	//     } else {
+	//         t.Fatal("not panic")
+	//     }
+	// }()
 
     var hstr string
 
