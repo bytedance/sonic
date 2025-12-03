@@ -75,7 +75,11 @@ func (self Pcdata) MarshalBinary() (data []byte, err error) {
         if v.PC < sp {
             panic("PC must be in ascending order!")
         }
-        dp := uint64(v.PC - sp)
+        // CRITICAL FIX: PC delta must be divided by _MinLC (PC quantum)
+        // ARM64 uses 4-byte aligned instructions (_MinLC=4)
+        // x86 uses 1-byte aligned instructions (_MinLC=1)
+        // Runtime expects PC values to be in units of _MinLC
+        dp := uint64((v.PC - sp) / uint32(_MinLC))
         dv := int64(v.Val - sv)
         if dv == 0 || dp == 0 {
             continue
