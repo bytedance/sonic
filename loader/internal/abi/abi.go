@@ -13,6 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ //
+// (x86)
+// +------------------+
+// | args from caller |
+// +------------------+ <- frame->argp
+// |  return address  |
+// +------------------+
+// |  caller's BP (*) | (*) if framepointer_enabled && varp > sp
+// +------------------+ <- frame->varp
+// |     locals       |
+// +------------------+
+// |  args to callee  |
+// +------------------+ <- frame->sp
+//
+// (arm)
+// +------------------+
+// | args from caller |
+// +------------------+ <- frame->argp
+// | caller's retaddr |
+// +------------------+
+// |  caller's FP (*) | (*) on ARM64, if framepointer_enabled && varp > sp
+// +------------------+ <- frame->varp
+// |     locals       |
+// +------------------+
+// |  args to callee  |
+// +------------------+
+// |  return address  |
+// +------------------+ <- frame->sp
+//
+// varp > sp means that the function has a frame;
+// varp == sp means frameless function.
+*/
 
 package abi
 
