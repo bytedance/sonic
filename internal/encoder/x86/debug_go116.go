@@ -1,4 +1,4 @@
-// +build go1.17,!go1.17
+// +build !arm64,go1.17,!go1.17
 
 /*
  * Copyright 2021 ByteDance Inc.
