@@ -5,6 +5,7 @@ package rt
 
 import (
 	"encoding/base64"
+	"reflect"
 )
 
 func DecodeBase64(raw []byte) ([]byte, error) {
@@ -36,3 +37,6 @@ func EncodeBase64(buf []byte, src []byte) []byte {
 	buf = append(buf, '"')
 	return buf
 }
+var SubrB64Decode uintptr
+
+var SubrB64Encode uintptr = reflect.ValueOf(EncodeBase64).Pointer()

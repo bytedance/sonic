@@ -28,6 +28,10 @@ import (
 	"github.com/bytedance/sonic/option"
 )
 
+func GetUseVM() bool {
+	return vars.UseVM
+}
+
 func ForceUseJit() {
 	x86.SetCompiler(makeEncoderX86)
 	pretouchType = pretouchTypeX86
