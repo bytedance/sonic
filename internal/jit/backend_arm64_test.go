@@ -1,7 +1,8 @@
-//go:build amd64
-// +build amd64
+//go:build arm64
+// +build arm64
+
 /*
- * Copyright 2021 ByteDance Inc.
+ * Copyright 2025 Huawei Technologies Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +24,18 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/twitchyliquid64/golang-asm/obj"
-	"github.com/twitchyliquid64/golang-asm/obj/x86"
+	"github.com/twitchyliquid64/golang-asm/obj/arm64"
 )
 
-func TestBackend(t *testing.T) {
-	e := newBackend("amd64")
+func TestArmBackend(t *testing.T) {
+	e := newBackend("arm64")
 	p := e.New()
-	p.As = x86.AVPTEST
-	(*BaseAssembler)(nil).assignOperands(p, []obj.Addr{Reg("Y2"), Reg("Y1")})
+	p.As = arm64.ANOOP
+	(*BaseAssembler)(nil).assignOperands(p, []obj.Addr{})
 	e.Append(p)
+	p2 := e.New()
+	p2.As = arm64.AEOR
+	(*BaseAssembler)(nil).assignOperands(p2, []obj.Addr{Reg("R0"), Reg("R1")})
+	e.Append(p2)
 	spew.Dump(e.Assemble())
 }
