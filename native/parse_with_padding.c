@@ -1,9 +1,11 @@
 #include "native.h"
 #include "simd.h"
 #include <stdint.h>
-
 #include "parsing.h"
 #include "scanning.h"
+#if defined(__SVE__)
+#include "arm_sve.h"
+#endif
 
 // Option and Error -----------------------------------------------------------
 
@@ -392,6 +394,33 @@ static always_inline uint64_t get_nonspace_bits(const uint8_t* s) {
     uint32_t mask_lo = (uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(lo, shuf_lo));
     uint32_t mask_hi = (uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(hi, shuf_hi));
     return ~((uint64_t)mask_lo | ((uint64_t)(mask_hi) << 32));
+#elif defined(__SVE__)
+    static const uint8_t data[32] = {
+        '\x20', 0, 0, 0, 0, 0, 0, 0,
+        0, '\x09', '\x0A', 0, 0, '\x0D', 0, 0,
+        '\x20', 0, 0, 0, 0, 0, 0, 0,
+        0, '\x09', '\x0A', 0, 0, '\x0D', 0, 0
+    };
+
+    const uint8_t *ptr = &data[0];
+    svbool_t pg = svptrue_b8();
+    svuint8_t space_tab = svld1_u8(pg, ptr);
+
+    svuint8_t lo = svld1_u8(svptrue_b8(), s);
+    svuint8_t hi = svld1_u8(svptrue_b8(), s+32);
+
+    svuint8_t idx_lo = svand_n_u8_z(svptrue_b8(), lo, 0x1F);
+    svuint8_t shuffle_lo = svtbl_u8(space_tab, idx_lo);
+    svuint8_t idx_hi = svand_n_u8_z(svptrue_b8(), hi, 0x1F);
+    svuint8_t shuffle_hi = svtbl_u8(space_tab, idx_hi);
+
+    svbool_t lo_res = svcmpeq_u8(svptrue_b8(), lo, shuffle_lo);
+    uint32_t *mask_lo = &lo_res;
+
+    svbool_t hi_res = svcmpeq_u8(svptrue_b8(), hi, shuffle_hi);
+    uint32_t *mask_hi = &hi_res;
+
+    return ~((uint64_t)*mask_lo | ((uint64_t)*mask_hi) << 32);
 #else
     __m128i space_tab = _mm_setr_epi8(
         '\x20', 0, 0, 0, 0, 0, 0, 0,

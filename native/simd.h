@@ -1,4 +1,6 @@
-
+#if defined(__SVE__)
+#include <arm_sve.h>
+#endif
 
 #include "native.h"
 
@@ -25,7 +27,7 @@ static always_inline mask128 v128_le(const v128u v1, const v128u v2) {
 }
 
 static always_inline mask128 v128_gt(const v128u v1, const v128u v2) {
-    __m128i sub = _mm_subs_epu8(v1, v2); 
+    __m128i sub = _mm_subs_epu8(v1, v2);
     return _mm_xor_si128(_mm_cmpeq_epi8(sub, _mm_setzero_si128()), _mm_set1_epi8('\xff'));
 }
 
@@ -45,7 +47,8 @@ static always_inline mask128 mask128_or(mask128 mask1, mask128 mask2) {
     return _mm_or_si128(mask1, mask2);
 }
 
-#ifdef __AVX2__
+//#ifdef __AVX2__
+#if defined(__AVX2__)
 
 typedef __m256i v256u;
 typedef __m256i mask256;
@@ -68,7 +71,7 @@ static inline mask256 v256_le(const v256u v1, const v256u v2) {
 }
 
 static inline mask256 v256_gt(const v256u v1, const v256u v2) {
-    __m256i sub = _mm256_subs_epu8(v1, v2); 
+    __m256i sub = _mm256_subs_epu8(v1, v2);
     return _mm256_xor_si256(_mm256_cmpeq_epi8(sub, _mm256_setzero_si256()), _mm256_set1_epi8('\xff'));
 }
 
@@ -88,16 +91,65 @@ static inline mask256 mask256_or(mask256 mask1, mask256 mask2) {
     return _mm256_or_si256(mask1, mask2);
 }
 
+#elif defined(__SVE__)
+
+typedef svuint8_t v256u;
+typedef svuint8_t mask256;
+
+static inline v256u v256_loadu(const uint8_t* ptr) {
+    return svld1_u8(svptrue_b8(), ptr);
+}
+
+static inline void v256_storeu(const v256u v, uint8_t* ptr) {
+    svst1_u8(svptrue_b8(), ptr, v);
+}
+
+static inline mask256 v256_eq(const v256u v1, const v256u v2) {
+    svbool_t pg = svcmpeq_u8(svptrue_b8(), v1, v2);
+    return svsel_u8(pg, svdup_u8(0xFF), svdup_u8(0));
+}
+
+static inline mask256 v256_le(const v256u v1, const v256u v2) {
+    svuint8_t max = svmax_u8_z(svptrue_b8(), v1, v2);
+    svbool_t pg = svcmpeq_u8(svptrue_b8(), max, v2);
+    return svsel_u8(pg, svdup_u8(0xFF), svdup_u8(0));
+}
+
+static inline mask256 v256_gt(const v256u v1, const v256u v2) {
+    svuint8_t sub = svqsub_u8(v1, v2);
+    svbool_t pg = svcmpeq_n_u8(svptrue_b8(), sub, 0);
+    svuint8_t zero = svdup_u8(0);
+    svuint8_t all_one = svdup_u8(0xFF);
+    return sveor_n_u8_z(pg, svsel_u8(pg, all_one, zero), 0xFF);
+}
+
+static inline v256u v256_splat(uint8_t ch) {
+    return svdup_u8(ch);
+}
+
+static inline uint32_t mask256_tobitmask(mask256 mask) {
+    svbool_t result = svcmpge_n_u8(svptrue_b8(), mask, 0x80);
+    return *((uint32_t *)&result);
+}
+
+static inline mask256 mask256_and(mask256 mask1, mask256 mask2) {
+    return svand_u8_z(svptrue_b8(), mask1, mask2);
+}
+
+static inline mask256 mask256_or(mask256 mask1, mask256 mask2) {
+    return svorr_u8_z(svptrue_b8(), mask1, mask2);
+}
+
 #else
 
 typedef struct {
     v128u lo;
-    v128u hi;   
+    v128u hi;
 } v256u;
 
 typedef struct {
     mask128 lo;
-    mask128 hi;   
+    mask128 hi;
 } mask256;
 
 static inline v256u v256_loadu(const uint8_t* ptr) {
@@ -117,7 +169,7 @@ static inline mask256 v256_le(const v256u v1, const v256u v2) {
     return (mask256){ v128_le(v1.lo, v2.lo), v128_le(v1.hi, v2.hi)};
 }
 
-static inline mask256 v256_gt(const v256u v1, const v256u v2) {
+static mask256 v256_gt(const v256u v1, const v256u v2) {
     return (mask256){ v128_gt(v1.lo, v2.lo), v128_gt(v1.hi, v2.hi)};
 }
 
@@ -125,7 +177,7 @@ static inline v256u v256_splat(uint8_t ch) {
     return (v256u){v128_splat(ch), v128_splat(ch)};
 }
 
-static inline uint32_t mask256_tobitmask(mask256 mask) {
+static uint32_t mask256_tobitmask(mask256 mask) {
     uint32_t lo = mask128_tobitmask(mask.lo);
     uint32_t hi = mask128_tobitmask(mask.hi);
     return lo | (hi << 16);
