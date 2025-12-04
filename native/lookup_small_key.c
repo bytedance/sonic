@@ -1,7 +1,9 @@
 #include "native.h"
  #include "simd.h"
  #include "test/xprintf.h"
-
+#if defined(__SVE__)
+#include <arm_sve.h>
+#endif
 // Fast Lookup Table -------------------------------------------------------
 
 static const int _HDR_SLOTS = 33;
@@ -35,6 +37,25 @@ static always_inline void to_lower(uint8_t* dst, const uint8_t* src, size_t len)
         q += 32;
         len -= 32;
     };
+#elif defined(__SVE__)
+      const svint8_t _A = svdup_s8('A' - 1);
+      const svint8_t Z_ = svdup_s8('Z' + 1);
+      const svint8_t delta = svdup_s8('a' - 'A');
+      svint8_t op, mingle, add, lower;
+      uint8_t* q = dst;
+      svbool_t gt, lt, is_upper;
+
+      while (len >= 32){
+          op = svld1_s8(svptrue_b8(), (int8_t *)src);
+          gt = svcmpgt_s8(svptrue_b8(), op, _A);
+          lt = svcmpgt_s8(svptrue_b8(), Z_, op);
+          is_upper = svand_b_z(svptrue_b8(), gt, lt);
+          svint8_t result = svadd_s8_m(is_upper, op, delta);
+          svst1_s8(svptrue_b8(), q, result);
+          src += 32;
+          q += 32;
+          len -= 32;
+      };
 #else 
     const __m128i _A = _mm_set1_epi8('A' - 1);
     const __m128i Z_ = _mm_set1_epi8('Z' + 1);

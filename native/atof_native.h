@@ -61,6 +61,9 @@ const static lshift_cheat LSHIFT_TAB[61];
 static always_inline void decimal_init(Decimal *d, char *dbuf, size_t cap) {
     d->d = dbuf;
     d->cap = cap;
+#if defined(__SVE__)
+#pragma clang loop vectorize(disable)
+#endif    
     for (int i = 0; i < d->cap; ++i) {
         d->d[i] = 0;
     }
@@ -308,6 +311,9 @@ static always_inline uint64_t rounded_integer(Decimal *d) {
 
     int i = 0;
     uint64_t n = 0;
+#if defined(__SVE__)
+    #pragma clang loop vectorize(disable)
+#endif
     for (i = 0; i < d->dp && i < d->nd; i++) {
         n = n * 10 + (d->d[i] - '0');
     }

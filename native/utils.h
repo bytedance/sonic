@@ -15,7 +15,9 @@
  */
 
 #pragma once
-
+#if defined(__SVE__)
+#include <arm_sve.h>
+#endif
 #include <string.h>
 #include "native.h"
 
@@ -47,7 +49,11 @@ static always_inline void memcpy32(void *__restrict dp, const void *__restrict s
 }
 
 static always_inline void memcpy64(void *__restrict dp, const void *__restrict sp) {
+#if defined(__SVE__)
+    svst1_u8(svptrue_b8(), dp, svld1_u8(svptrue_b8(), sp));
+#else
     memcpy32(dp, sp);
+#endif
     memcpy32(dp + 32, sp + 32);
 }
 
@@ -72,6 +78,13 @@ static always_inline void memcpy_p32(void *__restrict dp, const void *__restrict
 }
 
 static always_inline void memcpy_p64(void *__restrict dp, const void *__restrict sp, size_t nb) {
+#if defined(__SVE__)
+    if (nb >= 32) { 
+	    svst1_u8(svptrue_b8(), dp, svld1_u8(svptrue_b8(), sp));
+        sp += 32, dp += 32, nb -= 32;
+    }
+#else
     if (nb >= 32) { memcpy32(dp, sp); sp += 32, dp += 32, nb -= 32; }
+#endif
     memcpy_p32(dp, sp, nb);
 }
