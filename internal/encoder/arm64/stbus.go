@@ -1,8 +1,8 @@
-//go:build amd64
-// +build amd64
+//go:build arm64
+// +build arm64
 
 /**
- * Copyright 2024 ByteDance Inc.
+ * Copyright 2025 Huawei Technologies Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,28 @@
  * limitations under the License.
  */
 
-package x86
+package arm64
 
 import (
 	"unsafe"
 	_ "unsafe"
 
+	_ "encoding/base64"
 	"github.com/bytedance/sonic/internal/encoder/alg"
 	"github.com/bytedance/sonic/internal/encoder/prim"
 	"github.com/bytedance/sonic/internal/encoder/vars"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/loader"
-	_ "github.com/cloudwego/base64x"
 )
 
-var compiler func(*rt.GoType, ... interface{}) (interface{}, error)
+var compiler func(*rt.GoType, ...interface{}) (interface{}, error)
 
-func SetCompiler(c func(*rt.GoType, ... interface{}) (interface{}, error)) {
+func SetCompiler(c func(*rt.GoType, ...interface{}) (interface{}, error)) {
 	compiler = c
 }
 
 func ptoenc(p loader.Function) vars.Encoder {
-    return *(*vars.Encoder)(unsafe.Pointer(&p))
+	return *(*vars.Encoder)(unsafe.Pointer(&p))
 }
 
 func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars.Stack, fv uint64) error {
@@ -47,9 +47,8 @@ func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars
 	} else if fn, err := vars.FindOrCompile(vt, (fv&(1<<alg.BitPointerValue)) != 0, compiler); err != nil {
 		return err
 	} else if vt.Indirect() {
-		return	fn.(vars.Encoder)(buf, *vp, sb, fv)
+		return fn.(vars.Encoder)(buf, *vp, sb, fv)
 	} else {
 		return fn.(vars.Encoder)(buf, unsafe.Pointer(vp), sb, fv)
 	}
 }
-
