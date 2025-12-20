@@ -28,21 +28,85 @@ import (
 	"github.com/bytedance/sonic/internal/rt"
 )
 
-func Compact(p *[]byte, v []byte) error {
-	buf := vars.NewBuffer()
-	err := json.Compact(buf, v)
+// Compact appends the compacted form of the JSON-encoded src to dst.
+// It removes insignificant whitespace (outside of strings).
+// Returns error if src is not valid JSON.
+func Compact(dst *[]byte, src []byte) error {
+	// Handle empty input - same as encoding/json.Compact
+	if len(src) == 0 {
+		return nil
+	}
+	// Validate JSON first to ensure consistent behavior with encoding/json.Compact
+	if ok, _ := alg.Valid(src); !ok {
+		// Use standard library to get proper error message
+		return json.Unmarshal(src, new(interface{}))
+	}
+	return compactFast(dst, src)
+}
 
-	/* check for errors */
-	if err != nil {
-		return err
+// compactFast is a high-performance implementation of JSON compaction.
+// It assumes the input is valid JSON (caller must validate first).
+func compactFast(dst *[]byte, src []byte) error {
+	n := len(src)
+	if n == 0 {
+		return nil
 	}
 
-	/* add to result */
-	v = buf.Bytes()
-	*p = append(*p, v...)
+	// Pre-allocate capacity for the result (at most same length as input)
+	if cap(*dst)-len(*dst) < n {
+		newCap := len(*dst) + n
+		newBuf := make([]byte, len(*dst), newCap)
+		copy(newBuf, *dst)
+		*dst = newBuf
+	}
 
-	/* return the buffer into pool */
-	vars.FreeBuffer(buf)
+	inString := false
+	i := 0
+
+	for i < n {
+		c := src[i]
+
+		// Fast path: skip whitespace outside strings
+		if !inString {
+			// Check for whitespace: space, tab, newline, carriage return
+			if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
+				i++
+				// Batch skip consecutive whitespace
+				for i < n {
+					c = src[i]
+					if c != ' ' && c != '\t' && c != '\n' && c != '\r' {
+						break
+					}
+					i++
+				}
+				continue
+			}
+		}
+
+		// Handle string boundaries
+		if c == '"' {
+			inString = !inString
+			*dst = append(*dst, c)
+			i++
+			continue
+		}
+
+		// Handle escape sequences inside strings
+		if inString && c == '\\' {
+			*dst = append(*dst, c)
+			i++
+			if i < n {
+				*dst = append(*dst, src[i])
+				i++
+			}
+			continue
+		}
+
+		// Regular character - append to output
+		*dst = append(*dst, c)
+		i++
+	}
+
 	return nil
 }
 
@@ -101,5 +165,5 @@ func IsZero(val unsafe.Pointer, fv *resolver.FieldMeta) bool {
 	rv := reflect.NewAt(fv.Type, val).Elem()
 	b1 := fv.IsZero == nil && rv.IsZero()
 	b2 := fv.IsZero != nil && fv.IsZero(rv)
-	return  b1 || b2
+	return b1 || b2
 }

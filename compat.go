@@ -1,3 +1,4 @@
+//go:build (!amd64 && !arm64) || go1.26 || !go1.17 || (arm64 && !go1.20)
 // +build !amd64,!arm64 go1.26 !go1.17 arm64,!go1.20
 
 /*
@@ -19,32 +20,32 @@
 package sonic
 
 import (
-    `bytes`
-    `encoding/json`
-    `io`
-    `reflect`
+	"bytes"
+	"encoding/json"
+	"io"
+	"reflect"
 
-    `github.com/bytedance/sonic/option`
+	"github.com/bytedance/sonic/option"
 )
 
 const apiKind = UseStdJSON
 
 type frozenConfig struct {
-    Config
+	Config
 }
 
 // Froze convert the Config to API
 func (cfg Config) Froze() API {
-    api := &frozenConfig{Config: cfg}
-    return api
+	api := &frozenConfig{Config: cfg}
+	return api
 }
 
 func (cfg frozenConfig) marshalOptions(val interface{}, prefix, indent string) ([]byte, error) {
-    w := bytes.NewBuffer([]byte{})
-    enc := json.NewEncoder(w)
-    enc.SetEscapeHTML(cfg.EscapeHTML)
-    enc.SetIndent(prefix, indent)
-    err := enc.Encode(val)
+	w := bytes.NewBuffer([]byte{})
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(cfg.EscapeHTML)
+	enc.SetIndent(prefix, indent)
+	err := enc.Encode(val)
 	out := w.Bytes()
 
 	// json.Encoder always appends '\n' after encoding,
@@ -57,78 +58,78 @@ func (cfg frozenConfig) marshalOptions(val interface{}, prefix, indent string) (
 
 // Marshal is implemented by sonic
 func (cfg frozenConfig) Marshal(val interface{}) ([]byte, error) {
-    if !cfg.EscapeHTML {
-        return cfg.marshalOptions(val, "", "")
-    }
-    return json.Marshal(val)
+	if !cfg.EscapeHTML {
+		return cfg.marshalOptions(val, "", "")
+	}
+	return json.Marshal(val)
 }
 
 // MarshalToString is implemented by sonic
 func (cfg frozenConfig) MarshalToString(val interface{}) (string, error) {
-    out, err := cfg.Marshal(val)
-    return string(out), err
+	out, err := cfg.Marshal(val)
+	return string(out), err
 }
 
 // MarshalIndent is implemented by sonic
 func (cfg frozenConfig) MarshalIndent(val interface{}, prefix, indent string) ([]byte, error) {
-    if !cfg.EscapeHTML {
-        return cfg.marshalOptions(val, prefix, indent)
-    }
-    return json.MarshalIndent(val, prefix, indent)
+	if !cfg.EscapeHTML {
+		return cfg.marshalOptions(val, prefix, indent)
+	}
+	return json.MarshalIndent(val, prefix, indent)
 }
 
 // UnmarshalFromString is implemented by sonic
 func (cfg frozenConfig) UnmarshalFromString(buf string, val interface{}) error {
-    r := bytes.NewBufferString(buf)
-    dec := json.NewDecoder(r)
-    if cfg.UseNumber {
-        dec.UseNumber()
-    }
-    if cfg.DisallowUnknownFields {
-        dec.DisallowUnknownFields()
-    }
-    err := dec.Decode(val)
-    if err != nil {
-        return err
-    }
+	r := bytes.NewBufferString(buf)
+	dec := json.NewDecoder(r)
+	if cfg.UseNumber {
+		dec.UseNumber()
+	}
+	if cfg.DisallowUnknownFields {
+		dec.DisallowUnknownFields()
+	}
+	err := dec.Decode(val)
+	if err != nil {
+		return err
+	}
 
-    // check the trailing chars
-    offset := dec.InputOffset()
-    if t, err := dec.Token(); !(t == nil && err == io.EOF) {
-        return &json.SyntaxError{ Offset: offset}
-    }
-    return nil
+	// check the trailing chars
+	offset := dec.InputOffset()
+	if t, err := dec.Token(); !(t == nil && err == io.EOF) {
+		return &json.SyntaxError{Offset: offset}
+	}
+	return nil
 }
 
 // Unmarshal is implemented by sonic
 func (cfg frozenConfig) Unmarshal(buf []byte, val interface{}) error {
-    return cfg.UnmarshalFromString(string(buf), val)
+	return cfg.UnmarshalFromString(string(buf), val)
 }
 
 // NewEncoder is implemented by sonic
 func (cfg frozenConfig) NewEncoder(writer io.Writer) Encoder {
-    enc := json.NewEncoder(writer)
-    if !cfg.EscapeHTML {
-        enc.SetEscapeHTML(cfg.EscapeHTML)
-    }
-    return enc
+	enc := json.NewEncoder(writer)
+	if !cfg.EscapeHTML {
+		enc.SetEscapeHTML(cfg.EscapeHTML)
+	}
+	return enc
 }
 
 // NewDecoder is implemented by sonic
 func (cfg frozenConfig) NewDecoder(reader io.Reader) Decoder {
-    dec := json.NewDecoder(reader)
-    if cfg.UseNumber {
-        dec.UseNumber()
-    }
-    if cfg.DisallowUnknownFields {
-        dec.DisallowUnknownFields()
-    }
-    return dec
+	dec := json.NewDecoder(reader)
+	if cfg.UseNumber {
+		dec.UseNumber()
+	}
+	if cfg.DisallowUnknownFields {
+		dec.DisallowUnknownFields()
+	}
+	return dec
 }
 
 // Valid is implemented by sonic
 func (cfg frozenConfig) Valid(data []byte) bool {
-    return json.Valid(data)
+	return json.Valid(data)
 }
 
 // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
@@ -138,6 +139,15 @@ func (cfg frozenConfig) Valid(data []byte) bool {
 // * This is the none implement for !amd64.
 // It will be useful for someone who develop with !amd64 arch,like Mac M1.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
-    return nil
+	return nil
 }
 
+// compactImpl is the fallback implementation using encoding/json.
+func compactImpl(dst *[]byte, src []byte) error {
+	buf := bytes.NewBuffer(nil)
+	if err := json.Compact(buf, src); err != nil {
+		return err
+	}
+	*dst = append(*dst, buf.Bytes()...)
+	return nil
+}
