@@ -397,6 +397,64 @@ func TestNodeFrom_Unmarshal_ModifyNode(t *testing.T) {
 	}
 }
 
+// Test edge cases
+func TestNode_Unmarshal_UintNegative(t *testing.T) {
+	// Test that negative numbers cannot be unmarshaled into uint
+	negNode := NewNumber("-5")
+	var u uint
+	err := negNode.Unmarshal(&u)
+	if err == nil {
+		t.Errorf("Expected error when unmarshaling negative number into uint, got nil")
+	}
+}
+
+func TestNode_Unmarshal_StringTag(t *testing.T) {
+	// Test json:",string" tag - number stored as string in JSON
+	type WithStringTag struct {
+		Value int `json:"value,string"`
+	}
+
+	// Create a node where value is a string containing a number
+	node, _ := NewParser(`{"value":"42"}`).Parse()
+
+	var result WithStringTag
+	err := node.Unmarshal(&result)
+	if err != nil {
+		t.Fatalf("Unmarshal with string tag failed: %v", err)
+	}
+	if result.Value != 42 {
+		t.Errorf("Expected 42, got %d", result.Value)
+	}
+}
+
+func TestNode_Unmarshal_EmbeddedPointer(t *testing.T) {
+	// Test embedded pointer struct
+	type Inner struct {
+		X int `json:"x"`
+	}
+	type Outer struct {
+		*Inner
+		Y int `json:"y"`
+	}
+
+	node, _ := NewParser(`{"x":1,"y":2}`).Parse()
+
+	var result Outer
+	err := node.Unmarshal(&result)
+	if err != nil {
+		t.Fatalf("Unmarshal embedded pointer failed: %v", err)
+	}
+	if result.Inner == nil {
+		t.Fatalf("Expected Inner to be initialized")
+	}
+	if result.X != 1 {
+		t.Errorf("Expected X=1, got %d", result.X)
+	}
+	if result.Y != 2 {
+		t.Errorf("Expected Y=2, got %d", result.Y)
+	}
+}
+
 // Benchmark tests
 func BenchmarkNodeFrom_Struct(b *testing.B) {
 	user := testUser{
@@ -433,5 +491,49 @@ func BenchmarkNode_Unmarshal_Struct(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		var result testUser
 		_ = node.Unmarshal(&result)
+	}
+}
+
+// Comparison benchmarks: New API vs Manual approach
+
+// BenchmarkNodeFrom_Manual tests the manual way: sonic.Marshal + NewParser().Parse()
+func BenchmarkNodeFrom_Manual(b *testing.B) {
+	user := testUser{
+		Name:  "Alice",
+		Age:   30,
+		Email: "alice@example.com",
+		Tags:  []string{"admin", "user"},
+		Profile: &testProfile{
+			Bio:     "Hello world",
+			Website: "https://example.com",
+		},
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		data, _ := marshalValue(user)
+		_, _ = NewParser(string(data)).Parse()
+	}
+}
+
+// BenchmarkUnmarshal_Manual tests the manual way: node.Raw() + sonic.Unmarshal
+func BenchmarkUnmarshal_Manual(b *testing.B) {
+	user := testUser{
+		Name:  "Alice",
+		Age:   30,
+		Email: "alice@example.com",
+		Tags:  []string{"admin", "user"},
+		Profile: &testProfile{
+			Bio:     "Hello world",
+			Website: "https://example.com",
+		},
+	}
+	node, _ := NodeFrom(user)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var result testUser
+		raw, _ := node.Raw()
+		_ = unmarshalValue([]byte(raw), &result)
 	}
 }
