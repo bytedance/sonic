@@ -1,0 +1,152 @@
+# BasedOnStyle:  Google
+
+Language: Cpp
+
+SortIncludes: false
+
+AccessModifierOffset: -4
+
+ConstructorInitializerIndentWidth: 4
+
+AlignEscapedNewlinesLeft: true
+
+AlignTrailingComments: true
+
+AllowShortBlocksOnASingleLine: false
+
+AllowShortFunctionsOnASingleLine: false
+
+AllowAllParametersOfDeclarationOnNextLine: false
+
+AllowShortIfStatementsOnASingleLine: false
+
+AllowShortCaseLabelsOnASingleLine: false
+
+AllowShortLoopsOnASingleLine: false
+
+AlwaysBreakTemplateDeclarations: true
+
+BinPackArguments: true
+
+AlwaysBreakBeforeMultilineStrings: false
+
+BreakBeforeBinaryOperators: None
+
+BreakBeforeTernaryOperators: true
+
+BreakConstructorInitializersBeforeComma: false
+
+BinPackParameters: true
+
+ColumnLimit:    120
+
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+DerivePointerBinding: true
+
+ExperimentalAutoDetectBinPacking: false
+
+IndentCaseLabels: true
+
+MaxEmptyLinesToKeep: 1
+
+NamespaceIndentation: None
+
+ObjCSpaceBeforeProtocolList: false
+
+PenaltyBreakBeforeFirstCallParameter: 1
+
+PenaltyBreakComment: 200
+
+PenaltyBreakString: 1000
+
+PenaltyBreakFirstLessLess: 120
+
+PenaltyExcessCharacter: 1000000
+
+PenaltyReturnTypeOnItsOwnLine: 200
+
+AlwaysBreakAfterDefinitionReturnType: None
+
+AlwaysBreakAfterReturnType: None
+
+PointerBindsToType: true
+
+Cpp11BracedListStyle: true
+
+Standard:        Auto
+
+IndentWidth:     4
+
+TabWidth:        4
+
+UseTab:          Never
+
+BreakBeforeBraces: Custom
+
+# 大括号换行，只有当BreakBeforeBraces设置为Custom时才有效
+BraceWrapping:
+    # class定义后面
+    AfterClass: false
+    # 控制语句后面
+    AfterControlStatement: false
+    # enum定义后面
+    AfterEnum: false
+    # 函数定义后面
+    AfterFunction: true
+    # 命名空间定义后面
+    # AfterNamespace: false
+    # ObjC定义后面
+    AfterObjCDeclaration: false
+    # struct定义后面
+    AfterStruct: false
+    # union定义后面
+    AfterUnion: false
+    AfterExternBlock: false
+    # catch之前
+    BeforeCatch: false
+    # else之前
+    BeforeElse: false
+    # 缩进大括号
+    IndentBraces: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
+
+IndentFunctionDeclarationAfterType: true
+
+SpacesInParentheses: false
+
+SpacesInAngles: false
+
+SpaceInEmptyParentheses: false
+
+SpacesInCStyleCastParentheses: false
+
+SpaceAfterControlStatementKeyword: true
+
+SpaceBeforeAssignmentOperators: true
+
+SpacesBeforeTrailingComments: 2
+
+ContinuationIndentWidth: 4
+
+CommentPragmas:  '^lint'
+
+MacroBlockBegin: "</span>
+
+^ *PROG *$|</span>
+
+CATCH_ALL_ERROR.*$"
+
+MacroBlockEnd: "</span>
+
+^ *END_PROG *$|</span>
+
+END_CATCH_ERROR$"
+
+AlignAfterOpenBracket: false
+
+AlignConsecutiveAssignments: false
+
+AlignConsecutiveDeclarations: false
