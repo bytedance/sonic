@@ -4,8 +4,13 @@
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/Path.h"
+
+#include <set>
 
 using namespace llvm;
+using namespace llvm::sys;
 
 std::map<std::string, unsigned> AArch64RegTable;
 
@@ -52,4 +57,35 @@ void PrintInstHelper(
 bool StartWith(std::string_view Str, std::string_view Prefix)
 {
     return Str.substr(0, Prefix.size()) == Prefix;
+}
+
+std::string GetSourceName(llvm::StringRef Path)
+{
+    if (Path.empty()) {
+        llvm::errs() << "error: empty file path\n";
+        return "";
+    }
+
+    fs::file_status Status;
+    if (fs::status(Path, Status)) {
+        llvm::errs() << "error: cannot access file '" << Path << "'\n";
+        return "";
+    }
+
+    if (!fs::is_regular_file(Status)) {
+        llvm::errs() << "error: not a regular file: '" << Path << "'\n";
+        return "";
+    }
+
+    std::string ext = path::extension(Path).str();
+    std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    static const std::set<std::string> ValidExts = {".c", ".cpp", ".cc", ".cxx"};
+
+    if (ValidExts.find(ext) == ValidExts.end()) {
+        llvm::errs() << "error: not a C/C++ source or header file: '" << Path << "'\n";
+        return "";
+    }
+
+    return path::stem(Path).str();
 }

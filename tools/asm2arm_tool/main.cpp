@@ -1,6 +1,7 @@
 #include "streamer.h"
 #include "dump_elf.h"
 #include "cal_depth.h"
+#include "utils.h"
 
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/CodeGen/CommandFlags.h"
@@ -38,15 +39,21 @@
 
 using namespace llvm;
 
-extern std::string DumpFile;
-
 static cl::opt<std::string> SourceFile(
-    "source-file", cl::desc("input .cxx file"), cl::value_desc("filename"), cl::Required);
-static cl::opt<std::string> LdScript("link-ld", cl::desc("linker script"), cl::value_desc("filename"), cl::Required);
+    "source-file", cl::desc("input .cxx file"), cl::value_desc("source-file-path"), cl::Required);
+static cl::opt<std::string> LdScript(
+    "link-ld", cl::desc("linker script"), cl::value_desc("link-ld-path"), cl::Required);
+static cl::opt<std::string> Package("package", cl::desc("The package to which the generated Go file belongs"),
+    cl::value_desc("package-name"), cl::Required);
 
 int main(int argc, char **argv)
 {
     cl::ParseCommandLineOptions(argc, argv, "assembly->object->elf->objdump\n");
+
+    auto BaseName = GetSourceName(SourceFile);
+    if (BaseName.empty()) {
+        return 1;
+    }
 
     InitializeAllTargets();
     InitializeAllTargetMCs();
@@ -55,7 +62,7 @@ int main(int argc, char **argv)
     InitializeAllDisassemblers();
 
     // 汇编生成
-    std::string AsmFile = "lookup_small_key.s";
+    std::string AsmFile = BaseName + ".s";
     {
         std::vector<StringRef> Args = {
             "clang", "-S", SourceFile, "-o", AsmFile, "-D__SVE__", "-march=armv8-a+sve", "-I/usr/include/simde"};
@@ -88,7 +95,7 @@ int main(int argc, char **argv)
         TheTarget->createMCInstPrinter(TheTriple, MAI->getAssemblerDialect(), *MAI, *MCII, *MRI));
 
     // object padding 生成
-    std::string ObjFile = "lookup_small_key.o";
+    std::string ObjFile = BaseName + ".o";
     {
         auto MBExp = MemoryBuffer::getFile(AsmFile);
         if (!MBExp) {
@@ -130,7 +137,7 @@ int main(int argc, char **argv)
     }
 
     // 链接elf 消除相对地址
-    std::string ELFFile = "lookup_small_key.elf";
+    std::string ELFFile = BaseName + ".elf";
     {
         std::vector<StringRef> Args = {"ld.lld", ObjFile, "-o", ELFFile, "-T", LdScript};
         std::string Err;
@@ -141,9 +148,10 @@ int main(int argc, char **argv)
         }
     }
 
-    DumpElf(ELFFile);
+    std::string DumpFile = BaseName + "_text_arm64.go";
+    DumpElf(ELFFile, DumpFile, STI.get(), MCIP.get(), Package, BaseName);
 
-    std::string EntryBB = "lookup_small_key";
+    std::string &EntryBB = BaseName;
     std::vector<BasicBlock> BBs;
     int EntryIdx = SplitBasicBlocks(MCII.get(), BBs, EntryBB);
 
@@ -169,7 +177,7 @@ int main(int argc, char **argv)
         outs() << "第" << i << "个SP" << SPDelta[i].first << " 最大深度:" << Key[i] << "\n";
     }
     // llvm-objdump
-    std::string TextFile = "lookup_small_key.text";
+    std::string TextFile = BaseName + ".text";
     {
         std::vector<StringRef> Args = {"llvm-objdump", "-S", ELFFile};
         std::error_code EC;

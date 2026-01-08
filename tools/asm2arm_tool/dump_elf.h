@@ -3,6 +3,7 @@
 
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCAsmBackend.h"
+#include "llvm/MC/MCInstPrinter.h"
 
 struct FuncRange {
     uint64_t StartAddr;
@@ -10,6 +11,7 @@ struct FuncRange {
     std::string Name;
 };
 
-void DumpElf(llvm::StringRef ElfPath);
+void DumpElf(llvm::StringRef ElfPath, llvm::StringRef DumpFile, const llvm::MCSubtargetInfo *STI,
+    llvm::MCInstPrinter *MCIP, const std::string &Package, const std::string &BaseName);
 
 #endif

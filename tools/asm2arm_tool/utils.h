@@ -16,4 +16,6 @@ void PrintInstHelper(
 
 bool StartWith(std::string_view Str, std::string_view Prefix);
 
+std::string GetSourceName(llvm::StringRef Path);
+
 #endif

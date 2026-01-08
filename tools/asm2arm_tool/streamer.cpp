@@ -24,6 +24,7 @@ void PaddingNopObjectStreamer::finish()
     this->PadTextSectionTo16Bytes();
     MCELFStreamer::finish();
 }
+
 void PaddingNopObjectStreamer::PadTextSectionTo16Bytes()
 {
     MCSection *Text = this->getContext().getObjectFileInfo()->getTextSection();

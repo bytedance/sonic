@@ -28,10 +28,9 @@
 using namespace llvm;
 using namespace llvm::object;
 
-std::string DumpFile = "lookup_small_key.dump";
-
 std::vector<MCInst> Text;
 std::vector<uint64_t> TextPC;
+std::vector<uint32_t> TextSize;
 std::unordered_map<uint64_t, size_t> Addr2Idx;
 std::vector<FuncRange> Funcs;
 
@@ -119,15 +118,33 @@ static bool DisasmTextSection(const ObjectFile &Obj, const SectionRef &Sec)
             PrintInstHelper(Inst, MRI.get(), MCII.get(), CurAddr);
             Text.emplace_back(std::move(Inst));
             TextPC.push_back(CurAddr);
+            TextSize.push_back(InstSize);
             Addr2Idx[CurAddr] = Text.size() - 1;
+            Data += InstSize;
+            CurAddr += InstSize;
+        } else {
+            Data += 1;
+            CurAddr += 1;
         }
-        Data += InstSize;
-        CurAddr += InstSize;
     }
     return true;
 }
 
-void DumpElf(llvm::StringRef ElfPath)
+static void DumpRawBytes(raw_fd_ostream &OS, const uint8_t *Data, size_t Offset, size_t Size)
+{
+    for (size_t i = 0; i < Size;) {
+        OS << "    ";
+        size_t LineEnd = std::min(i + 16, Size);
+        for (size_t j = i; j < LineEnd; ++j) {
+            OS << format_hex(Data[Offset + j], 4) << ", ";
+        }
+        OS << "   // data\n";
+        i = LineEnd;
+    }
+}
+
+void DumpElf(StringRef ElfPath, StringRef DumpFile, const llvm::MCSubtargetInfo *STI, MCInstPrinter *MCIP,
+    const std::string &Package, const std::string &BaseName)
 {
     auto Buf = MemoryBuffer::getFile(ElfPath);
     if (!Buf) {
@@ -149,8 +166,11 @@ void DumpElf(llvm::StringRef ElfPath)
         return;
     }
 
+    DumpOS << "package " << Package << "\n\n";
+    DumpOS << "var _text_" << BaseName << " = []byte{\n";
+
     for (auto &Sec : Obj.sections()) {
-        if (!Sec.isData() && !Sec.isText()) {
+        if (!Sec.isData() && !Sec.isText() && !Sec.isBSS()) {
             continue;
         }
 
@@ -159,42 +179,98 @@ void DumpElf(llvm::StringRef ElfPath)
             errs() << "Get section name failed\n";
             continue;
         }
-
         StringRef Name = *NameExp;
-        if (!Name.starts_with(".text") && !Name.starts_with(".rodata")) {
-            continue;
-        }
 
-        if (Name.starts_with(".text")) {
-            DisasmTextSection(Obj, Sec);
-        }
-        DumpOS << "Contents of section " << Name << ":\n";
-
-        Expected<StringRef> ContentExp = Sec.getContents();
-        if (!ContentExp) {
-            errs() << "getContents failed\n";
-            continue;
-        }
-        StringRef Content = *ContentExp;
         uint64_t BaseAddr = Sec.getAddress();
-        size_t Size = Content.size();
-        size_t InstCount = Size / 4;
-        size_t RemainInst = (4 - (InstCount % 4)) % 4;
-        for (size_t i = 0; i < Size; i += 16) {
-            DumpOS << format("%08" PRIx64 " ", BaseAddr + i);
-            for (size_t j = 0; j < 16; j++) {
-                if (i + j < Size) {
-                    DumpOS << format(" %02x", (uint8_t)Content[i + j]);
-                } else {
-                    DumpOS << "   ";
+        uint64_t Size = Sec.getSize();
+
+        DumpOS << "    // " << format_hex(BaseAddr, 18) << " Contents of section " << Name << ":\n";
+
+        if (Sec.isText()) {
+            DisasmTextSection(Obj, Sec);
+
+            Expected<StringRef> ContentExp = Sec.getContents();
+            if (!ContentExp) {
+                continue;
+            }
+            StringRef Content = *ContentExp;
+            const uint8_t *Bytes = reinterpret_cast<const uint8_t *>(Content.data());
+            uint64_t BaseAddr = Sec.getAddress();
+            size_t TotalSize = Content.size();
+
+            size_t NumInsts = Text.size();
+
+            // 开头
+            uint64_t CurrentAddr = BaseAddr;
+            size_t ByteIndex = 0;
+
+            if (NumInsts > 0 && TextPC[0] > BaseAddr) {
+                size_t GapSize = TextPC[0] - BaseAddr;
+                DumpRawBytes(DumpOS, Bytes, ByteIndex, GapSize);
+                ByteIndex += GapSize;
+                CurrentAddr += GapSize;
+            }
+
+            for (size_t i = 0; i < NumInsts; ++i) {
+                uint64_t InstAddr = TextPC[i];
+                uint32_t InstLen = TextSize[i];
+
+                assert(InstAddr == CurrentAddr && "Address misalignment!");
+                assert(ByteIndex + InstLen <= TotalSize && "Instruction overflows section");
+
+                // 输出指令字节（单行）
+                DumpOS << "    ";
+                for (uint32_t j = 0; j < InstLen; ++j) {
+                    DumpOS << format_hex(Bytes[ByteIndex + j], 4) << ", ";
+                }
+
+                // 指令注释
+                std::string InstStr;
+                raw_string_ostream OSS(InstStr);
+                MCIP->printInst(&Text[i], InstAddr, {}, *STI, OSS);
+                DumpOS << "   // " << InstStr << "\n";
+
+                ByteIndex += InstLen;
+                CurrentAddr += InstLen;
+
+                // 计算到下一条指令（或段尾）的 gap
+                uint64_t NextInstAddr = (i + 1 < NumInsts) ? TextPC[i + 1] : (BaseAddr + TotalSize);
+                if (CurrentAddr < NextInstAddr) {
+                    size_t GapSize = NextInstAddr - CurrentAddr;
+                    DumpRawBytes(DumpOS, Bytes, ByteIndex, GapSize);
+                    ByteIndex += GapSize;
+                    CurrentAddr = NextInstAddr;
                 }
             }
-            DumpOS << "   ";
-            for (size_t j = 0; j < 16 && i + j < Size; j++) {
-                char CH = Content[i + j];
-                DumpOS << (isprint(CH) ? CH : '.');
+        } else if (Sec.isBSS()) {
+            // .bss: 全零
+            for (uint64_t i = 0; i < Size; i += 16) {
+                DumpOS << "    ";
+                uint64_t LineBytes = std::min<uint64_t>(16, Size - i);
+                for (uint64_t j = 0; j < LineBytes; ++j) {
+                    DumpOS << "0x00, ";
+                }
+                DumpOS << "   \n";
             }
-            DumpOS << "\n";
+        } else {
+            // .data / .rodata
+            Expected<StringRef> ContentExp = Sec.getContents();
+            if (!ContentExp) {
+                continue;
+            }
+            StringRef Content = *ContentExp;
+            const uint8_t *Data = reinterpret_cast<const uint8_t *>(Content.data());
+            size_t DataSize = Content.size();
+
+            for (size_t i = 0; i < DataSize; i += 16) {
+                DumpOS << "    ";
+                uint64_t LineBytes = std::min<uint64_t>(16, DataSize - i);
+                for (size_t j = 0; j < LineBytes; ++j) {
+                    DumpOS << format_hex(Data[i + j], 4) << ", ";
+                }
+                DumpOS << "   \n";
+            }
         }
     }
+    DumpOS << "}\n";
 }
