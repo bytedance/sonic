@@ -1,3 +1,4 @@
+#include "mc_bundle.h"
 #include "streamer.h"
 #include "dump_elf.h"
 #include "cal_depth.h"
@@ -12,14 +13,11 @@
 #include "llvm/MC/MCCodeEmitter.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCInstPrinter.h"
-#include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCParser/MCAsmParser.h"
 #include "llvm/MC/MCParser/MCTargetAsmParser.h"
-#include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/MCObjectStreamer.h"
-#include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/MCTargetOptions.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/CommandLine.h"
@@ -75,24 +73,7 @@ int main(int argc, char **argv)
     }
 
     Triple TheTriple("aarch64-linux-gnu");
-    std::string Err;
-    const Target *TheTarget = TargetRegistry::lookupTarget("", TheTriple, Err);
-    if (!TheTarget) {
-        errs() << Err << "\n";
-        return 1;
-    }
-
-    std::unique_ptr<MCRegisterInfo> MRI(TheTarget->createMCRegInfo(TheTriple.str()));
-    assert(MRI && "Unable to create MCRegisterInfo!");
-    MCTargetOptions MCOptions;
-    std::unique_ptr<MCAsmInfo> MAI(TheTarget->createMCAsmInfo(*MRI, TheTriple.str(), MCOptions));
-    assert(MAI && "Unable to create MCAsmInfo!");
-    std::unique_ptr<MCSubtargetInfo> STI(TheTarget->createMCSubtargetInfo(TheTriple.str(), "generic", "+sve"));
-    assert(STI && "Unable to create MCSubtargetInfo!");
-    std::unique_ptr<MCInstrInfo> MCII(TheTarget->createMCInstrInfo());
-    assert(MCII && "Unable to create MCInstrInfo!");
-    std::unique_ptr<MCInstPrinter> MCIP(
-        TheTarget->createMCInstPrinter(TheTriple, MAI->getAssemblerDialect(), *MAI, *MCII, *MRI));
+    MCContextBundle Bundle(TheTriple);
 
     // object padding 生成
     std::string ObjFile = BaseName + ".o";
@@ -107,12 +88,14 @@ int main(int argc, char **argv)
         SourceMgr SrcMgr;
         SrcMgr.AddNewSourceBuffer(std::move(MB), SMLoc());
 
-        MCContext Ctx(TheTriple, MAI.get(), MRI.get(), STI.get(), &SrcMgr, &MCOptions);
-        std::unique_ptr<MCObjectFileInfo> MOFI(TheTarget->createMCObjectFileInfo(Ctx, false));
+        MCContext Ctx(TheTriple, &Bundle.getMCAsmInfo(), &Bundle.getMCRegisterInfo(), &Bundle.getMCSubtargetInfo(),
+            &SrcMgr, &Bundle.getMCTargetOptions());
+        std::unique_ptr<MCObjectFileInfo> MOFI(Bundle.getTarget().createMCObjectFileInfo(Ctx, false));
         Ctx.setObjectFileInfo(MOFI.get());
 
-        auto MAB = std::unique_ptr<MCAsmBackend>(TheTarget->createMCAsmBackend(*STI, *MRI, MCOptions));
-        auto MCE = std::unique_ptr<MCCodeEmitter>(TheTarget->createMCCodeEmitter(*MCII, Ctx));
+        auto MAB = std::unique_ptr<MCAsmBackend>(Bundle.getTarget().createMCAsmBackend(
+            Bundle.getMCSubtargetInfo(), Bundle.getMCRegisterInfo(), Bundle.getMCTargetOptions()));
+        auto MCE = std::unique_ptr<MCCodeEmitter>(Bundle.getTarget().createMCCodeEmitter(Bundle.getMCInstrInfo(), Ctx));
 
         std::error_code EC;
         raw_fd_ostream Out(ObjFile, EC, sys::fs::OF_None);
@@ -122,12 +105,13 @@ int main(int argc, char **argv)
         }
 
         auto MOW = MAB->createObjectWriter(Out);
-        auto Streamer = std::make_unique<PaddingNopObjectStreamer>(
-            Ctx, std::move(MAB), std::move(MOW), std::move(MCE), MCII.get(), MRI.get());
-        Streamer->initSections(false, *STI);
+        auto Streamer =
+            std::make_unique<PaddingNopObjectStreamer>(Ctx, std::move(MAB), std::move(MOW), std::move(MCE), Bundle);
+        Streamer->initSections(false, Bundle.getMCSubtargetInfo());
 
-        std::unique_ptr<MCAsmParser> Parser(llvm::createMCAsmParser(SrcMgr, Ctx, *Streamer, *MAI));
-        std::unique_ptr<MCTargetAsmParser> TAP(TheTarget->createMCAsmParser(*STI, *Parser, *MCII, MCOptions));
+        std::unique_ptr<MCAsmParser> Parser(llvm::createMCAsmParser(SrcMgr, Ctx, *Streamer, Bundle.getMCAsmInfo()));
+        std::unique_ptr<MCTargetAsmParser> TAP(Bundle.getTarget().createMCAsmParser(
+            Bundle.getMCSubtargetInfo(), *Parser, Bundle.getMCInstrInfo(), Bundle.getMCTargetOptions()));
         Parser->setTargetParser(*TAP);
         if (Parser->Run(false)) {
             errs() << "asm parse failed\n";
@@ -149,22 +133,22 @@ int main(int argc, char **argv)
     }
 
     std::string DumpFile = BaseName + "_text_arm64.go";
-    DumpElf(ELFFile, DumpFile, STI.get(), MCIP.get(), Package, BaseName);
+    DumpElf(ELFFile, DumpFile, Bundle, Package, BaseName);
 
     std::string &EntryBB = BaseName;
     std::vector<BasicBlock> BBs;
-    int EntryIdx = SplitBasicBlocks(MCII.get(), BBs, EntryBB);
+    int EntryIdx = SplitBasicBlocks(Bundle, BBs, EntryBB);
 
     std::vector<std::vector<size_t>> CFG;
     std::vector<BBSP> BBSPVec;
     std::vector<std::pair<uint64_t, int64_t>> SPDelta;
 
-    BuildCFG(MCII.get(), BBs, CFG);
+    BuildCFG(Bundle, BBs, CFG);
     if (HasCycle(BBs, CFG)) {
         outs() << "存在环\n";
     }
 
-    CalcSPDelta(MCII.get(), MRI.get(), MCIP.get(), STI.get(), BBs, BBSPVec, SPDelta);
+    CalcSPDelta(Bundle, BBs, BBSPVec, SPDelta);
     auto Res = ComputeMaxSPDepth(CFG, BBSPVec);
     int i = 1;
     for (auto x : Res) {

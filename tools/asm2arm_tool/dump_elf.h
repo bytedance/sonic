@@ -1,6 +1,8 @@
 #ifndef DUMP_ELF_H
 #define DUMP_ELF_H
 
+#include "mc_bundle.h"
+
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCAsmBackend.h"
 #include "llvm/MC/MCInstPrinter.h"
@@ -11,7 +13,7 @@ struct FuncRange {
     std::string Name;
 };
 
-void DumpElf(llvm::StringRef ElfPath, llvm::StringRef DumpFile, const llvm::MCSubtargetInfo *STI,
-    llvm::MCInstPrinter *MCIP, const std::string &Package, const std::string &BaseName);
+void DumpElf(llvm::StringRef ElfPath, llvm::StringRef DumpFile, MCContextBundle &Bundle, const std::string &Package,
+    const std::string &BaseName);
 
 #endif

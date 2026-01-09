@@ -5,7 +5,6 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstPrinter.h"
-#include "llvm/Support/Format.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <cstdint>
@@ -24,7 +23,7 @@ extern std::vector<uint64_t> TextPC;
 extern std::unordered_map<uint64_t, size_t> Addr2Idx;
 extern std::vector<FuncRange> Funcs;
 
-int SplitBasicBlocks(const llvm::MCInstrInfo *MCII, std::vector<BasicBlock> &BBs, const std::string &EntryBB)
+int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, const std::string &EntryBB)
 {
     BBs.clear();
     if (Text.empty()) {
@@ -52,7 +51,7 @@ int SplitBasicBlocks(const llvm::MCInstrInfo *MCII, std::vector<BasicBlock> &BBs
             break;
         }
 
-        const auto &Desc = MCII->get(Inst.getOpcode());
+        const auto &Desc = Bundle.getMCInstrInfo().get(Inst.getOpcode());
         if (Desc.isUnconditionalBranch()) {
             // 只有target，没有fall-through
             int64_t Offset = Inst.getOperand(Inst.getNumOperands() - 1).getImm();
@@ -105,7 +104,7 @@ static size_t FindBB(uint64_t PC, const std::vector<BasicBlock> &BBs)
     return std::distance(BBs.begin(), Pos);
 }
 
-void BuildCFG(const llvm::MCInstrInfo *MCII, std::vector<BasicBlock> &BBs, std::vector<std::vector<size_t>> &CFG)
+void BuildCFG(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, std::vector<std::vector<size_t>> &CFG)
 {
     CFG.clear();
     CFG.resize(BBs.size());
@@ -115,7 +114,7 @@ void BuildCFG(const llvm::MCInstrInfo *MCII, std::vector<BasicBlock> &BBs, std::
         MCInst &Inst = Text[BB.LastIdx];
         uint64_t LastPC = TextPC[BB.LastIdx];
 
-        const auto &Desc = MCII->get(Inst.getOpcode());
+        const auto &Desc = Bundle.getMCInstrInfo().get(Inst.getOpcode());
 
         // fall-through
         bool HasFallThrough = !(Desc.isUnconditionalBranch() || Desc.isReturn() || Desc.isTrap() || Desc.isBarrier());
@@ -165,18 +164,18 @@ bool HasCycle(const std::vector<BasicBlock> &BBs, const std::vector<std::vector<
     return false;
 }
 
-int64_t GetSPAdjust(const MCInst &Inst, uint64_t PC, const llvm::MCInstrInfo *MCII, const llvm::MCRegisterInfo *MRI,
-    llvm::MCInstPrinter *MCIP, const llvm::MCSubtargetInfo *STI, std::vector<std::pair<uint64_t, int64_t>> &SPDelta)
+int64_t GetSPAdjust(
+    const MCInst &Inst, uint64_t PC, MCContextBundle &Bundle, std::vector<std::pair<uint64_t, int64_t>> &SPDelta)
 {
-    const auto &Desc = MCII->get(Inst.getOpcode());
-    if (!Desc.hasDefOfPhysReg(Inst, AArch64RegTable["SP"], *MRI)) {
+    const auto &Desc = Bundle.getMCInstrInfo().get(Inst.getOpcode());
+    if (!Desc.hasDefOfPhysReg(Inst, AArch64RegTable["SP"], Bundle.getMCRegisterInfo())) {
         return 0;
     }
 
     std::string InstLine;
     {
         raw_string_ostream Rso(InstLine);
-        MCIP->printInst(&Inst, PC, {}, *STI, Rso);
+        Bundle.getMCInstPrinter().printInst(&Inst, PC, {}, Bundle.getMCSubtargetInfo(), Rso);
     }
     outs() << InstLine << "\n";
 
@@ -207,8 +206,7 @@ int64_t GetSPAdjust(const MCInst &Inst, uint64_t PC, const llvm::MCInstrInfo *MC
     return Def;
 }
 
-void CalcSPDelta(const llvm::MCInstrInfo *MCII, const llvm::MCRegisterInfo *MRI, llvm::MCInstPrinter *MCIP,
-    const llvm::MCSubtargetInfo *STI, const std::vector<BasicBlock> &BBs, std::vector<BBSP> &BBSPVec,
+void CalcSPDelta(MCContextBundle &Bundle, const std::vector<BasicBlock> &BBs, std::vector<BBSP> &BBSPVec,
     std::vector<std::pair<uint64_t, int64_t>> &SPDelta)
 {
     BBSPVec.assign(BBs.size(), {});
@@ -217,7 +215,7 @@ void CalcSPDelta(const llvm::MCInstrInfo *MCII, const llvm::MCRegisterInfo *MRI,
         int64_t Cur = 0;
         int64_t MinCur = 0;
         for (size_t i = BB.FirstIdx; i <= BB.LastIdx; i++) {
-            Cur += GetSPAdjust(Text[i], TextPC[i], MCII, MRI, MCIP, STI, SPDelta);
+            Cur += GetSPAdjust(Text[i], TextPC[i], Bundle, SPDelta);
             if (Cur < MinCur) {
                 MinCur = Cur;
             }

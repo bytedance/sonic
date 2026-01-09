@@ -14,10 +14,10 @@ using namespace llvm::sys;
 
 std::map<std::string, unsigned> AArch64RegTable;
 
-void FindSP(const llvm::MCRegisterInfo *MRI)
+void FindSP(MCContextBundle &Bundle)
 {
-    for (unsigned r = 0; r < MRI->getNumRegs(); r++) {
-        AArch64RegTable[MRI->getName(r)] = r;
+    for (unsigned r = 0; r < Bundle.getMCRegisterInfo().getNumRegs(); r++) {
+        AArch64RegTable[Bundle.getMCRegisterInfo().getName(r)] = r;
     }
     if (AArch64RegTable.find("SP") == AArch64RegTable.end()) {
         llvm::report_fatal_error("SP register not found!");
@@ -31,22 +31,21 @@ void PrintAArch64RegTable()
     }
 }
 
-void PrintInstHelper(
-    const llvm::MCInst &Inst, const llvm::MCRegisterInfo *MRI, const llvm::MCInstrInfo *MCII, uint64_t Addr)
+void PrintInstHelper(const llvm::MCInst &Inst, MCContextBundle &Bundle, uint64_t Addr)
 {
     errs() << "\n" << format_hex(Addr, 6) << "\n";
-    StringRef Mnem = MCII->getName(Inst.getOpcode());
+    StringRef Mnem = Bundle.getMCInstrInfo().getName(Inst.getOpcode());
     errs() << "Mnem=" << Mnem;
     unsigned NumOperands = Inst.getNumOperands();
     for (unsigned i = 0; i < NumOperands; i++) {
         errs() << " Operand" << std::to_string(i) << Inst.getOperand(i);
     }
     errs() << "\n";
-    Inst.print(errs(), MRI);
+    Inst.print(errs(), &Bundle.getMCRegisterInfo());
     errs() << "\n";
 
-    const MCInstrDesc &Desc = MCII->get(Inst.getOpcode());
-    if (Desc.hasDefOfPhysReg(Inst, AArch64RegTable["SP"], *MRI)) {
+    const MCInstrDesc &Desc = Bundle.getMCInstrInfo().get(Inst.getOpcode());
+    if (Desc.hasDefOfPhysReg(Inst, AArch64RegTable["SP"], Bundle.getMCRegisterInfo())) {
         errs() << "修改了SP\n";
     }
     if (Desc.isPreISelOpcode()) {

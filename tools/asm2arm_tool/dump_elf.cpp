@@ -1,20 +1,16 @@
 #include "dump_elf.h"
 #include "utils.h"
 
-#include "llvm/MC/SectionKind.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCDisassembler/MCDisassembler.h"
 #include "llvm/MC/MCInst.h"
-#include "llvm/MC/MCInstrInfo.h"
-#include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/MC/MCInstrDesc.h"
 #include "llvm/Support/NativeFormatting.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/Format.h"
-#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FileSystem.h"
@@ -63,7 +59,7 @@ static void CollectFuncRanges(ObjectFile &Obj)
     llvm::sort(Funcs, [](auto &a, auto &b) { return a.StartAddr < b.StartAddr; });
 }
 
-static bool DisasmTextSection(const ObjectFile &Obj, const SectionRef &Sec)
+static bool DisasmTextSection(MCContextBundle &Bundle, const ObjectFile &Obj, const SectionRef &Sec)
 {
     Expected<StringRef> ContentExp = Sec.getContents();
     if (!ContentExp) {
@@ -74,31 +70,9 @@ static bool DisasmTextSection(const ObjectFile &Obj, const SectionRef &Sec)
     StringRef Content = *ContentExp;
     uint64_t SectionAddr = Sec.getAddress();
 
-    InitializeAllTargetInfos();
-    InitializeAllTargetMCs();
-    InitializeAllDisassemblers();
-
-    Triple TheTriple = Obj.makeTriple();
-    StringRef TripleName = TheTriple.getTriple();
-    std::string Error;
-    const Target *TheTarget = TargetRegistry::lookupTarget(TripleName, Error);
-    if (!TheTarget) {
-        errs() << "lookupTarget failed: " << Error << "\n";
-        return false;
-    }
-
-    std::unique_ptr<MCRegisterInfo> MRI(TheTarget->createMCRegInfo(TheTriple.str()));
-    assert(MRI && "Unable to create MCRegisterInfo!");
-    MCTargetOptions MCOptions;
-    std::unique_ptr<MCAsmInfo> MAI(TheTarget->createMCAsmInfo(*MRI, TheTriple.str(), MCOptions));
-    assert(MAI && "Unable to create MCAsmInfo!");
-    std::unique_ptr<MCSubtargetInfo> STI(TheTarget->createMCSubtargetInfo(TheTriple.str(), "generic", "+sve"));
-    assert(STI && "Unable to create MCSubtargetInfo!");
-    std::unique_ptr<MCInstrInfo> MCII(TheTarget->createMCInstrInfo());
-    assert(MCII && "Unable to create MCInstrInfo!");
-
-    MCContext Ctx(TheTriple, MAI.get(), MRI.get(), STI.get());
-    std::unique_ptr<MCDisassembler> Disasm(TheTarget->createMCDisassembler(*STI, Ctx));
+    MCContext Ctx(
+        Bundle.getTriple(), &Bundle.getMCAsmInfo(), &Bundle.getMCRegisterInfo(), &Bundle.getMCSubtargetInfo());
+    std::unique_ptr<MCDisassembler> Disasm(Bundle.getTarget().createMCDisassembler(Bundle.getMCSubtargetInfo(), Ctx));
     if (!Disasm) {
         errs() << "create MCDisassembler failed\n";
         return false;
@@ -115,7 +89,7 @@ static bool DisasmTextSection(const ObjectFile &Obj, const SectionRef &Sec)
 
         auto DisasmStat = Disasm->getInstruction(Inst, InstSize, Bytes, CurAddr, errs());
         if (DisasmStat == llvm::MCDisassembler::DecodeStatus::Success) {
-            PrintInstHelper(Inst, MRI.get(), MCII.get(), CurAddr);
+            PrintInstHelper(Inst, Bundle, CurAddr);
             Text.emplace_back(std::move(Inst));
             TextPC.push_back(CurAddr);
             TextSize.push_back(InstSize);
@@ -143,8 +117,8 @@ static void DumpRawBytes(raw_fd_ostream &OS, const uint8_t *Data, size_t Offset,
     }
 }
 
-void DumpElf(StringRef ElfPath, StringRef DumpFile, const llvm::MCSubtargetInfo *STI, MCInstPrinter *MCIP,
-    const std::string &Package, const std::string &BaseName)
+void DumpElf(StringRef ElfPath, StringRef DumpFile, MCContextBundle &Bundle, const std::string &Package,
+    const std::string &BaseName)
 {
     auto Buf = MemoryBuffer::getFile(ElfPath);
     if (!Buf) {
@@ -187,7 +161,7 @@ void DumpElf(StringRef ElfPath, StringRef DumpFile, const llvm::MCSubtargetInfo 
         DumpOS << "    // " << format_hex(BaseAddr, 18) << " Contents of section " << Name << ":\n";
 
         if (Sec.isText()) {
-            DisasmTextSection(Obj, Sec);
+            DisasmTextSection(Bundle, Obj, Sec);
 
             Expected<StringRef> ContentExp = Sec.getContents();
             if (!ContentExp) {
@@ -227,7 +201,7 @@ void DumpElf(StringRef ElfPath, StringRef DumpFile, const llvm::MCSubtargetInfo 
                 // 指令注释
                 std::string InstStr;
                 raw_string_ostream OSS(InstStr);
-                MCIP->printInst(&Text[i], InstAddr, {}, *STI, OSS);
+                Bundle.getMCInstPrinter().printInst(&Text[i], InstAddr, {}, Bundle.getMCSubtargetInfo(), OSS);
                 DumpOS << "   // " << InstStr << "\n";
 
                 ByteIndex += InstLen;

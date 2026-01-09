@@ -11,11 +11,10 @@ using namespace llvm;
 extern std::map<std::string, unsigned> AArch64RegTable;
 
 PaddingNopObjectStreamer::PaddingNopObjectStreamer(llvm::MCContext &Context, std::unique_ptr<llvm::MCAsmBackend> TAB,
-    std::unique_ptr<llvm::MCObjectWriter> OW, std::unique_ptr<llvm::MCCodeEmitter> Emitter,
-    const llvm::MCInstrInfo *MCII, const llvm::MCRegisterInfo *MRI)
-    : MCELFStreamer(Context, std::move(TAB), std::move(OW), std::move(Emitter)), MCII(MCII), MRI(MRI)
+    std::unique_ptr<llvm::MCObjectWriter> OW, std::unique_ptr<llvm::MCCodeEmitter> Emitter, MCContextBundle &Bundle)
+    : MCELFStreamer(Context, std::move(TAB), std::move(OW), std::move(Emitter)), MRI(&Bundle.getMCRegisterInfo())
 {
-    FindSP(this->MRI);
+    FindSP(Bundle);
     errs() << "AArch64RegTable[SP] = " << AArch64RegTable["SP"] << "\n";
 }
 
