@@ -43,6 +43,8 @@ static cl::opt<std::string> LdScript(
     "link-ld", cl::desc("linker script"), cl::value_desc("link-ld-path"), cl::Required);
 static cl::opt<std::string> Package("package", cl::desc("The package to which the generated Go file belongs"),
     cl::value_desc("package-name"), cl::Required);
+static cl::opt<std::string> TmplDir(
+    "TmplDir", cl::desc("Folder where Tmpl files are stored"), cl::value_desc("Tmpl-files-Dir"), cl::Required);
 
 int main(int argc, char **argv)
 {
@@ -63,7 +65,7 @@ int main(int argc, char **argv)
     std::string AsmFile = BaseName + ".s";
     {
         std::vector<StringRef> Args = {
-            "clang", "-S", SourceFile, "-o", AsmFile, "-D__SVE__", "-march=armv8-a+sve", "-I/usr/include/simde"};
+            "clang", "-S", SourceFile, "-o", AsmFile, "-O2", "-D__SVE__", "-march=armv8-a+sve", "-I/usr/include/simde"};
         std::string Err;
         int RC = sys::ExecuteAndWait("/home/yupan/.local/LLVM19/bin/clang", Args, std::nullopt, {}, 0, 0, &Err);
         if (RC) {
@@ -132,8 +134,9 @@ int main(int argc, char **argv)
         }
     }
 
-    std::string DumpFile = BaseName + "_text_arm64.go";
-    DumpElf(ELFFile, DumpFile, Bundle, Package, BaseName);
+    uint64_t TextStartAddr;
+    uint64_t DumpSize;
+    DumpElf(ELFFile, Bundle, Package, BaseName, TextStartAddr, DumpSize);
 
     std::string &EntryBB = BaseName;
     std::vector<BasicBlock> BBs;
@@ -160,6 +163,10 @@ int main(int argc, char **argv)
     for (size_t i = 0; i < Key.size(); i++) {
         outs() << "第" << i << "个SP" << SPDelta[i].first << " 最大深度:" << Key[i] << "\n";
     }
+
+    DumpSubr(BBs[EntryIdx], Package, BaseName, SPDelta, Key, TextStartAddr, DumpSize);
+    DumpTmpl(TmplDir, Package, BaseName);
+
     // llvm-objdump
     std::string TextFile = BaseName + ".text";
     {
@@ -180,11 +187,6 @@ int main(int argc, char **argv)
         }
     }
 
-    outs() << "ALL DONE:\n"
-           << "  " << AsmFile << "\n"
-           << "  " << ObjFile << "\n"
-           << "  " << ELFFile << "\n"
-           << "  " << DumpFile << "\n"
-           << "  " << TextFile << "\n";
+    outs() << "ALL DONE\n";
     return 0;
 }

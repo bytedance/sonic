@@ -2,6 +2,7 @@
 #define DUMP_ELF_H
 
 #include "mc_bundle.h"
+#include "cal_depth.h"
 
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCAsmBackend.h"
@@ -13,7 +14,13 @@ struct FuncRange {
     std::string Name;
 };
 
-void DumpElf(llvm::StringRef ElfPath, llvm::StringRef DumpFile, MCContextBundle &Bundle, const std::string &Package,
-    const std::string &BaseName);
+void DumpElf(llvm::StringRef ElfPath, MCContextBundle &Bundle, const std::string &Package, const std::string &BaseName,
+    uint64_t &TextStartAddr, uint64_t &DumpTextSize);
+
+void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::string &BaseName,
+    const std::vector<std::pair<uint64_t, int64_t>> &SPDelta, const std::vector<int64_t> &Depth, uint64_t TextStartAddr,
+    uint64_t DumpTextSize);
+
+void DumpTmpl(const std::string &TmplDir, const std::string &Package, const std::string &BaseName);
 
 #endif
