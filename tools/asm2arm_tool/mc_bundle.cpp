@@ -11,7 +11,7 @@ MCContextBundle::MCContextBundle(const llvm::Triple &TheTriple, const std::strin
     std::string Error;
     TheTarget = TargetRegistry::lookupTarget(TheTriple.getTriple(), Error);
     if (!TheTarget) {
-        errs() << "MCContextBundle: " << Error << "\n";
+        outs() << "MCContextBundle: " << Error << "\n";
         assert(false && "Target not found");
     }
 

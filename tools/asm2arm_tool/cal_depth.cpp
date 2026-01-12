@@ -5,6 +5,7 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstPrinter.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <cstdint>
@@ -16,6 +17,7 @@
 #endif
 
 using namespace llvm;
+#define DEBUG_TYPE "cal_depth"
 
 extern std::map<std::string, unsigned> AArch64RegTable;
 extern std::vector<MCInst> Text;
@@ -182,7 +184,7 @@ int64_t GetSPAdjust(
         raw_string_ostream Rso(InstLine);
         Bundle.getMCInstPrinter().printInst(&Inst, PC, {}, Bundle.getMCSubtargetInfo(), Rso);
     }
-    outs() << InstLine << "\n";
+    LLVM_DEBUG(dbgs() << InstLine << "\n";);
 
     static const std::regex Re(R"(\s+(\w+)\s+.*sp.*#\s*(-?\d+)\b)");
     std::smatch Match;
@@ -206,7 +208,7 @@ int64_t GetSPAdjust(
     } else if (StartWith(Mnem, "add") || StartWith(Mnem, "st") || StartWith(Mnem, "ld")) {
         Def = Bytes;
     }
-    outs() << "        " << Mnem << " " << Bytes << " " << Def << "\n\n";
+    LLVM_DEBUG(dbgs() << "        " << Mnem << " " << Bytes << " " << Def << "\n\n";);
     SPDelta.push_back({PC, Def});
     return Def;
 }
@@ -265,7 +267,7 @@ std::vector<int64_t> ComputeMaxSPDepth(const std::vector<std::vector<size_t>> &C
             break;
         }
     }
-    outs() << "round = " << Round << " updated = " << Updated << "\n";
+    LLVM_DEBUG(dbgs() << "round = " << Round << " updated = " << Updated << "\n";);
     for (auto &x : DP) {
         x = -x;
     }

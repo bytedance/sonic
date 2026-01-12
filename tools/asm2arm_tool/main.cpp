@@ -21,6 +21,7 @@
 #include "llvm/MC/MCTargetOptions.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Program.h"
 #include "llvm/Support/SourceMgr.h"
@@ -36,7 +37,9 @@
 #include <vector>
 
 using namespace llvm;
+#define DEBUG_TYPE "main"
 
+static cl::opt<bool> Debug("debug", cl::desc("Enable debug output"), cl::init(false));
 static cl::opt<std::string> SourceFile(
     "source", cl::desc("input ASM file"), cl::value_desc("ASM-file-path"), cl::Required);
 static cl::opt<std::string> OutputPath(
@@ -53,6 +56,9 @@ static cl::opt<std::string> Features(
 int main(int argc, char **argv)
 {
     cl::ParseCommandLineOptions(argc, argv, "assembly->object->elf->objdump\n");
+    if (Debug) {
+        DebugFlag = true;
+    }
 
     auto BaseName = GetSourceName(SourceFile);
     if (BaseName.empty()) {
@@ -74,7 +80,7 @@ int main(int argc, char **argv)
     {
         auto MBExp = MemoryBuffer::getFile(SourceFile);
         if (!MBExp) {
-            errs() << "getFile failed\n";
+            outs() << "getFile failed\n";
             return 1;
         }
         std::unique_ptr<MemoryBuffer> MB = std::move(*MBExp);
@@ -94,7 +100,7 @@ int main(int argc, char **argv)
         std::error_code EC;
         raw_fd_ostream Out(ObjFile, EC, sys::fs::OF_None);
         if (EC) {
-            errs() << EC.message() << "\n";
+            outs() << EC.message() << "\n";
             return 1;
         }
 
@@ -109,7 +115,7 @@ int main(int argc, char **argv)
             Bundle.getMCSubtargetInfo(), *Parser, Bundle.getMCInstrInfo(), Bundle.getMCTargetOptions()));
         Parser->setTargetParser(*TAP);
         if (Parser->Run(false)) {
-            errs() << "asm parse failed\n";
+            outs() << "asm parse failed\n";
             return 1;
         }
         Streamer->finish();
@@ -123,7 +129,7 @@ int main(int argc, char **argv)
         std::string Err;
         int RC = sys::ExecuteAndWait("/home/yupan/.local/LLVM19/bin/ld.lld", Args, std::nullopt, {}, 0, 0, &Err);
         if (RC) {
-            errs() << "ld.lld failed: " << Err << "\n";
+            outs() << "ld.lld failed: " << Err << "\n";
             return 1;
         }
     }
@@ -140,22 +146,16 @@ int main(int argc, char **argv)
     std::vector<std::pair<uint64_t, int64_t>> SPDelta;
 
     BuildCFG(Bundle, BBs, CFG);
-    if (HasCycle(BBs, CFG)) {
-        outs() << "存在环\n";
-    }
+    LLVM_DEBUG(if (HasCycle(BBs, CFG)) { dbgs() << "存在环\n"; });
 
     CalcSPDelta(Bundle, BBs, BBSPVec, SPDelta);
     auto Res = ComputeMaxSPDepth(CFG, BBSPVec);
     int i = 1;
-    for (auto x : Res) {
-        outs() << "第" << i++ << "块为入口时最大SP: " << x << "\n";
-    }
-    outs() << "EntryIdx = " << EntryIdx << "\n";
+    LLVM_DEBUG(dbgs() << "EntryIdx = " << EntryIdx << "\n";);
 
     auto Key = ComputeMaxSPDepthAtInst(EntryIdx, BBs, CFG, BBSPVec, SPDelta);
-    for (size_t i = 0; i < Key.size(); i++) {
-        outs() << "第" << i << "个SP" << SPDelta[i].first << " 最大深度:" << Key[i] << "\n";
-    }
+    LLVM_DEBUG(for (size_t i = 0; i < Key.size();
+        i++) { dbgs() << "第" << i << "个SP" << SPDelta[i].first << " 最大深度:" << Key[i] << "\n"; });
 
     DumpSubr(BBs[EntryIdx], Package, OutputPath, BaseName, SPDelta, Key, DumpSize);
     DumpTmpl(TmplDir, Package, OutputPath, BaseName);
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
         std::error_code EC;
         raw_fd_ostream TextOS(TextFile, EC, sys::fs::OF_None);
         if (EC) {
-            errs() << EC.message() << "\n";
+            outs() << EC.message() << "\n";
             return 1;
         }
 
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
         int RC = sys::ExecuteAndWait("/home/yupan/.local/LLVM19/bin/llvm-objdump", Args, std::nullopt,
             {std::nullopt, TextFile, std::nullopt}, 0, 0, &Err, nullptr);
         if (RC) {
-            errs() << "llvm-objdump failed: " << Err << "\n";
+            outs() << "llvm-objdump failed: " << Err << "\n";
             return 1;
         }
     }

@@ -4,9 +4,11 @@
 #include "llvm/MC/MCAssembler.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCObjectFileInfo.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
 
 using namespace llvm;
+#define DEBUG_TYPE "streamer"
 
 extern std::map<std::string, unsigned> AArch64RegTable;
 
@@ -15,7 +17,7 @@ PaddingNopObjectStreamer::PaddingNopObjectStreamer(llvm::MCContext &Context, std
     : MCELFStreamer(Context, std::move(TAB), std::move(OW), std::move(Emitter)), MRI(&Bundle.getMCRegisterInfo())
 {
     FindSP(Bundle);
-    errs() << "AArch64RegTable[SP] = " << AArch64RegTable["SP"] << "\n";
+    LLVM_DEBUG(dbgs() << "AArch64RegTable[SP] = " << AArch64RegTable["SP"] << "\n";);
 }
 
 void PaddingNopObjectStreamer::finish()

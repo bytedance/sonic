@@ -8,6 +8,7 @@
 #include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/MC/MCInstrDesc.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/NativeFormatting.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/SourceMgr.h"
@@ -25,6 +26,7 @@
 
 using namespace llvm;
 using namespace llvm::object;
+#define DEBUG_TYPE "dump_elf"
 
 std::vector<MCInst> Text;
 std::vector<uint64_t> TextPC;
@@ -56,7 +58,7 @@ static void CollectFuncRanges(ObjectFile &Obj)
         F.EndAddr = *Addr + *Size;
         F.Name = Name->str();
         Funcs.push_back(F);
-        errs() << F.Name << " " << format_hex(F.StartAddr, 6) << " " << format_hex(F.EndAddr, 6) << "\n";
+        LLVM_DEBUG(dbgs() << F.Name << " " << format_hex(F.StartAddr, 6) << " " << format_hex(F.EndAddr, 6) << "\n";);
     }
     llvm::sort(Funcs, [](auto &a, auto &b) { return a.StartAddr < b.StartAddr; });
 }
@@ -65,7 +67,7 @@ static bool DisasmTextSection(MCContextBundle &Bundle, const ObjectFile &Obj, co
 {
     Expected<StringRef> ContentExp = Sec.getContents();
     if (!ContentExp) {
-        errs() << "getContents failed\n";
+        outs() << "getContents failed\n";
         return false;
     }
 
@@ -76,7 +78,7 @@ static bool DisasmTextSection(MCContextBundle &Bundle, const ObjectFile &Obj, co
         Bundle.getTriple(), &Bundle.getMCAsmInfo(), &Bundle.getMCRegisterInfo(), &Bundle.getMCSubtargetInfo());
     std::unique_ptr<MCDisassembler> Disasm(Bundle.getTarget().createMCDisassembler(Bundle.getMCSubtargetInfo(), Ctx));
     if (!Disasm) {
-        errs() << "create MCDisassembler failed\n";
+        outs() << "create MCDisassembler failed\n";
         return false;
     }
 
@@ -91,7 +93,7 @@ static bool DisasmTextSection(MCContextBundle &Bundle, const ObjectFile &Obj, co
 
         auto DisasmStat = Disasm->getInstruction(Inst, InstSize, Bytes, CurAddr, errs());
         if (DisasmStat == llvm::MCDisassembler::DecodeStatus::Success) {
-            PrintInstHelper(Inst, Bundle, CurAddr);
+            LLVM_DEBUG(PrintInstHelper(Inst, Bundle, CurAddr););
             Text.emplace_back(std::move(Inst));
             TextPC.push_back(CurAddr);
             TextSize.push_back(InstSize);
@@ -126,12 +128,12 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
     sys::path::append(DumpFile, OutputPath, (Twine(BaseName) + "_text_arm64.go").str());
     auto Buf = MemoryBuffer::getFile(ElfPath);
     if (!Buf) {
-        errs() << "open ELF file failed\n";
+        outs() << "open ELF file failed\n";
         return;
     }
     Expected<std::unique_ptr<ObjectFile>> ObjExp = ObjectFile::createObjectFile((*Buf)->getMemBufferRef());
     if (!ObjExp) {
-        errs() << "createObjectFile failed\n";
+        outs() << "createObjectFile failed\n";
         return;
     }
     ObjectFile &Obj = **ObjExp;
@@ -140,7 +142,7 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
     std::error_code EC;
     raw_fd_ostream DumpOS(DumpFile, EC, sys::fs::OF_None);
     if (EC) {
-        errs() << EC.message() << "\n";
+        outs() << EC.message() << "\n";
         return;
     }
 
@@ -154,7 +156,7 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
 
         Expected<StringRef> NameExp = Sec.getName();
         if (!NameExp) {
-            errs() << "Get section name failed\n";
+            outs() << "Get section name failed\n";
             continue;
         }
         StringRef Name = *NameExp;
@@ -263,7 +265,7 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::
     std::error_code EC;
     raw_fd_ostream DumpOS(DumpFile, EC, sys::fs::OF_None);
     if (EC) {
-        errs() << EC.message() << "\n";
+        outs() << EC.message() << "\n";
         return;
     }
 
