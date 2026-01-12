@@ -79,10 +79,10 @@ std::string GetSourceName(llvm::StringRef Path)
     std::string ext = path::extension(Path).str();
     std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
 
-    static const std::set<std::string> ValidExts = {".c", ".cpp", ".cc", ".cxx"};
+    static const std::set<std::string> ValidExts = {".s", ".S"};
 
     if (ValidExts.find(ext) == ValidExts.end()) {
-        llvm::errs() << "error: not a C/C++ source or header file: '" << Path << "'\n";
+        llvm::errs() << "error: not a ASM file: '" << Path << "'\n";
         return "";
     }
 

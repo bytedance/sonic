@@ -38,13 +38,17 @@
 using namespace llvm;
 
 static cl::opt<std::string> SourceFile(
-    "source-file", cl::desc("input .cxx file"), cl::value_desc("source-file-path"), cl::Required);
+    "source", cl::desc("input ASM file"), cl::value_desc("ASM-file-path"), cl::Required);
+static cl::opt<std::string> OutputPath(
+    "output", cl::desc("Output path of *.go files"), cl::value_desc("output-path"), cl::Required);
 static cl::opt<std::string> LdScript(
     "link-ld", cl::desc("linker script"), cl::value_desc("link-ld-path"), cl::Required);
 static cl::opt<std::string> Package("package", cl::desc("The package to which the generated Go file belongs"),
     cl::value_desc("package-name"), cl::Required);
 static cl::opt<std::string> TmplDir(
     "TmplDir", cl::desc("Folder where Tmpl files are stored"), cl::value_desc("Tmpl-files-Dir"), cl::Required);
+static cl::opt<std::string> Features(
+    "features", cl::desc("features like +sve,+aes"), cl::value_desc("features"), cl::Optional);
 
 int main(int argc, char **argv)
 {
@@ -61,26 +65,13 @@ int main(int argc, char **argv)
     InitializeAllAsmParsers();
     InitializeAllDisassemblers();
 
-    // 汇编生成
-    std::string AsmFile = BaseName + ".s";
-    {
-        std::vector<StringRef> Args = {
-            "clang", "-S", SourceFile, "-o", AsmFile, "-O2", "-D__SVE__", "-march=armv8-a+sve", "-I/usr/include/simde"};
-        std::string Err;
-        int RC = sys::ExecuteAndWait("/home/yupan/.local/LLVM19/bin/clang", Args, std::nullopt, {}, 0, 0, &Err);
-        if (RC) {
-            errs() << "clang failed: " << Err << "\n";
-            return 1;
-        }
-    }
-
     Triple TheTriple("aarch64-linux-gnu");
-    MCContextBundle Bundle(TheTriple);
+    MCContextBundle Bundle(TheTriple, Features);
 
     // object padding 生成
-    std::string ObjFile = BaseName + ".o";
+    std::string ObjFile = OutputPath + BaseName + ".o";
     {
-        auto MBExp = MemoryBuffer::getFile(AsmFile);
+        auto MBExp = MemoryBuffer::getFile(SourceFile);
         if (!MBExp) {
             errs() << "getFile failed\n";
             return 1;
@@ -107,6 +98,7 @@ int main(int argc, char **argv)
         }
 
         auto MOW = MAB->createObjectWriter(Out);
+        // 不padding，会导致hasDefOfPhysReg功能失效
         auto Streamer =
             std::make_unique<PaddingNopObjectStreamer>(Ctx, std::move(MAB), std::move(MOW), std::move(MCE), Bundle);
         Streamer->initSections(false, Bundle.getMCSubtargetInfo());
@@ -123,7 +115,7 @@ int main(int argc, char **argv)
     }
 
     // 链接elf 消除相对地址
-    std::string ELFFile = BaseName + ".elf";
+    std::string ELFFile = OutputPath + BaseName + ".elf";
     {
         std::vector<StringRef> Args = {"ld.lld", ObjFile, "-o", ELFFile, "-T", LdScript};
         std::string Err;
@@ -134,9 +126,8 @@ int main(int argc, char **argv)
         }
     }
 
-    uint64_t TextStartAddr;
     uint64_t DumpSize;
-    DumpElf(ELFFile, Bundle, Package, BaseName, TextStartAddr, DumpSize);
+    DumpElf(OutputPath, ELFFile, Bundle, Package, BaseName, DumpSize);
 
     std::string &EntryBB = BaseName;
     std::vector<BasicBlock> BBs;
@@ -164,11 +155,11 @@ int main(int argc, char **argv)
         outs() << "第" << i << "个SP" << SPDelta[i].first << " 最大深度:" << Key[i] << "\n";
     }
 
-    DumpSubr(BBs[EntryIdx], Package, BaseName, SPDelta, Key, TextStartAddr, DumpSize);
-    DumpTmpl(TmplDir, Package, BaseName);
+    DumpSubr(BBs[EntryIdx], Package, OutputPath, BaseName, SPDelta, Key, DumpSize);
+    DumpTmpl(TmplDir, Package, OutputPath, BaseName);
 
     // llvm-objdump
-    std::string TextFile = BaseName + ".text";
+    std::string TextFile = OutputPath + BaseName + ".text";
     {
         std::vector<StringRef> Args = {"llvm-objdump", "-S", ELFFile};
         std::error_code EC;

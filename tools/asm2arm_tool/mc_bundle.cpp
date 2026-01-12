@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-MCContextBundle::MCContextBundle(const llvm::Triple &TheTriple) : TheTriple(TheTriple)
+MCContextBundle::MCContextBundle(const llvm::Triple &TheTriple, const std::string &Features) : TheTriple(TheTriple)
 {
     using namespace llvm;
 
@@ -21,7 +21,7 @@ MCContextBundle::MCContextBundle(const llvm::Triple &TheTriple) : TheTriple(TheT
     MAI.reset(TheTarget->createMCAsmInfo(*MRI, TheTriple.str(), MCOptions));
     assert(MAI && "Unable to create MCAsmInfo!");
 
-    STI.reset(TheTarget->createMCSubtargetInfo(TheTriple.str(), "generic", "+sve"));
+    STI.reset(TheTarget->createMCSubtargetInfo(TheTriple.str(), "generic", Features));
     assert(STI && "Unable to create MCSubtargetInfo!");
 
     MCII.reset(TheTarget->createMCInstrInfo());

@@ -119,10 +119,10 @@ static void DumpRawBytes(raw_fd_ostream &OS, const uint8_t *Data, size_t Offset,
     }
 }
 
-void DumpElf(StringRef ElfPath, MCContextBundle &Bundle, const std::string &Package, const std::string &BaseName,
-    uint64_t &TextStartAddr, uint64_t &DumpTextSize)
+void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &Bundle, const std::string &Package,
+    const std::string &BaseName, uint64_t &DumpTextSize)
 {
-    std::string DumpFile = BaseName + "_text_arm64.go";
+    std::string DumpFile = OutputPath + BaseName + "_text_arm64.go";
     auto Buf = MemoryBuffer::getFile(ElfPath);
     if (!Buf) {
         errs() << "open ELF file failed\n";
@@ -159,7 +159,6 @@ void DumpElf(StringRef ElfPath, MCContextBundle &Bundle, const std::string &Pack
         StringRef Name = *NameExp;
 
         uint64_t BaseAddr = Sec.getAddress();
-        TextStartAddr = BaseAddr;
         uint64_t Size = Sec.getSize();
 
         DumpOS << "    // " << format_hex(BaseAddr, 18) << " Contents of section " << Name << ":\n";
@@ -254,11 +253,11 @@ void DumpElf(StringRef ElfPath, MCContextBundle &Bundle, const std::string &Pack
     DumpOS << "}\n";
 }
 
-void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::string &BaseName,
-    const std::vector<std::pair<uint64_t, int64_t>> &SPDelta, const std::vector<int64_t> &Depth, uint64_t TextStartAddr,
-    uint64_t DumpTextSize)
+void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::string &OutputPath,
+    const std::string &BaseName, const std::vector<std::pair<uint64_t, int64_t>> &SPDelta,
+    const std::vector<int64_t> &Depth, uint64_t DumpTextSize)
 {
-    std::string DumpFile = BaseName + "_subr.go";
+    std::string DumpFile = OutputPath + BaseName + "_subr.go";
     std::error_code EC;
     raw_fd_ostream DumpOS(DumpFile, EC, sys::fs::OF_None);
     if (EC) {
@@ -268,7 +267,7 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::
 
     DumpOS << "package " << Package << "\n\n"
            << "import (\n    `github.com/bytedance/sonic/loader`\n)\n\n"
-           << "const (\n    _entry__" << BaseName << " = " << EntryBB.StartAddr - TextStartAddr << "\n)\n\n";
+           << "const (\n    _entry__" << BaseName << " = " << EntryBB.StartAddr << "\n)\n\n";
 
     int64_t MaxDepth = 0;
     for (auto x : Depth) {
@@ -280,7 +279,7 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::
            << "        {0x1, 0},\n";
 
     for (size_t i = 0; i < SPDelta.size(); i++) {
-        DumpOS << "        {0x" << Twine::utohexstr(SPDelta[i].first - TextStartAddr) << ", " << Depth[i] << "},\n";
+        DumpOS << "        {0x" << Twine::utohexstr(SPDelta[i].first) << ", " << Depth[i] << "},\n";
     }
 
     DumpOS << "        {0x" << Twine::utohexstr(DumpTextSize) << ", 0},\n"
@@ -292,7 +291,8 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::
            << "}\n";
 }
 
-void DumpTmpl(const std::string &TmplDir, const std::string &Package, const std::string &BaseName)
+void DumpTmpl(
+    const std::string &TmplDir, const std::string &Package, const std::string &OutputPath, const std::string &BaseName)
 {
     SmallString<256> TmplPath;
     sys::path::append(TmplPath, TmplDir, (Twine(BaseName) + ".tmpl").str());
@@ -304,7 +304,7 @@ void DumpTmpl(const std::string &TmplDir, const std::string &Package, const std:
     MemoryBuffer &Buf = *BufOrErr.get();
 
     SmallString<256> OutPath;
-    sys::path::append(OutPath, (Twine(BaseName) + ".go").str());
+    sys::path::append(OutPath, OutputPath, (Twine(BaseName) + ".go").str());
 
     std::error_code EC;
     raw_fd_ostream OutFile(OutPath, EC, sys::fs::OF_Text);

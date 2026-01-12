@@ -34,6 +34,7 @@ int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, cons
     std::vector<uint64_t> Leaders;
     uint64_t EntryBBAddr = UINT64_MAX;
 
+    auto TextBegin = Funcs[0].StartAddr;
     auto TextEnd = Funcs.back().EndAddr;
     // 函数入口leader
     for (const auto &F : Funcs) {
@@ -47,7 +48,7 @@ int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, cons
     for (size_t i = 0; i < Text.size(); i++) {
         auto &Inst = Text[i];
         auto Pc = TextPC[i];
-        if (Pc > TextEnd) {
+        if (Pc >= TextEnd || Pc < TextBegin) {
             break;
         }
 
@@ -56,7 +57,9 @@ int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, cons
             // 只有target，没有fall-through
             int64_t Offset = Inst.getOperand(Inst.getNumOperands() - 1).getImm();
             uint64_t Addr = static_cast<int64_t>(Pc) + Offset * 4;
-            Leaders.push_back(Addr);
+            if (Addr >= TextBegin && Addr < TextEnd) {
+                Leaders.push_back(Addr);
+            }
             continue;
         }
         if (Desc.isConditionalBranch() || Desc.isCall()) {
@@ -66,7 +69,9 @@ int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, cons
             }
             int64_t Offset = Inst.getOperand(Inst.getNumOperands() - 1).getImm();
             uint64_t Addr = static_cast<int64_t>(Pc) + Offset * 4;
-            Leaders.push_back(Addr);
+            if (Addr >= TextBegin && Addr < TextEnd) {
+                Leaders.push_back(Addr);
+            }
             continue;
         }
         if (Desc.isReturn() || Desc.isTrap() || Desc.isBarrier()) {
@@ -85,7 +90,7 @@ int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, cons
         size_t Last = Addr2Idx[EAddr];
         BBs.push_back({SAddr, EAddr, First, Last});
     }
-    BBs.push_back({Leaders.back(), TextEnd, Addr2Idx[Leaders.back()], Addr2Idx[TextEnd]});
+    BBs.push_back({Leaders.back(), TextEnd - 4, Addr2Idx[Leaders.back()], Addr2Idx[TextEnd - 4]});
     for (size_t i = 0; i < BBs.size(); i++) {
         if (BBs[i].StartAddr == EntryBBAddr) {
             return i;

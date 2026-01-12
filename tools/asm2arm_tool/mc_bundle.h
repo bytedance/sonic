@@ -15,7 +15,7 @@
 
 class MCContextBundle {
 public:
-    explicit MCContextBundle(const llvm::Triple &TheTriple);
+    explicit MCContextBundle(const llvm::Triple &TheTriple, const std::string &Features);
 
     MCContextBundle(const MCContextBundle &) = delete;
     MCContextBundle &operator=(const MCContextBundle &) = delete;
