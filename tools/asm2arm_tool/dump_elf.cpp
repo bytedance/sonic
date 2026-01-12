@@ -122,7 +122,8 @@ static void DumpRawBytes(raw_fd_ostream &OS, const uint8_t *Data, size_t Offset,
 void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &Bundle, const std::string &Package,
     const std::string &BaseName, uint64_t &DumpTextSize)
 {
-    std::string DumpFile = OutputPath + BaseName + "_text_arm64.go";
+    SmallString<256> DumpFile;
+    sys::path::append(DumpFile, OutputPath, (Twine(BaseName) + "_text_arm64.go").str());
     auto Buf = MemoryBuffer::getFile(ElfPath);
     if (!Buf) {
         errs() << "open ELF file failed\n";
@@ -257,7 +258,8 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::
     const std::string &BaseName, const std::vector<std::pair<uint64_t, int64_t>> &SPDelta,
     const std::vector<int64_t> &Depth, uint64_t DumpTextSize)
 {
-    std::string DumpFile = OutputPath + BaseName + "_subr.go";
+    SmallString<256> DumpFile;
+    sys::path::append(DumpFile, OutputPath, (Twine(BaseName) + "_subr.go").str());
     std::error_code EC;
     raw_fd_ostream DumpOS(DumpFile, EC, sys::fs::OF_None);
     if (EC) {

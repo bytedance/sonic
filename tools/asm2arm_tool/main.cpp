@@ -69,7 +69,8 @@ int main(int argc, char **argv)
     MCContextBundle Bundle(TheTriple, Features);
 
     // object padding 生成
-    std::string ObjFile = OutputPath + BaseName + ".o";
+    SmallString<256> ObjFile;
+    sys::path::append(ObjFile, OutputPath, (Twine(BaseName) + ".o").str());
     {
         auto MBExp = MemoryBuffer::getFile(SourceFile);
         if (!MBExp) {
@@ -115,7 +116,8 @@ int main(int argc, char **argv)
     }
 
     // 链接elf 消除相对地址
-    std::string ELFFile = OutputPath + BaseName + ".elf";
+    SmallString<256> ELFFile;
+    sys::path::append(ELFFile, OutputPath, (Twine(BaseName) + ".elf").str());
     {
         std::vector<StringRef> Args = {"ld.lld", ObjFile, "-o", ELFFile, "-T", LdScript};
         std::string Err;
@@ -159,7 +161,8 @@ int main(int argc, char **argv)
     DumpTmpl(TmplDir, Package, OutputPath, BaseName);
 
     // llvm-objdump
-    std::string TextFile = OutputPath + BaseName + ".text";
+    SmallString<256> TextFile;
+    sys::path::append(TextFile, OutputPath, (Twine(BaseName) + ".text").str());
     {
         std::vector<StringRef> Args = {"llvm-objdump", "-S", ELFFile};
         std::error_code EC;
