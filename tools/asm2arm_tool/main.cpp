@@ -39,22 +39,25 @@
 using namespace llvm;
 #define DEBUG_TYPE "main"
 
-static cl::opt<bool> Debug("debug", cl::desc("Enable debug output"), cl::init(false));
+cl::OptionCategory JITCategory("JIT Options");
+
+static cl::opt<bool> Debug("debug", cl::desc("Enable debug output"), cl::init(false), cl::cat(JITCategory));
 static cl::opt<std::string> SourceFile(
-    "source", cl::desc("input ASM file"), cl::value_desc("ASM-file-path"), cl::Required);
+    "source", cl::desc("input ASM file"), cl::value_desc("ASM-file-path"), cl::Required, cl::cat(JITCategory));
 static cl::opt<std::string> OutputPath(
-    "output", cl::desc("Output path of *.go files"), cl::value_desc("output-path"), cl::Required);
+    "output", cl::desc("Output path of *.go files"), cl::value_desc("output-path"), cl::Required, cl::cat(JITCategory));
 static cl::opt<std::string> LdScript(
-    "link-ld", cl::desc("linker script"), cl::value_desc("link-ld-path"), cl::Required);
+    "link-ld", cl::desc("linker script"), cl::value_desc("link-ld-path"), cl::Required, cl::cat(JITCategory));
 static cl::opt<std::string> Package("package", cl::desc("The package to which the generated Go file belongs"),
-    cl::value_desc("package-name"), cl::Required);
-static cl::opt<std::string> TmplDir(
-    "TmplDir", cl::desc("Folder where Tmpl files are stored"), cl::value_desc("Tmpl-files-Dir"), cl::Required);
+    cl::value_desc("package-name"), cl::Required, cl::cat(JITCategory));
+static cl::opt<std::string> TmplDir("TmplDir", cl::desc("Folder where Tmpl files are stored"),
+    cl::value_desc("Tmpl-files-Dir"), cl::Required, cl::cat(JITCategory));
 static cl::opt<std::string> Features(
-    "features", cl::desc("features like +sve,+aes"), cl::value_desc("features"), cl::Optional);
+    "features", cl::desc("features like +sve,+aes"), cl::value_desc("features"), cl::Optional, cl::cat(JITCategory));
 
 int main(int argc, char **argv)
 {
+    cl::HideUnrelatedOptions(JITCategory);
     cl::ParseCommandLineOptions(argc, argv, "assembly->object->elf->objdump\n");
     if (Debug) {
         DebugFlag = true;
