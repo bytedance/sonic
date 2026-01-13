@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <map>
 #include <regex>
+#include <set>
 
 #ifdef __ARM_FEATURE_SVE
 #include <arm_sve.h>
@@ -24,6 +25,7 @@ extern std::vector<MCInst> Text;
 extern std::vector<uint64_t> TextPC;
 extern std::unordered_map<uint64_t, size_t> Addr2Idx;
 extern std::vector<FuncRange> Funcs;
+extern std::set<uint64_t> Rets;
 
 int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, const std::string &EntryBB)
 {
@@ -175,6 +177,10 @@ int64_t GetSPAdjust(
     const MCInst &Inst, uint64_t PC, MCContextBundle &Bundle, std::vector<std::pair<uint64_t, int64_t>> &SPDelta)
 {
     const auto &Desc = Bundle.getMCInstrInfo().get(Inst.getOpcode());
+    if (Desc.isReturn()) {
+        Rets.insert(PC);
+        return 0;
+    }
     if (!Desc.hasDefOfPhysReg(Inst, AArch64RegTable["SP"], Bundle.getMCRegisterInfo())) {
         return 0;
     }

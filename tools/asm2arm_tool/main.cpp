@@ -140,7 +140,7 @@ int main(int argc, char **argv)
         }
     }
 
-    uint64_t DumpSize;
+    uint64_t DumpSize = 0;
     DumpElf(OutputPath, ELFFile, Bundle, Package, BaseName, DumpSize);
 
     std::string &EntryBB = BaseName;

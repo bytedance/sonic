@@ -21,6 +21,7 @@
 #include "llvm/Object/ELFObjectFile.h"
 
 #include <cstdint>
+#include <set>
 #include <sys/types.h>
 #include <unordered_map>
 
@@ -33,6 +34,7 @@ std::vector<uint64_t> TextPC;
 std::vector<uint32_t> TextSize;
 std::unordered_map<uint64_t, size_t> Addr2Idx;
 std::vector<FuncRange> Funcs;
+std::set<uint64_t> Rets;
 
 static void CollectFuncRanges(ObjectFile &Obj)
 {
@@ -175,7 +177,7 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
             const uint8_t *Bytes = reinterpret_cast<const uint8_t *>(Content.data());
             uint64_t BaseAddr = Sec.getAddress();
             size_t TotalSize = Content.size();
-            DumpTextSize = TotalSize;
+            DumpTextSize += TotalSize;
 
             size_t NumInsts = Text.size();
 
@@ -223,6 +225,7 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
             }
         } else if (Sec.isBSS()) {
             // .bss: 全零
+            DumpTextSize += Size;
             for (uint64_t i = 0; i < Size; i += 16) {
                 DumpOS << "    ";
                 uint64_t LineBytes = std::min<uint64_t>(16, Size - i);
@@ -240,6 +243,7 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
             StringRef Content = *ContentExp;
             const uint8_t *Data = reinterpret_cast<const uint8_t *>(Content.data());
             size_t DataSize = Content.size();
+            DumpTextSize += DataSize;
 
             for (size_t i = 0; i < DataSize; i += 16) {
                 DumpOS << "    ";
@@ -280,11 +284,18 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::
            << "var (\n    _pcsp__" << BaseName << " = [][2]uint32{\n"
            << "        {0x1, 0},\n";
 
-    for (size_t i = 0; i < SPDelta.size(); i++) {
-        DumpOS << "        {0x" << Twine::utohexstr(SPDelta[i].first) << ", " << Depth[i] << "},\n";
+    std::map<uint64_t, int64_t> SPDump;
+    for (size_t i = 1; i < SPDelta.size(); i++) {
+        SPDump[SPDelta[i].first] = Depth[i];
+    }
+    for (auto x : Rets) {
+        SPDump[x] = 0;
+    }
+    for (auto [Addr, SP] : SPDump) {
+        DumpOS << "        {0x" << Twine::utohexstr(Addr) << ", " << SP << "},\n";
     }
 
-    DumpOS << "        {0x" << Twine::utohexstr(DumpTextSize) << ", 0},\n"
+    DumpOS << "        {0x" << Twine::utohexstr(DumpTextSize) << ", " << MaxDepth << "},\n"
            << "    }\n)\n\n"
            << "var _cfunc_" << BaseName << " = []loader.CFunc{\n    {\"_" << BaseName << "_entry\", 0, _entry__"
            << BaseName << ", 0, nil},\n"
