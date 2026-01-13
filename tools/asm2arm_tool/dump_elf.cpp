@@ -98,12 +98,10 @@ static bool DisasmTextSection(MCContextBundle &Bundle, const ObjectFile &Obj, co
             TextPC.push_back(CurAddr);
             TextSize.push_back(InstSize);
             Addr2Idx[CurAddr] = Text.size() - 1;
-            Data += InstSize;
-            CurAddr += InstSize;
-        } else {
-            Data += 1;
-            CurAddr += 1;
         }
+        // 无法解析时，InstSize会存储需要跳过的字节数
+        Data += InstSize;
+        CurAddr += InstSize;
     }
     return true;
 }

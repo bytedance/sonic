@@ -128,7 +128,10 @@ int main(int argc, char **argv)
     SmallString<256> ELFFile;
     sys::path::append(ELFFile, OutputPath, (Twine(BaseName) + ".elf").str());
     {
-        std::vector<StringRef> Args = {"ld.lld", ObjFile, "-o", ELFFile, "-T", LdScript};
+        // ld.lld默认会优化某些指令组合，如adrp+add在寻址相对举例小于1MB时会被优化成一条adr指令，多出来的地址变为unknown
+        // 这会打断BB块的数据流，为了避免这种情况，保持链接后与输入一致，增加--no-relax
+        // 或者对于JIT这种来说，代码段一般都不会大于1MB，可以直接在生成汇编时加上-mcmodel=tiny
+        std::vector<StringRef> Args = {"ld.lld", ObjFile, "-o", ELFFile, "-T", LdScript, "--no-relax"};
         std::string Err;
         int RC = sys::ExecuteAndWait("/home/yupan/.local/LLVM19/bin/ld.lld", Args, std::nullopt, {}, 0, 0, &Err);
         if (RC) {

@@ -59,7 +59,7 @@ int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, cons
             // 只有target，没有fall-through
             int64_t Offset = Inst.getOperand(Inst.getNumOperands() - 1).getImm();
             uint64_t Addr = static_cast<int64_t>(Pc) + Offset * 4;
-            if (Addr >= TextBegin && Addr < TextEnd) {
+            if (Addr2Idx.find(Addr) != Addr2Idx.end()) {
                 Leaders.push_back(Addr);
             }
             continue;
@@ -71,7 +71,7 @@ int SplitBasicBlocks(MCContextBundle &Bundle, std::vector<BasicBlock> &BBs, cons
             }
             int64_t Offset = Inst.getOperand(Inst.getNumOperands() - 1).getImm();
             uint64_t Addr = static_cast<int64_t>(Pc) + Offset * 4;
-            if (Addr >= TextBegin && Addr < TextEnd) {
+            if (Addr2Idx.find(Addr) != Addr2Idx.end()) {
                 Leaders.push_back(Addr);
             }
             continue;
