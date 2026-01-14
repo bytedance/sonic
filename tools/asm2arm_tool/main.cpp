@@ -23,34 +23,34 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
-#include "llvm/Support/Program.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/TargetParser/Host.h"
 #include "llvm/TargetParser/Triple.h"
+#include "lld/Common/Driver.h"
 
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
 using namespace llvm;
 #define DEBUG_TYPE "main"
+LLD_HAS_DRIVER(elf)
 
 cl::OptionCategory JITCategory("JIT Options");
 
 static cl::opt<bool> Debug("debug", cl::desc("Enable debug output"), cl::init(false), cl::cat(JITCategory));
 static cl::opt<std::string> SourceFile(
     "source", cl::desc("input ASM file"), cl::value_desc("ASM-file-path"), cl::Required, cl::cat(JITCategory));
-static cl::opt<std::string> OutputPath(
+static cl::opt<std::string> OutputPath_(
     "output", cl::desc("Output path of *.go files"), cl::value_desc("output-path"), cl::Required, cl::cat(JITCategory));
 static cl::opt<std::string> LdScript(
     "link-ld", cl::desc("linker script"), cl::value_desc("link-ld-path"), cl::Required, cl::cat(JITCategory));
-static cl::opt<std::string> Package("package", cl::desc("The package to which the generated Go file belongs"),
+static cl::opt<std::string> Package_("package", cl::desc("The package to which the generated Go file belongs"),
     cl::value_desc("package-name"), cl::Required, cl::cat(JITCategory));
-static cl::opt<std::string> TmplDir("TmplDir", cl::desc("Folder where Tmpl files are stored"),
+static cl::opt<std::string> TmplDir_("TmplDir", cl::desc("Folder where Tmpl files are stored"),
     cl::value_desc("Tmpl-files-Dir"), cl::Required, cl::cat(JITCategory));
 static cl::opt<std::string> Features(
     "features", cl::desc("features like +sve,+aes"), cl::value_desc("features"), cl::Optional, cl::cat(JITCategory));
@@ -62,6 +62,9 @@ int main(int argc, char **argv)
     if (Debug) {
         DebugFlag = true;
     }
+    std::string OutputPath = OutputPath_;
+    std::string Package = Package_;
+    std::string TmplDir = TmplDir_;
 
     auto BaseName = GetSourceName(SourceFile);
     if (BaseName.empty()) {
@@ -131,11 +134,14 @@ int main(int argc, char **argv)
         // ld.lld默认会优化某些指令组合，如adrp+add在寻址相对举例小于1MB时会被优化成一条adr指令，多出来的地址变为unknown
         // 这会打断BB块的数据流，为了避免这种情况，保持链接后与输入一致，增加--no-relax
         // 或者对于JIT这种来说，代码段一般都不会大于1MB，可以直接在生成汇编时加上-mcmodel=tiny
-        std::vector<StringRef> Args = {"ld.lld", ObjFile, "-o", ELFFile, "-T", LdScript, "--no-relax"};
-        std::string Err;
-        int RC = sys::ExecuteAndWait("/home/yupan/.local/LLVM19/bin/ld.lld", Args, std::nullopt, {}, 0, 0, &Err);
-        if (RC) {
-            outs() << "ld.lld failed: " << Err << "\n";
+        LdScript = "--script=" + LdScript;
+        std::vector<const char *> Args = {
+            "ld.lld", ObjFile.c_str(), "-o", ELFFile.c_str(), LdScript.c_str(), "--no-relax"};
+        static const lld::DriverDef Drivers[] = {{lld::Gnu, lld::elf::link}};
+        // 内部会调用cl::ParseCommandLineOptions，导致前面的选项被清空
+        lld::Result Res = lld::lldMain(Args, outs(), errs(), Drivers);
+        if (Res.retCode != 0) {
+            outs() << "ld.lld failed\n";
             return 1;
         }
     }
@@ -165,27 +171,6 @@ int main(int argc, char **argv)
 
     DumpSubr(BBs[EntryIdx], Package, OutputPath, BaseName, SPDelta, Key, DumpSize);
     DumpTmpl(TmplDir, Package, OutputPath, BaseName);
-
-    // llvm-objdump
-    SmallString<256> TextFile;
-    sys::path::append(TextFile, OutputPath, (Twine(BaseName) + ".text").str());
-    {
-        std::vector<StringRef> Args = {"llvm-objdump", "-S", ELFFile};
-        std::error_code EC;
-        raw_fd_ostream TextOS(TextFile, EC, sys::fs::OF_None);
-        if (EC) {
-            outs() << EC.message() << "\n";
-            return 1;
-        }
-
-        std::string Err;
-        int RC = sys::ExecuteAndWait("/home/yupan/.local/LLVM19/bin/llvm-objdump", Args, std::nullopt,
-            {std::nullopt, TextFile, std::nullopt}, 0, 0, &Err, nullptr);
-        if (RC) {
-            outs() << "llvm-objdump failed: " << Err << "\n";
-            return 1;
-        }
-    }
 
     outs() << "ALL DONE\n";
     return 0;

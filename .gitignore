@@ -53,3 +53,6 @@ fuzz/testdata
 *pprof
 *coverage.txt
 tools/venv/*
+tools/asm2arm_tool/.cache
+tools/asm2arm_tool/build
+tools/asm2arm_tool/output
