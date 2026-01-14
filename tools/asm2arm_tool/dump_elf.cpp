@@ -209,7 +209,7 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
                 std::string InstStr;
                 raw_string_ostream OSS(InstStr);
                 Bundle.getMCInstPrinter().printInst(&Text[i], InstAddr, {}, Bundle.getMCSubtargetInfo(), OSS);
-                DumpOS << "   // " << InstStr << "\n";
+                DumpOS << "   // " << format_hex(InstAddr, 18) << " " << InstStr << "\n";
 
                 ByteIndex += InstLen;
                 CurrentAddr += InstLen;
