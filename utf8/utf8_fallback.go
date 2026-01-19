@@ -20,8 +20,6 @@ package utf8
 
 import (
 	"unicode/utf8"
-
-	"github.com/bytedance/sonic/internal/rt"
 )
 
 // ValidateFallback validates UTF-8 encoded bytes using standard library.
@@ -33,5 +31,23 @@ func Validate(src []byte) bool {
 // ValidateStringFallback validates UTF-8 encoded string using standard library.
 // This is used when native UTF-8 validation is not available.
 func ValidateString(src string) bool {
-	return utf8.Valid(rt.Str2Mem(src))
+	return utf8.ValidString(src)
+}
+
+// CorrectWith corrects the invalid utf8 byte with repl string.
+// This is the fallback implementation using standard library.
+func CorrectWith(dst []byte, src []byte, repl string) []byte {
+	for len(src) > 0 {
+		r, size := utf8.DecodeRune(src)
+		if r == utf8.RuneError && size == 1 {
+			// Invalid UTF-8 byte, replace with repl
+			dst = append(dst, repl...)
+			src = src[1:]
+		} else {
+			// Valid UTF-8 sequence, copy it
+			dst = append(dst, src[:size]...)
+			src = src[size:]
+		}
+	}
+	return dst
 }
