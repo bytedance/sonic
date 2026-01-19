@@ -1,5 +1,6 @@
 #include "mc_bundle.h"
 #include "streamer.h"
+#include "plan9_streamer.h"
 #include "dump_elf.h"
 #include "cal_depth.h"
 #include "utils.h"
@@ -42,7 +43,7 @@ LLD_HAS_DRIVER(elf)
 cl::OptionCategory JITCategory("JIT Options");
 
 static cl::opt<bool> Debug("debug", cl::desc("Enable debug output"), cl::init(false), cl::cat(JITCategory));
-static cl::opt<std::string> SourceFile(
+static cl::opt<std::string> SourceFile_(
     "source", cl::desc("input ASM file"), cl::value_desc("ASM-file-path"), cl::Required, cl::cat(JITCategory));
 static cl::opt<std::string> OutputPath_(
     "output", cl::desc("Output path of *.go files"), cl::value_desc("output-path"), cl::Required, cl::cat(JITCategory));
@@ -62,6 +63,7 @@ int main(int argc, char **argv)
     if (Debug) {
         DebugFlag = true;
     }
+    std::string SourceFile = SourceFile_;
     std::string OutputPath = OutputPath_;
     std::string Package = Package_;
     std::string TmplDir = TmplDir_;
@@ -79,6 +81,54 @@ int main(int argc, char **argv)
 
     Triple TheTriple("aarch64-linux-gnu");
     MCContextBundle Bundle(TheTriple, Features);
+    FindSP(Bundle);
+
+    // object padding 生成
+    SmallString<256> StaticFile;
+    sys::path::append(StaticFile, OutputPath, (Twine(BaseName) + "_arm64.s").str());
+    {
+        auto MBExp = MemoryBuffer::getFile(SourceFile);
+        if (!MBExp) {
+            outs() << "getFile failed\n";
+            return 1;
+        }
+        std::unique_ptr<MemoryBuffer> MB = std::move(*MBExp);
+
+        SourceMgr SrcMgr;
+        SrcMgr.AddNewSourceBuffer(std::move(MB), SMLoc());
+
+        MCContext Ctx(TheTriple, &Bundle.getMCAsmInfo(), &Bundle.getMCRegisterInfo(), &Bundle.getMCSubtargetInfo(),
+            &SrcMgr, &Bundle.getMCTargetOptions());
+        std::unique_ptr<MCObjectFileInfo> MOFI(Bundle.getTarget().createMCObjectFileInfo(Ctx, false));
+        Ctx.setObjectFileInfo(MOFI.get());
+
+        auto MAB = std::unique_ptr<MCAsmBackend>(Bundle.getTarget().createMCAsmBackend(
+            Bundle.getMCSubtargetInfo(), Bundle.getMCRegisterInfo(), Bundle.getMCTargetOptions()));
+        auto MCE = std::unique_ptr<MCCodeEmitter>(Bundle.getTarget().createMCCodeEmitter(Bundle.getMCInstrInfo(), Ctx));
+
+        std::error_code EC;
+        raw_fd_ostream Out(StaticFile, EC, sys::fs::OF_None);
+        if (EC) {
+            outs() << EC.message() << "\n";
+            return 1;
+        }
+        raw_null_ostream NullOS;
+        auto MOW = MAB->createObjectWriter(NullOS);
+
+        auto Streamer =
+            std::make_unique<Plan9Streamer>(Ctx, std::move(MAB), std::move(MOW), std::move(MCE), Out, Bundle);
+        Streamer->initSections(false, Bundle.getMCSubtargetInfo());
+
+        std::unique_ptr<MCAsmParser> Parser(llvm::createMCAsmParser(SrcMgr, Ctx, *Streamer, Bundle.getMCAsmInfo()));
+        std::unique_ptr<MCTargetAsmParser> TAP(Bundle.getTarget().createMCAsmParser(
+            Bundle.getMCSubtargetInfo(), *Parser, Bundle.getMCInstrInfo(), Bundle.getMCTargetOptions()));
+        Parser->setTargetParser(*TAP);
+        if (Parser->Run(false)) {
+            outs() << "asm parse failed\n";
+            return 1;
+        }
+        Streamer->finish();
+    }
 
     // object padding 生成
     SmallString<256> ObjFile;

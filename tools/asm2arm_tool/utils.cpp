@@ -89,3 +89,79 @@ std::string GetSourceName(llvm::StringRef Path)
 
     return path::stem(Path).str();
 }
+
+std::vector<std::string> TokenizeInstruction(const std::string &InstStr)
+{
+    std::string s = InstStr;
+    // 去掉前导空白
+    size_t start = s.find_first_not_of(" \t");
+    if (start == std::string::npos)
+        return {};
+    s = s.substr(start);
+
+    std::vector<std::string> tokens;
+
+    // 1. 提取操作码（直到空格）
+    size_t i = 0;
+    while (i < s.size() && !isspace(s[i])) {
+        i++;
+    }
+    tokens.push_back(s.substr(0, i));
+    if (i >= s.size())
+        return tokens;
+
+    // 2. 跳过空格
+    while (i < s.size() && isspace(s[i]))
+        i++;
+
+    // 3. 解析操作数列表（支持 [x0, #8] 为一个整体）
+    std::string current;
+    bool inBrackets = false;
+
+    for (; i < s.size(); ++i) {
+        char c = s[i];
+
+        if (c == '[') {
+            inBrackets = true;
+            current += c;
+        } else if (c == ']') {
+            inBrackets = false;
+            current += c;
+        } else if (c == ',' && !inBrackets) {
+            // 顶层逗号：结束当前操作数
+            // 去掉尾部空格
+            size_t end = current.find_last_not_of(" \t");
+            if (end != std::string::npos) {
+                current = current.substr(0, end + 1);
+            }
+            tokens.push_back(current);
+            current.clear();
+            // 跳过逗号后的空格
+            while (i + 1 < s.size() && isspace(s[i + 1]))
+                i++;
+        } else {
+            current += c;
+        }
+    }
+
+    // 添加最后一个操作数
+    if (!current.empty()) {
+        size_t end = current.find_last_not_of(" \t");
+        if (end != std::string::npos) {
+            current = current.substr(0, end + 1);
+        }
+        tokens.push_back(current);
+    }
+
+    return tokens;
+}
+
+llvm::raw_fd_ostream &OutLabel(llvm::raw_fd_ostream &Out, llvm::StringRef Label)
+{
+    if (Label[0] == '.') {
+        Out << Label.substr(1);
+    } else {
+        Out << Label;
+    }
+    return Out;
+}

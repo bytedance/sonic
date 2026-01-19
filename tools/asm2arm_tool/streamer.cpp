@@ -16,7 +16,6 @@ PaddingNopObjectStreamer::PaddingNopObjectStreamer(llvm::MCContext &Context, std
     std::unique_ptr<llvm::MCObjectWriter> OW, std::unique_ptr<llvm::MCCodeEmitter> Emitter, MCContextBundle &Bundle)
     : MCELFStreamer(Context, std::move(TAB), std::move(OW), std::move(Emitter)), MRI(&Bundle.getMCRegisterInfo())
 {
-    FindSP(Bundle);
     LLVM_DEBUG(dbgs() << "AArch64RegTable[SP] = " << AArch64RegTable["SP"] << "\n";);
 }
 

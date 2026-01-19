@@ -17,7 +17,7 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 llvm_map_components_to_libnames(LLVM_LIBS all support option lto
 AllTargetsInfos AllTargetsCodeGens AllTargetsAsmParsers AllTargetsDescs AllTargetsDisassemblers)
 
-add_executable(asm2arm_tool main.cpp streamer.cpp dump_elf.cpp utils.cpp cal_depth.cpp mc_bundle.cpp)
+add_executable(asm2arm_tool main.cpp streamer.cpp plan9_streamer.cpp dump_elf.cpp utils.cpp cal_depth.cpp mc_bundle.cpp)
 target_compile_definitions(asm2arm_tool PRIVATE ${LLVM_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -ffunction-sections -fdata-sections -g -march=armv8-a+sve")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections")
