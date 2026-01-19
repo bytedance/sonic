@@ -1,5 +1,5 @@
-//go:build (amd64 && go1.17 && !go1.26) || (arm64 && go1.20 && !go1.26)
-// +build amd64,go1.17,!go1.26 arm64,go1.20,!go1.26
+//go:build (amd64 && go1.17 && !go1.27) || (arm64 && go1.20 && !go1.27)
+// +build amd64,go1.17,!go1.27 arm64,go1.20,!go1.27
 
 
 /*
