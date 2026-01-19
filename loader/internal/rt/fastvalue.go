@@ -71,9 +71,9 @@ func (self *GoType) String() string {
     return self.Pack().String()
 }
 
-func (self *GoType) Indirect() bool {
-    return self.KindFlags & F_direct == 0
-}
+// Indirect() is defined in version-specific files:
+// - gotype_legacy.go for Go < 1.26
+// - gotype_go126.go for Go >= 1.26
 
 type GoItab struct {
     it unsafe.Pointer
@@ -103,21 +103,9 @@ type GoPtrType struct {
     Elem *GoType
 }
 
-type GoMapType struct {
-    GoType
-    Key        *GoType
-    Elem       *GoType
-    Bucket     *GoType
-    Hasher     func(unsafe.Pointer, uintptr) uintptr
-    KeySize    uint8
-    ElemSize   uint8
-    BucketSize uint16
-    Flags      uint32
-}
-
-func (self *GoMapType) IndirectElem() bool {
-    return self.Flags & 2 != 0
-}
+// GoMapType is defined in version-specific files:
+// - fastvalue_maptype_legacy.go for Go < 1.26
+// - fastvalue_maptype_go126.go for Go >= 1.26
 
 type GoStructType struct {
     GoType

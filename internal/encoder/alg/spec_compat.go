@@ -1,4 +1,5 @@
-// +build !amd64,!arm64 go1.26 !go1.16 arm64,!go1.20
+//go:build (!amd64 && !arm64) || (amd64 && go1.26) || (amd64 && !go1.16) || (arm64 && !go1.20)
+// +build !amd64,!arm64 amd64,go1.26 amd64,!go1.16 arm64,!go1.20
 
 /**
  * Copyright 2024 ByteDance Inc.
@@ -130,13 +131,23 @@ func HtmlEscape(dst []byte, src []byte) []byte {
 func F64toa(buf []byte, v float64) ([]byte) {
 	bs := bytes.NewBuffer(buf)
 	_ = json.NewEncoder(bs).Encode(v)
-	return bs.Bytes()
+	// json.Encoder.Encode appends a newline, so we need to strip it
+	out := bs.Bytes()
+	if len(out) > 0 && out[len(out)-1] == '\n' {
+		return out[:len(out)-1]
+	}
+	return out
 }
 
 func F32toa(buf []byte, v float32) ([]byte) {
 	bs := bytes.NewBuffer(buf)
 	_ = json.NewEncoder(bs).Encode(v)
-	return bs.Bytes()
+	// json.Encoder.Encode appends a newline, so we need to strip it
+	out := bs.Bytes()
+	if len(out) > 0 && out[len(out)-1] == '\n' {
+		return out[:len(out)-1]
+	}
+	return out
 }
 
 func I64toa(buf []byte, v int64) ([]byte) {
