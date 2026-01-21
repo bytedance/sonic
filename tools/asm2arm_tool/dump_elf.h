@@ -15,13 +15,13 @@ struct FuncRange {
 };
 
 void DumpElf(const std::string &OutputPath, llvm::StringRef ElfPath, MCContextBundle &Bundle,
-    const std::string &Package, const std::string &BaseName, uint64_t &DumpTextSize);
+    const std::string &Package, const std::string &BaseName, uint64_t &DumpTextSize, const std::string &Mode);
 
 void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::string &OutputPath,
     const std::string &BaseName, const std::vector<std::pair<uint64_t, int64_t>> &SPDelta,
     const std::vector<int64_t> &Depth, uint64_t DumpTextSize);
 
-void DumpTmpl(
-    const std::string &TmplDir, const std::string &Package, const std::string &OutputPath, const std::string &BaseName);
+void DumpTmpl(const std::string &TmplFile, const std::string &Package, const std::string &OutputPath,
+    const std::string &BaseName);
 
 #endif

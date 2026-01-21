@@ -27,12 +27,27 @@ for src_file in "${SRC_DIR}"/*.c; do
     asm_file="${OUTPUT_DIR}/${base_name}.s"
     cerr_log="${OUTPUT_DIR}/${base_name}.log"
 
-    echo ">>> Compile ${src_file}... --> ${asm_file}"
-    ${CC} -ffixed-x28 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
-    -mno-red-zone -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
-    -march=armv8-a+sve+aes -I/usr/include/simde -D__SVE__ -S -o "${asm_file}" "${src_file}"
+    if [ ! -e "${asm_file}" ]; then
+        echo ">>> Compile ${src_file}... --> ${asm_file}"
+        ${CC} -ffixed-x28 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
+        -mno-red-zone -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
+        -march=armv8-a+sve+aes -I/usr/include/simde -D__SVE__ -S -o "${asm_file}" "${src_file}"
+    fi
 
-    echo ">>> Execute Raw JIT mode..."
-    ${TOOL_PATH} --source=${asm_file} --output=${OUTPUT_DIR} --link-ld=${SCRIPT_DIR}/link.ld --TmplDir=${TMPL_DIR} \
+    
+    tmpl_file="${TMPL_DIR}/${base_name}.tmpl"
+    if [ ! -e "${tmpl_file}" ]; then
+        continue
+    fi
+    echo ">>> Execute Raw JIT mode for ${asm_file}..."
+    ${TOOL_PATH} --debug --mode=JIT --source=${asm_file} --output=${OUTPUT_DIR} --link-ld=${SCRIPT_DIR}/link.ld --tmpl=${tmpl_file} \
     --package=sve_wrapgoc --features=+sve,+aes 2>${cerr_log}
+
+    go_file="${TMPL_DIR}/sve_linkname/${base_name}_arm64.go"
+    if [ ! -e "${go_file}" ]; then
+        continue
+    fi
+    echo ">>> Execute SL mode for ${asm_file}..."
+    ${TOOL_PATH} --debug --mode=SL --source=${asm_file} --goproto=${go_file} --output=${OUTPUT_DIR} --link-ld=${SCRIPT_DIR}/link.ld \
+    --package=sve_linkname --features=+sve,+aes 2>${cerr_log}
 done

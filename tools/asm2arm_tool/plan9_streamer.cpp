@@ -290,7 +290,7 @@ void Plan9Streamer::emitBytes(StringRef Data)
             this->Out << "    WORD $" << format_hex(Word, 10) << "\n";
             this->WordData.erase(0, 4);
         }
-        LLVM_DEBUG(dbgs() << "BYTE DATA: len=" << Data.size() << " " << Data << "\n");
+        LLVM_DEBUG(dbgs() << "BYTE DATA: len=" << Data.size() << "\n");
     }
     IsTopEmit++;
     MCELFStreamer::emitBytes(Data);

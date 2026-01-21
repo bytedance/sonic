@@ -108,21 +108,21 @@ static bool DisasmTextSection(MCContextBundle &Bundle, const ObjectFile &Obj, co
     return true;
 }
 
-static void DumpRawBytes(raw_fd_ostream &OS, const uint8_t *Data, size_t Offset, size_t Size)
+static void DumpRawBytes(std::unique_ptr<raw_ostream> &OS, const uint8_t *Data, size_t Offset, size_t Size)
 {
     for (size_t i = 0; i < Size;) {
-        OS << "    ";
+        *OS << "    ";
         size_t LineEnd = std::min(i + 16, Size);
         for (size_t j = i; j < LineEnd; ++j) {
-            OS << format_hex(Data[Offset + j], 4) << ", ";
+            *OS << format_hex(Data[Offset + j], 4) << ", ";
         }
-        OS << "   // data\n";
+        *OS << "   // data\n";
         i = LineEnd;
     }
 }
 
 void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &Bundle, const std::string &Package,
-    const std::string &BaseName, uint64_t &DumpTextSize)
+    const std::string &BaseName, uint64_t &DumpTextSize, const std::string &Mode)
 {
     SmallString<256> DumpFile;
     sys::path::append(DumpFile, OutputPath, (Twine(BaseName) + "_text_arm64.go").str());
@@ -139,15 +139,20 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
     ObjectFile &Obj = **ObjExp;
     CollectFuncRanges(Obj);  // 获取函数起止地址
 
-    std::error_code EC;
-    raw_fd_ostream DumpOS(DumpFile, EC, sys::fs::OF_None);
-    if (EC) {
-        outs() << EC.message() << "\n";
-        return;
+    std::unique_ptr<raw_ostream> DumpOS;
+    if (Mode == "JIT") {
+        std::error_code EC;
+        DumpOS = std::make_unique<raw_fd_ostream>(DumpFile, EC, sys::fs::OF_None);
+        if (EC) {
+            outs() << "Dump file error: " << EC.message() << "\n";
+            return;
+        }
+    } else {
+        DumpOS = std::make_unique<raw_null_ostream>();
     }
 
-    DumpOS << "package " << Package << "\n\n";
-    DumpOS << "var _text_" << BaseName << " = []byte{\n";
+    *DumpOS << "package " << Package << "\n\n";
+    *DumpOS << "var _text_" << BaseName << " = []byte{\n";
 
     for (auto &Sec : Obj.sections()) {
         if (!Sec.isData() && !Sec.isText() && !Sec.isBSS()) {
@@ -164,7 +169,7 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
         uint64_t BaseAddr = Sec.getAddress();
         uint64_t Size = Sec.getSize();
 
-        DumpOS << "    // " << format_hex(BaseAddr, 18) << " Contents of section " << Name << ":\n";
+        *DumpOS << "    // " << format_hex(BaseAddr, 18) << " Contents of section " << Name << ":\n";
 
         if (Sec.isText()) {
             DisasmTextSection(Bundle, Obj, Sec);
@@ -200,16 +205,16 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
                 assert(ByteIndex + InstLen <= TotalSize && "Instruction overflows section");
 
                 // 输出指令字节（单行）
-                DumpOS << "    ";
+                *DumpOS << "    ";
                 for (uint32_t j = 0; j < InstLen; ++j) {
-                    DumpOS << format_hex(Bytes[ByteIndex + j], 4) << ", ";
+                    *DumpOS << format_hex(Bytes[ByteIndex + j], 4) << ", ";
                 }
 
                 // 指令注释
                 std::string InstStr;
                 raw_string_ostream OSS(InstStr);
                 Bundle.getMCInstPrinter().printInst(&Text[i], InstAddr, {}, Bundle.getMCSubtargetInfo(), OSS);
-                DumpOS << "   // " << format_hex(InstAddr, 18) << " " << InstStr << "\n";
+                *DumpOS << "   // " << format_hex(InstAddr, 18) << " " << InstStr << "\n";
 
                 ByteIndex += InstLen;
                 CurrentAddr += InstLen;
@@ -227,12 +232,12 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
             // .bss: 全零
             DumpTextSize += Size;
             for (uint64_t i = 0; i < Size; i += 16) {
-                DumpOS << "    ";
+                *DumpOS << "    ";
                 uint64_t LineBytes = std::min<uint64_t>(16, Size - i);
                 for (uint64_t j = 0; j < LineBytes; ++j) {
-                    DumpOS << "0x00, ";
+                    *DumpOS << "0x00, ";
                 }
-                DumpOS << "   \n";
+                *DumpOS << "   \n";
             }
         } else {
             // .data / .rodata
@@ -246,16 +251,16 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath, MCContextBundle &
             DumpTextSize += DataSize;
 
             for (size_t i = 0; i < DataSize; i += 16) {
-                DumpOS << "    ";
+                *DumpOS << "    ";
                 uint64_t LineBytes = std::min<uint64_t>(16, DataSize - i);
                 for (size_t j = 0; j < LineBytes; ++j) {
-                    DumpOS << format_hex(Data[i + j], 4) << ", ";
+                    *DumpOS << format_hex(Data[i + j], 4) << ", ";
                 }
-                DumpOS << "   \n";
+                *DumpOS << "   \n";
             }
         }
     }
-    DumpOS << "}\n";
+    *DumpOS << "}\n";
 }
 
 void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::string &OutputPath,
@@ -305,14 +310,12 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package, const std::
 }
 
 void DumpTmpl(
-    const std::string &TmplDir, const std::string &Package, const std::string &OutputPath, const std::string &BaseName)
+    const std::string &TmplFile, const std::string &Package, const std::string &OutputPath, const std::string &BaseName)
 {
-    SmallString<256> TmplPath;
-    sys::path::append(TmplPath, TmplDir, (Twine(BaseName) + ".tmpl").str());
-
-    ErrorOr<std::unique_ptr<MemoryBuffer>> BufOrErr = MemoryBuffer::getFile(TmplPath);
+    ErrorOr<std::unique_ptr<MemoryBuffer>> BufOrErr = MemoryBuffer::getFile(TmplFile);
     if (std::error_code EC = BufOrErr.getError()) {
-        report_fatal_error("Failed to open template file '" + TmplPath.str() + "': " + EC.message());
+        outs() << "Failed to open template file '" << TmplFile << "': " + EC.message() << "\n";
+        return;
     }
     MemoryBuffer &Buf = *BufOrErr.get();
 
@@ -322,7 +325,7 @@ void DumpTmpl(
     std::error_code EC;
     raw_fd_ostream OutFile(OutPath, EC, sys::fs::OF_Text);
     if (EC) {
-        report_fatal_error("Failed to create output file '" + OutPath.str() + "': " + EC.message());
+        outs() << "Failed to create output file '" << OutPath.str() << "': " << EC.message() << "\n";
     }
 
     bool FoundPackageLine = false;
