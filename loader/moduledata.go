@@ -1,5 +1,5 @@
-// go:build go1.18 && !go1.26
-// +build go1.18,!go1.26
+// go:build go1.18 && !go1.27
+// +build go1.18,!go1.27
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -267,6 +267,10 @@ func makeModuledata(name string, filenames []string, funcsp *[]Func, text []byte
     // make pclnt table
     pclntab := makePclntable(pclntSize, startLocations, _funcs, uint32(len(text)), pcdataOffs, funcdataOffs)
     mod.pclntable = pclntab
+
+    if len(pclntab) > 0 {
+		setEpclntab(mod, uintptr(unsafe.Pointer(&pclntab[0]))+uintptr(len(pclntab)))
+	}
 
     // make pc header
     mod.pcHeader = &pcHeader {
