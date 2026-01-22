@@ -159,9 +159,8 @@ void Plan9Streamer::makeBranch(const std::vector<std::string> &Token, const std:
     this->Out << "  // " << InstStr << "\n";
 }
 
-void Plan9Streamer::makeBranchInst(const std::string &InstStr)
+void Plan9Streamer::makeBranchInst(const std::vector<std::string> &Token, const std::string &InstStr)
 {
-    auto Token = TokenizeInstruction(InstStr);
     auto &Op = Token[0];
     if (BranchMap.find(Op) != BranchMap.end()) {
         this->makeBranch(Token, InstStr);
@@ -184,10 +183,14 @@ void Plan9Streamer::emitInstruction(const MCInst &Inst, const MCSubtargetInfo &S
         SmallVector<char> Buffer;
         SmallVector<MCFixup> Fixup;
         MCELFStreamer::getAssembler().getEmitter().encodeInstruction(Inst, Buffer, Fixup, Bundle.getMCSubtargetInfo());
+        auto Token = TokenizeInstruction(InstStr);
         // Fixup非空时，说明指令中存在需要在链接时处理的label参数
         // label参数在MCOperand中的判断是isExpr()，暂不清楚这种指令能否直接使用WORD表示
         if (Desc.isBranch()) {
-            this->makeBranchInst(InstStr);
+            this->makeBranchInst(Token, InstStr);
+        } else if (Token[0] == "adrp") {
+            this->Out << "    ADR ";
+            OutLabel(this->Out, Token[2]) << ", R" << Token[1].substr(1) << "\n";
         } else {
             this->Out << "    WORD $" << format_hex(readLittleEndianU32(Buffer), 10) << "  // " << InstStr << "\n";
         }

@@ -76,7 +76,7 @@ private:
 public:
     void makeWordData(uint64_t Value, unsigned Size, unsigned Repeat = 1);
     void flushPendingBytes();
-    void makeBranchInst(const std::string &InstStr);
+    void makeBranchInst(const std::vector<std::string> &Token, const std::string &InstStr);
     void makeBranch(const std::vector<std::string> &Token, const std::string &InstStr);
     bool makeCmpareBranch(const std::vector<std::string> &Token, const std::string &InstStr);
     void finish();
