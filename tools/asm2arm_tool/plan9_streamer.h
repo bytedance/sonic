@@ -2,6 +2,7 @@
 #define PLAN9_STREAMER_H
 
 #include "mc_bundle.h"
+#include "go_func_parser.h"
 
 #include "llvm/MC/MCELFStreamer.h"
 #include "llvm/MC/MCAsmBackend.h"
@@ -81,5 +82,9 @@ public:
     bool makeCmpareBranch(const std::vector<std::string> &Token, const std::string &InstStr);
     void finish();
 };
+
+void DumpDeclareHead(llvm::raw_fd_ostream &Out, const std::string &BaseName, int64_t MaxDepth);
+
+void DumpDeclareTail(llvm::raw_fd_ostream &Out, const std::string &BaseName, ParseResult &ParseRes, int64_t MaxDepth);
 
 #endif

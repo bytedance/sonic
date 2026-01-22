@@ -317,3 +317,82 @@ void Plan9Streamer::emitValueToAlignment(
     MCELFStreamer::emitValueToAlignment(Alignment, Value, ValueSize, MaxBytesToEmit);
     IsTopEmit--;
 }
+
+void DumpDeclareHead(llvm::raw_fd_ostream &Out, const std::string &BaseName, int64_t MaxDepth)
+{
+    Out << "#include \"go_asm.h\"\n"
+        << "#include \"funcdata.h\"\n"
+        << "#include \"textflag.h\"\n";
+
+    int64_t GoDepth = MaxDepth < 16 ? 0 : MaxDepth - 16;
+    Out << "\nTEXT ·__" << BaseName << "_entry__(SB), NOSPLIT, $" << GoDepth << "\n"
+        << "    NO_LOCAL_POINTERS\n"
+        << "    WORD $0x100000a0 // adr x0, .+20\n"
+        << "    MOVD R0, ret(FP)\n"
+        << "    RET\n\n";
+}
+
+void DumpDeclareTail(llvm::raw_fd_ostream &Out, const std::string &BaseName, ParseResult &ParseRes, int64_t MaxDepth)
+{
+    const auto &func = ParseRes.funcs["__" + BaseName];
+    if (!func.isAllocated()) {
+        outs() << BaseName << " isAllocated(): false\n";
+        return;
+    }
+    Out << "\nTEXT ·__" << BaseName << "(SB), NOSPLIT, $0-" << func.argspace() << "\n"
+        << "    NO_LOCAL_POINTERS\n";
+
+    int64_t CheckDepth = MaxDepth + 64;
+
+    if (CheckDepth != 0) {
+        Out << "\n_entry:\n"
+            << "    MOVD 16(g), R16\n";
+        if (MaxDepth > 0) {
+            if (MaxDepth < ((1 << 12) - 1)) {
+                Out << "    SUB $" << CheckDepth << ", RSP, R17\n";
+            } else if (MaxDepth < ((1 << 16) - 1)) {
+                Out << "    MOVD $" << CheckDepth << ", R17\n"
+                    << "    SUB R17, RSP, R17\n";
+            } else {
+                outs() << "too large stack size: " << CheckDepth << "\n";
+                return;
+            }
+            Out << "    CMP R16, R17\n";
+        } else {
+            Out << "    CMP R16, RSP\n";
+        }
+        Out << "    BLS _stack_grow\n";
+    }
+
+    Out << "\n    _" << BaseName << ":\n";
+    size_t offset = 0;
+    for (auto &p : func.params) {
+        if (p.creg.name[0] == 'x') {
+            Out << "    MOVD " << p.name << "+" << offset << "(FP), R" << p.creg.name.substr(1) << "\n";
+        }
+        if (p.creg.name[0] == 'd') {
+            Out << "    FMOVD " << p.name << "+" << offset << "(FP), F" << p.creg.name.substr(1) << "\n";
+        }
+        offset += p.size;
+    }
+    Out << "    MOVD ·_subr__" << BaseName << "(SB), R11\n"
+        << "    BL (R11)\n";
+
+    if (!func.results.empty()) {
+        auto &p = func.results[0];
+        if (p.creg.name[0] == 'x') {
+            Out << "    MOVD R0, " << p.name << "+" << offset << "(FP)\n";
+        }
+        if (p.creg.name[0] == 'd') {
+            Out << "    FMOVD F0, " << p.name << "+" << offset << "(FP)\n";
+        }
+    }
+    Out << "    RET\n";
+
+    if (CheckDepth != 0) {
+        Out << "\n_stack_grow:\n"
+            << "    MOVD R30, R3\n"
+            << "    CALL runtime·morestack_noctxt<>(SB)\n"
+            << "    JMP  _entry\n";
+    }
+}

@@ -229,6 +229,10 @@ int main(int argc, char** argv)
     LLVM_DEBUG(dbgs() << "EntryIdx = " << EntryIdx << "\n";);
 
     auto Key = ComputeMaxSPDepthAtInst(EntryIdx, BBs, CFG, BBSPVec, SPDelta);
+    int64_t MaxDepth = 0;
+    for (auto x : Key) {
+        MaxDepth = std::max(MaxDepth, x);
+    }
     LLVM_DEBUG(for (size_t i = 0; i < Key.size();
         i++) { dbgs() << "第" << i << "个SP" << SPDelta[i].first << " 最大深度:" << Key[i] << "\n"; });
 
@@ -265,6 +269,9 @@ int main(int argc, char** argv)
             outs() << EC.message() << "\n";
             return 1;
         }
+
+        DumpDeclareHead(Out, BaseName, MaxDepth);
+
         raw_null_ostream NullOS;
         auto MOW = MAB->createObjectWriter(NullOS);
 
@@ -301,6 +308,8 @@ int main(int argc, char** argv)
                        << "B): " << res.creg.name << " (C)\n";
             }
         });
+
+        DumpDeclareTail(Out, BaseName, ParseRes, MaxDepth);
     }
 
     outs() << "ALL DONE\n";
