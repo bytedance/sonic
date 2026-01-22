@@ -24,7 +24,7 @@ class Plan9Streamer : public llvm::MCELFStreamer {
 public:
     Plan9Streamer(llvm::MCContext &Context, std::unique_ptr<llvm::MCAsmBackend> TAB,
         std::unique_ptr<llvm::MCObjectWriter> OW, std::unique_ptr<llvm::MCCodeEmitter> Emitter,
-        llvm::raw_fd_ostream &Out, MCContextBundle &Bundle);
+        llvm::raw_fd_ostream &Out, MCContextBundle &Bundle, const std::string &BaseName);
 
     // 获取label
     void emitLabel(llvm::MCSymbol *Sym, llvm::SMLoc Loc = {}) override;
@@ -73,8 +73,12 @@ private:
     size_t IsTopEmit = 0;
     llvm::raw_fd_ostream &Out;
     std::string WordData;
+    uint64_t PC = 0;
+    uint64_t StartPC = 0;
+    const std::string &BaseName;
 
 public:
+    uint64_t getStartPC();
     void makeWordData(uint64_t Value, unsigned Size, unsigned Repeat = 1);
     void flushPendingBytes();
     void makeBranchInst(const std::vector<std::string> &Token, const std::string &InstStr);
@@ -86,5 +90,8 @@ public:
 void DumpDeclareHead(llvm::raw_fd_ostream &Out, const std::string &BaseName, int64_t MaxDepth);
 
 void DumpDeclareTail(llvm::raw_fd_ostream &Out, const std::string &BaseName, ParseResult &ParseRes, int64_t MaxDepth);
+
+void DumpSubrSL(const std::string &OutputPath, const std::string &Package, const std::string &BaseName,
+    uint64_t StartPC, int64_t MaxDepth);
 
 #endif

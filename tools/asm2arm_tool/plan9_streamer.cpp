@@ -8,7 +8,9 @@
 #include "llvm/MC/MCFixup.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Format.h"
+#include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cstddef>
 #include <string>
@@ -19,9 +21,17 @@ using namespace llvm;
 
 Plan9Streamer::Plan9Streamer(llvm::MCContext &Context, std::unique_ptr<llvm::MCAsmBackend> TAB,
     std::unique_ptr<llvm::MCObjectWriter> OW, std::unique_ptr<llvm::MCCodeEmitter> Emitter, llvm::raw_fd_ostream &Out,
-    MCContextBundle &Bundle)
-    : MCELFStreamer(Context, std::move(TAB), std::move(OW), std::move(Emitter)), Out(Out), Bundle(Bundle)
+    MCContextBundle &Bundle, const std::string &BaseName)
+    : MCELFStreamer(Context, std::move(TAB), std::move(OW), std::move(Emitter)),
+      Out(Out),
+      Bundle(Bundle),
+      BaseName(BaseName)
 {}
+
+uint64_t Plan9Streamer::getStartPC()
+{
+    return this->StartPC;
+}
 
 void Plan9Streamer::finish()
 {
@@ -42,6 +52,9 @@ void Plan9Streamer::emitLabel(MCSymbol *Sym, SMLoc Loc)
             }
             dbgs() << Sym->getName() << "\n";
         });
+    }
+    if (Sym->getName() == BaseName) {
+        this->StartPC = this->PC;
     }
     IsTopEmit++;
     MCELFStreamer::emitLabel(Sym, Loc);
@@ -164,9 +177,11 @@ void Plan9Streamer::makeBranchInst(const std::vector<std::string> &Token, const 
     auto &Op = Token[0];
     if (BranchMap.find(Op) != BranchMap.end()) {
         this->makeBranch(Token, InstStr);
+        this->PC += 4;
         return;
     }
     if (this->makeCmpareBranch(Token, InstStr)) {
+        this->PC += 8;
         return;
     }
     outs() << "Unsupported Branch Instruction\n";
@@ -191,8 +206,10 @@ void Plan9Streamer::emitInstruction(const MCInst &Inst, const MCSubtargetInfo &S
         } else if (Token[0] == "adrp") {
             this->Out << "    ADR ";
             OutLabel(this->Out, Token[2]) << ", R" << Token[1].substr(1) << "\n";
+            this->PC += 4;
         } else {
             this->Out << "    WORD $" << format_hex(readLittleEndianU32(Buffer), 10) << "  // " << InstStr << "\n";
+            this->PC += 4;
         }
 
         LLVM_DEBUG({
@@ -228,6 +245,7 @@ void Plan9Streamer::makeWordData(uint64_t Value, unsigned Size, unsigned Repeat)
         Out << "    WORD $" << format_hex(Word, 10) << "\n";
         // 移除已输出的 4 字节
         this->WordData.erase(0, 4);
+        this->PC += 4;
     }
 }
 
@@ -247,6 +265,7 @@ void Plan9Streamer::flushPendingBytes()
             (static_cast<uint8_t>(this->WordData[2]) << 16) | (static_cast<uint8_t>(this->WordData[3]) << 24);
         this->Out << "    WORD $" << format_hex(Word, 10) << "\n";
         WordData.erase(0, 4);
+        this->PC += 4;
     }
 }
 
@@ -292,6 +311,7 @@ void Plan9Streamer::emitBytes(StringRef Data)
                 (static_cast<uint8_t>(this->WordData[2]) << 16) | (static_cast<uint8_t>(this->WordData[3]) << 24);
             this->Out << "    WORD $" << format_hex(Word, 10) << "\n";
             this->WordData.erase(0, 4);
+            this->PC += 4;
         }
         LLVM_DEBUG(dbgs() << "BYTE DATA: len=" << Data.size() << "\n");
     }
@@ -364,7 +384,7 @@ void DumpDeclareTail(llvm::raw_fd_ostream &Out, const std::string &BaseName, Par
         Out << "    BLS _stack_grow\n";
     }
 
-    Out << "\n    _" << BaseName << ":\n";
+    Out << "\n_" << BaseName << ":\n";
     size_t offset = 0;
     for (auto &p : func.params) {
         if (p.creg.name[0] == 'x') {
@@ -395,4 +415,40 @@ void DumpDeclareTail(llvm::raw_fd_ostream &Out, const std::string &BaseName, Par
             << "    CALL runtime·morestack_noctxt<>(SB)\n"
             << "    JMP  _entry\n";
     }
+}
+
+void DumpSubrSL(const std::string &OutputPath, const std::string &Package, const std::string &BaseName,
+    uint64_t StartPC, int64_t MaxDepth)
+{
+    SmallString<256> SubrSL;
+    sys::path::append(SubrSL, OutputPath, (Twine(BaseName) + "_subr_arm64.go").str());
+    std::error_code EC;
+    raw_fd_ostream Out(SubrSL, EC, sys::fs::OF_None);
+    if (EC) {
+        outs() << EC.message() << "\n";
+        return;
+    }
+
+    Out << "package " << Package << "\n\n";
+
+    Out << "//go:nosplit\n"
+        << "//go:noescape\n"
+        << "//goland:noinspection ALL\n"
+        << "func __" << BaseName << "_entry__() uintptr\n\n";
+
+    Out << "var (\n"
+        << "    _subr__" << BaseName << " uintptr = __" << BaseName << "_entry__() + " << StartPC << "\n"
+        << ")\n\n";
+
+    Out << "const (\n"
+        << "    _stack__" << BaseName << " = " << MaxDepth << "\n"
+        << ")\n\n";
+
+    Out << "var (\n"
+        << "    _ = _subr__" << BaseName << "\n"
+        << ")\n\n";
+
+    Out << "const (\n"
+        << "    _ = _stack__" << BaseName << "\n"
+        << ")\n\n";
 }

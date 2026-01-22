@@ -276,7 +276,7 @@ int main(int argc, char** argv)
         auto MOW = MAB->createObjectWriter(NullOS);
 
         auto Streamer =
-            std::make_unique<Plan9Streamer>(Ctx, std::move(MAB), std::move(MOW), std::move(MCE), Out, Bundle);
+            std::make_unique<Plan9Streamer>(Ctx, std::move(MAB), std::move(MOW), std::move(MCE), Out, Bundle, BaseName);
         Streamer->initSections(false, Bundle.getMCSubtargetInfo());
 
         std::unique_ptr<MCAsmParser> Parser(llvm::createMCAsmParser(SrcMgr, Ctx, *Streamer, Bundle.getMCAsmInfo()));
@@ -310,6 +310,7 @@ int main(int argc, char** argv)
         });
 
         DumpDeclareTail(Out, BaseName, ParseRes, MaxDepth);
+        DumpSubrSL(OutputPath, Package, BaseName, Streamer->getStartPC(), MaxDepth);
     }
 
     outs() << "ALL DONE\n";
