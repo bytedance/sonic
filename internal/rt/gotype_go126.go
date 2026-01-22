@@ -1,4 +1,5 @@
-// +build go1.17,!go1.27
+//go:build go1.26
+// +build go1.26
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -16,23 +17,9 @@
  * limitations under the License.
  */
 
-package api
+package rt
 
-import (
-	`github.com/bytedance/sonic/internal/decoder/optdec`
-	`github.com/bytedance/sonic/internal/envs`
-)
-
-var (
-	pretouchImpl = optdec.Pretouch
-	decodeImpl = optdec.Decode
-)
-
-
-func init() {
-    // when in aarch64, we enable all optimization
-	envs.EnableOptDec()
-	envs.EnableFastMap()
+// In Go 1.26+, TFlagDirectIface is in the TFlag (Flags) field, not Kind_.
+func (self *GoType) Indirect() bool {
+	return self.Flags&F_direct == 0
 }
-
-

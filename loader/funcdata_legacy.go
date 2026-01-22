@@ -1,4 +1,5 @@
-// +build go1.17,!go1.27
+//go:build go1.18 && !go1.26
+// +build go1.18,!go1.26
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -16,23 +17,8 @@
  * limitations under the License.
  */
 
-package api
+package loader
 
-import (
-	`github.com/bytedance/sonic/internal/decoder/optdec`
-	`github.com/bytedance/sonic/internal/envs`
-)
-
-var (
-	pretouchImpl = optdec.Pretouch
-	decodeImpl = optdec.Decode
-)
-
-
-func init() {
-    // when in aarch64, we enable all optimization
-	envs.EnableOptDec()
-	envs.EnableFastMap()
+func setEpclntab(mod *moduledata, val uintptr) {
+    // No-op for versions < 1.26
 }
-
-

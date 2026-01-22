@@ -2,6 +2,8 @@ module github.com/bytedance/sonic
 
 go 1.18
 
+replace github.com/bytedance/sonic/loader => ./loader
+
 require (
 	github.com/bytedance/gopkg v0.1.3
 	github.com/bytedance/sonic/loader v0.4.0
