@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCInstrInfo.h"
@@ -158,10 +159,10 @@ std::vector<std::string> TokenizeInstruction(const std::string &InstStr)
 
 llvm::raw_fd_ostream &OutLabel(llvm::raw_fd_ostream &Out, llvm::StringRef Label)
 {
-    if (Label[0] == '.') {
-        Out << Label.substr(1);
-    } else {
-        Out << Label;
+    for (auto &c : Label) {
+        if (isAlpha(c) || isDigit(c) || c == '_') {
+            Out << c;
+        }
     }
     return Out;
 }

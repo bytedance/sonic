@@ -69,12 +69,17 @@ uint32_t readLittleEndianU32(const SmallVectorImpl<char> &CB)
 
 std::string ToPlan9Reg(const std::string &armReg)
 {
-    // 去除前导非数字字符，提取数字部分
+    if (armReg == "xzr" || armReg == "wzr") {
+        return "ZR";
+    }
     std::string numPart;
     for (char c : armReg) {
         if (std::isdigit(c)) {
             numPart += c;
         }
+    }
+    if (numPart == "18") {
+        return "R" + numPart + "_PLATFORM";
     }
     return "R" + numPart;
 }
@@ -143,19 +148,19 @@ bool Plan9Streamer::makeCmpareBranch(const std::vector<std::string> &Token, cons
         return false;
     }
     if (Op == "cbz") {
-        this->Out << "    CMP $0, R" << Token[1].substr(1) << "\n";
+        this->Out << "    CMP ZR, " << ToPlan9Reg(Token[1]) << "\n";
         this->Out << "    BEQ ";
         OutLabel(this->Out, Token[2]) << "  // " << InstStr << "\n";
     } else if (Op == "cbnz") {
-        this->Out << "    CMP $0, R" << Token[1].substr(1) << "\n";
+        this->Out << "    CMP ZR, " << ToPlan9Reg(Token[1]) << "\n";
         this->Out << "    BNE ";
         OutLabel(this->Out, Token[2]) << "  // " << InstStr << "\n";
     } else if (Op == "tbz") {
-        this->Out << "    TST $(1<<" << Token[2].substr(1) << "), R" << Token[1].substr(1) << "\n";
+        this->Out << "    TST $(1<<" << Token[2].substr(1) << "), " << ToPlan9Reg(Token[1]) << "\n";
         this->Out << "    BEQ ";
         OutLabel(this->Out, Token[3]) << "  // " << InstStr << "\n";
     } else {
-        this->Out << "    TST $(1<<" << Token[2].substr(1) << "), R" << Token[1].substr(1) << "\n";
+        this->Out << "    TST $(1<<" << Token[2].substr(1) << "), " << ToPlan9Reg(Token[1]) << "\n";
         this->Out << "    BNE ";
         OutLabel(this->Out, Token[3]) << "  // " << InstStr << "\n";
     }
@@ -205,7 +210,7 @@ void Plan9Streamer::emitInstruction(const MCInst &Inst, const MCSubtargetInfo &S
             this->makeBranchInst(Token, InstStr);
         } else if (Token[0] == "adrp") {
             this->Out << "    ADR ";
-            OutLabel(this->Out, Token[2]) << ", R" << Token[1].substr(1) << "\n";
+            OutLabel(this->Out, Token[2]) << ", " << ToPlan9Reg(Token[1]) << "\n";
             this->PC += 4;
         } else {
             this->Out << "    WORD $" << format_hex(readLittleEndianU32(Buffer), 10) << "  // " << InstStr << "\n";
