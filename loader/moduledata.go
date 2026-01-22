@@ -268,6 +268,10 @@ func makeModuledata(name string, filenames []string, funcsp *[]Func, text []byte
     pclntab := makePclntable(pclntSize, startLocations, _funcs, uint32(len(text)), pcdataOffs, funcdataOffs)
     mod.pclntable = pclntab
 
+    if len(pclntab) > 0 {
+		setEpclntab(mod, uintptr(unsafe.Pointer(&pclntab[0]))+uintptr(len(pclntab)))
+	}
+
     // make pc header
     mod.pcHeader = &pcHeader {
         magic   : _Magic,
