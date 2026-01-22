@@ -71,10 +71,6 @@ func (self *GoType) String() string {
 	return self.Pack().String()
 }
 
-func (self *GoType) Indirect() bool {
-	return self.KindFlags&F_direct == 0
-}
-
 type GoItab struct {
 	it unsafe.Pointer
 	Vt *GoType
