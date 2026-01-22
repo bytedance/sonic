@@ -1,8 +1,11 @@
 #include "go_func_parser.h"
 
+#include "llvm/Support/raw_ostream.h"
+
 #include <fstream>
 #include <sstream>
 #include <cctype>
+#include <unordered_map>
 
 std::string trim(const std::string& s)
 {
@@ -391,4 +394,98 @@ ParseResult parseGoFile(const std::string& filepath) noexcept
 
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     return parseGoAsmFunctions(content);
+}
+
+const std::vector<Register> ARGS_ORDER_C = {{"x0"}, {"x1"}, {"x2"}, {"x3"}, {"x4"}, {"x5"}, {"x6"}, {"x7"}};
+const std::vector<Register> FPARGS_ORDER = {{"d0"}, {"d1"}, {"d2"}, {"d3"}, {"d4"}, {"d5"}, {"d6"}, {"d7"}};
+
+std::unordered_map<std::string, std::pair<size_t, bool>> TypeInfo = {{"int", {8, false}}, {"uint", {8, false}},
+    {"uintptr", {8, false}}, {"Pointer", {8, false}}, {"unsafe.Pointer", {8, false}}, {"int64", {8, false}},
+    {"uint64", {8, false}}, {"int32", {4, false}}, {"uint32", {4, false}}, {"rune", {4, false}}, {"int16", {2, false}},
+    {"uint16", {2, false}}, {"int8", {1, false}}, {"uint8", {1, false}}, {"byte", {1, false}}, {"bool", {1, false}},
+    {"float32", {4, true}}, {"float64", {8, true}}};
+
+// 类型 → (size, isFloat)
+static std::pair<size_t, bool> getTypeInfo(const std::string& typeStr)
+{
+    if (typeStr.empty()) {
+        llvm::outs() << "empty type\n";
+        return {};
+    }
+
+    std::string t = typeStr;
+    // 处理指针
+    if (t[0] == '*') {
+        return {8, false};
+    }
+
+    // 标准类型映射
+    if (TypeInfo.find(t) != TypeInfo.end()) {
+        return TypeInfo[t];
+    } else {
+        llvm::outs() << "unrecognized type: " << typeStr << "\n";
+        return {};
+    }
+}
+
+// 对齐到 8 字节（寄存器大小）
+static size_t alignSize(size_t size)
+{
+    return ((size + 7) / 8) * 8;
+}
+
+// 分配单个 Param 的寄存器
+static void allocateParam(Param& param, int& intIdx, int& fpIdx, const std::string& funcName)
+{
+    auto [rawSize, isFloat] = getTypeInfo(param.type);
+    if (rawSize == 0) {
+        return;
+    }
+    param.is_float = isFloat;
+    param.size = alignSize(rawSize);
+
+    if (isFloat) {
+        if (fpIdx >= static_cast<int>(FPARGS_ORDER.size())) {
+            llvm::outs() << "too many floating-point arguments\n";
+            return;
+        }
+        param.creg = FPARGS_ORDER[fpIdx];
+        ++fpIdx;
+    } else {
+        if (intIdx >= static_cast<int>(ARGS_ORDER_C.size())) {
+            llvm::outs() << "too many integer arguments\n";
+            return;
+        }
+        param.creg = ARGS_ORDER_C[intIdx];
+        ++intIdx;
+    }
+}
+
+// 主分配函数
+void allocateRegisters(ParseResult& result) noexcept
+{
+    if (!result.success()) {
+        return;
+    }
+
+    for (auto& [name, sig] : result.funcs) {
+        // 检查返回值数量（只支持 ≤1）
+        if (sig.results.size() > 1) {
+            result.error = "Function '" + name + "' has multiple return values (only single return supported)";
+            return;
+        }
+
+        // 分配参数寄存器
+        int intIdx = 0, fpIdx = 0;
+        for (auto& param : sig.params) {
+            allocateParam(param, intIdx, fpIdx, name);
+        }
+
+        // 分配返回值寄存器（如果有）
+        if (!sig.results.empty()) {
+            // 重置索引（返回值从第 0 个寄存器开始）
+            int retIntIdx = 0, retFpIdx = 0;
+            allocateParam(sig.results[0], retIntIdx, retFpIdx, name);
+        }
+    }
 }

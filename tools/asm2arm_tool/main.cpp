@@ -284,20 +284,22 @@ int main(int argc, char** argv)
 
         // 函数签名解析
         auto ParseRes = parseGoFile(GoProto);
-        if (!ParseRes.error.empty()) {
+        allocateRegisters(ParseRes);
+        if (!ParseRes.success()) {
             outs() << "Error: " << ParseRes.error << "\n";
             return 1;
         }
 
         LLVM_DEBUG(for (const auto& [name, sig] : ParseRes.funcs) {
             dbgs() << "Function: " << name << "\n";
-            for (const auto& p : sig.params) {
-                dbgs() << "  param: " << (p.name.empty() ? "(anon)" : p.name.c_str()) << " " << p.type << "\n";
+            for (const auto& arg : sig.params) {
+                dbgs() << "  ARG " << (arg.name.empty() ? "_" : arg.name) << " (" << arg.type << ", " << arg.size
+                       << "B): " << arg.creg.name << " (C)\n";
             }
-            for (const auto& r : sig.results) {
-                dbgs() << "  return: " << (r.name.empty() ? "(anon)" : r.name.c_str()) << " " << r.type << "\n";
+            for (const auto& res : sig.results) {
+                dbgs() << "  RET " << (res.name.empty() ? "_" : res.name) << " (" << res.type << ", " << res.size
+                       << "B): " << res.creg.name << " (C)\n";
             }
-            dbgs() << "\n";
         });
     }
 
