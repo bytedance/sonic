@@ -16,12 +16,15 @@
 
 #include "go_func_parser.h"
 
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <cctype>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+
+#define DEBUG_TYPE "go_func_parser"
 
 namespace tool {
 
@@ -465,7 +468,7 @@ std::unordered_map<std::string, std::pair<size_t, bool>> TypeInfo = {
  */
 static std::pair<size_t, bool> GetTypeInfo(const std::string &TypeStr) {
   if (TypeStr.empty()) {
-    llvm::outs() << "empty type\n";
+    LLVM_DEBUG(llvm::dbgs() << "empty type\n");
     return {};
   }
 
@@ -479,7 +482,7 @@ static std::pair<size_t, bool> GetTypeInfo(const std::string &TypeStr) {
   if (TypeInfo.find(Type) != TypeInfo.end()) {
     return TypeInfo[Type];
   } else {
-    llvm::outs() << "unrecognized type: " << TypeStr << "\n";
+    LLVM_DEBUG(llvm::dbgs() << "unrecognized type: " << TypeStr << "\n");
     return {};
   }
 }
@@ -513,14 +516,14 @@ static void AllocateParam(Param &Param, int &IntIdx, int &FpIdx,
 
   if (IsFloat) {
     if (FpIdx >= static_cast<int>(FLOAT_REGISTER_ORDER.size())) {
-      llvm::outs() << "too many floating-point arguments\n";
+      LLVM_DEBUG(llvm::dbgs() << "too many floating-point arguments\n");
       return;
     }
     Param.CReg = FLOAT_REGISTER_ORDER[FpIdx];
     ++FpIdx;
   } else {
     if (IntIdx >= static_cast<int>(INTEGER_REGISTER_ORDER.size())) {
-      llvm::outs() << "too many integer arguments\n";
+      LLVM_DEBUG(llvm::dbgs() << "too many integer arguments\n");
       return;
     }
     Param.CReg = INTEGER_REGISTER_ORDER[IntIdx];
