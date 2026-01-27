@@ -17,9 +17,19 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 llvm_map_components_to_libnames(LLVM_LIBS all support option lto
 AllTargetsInfos AllTargetsCodeGens AllTargetsAsmParsers AllTargetsDescs AllTargetsDisassemblers)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-march=armv8-a+sve" COMPILER_SUPPORTS_SVE)
+if(COMPILER_SUPPORTS_SVE)
+    set(ARCH_FLAGS "-march=armv8-a+sve")
+    message(STATUS "Compiler supports SVE, enabling SVE extensions")
+else()
+    set(ARCH_FLAGS "-march=armv8-a")
+    message(STATUS "Compiler does not support SVE, using ARMv8-A base architecture")
+endif()
+
 add_executable(asm2arm_tool main.cpp streamer_JIT.cpp streamer_SL.cpp dump_elf.cpp utils.cpp cal_depth.cpp mc_bundle.cpp go_func_parser.cpp)
 target_compile_definitions(asm2arm_tool PRIVATE ${LLVM_DEFINITIONS})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -ffunction-sections -fdata-sections -g -march=armv8-a+sve")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -ffunction-sections -fdata-sections -g ${ARCH_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections")
 target_link_libraries(asm2arm_tool PRIVATE
     lldELF

@@ -28,6 +28,7 @@
 #include <map>
 #include <regex>
 #include <set>
+#include <sys/auxv.h>
 
 #ifdef __ARM_FEATURE_SVE
 #include <arm_sve.h>
@@ -258,7 +259,9 @@ int64_t GetSPAdjust(const MCInst &Inst, uint64_t PC,
   int64_t Def = 0;
   uint64_t VL = 1;
 #ifdef __ARM_FEATURE_SVE
-  VL = svcntb();
+  if (getauxval(AT_HWCAP) & HWCAP_SVE) {
+    VL = svcntb();
+  }
 #endif
   if (StartWith(Mnem, "sub")) {
     Def = -Bytes;
