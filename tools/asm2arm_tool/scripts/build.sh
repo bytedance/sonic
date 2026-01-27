@@ -70,13 +70,13 @@ cd "$BUILD_DIR"
 # 编译工具，依赖本地构建的 LLVM
 if command -v ninja &> /dev/null; then
     echo ">>> Configuring project with CMake + Ninja..."
-    cmake -G Ninja .. \
+    cmake -G Ninja ../src \
         -DLLVM_DIR="$LLVM_INSTALL_DIR/lib/cmake/llvm"
     echo ">>> Building with Ninja..."
     ninja
 else
     echo ">>> Configuring project with CMake + Makefiles..."
-    cmake .. \
+    cmake ../src \
         -DLLVM_DIR="$LLVM_INSTALL_DIR/lib/cmake/llvm"
     echo ">>> Building with Make..."
     make -j$(nproc)
