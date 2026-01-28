@@ -35,18 +35,29 @@ asm2arm_tool 是一个用于将 ARM64 汇编代码转换为 Go 语言可调用�
 
 2. **运行测试**
 
+   `native`与`recover`测试：
    ```bash
    cd tools/asm2arm_tool/scripts
 
    bash test.sh
    ```
 
-   测试脚本会：
+   `test.sh`测试脚本会：
    - 拷贝 `internal/native/neon` 下的文件到 `output/neon` 目录
    - 拷贝 `internal/native/sve_linkname` 下的文件到 `output/sve_linkname` 目录
-   - 拷贝 `internal/native/sve_wrapgpc` 下的文件到 `output/sve_wrapgpc` 目录
-   - 调用 `build_go.sh` 生成对应平台的go代码文件到上述`output/neon`、`output/sve_linkname`、`output/sve_wrapgpc`目录
+   - 拷贝 `internal/native/sve_wrapgoc` 下的文件到 `output/sve_wrapgoc` 目录
+   - 调用 `build_go.sh` 生成对应平台的go代码文件到上述`output/neon`、`output/sve_linkname`、`output/sve_wrapgoc`目录
    - 在三个输出目录下分别运行go的测试
+
+   `encoder`与`api`测试：
+   ```bash
+   cd tools/asm2arm_tool/scripts
+
+   bash test_all.sh
+   ```
+   `test_all.sh`测试脚本会：
+   - 将生成文件拷贝到internal/native下的目录中
+   - 执行encoder、api的测试
 
 ### 注意事项
 
@@ -96,7 +107,7 @@ cd tools/asm2arm_tool
 #### JIT 模式
 
 ```bash
-./build/asm2arm_tool --mode JIT --source input.s --output output_dir --link-ld scripts/link.ld --package sve_wrapgpc --tmpl input.tmpl
+./build/asm2arm_tool --mode JIT --source input.s --output output_dir --link-ld scripts/link.ld --package sve_wrapgoc --tmpl input.tmpl
 ```
 
 执行完成后，会在output_dir下生成对应的`input_subr.go`、`input_text_arm64.go`、`input.go`三个文件

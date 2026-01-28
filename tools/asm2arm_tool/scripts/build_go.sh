@@ -2,6 +2,23 @@
 
 set -e
 
+# 清理选项
+CLEAN="false"
+
+# 解析命令行参数
+while getopts "c" opt; do
+  case $opt in
+    c)
+      CLEAN="true"
+      ;;
+    *)
+      echo "Usage: $0 [-c]"
+      echo "  -c: Clean generated files (*.o, *.elf, *.log)"
+      exit 1
+      ;;
+  esac
+done
+
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL_DIR="$(dirname "${SCRIPT_DIR}")"   # asm2arm_tool
@@ -16,16 +33,32 @@ SRC_DIR="${PROJECT_DIR}/native"
 TMPL_DIR="${PROJECT_DIR}/internal/native"
 OUTPUT_DIR="${TOOL_DIR}/output"
 
+# 清理函数
+function clean_files() {
+  echo ">>> Cleaning generated files..."
+  
+  # 清理 .o 文件
+  find "${OUTPUT_DIR}" -name "*.o" -type f -delete
+  
+  # 清理 .elf 文件
+  find "${OUTPUT_DIR}" -name "*.elf" -type f -delete
+  
+  # 清理 .log 文件
+  find "${OUTPUT_DIR}" -name "*.log" -type f -delete
+  
+  echo ">>> Clean completed!"
+}
+
 # 创建输出目录
 mkdir -p "${OUTPUT_DIR}/neon"
 mkdir -p "${OUTPUT_DIR}/sve_linkname"
-mkdir -p "${OUTPUT_DIR}/sve_wrapgpc"
+mkdir -p "${OUTPUT_DIR}/sve_wrapgoc"
 mkdir -p "${OUTPUT_DIR}/asm/neon"
 mkdir -p "${OUTPUT_DIR}/asm/sve"
 
 NEON_OUTPUT="${OUTPUT_DIR}/neon"
 SVE_LINKNAME_OUTPUT="${OUTPUT_DIR}/sve_linkname"
-SVE_WRAPGPC_OUTPUT="${OUTPUT_DIR}/sve_wrapgpc"
+SVE_WRAPGOC_OUTPUT="${OUTPUT_DIR}/sve_wrapgoc"
 NEON_ASM_DIR="${OUTPUT_DIR}/asm/neon"
 SVE_ASM_DIR="${OUTPUT_DIR}/asm/sve"
 
@@ -155,7 +188,7 @@ if [ -d "${SRC_DIR}" ]; then
                 echo ""
                 echo ">>> Processing for sve_wrapgoc..."
                 asm_file="${SVE_ASM_DIR}/${base_name}.s"
-                cerr_log="${SVE_WRAPGPC_OUTPUT}/${base_name}.log"
+                cerr_log="${SVE_WRAPGOC_OUTPUT}/${base_name}.log"
                 
                 echo ">>> Compiling to assembly (sve)... --> ${asm_file}"
                 ${CLANG_PATH} \
@@ -170,7 +203,7 @@ if [ -d "${SRC_DIR}" ]; then
                     echo "Error: Assembly file not generated for sve_wrapgoc."
                 else
                     echo ">>> Execute JIT mode for sve_wrapgoc..."
-                    ${TOOL_PATH} --debug --mode=JIT --source=${asm_file} --output=${SVE_WRAPGPC_OUTPUT} --link-ld=${SCRIPT_DIR}/link.ld --tmpl=${SVE_WRAPGOC_TMPL} \
+                    ${TOOL_PATH} --debug --mode=JIT --source=${asm_file} --output=${SVE_WRAPGOC_OUTPUT} --link-ld=${SCRIPT_DIR}/link.ld --tmpl=${SVE_WRAPGOC_TMPL} \
                     --package=sve_wrapgoc --features=+sve,+aes 2>${cerr_log}
                     
                     if [ $? -eq 0 ]; then
@@ -189,3 +222,8 @@ fi
 echo ""
 echo ">>> All files processed!"
 echo ">>> Output files are in: ${OUTPUT_DIR}"
+
+# 如果指定了清理选项，执行清理
+if [ "$CLEAN" = "true" ]; then
+  clean_files
+fi
