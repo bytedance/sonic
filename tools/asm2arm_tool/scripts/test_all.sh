@@ -32,14 +32,17 @@ function copy_files() {
 
 # 执行测试
 function run_tests() {
-    local wrapgoc=$1
-    local linkname=$2
-    local test_dir="$OUTPUT_DIR/test_results/wrapgoc_${wrapgoc}_linkname_${linkname}"
+    local usevm=$1
+    local wrapgoc=$2
+    local linkname=$3
+    local test_dir="$OUTPUT_DIR/test_results/usevm_${usevm}_wrapgoc_${wrapgoc}_linkname_${linkname}"
     
-    echo "\nRunning tests with SONIC_USE_SVE_WRAPGOC=$wrapgoc, SONIC_USE_SVE_LINKNAME=$linkname..."
+    echo ""
+    echo "Running tests with SONIC_ENCODER_USE_VM=$usevm SONIC_USE_SVE_WRAPGOC=$wrapgoc, SONIC_USE_SVE_LINKNAME=$linkname..."
     mkdir -p "$test_dir"
     
     # 设置环境变量
+    export SONIC_ENCODER_USE_VM=$usevm
     export SONIC_USE_SVE_WRAPGOC=$wrapgoc
     export SONIC_USE_SVE_LINKNAME=$linkname
     
@@ -63,12 +66,12 @@ function main() {
     mkdir -p "$OUTPUT_DIR/test_results"
     
     # 执行所有组合的测试
-    run_tests 0 0
-    run_tests 1 0
-    run_tests 0 1
-    run_tests 1 1
+    run_tests 1 0 0
+    run_tests 0 1 0
+    run_tests 0 0 1
     
-    echo "\nAll tests completed!"
+    echo ""
+    echo "All tests completed!"
     echo "Test results saved in $OUTPUT_DIR/test_results/"
 }
 
