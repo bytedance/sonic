@@ -390,8 +390,11 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package,
     SPDump[X] = 0;
   }
   for (auto [Addr, SP] : SPDump) {
-    DumpStream << "        {0x" << Twine::utohexstr(Addr) << ", " << SP
-               << "},\n";
+    if (Addr < EntryBB.StartAddr) {
+      continue;
+    }
+    DumpStream << "        {0x" << Twine::utohexstr(Addr - EntryBB.StartAddr)
+               << ", " << SP << "},\n";
   }
 
   DumpStream << "        {0x" << Twine::utohexstr(DumpTextSize) << ", "

@@ -128,7 +128,7 @@ if [ -d "${SRC_DIR}" ]; then
                 echo ">>> Compiling to assembly (neon)... --> ${asm_file}"
                 ${CLANG_PATH} \
                 -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables -fno-pic \
-                -ffixed-x28 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
+                -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
                 -mllvm=--go-frame -mllvm=--enable-shrink-wrap=0 -mno-red-zone \
                 -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+simd -I${SIMDE_INCLUDE_DIR} -S -o "${asm_file}" "${src_file}"
@@ -160,9 +160,9 @@ if [ -d "${SRC_DIR}" ]; then
                 echo ">>> Compiling to assembly (sve)... --> ${asm_file}"
                 ${CLANG_PATH} \
                 -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables -fno-pic \
-                -ffixed-x28 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
-                -mllvm=--go-frame -mllvm=--enable-shrink-wrap=0 -mno-red-zone \
-                -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
+                -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
+                -mllvm -disable-constant-hoisting -mllvm=--go-frame -fno-addrsig -no-integrated-as \
+                -mno-red-zone -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+sve+aes -I${SIMDE_INCLUDE_DIR} -D__SVE__ -S -o "${asm_file}" "${src_file}"
                 
                 # 检查汇编文件是否生成
@@ -193,8 +193,8 @@ if [ -d "${SRC_DIR}" ]; then
                 echo ">>> Compiling to assembly (sve)... --> ${asm_file}"
                 ${CLANG_PATH} \
                 -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables -fno-pic \
-                -ffixed-x28 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
-                -mllvm=--go-frame -mllvm=--enable-shrink-wrap=0 \
+                -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
+                -mllvm -disable-constant-hoisting -mllvm=--go-frame -fno-addrsig -no-integrated-as \
                 -mno-red-zone -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+sve+aes -I${SIMDE_INCLUDE_DIR} -D__SVE__ -S -o "${asm_file}" "${src_file}"
                 
