@@ -19,6 +19,7 @@
 package neon
 
 import (
+	`bytes`
 	`os`
 	`time`
 	`runtime`
@@ -657,4 +658,40 @@ func TestRecover_validate_utf8_fast(t *testing.T) {
 		}
 	}()
 	_ = validate_utf8_fast(nil)
+}
+
+func TestRecover_parse_with_padding(t *testing.T) {
+	defer func() {
+		if r := recover(); r!= nil {
+			t.Log("recover: ", r)
+		} else {
+			t.Fatal("no panic")
+		}
+	}()
+	_ = parse_with_padding(nil)
+}
+
+func TestRecover_lookup_small_key(t *testing.T) {
+	t.Run("key", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r!= nil {
+				t.Log("recover: ", r)
+			} else {
+				t.Fatal("no panic")
+			}
+		}()
+		b := bytes.Repeat([]byte("a"), 100)
+		_ = lookup_small_key(nil, &b, 10)
+	})
+	t.Run("table", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r!= nil {
+				t.Log("recover: ", r)
+			} else {
+				t.Fatal("no panic")
+			}
+		}()
+		key := "a"
+		_ = lookup_small_key(&key, nil, 10)
+	})
 }
