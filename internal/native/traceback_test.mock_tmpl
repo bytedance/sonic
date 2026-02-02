@@ -307,14 +307,6 @@ func mock_parse_with_padding() {
     F_mock_parse_with_padding()
 }
 
-var F_mock_lookup_small_key func()
-var S_mock_lookup_small_key uintptr
-
-//go:nosplit
-func mock_lookup_small_key() {
-    F_mock_lookup_small_key()
-}
-
 func init() {
     Mock()
 }
@@ -343,7 +335,6 @@ func Mock() {
     loader.WrapGoC(_mock_text_vstring, _cfunc_vstring, []loader.GoC{{"_vstring", &S_mock_vstring, &F_mock_vstring}}, "{{PACKAGE}}", "{{PACKAGE}}/vstring.c")
     loader.WrapGoC(_mock_text_value, _cfunc_value, []loader.GoC{{"_value", &S_mock_value, &F_mock_value}}, "{{PACKAGE}}", "{{PACKAGE}}/value.c")
     loader.WrapGoC(_mock_text_parse_with_padding, _cfunc_parse_with_padding, []loader.GoC{{"_parse_with_padding", &S_mock_parse_with_padding, &F_mock_parse_with_padding}}, "{{PACKAGE}}", "{{PACKAGE}}/parse_with_padding.c")
-    loader.WrapGoC(_mock_text_lookup_small_key, _cfunc_lookup_small_key, []loader.GoC{{"_lookup_small_key", &S_mock_lookup_small_key, &F_mock_lookup_small_key}}, "{{PACKAGE}}", "{{PACKAGE}}/lookup_small_key.c")
 }
 
 func TestTraceback(t *testing.T) {
@@ -371,7 +362,6 @@ func TestTraceback(t *testing.T) {
         mock_vstring,
         mock_value,
         mock_parse_with_padding,
-        mock_lookup_small_key,
     }
     for _, f := range tests {
         f()
