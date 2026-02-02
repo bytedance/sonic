@@ -80,14 +80,13 @@ var (
 )
 
 var (
-	S_skip_one    uintptr
-	S_skip_one_fast    uintptr
-	S_get_by_path    uintptr
-	S_skip_array  uintptr
-	S_skip_object uintptr
-	S_skip_number uintptr
+	S_skip_one           uintptr
+	S_skip_one_fast      uintptr
+	S_get_by_path        uintptr
+	S_skip_array         uintptr
+	S_skip_object        uintptr
+	S_skip_number        uintptr
 	S_parse_with_padding uintptr
-	S_lookup_small_key uintptr
 )
 var UseSveWrapgoc bool
 var UseSveLinkname bool
@@ -381,7 +380,6 @@ func useNeon() {
 	S_skip_number = neon.S_skip_number
 	S_get_by_path = neon.S_get_by_path
 	S_parse_with_padding = neon.S_parse_with_padding
-	S_lookup_small_key = neon.S_lookup_small_key
 }
 
 func useSveLinkname() {
