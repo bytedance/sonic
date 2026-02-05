@@ -67,20 +67,20 @@ else
 fi
 
 echo ""
-echo ">>> Step 2: Executing build_go.sh..."
+echo ">>> Step 2: Executing generate_native_go.sh..."
 echo ""
 cd "${SCRIPT_DIR}"
-bash build_go.sh -c
+bash generate_native_go.sh -c
 
 if [ $? -ne 0 ]; then
     echo ""
-    echo "Error: build_go.sh execution failed."
+    echo "Error: generate_native_go.sh execution failed."
     echo "Please check the error messages above and fix the issues."
     exit 1
 fi
 
 echo ""
-echo ">>> build_go.sh executed successfully."
+echo ">>> generate_native_go.sh executed successfully."
 echo ""
 echo "=========================================="
 echo ">>> Step 3: Running tests..."

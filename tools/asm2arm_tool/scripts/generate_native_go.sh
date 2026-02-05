@@ -95,13 +95,13 @@ echo ">>> Output directory: ${OUTPUT_DIR}"
 
 # 检查工具是否存在
 if [ ! -f "${TOOL_PATH}" ]; then
-    echo "Error: Tool not found. Please run build.sh first."
+    echo "Error: Tool not found. Please run build_tool.sh first."
     exit 1
 fi
 
 # 检查clang是否存在
 if [ ! -f "${CLANG_PATH}" ]; then
-    echo "Error: Clang not found. Please run build.sh first."
+    echo "Error: Clang not found. Please run build_tool.sh first."
     exit 1
 fi
 

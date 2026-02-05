@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# tool/scripts/build.sh
+# tool/scripts/build_tool.sh
 # 在 tool/build/ 下进行 out-of-source 构建
 
 set -e
