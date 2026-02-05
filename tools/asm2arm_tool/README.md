@@ -118,3 +118,19 @@ cd tools/asm2arm_tool
 ```
 
 执行完成后，会在output_dir下生成对应的`input_subr_arm64.go`、`input_arm64.s`两个文件
+
+#### 汇编编译选项
+
+输入给工具的汇编文件，在生成时可参考下列选项：
+
+```bash
+${CLANG_PATH} \
+   -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
+   -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
+   -mllvm=--go-frame -mllvm=--enable-shrink-wrap=0 -mno-red-zone \
+   -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
+   -march=armv8-a -I${SIMDE_INCLUDE_DIR} -S -o "${asm_file}" "${src_file}"
+```
+
+- clang在-O0、-O1的优化级别下，生成的汇编可能存在栈空间过大的非法汇编，推荐开启-O2及以上优化等级
+- 在不同的-O优化等级下，通过-g生成不同级别的调试信息，可能导致生成的汇编代码不合法。推荐禁用调试信息的生成，工具未对调试信息的处理做支持

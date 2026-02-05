@@ -37,14 +37,17 @@ OUTPUT_DIR="${TOOL_DIR}/output"
 function clean_files() {
   echo ">>> Cleaning generated files..."
   
-  # 清理 .o 文件
-  find "${OUTPUT_DIR}" -name "*.o" -type f -delete
+  # 清理 neon 目录下的 .o 和 .log 文件
+  find "${OUTPUT_DIR}/neon" -name "*.o" -type f -delete 2>/dev/null || true
+  find "${OUTPUT_DIR}/neon" -name "*.log" -type f -delete 2>/dev/null || true
   
-  # 清理 .elf 文件
-  find "${OUTPUT_DIR}" -name "*.elf" -type f -delete
+  # 清理 sve_linkname 目录下的 .o 和 .log 文件
+  find "${OUTPUT_DIR}/sve_linkname" -name "*.o" -type f -delete 2>/dev/null || true
+  find "${OUTPUT_DIR}/sve_linkname" -name "*.log" -type f -delete 2>/dev/null || true
   
-  # 清理 .log 文件
-  find "${OUTPUT_DIR}" -name "*.log" -type f -delete
+  # 清理 sve_wrapgoc 目录下的 .o 和 .log 文件
+  find "${OUTPUT_DIR}/sve_wrapgoc" -name "*.o" -type f -delete 2>/dev/null || true
+  find "${OUTPUT_DIR}/sve_wrapgoc" -name "*.log" -type f -delete 2>/dev/null || true
   
   echo ">>> Clean completed!"
 }
@@ -127,10 +130,10 @@ if [ -d "${SRC_DIR}" ]; then
                 # 编译生成汇编文件（neon版本）
                 echo ">>> Compiling to assembly (neon)... --> ${asm_file}"
                 ${CLANG_PATH} \
-                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables -fno-pic \
+                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
                 -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
                 -mllvm=--go-frame -mllvm=--enable-shrink-wrap=0 -mno-red-zone \
-                -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
+                -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+simd -I${SIMDE_INCLUDE_DIR} -S -o "${asm_file}" "${src_file}"
                 
                 # 检查汇编文件是否生成
@@ -159,10 +162,10 @@ if [ -d "${SRC_DIR}" ]; then
 
                 echo ">>> Compiling to assembly (sve)... --> ${asm_file}"
                 ${CLANG_PATH} \
-                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables -fno-pic \
+                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
                 -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
                 -mllvm -disable-constant-hoisting -mllvm=--go-frame -fno-addrsig -no-integrated-as \
-                -mno-red-zone -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
+                -mno-red-zone -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+sve+aes -I${SIMDE_INCLUDE_DIR} -D__SVE__ -S -o "${asm_file}" "${src_file}"
                 
                 # 检查汇编文件是否生成
@@ -192,10 +195,10 @@ if [ -d "${SRC_DIR}" ]; then
                 
                 echo ">>> Compiling to assembly (sve)... --> ${asm_file}"
                 ${CLANG_PATH} \
-                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables -fno-pic \
+                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
                 -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
                 -mllvm -disable-constant-hoisting -mllvm=--go-frame -fno-addrsig -no-integrated-as \
-                -mno-red-zone -fno-rtti -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
+                -mno-red-zone -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+sve+aes -I${SIMDE_INCLUDE_DIR} -D__SVE__ -S -o "${asm_file}" "${src_file}"
                 
                 # 检查汇编文件是否生成

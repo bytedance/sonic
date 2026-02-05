@@ -134,9 +134,9 @@ std::string ToUpper(const std::string &Str) {
 static std::unordered_map<std::string, std::string> BranchMap = {
     {"b", "B"},
     {"bl", "BL"},
-    // 根据寄存器内的地址跳转，感觉单文件的功能不会出现
-    {"blr", "BLR"},
-    {"br", "BR"},
+    // 根据寄存器内的地址跳转，需要使用-fno-jump-tables消除，不支持
+    // {"blr", "BLR"},
+    // {"br", "BR"},
 
     {"b.eq", "BEQ"},
     {"b.ne", "BNE"},
