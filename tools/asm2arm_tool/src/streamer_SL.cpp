@@ -61,7 +61,9 @@ void SLStreamer::finish() {
 void SLStreamer::emitLabel(MCSymbol *Sym, SMLoc Loc) {
   this->FlushPendingBytes();
   if (IsTopEmit == 0) {
-    tool::OutLabel(this->Out, Sym->getName()) << ":\n";
+    if (!Sym->getName().empty()) {
+      tool::OutLabel(this->Out, Sym->getName()) << ":\n";
+    }
 
     LLVM_DEBUG({
       dbgs() << "LABEL: ";
