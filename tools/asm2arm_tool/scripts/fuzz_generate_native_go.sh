@@ -28,6 +28,14 @@ optimization_levels=(
     "-O3"
 )
 
+# 调试级别
+debug_levels=(
+    "-g0"
+    "-g1"
+    "-g2"
+    "-g3"
+)
+
 # 备份原始 generate_native_go.sh 文件
 backup_file="${SCRIPT_DIR}/generate_native_go.sh.bak"
 cp "${SCRIPT_DIR}/generate_native_go.sh" "${backup_file}"
@@ -35,7 +43,8 @@ cp "${SCRIPT_DIR}/generate_native_go.sh" "${backup_file}"
 # 修改 generate_native_go.sh 文件的函数
 modify_generate_script() {
     local opt_level=$1
-    local test_case=$2
+    local debug_level=$2
+    local test_case=$3
     
     echo "Modifying generate_native_go.sh for test case: ${test_case}"
     
@@ -48,17 +57,25 @@ modify_generate_script() {
     # 修改 neon 编译选项
     modified_content=$(echo "${modified_content}" | sed "s/-O3/${opt_level}/g")
     
+    # 移除所有现有的调试级别选项
+    modified_content=$(echo "${modified_content}" | sed "s/-g[0-3]//g")
+    
+    # 添加新的调试级别选项
+    modified_content=$(echo "${modified_content}" | sed "s/${opt_level}/${opt_level} ${debug_level}/g")
+    
     # 写入修改后的内容
     echo "${modified_content}" > "${SCRIPT_DIR}/generate_native_go.sh"
     
     echo "Modified generate_native_go.sh with:"
     echo "  Optimization: ${opt_level}"
+    echo "  Debug level: ${debug_level}"
 }
 
 # 去除架构特性的函数
 remove_arch_features() {
     local opt_level=$1
-    local test_case=$2
+    local debug_level=$2
+    local test_case=$3
     
     echo "Modifying generate_native_go.sh for test case: ${test_case} (no arch features)"
     
@@ -70,6 +87,12 @@ remove_arch_features() {
     
     # 修改优化级别
     modified_content=$(echo "${modified_content}" | sed "s/-O3/${opt_level}/g")
+    
+    # 移除所有现有的调试级别选项
+    modified_content=$(echo "${modified_content}" | sed "s/-g[0-3]//g")
+    
+    # 添加新的调试级别选项
+    modified_content=$(echo "${modified_content}" | sed "s/${opt_level}/${opt_level} ${debug_level}/g")
     
     # 去除 neon 的 simd 架构特性
     modified_content=$(echo "${modified_content}" | sed "s/-march=armv8-a+simd/-march=armv8-a/g")
@@ -88,6 +111,7 @@ remove_arch_features() {
     
     echo "Modified generate_native_go.sh with:"
     echo "  Optimization: ${opt_level}"
+    echo "  Debug level: ${debug_level}"
     echo "  Arch features: removed (no simd/sve)"
 }
 
@@ -142,39 +166,41 @@ run_fuzz_tests() {
     local test_counter=0
     
     echo "=========================================="
-    echo "Running fuzz tests for generate_native_go.sh with different optimization levels"
+    echo "Running fuzz tests for generate_native_go.sh with different optimization and debug levels"
     echo "=========================================="
     echo ""
     
-    # 遍历所有测试组合
+    # 遍历所有测试组合（优化级别和调试级别）
     for opt_level in "${optimization_levels[@]}"; do
-        test_counter=$((test_counter + 1))
-        test_case="test_${test_counter}_opt_${opt_level//-/_}"
-        local status_file="${TEST_RESULTS_DIR}/${test_case}.status"
-        
-        echo ""
-        echo "Test case ${test_counter}: ${test_case}"
-        echo "--------------------------------------------------"
-        
-        # 修改 generate_native_go.sh 文件
-        modify_generate_script "${opt_level}" "${test_case}"
-        
-        # 运行 native recover 测试
-        run_native_recover_test "${test_case}"
-        local native_exit_code=$?
-        
-        # 运行 encoder api 测试
-        run_encoder_api_test "${test_case}"
-        local encoder_exit_code=$?
-        
-        # 记录测试状态
-        if [ ${native_exit_code} -eq 0 ] && [ ${encoder_exit_code} -eq 0 ]; then
-            echo "0" > "${status_file}"
-        else
-            echo "1" > "${status_file}"
-        fi
-        
-        echo "--------------------------------------------------"
+        for debug_level in "${debug_levels[@]}"; do
+            test_counter=$((test_counter + 1))
+            test_case="test_${test_counter}_opt_${opt_level//-/_}_debug_${debug_level//-/_}"
+            local status_file="${TEST_RESULTS_DIR}/${test_case}.status"
+            
+            echo ""
+            echo "Test case ${test_counter}: ${test_case}"
+            echo "--------------------------------------------------"
+            
+            # 修改 generate_native_go.sh 文件
+            modify_generate_script "${opt_level}" "${debug_level}" "${test_case}"
+            
+            # 运行 native recover 测试
+            run_native_recover_test "${test_case}"
+            local native_exit_code=$?
+            
+            # 运行 encoder api 测试
+            run_encoder_api_test "${test_case}"
+            local encoder_exit_code=$?
+            
+            # 记录测试状态
+            if [ ${native_exit_code} -eq 0 ] && [ ${encoder_exit_code} -eq 0 ]; then
+                echo "0" > "${status_file}"
+            else
+                echo "1" > "${status_file}"
+            fi
+            
+            echo "--------------------------------------------------"
+        done
     done
     
     # 遍历所有测试组合（去除架构特性）
@@ -185,33 +211,35 @@ run_fuzz_tests() {
     echo ""
     
     for opt_level in "${optimization_levels[@]}"; do
-        test_counter=$((test_counter + 1))
-        test_case="test_${test_counter}_opt_${opt_level//-/_}_noarch"
-        local status_file="${TEST_RESULTS_DIR}/${test_case}.status"
-        
-        echo ""
-        echo "Test case ${test_counter}: ${test_case}"
-        echo "--------------------------------------------------"
-        
-        # 修改 generate_native_go.sh 文件（去除架构特性）
-        remove_arch_features "${opt_level}" "${test_case}"
-        
-        # 运行 native recover 测试
-        run_native_recover_test "${test_case}"
-        local native_exit_code=$?
-        
-        # 运行 encoder api 测试
-        run_encoder_api_test "${test_case}"
-        local encoder_exit_code=$?
-        
-        # 记录测试状态
-        if [ ${native_exit_code} -eq 0 ] && [ ${encoder_exit_code} -eq 0 ]; then
-            echo "0" > "${status_file}"
-        else
-            echo "1" > "${status_file}"
-        fi
-        
-        echo "--------------------------------------------------"
+        for debug_level in "${debug_levels[@]}"; do
+            test_counter=$((test_counter + 1))
+            test_case="test_${test_counter}_opt_${opt_level//-/_}_debug_${debug_level//-/_}_noarch"
+            local status_file="${TEST_RESULTS_DIR}/${test_case}.status"
+            
+            echo ""
+            echo "Test case ${test_counter}: ${test_case}"
+            echo "--------------------------------------------------"
+            
+            # 修改 generate_native_go.sh 文件（去除架构特性）
+            remove_arch_features "${opt_level}" "${debug_level}" "${test_case}"
+            
+            # 运行 native recover 测试
+            run_native_recover_test "${test_case}"
+            local native_exit_code=$?
+            
+            # 运行 encoder api 测试
+            run_encoder_api_test "${test_case}"
+            local encoder_exit_code=$?
+            
+            # 记录测试状态
+            if [ ${native_exit_code} -eq 0 ] && [ ${encoder_exit_code} -eq 0 ]; then
+                echo "0" > "${status_file}"
+            else
+                echo "1" > "${status_file}"
+            fi
+            
+            echo "--------------------------------------------------"
+        done
     done
     
     # 恢复原始 generate_native_go.sh 文件
