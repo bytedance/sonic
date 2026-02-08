@@ -49,7 +49,7 @@ var bufPool = sync.Pool{
 }
 
 func freeBytes(buf []byte) {
-    if rt.CanSizeResue(cap(buf)) {
+    if rt.CanSizeReuse(cap(buf)) {
         bufPool.Put(buf[:0])
     }
 }

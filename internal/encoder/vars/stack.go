@@ -123,7 +123,7 @@ func NewBuffer() *bytes.Buffer {
 }
 
 func FreeBytes(p *[]byte) {
-	if rt.CanSizeResue(cap(*p)) {
+	if rt.CanSizeReuse(cap(*p)) {
 		(*p) = (*p)[:0]
 		bytesPool.Put(p)
 	}
@@ -135,7 +135,7 @@ func FreeStack(p *Stack) {
 }
 
 func FreeBuffer(p *bytes.Buffer) {
-	if rt.CanSizeResue(cap(p.Bytes())) {
+	if rt.CanSizeReuse(cap(p.Bytes())) {
 		p.Reset()
 		bufferPool.Put(p)
 	}
