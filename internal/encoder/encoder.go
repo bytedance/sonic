@@ -183,7 +183,7 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
     encodeFinishWithPool(buf, opts)
 
     /* make a copy of the result */
-    if rt.CanSizeResue(cap(*buf)) {
+    if rt.CanSizeReuse(cap(*buf)) {
         ret = dirtmake.Bytes(len(*buf), len(*buf))
         copy(ret, *buf)
         vars.FreeBytes(buf)
@@ -288,7 +288,7 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 
     /* copy to the result buffer */
     var ret []byte
-    if rt.CanSizeResue(cap(buf.Bytes())) {
+    if rt.CanSizeReuse(cap(buf.Bytes())) {
         ret = make([]byte, buf.Len())
         copy(ret, buf.Bytes())
         /* return the buffers into pool */

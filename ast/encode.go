@@ -108,7 +108,7 @@ func (self *Node) MarshalJSON() ([]byte, error) {
         return nil, err
     }
     var ret []byte
-    if !rt.CanSizeResue(cap(*buf)) {
+    if !rt.CanSizeReuse(cap(*buf)) {
         ret = *buf
     } else {
         ret = dirtmake.Bytes(len(*buf), len(*buf))
@@ -128,7 +128,7 @@ func newBuffer() *[]byte {
 }
 
 func freeBuffer(buf *[]byte) {
-    if !rt.CanSizeResue(cap(*buf)) {
+    if !rt.CanSizeReuse(cap(*buf)) {
         return
     }
     *buf = (*buf)[:0]

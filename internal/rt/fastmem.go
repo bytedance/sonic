@@ -149,7 +149,7 @@ func Add(ptr unsafe.Pointer, off uintptr) unsafe.Pointer {
     return unsafe.Pointer(uintptr(ptr) + off)
 }
 
-// CanSizeResue
-func CanSizeResue(cap int) bool {
+// CanSizeReuse
+func CanSizeReuse(cap int) bool {
     return cap <= int(option.LimitBufferSize)
 }
