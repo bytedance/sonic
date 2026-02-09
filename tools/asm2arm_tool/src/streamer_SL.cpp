@@ -136,7 +136,7 @@ std::string ToUpper(const std::string &Str) {
 static std::unordered_map<std::string, std::string> BranchMap = {
     {"b", "B"},
     {"bl", "BL"},
-    // 根据寄存器内的地址跳转，需要使用-fno-jump-tables消除，不支持
+    // isIndirectBranch，使用WORD指令
     // {"blr", "BLR"},
     // {"br", "BR"},
 
@@ -248,7 +248,7 @@ void SLStreamer::emitInstruction(const MCInst &Inst,
     auto Token = tool::TokenizeInstruction(InstStr);
     // Fixup非空时，说明指令中存在需要在链接时处理的label参数
     // label参数在MCOperand中的判断是isExpr()，暂不清楚这种指令能否直接使用WORD表示
-    if (Desc.isBranch()) {
+    if (Desc.isBranch() && !Desc.isIndirectBranch()) {
       this->MakeBranchInst(Token, InstStr);
     } else if (Token[0] == "adrp") {
       this->Out << "    ADR ";
