@@ -257,18 +257,18 @@ int64_t GetSPAdjust(const MCInst &Inst, uint64_t PC,
   int64_t Bytes = std::stoll(Match[2].str());
 
   int64_t Def = 0;
-  uint64_t VL = 1;
+  uint64_t VL = 0;
 #ifdef __ARM_FEATURE_SVE
   if (getauxval(AT_HWCAP) & HWCAP_SVE) {
     VL = svcntb();
   }
 #endif
-  if (StartWith(Mnem, "sub")) {
-    Def = -Bytes;
-  } else if (StartWith(Mnem, "addvl")) {
+  if (StartWith(Mnem, "addvl") || StartWith(Mnem, "addpl")) {
+    assert((VL != 0) && "SVE vector length is unknown, but addvl and addpl are "
+                        "used to adjust sp.");
     Def = Bytes * VL;
-  } else if (StartWith(Mnem, "subvl")) {
-    Def = -Bytes * VL;
+  } else if (StartWith(Mnem, "sub")) {
+    Def = -Bytes;
   } else if (StartWith(Mnem, "add") || StartWith(Mnem, "st") ||
              StartWith(Mnem, "ld")) {
     Def = Bytes;
