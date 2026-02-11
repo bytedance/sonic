@@ -392,6 +392,8 @@ void SLStreamer::emitValueToAlignment(llvm::Align Alignment, int64_t Value,
 
 void DumpDeclareHead(llvm::raw_fd_ostream &Out, const std::string &BaseName,
                      int64_t MaxDepth) {
+  OutBuildTag(&Out);
+
   Out << "#include \"go_asm.h\"\n"
       << "#include \"funcdata.h\"\n"
       << "#include \"textflag.h\"\n";
@@ -485,6 +487,8 @@ void DumpSubrSL(const std::string &OutputPath, const std::string &Package,
     outs() << EC.message() << "\n";
     return;
   }
+
+  OutBuildTag(&Out);
 
   Out << "package " << Package << "\n\n";
 

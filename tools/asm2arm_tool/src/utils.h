@@ -93,6 +93,14 @@ std::vector<std::string> TokenizeInstruction(const std::string &InstStr);
 llvm::raw_fd_ostream &OutLabel(llvm::raw_fd_ostream &Out,
                                llvm::StringRef Label);
 
+/**
+ * @brief 输出构建标签
+ *
+ * 输出固定的构建标签内容
+ * @param Out 输出流
+ */
+void OutBuildTag(llvm::raw_ostream *Out);
+
 } // end namespace tool
 
 #endif // UTILS_H

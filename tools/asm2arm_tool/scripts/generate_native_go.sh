@@ -40,14 +40,17 @@ function clean_files() {
   # 清理 neon 目录下的 .o 和 .log 文件
   find "${OUTPUT_DIR}/neon" -name "*.o" -type f -delete 2>/dev/null || true
   find "${OUTPUT_DIR}/neon" -name "*.log" -type f -delete 2>/dev/null || true
+  find "${OUTPUT_DIR}/neon" -name "*.elf" -type f -delete 2>/dev/null || true
   
   # 清理 sve_linkname 目录下的 .o 和 .log 文件
   find "${OUTPUT_DIR}/sve_linkname" -name "*.o" -type f -delete 2>/dev/null || true
   find "${OUTPUT_DIR}/sve_linkname" -name "*.log" -type f -delete 2>/dev/null || true
+  find "${OUTPUT_DIR}/sve_linkname" -name "*.elf" -type f -delete 2>/dev/null || true
   
   # 清理 sve_wrapgoc 目录下的 .o 和 .log 文件
   find "${OUTPUT_DIR}/sve_wrapgoc" -name "*.o" -type f -delete 2>/dev/null || true
   find "${OUTPUT_DIR}/sve_wrapgoc" -name "*.log" -type f -delete 2>/dev/null || true
+  find "${OUTPUT_DIR}/sve_wrapgoc" -name "*.elf" -type f -delete 2>/dev/null || true
   
   echo ">>> Clean completed!"
 }

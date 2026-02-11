@@ -236,6 +236,8 @@ void DumpElf(const std::string &OutputPath, StringRef ElfPath,
     DumpStream = std::make_unique<raw_null_ostream>();
   }
 
+  OutBuildTag(DumpStream.get());
+
   *DumpStream << "package " << Package << "\n\n";
   *DumpStream << "var _text_" << BaseName << " = []byte{\n";
 
@@ -365,6 +367,8 @@ void DumpSubr(const BasicBlock &EntryBB, const std::string &Package,
     outs() << EC.message() << "\n";
     return;
   }
+
+  OutBuildTag(&DumpStream);
 
   DumpStream << "package " << Package << "\n\n"
              << "import (\n    `github.com/bytedance/sonic/loader`\n)\n\n"
