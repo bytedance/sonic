@@ -23,5 +23,4 @@ var (
 	S_skip_one_fast      = _subr__skip_one_fast
 	S_get_by_path        = _subr__get_by_path
 	S_parse_with_padding = _subr__parse_with_padding
-	S_lookup_small_key   = _subr__lookup_small_key
 )
