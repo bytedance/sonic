@@ -29,6 +29,5 @@ func Use() {
 	loader.WrapGoC(_text_f64toa, _cfunc_f64toa, []loader.GoC{{"_f64toa", &S_f64toa, &F_f64toa}}, "sve_wrapgoc", "sve_wrapgoc/f64toa.c")
 	loader.WrapGoC(_text_skip_one_fast, _cfunc_skip_one_fast, []loader.GoC{{"_skip_one_fast", &S_skip_one_fast, &F_skip_one_fast}}, "sve_wrapgoc", "sve_wrapgoc/skip_one_fast.c")
 	loader.WrapGoC(_text_skip_one, _cfunc_skip_one, []loader.GoC{{"_skip_one", &S_skip_one, &F_skip_one}}, "sve_wrapgoc", "sve_wrapgoc/skip_one.c")
-	loader.WrapGoC(_text_lookup_small_key, _cfunc_lookup_small_key, []loader.GoC{{"_lookup_small_key", &S_lookup_small_key, &F_lookup_small_key}}, "sve_wrapgoc", "sve_wrapgoc/lookup.c")
 	loader.WrapGoC(_text_u64toa, _cfunc_u64toa, []loader.GoC{{"_u64toa", &S_u64toa, &F_u64toa}}, "sve_wrapgoc", "sve_wrapgoc/u64toa.c")
 }
