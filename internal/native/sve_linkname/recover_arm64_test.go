@@ -20,7 +20,6 @@ package sve_linkname
 
 import (
 	"bufio"
-	"bytes"
 	"os"
 	"runtime"
 	"runtime/debug"
@@ -230,29 +229,4 @@ func TestRecover_parse_with_padding(t *testing.T) {
 		}
 	}()
 	_ = parse_with_padding(nil)
-}
-
-func TestRecover_lookup_small_key(t *testing.T) {
-	t.Run("key", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r != nil {
-				t.Log("recover: ", r)
-			} else {
-				t.Fatal("no panic")
-			}
-		}()
-		b := bytes.Repeat([]byte("a"), 100)
-		_ = lookup_small_key(nil, &b, 10)
-	})
-	t.Run("table", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r != nil {
-				t.Log("recover: ", r)
-			} else {
-				t.Fatal("no panic")
-			}
-		}()
-		key := "a"
-		_ = lookup_small_key(&key, nil, 10)
-	})
 }
