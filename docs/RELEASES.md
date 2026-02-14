@@ -104,7 +104,12 @@ go get github.com/bytedance/sonic@v1.0
 
 ## Dependabot Configuration
 
-If you want Dependabot to also consider pre-release versions, you can configure it in `.github/dependabot.yml`:
+Dependabot does not suggest updates to pre-release versions by default. Currently, Dependabot does not have a direct configuration option to enable pre-release version updates. If you need to use pre-release versions, you can:
+
+1. Manually update the version number in your `go.mod` file to the pre-release version
+2. Use other dependency management tools (like Renovate) that provide more flexible pre-release version configuration options
+
+Basic Dependabot configuration example:
 
 ```yaml
 version: 2
@@ -113,10 +118,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    # Allow pre-release versions
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
 ```
 
 ## Frequently Asked Questions
