@@ -11,6 +11,10 @@
 - OS: Linux / MacOS / Windows
 - CPU: AMD64 / (ARM64, 需要 Go1.20 以上）
 
+## 版本管理
+
+要了解 GitHub Release 标记（pre-release、latest、未标记）的含义及其对依赖管理的影响，请参阅 [版本管理文档](docs/RELEASES_ZH_CN.md)。
+
 ## 接口
 
 详见 [go.dev](https://pkg.go.dev/github.com/bytedance/sonic)

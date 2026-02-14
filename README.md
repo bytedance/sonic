@@ -11,6 +11,10 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 - OS: Linux / MacOS / Windows
 - CPU: AMD64 / (ARM64, need go1.20 above)
 
+## Version Management
+
+To understand the meaning of GitHub Release labels (pre-release, latest, unmarked) and their impact on dependency management, please refer to the [Release Documentation](docs/RELEASES.md).
+
 ## Features
 
 - Runtime object binding without code generation
