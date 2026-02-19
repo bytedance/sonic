@@ -17,11 +17,18 @@
 package ast
 
 import (
+	"encoding"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
+)
+
+var (
+	jsonUnmarshalerType = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
+	textUnmarshalerType = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 )
 
 // NodeFrom converts any Go value to a fully-parsed Node.
@@ -89,10 +96,16 @@ func nodeToValue(node *Node, v reflect.Value) error {
 		if err != nil {
 			return err
 		}
-		if val != nil {
+		if val == nil {
+			v.Set(reflect.Zero(v.Type()))
+		} else {
 			v.Set(reflect.ValueOf(val))
 		}
 		return nil
+	}
+
+	if handled, err := unmarshalWithCustomDecoder(node, v); handled {
+		return err
 	}
 
 	nodeType := node.Type()
@@ -177,14 +190,22 @@ func unmarshalNumber(node *Node, v reflect.Value) error {
 		return nil
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		n, err := node.Int64()
+		num, err := node.Number()
 		if err != nil {
 			return err
 		}
-		if n < 0 {
-			return fmt.Errorf("cannot unmarshal negative number %d into %v", n, v.Type())
+		raw := string(num)
+		if strings.HasPrefix(raw, "-") {
+			return fmt.Errorf("cannot unmarshal negative number %s into %v", raw, v.Type())
 		}
-		v.SetUint(uint64(n))
+		if strings.ContainsAny(raw, ".eE") {
+			return fmt.Errorf("cannot unmarshal non-integer number %s into %v", raw, v.Type())
+		}
+		n, err := strconv.ParseUint(raw, 10, v.Type().Bits())
+		if err != nil {
+			return err
+		}
+		v.SetUint(n)
 		return nil
 
 	case reflect.Float32, reflect.Float64:
@@ -214,6 +235,51 @@ func unmarshalNumber(node *Node, v reflect.Value) error {
 		}
 		return fmt.Errorf("cannot unmarshal number into %v", v.Type())
 	}
+}
+
+func unmarshalWithCustomDecoder(node *Node, v reflect.Value) (bool, error) {
+	if v.CanAddr() {
+		addr := v.Addr()
+		if addr.Type().Implements(jsonUnmarshalerType) {
+			raw, err := node.Raw()
+			if err != nil {
+				return true, err
+			}
+			return true, addr.Interface().(json.Unmarshaler).UnmarshalJSON([]byte(raw))
+		}
+		if addr.Type().Implements(textUnmarshalerType) {
+			if node.Type() != V_STRING {
+				return true, fmt.Errorf("cannot unmarshal %v into %v", node.Type(), v.Type())
+			}
+			str, err := node.String()
+			if err != nil {
+				return true, err
+			}
+			return true, addr.Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(str))
+		}
+	}
+
+	if v.CanInterface() {
+		if v.Type().Implements(jsonUnmarshalerType) {
+			raw, err := node.Raw()
+			if err != nil {
+				return true, err
+			}
+			return true, v.Interface().(json.Unmarshaler).UnmarshalJSON([]byte(raw))
+		}
+		if v.Type().Implements(textUnmarshalerType) {
+			if node.Type() != V_STRING {
+				return true, fmt.Errorf("cannot unmarshal %v into %v", node.Type(), v.Type())
+			}
+			str, err := node.String()
+			if err != nil {
+				return true, err
+			}
+			return true, v.Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(str))
+		}
+	}
+
+	return false, nil
 }
 
 func unmarshalArray(node *Node, v reflect.Value) error {

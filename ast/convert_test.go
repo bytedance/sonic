@@ -34,6 +34,22 @@ type testProfile struct {
 	Website string `json:"website"`
 }
 
+type jsonHookValue struct {
+	Raw string
+}
+
+func (v *jsonHookValue) UnmarshalJSON(data []byte) error {
+	v.Raw = string(data)
+	return nil
+}
+
+type textHookValue string
+
+func (v *textHookValue) UnmarshalText(data []byte) error {
+	*v = textHookValue("text:" + string(data))
+	return nil
+}
+
 func TestNodeFrom_Struct(t *testing.T) {
 	user := testUser{
 		Name:  "Alice",
@@ -452,6 +468,64 @@ func TestNode_Unmarshal_EmbeddedPointer(t *testing.T) {
 	}
 	if result.Y != 2 {
 		t.Errorf("Expected Y=2, got %d", result.Y)
+	}
+}
+
+func TestNode_Unmarshal_UsesJSONUnmarshaler(t *testing.T) {
+	node := NewString("hello")
+
+	var value jsonHookValue
+	err := node.Unmarshal(&value)
+	if err != nil {
+		t.Fatalf("Unmarshal json.Unmarshaler failed: %v", err)
+	}
+
+	if value.Raw != `"hello"` {
+		t.Fatalf("Expected raw JSON %q, got %q", `"hello"`, value.Raw)
+	}
+}
+
+func TestNode_Unmarshal_UsesTextUnmarshaler(t *testing.T) {
+	node := NewString("hello")
+
+	var value textHookValue
+	err := node.Unmarshal(&value)
+	if err != nil {
+		t.Fatalf("Unmarshal encoding.TextUnmarshaler failed: %v", err)
+	}
+
+	if value != textHookValue("text:hello") {
+		t.Fatalf("Expected %q, got %q", "text:hello", value)
+	}
+}
+
+func TestNode_Unmarshal_NullClearsInterface(t *testing.T) {
+	node := NewNull()
+
+	var value interface{} = 1
+	err := node.Unmarshal(&value)
+	if err != nil {
+		t.Fatalf("Unmarshal null into interface failed: %v", err)
+	}
+	if value != nil {
+		t.Fatalf("Expected nil, got %v", value)
+	}
+}
+
+func TestNode_Unmarshal_Uint64Range(t *testing.T) {
+	var value uint64
+
+	maxNode := NewNumber("18446744073709551615")
+	if err := maxNode.Unmarshal(&value); err != nil {
+		t.Fatalf("Unmarshal max uint64 failed: %v", err)
+	}
+	if value != ^uint64(0) {
+		t.Fatalf("Expected max uint64, got %d", value)
+	}
+
+	overflowNode := NewNumber("18446744073709551616")
+	if err := overflowNode.Unmarshal(&value); err == nil {
+		t.Fatal("Expected overflow error for uint64, got nil")
 	}
 }
 
