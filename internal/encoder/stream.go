@@ -25,67 +25,67 @@ import (
 
 // StreamEncoder uses io.Writer as input.
 type StreamEncoder struct {
-    w io.Writer
-    Encoder
+	w io.Writer
+	Encoder
 }
 
 // NewStreamEncoder adapts to encoding/json.NewDecoder API.
 //
 // NewStreamEncoder returns a new encoder that write to w.
 func NewStreamEncoder(w io.Writer) *StreamEncoder {
-    return &StreamEncoder{w: w}
+	return &StreamEncoder{w: w}
 }
 
 // Encode encodes interface{} as JSON to io.Writer
 func (enc *StreamEncoder) Encode(val interface{}) (err error) {
-    out := vars.NewBytes()
+	out := vars.NewBytes()
 
-    /* encode into the buffer */
-    err = EncodeInto(out, val, enc.Opts)
-    if err != nil {
-        goto free_bytes
-    }
+	/* encode into the buffer */
+	err = EncodeInto(out, val, enc.Opts)
+	if err != nil {
+		goto free_bytes
+	}
 
-    if enc.indent != "" || enc.prefix != "" {
-        /* indent the JSON */
-        buf := vars.NewBuffer()
-        err = json.Indent(buf, *out, enc.prefix, enc.indent)
-        if err != nil {
-            vars.FreeBuffer(buf)
-            goto free_bytes
-        }
+	if enc.indent != "" || enc.prefix != "" {
+		/* indent the JSON */
+		buf := vars.NewBuffer()
+		err = json.Indent(buf, *out, enc.prefix, enc.indent)
+		if err != nil {
+			vars.FreeBuffer(buf)
+			goto free_bytes
+		}
 
-        // according to standard library, terminate each value with a newline...
-        if enc.Opts & NoEncoderNewline == 0 {
-            buf.WriteByte('\n')
-        }
+		// according to standard library, terminate each value with a newline...
+		if enc.Opts&NoEncoderNewline == 0 {
+			buf.WriteByte('\n')
+		}
 
-        /* copy into io.Writer */
-        _, err = io.Copy(enc.w, buf)
-        if err != nil {
-            vars.FreeBuffer(buf)
-            goto free_bytes
-        }
+		/* copy into io.Writer */
+		_, err = io.Copy(enc.w, buf)
+		if err != nil {
+			vars.FreeBuffer(buf)
+			goto free_bytes
+		}
 
-    } else {
-        /* copy into io.Writer */
-        var n int
-        buf := *out
-        for len(buf) > 0 {
-            n, err = enc.w.Write(buf)
-            buf = buf[n:]
-            if err != nil {
-                goto free_bytes
-            }
-        }
+	} else {
+		/* copy into io.Writer */
+		var n int
+		buf := *out
+		for len(buf) > 0 {
+			n, err = enc.w.Write(buf)
+			buf = buf[n:]
+			if err != nil {
+				goto free_bytes
+			}
+		}
 
-        // according to standard library, terminate each value with a newline...
-        if enc.Opts & NoEncoderNewline == 0 {
-            enc.w.Write([]byte{'\n'})
-        }
-    }
+		// according to standard library, terminate each value with a newline...
+		if enc.Opts&NoEncoderNewline == 0 {
+			enc.w.Write([]byte{'\n'})
+		}
+	}
 
 free_bytes:
-    vars.FreeBytes(out)
-    return err
+	vars.FreeBytes(out)
+	return err
 }

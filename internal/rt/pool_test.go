@@ -6,10 +6,10 @@ import (
 )
 
 var poolTest = sync.Pool{
-	New:  newBytes,
+	New: newBytes,
 }
 
-func newBytes() interface{}  {
+func newBytes() interface{} {
 	return make([]byte, 1024)
 }
 

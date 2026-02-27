@@ -5,39 +5,37 @@ import (
 	"unsafe"
 
 	"encoding/json"
+	"github.com/bytedance/sonic/internal/decoder/consts"
+	"github.com/bytedance/sonic/internal/decoder/errors"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/option"
-	"github.com/bytedance/sonic/internal/decoder/errors"
-	"github.com/bytedance/sonic/internal/decoder/consts"
 )
-
 
 type (
 	MismatchTypeError = errors.MismatchTypeError
-	SyntaxError = errors.SyntaxError
+	SyntaxError       = errors.SyntaxError
 )
 
 const (
-	_F_allow_control = consts.F_allow_control
-	_F_copy_string = consts.F_copy_string
+	_F_allow_control   = consts.F_allow_control
+	_F_copy_string     = consts.F_copy_string
 	_F_disable_unknown = consts.F_disable_unknown
-	_F_disable_urc = consts.F_disable_urc
-	_F_use_int64 = consts.F_use_int64
-	_F_use_number = consts.F_use_number
+	_F_disable_urc     = consts.F_disable_urc
+	_F_use_int64       = consts.F_use_int64
+	_F_use_number      = consts.F_use_number
 	_F_validate_string = consts.F_validate_string
 )
 
 type Options = consts.Options
 
 const (
-	OptionUseInt64     = consts.OptionUseInt64
-	OptionUseNumber    = consts.OptionUseNumber
+	OptionUseInt64         = consts.OptionUseInt64
+	OptionUseNumber        = consts.OptionUseNumber
 	OptionUseUnicodeErrors = consts.OptionUseUnicodeErrors
-	OptionDisableUnknown = consts.OptionDisableUnknown
-	OptionCopyString = consts.OptionCopyString
-	OptionValidateString = consts.OptionValidateString
+	OptionDisableUnknown   = consts.OptionDisableUnknown
+	OptionCopyString       = consts.OptionCopyString
+	OptionValidateString   = consts.OptionValidateString
 )
-
 
 func Decode(s *string, i *int, f uint64, val interface{}) error {
 	vv := rt.UnpackEface(val)
@@ -74,7 +72,7 @@ func Decode(s *string, i *int, f uint64, val interface{}) error {
 		*s = ctx.Parser.Json
 	}
 	if err != nil {
-		goto fix_error;
+		goto fix_error
 	}
 	err = dec.FromDom(vp, ctx.Root(), &ctx)
 
@@ -96,9 +94,9 @@ func fix_error(json string, pos int, err error) error {
 	}
 
 	if e, ok := err.(MismatchTypeError); ok {
-		return &MismatchTypeError {
-			Pos: int(e.Pos) + pos,
-			Src: json,
+		return &MismatchTypeError{
+			Pos:  int(e.Pos) + pos,
+			Src:  json,
 			Type: e.Type,
 		}
 	}
@@ -112,49 +110,49 @@ func fix_error(json string, pos int, err error) error {
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
-    cfg := option.DefaultCompileOptions()
-    for _, opt := range opts {
-        opt(&cfg)
-    }
-    return pretouchRec(map[reflect.Type]bool{vt:true}, cfg)
+	cfg := option.DefaultCompileOptions()
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+	return pretouchRec(map[reflect.Type]bool{vt: true}, cfg)
 }
 
 func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
-    /* compile function */
-    compiler := newCompiler().apply(opts)
-    decoder := func(vt *rt.GoType, _ ...interface{}) (interface{}, error) {
-        if f, err := compiler.compileType(_vt); err != nil {
-            return nil, err
-        } else {
-            return f, nil
-        }
-    }
+	/* compile function */
+	compiler := newCompiler().apply(opts)
+	decoder := func(vt *rt.GoType, _ ...interface{}) (interface{}, error) {
+		if f, err := compiler.compileType(_vt); err != nil {
+			return nil, err
+		} else {
+			return f, nil
+		}
+	}
 
-    /* find or compile */
-    vt := rt.UnpackType(_vt)
-    if val := programCache.Get(vt); val != nil {
-        return nil, nil
-    } else if _, err := programCache.Compute(vt, decoder); err == nil {
-        return compiler.visited, nil
-    } else {
-        return nil, err
-    }
+	/* find or compile */
+	vt := rt.UnpackType(_vt)
+	if val := programCache.Get(vt); val != nil {
+		return nil, nil
+	} else if _, err := programCache.Compute(vt, decoder); err == nil {
+		return compiler.visited, nil
+	} else {
+		return nil, err
+	}
 }
 
 func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
-    if opts.RecursiveDepth < 0 || len(vtm) == 0 {
-        return nil
-    }
-    next := make(map[reflect.Type]bool)
-    for vt := range(vtm) {
-        sub, err := pretouchType(vt, opts)
-        if err != nil {
-            return err
-        }
-        for svt := range(sub) {
-            next[svt] = true
-        }
-    }
-    opts.RecursiveDepth -= 1
-    return pretouchRec(next, opts)
+	if opts.RecursiveDepth < 0 || len(vtm) == 0 {
+		return nil
+	}
+	next := make(map[reflect.Type]bool)
+	for vt := range vtm {
+		sub, err := pretouchType(vt, opts)
+		if err != nil {
+			return err
+		}
+		for svt := range sub {
+			next[svt] = true
+		}
+	}
+	opts.RecursiveDepth -= 1
+	return pretouchRec(next, opts)
 }

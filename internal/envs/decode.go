@@ -4,8 +4,8 @@ import (
 	"os"
 )
 
-var UseOptDec  = os.Getenv("SONIC_USE_OPTDEC")  == "1" 
-var UseFastMap = os.Getenv("SONIC_USE_FASTMAP") == "1" 
+var UseOptDec = os.Getenv("SONIC_USE_OPTDEC") == "1"
+var UseFastMap = os.Getenv("SONIC_USE_FASTMAP") == "1"
 
 func EnableOptDec() {
 	UseOptDec = true
