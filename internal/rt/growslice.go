@@ -1,3 +1,4 @@
+//go:build go1.20
 // +build go1.20
 
 /*
@@ -18,13 +19,22 @@
 
 package rt
 
-import "unsafe"
+import (
+	"unsafe"
+
+	"github.com/bytedance/sonic/option"
+)
+
+
 
 // Growslice to newCap, not append length
 // Note: the [old, newCap) will not be zeroed if et does not have any ptr data.
 func GrowSlice(et *GoType, old GoSlice, newCap int) GoSlice {
 	if newCap < old.Len {
 		panic("growslice's newCap is smaller than old length")
+	}
+	if old.Cap < int(option.FastGrowSliceThreshold) {
+		newCap *= int(option.FastGrowSliceFactor)
 	}
 	s := growslice(old.Ptr, newCap, old.Cap, newCap - old.Len, et)
 	s.Len = old.Len
