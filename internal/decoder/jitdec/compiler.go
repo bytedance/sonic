@@ -1245,6 +1245,7 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
 		p.int(_OP_add, 1)
 		p.pin(pc2)
 		p.pin(n0)
+		p.pin(skip)
 		return
 	}
 
