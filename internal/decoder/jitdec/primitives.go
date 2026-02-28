@@ -58,11 +58,11 @@ func decodeTextUnmarshaler(vv interface{}, s string) error {
 	return vv.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(s))
 }
 
-func decodeFloat32Std(s string, vp unsafe.Pointer) error {
+func decodeFloat32Std(s string, vp *float32) error {
 	v, err := strconv.ParseFloat(s, 32)
 	if err != nil {
 		return err
 	}
-	*(*float32)(vp) = float32(v)
+	*vp = float32(v)
 	return nil
 }
