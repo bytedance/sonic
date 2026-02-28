@@ -100,6 +100,7 @@ const (
 	_LB_type_error      = "_type_error"
 	_LB_field_error     = "_field_error"
 	_LB_range_error     = "_range_error"
+	_LB_range_continue  = "_range_continue"
 	_LB_stack_error     = "_stack_error"
 	_LB_base64_error    = "_base64_error"
 	_LB_unquote_error   = "_unquote_error"
@@ -232,6 +233,7 @@ func (self *_Assembler) compile() {
 	self.prologue()
 	self.instrs()
 	self.epilogue()
+	self.range_continue_handler()
 	self.copy_string()
 	self.escape_string()
 	self.escape_string_twice()
@@ -883,6 +885,73 @@ func (self *_Assembler) range_unsigned_CX(i *rt.GoItab, t *rt.GoType, v uint64) 
 	self.Sjmp("JA", _LB_range_error)          // JA    _range_error
 }
 
+// used by byte-slice element decoding: keep parsing remaining elements
+// after integer overflow/underflow, while still surfacing a final type error.
+func (self *_Assembler) range_continue_handle_error(i *rt.GoItab, t *rt.GoType, pin string) {
+	// Avoid encoding imm64->mem on windows: MOVQ to memory only accepts sign-extended imm32.
+	self.Emit("MOVQ", jit.Gitab(i), _ET)
+	self.Emit("MOVQ", jit.Gtype(t), _EP)
+	self.Emit("MOVQ", _ET, _VAR_ss_AX)
+	self.Emit("MOVQ", _EP, _VAR_ss_CX)
+	self.Byte(0x4c, 0x8d, 0x0d) // LEAQ (PC), R9
+	self.Sref(pin, 4)
+	self.Emit("MOVQ", _R9, _VAR_pc)
+	self.Sjmp("JMP", _LB_range_continue)
+}
+
+func (self *_Assembler) range_continue_handler() {
+	self.Link(_LB_range_continue)
+	self.Emit("MOVQ", jit.Ptr(_ST, 0), _DX)
+	self.Emit("TESTQ", _DX, _DX)
+	self.Sjmp("JNE", "_range_continue_in_container")
+	self.Emit("MOVQ", _VAR_ss_AX, _ET)
+	self.Emit("MOVQ", _VAR_ss_CX, _EP)
+	self.Sjmp("JMP", _LB_range_error)
+	self.Link("_range_continue_in_container")
+	self.Emit("CMPQ", _VAR_et, jit.Imm(0))
+	self.Sjmp("JNE", "_range_continue_jump")
+	self.Emit("MOVQ", _BX, _VAR_ic)
+	self.Emit("MOVQ", _VAR_ss_CX, _DX)
+	self.Emit("MOVQ", _DX, _VAR_et)
+	self.Link("_range_continue_jump")
+	self.Emit("MOVQ", _VAR_pc, _R9)
+	self.Rjmp("JMP", _R9)
+}
+
+func (self *_Assembler) range_unsigned_CX_continue(i *rt.GoItab, t *rt.GoType, v uint64, pin string) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX) // MOVQ  st.Iv, CX
+	self.Emit("TESTQ", _CX, _CX)       // TESTQ CX, CX
+	self.Sjmp("JS", "_range_unsigned_continue_err_{n}")
+	self.Emit("CMPQ", _CX, jit.Imm(int64(v))) // CMPQ  CX, ${a}
+	self.Sjmp("JBE", "_range_unsigned_continue_end_{n}")
+	self.Link("_range_unsigned_continue_err_{n}")
+	self.range_continue_handle_error(i, t, pin)
+	self.Link("_range_unsigned_continue_end_{n}")
+}
+
+func (self *_Assembler) range_signed_CX_continue(i *rt.GoItab, t *rt.GoType, a int64, b int64, pin string) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX)
+	self.Emit("CMPQ", _CX, jit.Imm(a))
+	self.Sjmp("JL", "_range_signed_continue_err_{n}")
+	self.Emit("CMPQ", _CX, jit.Imm(b))
+	self.Sjmp("JLE", "_range_signed_continue_end_{n}")
+	self.Link("_range_signed_continue_err_{n}")
+	self.range_continue_handle_error(i, t, pin)
+	self.Link("_range_signed_continue_end_{n}")
+}
+
+func (self *_Assembler) range_uint32_CX_continue(i *rt.GoItab, t *rt.GoType, pin string) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX)
+	self.Emit("TESTQ", _CX, _CX)
+	self.Sjmp("JS", "_range_uint32_continue_err_{n}")
+	self.Emit("MOVL", _CX, _DX)
+	self.Emit("CMPQ", _CX, _DX)
+	self.Sjmp("JE", "_range_uint32_continue_end_{n}")
+	self.Link("_range_uint32_continue_err_{n}")
+	self.range_continue_handle_error(i, t, pin)
+	self.Link("_range_uint32_continue_end_{n}")
+}
+
 func (self *_Assembler) range_uint32_CX(i *rt.GoItab, t *rt.GoType) {
 	self.Emit("MOVQ", _VAR_st_Iv, _CX)   // MOVQ  st.Iv, CX
 	self.Emit("MOVQ", jit.Gitab(i), _ET) // MOVQ  ${i}, ET
@@ -1415,25 +1484,25 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
 	var pin = "_i8_end_{n}"
-	self.parse_signed(int8Type, pin, -1)                               // PARSE int8
-	self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8) // RANGE int8
-	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0))                            // MOVB  CX, (VP)
+	self.parse_signed(int8Type, pin, -1) // PARSE int8
+	self.range_signed_CX_continue(_I_int8, _T_int8, math.MinInt8, math.MaxInt8, pin)
+	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0)) // MOVB  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_i16(_ *_Instr) {
 	var pin = "_i16_end_{n}"
-	self.parse_signed(int16Type, pin, -1)                                  // PARSE int16
-	self.range_signed_CX(_I_int16, _T_int16, math.MinInt16, math.MaxInt16) // RANGE int16
-	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0))                                // MOVW  CX, (VP)
+	self.parse_signed(int16Type, pin, -1) // PARSE int16
+	self.range_signed_CX_continue(_I_int16, _T_int16, math.MinInt16, math.MaxInt16, pin)
+	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0)) // MOVW  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_i32(_ *_Instr) {
 	var pin = "_i32_end_{n}"
-	self.parse_signed(int32Type, pin, -1)                                  // PARSE int32
-	self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32) // RANGE int32
-	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0))                                // MOVL  CX, (VP)
+	self.parse_signed(int32Type, pin, -1) // PARSE int32
+	self.range_signed_CX_continue(_I_int32, _T_int32, math.MinInt32, math.MaxInt32, pin)
+	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0)) // MOVL  CX, (VP)
 	self.Link(pin)
 }
 
@@ -1447,25 +1516,25 @@ func (self *_Assembler) _asm_OP_i64(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_u8(_ *_Instr) {
 	var pin = "_u8_end_{n}"
-	self.parse_unsigned(uint8Type, pin, -1)                   // PARSE uint8
-	self.range_unsigned_CX(_I_uint8, _T_uint8, math.MaxUint8) // RANGE uint8
-	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0))                   // MOVB  CX, (VP)
+	self.parse_unsigned(uint8Type, pin, -1) // PARSE uint8
+	self.range_unsigned_CX_continue(_I_uint8, _T_uint8, math.MaxUint8, pin)
+	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0)) // MOVB  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u16(_ *_Instr) {
 	var pin = "_u16_end_{n}"
-	self.parse_unsigned(uint16Type, pin, -1)                     // PARSE uint16
-	self.range_unsigned_CX(_I_uint16, _T_uint16, math.MaxUint16) // RANGE uint16
-	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0))                      // MOVW  CX, (VP)
+	self.parse_unsigned(uint16Type, pin, -1) // PARSE uint16
+	self.range_unsigned_CX_continue(_I_uint16, _T_uint16, math.MaxUint16, pin)
+	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0)) // MOVW  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u32(_ *_Instr) {
 	var pin = "_u32_end_{n}"
-	self.parse_unsigned(uint32Type, pin, -1)   // PARSE uint32
-	self.range_uint32_CX(_I_uint32, _T_uint32) // RANGE uint32
-	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0))    // MOVL  CX, (VP)
+	self.parse_unsigned(uint32Type, pin, -1) // PARSE uint32
+	self.range_uint32_CX_continue(_I_uint32, _T_uint32, pin)
+	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0)) // MOVL  CX, (VP)
 	self.Link(pin)
 }
 
