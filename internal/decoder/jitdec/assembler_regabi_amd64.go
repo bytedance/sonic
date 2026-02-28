@@ -1477,8 +1477,24 @@ func (self *_Assembler) _asm_OP_u64(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_f32(_ *_Instr) {
 	var pin = "_f32_end_{n}"
-	self.parse_number(float32Type, pin, -1)       // PARSE NUMBER
-	self.slice_from(_VAR_st_Ep, 0)                // SLICE st.Ep, $0
+	self.Emit("MOVQ", _IC, _BX) // save ic
+	self.Emit("LEAQ", _ARG_s, _DI)
+	self.Emit("MOVQ", _IC, _ARG_ic)
+	self.Emit("LEAQ", _ARG_ic, _SI)
+	self.callc(_F_skip_number)
+	self.Emit("MOVQ", _ARG_ic, _IC)
+	self.Emit("TESTQ", _AX, _AX)
+	self.Sjmp("JNS", "_f32_parse_std_{n}")
+	self.Emit("MOVQ", _BX, _VAR_ic)
+	self.Emit("MOVQ", jit.Type(float32Type), _ET)
+	self.Emit("MOVQ", _ET, _VAR_et)
+	self.Byte(0x4c, 0x8d, 0x0d) // LEAQ (PC), R9
+	self.Sref(pin, 4)
+	self.Emit("MOVQ", _R9, _VAR_pc)
+	self.Sjmp("JMP", _LB_skip_one)
+	self.Link("_f32_parse_std_{n}")
+	self.Emit("MOVQ", _AX, _VAR_st_Ep)            // MOVQ AX, st.Ep
+	self.slice_from_r(_AX, 0)                     // SLICE_R AX, $0
 	self.Emit("MOVQ", _DI, _AX)                   // MOVQ DI, AX
 	self.Emit("MOVQ", _SI, _BX)                   // MOVQ SI, BX
 	self.Emit("MOVQ", _VP, _CX)                   // MOVQ VP, CX
@@ -1656,8 +1672,25 @@ func (self *_Assembler) _asm_OP_map_key_u64(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_f32(p *_Instr) {
-	self.parse_number(float32Type, "", p.vi())    // PARSE     NUMBER
-	self.slice_from(_VAR_st_Ep, 0)                // SLICE st.Ep, $0
+	self.Emit("MOVQ", _IC, _BX) // save ic
+	self.Emit("LEAQ", _ARG_s, _DI)
+	self.Emit("MOVQ", _IC, _ARG_ic)
+	self.Emit("LEAQ", _ARG_ic, _SI)
+	self.callc(_F_skip_number)
+	self.Emit("MOVQ", _ARG_ic, _IC)
+	self.Emit("TESTQ", _AX, _AX)
+	self.Sjmp("JNS", "_map_key_f32_parse_std_{n}")
+	self.Emit("MOVQ", jit.Type(float32Type), _ET)
+	self.Emit("MOVQ", _ET, _VAR_et)
+	self.Emit("SUBQ", jit.Imm(1), _BX)
+	self.Emit("MOVQ", _BX, _VAR_ic)
+	self.Byte(0x4c, 0x8d, 0x0d) // LEAQ (PC), R9
+	self.Xref(p.vi(), 4)
+	self.Emit("MOVQ", _R9, _VAR_pc)
+	self.Sjmp("JMP", _LB_skip_key_value)
+	self.Link("_map_key_f32_parse_std_{n}")
+	self.Emit("MOVQ", _AX, _VAR_st_Ep)            // MOVQ AX, st.Ep
+	self.slice_from_r(_AX, 0)                     // SLICE_R AX, $0
 	self.Emit("MOVQ", _DI, _AX)                   // MOVQ DI, AX
 	self.Emit("MOVQ", _SI, _BX)                   // MOVQ SI, BX
 	self.Emit("LEAQ", _VAR_st_Dv, _CX)            // LEAQ st.Dv, CX

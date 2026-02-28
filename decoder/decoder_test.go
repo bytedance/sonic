@@ -18,6 +18,7 @@ package decoder
 
 import (
 	"encoding/json"
+	"os"
 	"runtime"
 	"runtime/debug"
 	"strings"
@@ -38,10 +39,9 @@ func TestMain(m *testing.M) {
 			runtime.GC()
 			debug.FreeOSMemory()
 		}
-		println("stop GC looping!")
 	}()
 	time.Sleep(time.Millisecond)
-	m.Run()
+	os.Exit(m.Run())
 }
 
 func TestGC(t *testing.T) {
