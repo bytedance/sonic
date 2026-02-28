@@ -1,11 +1,14 @@
-/**
- * Copyright 2024 ByteDance Inc.
+//go:build go1.18 && !go1.26
+// +build go1.18,!go1.26
+
+/*
+ * Copyright 2021 ByteDance Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +17,8 @@
  * limitations under the License.
  */
 
-package neon
+package loader
 
-import (
-	"unsafe"
-
-	"github.com/bytedance/sonic/internal/rt"
-)
-
-//go:nosplit
-func lookup_small_key(key *string, table *[]byte, lowerOff int) (ret int) {
-    return __lookup_small_key(rt.NoEscape(unsafe.Pointer(key)), rt.NoEscape(unsafe.Pointer(table)), lowerOff)
+func setEpclntab(mod *moduledata, val uintptr) {
+    // No-op for versions < 1.26
 }
-
-//go:nosplit
-func __lookup_small_key(key unsafe.Pointer, table unsafe.Pointer, lowerOff int) (ret int)

@@ -1,5 +1,5 @@
-//go:build (!amd64 && !arm64) || go1.26 || !go1.17 || (arm64 && !go1.20)
-// +build !amd64,!arm64 go1.26 !go1.17 arm64,!go1.20
+//go:build (!amd64 && !arm64) || go1.27 || !go1.17 || (arm64 && !go1.20)
+// +build !amd64,!arm64 go1.27 !go1.17 arm64,!go1.20
 
 /*
 * Copyright 2023 ByteDance Inc.
