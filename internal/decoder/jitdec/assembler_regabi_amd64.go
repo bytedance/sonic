@@ -1004,12 +1004,14 @@ var (
 	_F_decodeJsonUnmarshaler       obj.Addr
 	_F_decodeJsonUnmarshalerQuoted obj.Addr
 	_F_decodeTextUnmarshaler       obj.Addr
+	_F_decodeFloat32Std            obj.Addr
 )
 
 func init() {
 	_F_decodeJsonUnmarshaler = jit.Func(decodeJsonUnmarshaler)
 	_F_decodeJsonUnmarshalerQuoted = jit.Func(decodeJsonUnmarshalerQuoted)
 	_F_decodeTextUnmarshaler = jit.Func(decodeTextUnmarshaler)
+	_F_decodeFloat32Std = jit.Func(decodeFloat32Std)
 }
 
 func (self *_Assembler) mapaccess_ptr(t reflect.Type) {
@@ -1475,9 +1477,17 @@ func (self *_Assembler) _asm_OP_u64(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_f32(_ *_Instr) {
 	var pin = "_f32_end_{n}"
-	self.parse_number(float32Type, pin, -1)  // PARSE NUMBER
-	self.range_single_X0()                   // RANGE float32
-	self.Emit("MOVSS", _X0, jit.Ptr(_VP, 0)) // MOVSS X0, (VP)
+	self.parse_number(float32Type, pin, -1)       // PARSE NUMBER
+	self.slice_from(_VAR_st_Ep, 0)                // SLICE st.Ep, $0
+	self.Emit("MOVQ", _DI, _AX)                   // MOVQ DI, AX
+	self.Emit("MOVQ", _SI, _BX)                   // MOVQ SI, BX
+	self.Emit("MOVQ", _VP, _CX)                   // MOVQ VP, CX
+	self.call_go(_F_decodeFloat32Std)             // CALL_GO decodeFloat32Std
+	self.Emit("TESTQ", _ET, _ET)                  // TESTQ ET, ET
+	self.Sjmp("JZ", pin)                          // JZ _f32_end
+	self.Emit("MOVQ", jit.Gitab(_I_float32), _ET) // MOVQ itab(float32), ET
+	self.Emit("MOVQ", jit.Gtype(_T_float32), _EP) // MOVQ type(float32), EP
+	self.Sjmp("JMP", _LB_range_error)             // JMP _range_error
 	self.Link(pin)
 }
 
@@ -1646,9 +1656,18 @@ func (self *_Assembler) _asm_OP_map_key_u64(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_f32(p *_Instr) {
-	self.parse_number(float32Type, "", p.vi()) // PARSE     NUMBER
-	self.range_single_X0()                     // RANGE     float32
-	self.Emit("MOVSS", _X0, _VAR_st_Dv)        // MOVSS     X0, st.Dv
+	self.parse_number(float32Type, "", p.vi())    // PARSE     NUMBER
+	self.slice_from(_VAR_st_Ep, 0)                // SLICE st.Ep, $0
+	self.Emit("MOVQ", _DI, _AX)                   // MOVQ DI, AX
+	self.Emit("MOVQ", _SI, _BX)                   // MOVQ SI, BX
+	self.Emit("LEAQ", _VAR_st_Dv, _CX)            // LEAQ st.Dv, CX
+	self.call_go(_F_decodeFloat32Std)             // CALL_GO decodeFloat32Std
+	self.Emit("TESTQ", _ET, _ET)                  // TESTQ ET, ET
+	self.Sjmp("JZ", "_map_key_f32_ok_{n}")        // JZ _map_key_f32_ok
+	self.Emit("MOVQ", jit.Gitab(_I_float32), _ET) // MOVQ itab(float32), ET
+	self.Emit("MOVQ", jit.Gtype(_T_float32), _EP) // MOVQ type(float32), EP
+	self.Sjmp("JMP", _LB_range_error)             // JMP _range_error
+	self.Link("_map_key_f32_ok_{n}")
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Dv) // MAPASSIGN ${p.vt()}, mapassign, st.Dv
 }

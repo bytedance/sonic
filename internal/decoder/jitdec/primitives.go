@@ -19,6 +19,7 @@ package jitdec
 import (
 	"encoding"
 	"encoding/json"
+	"strconv"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/native"
@@ -55,4 +56,13 @@ func decodeJsonUnmarshalerQuoted(vv interface{}, s string) error {
 
 func decodeTextUnmarshaler(vv interface{}, s string) error {
 	return vv.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(s))
+}
+
+func decodeFloat32Std(s string, vp unsafe.Pointer) error {
+	v, err := strconv.ParseFloat(s, 32)
+	if err != nil {
+		return err
+	}
+	*(*float32)(vp) = float32(v)
+	return nil
 }

@@ -378,6 +378,19 @@ func BenchmarkDecoder_Parallel_Generic_Sonic_Fast(b *testing.B) {
 	})
 }
 
+func TestFloat32PrecisionCompat(t *testing.T) {
+	src := "7.328900098800659"
+	var std float32
+	var got float32
+
+	err := json.Unmarshal([]byte(src), &std)
+	assert.NoError(t, err)
+
+	_, err = decode(src, &got, false)
+	assert.NoError(t, err)
+	assert.Equal(t, std, got)
+}
+
 func BenchmarkDecoder_Parallel_Generic_StdLib(b *testing.B) {
 	var w interface{}
 	m := []byte(TwitterJson)
