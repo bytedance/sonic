@@ -51,7 +51,7 @@ type arrayDecoder struct {
 	len      int
 	elemType *rt.GoType
 	elemDec  decFunc
-	typ   	reflect.Type
+	typ      reflect.Type
 }
 
 //go:nocheckptr
@@ -103,7 +103,7 @@ func (d *sliceEfaceDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) 
 	if ((*rt.GoSlice)(vp)).Len == 0 {
 		return node.AsSliceEface(ctx, vp)
 	}
-	
+
 	decoder := sliceDecoder{
 		elemType: rt.AnyType,
 		elemDec:  &efaceDecoder{},
@@ -190,7 +190,7 @@ func (d *sliceBytesDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) 
 type sliceBytesUnmarshalerDecoder struct {
 	elemType *rt.GoType
 	elemDec  decFunc
-	typ reflect.Type
+	typ      reflect.Type
 }
 
 func (d *sliceBytesUnmarshalerDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {

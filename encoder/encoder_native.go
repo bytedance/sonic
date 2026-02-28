@@ -1,3 +1,4 @@
+//go:build (amd64 && go1.17 && !go1.27) || (arm64 && go1.20 && !go1.27)
 // +build amd64,go1.17,!go1.27 arm64,go1.20,!go1.27
 
 /*
@@ -19,7 +20,7 @@
 package encoder
 
 import (
-    `github.com/bytedance/sonic/internal/encoder`
+	"github.com/bytedance/sonic/internal/encoder"
 )
 
 // EnableFallback indicates if encoder use fallback
@@ -35,87 +36,86 @@ type StreamEncoder = encoder.StreamEncoder
 type Options = encoder.Options
 
 const (
-    // SortMapKeys indicates that the keys of a map needs to be sorted
-    // before serializing into JSON.
-    // WARNING: This hurts performance A LOT, USE WITH CARE.
-    SortMapKeys Options = encoder.SortMapKeys
+	// SortMapKeys indicates that the keys of a map needs to be sorted
+	// before serializing into JSON.
+	// WARNING: This hurts performance A LOT, USE WITH CARE.
+	SortMapKeys Options = encoder.SortMapKeys
 
-    // EscapeHTML indicates encoder to escape all HTML characters
-    // after serializing into JSON (see https://pkg.go.dev/encoding/json#HTMLEscape).
-    // WARNING: This hurts performance A LOT, USE WITH CARE.
-    EscapeHTML Options = encoder.EscapeHTML
+	// EscapeHTML indicates encoder to escape all HTML characters
+	// after serializing into JSON (see https://pkg.go.dev/encoding/json#HTMLEscape).
+	// WARNING: This hurts performance A LOT, USE WITH CARE.
+	EscapeHTML Options = encoder.EscapeHTML
 
-    // CompactMarshaler indicates that the output JSON from json.Marshaler
-    // is always compact and needs no validation
-    CompactMarshaler Options = encoder.CompactMarshaler
+	// CompactMarshaler indicates that the output JSON from json.Marshaler
+	// is always compact and needs no validation
+	CompactMarshaler Options = encoder.CompactMarshaler
 
-    // NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler
-    // is always escaped string and needs no quoting
-    NoQuoteTextMarshaler Options = encoder.NoQuoteTextMarshaler
+	// NoQuoteTextMarshaler indicates that the output text from encoding.TextMarshaler
+	// is always escaped string and needs no quoting
+	NoQuoteTextMarshaler Options = encoder.NoQuoteTextMarshaler
 
-    // NoNullSliceOrMap indicates all empty Array or Object are encoded as '[]' or '{}',
-    // instead of 'null'
-    NoNullSliceOrMap Options = encoder.NoNullSliceOrMap
+	// NoNullSliceOrMap indicates all empty Array or Object are encoded as '[]' or '{}',
+	// instead of 'null'
+	NoNullSliceOrMap Options = encoder.NoNullSliceOrMap
 
-    // ValidateString indicates that encoder should validate the input string
-    // before encoding it into JSON.
-    ValidateString Options = encoder.ValidateString
+	// ValidateString indicates that encoder should validate the input string
+	// before encoding it into JSON.
+	ValidateString Options = encoder.ValidateString
 
-    // NoValidateJSONMarshaler indicates that the encoder should not validate the output string
-    // after encoding the JSONMarshaler to JSON.
-    NoValidateJSONMarshaler Options = encoder.NoValidateJSONMarshaler
+	// NoValidateJSONMarshaler indicates that the encoder should not validate the output string
+	// after encoding the JSONMarshaler to JSON.
+	NoValidateJSONMarshaler Options = encoder.NoValidateJSONMarshaler
 
-    // NoEncoderNewline indicates that the encoder should not add a newline after every message
-    NoEncoderNewline Options = encoder.NoEncoderNewline
+	// NoEncoderNewline indicates that the encoder should not add a newline after every message
+	NoEncoderNewline Options = encoder.NoEncoderNewline
 
-    // CompatibleWithStd is used to be compatible with std encoder.
-    CompatibleWithStd Options = encoder.CompatibleWithStd
+	// CompatibleWithStd is used to be compatible with std encoder.
+	CompatibleWithStd Options = encoder.CompatibleWithStd
 
-    // EncodeNullForInfOrNan encodes Infinity or NaN float values as 'null'
-    // instead of returning an error.
-    EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
+	// EncodeNullForInfOrNan encodes Infinity or NaN float values as 'null'
+	// instead of returning an error.
+	EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
 )
 
-
 var (
-    // Encode returns the JSON encoding of val, encoded with opts.
-    Encode = encoder.Encode
+	// Encode returns the JSON encoding of val, encoded with opts.
+	Encode = encoder.Encode
 
-    // EncodeIndented is like Encode but applies Indent to format the output.
-    // Each JSON element in the output will begin on a new line beginning with prefix
-    // followed by one or more copies of indent according to the indentation nesting.
-    EncodeIndented = encoder.EncodeIndented
+	// EncodeIndented is like Encode but applies Indent to format the output.
+	// Each JSON element in the output will begin on a new line beginning with prefix
+	// followed by one or more copies of indent according to the indentation nesting.
+	EncodeIndented = encoder.EncodeIndented
 
-    // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating a new one.
-    EncodeInto = encoder.EncodeInto
+	// EncodeInto is like Encode but uses a user-supplied buffer instead of allocating a new one.
+	EncodeInto = encoder.EncodeInto
 
-    // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
-    // characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029
-    // so that the JSON will be safe to embed inside HTML <script> tags.
-    // For historical reasons, web browsers don't honor standard HTML
-    // escaping within <script> tags, so an alternative JSON encoding must
-    // be used.
-    HTMLEscape = encoder.HTMLEscape
+	// HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
+	// characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029
+	// so that the JSON will be safe to embed inside HTML <script> tags.
+	// For historical reasons, web browsers don't honor standard HTML
+	// escaping within <script> tags, so an alternative JSON encoding must
+	// be used.
+	HTMLEscape = encoder.HTMLEscape
 
-    // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
-    // order to reduce the first-hit latency.
-    //
-    // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
-    // a compile option to set the depth of recursive compile for the nested struct type.
-    Pretouch = encoder.Pretouch
+	// Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
+	// order to reduce the first-hit latency.
+	//
+	// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+	// a compile option to set the depth of recursive compile for the nested struct type.
+	Pretouch = encoder.Pretouch
 
-    // Quote returns the JSON-quoted version of s.
-    Quote = encoder.Quote
+	// Quote returns the JSON-quoted version of s.
+	Quote = encoder.Quote
 
-    // Valid validates json and returns first non-blank character position,
-    // if it is only one valid json value.
-    // Otherwise returns invalid character position using start.
-    //
-    // Note: it does not check for the invalid UTF-8 characters.
-    Valid = encoder.Valid
+	// Valid validates json and returns first non-blank character position,
+	// if it is only one valid json value.
+	// Otherwise returns invalid character position using start.
+	//
+	// Note: it does not check for the invalid UTF-8 characters.
+	Valid = encoder.Valid
 
-    // NewStreamEncoder adapts to encoding/json.NewDecoder API.
-    //
-    // NewStreamEncoder returns a new encoder that write to w.
-    NewStreamEncoder = encoder.NewStreamEncoder
+	// NewStreamEncoder adapts to encoding/json.NewDecoder API.
+	//
+	// NewStreamEncoder returns a new encoder that write to w.
+	NewStreamEncoder = encoder.NewStreamEncoder
 )

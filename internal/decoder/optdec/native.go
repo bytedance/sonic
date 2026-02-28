@@ -13,43 +13,42 @@ import (
 	"github.com/bytedance/sonic/utf8"
 )
 
-
 type ErrorCode int
 
 const (
-	SONIC_OK                = 0;
-	SONIC_CONTROL_CHAR      = 1;
-	SONIC_INVALID_ESCAPED   = 2;
-	SONIC_INVALID_NUM       = 3;
-	SONIC_FLOAT_INF         = 4;
-	SONIC_EOF               = 5;
-	SONIC_INVALID_CHAR   	= 6;
-	SONIC_EXPECT_KEY        = 7;
-	SONIC_EXPECT_COLON      = 8;
-	SONIC_EXPECT_OBJ_COMMA_OR_END  = 9;
-	SONIC_EXPECT_ARR_COMMA_OR_END  = 10;
-	SONIC_VISIT_FAILED        = 11;
-	SONIC_INVALID_ESCAPED_UTF = 12;
-	SONIC_INVALID_LITERAL 	  = 13;
-	SONIC_STACK_OVERFLOW	  = 14;
+	SONIC_OK                      = 0
+	SONIC_CONTROL_CHAR            = 1
+	SONIC_INVALID_ESCAPED         = 2
+	SONIC_INVALID_NUM             = 3
+	SONIC_FLOAT_INF               = 4
+	SONIC_EOF                     = 5
+	SONIC_INVALID_CHAR            = 6
+	SONIC_EXPECT_KEY              = 7
+	SONIC_EXPECT_COLON            = 8
+	SONIC_EXPECT_OBJ_COMMA_OR_END = 9
+	SONIC_EXPECT_ARR_COMMA_OR_END = 10
+	SONIC_VISIT_FAILED            = 11
+	SONIC_INVALID_ESCAPED_UTF     = 12
+	SONIC_INVALID_LITERAL         = 13
+	SONIC_STACK_OVERFLOW          = 14
 )
 
 var ParsingErrors = []string{
-    SONIC_OK                      	: "ok",
-	SONIC_CONTROL_CHAR      	  	: "control chars in string",
-	SONIC_INVALID_ESCAPED 		  	: "invalid escaped chars in string",
-	SONIC_INVALID_NUM       		: "invalid number",
-	SONIC_FLOAT_INF         		: "float infinity",
-	SONIC_EOF               		: "eof",
-	SONIC_INVALID_CHAR		  		: "invalid chars",
-	SONIC_EXPECT_KEY        		: "expect a json key",
-	SONIC_EXPECT_COLON      		: "expect a `:`",
-	SONIC_EXPECT_OBJ_COMMA_OR_END	: "expect a `,` or `}`",
-	SONIC_EXPECT_ARR_COMMA_OR_END	: "expect a `,` or `]`",
-	SONIC_VISIT_FAILED     			: "failed in json visitor",
-	SONIC_INVALID_ESCAPED_UTF		: "invalid escaped unicodes",
-	SONIC_INVALID_LITERAL			: "invalid literal(true/false/null)",
-	SONIC_STACK_OVERFLOW			: "json is exceeded max depth 4096, cause stack overflow",
+	SONIC_OK:                      "ok",
+	SONIC_CONTROL_CHAR:            "control chars in string",
+	SONIC_INVALID_ESCAPED:         "invalid escaped chars in string",
+	SONIC_INVALID_NUM:             "invalid number",
+	SONIC_FLOAT_INF:               "float infinity",
+	SONIC_EOF:                     "eof",
+	SONIC_INVALID_CHAR:            "invalid chars",
+	SONIC_EXPECT_KEY:              "expect a json key",
+	SONIC_EXPECT_COLON:            "expect a `:`",
+	SONIC_EXPECT_OBJ_COMMA_OR_END: "expect a `,` or `}`",
+	SONIC_EXPECT_ARR_COMMA_OR_END: "expect a `,` or `]`",
+	SONIC_VISIT_FAILED:            "failed in json visitor",
+	SONIC_INVALID_ESCAPED_UTF:     "invalid escaped unicodes",
+	SONIC_INVALID_LITERAL:         "invalid literal(true/false/null)",
+	SONIC_STACK_OVERFLOW:          "json is exceeded max depth 4096, cause stack overflow",
 }
 
 func (code ErrorCode) Error() string {
@@ -69,67 +68,66 @@ type _nospaceBlock struct {
 
 // should consistent with native/parser.c
 type nodeBuf struct {
-	ncur    uintptr
-	parent  int64
-	depth   uint64
-	nstart  uintptr
-	nend    uintptr
-	iskey   bool
-	stat    jsonStat
+	ncur   uintptr
+	parent int64
+	depth  uint64
+	nstart uintptr
+	nend   uintptr
+	iskey  bool
+	stat   jsonStat
 }
 
 func (self *nodeBuf) init(nodes []node) {
 	self.ncur = uintptr(unsafe.Pointer(&nodes[0]))
 	self.nstart = self.ncur
-	self.nend = self.ncur + uintptr(cap(nodes)) * unsafe.Sizeof(node{})
+	self.nend = self.ncur + uintptr(cap(nodes))*unsafe.Sizeof(node{})
 	self.parent = -1
 }
 
 // should consistent with native/parser.c
 type Parser struct {
-	Json    string
-	padded	[]byte
-	nodes 	[]node
-	dbuf 	[]byte
-	backup  []node
+	Json   string
+	padded []byte
+	nodes  []node
+	dbuf   []byte
+	backup []node
 
 	options uint64
 	// JSON cursor
-	start   uintptr
-	cur     uintptr
-	end     uintptr
-	_nbk    _nospaceBlock
+	start uintptr
+	cur   uintptr
+	end   uintptr
+	_nbk  _nospaceBlock
 
 	// node buffer cursor
-	nbuf   	nodeBuf
-	Utf8Inv  	bool
-	isEface    bool
+	nbuf    nodeBuf
+	Utf8Inv bool
+	isEface bool
 }
 
 // only when parse non-empty object/array are needed.
 type jsonStat struct {
-    object 		uint32
-    array 		uint32
-    str 		uint32
-    number 		uint32
-    array_elems uint32
-    object_keys uint32
-    max_depth	uint32
+	object      uint32
+	array       uint32
+	str         uint32
+	number      uint32
+	array_elems uint32
+	object_keys uint32
+	max_depth   uint32
 }
 
-
 var (
-	defaultJsonPaddedCap uintptr =  1 << 20  // 1 Mb
-	defaultNodesCap      uintptr =  (1 << 20) / unsafe.Sizeof(node{})  // 1 Mb
+	defaultJsonPaddedCap uintptr = 1 << 20                           // 1 Mb
+	defaultNodesCap      uintptr = (1 << 20) / unsafe.Sizeof(node{}) // 1 Mb
 )
 
-var parsePool sync.Pool = sync.Pool {
-	New: func () interface{} {
+var parsePool sync.Pool = sync.Pool{
+	New: func() interface{} {
 		return &Parser{
 			options: 0,
-			padded: make([]byte, 0, defaultJsonPaddedCap),
-			nodes: make([]node, defaultNodesCap, defaultNodesCap),
-			dbuf: make([]byte, types.MaxDigitNums, types.MaxDigitNums),
+			padded:  make([]byte, 0, defaultJsonPaddedCap),
+			nodes:   make([]node, defaultNodesCap, defaultNodesCap),
+			dbuf:    make([]byte, types.MaxDigitNums, types.MaxDigitNums),
 		}
 	},
 }
@@ -140,10 +138,10 @@ func newParser(data string, pos int, opt uint64) *Parser {
 	p := parsePool.Get().(*Parser)
 
 	/* validate json if needed */
-	if (opt & (1 << _F_validate_string)) != 0  && !utf8.ValidateString(data){
+	if (opt&(1<<_F_validate_string)) != 0 && !utf8.ValidateString(data) {
 		dbuf := utf8.CorrectWith(nil, rt.Str2Mem(data[pos:]), "\ufffd")
 		dbuf = append(dbuf, padding...)
-		p.Json = rt.Mem2Str(dbuf[:len(dbuf) - len(padding)])
+		p.Json = rt.Mem2Str(dbuf[:len(dbuf)-len(padding)])
 		p.Utf8Inv = true
 		p.start = uintptr((*rt.GoString)(unsafe.Pointer(&p.Json)).Ptr)
 	} else {
@@ -154,13 +152,12 @@ func newParser(data string, pos int, opt uint64) *Parser {
 		p.start = uintptr((*rt.GoSlice)(unsafe.Pointer(&p.padded)).Ptr)
 	}
 
-	p.cur 	= p.start
-	p.end   = p.cur + uintptr(len(p.Json))
+	p.cur = p.start
+	p.end = p.cur + uintptr(len(p.Json))
 	p.options = opt
 	p.nbuf.init(p.nodes)
 	return p
 }
-
 
 func (p *Parser) Pos() int {
 	return int(p.cur - p.start)
@@ -178,7 +175,7 @@ var nodeType = rt.UnpackType(reflect.TypeOf(node{}))
 
 //go:inline
 func calMaxNodeCap(jsonSize int) int {
-	return jsonSize / 2 + 2
+	return jsonSize/2 + 2
 }
 
 func (p *Parser) parse() ErrorCode {
@@ -197,16 +194,16 @@ func (p *Parser) parse() ErrorCode {
 
 	// check OoB here
 	offset := p.nbuf.ncur - p.nbuf.nstart
-	curLen :=  int(offset / unsafe.Sizeof(node{}))
+	curLen := int(offset / unsafe.Sizeof(node{}))
 	if curLen != len(p.nodes) {
 		panic(fmt.Sprintf("current len: %d, real len: %d cap: %d", curLen, len(p.nodes), cap(p.nodes)))
 	}
 
 	// node buf is not enough, continue parse
 	// the maxCap is always meet all valid JSON
-	maxCap := curLen + calMaxNodeCap(len(p.Json) - int(p.cur - p.start))
+	maxCap := curLen + calMaxNodeCap(len(p.Json)-int(p.cur-p.start))
 	slice := rt.GoSlice{
-		Ptr: rt.Mallocgc(uintptr(maxCap) * nodeType.Size, nodeType, false),
+		Ptr: rt.Mallocgc(uintptr(maxCap)*nodeType.Size, nodeType, false),
 		Len: maxCap,
 		Cap: maxCap,
 	}
@@ -216,7 +213,7 @@ func (p *Parser) parse() ErrorCode {
 
 	// update node cursor
 	p.nbuf.nstart = uintptr(unsafe.Pointer(&p.nodes[0]))
-	p.nbuf.nend = p.nbuf.nstart + uintptr(cap(p.nodes)) * unsafe.Sizeof(node{})
+	p.nbuf.nend = p.nbuf.nstart + uintptr(cap(p.nodes))*unsafe.Sizeof(node{})
 	p.nbuf.ncur = p.nbuf.nstart + offset
 
 	// continue parse json
@@ -255,7 +252,7 @@ func (p *Parser) fixError(code ErrorCode) error {
 	}
 
 	if p.Pos() == 0 {
-		code = SONIC_EOF;
+		code = SONIC_EOF
 	}
 
 	pos := p.Pos() - 1

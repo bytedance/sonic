@@ -20,132 +20,130 @@
 package ast
 
 import (
-    `encoding/json`
-    `fmt`
-    `reflect`
-    `runtime`
-    `runtime/debug`
-    `testing`
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"runtime"
+	"runtime/debug"
+	"testing"
 
-    `github.com/bytedance/sonic/encoder`
-    `github.com/stretchr/testify/require`
+	"github.com/bytedance/sonic/encoder"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSortNodeTwitter(t *testing.T) {
-    if encoder.EnableFallback {
-        return
-    }
-    root, err := NewSearcher(_TwitterJson).GetByPath()
-    if err != nil {
-        t.Fatal(err)
-    }
-    obj, err := root.MapUseNumber()
-    if err != nil {
-        t.Fatal(err)
-    }
-    exp, err := encoder.Encode(obj, encoder.SortMapKeys|encoder.NoEncoderNewline)
-    if err != nil {
-        t.Fatal(err)
-    }
-    var expObj interface{}
-    require.NoError(t, json.Unmarshal(exp, &expObj))
+	if encoder.EnableFallback {
+		return
+	}
+	root, err := NewSearcher(_TwitterJson).GetByPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+	obj, err := root.MapUseNumber()
+	if err != nil {
+		t.Fatal(err)
+	}
+	exp, err := encoder.Encode(obj, encoder.SortMapKeys|encoder.NoEncoderNewline)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var expObj interface{}
+	require.NoError(t, json.Unmarshal(exp, &expObj))
 
-    if err := root.SortKeys(true); err != nil {
-        t.Fatal(err)
-    }
-    act, err := root.MarshalJSON()
-    if err != nil {
-        t.Fatal(err)
-    }
-    var actObj interface{}
-    require.NoError(t, json.Unmarshal(act, &actObj))
-    require.Equal(t, expObj, actObj)
-    require.Equal(t, len(exp), len(act))
-    require.Equal(t, string(exp), string(act))
+	if err := root.SortKeys(true); err != nil {
+		t.Fatal(err)
+	}
+	act, err := root.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var actObj interface{}
+	require.NoError(t, json.Unmarshal(act, &actObj))
+	require.Equal(t, expObj, actObj)
+	require.Equal(t, len(exp), len(act))
+	require.Equal(t, string(exp), string(act))
 }
 
 func TestNodeAny(t *testing.T) {
-    empty := Node{}
-    _,err := empty.SetAny("any", map[string]interface{}{"a": []int{0}})
-    if err != nil {
-        t.Fatal(err)
-    }
-    if m, err := empty.Get("any").Interface(); err != nil {
-        t.Fatal(err)
-    } else if v, ok := m.(map[string]interface{}); !ok {
-        t.Fatal(v)
-    }
-    if buf, err := empty.MarshalJSON(); err != nil {
-        t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]}}` {
-        t.Fatal(string(buf))
-    }
-    if _, err := empty.Set("any2", Node{}); err != nil {
-        t.Fatal(err)
-    }
-    if err := empty.Get("any2").AddAny(nil); err != nil {
-        t.Fatal(err)
-    }
-    if buf, err := empty.MarshalJSON(); err != nil {
-        t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]},"any2":[null]}` {
-        t.Fatal(string(buf))
-    }
-    if _, err := empty.Get("any2").SetAnyByIndex(0, NewNumber("-0.0")); err != nil {
-        t.Fatal(err)
-    }
-    if buf, err := empty.MarshalJSON(); err != nil {
-        t.Fatal(err)
-    } else if string(buf) != `{"any":{"a":[0]},"any2":[-0.0]}` {
-        t.Fatal(string(buf))
-    }
+	empty := Node{}
+	_, err := empty.SetAny("any", map[string]interface{}{"a": []int{0}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m, err := empty.Get("any").Interface(); err != nil {
+		t.Fatal(err)
+	} else if v, ok := m.(map[string]interface{}); !ok {
+		t.Fatal(v)
+	}
+	if buf, err := empty.MarshalJSON(); err != nil {
+		t.Fatal(err)
+	} else if string(buf) != `{"any":{"a":[0]}}` {
+		t.Fatal(string(buf))
+	}
+	if _, err := empty.Set("any2", Node{}); err != nil {
+		t.Fatal(err)
+	}
+	if err := empty.Get("any2").AddAny(nil); err != nil {
+		t.Fatal(err)
+	}
+	if buf, err := empty.MarshalJSON(); err != nil {
+		t.Fatal(err)
+	} else if string(buf) != `{"any":{"a":[0]},"any2":[null]}` {
+		t.Fatal(string(buf))
+	}
+	if _, err := empty.Get("any2").SetAnyByIndex(0, NewNumber("-0.0")); err != nil {
+		t.Fatal(err)
+	}
+	if buf, err := empty.MarshalJSON(); err != nil {
+		t.Fatal(err)
+	} else if string(buf) != `{"any":{"a":[0]},"any2":[-0.0]}` {
+		t.Fatal(string(buf))
+	}
 }
 
-
 func TestTypeCast2(t *testing.T) {
-    type tcase struct {
-        method string
-        node Node
-        exp interface{}
-        err error
-    }
-    var cases = []tcase{
-        {"Raw", NewAny(""), "\"\"", nil},
-    }
+	type tcase struct {
+		method string
+		node   Node
+		exp    interface{}
+		err    error
+	}
+	var cases = []tcase{
+		{"Raw", NewAny(""), "\"\"", nil},
+	}
 
-    for i, c := range cases {
-        fmt.Println(i, c)
-        rt := reflect.ValueOf(&c.node)
-        m := rt.MethodByName(c.method)
-        rets := m.Call([]reflect.Value{})
-        if len(rets) != 2 {
-            t.Fatal(i, rets)
-        }
-        require.Equal(t, c.exp, rets[0].Interface())
-        v := rets[1].Interface();
-        if  v != c.err {
-            t.Fatal(i, v)
-        }
-    }
+	for i, c := range cases {
+		fmt.Println(i, c)
+		rt := reflect.ValueOf(&c.node)
+		m := rt.MethodByName(c.method)
+		rets := m.Call([]reflect.Value{})
+		if len(rets) != 2 {
+			t.Fatal(i, rets)
+		}
+		require.Equal(t, c.exp, rets[0].Interface())
+		v := rets[1].Interface()
+		if v != c.err {
+			t.Fatal(i, v)
+		}
+	}
 }
 
 func TestStackAny(t *testing.T) {
-    var obj = stackObj()
-    any := NewAny(obj)
-    fmt.Printf("any: %#v\n", any)
-    runtime.GC()
-    debug.FreeOSMemory()
-    println("finish GC")
-    buf, err := any.MarshalJSON()
-    println("finish marshal")
-    if err != nil {
-        t.Fatal(err)
-    }
-    if string(buf) != "1" {
-        t.Fatal(string(buf))
-    }
+	var obj = stackObj()
+	any := NewAny(obj)
+	fmt.Printf("any: %#v\n", any)
+	runtime.GC()
+	debug.FreeOSMemory()
+	println("finish GC")
+	buf, err := any.MarshalJSON()
+	println("finish marshal")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(buf) != "1" {
+		t.Fatal(string(buf))
+	}
 }
-
 
 func Test_Export(t *testing.T) {
 	type args struct {
