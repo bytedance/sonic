@@ -5,8 +5,8 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/internal/resolver"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type decFunc interface {
@@ -33,9 +33,9 @@ func (d *ptrDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 }
 
 type embeddedFieldPtrDecoder struct {
-	field      resolver.FieldMeta
-	fieldDec   decFunc
-	fieldName  string
+	field     resolver.FieldMeta
+	fieldDec  decFunc
+	fieldName string
 }
 
 // Pointer Value is allocated in the Caller
@@ -50,7 +50,7 @@ func (d *embeddedFieldPtrDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *con
 		deref := rt.UnpackType(f.Type)
 		vp = unsafe.Pointer(uintptr(vp) + f.Size)
 		if f.Kind == resolver.F_deref {
-			if  *(*unsafe.Pointer)(vp) == nil  {
+			if *(*unsafe.Pointer)(vp) == nil {
 				*(*unsafe.Pointer)(vp) = rt.Mallocgc(deref.Size, deref, true)
 			}
 			vp = *(*unsafe.Pointer)(vp)
@@ -67,7 +67,7 @@ func (d *i8Decoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	}
 
 	ret, ok := node.AsI64(ctx)
-	if !ok ||  ret > math.MaxInt8 || ret < math.MinInt8 {
+	if !ok || ret > math.MaxInt8 || ret < math.MinInt8 {
 		return error_mismatch(node, ctx, int8Type)
 	}
 
@@ -99,7 +99,7 @@ func (d *i32Decoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	}
 
 	ret, ok := node.AsI64(ctx)
-	if !ok ||  ret > math.MaxInt32 || ret < math.MinInt32 {
+	if !ok || ret > math.MaxInt32 || ret < math.MinInt32 {
 		return error_mismatch(node, ctx, int32Type)
 	}
 
@@ -115,7 +115,7 @@ func (d *i64Decoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	}
 
 	ret, ok := node.AsI64(ctx)
-	if !ok  {
+	if !ok {
 		return error_mismatch(node, ctx, int64Type)
 	}
 
@@ -212,7 +212,7 @@ func (d *f64Decoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 
 	ret, ok := node.AsF64(ctx)
 	if !ok {
-		return  error_mismatch(node, ctx, float64Type)
+		return error_mismatch(node, ctx, float64Type)
 	}
 
 	*(*float64)(vp) = float64(ret)
@@ -284,11 +284,9 @@ type unsupportedTypeDecoder struct {
 	typ *rt.GoType
 }
 
-
 func (d *unsupportedTypeDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	if node.IsNull() {
 		return nil
 	}
 	return error_unsuppoted(d.typ)
 }
-

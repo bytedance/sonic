@@ -27,41 +27,45 @@ import (
 )
 
 func TestMain(m *testing.M) {
-    go func ()  {
-        if !vars.DebugAsyncGC {
-            return
-        }
-        println("Begin GC looping...")
-        for {
-            runtime.GC()
-            debug.FreeOSMemory()
-        }
-        println("stop GC looping!")
-    }()
-    time.Sleep(time.Millisecond)
-    encoder.ForceUseVM()
-    m.Run()
+	go func() {
+		if !vars.DebugAsyncGC {
+			return
+		}
+		println("Begin GC looping...")
+		for {
+			runtime.GC()
+			debug.FreeOSMemory()
+		}
+		println("stop GC looping!")
+	}()
+	time.Sleep(time.Millisecond)
+	encoder.ForceUseVM()
+	m.Run()
 }
 
 type StringStruct struct {
-    X *int        `json:"x,string,omitempty"`
-    Y []int       `json:"y"`
-    Z json.Number `json:"z,string"`
-    W string      `json:"w,string"`
+	X *int        `json:"x,string,omitempty"`
+	Y []int       `json:"y"`
+	Z json.Number `json:"z,string"`
+	W string      `json:"w,string"`
 }
 
 func TestEncoder_FieldStringize(t *testing.T) {
-    x := 12345
-    v := StringStruct{X: &x, Y: []int{1, 2, 3}, Z: "4567456", W: "asdf"}
-    r, e := encoder.Encode(v, 0)
-    require.NoError(t, e)
-    println(string(r))
+	x := 12345
+	v := StringStruct{X: &x, Y: []int{1, 2, 3}, Z: "4567456", W: "asdf"}
+	r, e := encoder.Encode(v, 0)
+	require.NoError(t, e)
+	println(string(r))
 }
 
 func TestCorpusMarshal(t *testing.T) {
-    var v = struct { F0 int "json:\"C,omitempty\""; F1 **int "json:\"a,\""; p2 **int }{}
-    sout, serr := encoder.Encode(v, 0)
-    jout, jerr := json.Marshal(v)
-    require.Equal(t, jerr == nil, serr == nil)
-    require.Equal(t, string(jout), string(sout))
+	var v = struct {
+		F0 int   "json:\"C,omitempty\""
+		F1 **int "json:\"a,\""
+		p2 **int
+	}{}
+	sout, serr := encoder.Encode(v, 0)
+	jout, jerr := json.Marshal(v)
+	require.Equal(t, jerr == nil, serr == nil)
+	require.Equal(t, string(jout), string(sout))
 }

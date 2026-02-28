@@ -25,20 +25,20 @@ import (
 )
 
 func TestCompiler_Compile(t *testing.T) {
-    prg, err := newCompiler().compile(reflect.TypeOf(TwitterStruct{}))
-    assert.Nil(t, err)
-    prg.disassemble()
+	prg, err := newCompiler().compile(reflect.TypeOf(TwitterStruct{}))
+	assert.Nil(t, err)
+	prg.disassemble()
 }
 
 func BenchmarkCompiler_Compile(b *testing.B) {
-    for i := 0; i < b.N; i++ {
-        pp, err :=  newCompiler().compile(reflect.TypeOf(TwitterStruct{}))
-        if err != nil {
-            panic("compile failed")
-        } 
-        as := newAssembler(pp)
-        as.name = "twitter struct"
-        _ = as.Load()
-        vars.ResetProgramCache()
-    }
+	for i := 0; i < b.N; i++ {
+		pp, err := newCompiler().compile(reflect.TypeOf(TwitterStruct{}))
+		if err != nil {
+			panic("compile failed")
+		}
+		as := newAssembler(pp)
+		as.name = "twitter struct"
+		_ = as.Load()
+		vars.ResetProgramCache()
+	}
 }

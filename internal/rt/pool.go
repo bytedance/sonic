@@ -21,7 +21,7 @@ func (self *SlicePool) GetSlice(size int) unsafe.Pointer {
 		return newarray(AsGoType(self.typ), size)
 	}
 
-	ptr := PtrAdd(self.pool, uintptr(self.index)* AsGoType(self.typ).Size)
+	ptr := PtrAdd(self.pool, uintptr(self.index)*AsGoType(self.typ).Size)
 	self.index += size
 	return ptr
 }

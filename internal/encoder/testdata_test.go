@@ -549,4 +549,3 @@ type SearchMetadata struct {
 	Query       string  `json:"query"`
 	MaxIDStr    string  `json:"max_id_str"`
 }
- 

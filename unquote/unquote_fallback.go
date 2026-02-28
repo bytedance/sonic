@@ -1,3 +1,4 @@
+//go:build (!amd64 && !arm64) || go1.27 || !go1.17 || (arm64 && !go1.20)
 // +build !amd64,!arm64 go1.27 !go1.17 arm64,!go1.20
 
 /*
@@ -22,9 +23,9 @@ import (
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
-	
-	"github.com/bytedance/sonic/internal/rt"
+
 	"github.com/bytedance/sonic/internal/native/types"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 // getu4 decodes \uXXXX from the beginning of s, returning the hex value,
@@ -49,7 +50,6 @@ func getu4(s []byte) rune {
 	}
 	return r
 }
-
 
 // unquoteBytes is a fallback implementation copied from Go standard library
 // encoding/json/decode.go. This is used when native unquote is not available.
@@ -162,7 +162,6 @@ func unquoteBytes(s []byte) (t []byte, ok bool) {
 	return b[0:w], true
 }
 
-
 // getu4Fallback decodes a 4-byte hex sequence from the beginning of s.
 // It is copied from Go standard library encoding/json.decode.go.
 func getu4Fallback(s []byte) rune {
@@ -185,7 +184,6 @@ func getu4Fallback(s []byte) rune {
 	}
 	return r
 }
-
 
 // String unescapes an escaped string (not including `"` at beginning and end)
 // It validates invalid UTF8 and replace with `\ufffd`

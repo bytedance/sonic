@@ -10,10 +10,10 @@ import (
 )
 
 type Context struct {
-	Parser      *Parser
-	efacePool   *efacePool
-	Stack       boundedStack
-	Utf8Inv     bool
+	Parser    *Parser
+	efacePool *efacePool
+	Stack     boundedStack
+	Utf8Inv   bool
 }
 
 func (ctx *Context) Options() uint64 {
@@ -23,8 +23,8 @@ func (ctx *Context) Options() uint64 {
 /************************* Stack and Pool Helper *******************/
 
 type parentStat struct {
-	con 	unsafe.Pointer
-	remain	uint64
+	con    unsafe.Pointer
+	remain uint64
 }
 type boundedStack struct {
 	stack []parentStat
@@ -33,13 +33,13 @@ type boundedStack struct {
 
 func newStack(size int) boundedStack {
 	return boundedStack{
-		stack: make([]parentStat, size + 2),
+		stack: make([]parentStat, size+2),
 		index: 0,
 	}
 }
 
 //go:nosplit
-func (s *boundedStack) Pop() (unsafe.Pointer, int, bool){
+func (s *boundedStack) Pop() (unsafe.Pointer, int, bool) {
 	s.index--
 	con := s.stack[s.index].con
 	remain := s.stack[s.index].remain &^ (uint64(1) << 63)
@@ -59,11 +59,11 @@ func (s *boundedStack) Push(p unsafe.Pointer, remain int, isObj bool) {
 	s.index++
 }
 
-type efacePool struct{
-	t64   		rt.T64Pool
-	tslice 		rt.TslicePool
-	tstring 	rt.TstringPool
-	efaceSlice  rt.SlicePool
+type efacePool struct {
+	t64        rt.T64Pool
+	tslice     rt.TslicePool
+	tstring    rt.TstringPool
+	efaceSlice rt.SlicePool
 }
 
 func newEfacePool(stat *jsonStat, useNumber bool) *efacePool {
@@ -76,9 +76,9 @@ func newEfacePool(stat *jsonStat, useNumber bool) *efacePool {
 	}
 
 	return &efacePool{
-		t64: rt.NewT64Pool(nums),
-		tslice: rt.NewTslicePool(int(stat.array)),
-		tstring: rt.NewTstringPool(strs),
+		t64:        rt.NewT64Pool(nums),
+		tslice:     rt.NewTslicePool(int(stat.array)),
+		tstring:    rt.NewTstringPool(strs),
 		efaceSlice: rt.NewPool(rt.AnyType, int(stat.array_elems)),
 	}
 }
@@ -92,7 +92,7 @@ func (self *efacePool) GetSlice(hint int) unsafe.Pointer {
 	return unsafe.Pointer(self.efaceSlice.GetSlice(hint))
 }
 
-func (self *efacePool) ConvTSlice(val rt.GoSlice, typ *rt.GoType,  dst unsafe.Pointer) {
+func (self *efacePool) ConvTSlice(val rt.GoSlice, typ *rt.GoType, dst unsafe.Pointer) {
 	self.tslice.Conv(val, typ, (*interface{})(dst))
 }
 
@@ -110,8 +110,8 @@ func (self *efacePool) ConvTnum(val json.Number, dst unsafe.Pointer) {
 
 /********************************************************/
 
-func canUseFastMap( opts uint64, root *rt.GoType) bool {
-	return envs.UseFastMap && (opts & (1 << _F_copy_string)) == 0 &&  (opts & (1 << _F_use_int64)) == 0  && (root == rt.AnyType || root == rt.MapEfaceType || root == rt.SliceEfaceType) 
+func canUseFastMap(opts uint64, root *rt.GoType) bool {
+	return envs.UseFastMap && (opts&(1<<_F_copy_string)) == 0 && (opts&(1<<_F_use_int64)) == 0 && (root == rt.AnyType || root == rt.MapEfaceType || root == rt.SliceEfaceType)
 }
 
 func NewContext(json string, pos int, opts uint64, root *rt.GoType) (Context, error) {
@@ -128,7 +128,7 @@ func NewContext(json string, pos int, opts uint64, root *rt.GoType) (Context, er
 		return ctx, ctx.Parser.fixError(ecode)
 	}
 
-	useNumber := (opts & (1 << _F_use_number )) != 0
+	useNumber := (opts & (1 << _F_use_number)) != 0
 	if canUseFastMap(opts, root) {
 		ctx.efacePool = newEfacePool(&ctx.Parser.nbuf.stat, useNumber)
 		ctx.Stack = newStack(int(ctx.Parser.nbuf.stat.max_depth))
@@ -173,7 +173,7 @@ func (obj Object) Len() int {
 }
 
 func (arr Array) Len() int {
-	carr :=  ptrCast(arr.cptr)
+	carr := ptrCast(arr.cptr)
 	return int(uint64(carr.val) & ConLenMask)
 }
 
@@ -210,7 +210,6 @@ func (iter *NodeIter) Next() Node {
 	return ret
 }
 
-
 func (iter *NodeIter) Peek() Node {
 	return NewNode(iter.next)
 }
@@ -230,7 +229,7 @@ func (val Node) IsNull() bool {
 }
 
 func (val Node) IsNumber() bool {
-	return val.Type() & KNumber != 0
+	return val.Type()&KNumber != 0
 }
 
 func (val Node) F64() float64 {
@@ -288,7 +287,7 @@ func (self Node) AsI64(ctx *Context) (int64, bool) {
 	typ := self.Type()
 	if typ == KUint && self.U64() <= math.MaxInt64 {
 		return int64(self.U64()), true
-	} else  if typ == KSint {
+	} else if typ == KSint {
 		return self.I64(), true
 	} else if typ == KRawNumber {
 		val, err := self.Number(ctx).Int64()
@@ -400,7 +399,6 @@ func (val Node) ParseString(ctx *Context) (string, bool) {
 	return s, true
 }
 
-
 func (val Node) ParseNumber(ctx *Context) (json.Number, bool) {
 	// should not use AsStrRef
 	s, ok := val.AsStr(ctx)
@@ -415,42 +413,50 @@ func (val Node) ParseNumber(ctx *Context) (json.Number, bool) {
 	end, ok := SkipNumberFast(s, 0)
 	// has error or trailing chars
 	if !ok || end != len(s) {
-		return json.Number(""),  false
+		return json.Number(""), false
 	}
 	return json.Number(s), true
 }
 
-
-
 func (val Node) AsF64(ctx *Context) (float64, bool) {
 	switch val.Type() {
-		case KUint: return float64(val.U64()), true
-		case KSint: return float64(val.I64()), true
-		case KReal: return float64(val.F64()), true
-		case KRawNumber: f, err := val.Number(ctx).Float64(); return f, err == nil
-		default: return 0, false
+	case KUint:
+		return float64(val.U64()), true
+	case KSint:
+		return float64(val.I64()), true
+	case KReal:
+		return float64(val.F64()), true
+	case KRawNumber:
+		f, err := val.Number(ctx).Float64()
+		return f, err == nil
+	default:
+		return 0, false
 	}
 }
 
 func (val Node) AsBool() (bool, bool) {
 	switch val.Type() {
-		case KTrue: return true, true
-		case KFalse: return false, true
-		default: return false, false
+	case KTrue:
+		return true, true
+	case KFalse:
+		return false, true
+	default:
+		return false, false
 	}
 }
 
 func (val Node) AsStr(ctx *Context) (string, bool) {
 	switch val.Type() {
-		case KStringCommon:
-			s := val.StringRef(ctx)
-			if (ctx.Options() & (1 << _F_copy_string) == 0) {
-				return s, true
-			}
-			return string(rt.Str2Mem(s)), true
-		case KStringEscaped:
-			return val.StringCopyEsc(ctx), true
-		default: return "", false
+	case KStringCommon:
+		s := val.StringRef(ctx)
+		if ctx.Options()&(1<<_F_copy_string) == 0 {
+			return s, true
+		}
+		return string(rt.Str2Mem(s)), true
+	case KStringEscaped:
+		return val.StringCopyEsc(ctx), true
+	default:
+		return "", false
 	}
 }
 
@@ -460,7 +466,7 @@ func (val Node) AsStrRef(ctx *Context) (string, bool) {
 		node := ptrCast(val.cptr)
 		offset := val.Position()
 		len := int(node.val)
-		return rt.Mem2Str(ctx.Parser.JsonBytes()[offset : offset + len]), true
+		return rt.Mem2Str(ctx.Parser.JsonBytes()[offset : offset+len]), true
 	case KStringCommon:
 		return val.StringRef(ctx), true
 	default:
@@ -551,10 +557,12 @@ func (val Node) AsRaw(ctx *Context) string {
 		// add start and end quote
 		ref := rt.Str2Mem(ctx.Parser.Json)[offset-1 : offset+len+1]
 		return rt.Mem2Str(ref)
-	case KRawNumber: fallthrough
-	case KRaw: return val.Raw(ctx)
+	case KRawNumber:
+		fallthrough
+	case KRaw:
+		return val.Raw(ctx)
 	case KStringEscaped:
-		raw, _ := SkipOneFast(ctx.Parser.Json, val.Position() - 1)
+		raw, _ := SkipOneFast(ctx.Parser.Json, val.Position()-1)
 		return raw
 	default:
 		raw, err := SkipOneFast(ctx.Parser.Json, val.Position())
@@ -581,7 +589,7 @@ func (val Node) StringCopyEsc(ctx *Context) string {
 	node := ptrCast(val.cptr)
 	len := int(node.val)
 	offset := val.Position()
-	return string(ctx.Parser.JsonBytes()[offset : offset + len])
+	return string(ctx.Parser.JsonBytes()[offset : offset+len])
 }
 
 func (val Node) Object() Object {
@@ -694,7 +702,7 @@ func (node *Node) AsSliceEface(ctx *Context, vp unsafe.Pointer) error {
 	size := arr.Len()
 	var s []interface{}
 	if size != 0 && ctx.efacePool != nil {
-		slice := rt.GoSlice {
+		slice := rt.GoSlice{
 			Ptr: ctx.efacePool.GetSlice(size),
 			Len: size,
 			Cap: size,
@@ -791,7 +799,7 @@ func (node *Node) AsSliceU32(ctx *Context, vp unsafe.Pointer) error {
 	for i := 0; i < size; i++ {
 		val := NewNode(next)
 		ret, ok := val.AsU64(ctx)
-		if !ok ||  ret > math.MaxUint32 {
+		if !ok || ret > math.MaxUint32 {
 			if gerr == nil {
 				gerr = newUnmatched(val.Position(), rt.Uint32Type)
 			}
@@ -871,7 +879,7 @@ func (val *Node) AsSliceBytes(ctx *Context) ([]byte, error) {
 		node := ptrCast(val.cptr)
 		offset := val.Position()
 		len := int(node.val)
-		origin = ctx.Parser.JsonBytes()[offset : offset + len]
+		origin = ctx.Parser.JsonBytes()[offset : offset+len]
 	case KStringCommon:
 		origin = rt.Str2Mem(val.StringRef(ctx))
 	case KArray:
@@ -890,9 +898,9 @@ func (val *Node) AsSliceBytes(ctx *Context) ([]byte, error) {
 		}
 		return a, gerr
 	default:
-		return nil,  newUnmatched(val.Position(), rt.BytesType)
+		return nil, newUnmatched(val.Position(), rt.BytesType)
 	}
-	
+
 	b64, err := rt.DecodeBase64(origin)
 	if err != nil {
 		return nil, newUnmatched(val.Position(), rt.BytesType)
@@ -915,18 +923,30 @@ func (node *Node) AsEface(ctx *Context) (interface{}, error) {
 func parseSingleNode(node Node, ctx *Context) interface{} {
 	var v interface{}
 	switch node.Type() {
-		case KObject: 			v = map[string]interface{}{}
-		case KArray: 			v = []interface{}{}
-		case KStringCommon: 	v = node.StringRef(ctx)
-		case KStringEscaped:	v = node.StringCopyEsc(ctx)
-		case KTrue:				v = true
-		case KFalse:			v = false
-		case KNull:				v = nil
-		case KUint:				v = float64(node.U64())
-		case KSint: 			v = float64(node.I64())
-		case KReal:				v = float64(node.F64())
-		case KRawNumber:		v = node.Number(ctx)
-		default:				panic("unreachable for as eface")
+	case KObject:
+		v = map[string]interface{}{}
+	case KArray:
+		v = []interface{}{}
+	case KStringCommon:
+		v = node.StringRef(ctx)
+	case KStringEscaped:
+		v = node.StringCopyEsc(ctx)
+	case KTrue:
+		v = true
+	case KFalse:
+		v = false
+	case KNull:
+		v = nil
+	case KUint:
+		v = float64(node.U64())
+	case KSint:
+		v = float64(node.I64())
+	case KReal:
+		v = float64(node.F64())
+	case KRawNumber:
+		v = node.Number(ctx)
+	default:
+		panic("unreachable for as eface")
 	}
 	return v
 }
@@ -952,7 +972,7 @@ func AsEfaceFast(iter *NodeIter, ctx *Context) interface{} {
 	node = iter.Next()
 
 	switch node.Type() {
-	case KObject: 
+	case KObject:
 		size = node.Object().Len()
 		if size != 0 {
 			ctx.Stack.Push(nil, 0, true)
@@ -961,8 +981,8 @@ func AsEfaceFast(iter *NodeIter, ctx *Context) interface{} {
 			isObj = true
 			goto _object_key
 		} else {
-			return rt.GoEface {
-				Type: rt.MapEfaceType,
+			return rt.GoEface{
+				Type:  rt.MapEfaceType,
 				Value: ctx.efacePool.GetMap(0),
 			}.Pack()
 		}
@@ -971,7 +991,7 @@ func AsEfaceFast(iter *NodeIter, ctx *Context) interface{} {
 		if size != 0 {
 			ctx.Stack.Push(nil, 0, false)
 			sp = ctx.efacePool.GetSlice(size)
-			slice = rt.GoSlice {
+			slice = rt.GoSlice{
 				Ptr: sp,
 				Len: size,
 				Cap: size,
@@ -979,26 +999,36 @@ func AsEfaceFast(iter *NodeIter, ctx *Context) interface{} {
 			rootS = slice
 			isObj = false
 			val = sp
-			goto _arr_val;
+			goto _arr_val
 		} else {
 			ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, unsafe.Pointer(&root))
 		}
-	case KStringCommon: 	ctx.efacePool.ConvTstring(node.StringRef(ctx), unsafe.Pointer(&root))
-	case KStringEscaped:	ctx.efacePool.ConvTstring(node.StringCopyEsc(ctx), unsafe.Pointer(&root))  
-	case KTrue:				root = true
-	case KFalse:			root = false
-	case KNull:				root = nil
-	case KUint:				ctx.efacePool.ConvF64(float64(node.U64()), unsafe.Pointer(&root))  
-	case KSint: 			ctx.efacePool.ConvF64(float64(node.I64()), unsafe.Pointer(&root))
-	case KReal:				ctx.efacePool.ConvF64(node.F64(), unsafe.Pointer(&root))
-	case KRawNumber:		ctx.efacePool.ConvTnum(node.Number(ctx), unsafe.Pointer(&root))
-	default:				panic("unreachable for as eface")
+	case KStringCommon:
+		ctx.efacePool.ConvTstring(node.StringRef(ctx), unsafe.Pointer(&root))
+	case KStringEscaped:
+		ctx.efacePool.ConvTstring(node.StringCopyEsc(ctx), unsafe.Pointer(&root))
+	case KTrue:
+		root = true
+	case KFalse:
+		root = false
+	case KNull:
+		root = nil
+	case KUint:
+		ctx.efacePool.ConvF64(float64(node.U64()), unsafe.Pointer(&root))
+	case KSint:
+		ctx.efacePool.ConvF64(float64(node.I64()), unsafe.Pointer(&root))
+	case KReal:
+		ctx.efacePool.ConvF64(node.F64(), unsafe.Pointer(&root))
+	case KRawNumber:
+		ctx.efacePool.ConvTnum(node.Number(ctx), unsafe.Pointer(&root))
+	default:
+		panic("unreachable for as eface")
 	}
 	return root
 
 _object_key:
 	node = iter.Next()
-	if  node.Type() ==  KStringCommon {
+	if node.Type() == KStringCommon {
 		key = node.StringRef(ctx)
 	} else {
 		key = node.StringCopyEsc(ctx)
@@ -1012,68 +1042,68 @@ _object_key:
 	// parse value node
 	node = iter.Next()
 	switch node.Type() {
-		case KObject:
-			newSize := node.Object().Len()
-			newMp := ctx.efacePool.GetMap(newSize)
-			*vt = rt.MapEfaceType
-			*vp = newMp
-			remain := size - 1
-			isObj = true
-			if newSize != 0 {
-				if remain > 0 {
-					ctx.Stack.Push(mp, remain, true)
-				}
-				mp = newMp
-				size = newSize
-				goto _object_key;
-			}
-		case KArray:
-			newSize := node.Array().Len()
-			if newSize == 0 {
-				ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, val)
-				break;
-			}
-
-			newSp := ctx.efacePool.GetSlice(newSize)
-			// pack to []interface{}
-			ctx.efacePool.ConvTSlice(rt.GoSlice{
-				Ptr: newSp,
-				Len: newSize,
-				Cap: newSize,
-			}, rt.SliceEfaceType, val)
-			remain := size - 1
+	case KObject:
+		newSize := node.Object().Len()
+		newMp := ctx.efacePool.GetMap(newSize)
+		*vt = rt.MapEfaceType
+		*vp = newMp
+		remain := size - 1
+		isObj = true
+		if newSize != 0 {
 			if remain > 0 {
 				ctx.Stack.Push(mp, remain, true)
 			}
-			val = newSp
-			isObj = false
+			mp = newMp
 			size = newSize
-			goto _arr_val;
-		case KStringCommon:
-			ctx.efacePool.ConvTstring(node.StringRef(ctx), val)
-		case KStringEscaped:
-			ctx.efacePool.ConvTstring(node.StringCopyEsc(ctx), val)
-		case KTrue:
-			rt.ConvTBool(true, (*interface{})(val))
-		case KFalse:
-			rt.ConvTBool(false, (*interface{})(val))
-		case KNull: /* skip */
-		case KUint:
-			ctx.efacePool.ConvF64(float64(node.U64()), val)
-		case KSint: 
-			ctx.efacePool.ConvF64(float64(node.I64()), val)
-		case KReal: 
-			ctx.efacePool.ConvF64(node.F64(), val)
-		case KRawNumber:
-			ctx.efacePool.ConvTnum(node.Number(ctx), val)
-		default: 
-			panic("unreachable for as eface")
+			goto _object_key
+		}
+	case KArray:
+		newSize := node.Array().Len()
+		if newSize == 0 {
+			ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, val)
+			break
+		}
+
+		newSp := ctx.efacePool.GetSlice(newSize)
+		// pack to []interface{}
+		ctx.efacePool.ConvTSlice(rt.GoSlice{
+			Ptr: newSp,
+			Len: newSize,
+			Cap: newSize,
+		}, rt.SliceEfaceType, val)
+		remain := size - 1
+		if remain > 0 {
+			ctx.Stack.Push(mp, remain, true)
+		}
+		val = newSp
+		isObj = false
+		size = newSize
+		goto _arr_val
+	case KStringCommon:
+		ctx.efacePool.ConvTstring(node.StringRef(ctx), val)
+	case KStringEscaped:
+		ctx.efacePool.ConvTstring(node.StringCopyEsc(ctx), val)
+	case KTrue:
+		rt.ConvTBool(true, (*interface{})(val))
+	case KFalse:
+		rt.ConvTBool(false, (*interface{})(val))
+	case KNull: /* skip */
+	case KUint:
+		ctx.efacePool.ConvF64(float64(node.U64()), val)
+	case KSint:
+		ctx.efacePool.ConvF64(float64(node.I64()), val)
+	case KReal:
+		ctx.efacePool.ConvF64(node.F64(), val)
+	case KRawNumber:
+		ctx.efacePool.ConvTnum(node.Number(ctx), val)
+	default:
+		panic("unreachable for as eface")
 	}
-	
-	// check size 
+
+	// check size
 	size -= 1
 	if size != 0 {
-		goto _object_key;
+		goto _object_key
 	}
 
 	parent, size, isObj = ctx.Stack.Pop()
@@ -1081,8 +1111,8 @@ _object_key:
 	// parent is empty
 	if parent == nil {
 		if isObj {
-			return rt.GoEface {
-				Type: rt.MapEfaceType,
+			return rt.GoEface{
+				Type:  rt.MapEfaceType,
 				Value: rootM,
 			}.Pack()
 		} else {
@@ -1094,10 +1124,10 @@ _object_key:
 	// continue to parse parent
 	if isObj {
 		mp = parent
-		goto _object_key;
+		goto _object_key
 	} else {
 		val = rt.PtrAdd(parent, rt.AnyType.Size)
-		goto _arr_val;
+		goto _arr_val
 	}
 
 _arr_val:
@@ -1108,81 +1138,81 @@ _arr_val:
 	// parse value node
 	node = iter.Next()
 	switch node.Type() {
-		case KObject:
-			newSize := node.Object().Len()
-			newMp := ctx.efacePool.GetMap(newSize)
-			*vt = rt.MapEfaceType
-			*vp = newMp
-			remain := size - 1
-			if newSize != 0 {
-				// push next array elem into stack
-				if remain > 0 {
-					ctx.Stack.Push(val, remain, false)
-				}
-				mp = newMp
-				size = newSize
-				isObj = true
-				goto _object_key;
-			}
-		case KArray:
-			newSize := node.Array().Len()
-			if newSize == 0 {
-				ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, val)
-				break;
-			}
-			
-			newSp := ctx.efacePool.GetSlice(newSize)
-			// pack to []interface{}
-			ctx.efacePool.ConvTSlice(rt.GoSlice {
-				Ptr: newSp,
-				Len: newSize,
-				Cap: newSize,
-			}, rt.SliceEfaceType, val)
-
-			remain := size - 1
+	case KObject:
+		newSize := node.Object().Len()
+		newMp := ctx.efacePool.GetMap(newSize)
+		*vt = rt.MapEfaceType
+		*vp = newMp
+		remain := size - 1
+		if newSize != 0 {
+			// push next array elem into stack
 			if remain > 0 {
 				ctx.Stack.Push(val, remain, false)
 			}
-
-			val = newSp
-			isObj = false
+			mp = newMp
 			size = newSize
-			goto _arr_val;
-		case KStringCommon:
-			ctx.efacePool.ConvTstring(node.StringRef(ctx), val)
-		case KStringEscaped:
-			ctx.efacePool.ConvTstring(node.StringCopyEsc(ctx), val)
-		case KTrue:
-			rt.ConvTBool(true, (*interface{})(val))
-		case KFalse:
-			rt.ConvTBool(false, (*interface{})(val))
-		case KNull: /* skip */
-		case KUint:
-			ctx.efacePool.ConvF64(float64(node.U64()), val)
-		case KSint: 
-			ctx.efacePool.ConvF64(float64(node.I64()), val)
-		case KReal: 
-			ctx.efacePool.ConvF64(node.F64(), val)
-		case KRawNumber:
-			ctx.efacePool.ConvTnum(node.Number(ctx), val)
-		default: panic("unreachable for as eface")
+			isObj = true
+			goto _object_key
+		}
+	case KArray:
+		newSize := node.Array().Len()
+		if newSize == 0 {
+			ctx.efacePool.ConvTSlice(rt.EmptySlice, rt.SliceEfaceType, val)
+			break
+		}
+
+		newSp := ctx.efacePool.GetSlice(newSize)
+		// pack to []interface{}
+		ctx.efacePool.ConvTSlice(rt.GoSlice{
+			Ptr: newSp,
+			Len: newSize,
+			Cap: newSize,
+		}, rt.SliceEfaceType, val)
+
+		remain := size - 1
+		if remain > 0 {
+			ctx.Stack.Push(val, remain, false)
+		}
+
+		val = newSp
+		isObj = false
+		size = newSize
+		goto _arr_val
+	case KStringCommon:
+		ctx.efacePool.ConvTstring(node.StringRef(ctx), val)
+	case KStringEscaped:
+		ctx.efacePool.ConvTstring(node.StringCopyEsc(ctx), val)
+	case KTrue:
+		rt.ConvTBool(true, (*interface{})(val))
+	case KFalse:
+		rt.ConvTBool(false, (*interface{})(val))
+	case KNull: /* skip */
+	case KUint:
+		ctx.efacePool.ConvF64(float64(node.U64()), val)
+	case KSint:
+		ctx.efacePool.ConvF64(float64(node.I64()), val)
+	case KReal:
+		ctx.efacePool.ConvF64(node.F64(), val)
+	case KRawNumber:
+		ctx.efacePool.ConvTnum(node.Number(ctx), val)
+	default:
+		panic("unreachable for as eface")
 	}
 
-	// check size 
+	// check size
 	size -= 1
 	if size != 0 {
 		val = rt.PtrAdd(val, rt.AnyType.Size)
-		goto _arr_val;
+		goto _arr_val
 	}
-
 
 	parent, size, isObj = ctx.Stack.Pop()
 
 	// parent is empty
 	if parent == nil {
 		if isObj {
-			return rt.GoEface {
-				Type: rt.MapEfaceType,
+			return rt.GoEface{
+				Type:  rt.MapEfaceType,
 				Value: rootM,
 			}.Pack()
 		} else {
@@ -1194,10 +1224,10 @@ _arr_val:
 	// continue to parse parent
 	if isObj {
 		mp = parent
-		goto _object_key;
+		goto _object_key
 	} else {
 		val = rt.PtrAdd(parent, rt.AnyType.Size)
-		goto _arr_val;
+		goto _arr_val
 	}
 }
 
@@ -1250,7 +1280,7 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 		return nil, nil
 	default:
 		// use float64
-		if ctx.Parser.options & (1 << _F_use_number) != 0 {
+		if ctx.Parser.options&(1<<_F_use_number) != 0 {
 			num, ok := node.AsNumber(ctx)
 			if !ok {
 				// skip the unmatched type
@@ -1260,7 +1290,7 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 				*node = NewNode(PtrOffset(node.cptr, 1))
 				return num, nil
 			}
-		} else if  ctx.Parser.options & (1 << _F_use_int64) != 0 {
+		} else if ctx.Parser.options&(1<<_F_use_int64) != 0 {
 			// first try int64
 			i, ok := node.AsI64(ctx)
 			if ok {
@@ -1274,7 +1304,7 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 				*node = NewNode(PtrOffset(node.cptr, 1))
 				return f, nil
 			}
-		
+
 			// skip the unmatched type
 			*node = NewNode(node.Next())
 			return nil, newUnmatched(node.Position(), rt.Int64Type)
@@ -1294,5 +1324,5 @@ func (node *Node) AsEfaceFallback(ctx *Context) (interface{}, error) {
 
 //go:nosplit
 func PtrOffset(ptr uintptr, off int64) uintptr {
-	return uintptr(int64(ptr) + off * int64(unsafe.Sizeof(node{})))
+	return uintptr(int64(ptr) + off*int64(unsafe.Sizeof(node{})))
 }

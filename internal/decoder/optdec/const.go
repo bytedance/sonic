@@ -39,13 +39,13 @@ const (
 	KArray  = 7 // xxxxx111
 
 	// SubType: 2 bits
-	KFalse            = (0 << 3) | KBool   // xxx00_010, 2
-	KTrue             = (1 << 3) | KBool   // xxx01_010, 10
-	KUint             = (0 << 3) | KNumber // xxx00_011, 3
-	KSint             = (1 << 3) | KNumber // xxx01_011, 11
-	KReal             = (2 << 3) | KNumber // xxx10_011, 19
-	KRawNumber        = (3 << 3) | KNumber // xxx11_011, 27
-	KStringCommon     = KString            // xxx00_100, 4
+	KFalse         = (0 << 3) | KBool   // xxx00_010, 2
+	KTrue          = (1 << 3) | KBool   // xxx01_010, 10
+	KUint          = (0 << 3) | KNumber // xxx00_011, 3
+	KSint          = (1 << 3) | KNumber // xxx01_011, 11
+	KReal          = (2 << 3) | KNumber // xxx10_011, 19
+	KRawNumber     = (3 << 3) | KNumber // xxx11_011, 27
+	KStringCommon  = KString            // xxx00_100, 4
 	KStringEscaped = (1 << 3) | KString // xxx01_100, 12
 )
 

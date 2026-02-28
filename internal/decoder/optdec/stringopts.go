@@ -22,7 +22,7 @@ func (d *ptrStrDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) erro
 
 	s, ok := node.AsStrRef(ctx)
 	if !ok {
-		return	error_mismatch(node, ctx, stringType)
+		return error_mismatch(node, ctx, stringType)
 	}
 
 	if s == "null" {
@@ -172,7 +172,7 @@ func parseU64(node Node, ctx *context) (uint64, error, bool) {
 	}
 
 	ret, err := ParseU64(s)
-	return 	ret, err, false
+	return ret, err, false
 }
 
 type u8StringDecoder struct{}
@@ -234,7 +234,6 @@ func (d *u32StringDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) e
 	*(*uint32)(vp) = uint32(ret)
 	return nil
 }
-
 
 type u64StringDecoder struct{}
 
