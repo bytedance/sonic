@@ -20,37 +20,37 @@
 package encoder
 
 import (
-    `runtime`
-    `sync`
-    `testing`
+	"runtime"
+	"sync"
+	"testing"
 
-	`github.com/bytedance/sonic/internal/encoder/vars`
+	"github.com/bytedance/sonic/internal/encoder/vars"
 )
 
 func TestGC(t *testing.T) {
-    if !vars.DebugAsyncGC {
-        return
-    }
-    out, err := Encode(_GenericValue, 0)
-    if err != nil {
-        t.Fatal(err)
-    }
-    n := len(out)
-    wg := &sync.WaitGroup{}
-    N := 10000
-    for i:=0; i<N; i++ {
-        wg.Add(1)
-        go func (wg *sync.WaitGroup, size int)  {
-            defer wg.Done()
-            out, err := Encode(_GenericValue, 0)
-            if err != nil {
-                t.Fatal(err)
-            }
-            if len(out) != size {
-                t.Fatal(len(out), size)
-            }
-            runtime.GC()
-        }(wg, n)
-    }
-    wg.Wait()
+	if !vars.DebugAsyncGC {
+		return
+	}
+	out, err := Encode(_GenericValue, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n := len(out)
+	wg := &sync.WaitGroup{}
+	N := 10000
+	for i := 0; i < N; i++ {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup, size int) {
+			defer wg.Done()
+			out, err := Encode(_GenericValue, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(out) != size {
+				t.Fatal(len(out), size)
+			}
+			runtime.GC()
+		}(wg, n)
+	}
+	wg.Wait()
 }

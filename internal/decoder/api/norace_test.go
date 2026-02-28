@@ -20,79 +20,79 @@
 package api
 
 import (
-    `runtime`
-    `testing`
-    `time`
-    `unsafe`
+	"runtime"
+	"testing"
+	"time"
+	"unsafe"
 
-    `github.com/bytedance/sonic/internal/rt`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 var referred = false
 
 func TestStringReferring(t *testing.T) {
-    str := []byte(`{"A":"0","B":"1"}`)
-    sp := *(**byte)(unsafe.Pointer(&str))
-    println("malloc *byte ", sp)
-    runtime.SetFinalizer(sp, func(sp *byte){
-        referred = false
-        println("*byte ", sp, " got free 1")
-    })
-    runtime.GC()
-    println("first GC")
-    var obj struct{
-        A string
-        B string
-    }
-    dc := NewDecoder(rt.Mem2Str(str))
-    dc.CopyString()
-    referred = true
-    if err := dc.Decode(&obj); err != nil {
-        t.Fatal(err)
-    }
-    runtime.GC()
-    println("second GC")
-    time.Sleep(time.Millisecond)
-    if referred {
-        t.Fatal("*byte is being referred")
-    }
+	str := []byte(`{"A":"0","B":"1"}`)
+	sp := *(**byte)(unsafe.Pointer(&str))
+	println("malloc *byte ", sp)
+	runtime.SetFinalizer(sp, func(sp *byte) {
+		referred = false
+		println("*byte ", sp, " got free 1")
+	})
+	runtime.GC()
+	println("first GC")
+	var obj struct {
+		A string
+		B string
+	}
+	dc := NewDecoder(rt.Mem2Str(str))
+	dc.CopyString()
+	referred = true
+	if err := dc.Decode(&obj); err != nil {
+		t.Fatal(err)
+	}
+	runtime.GC()
+	println("second GC")
+	time.Sleep(time.Millisecond)
+	if referred {
+		t.Fatal("*byte is being referred")
+	}
 
-    str2 := []byte(`{"A":"0","B":"1"}`)
-    sp2 := *(**byte)(unsafe.Pointer(&str2))
-    println("malloc *byte ", sp2)
-    runtime.SetFinalizer(sp2, func(sp *byte){
-        referred = false
-        println("*byte ", sp, " got free")
-    })
-    runtime.GC()
-    println("first GC")
-    var obj2 interface{}
-    dc2 := NewDecoder(rt.Mem2Str(str2))
-    dc2.UseNumber()
-    dc2.CopyString()
-    referred = true
-    if err := dc2.Decode(&obj2); err != nil {
-        t.Fatal(err)
-    }
-    runtime.GC()
-    println("second GC")
-    time.Sleep(time.Millisecond)
-    if referred {
-        t.Fatal("*byte is being referred")
-    }
-    
-    runtime.KeepAlive(&obj)
-    runtime.KeepAlive(&obj2)
+	str2 := []byte(`{"A":"0","B":"1"}`)
+	sp2 := *(**byte)(unsafe.Pointer(&str2))
+	println("malloc *byte ", sp2)
+	runtime.SetFinalizer(sp2, func(sp *byte) {
+		referred = false
+		println("*byte ", sp, " got free")
+	})
+	runtime.GC()
+	println("first GC")
+	var obj2 interface{}
+	dc2 := NewDecoder(rt.Mem2Str(str2))
+	dc2.UseNumber()
+	dc2.CopyString()
+	referred = true
+	if err := dc2.Decode(&obj2); err != nil {
+		t.Fatal(err)
+	}
+	runtime.GC()
+	println("second GC")
+	time.Sleep(time.Millisecond)
+	if referred {
+		t.Fatal("*byte is being referred")
+	}
+
+	runtime.KeepAlive(&obj)
+	runtime.KeepAlive(&obj2)
 }
 
 func TestDecoderErrorStackOverflower(t *testing.T) {
-    src := `{"a":[]}`
-    N := _MaxStack
-    for i:=0; i<N; i++ {
-        var obj map[string]string
-        err := NewDecoder(src).Decode(&obj)
-        if err == nil {
-            t.Fatal(err)
-        }
-    }
+	src := `{"a":[]}`
+	N := _MaxStack
+	for i := 0; i < N; i++ {
+		var obj map[string]string
+		err := NewDecoder(src).Decode(&obj)
+		if err == nil {
+			t.Fatal(err)
+		}
+	}
 }

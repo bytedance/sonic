@@ -39,8 +39,8 @@ func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars
 	}
 }
 
-var compiler func(*rt.GoType, ... interface{}) (interface{}, error)
+var compiler func(*rt.GoType, ...interface{}) (interface{}, error)
 
-func SetCompiler(c func(*rt.GoType, ... interface{}) (interface{}, error)) {
+func SetCompiler(c func(*rt.GoType, ...interface{}) (interface{}, error)) {
 	compiler = c
 }

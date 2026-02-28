@@ -27,23 +27,23 @@ import (
 )
 
 type StdField struct {
-    name        string
-    nameBytes   []byte
-    nameNonEsc  string
-    nameEscHTML string
-    tag         bool
-    index       []int
-    typ         reflect.Type
-    omitEmpty   bool
-    omitZero    bool
-    isZero      func(reflect.Value) bool
-    quoted      bool
+	name        string
+	nameBytes   []byte
+	nameNonEsc  string
+	nameEscHTML string
+	tag         bool
+	index       []int
+	typ         reflect.Type
+	omitEmpty   bool
+	omitZero    bool
+	isZero      func(reflect.Value) bool
+	quoted      bool
 }
 
 type StdStructFields struct {
-    list      []StdField
-    nameIndex map[string]*StdField
-    byFoldedName map[string]*StdField
+	list         []StdField
+	nameIndex    map[string]*StdField
+	byFoldedName map[string]*StdField
 }
 
 func typeFields(t reflect.Type) StdStructFields {
@@ -347,7 +347,6 @@ func dominantField(fields []StdField) (StdField, bool) {
 	}
 	return fields[0], true
 }
-
 
 // foldName returns a folded string such that foldName(x) == foldName(y)
 // is identical to bytes.EqualFold(x, y).

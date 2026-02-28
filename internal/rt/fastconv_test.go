@@ -15,8 +15,8 @@ func TestFastConvTSlice(t *testing.T) {
 	pool := NewTslicePool(POOL_SIZE)
 	typ := UnpackType(reflect.TypeOf([]string(nil)))
 
-	t.Run("Empty",  func(t *testing.T) {
-		buf := []string{ }
+	t.Run("Empty", func(t *testing.T) {
+		buf := []string{}
 
 		var got, exp interface{}
 		exp = interface{}(buf)
@@ -30,7 +30,7 @@ func TestFastConvTSlice(t *testing.T) {
 		spew.Dump(*((*GoEface)(unsafe.Pointer(&exp))))
 	})
 
-	t.Run("Nil",  func(t *testing.T) {
+	t.Run("Nil", func(t *testing.T) {
 		var buf []string
 		buf = nil
 
@@ -44,8 +44,8 @@ func TestFastConvTSlice(t *testing.T) {
 		spew.Dump(*((*GoEface)(unsafe.Pointer(&exp))))
 	})
 
-	t.Run("Normal",  func(t *testing.T) {
-		buf := []string{ "hello" }
+	t.Run("Normal", func(t *testing.T) {
+		buf := []string{"hello"}
 
 		var got, exp interface{}
 		exp = interface{}(buf)
@@ -59,7 +59,7 @@ func TestFastConvTSlice(t *testing.T) {
 func TestFastConvTString(t *testing.T) {
 	pool := NewTstringPool(POOL_SIZE)
 	t.Run("Empty", func(t *testing.T) {
-		s := "" 
+		s := ""
 		var got, exp interface{}
 		exp = interface{}(s)
 		pool.Conv(s, &got)
@@ -67,15 +67,13 @@ func TestFastConvTString(t *testing.T) {
 	})
 
 	t.Run("Normal", func(t *testing.T) {
-		s := "hello" 
+		s := "hello"
 		var got, exp interface{}
 		exp = interface{}(s)
 		pool.Conv(s, &got)
 		assert.Equal(t, exp, got)
 	})
 }
-
-
 
 func TestFastConvT64(t *testing.T) {
 	pool := NewT64Pool(POOL_SIZE)
@@ -114,7 +112,6 @@ func BenchmarkFastConvT64(b *testing.B) {
 		}
 	})
 
-
 	b.Run("Naive", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for j := 0; j < POOL_SIZE; j++ {
@@ -127,7 +124,6 @@ func BenchmarkFastConvT64(b *testing.B) {
 	assert.Equal(b, v1, v2)
 }
 
-
 func BenchmarkFastConvTString(b *testing.B) {
 	var v1, v2 interface{}
 	b.Run("Fast", func(b *testing.B) {
@@ -139,7 +135,6 @@ func BenchmarkFastConvTString(b *testing.B) {
 			}
 		}
 	})
-
 
 	b.Run("Naive", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
@@ -166,7 +161,6 @@ func BenchmarkFastConvTSlice(b *testing.B) {
 			}
 		}
 	})
-
 
 	b.Run("Naive", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

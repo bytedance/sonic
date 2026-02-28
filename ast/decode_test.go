@@ -30,7 +30,7 @@ func Test_DecodeString(t *testing.T) {
 		needEsc  bool
 		validStr bool
 	}
-	invalidstr := rt.Mem2Str([]byte{'"',193,255,'"'})
+	invalidstr := rt.Mem2Str([]byte{'"', 193, 255, '"'})
 	println(utf8.ValidString(invalidstr))
 
 	tests := []struct {

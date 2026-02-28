@@ -17,52 +17,51 @@
 package sonic
 
 import (
-    `testing`
+	"testing"
 
-    `github.com/stretchr/testify/require`
+	"github.com/stretchr/testify/require"
 )
 
 func TestValid(t *testing.T) {
-    require.False(t, Valid(nil))
+	require.False(t, Valid(nil))
 
-    testCase := []struct {
-        data     string
-        expected bool
-    }{
-        {``, false},
-        {`s`, false},
-        {`{`, false},
-        {`[`, false},
-        {`[1,2`, false},
-        {`{"so":nic"}`, false},
+	testCase := []struct {
+		data     string
+		expected bool
+	}{
+		{``, false},
+		{`s`, false},
+		{`{`, false},
+		{`[`, false},
+		{`[1,2`, false},
+		{`{"so":nic"}`, false},
 
-        {`null`, true},
-        {`""`, true},
-        {`1`, true},
-        {`"sonic"`, true},
-        {`{}`, true},
-        {`[]`, true},
-        {`[1,2]`, true},
-        {`{"so":"nic"}`, true},
-    }
-    for _, tc := range testCase {
-        require.Equal(t, tc.expected, Valid([]byte(tc.data)), tc.data)
-    }
+		{`null`, true},
+		{`""`, true},
+		{`1`, true},
+		{`"sonic"`, true},
+		{`{}`, true},
+		{`[]`, true},
+		{`[1,2]`, true},
+		{`{"so":"nic"}`, true},
+	}
+	for _, tc := range testCase {
+		require.Equal(t, tc.expected, Valid([]byte(tc.data)), tc.data)
+	}
 }
 
-
 func TestIdent(t *testing.T) {
-    foo := struct {
-        Name string
-        Age  int
-    }{
-        Name: "sonic",
-        Age:  20,
-    }
+	foo := struct {
+		Name string
+		Age  int
+	}{
+		Name: "sonic",
+		Age:  20,
+	}
 
-    out, err := MarshalIndent(&foo, "", "  ")
-    require.Nil(t, err)
-    require.Equal(t, `{
+	out, err := MarshalIndent(&foo, "", "  ")
+	require.Nil(t, err)
+	require.Equal(t, `{
   "Name": "sonic",
   "Age": 20
 }`, string(out))

@@ -1,3 +1,4 @@
+//go:build go1.16 && !go1.20
 // +build go1.16,!go1.20
 
 /*
@@ -19,7 +20,7 @@
 package rt
 
 import (
-    _ `unsafe`
+	_ "unsafe"
 )
 
 //go:linkname GrowSlice runtime.growslice

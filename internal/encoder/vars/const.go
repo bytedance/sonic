@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	MaxStack = 4096 // 4k states
-	StackSize = unsafe.Sizeof(Stack{})
+	MaxStack   = 4096 // 4k states
+	StackSize  = unsafe.Sizeof(Stack{})
 	StateSize  = int64(unsafe.Sizeof(State{}))
 	StackLimit = MaxStack * StateSize
 )

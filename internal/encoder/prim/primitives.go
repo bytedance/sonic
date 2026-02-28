@@ -101,5 +101,5 @@ func IsZero(val unsafe.Pointer, fv *resolver.FieldMeta) bool {
 	rv := reflect.NewAt(fv.Type, val).Elem()
 	b1 := fv.IsZero == nil && rv.IsZero()
 	b2 := fv.IsZero != nil && fv.IsZero(rv)
-	return  b1 || b2
+	return b1 || b2
 }

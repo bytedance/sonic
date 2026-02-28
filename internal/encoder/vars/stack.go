@@ -39,8 +39,8 @@ type Stack struct {
 }
 
 var (
-	bytesPool    = sync.Pool{}
-	stackPool    = sync.Pool{
+	bytesPool = sync.Pool{}
+	stackPool = sync.Pool{
 		New: func() interface{} {
 			return &Stack{}
 		},
@@ -63,7 +63,7 @@ func NewBytes() *[]byte {
 }
 
 func NewStack() *Stack {
-	ret :=  stackPool.Get().(*Stack)
+	ret := stackPool.Get().(*Stack)
 	ret.sp = 0
 	return ret
 }
@@ -77,7 +77,7 @@ func (s *Stack) Top() *State {
 }
 
 func (s *Stack) Cur() *State {
-	return (*State)(rt.Add(unsafe.Pointer(&s.sb[0]), s.sp - uintptr(StateSize)))
+	return (*State)(rt.Add(unsafe.Pointer(&s.sb[0]), s.sp-uintptr(StateSize)))
 }
 
 const _MaxStackSP = uintptr(MaxStack * StateSize)
@@ -106,7 +106,7 @@ func (s *Stack) Load() (int, uint64, unsafe.Pointer, unsafe.Pointer) {
 }
 
 func (s *Stack) Save(x int, f uint64, p unsafe.Pointer, q unsafe.Pointer) bool {
-	return s.Push(State{x: x, f:f, p: p, q: q})
+	return s.Push(State{x: x, f: f, p: p, q: q})
 }
 
 func (s *Stack) Drop() (int, uint64, unsafe.Pointer, unsafe.Pointer) {
@@ -144,7 +144,7 @@ func FreeBuffer(p *bytes.Buffer) {
 var (
 	ArgPtrs   = []bool{true, true, true, false}
 	LocalPtrs = []bool{}
-	
-    ArgPtrs_generic   = []bool{true}
-    LocalPtrs_generic = []bool{}
+
+	ArgPtrs_generic   = []bool{true}
+	LocalPtrs_generic = []bool{}
 )
