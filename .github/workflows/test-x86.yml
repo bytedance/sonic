@@ -5,6 +5,10 @@ on: pull_request
 
 jobs:
   build:
+    permissions:
+      contents: read
+      id-token: write
+
     strategy:
       matrix:
         go-version: [1.18.x, 1.21.x, 1.25.x]
@@ -33,7 +37,7 @@ jobs:
 
       - name: Unit Test JIT
         run: |
-          GOMAXPROCS=4 go test -race -covermode=atomic -coverprofile=coverage.txt ./...
+          GOMAXPROCS=4 go test -race -covermode=atomic -coverprofile=coverage-jit.txt ./...
 
       - name: Unit Test JIT PCSP
         run: |
@@ -41,12 +45,12 @@ jobs:
 
       - name: Unit Test VM
         run: |
-          SONIC_USE_OPTDEC=1 SONIC_USE_FASTMAP=1 SONIC_ENCODER_USE_VM=1  GOMAXPROCS=4 go test -race -covermode=atomic -coverprofile=coverage.txt ./...
+          SONIC_USE_OPTDEC=1 SONIC_USE_FASTMAP=1 SONIC_ENCODER_USE_VM=1  GOMAXPROCS=4 go test -race -covermode=atomic -coverprofile=coverage-vm.txt ./...
     
       - name: Loader Test
         run: |
           cd ./loader
-          go test -race ./...
+          go test -race ./...  
   
       - name: Data Race
         run: |
@@ -67,4 +71,9 @@ jobs:
         run: GOMAXPROCS=4 SONIC_USE_OPTDEC=1 SONIC_USE_FASTMAP=1 SONIC_ENCODER_USE_VM=1 go test -v -race ./generic_test
 
       - name: Codecov
-        run: bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: ./coverage-jit.txt,./coverage-vm.txt
+          flags: x86,${{ matrix.runner_arch }}
+          fail_ci_if_error: false

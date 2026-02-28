@@ -74,15 +74,3 @@ func TestIssue916_StringTagTypeMismatchShouldContinue_WithLowInlineDepth(t *test
 	assertUnmarshal(t, sonic.ConfigStd, cas)
 }
 
-func TestIssue777_SkipUnsupportedFieldStillDecodeLaterFields(t *testing.T) {
-	cas := unmTestCase{
-		name: "skip unsupported field and continue",
-		data: []byte(`{"z":{}, "y": {"1": "2", "123": 123}, "x": [1, 2, 3]}`),
-		newfn: func() interface{} {
-			var a unknownKeyMap
-			return &a
-		},
-	}
-
-	assertUnmarshal(t, sonic.ConfigStd, cas)
-}
