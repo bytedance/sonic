@@ -56,71 +56,70 @@ func TestGC_Search(t *testing.T) {
 	wg.Wait()
 }
 
-
 func TestNodeRace(t *testing.T) {
 
-    src := `{"1":1,"2": [ 1 , 1 , { "3" : 1 , "4" : [] } ] }`
-    s := NewSearcher(src)
-    s.ConcurrentRead = true
-    node, _ := s.GetByPath()
+	src := `{"1":1,"2": [ 1 , 1 , { "3" : 1 , "4" : [] } ] }`
+	s := NewSearcher(src)
+	s.ConcurrentRead = true
+	node, _ := s.GetByPath()
 
-    cases := []struct{
-        path []interface{}
-        exp []string
-        scalar bool
-        lv int
-    }{
-        {[]interface{}{"1"}, []string{`1`}, true, 0},
-        {[]interface{}{"2"}, []string{`[ 1 , 1 , { "3" : 1 , "4" : [] } ]`, `[1,1,{ "3" : 1 , "4" : [] }]`, `[1,1,{"3":1,"4":[]}]`}, false, 3},
-        {[]interface{}{"2", 1}, []string{`1`}, true, 1},
-        {[]interface{}{"2", 2}, []string{`{ "3" : 1 , "4" : [] }`, `{"3":1,"4":[]}`}, false, 2},
-        {[]interface{}{"2", 2, "3"}, []string{`1`}, true, 0},
-        {[]interface{}{"2", 2, "4"}, []string{`[]`}, false, 0},
-    }
+	cases := []struct {
+		path   []interface{}
+		exp    []string
+		scalar bool
+		lv     int
+	}{
+		{[]interface{}{"1"}, []string{`1`}, true, 0},
+		{[]interface{}{"2"}, []string{`[ 1 , 1 , { "3" : 1 , "4" : [] } ]`, `[1,1,{ "3" : 1 , "4" : [] }]`, `[1,1,{"3":1,"4":[]}]`}, false, 3},
+		{[]interface{}{"2", 1}, []string{`1`}, true, 1},
+		{[]interface{}{"2", 2}, []string{`{ "3" : 1 , "4" : [] }`, `{"3":1,"4":[]}`}, false, 2},
+		{[]interface{}{"2", 2, "3"}, []string{`1`}, true, 0},
+		{[]interface{}{"2", 2, "4"}, []string{`[]`}, false, 0},
+	}
 
-    wg := sync.WaitGroup{}
-    start := sync.RWMutex{}
-    start.Lock()
+	wg := sync.WaitGroup{}
+	start := sync.RWMutex{}
+	start.Lock()
 
-    P := 100
-    for i := range cases {
-        // println(i)
-        c := cases[i]
-        for j := 0; j < P; j++ {
-            wg.Add(1)
-            go func ()  {
-                defer wg.Done()
-                start.RLock()
-                n := node.GetByPath(c.path...)
-                _ = n.TypeSafe()
-                _ = n.isAny()
-                v, err := n.Raw()
-                iv, _ := n.Int64()
-                lv, _ := n.Len()
-                _, e := n.Interface()
+	P := 100
+	for i := range cases {
+		// println(i)
+		c := cases[i]
+		for j := 0; j < P; j++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				start.RLock()
+				n := node.GetByPath(c.path...)
+				_ = n.TypeSafe()
+				_ = n.isAny()
+				v, err := n.Raw()
+				iv, _ := n.Int64()
+				lv, _ := n.Len()
+				_, e := n.Interface()
 				e2 := n.SortKeys(false)
-                require.NoError(t, err)
-                require.NoError(t, e)
-                require.NoError(t, e2)
-                if c.scalar {
-                    require.Equal(t, int64(1), iv)
-                } else {
-                    require.Equal(t, c.lv, lv)
-                }
-                eq := false
-                for _, exp := range c.exp {
-                    if exp == v {
-                        eq = true
-                        break
-                    }
-                }
-                require.True(t, eq)
-            }()
-        }
-    }
+				require.NoError(t, err)
+				require.NoError(t, e)
+				require.NoError(t, e2)
+				if c.scalar {
+					require.Equal(t, int64(1), iv)
+				} else {
+					require.Equal(t, c.lv, lv)
+				}
+				eq := false
+				for _, exp := range c.exp {
+					if exp == v {
+						eq = true
+						break
+					}
+				}
+				require.True(t, eq)
+			}()
+		}
+	}
 
-    start.Unlock()
-    wg.Wait()
+	start.Unlock()
+	wg.Wait()
 }
 
 func TestExportErrorInvalidChar(t *testing.T) {
@@ -264,7 +263,7 @@ func TestSearch_LoadRawNumber(t *testing.T) {
 	1,
 	2.34
 	]`)
-	
+
 	node, err := s.getByPath(1)
 	require.NoError(t, err)
 	raw, err := node.Raw()

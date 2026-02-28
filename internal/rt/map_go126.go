@@ -8,8 +8,8 @@ import (
 )
 
 type GoMapIterator struct {
-	K     unsafe.Pointer
-	V     unsafe.Pointer
-	T     *GoMapType
-	It    unsafe.Pointer
+	K  unsafe.Pointer
+	V  unsafe.Pointer
+	T  *GoMapType
+	It unsafe.Pointer
 }

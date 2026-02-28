@@ -1,7 +1,6 @@
 //go:build (amd64 && go1.17 && !go1.27) || (arm64 && go1.20 && !go1.27)
 // +build amd64,go1.17,!go1.27 arm64,go1.20,!go1.27
 
-
 /*
 * Copyright 2023 ByteDance Inc.
 *
@@ -16,12 +15,12 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package decoder
 
 import (
-    `github.com/bytedance/sonic/internal/decoder/api`
+	"github.com/bytedance/sonic/internal/decoder/api"
 )
 
 // Decoder is the decoder context object
@@ -37,36 +36,36 @@ type MismatchTypeError = api.MismatchTypeError
 type Options = api.Options
 
 const (
-    OptionUseInt64         Options = api.OptionUseInt64
-    OptionUseNumber        Options = api.OptionUseNumber
-    OptionUseUnicodeErrors Options = api.OptionUseUnicodeErrors
-    OptionDisableUnknown   Options = api.OptionDisableUnknown
-    OptionCopyString       Options = api.OptionCopyString
-    OptionValidateString   Options = api.OptionValidateString
-    OptionNoValidateJSON   Options = api.OptionNoValidateJSON
-    OptionCaseSensitive    Options = api.OptionCaseSensitive
+	OptionUseInt64         Options = api.OptionUseInt64
+	OptionUseNumber        Options = api.OptionUseNumber
+	OptionUseUnicodeErrors Options = api.OptionUseUnicodeErrors
+	OptionDisableUnknown   Options = api.OptionDisableUnknown
+	OptionCopyString       Options = api.OptionCopyString
+	OptionValidateString   Options = api.OptionValidateString
+	OptionNoValidateJSON   Options = api.OptionNoValidateJSON
+	OptionCaseSensitive    Options = api.OptionCaseSensitive
 )
 
 // StreamDecoder is the decoder context object for streaming input.
 type StreamDecoder = api.StreamDecoder
 
 var (
-    // NewDecoder creates a new decoder instance.
-    NewDecoder = api.NewDecoder
+	// NewDecoder creates a new decoder instance.
+	NewDecoder = api.NewDecoder
 
-    // NewStreamDecoder adapts to encoding/json.NewDecoder API.
-    //
-    // NewStreamDecoder returns a new decoder that reads from r.
-    NewStreamDecoder = api.NewStreamDecoder
+	// NewStreamDecoder adapts to encoding/json.NewDecoder API.
+	//
+	// NewStreamDecoder returns a new decoder that reads from r.
+	NewStreamDecoder = api.NewStreamDecoder
 
-    // Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
-    // order to reduce the first-hit latency.
-    //
-    // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
-    // a compile option to set the depth of recursive compile for the nested struct type.
-    Pretouch = api.Pretouch
-    
-    // Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
-    // Otherwise, returns negative error code using start and invalid character position using end
-    Skip = api.Skip
+	// Pretouch compiles vt ahead-of-time to avoid JIT compilation on-the-fly, in
+	// order to reduce the first-hit latency.
+	//
+	// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+	// a compile option to set the depth of recursive compile for the nested struct type.
+	Pretouch = api.Pretouch
+
+	// Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
+	// Otherwise, returns negative error code using start and invalid character position using end
+	Skip = api.Skip
 )

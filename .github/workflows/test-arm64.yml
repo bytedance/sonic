@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.20.x, 1.22.x, 1.25.x]
-        runner_arch: [ubuntu-24.04-arm]
+        runner_arch: [ubuntu-24.04-arm, macos-latest]
 
     runs-on: ${{ matrix.runner_arch }}
     

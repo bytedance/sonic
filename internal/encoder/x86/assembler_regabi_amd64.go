@@ -84,9 +84,9 @@ const (
 
 const (
 	_FP_loffs = _FP_fargs + _FP_saves
-	FP_offs  = _FP_loffs + _FP_locals
+	FP_offs   = _FP_loffs + _FP_locals
 	// _FP_offs  = _FP_loffs + _FP_locals + _FP_debug
-	_FP_size = FP_offs + 8 // 8 bytes for the parent frame pointer
+	_FP_size = FP_offs + 8  // 8 bytes for the parent frame pointer
 	_FP_base = _FP_size + 8 // 8 bytes for the return address
 )
 
@@ -186,8 +186,8 @@ var (
 type Assembler struct {
 	Name string
 	jit.BaseAssembler
-	p    ir.Program
-	x    int
+	p ir.Program
+	x int
 }
 
 func NewAssembler(p ir.Program) *Assembler {
@@ -299,32 +299,32 @@ func (self *Assembler) epilogue() {
 	self.Emit("XORL", _ET, _ET)
 	self.Emit("XORL", _EP, _EP)
 	self.Link(_LB_error)
-	self.Emit("MOVQ", _ARG_rb, _CX)                // MOVQ rb<>+0(FP), CX
-	self.Emit("MOVQ", _RL, jit.Ptr(_CX, 8))        // MOVQ RL, 8(CX)
-	self.Emit("MOVQ", jit.Imm(0), _ARG_rb)         // MOVQ AX, rb<>+0(FP)
-	self.Emit("MOVQ", jit.Imm(0), _ARG_vp)         // MOVQ BX, vp<>+8(FP)
-	self.Emit("MOVQ", jit.Imm(0), _ARG_sb)         // MOVQ CX, sb<>+16(FP)
+	self.Emit("MOVQ", _ARG_rb, _CX)               // MOVQ rb<>+0(FP), CX
+	self.Emit("MOVQ", _RL, jit.Ptr(_CX, 8))       // MOVQ RL, 8(CX)
+	self.Emit("MOVQ", jit.Imm(0), _ARG_rb)        // MOVQ AX, rb<>+0(FP)
+	self.Emit("MOVQ", jit.Imm(0), _ARG_vp)        // MOVQ BX, vp<>+8(FP)
+	self.Emit("MOVQ", jit.Imm(0), _ARG_sb)        // MOVQ CX, sb<>+16(FP)
 	self.Emit("MOVQ", jit.Ptr(_SP, FP_offs), _BP) // MOVQ _FP_offs(SP), BP
-	self.Emit("ADDQ", jit.Imm(_FP_size), _SP)      // ADDQ $_FP_size, SP
-	self.Emit("RET")                               // RET
+	self.Emit("ADDQ", jit.Imm(_FP_size), _SP)     // ADDQ $_FP_size, SP
+	self.Emit("RET")                              // RET
 }
 
 func (self *Assembler) prologue() {
-	self.Emit("SUBQ", jit.Imm(_FP_size), _SP)      // SUBQ $_FP_size, SP
+	self.Emit("SUBQ", jit.Imm(_FP_size), _SP)     // SUBQ $_FP_size, SP
 	self.Emit("MOVQ", _BP, jit.Ptr(_SP, FP_offs)) // MOVQ BP, _FP_offs(SP)
 	self.Emit("LEAQ", jit.Ptr(_SP, FP_offs), _BP) // LEAQ _FP_offs(SP), BP
-	self.Emit("MOVQ", _AX, _ARG_rb)                // MOVQ AX, rb<>+0(FP)
-	self.Emit("MOVQ", _BX, _ARG_vp)                // MOVQ BX, vp<>+8(FP)
-	self.Emit("MOVQ", _CX, _ARG_sb)                // MOVQ CX, sb<>+16(FP)
-	self.Emit("MOVQ", _DI, _ARG_fv)                // MOVQ DI, rb<>+24(FP)
-	self.Emit("MOVQ", jit.Ptr(_AX, 0), _RP)        // MOVQ (AX)  , DI
-	self.Emit("MOVQ", jit.Ptr(_AX, 8), _RL)        // MOVQ 8(AX) , SI
-	self.Emit("MOVQ", jit.Ptr(_AX, 16), _RC)       // MOVQ 16(AX), DX
-	self.Emit("MOVQ", _BX, _SP_p)                  // MOVQ BX, R10
-	self.Emit("MOVQ", _CX, _ST)                    // MOVQ CX, R8
-	self.Emit("XORL", _SP_x, _SP_x)                // XORL R10, R12
-	self.Emit("XORL", _SP_f, _SP_f)                // XORL R11, R13
-	self.Emit("XORL", _SP_q, _SP_q)                // XORL R13, R11
+	self.Emit("MOVQ", _AX, _ARG_rb)               // MOVQ AX, rb<>+0(FP)
+	self.Emit("MOVQ", _BX, _ARG_vp)               // MOVQ BX, vp<>+8(FP)
+	self.Emit("MOVQ", _CX, _ARG_sb)               // MOVQ CX, sb<>+16(FP)
+	self.Emit("MOVQ", _DI, _ARG_fv)               // MOVQ DI, rb<>+24(FP)
+	self.Emit("MOVQ", jit.Ptr(_AX, 0), _RP)       // MOVQ (AX)  , DI
+	self.Emit("MOVQ", jit.Ptr(_AX, 8), _RL)       // MOVQ 8(AX) , SI
+	self.Emit("MOVQ", jit.Ptr(_AX, 16), _RC)      // MOVQ 16(AX), DX
+	self.Emit("MOVQ", _BX, _SP_p)                 // MOVQ BX, R10
+	self.Emit("MOVQ", _CX, _ST)                   // MOVQ CX, R8
+	self.Emit("XORL", _SP_x, _SP_x)               // XORL R10, R12
+	self.Emit("XORL", _SP_f, _SP_f)               // XORL R11, R13
+	self.Emit("XORL", _SP_q, _SP_q)               // XORL R13, R11
 }
 
 /** Assembler Inline Functions **/
@@ -429,18 +429,16 @@ func (self *Assembler) slice_grow_ax(ret string) {
 
 /** State Stack Helpers **/
 
-
-
 func (self *Assembler) save_state() {
-	self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)            // MOVQ (ST), CX
-	self.Emit("LEAQ", jit.Ptr(_CX, vars.StateSize), _R9)   // LEAQ vars.StateSize(CX), R9
-	self.Emit("CMPQ", _R9, jit.Imm(vars.StackLimit))       // CMPQ R9, $vars.StackLimit
-	self.Sjmp("JAE", _LB_error_too_deep)               // JA   _error_too_deep
-	self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _CX, 1, 8))  // MOVQ SP.x, 8(ST)(CX)
-	self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16)) // MOVQ SP.f, 16(ST)(CX)
-	self.WritePtr(0, _SP_p, jit.Sib(_ST, _CX, 1, 24))  // MOVQ SP.p, 24(ST)(CX)
-	self.WritePtr(1, _SP_q, jit.Sib(_ST, _CX, 1, 32))  // MOVQ SP.q, 32(ST)(CX)
-	self.Emit("MOVQ", _R9, jit.Ptr(_ST, 0))            // MOVQ R9, (ST)
+	self.Emit("MOVQ", jit.Ptr(_ST, 0), _CX)              // MOVQ (ST), CX
+	self.Emit("LEAQ", jit.Ptr(_CX, vars.StateSize), _R9) // LEAQ vars.StateSize(CX), R9
+	self.Emit("CMPQ", _R9, jit.Imm(vars.StackLimit))     // CMPQ R9, $vars.StackLimit
+	self.Sjmp("JAE", _LB_error_too_deep)                 // JA   _error_too_deep
+	self.Emit("MOVQ", _SP_x, jit.Sib(_ST, _CX, 1, 8))    // MOVQ SP.x, 8(ST)(CX)
+	self.Emit("MOVQ", _SP_f, jit.Sib(_ST, _CX, 1, 16))   // MOVQ SP.f, 16(ST)(CX)
+	self.WritePtr(0, _SP_p, jit.Sib(_ST, _CX, 1, 24))    // MOVQ SP.p, 24(ST)(CX)
+	self.WritePtr(1, _SP_q, jit.Sib(_ST, _CX, 1, 32))    // MOVQ SP.q, 32(ST)(CX)
+	self.Emit("MOVQ", _R9, jit.Ptr(_ST, 0))              // MOVQ R9, (ST)
 }
 
 func (self *Assembler) drop_state(decr int64) {
@@ -754,8 +752,6 @@ func (self *Assembler) encode_string(doubleQuote bool) {
 
 /** OpCode Assembler Functions **/
 
-
-
 var (
 	_F_f64toa    = jit.Imm(int64(native.S_f64toa))
 	_F_f32toa    = jit.Imm(int64(native.S_f32toa))
@@ -789,7 +785,7 @@ const (
 func init() {
 	_F_encodeJsonMarshaler = jit.Func(prim.EncodeJsonMarshaler)
 	_F_encodeTextMarshaler = jit.Func(prim.EncodeTextMarshaler)
-	_F_encodeTypedPointer  = jit.Func(EncodeTypedPointer)
+	_F_encodeTypedPointer = jit.Func(EncodeTypedPointer)
 }
 
 func (self *Assembler) _asm_OP_null(_ *ir.Instr) {
@@ -871,14 +867,14 @@ func (self *Assembler) _asm_OP_u64(_ *ir.Instr) {
 
 func (self *Assembler) _asm_OP_f32(_ *ir.Instr) {
 	self.check_size(32)
-	self.Emit("MOVL", jit.Ptr(_SP_p, 0), _AX)  // MOVL     (SP.p), AX
-	self.Emit("ANDL", jit.Imm(_FM_exp32), _AX) // ANDL     $_FM_exp32, AX
-	self.Emit("XORL", jit.Imm(_FM_exp32), _AX) // XORL     $_FM_exp32, AX
-	self.Sjmp("JNZ",  "_encode_normal_f32_{n}")// JNZ      _encode_normal_f32_{n}
+	self.Emit("MOVL", jit.Ptr(_SP_p, 0), _AX)                        // MOVL     (SP.p), AX
+	self.Emit("ANDL", jit.Imm(_FM_exp32), _AX)                       // ANDL     $_FM_exp32, AX
+	self.Emit("XORL", jit.Imm(_FM_exp32), _AX)                       // XORL     $_FM_exp32, AX
+	self.Sjmp("JNZ", "_encode_normal_f32_{n}")                       // JNZ      _encode_normal_f32_{n}
 	self.Emit("BTQ", jit.Imm(alg.BitEncodeNullForInfOrNan), _ARG_fv) // BTQ ${BitEncodeNullForInfOrNan}, fv
-	self.Sjmp("JNC", _LB_error_nan_or_infinite) // JNC     _error_nan_or_infinite
+	self.Sjmp("JNC", _LB_error_nan_or_infinite)                      // JNC     _error_nan_or_infinite
 	self._asm_OP_null(nil)
-	self.Sjmp("JMP", "_encode_f32_end_{n}")    // JMP      _encode_f32_end_{n}
+	self.Sjmp("JMP", "_encode_f32_end_{n}") // JMP      _encode_f32_end_{n}
 	self.Link("_encode_normal_f32_{n}")
 	self.save_c()                              // SAVE     $C_regs
 	self.rbuf_di()                             // MOVQ     RP, DI
@@ -890,15 +886,15 @@ func (self *Assembler) _asm_OP_f32(_ *ir.Instr) {
 
 func (self *Assembler) _asm_OP_f64(_ *ir.Instr) {
 	self.check_size(32)
-	self.Emit("MOVQ", jit.Ptr(_SP_p, 0), _AX)  // MOVQ   (SP.p), AX
-	self.Emit("MOVQ", jit.Imm(_FM_exp64), _CX) // MOVQ   $_FM_exp64, CX
-	self.Emit("ANDQ", _CX, _AX)                // ANDQ   CX, AX
-	self.Emit("XORQ", _CX, _AX)                // XORQ   CX, AX
-	self.Sjmp("JNZ",  "_encode_normal_f64_{n}")// JNZ    _encode_normal_f64_{n}
+	self.Emit("MOVQ", jit.Ptr(_SP_p, 0), _AX)                        // MOVQ   (SP.p), AX
+	self.Emit("MOVQ", jit.Imm(_FM_exp64), _CX)                       // MOVQ   $_FM_exp64, CX
+	self.Emit("ANDQ", _CX, _AX)                                      // ANDQ   CX, AX
+	self.Emit("XORQ", _CX, _AX)                                      // XORQ   CX, AX
+	self.Sjmp("JNZ", "_encode_normal_f64_{n}")                       // JNZ    _encode_normal_f64_{n}
 	self.Emit("BTQ", jit.Imm(alg.BitEncodeNullForInfOrNan), _ARG_fv) // BTQ ${BitEncodeNullForInfOrNan}, fv
-	self.Sjmp("JNC", _LB_error_nan_or_infinite)// JNC    _error_nan_or_infinite
+	self.Sjmp("JNC", _LB_error_nan_or_infinite)                      // JNC    _error_nan_or_infinite
 	self._asm_OP_null(nil)
-	self.Sjmp("JMP", "_encode_f64_end_{n}")    // JMP    _encode_f64_end_{n}
+	self.Sjmp("JMP", "_encode_f64_end_{n}") // JMP    _encode_f64_end_{n}
 	self.Link("_encode_normal_f64_{n}")
 	self.save_c()                              // SAVE   $C_regs
 	self.rbuf_di()                             // MOVQ   RP, DI
@@ -1034,7 +1030,7 @@ func (self *Assembler) _asm_OP_drop(_ *ir.Instr) {
 }
 
 func (self *Assembler) _asm_OP_drop_2(_ *ir.Instr) {
-	self.drop_state(vars.StateSize * 2)                   // DROP  $(vars.StateSize * 2)
+	self.drop_state(vars.StateSize * 2)               // DROP  $(vars.StateSize * 2)
 	self.Emit("MOVOU", _X0, jit.Sib(_ST, _AX, 1, 56)) // MOVOU X0, 56(ST)(AX)
 }
 
@@ -1103,17 +1099,17 @@ func (self *Assembler) _asm_OP_is_zero_map(p *ir.Instr) {
 }
 
 var (
-	_F_is_zero = jit.Func(prim.IsZero)
+	_F_is_zero      = jit.Func(prim.IsZero)
 	_T_reflect_Type = rt.UnpackIface(reflect.Type(nil))
 )
 
 func (self *Assembler) _asm_OP_is_zero(p *ir.Instr) {
 	fv := p.VField()
-	self.Emit("MOVQ", _SP_p, _AX) // ptr
+	self.Emit("MOVQ", _SP_p, _AX)                          // ptr
 	self.Emit("MOVQ", jit.ImmPtr(unsafe.Pointer(fv)), _BX) // fv
-	self.call_go(_F_is_zero) // CALL  $fn
-	self.Emit("CMPB", _AX, jit.Imm(0)) // CMPB (SP.p), $0
-	self.Xjmp("JNE", p.Vi())                          // JE   p.Vi()
+	self.call_go(_F_is_zero)                               // CALL  $fn
+	self.Emit("CMPB", _AX, jit.Imm(0))                     // CMPB (SP.p), $0
+	self.Xjmp("JNE", p.Vi())                               // JE   p.Vi()
 }
 
 func (self *Assembler) _asm_OP_goto(p *ir.Instr) {
@@ -1146,10 +1142,10 @@ func (self *Assembler) _asm_OP_map_check_key(p *ir.Instr) {
 
 func (self *Assembler) _asm_OP_map_write_key(p *ir.Instr) {
 	self.Emit("BTQ", jit.Imm(alg.BitSortMapKeys), _ARG_fv) // BTQ ${SortMapKeys}, fv
-	self.Sjmp("JNC", "_unordered_key_{n}")             // JNC _unordered_key_{n}
-	self.encode_string(false)                          // STR $false
-	self.Xjmp("JMP", p.Vi())                           // JMP ${p.Vi()}
-	self.Link("_unordered_key_{n}")                    // _unordered_key_{n}:
+	self.Sjmp("JNC", "_unordered_key_{n}")                 // JNC _unordered_key_{n}
+	self.encode_string(false)                              // STR $false
+	self.Xjmp("JMP", p.Vi())                               // JMP ${p.Vi()}
+	self.Link("_unordered_key_{n}")                        // _unordered_key_{n}:
 }
 
 func (self *Assembler) _asm_OP_map_value_next(_ *ir.Instr) {

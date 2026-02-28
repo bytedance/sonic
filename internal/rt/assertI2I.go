@@ -1,3 +1,4 @@
+//go:build go1.17
 // +build go1.17
 
 /*
@@ -19,11 +20,11 @@
 package rt
 
 import (
-    _ `unsafe`
+	_ "unsafe"
 )
 
 func AssertI2I(t *GoType, i GoIface) (r GoIface) {
-    inter := IfaceType(t)
+	inter := IfaceType(t)
 	tab := i.Itab
 	if tab == nil {
 		return
@@ -38,5 +39,3 @@ func AssertI2I(t *GoType, i GoIface) (r GoIface) {
 	r.Value = i.Value
 	return
 }
-
-

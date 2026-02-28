@@ -24,6 +24,7 @@ import (
 //go:noescape
 //go:linkname Memmove runtime.memmove
 func Memmove(to unsafe.Pointer, from unsafe.Pointer, n uintptr)
+
 //go:noescape
 //go:linkname MemEqual runtime.memequal
 //goland:noinspection GoUnusedParameter
@@ -36,7 +37,7 @@ func Mapiternext(it *GoMapIterator)
 func Mapiterinit(t *GoMapType, m unsafe.Pointer, it *GoMapIterator)
 
 //go:linkname Maplen reflect.maplen
-func Maplen(h unsafe.Pointer) int 
+func Maplen(h unsafe.Pointer) int
 
 //go:nosplit
 //go:linkname MemclrHasPointers runtime.memclrHasPointers
@@ -48,7 +49,7 @@ func MemclrHasPointers(ptr unsafe.Pointer, n uintptr)
 func MemclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
 //go:linkname newarray runtime.newarray
-func newarray(typ *GoType, n int) unsafe.Pointer 
+func newarray(typ *GoType, n int) unsafe.Pointer
 
 func add(p unsafe.Pointer, x uintptr) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(p) + x)
@@ -95,13 +96,13 @@ func Mapassign_fast64(t *GoMapType, h unsafe.Pointer, k uint64) unsafe.Pointer
 //goland:noinspection GoUnusedParameter
 func Mapassign_faststr(t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer
 
-type MapStrAssign func (t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer
+type MapStrAssign func(t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer
 
 func GetMapStrAssign(vt reflect.Type) MapStrAssign {
 	if IsMapfast(vt) {
 		return Mapassign_faststr
 	} else {
-		return func (t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer {
+		return func(t *GoMapType, h unsafe.Pointer, s string) unsafe.Pointer {
 			return Mapassign(t, h, unsafe.Pointer(&s))
 		}
 	}
@@ -113,7 +114,7 @@ func GetMap32Assign(vt reflect.Type) Map32Assign {
 	if IsMapfast(vt) {
 		return Mapassign_fast32
 	} else {
-		return func (t *GoMapType, h unsafe.Pointer, s uint32) unsafe.Pointer {
+		return func(t *GoMapType, h unsafe.Pointer, s uint32) unsafe.Pointer {
 			return Mapassign(t, h, unsafe.Pointer(&s))
 		}
 	}
@@ -125,12 +126,11 @@ func GetMap64Assign(vt reflect.Type) Map64Assign {
 	if IsMapfast(vt) {
 		return Mapassign_fast64
 	} else {
-		return func (t *GoMapType, h unsafe.Pointer, s uint64) unsafe.Pointer {
+		return func(t *GoMapType, h unsafe.Pointer, s uint64) unsafe.Pointer {
 			return Mapassign(t, h, unsafe.Pointer(&s))
 		}
 	}
 }
-
 
 var emptyBytes = make([]byte, 0, 0)
 var EmptySlice = *(*GoSlice)(unsafe.Pointer(&emptyBytes))
