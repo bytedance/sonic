@@ -99,6 +99,19 @@ type sample struct {
 	AP *[0]interface{}
 }
 
+type sampleOmitAllEmpty struct {
+	A int
+	B string
+	C []int
+	D map[string]int
+	E *int
+	F bool
+	G [0]int
+	H struct{}
+	I int `json:"i,omitempty"`
+	K int `json:"k"`
+}
+
 func TestOptionSliceOrMapNoNull(t *testing.T) {
 	obj := sample{}
 	out, err := Encode(obj, NoNullSliceOrMap)
@@ -138,6 +151,17 @@ func BenchmarkOptionSliceOrMapNoNull(b *testing.B) {
 			_, _ = Encode(obj2, 0)
 		}
 	})
+}
+
+func TestOptionOmitAllEmpty(t *testing.T) {
+	obj := sampleOmitAllEmpty{K: 1}
+	out, err := Encode(obj, 0)
+	require.NoError(t, err)
+	require.Equal(t, `{"A":0,"B":"","C":null,"D":null,"E":null,"F":false,"G":[],"H":{},"k":1}`, string(out))
+
+	out, err = Encode(obj, OmitAllEmpty)
+	require.NoError(t, err)
+	require.Equal(t, `{"H":{},"k":1}`, string(out))
 }
 
 func runEncoderTest(t *testing.T, fn func(string) string, exp string, arg string) {

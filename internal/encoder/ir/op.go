@@ -81,6 +81,7 @@ const (
 	OP_marshal_text_p
 	OP_cond_set
 	OP_cond_testc
+	OP_if_omit_all_empty
 	OP_unsupported
 	OP_is_zero
 )
@@ -144,6 +145,7 @@ var OpNames = [256]string{
 	OP_marshal_text_p: "marshal_text_p",
 	OP_cond_set:       "cond_set",
 	OP_cond_testc:     "cond_testc",
+	OP_if_omit_all_empty: "if_omit_all_empty",
 	OP_unsupported:    "unsupported type",
 }
 
@@ -353,6 +355,8 @@ func (self Instr) isBranch() bool {
 	case OP_slice_next:
 		fallthrough
 	case OP_cond_testc:
+		fallthrough
+	case OP_if_omit_all_empty:
 		return true
 	default:
 		return false
@@ -397,6 +401,8 @@ func (self Instr) Disassemble() string {
 	case OP_is_zero_map:
 		fallthrough
 	case OP_cond_testc:
+		fallthrough
+	case OP_if_omit_all_empty:
 		fallthrough
 	case OP_map_check_key:
 		fallthrough

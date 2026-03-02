@@ -457,11 +457,19 @@ func (self *Compiler) compileStructBody(p *ir.Program, sp int, vt reflect.Type) 
 	for i, fv := range fvs {
 		var s []int
 		var o resolver.Offset
+		omitEmpty := (fv.Opts & resolver.F_omitempty) != 0
 
 		/* "omitempty" for arrays */
 		if fv.Type.Kind() == reflect.Array {
-			if fv.Type.Len() == 0 && (fv.Opts&resolver.F_omitempty) != 0 {
-				continue
+			if fv.Type.Len() == 0 {
+				if omitEmpty {
+					continue
+				}
+				u := p.PC()
+				p.Add(ir.OP_if_omit_all_empty)
+				s = append(s, p.PC())
+				p.Add(ir.OP_goto)
+				p.Pin(u)
 			}
 		}
 
@@ -475,9 +483,17 @@ func (self *Compiler) compileStructBody(p *ir.Program, sp int, vt reflect.Type) 
 		}
 
 		/* check for "omitempty" option */
-		if fv.Type.Kind() != reflect.Struct && fv.Type.Kind() != reflect.Array && (fv.Opts&resolver.F_omitempty) != 0 {
-			s = append(s, p.PC())
-			self.compileStructFieldEmpty(p, fv.Type)
+		if fv.Type.Kind() != reflect.Struct && fv.Type.Kind() != reflect.Array {
+			if omitEmpty {
+				s = append(s, p.PC())
+				self.compileStructFieldEmpty(p, fv.Type)
+			} else {
+				u := p.PC()
+				p.Add(ir.OP_if_omit_all_empty)
+				s = append(s, p.PC())
+				self.compileStructFieldEmpty(p, fv.Type)
+				p.Pin(u)
+			}
 		}
 		/* check for "omitzero" option */
 		if fv.Opts&resolver.F_omitzero != 0 {

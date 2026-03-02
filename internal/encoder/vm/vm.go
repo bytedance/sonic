@@ -286,6 +286,11 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 				pc = ins.Vi()
 				continue
 			}
+		case ir.OP_if_omit_all_empty:
+			if !has_opts(flags, alg.BitOmitAllEmpty) {
+				pc = ins.Vi()
+				continue
+			}
 		case ir.OP_is_zero:
 			fv := ins.VField()
 			if prim.IsZero(p, fv) {

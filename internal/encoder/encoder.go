@@ -73,6 +73,9 @@ const (
 
 	// Encode Infinity or Nan float into `null`, instead of returning an error.
 	EncodeNullForInfOrNan Options = 1 << alg.BitEncodeNullForInfOrNan
+
+	// OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`
+	OmitAllEmpty Options = 1 << alg.BitOmitAllEmpty
 )
 
 // Encoder represents a specific set of encoder configurations.

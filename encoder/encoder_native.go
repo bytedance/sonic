@@ -75,6 +75,9 @@ const (
 	// EncodeNullForInfOrNan encodes Infinity or NaN float values as 'null'
 	// instead of returning an error.
 	EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
+
+	// OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`.
+	OmitAllEmpty Options = encoder.OmitAllEmpty
 )
 
 var (

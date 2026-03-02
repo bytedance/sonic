@@ -95,6 +95,9 @@ type Config struct {
 	// Encode Infinity or Nan float into `null`, instead of returning an error.
 	EncodeNullForInfOrNan bool
 
+	// OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`.
+	OmitAllEmpty bool
+
 	// CaseSensitive indicates that the decoder should not ignore the case of object keys.
 	CaseSensitive bool
 }

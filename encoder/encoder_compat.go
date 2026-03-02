@@ -8,7 +8,7 @@
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
-*     http://www.apache.org/licenses/LICENSE-2.0
+*    http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,14 +40,15 @@ const EnableFallback = true
 type Options uint64
 
 const (
-	bitSortMapKeys = iota
-	bitEscapeHTML
-	bitCompactMarshaler
-	bitNoQuoteTextMarshaler
-	bitNoNullSliceOrMap
-	bitValidateString
-	bitNoValidateJSONMarshaler
-	bitNoEncoderNewline
+    bitSortMapKeys      = iota
+    bitEscapeHTML        
+    bitCompactMarshaler
+    bitNoQuoteTextMarshaler
+    bitNoNullSliceOrMap
+    bitValidateString
+    bitNoValidateJSONMarshaler
+    bitNoEncoderNewline
+    bitOmitAllEmpty
 
 	// used for recursive compile
 	bitPointerValue = 63
@@ -84,11 +85,14 @@ const (
 	// after encoding the JSONMarshaler to JSON.
 	NoValidateJSONMarshaler Options = 1 << bitNoValidateJSONMarshaler
 
-	// NoEncoderNewline indicates that the encoder should not add a newline after every message
-	NoEncoderNewline Options = 1 << bitNoEncoderNewline
+    // NoEncoderNewline indicates that the encoder should not add a newline after every message
+    NoEncoderNewline Options = 1 << bitNoEncoderNewline
 
-	// CompatibleWithStd is used to be compatible with std encoder.
-	CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
+    // OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`.
+    OmitAllEmpty Options = 1 << bitOmitAllEmpty
+  
+    // CompatibleWithStd is used to be compatible with std encoder.
+    CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
 )
 
 // Encoder represents a specific set of encoder configurations.

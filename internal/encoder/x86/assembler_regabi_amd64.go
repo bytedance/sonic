@@ -266,6 +266,7 @@ var _OpFuncTab = [256]func(*Assembler, *ir.Instr){
 	ir.OP_marshal_text_p: (*Assembler)._asm_OP_marshal_text_p,
 	ir.OP_cond_set:       (*Assembler)._asm_OP_cond_set,
 	ir.OP_cond_testc:     (*Assembler)._asm_OP_cond_testc,
+	ir.OP_if_omit_all_empty: (*Assembler)._asm_OP_if_omit_all_empty,
 	ir.OP_unsupported:    (*Assembler)._asm_OP_unsupported,
 	ir.OP_is_zero:        (*Assembler)._asm_OP_is_zero,
 }
@@ -1200,6 +1201,11 @@ func (self *Assembler) _asm_OP_cond_set(_ *ir.Instr) {
 func (self *Assembler) _asm_OP_cond_testc(p *ir.Instr) {
 	self.Emit("BTRQ", jit.Imm(_S_cond), _SP_f) // BTRQ $_S_cond, SP.f
 	self.Xjmp("JC", p.Vi())
+}
+
+func (self *Assembler) _asm_OP_if_omit_all_empty(p *ir.Instr) {
+	self.Emit("BTQ", jit.Imm(alg.BitOmitAllEmpty), _ARG_fv)
+	self.Xjmp("JNC", p.Vi())
 }
 
 var _F_error_unsupported = jit.Func(vars.Error_unsuppoted)
