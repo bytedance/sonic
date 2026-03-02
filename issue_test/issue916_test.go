@@ -73,4 +73,3 @@ func TestIssue916_StringTagTypeMismatchShouldContinue_WithLowInlineDepth(t *test
 	assertUnmarshal(t, sonic.ConfigDefault, cas)
 	assertUnmarshal(t, sonic.ConfigStd, cas)
 }
-

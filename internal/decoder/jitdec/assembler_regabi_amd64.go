@@ -885,8 +885,8 @@ func (self *_Assembler) range_unsigned_CX(i *rt.GoItab, t *rt.GoType, v uint64) 
 	self.Sjmp("JA", _LB_range_error)          // JA    _range_error
 }
 
-// used by byte-slice element decoding: keep parsing remaining elements
-// after integer overflow/underflow, while still surfacing a final type error.
+// Continue decoding after integer range mismatch in container/field contexts,
+// while preserving a final type error consistent with existing behavior.
 func (self *_Assembler) range_continue_handle_error(i *rt.GoItab, t *rt.GoType, pin string) {
 	// Avoid encoding imm64->mem on windows: MOVQ to memory only accepts sign-extended imm32.
 	self.Emit("MOVQ", jit.Gitab(i), _ET)
@@ -950,17 +950,6 @@ func (self *_Assembler) range_uint32_CX_continue(i *rt.GoItab, t *rt.GoType, pin
 	self.Link("_range_uint32_continue_err_{n}")
 	self.range_continue_handle_error(i, t, pin)
 	self.Link("_range_uint32_continue_end_{n}")
-}
-
-func (self *_Assembler) range_uint32_CX(i *rt.GoItab, t *rt.GoType) {
-	self.Emit("MOVQ", _VAR_st_Iv, _CX)   // MOVQ  st.Iv, CX
-	self.Emit("MOVQ", jit.Gitab(i), _ET) // MOVQ  ${i}, ET
-	self.Emit("MOVQ", jit.Gtype(t), _EP) // MOVQ  ${t}, EP
-	self.Emit("TESTQ", _CX, _CX)         // TESTQ CX, CX
-	self.Sjmp("JS", _LB_range_error)     // JS    _range_error
-	self.Emit("MOVL", _CX, _DX)          // MOVL  CX, DX
-	self.Emit("CMPQ", _CX, _DX)          // CMPQ  CX, DX
-	self.Sjmp("JNE", _LB_range_error)    // JNZ   _range_error
 }
 
 /** String Manipulating Routines **/

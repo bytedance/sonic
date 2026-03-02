@@ -82,7 +82,7 @@ func TestIssue775_OutOfRangeIntegerInOtherSlices(t *testing.T) {
 	}
 }
 
-func TestAgentTmp_NonSliceIntegerMismatchContinue(t *testing.T) {
+func TestIssue775_NonSliceIntegerMismatchShouldContinue(t *testing.T) {
 	cases := []unmTestCase{
 		{
 			name: "int8 overflow should still decode sibling field",
