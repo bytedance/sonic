@@ -124,3 +124,35 @@ func TestIssue775_NonSliceIntegerMismatchShouldContinue(t *testing.T) {
 		assertUnmarshal(t, sonic.ConfigStd, cas)
 	}
 }
+
+func TestIssue775_MapKeyIntegerMismatchShouldContinue(t *testing.T) {
+	cases := []unmTestCase{
+		{
+			name: "map[int8]int key overflow should still decode sibling field",
+			data: []byte(`{"M":{"1":1,"128":2,"2":3},"T":9}`),
+			newfn: func() interface{} {
+				var v struct {
+					M map[int8]int
+					T int
+				}
+				return &v
+			},
+		},
+		{
+			name: "map[uint8]int key underflow should still decode sibling field",
+			data: []byte(`{"M":{"1":1,"-1":2,"2":3},"T":9}`),
+			newfn: func() interface{} {
+				var v struct {
+					M map[uint8]int
+					T int
+				}
+				return &v
+			},
+		},
+	}
+
+	for _, cas := range cases {
+		assertUnmarshal(t, sonic.ConfigDefault, cas)
+		assertUnmarshal(t, sonic.ConfigStd, cas)
+	}
+}
