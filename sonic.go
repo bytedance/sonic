@@ -72,6 +72,9 @@ func (cfg Config) Froze() API {
 	if cfg.OmitAllEmpty {
 		api.encoderOpts |= encoder.OmitAllEmpty
 	}
+	if cfg.OmitAllEmptyButSlice {
+		api.encoderOpts |= encoder.OmitAllEmptyButSlice
+	}
 
 	// configure decoder options:
 	if cfg.NoValidateJSONSkip {

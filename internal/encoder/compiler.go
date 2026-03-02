@@ -489,7 +489,11 @@ func (self *Compiler) compileStructBody(p *ir.Program, sp int, vt reflect.Type) 
 				self.compileStructFieldEmpty(p, fv.Type)
 			} else {
 				u := p.PC()
-				p.Add(ir.OP_if_omit_all_empty)
+				if fv.Type.Kind() == reflect.Slice {
+					p.Add(ir.OP_if_omit_all_empty)
+				} else {
+					p.Add(ir.OP_if_omit_all_empty_or_but_slice)
+				}
 				s = append(s, p.PC())
 				self.compileStructFieldEmpty(p, fv.Type)
 				p.Pin(u)

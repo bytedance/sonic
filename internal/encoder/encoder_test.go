@@ -164,6 +164,13 @@ func TestOptionOmitAllEmpty(t *testing.T) {
 	require.Equal(t, `{"H":{},"k":1}`, string(out))
 }
 
+func TestOptionOmitAllEmptyButSlice(t *testing.T) {
+	obj := sampleOmitAllEmpty{K: 1}
+	out, err := Encode(obj, OmitAllEmptyButSlice)
+	require.NoError(t, err)
+	require.Equal(t, `{"C":null,"G":[],"H":{},"k":1}`, string(out))
+}
+
 func runEncoderTest(t *testing.T, fn func(string) string, exp string, arg string) {
 	require.Equal(t, exp, fn(arg))
 }

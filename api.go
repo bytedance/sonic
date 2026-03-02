@@ -98,6 +98,10 @@ type Config struct {
 	// OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`.
 	OmitAllEmpty bool
 
+	// OmitAllEmptyButSlice omits all zero-value fields of structs except slice fields,
+	// no matter if it has tag `omitempty`.
+	OmitAllEmptyButSlice bool
+
 	// CaseSensitive indicates that the decoder should not ignore the case of object keys.
 	CaseSensitive bool
 }

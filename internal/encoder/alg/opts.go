@@ -27,6 +27,7 @@ const (
 	BitNoEncoderNewline
 	BitEncodeNullForInfOrNan
 	BitOmitAllEmpty
+	BitOmitAllEmptyButSlice
 
 	BitPointerValue = 63
 )

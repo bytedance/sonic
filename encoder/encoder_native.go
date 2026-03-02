@@ -78,6 +78,10 @@ const (
 
 	// OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`.
 	OmitAllEmpty Options = encoder.OmitAllEmpty
+
+	// OmitAllEmptyButSlice omits all zero-value fields of structs except slice fields,
+	// no matter if it has tag `omitempty`.
+	OmitAllEmptyButSlice Options = encoder.OmitAllEmptyButSlice
 )
 
 var (

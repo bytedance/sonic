@@ -76,6 +76,9 @@ const (
 
 	// OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`
 	OmitAllEmpty Options = 1 << alg.BitOmitAllEmpty
+
+	// OmitAllEmptyButSlice is like OmitAllEmpty except slice-type fields
+	OmitAllEmptyButSlice Options = 1 << alg.BitOmitAllEmptyButSlice
 )
 
 // Encoder represents a specific set of encoder configurations.

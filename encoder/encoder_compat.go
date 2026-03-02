@@ -40,15 +40,16 @@ const EnableFallback = true
 type Options uint64
 
 const (
-    bitSortMapKeys      = iota
-    bitEscapeHTML        
-    bitCompactMarshaler
-    bitNoQuoteTextMarshaler
-    bitNoNullSliceOrMap
-    bitValidateString
-    bitNoValidateJSONMarshaler
-    bitNoEncoderNewline
-    bitOmitAllEmpty
+	bitSortMapKeys = iota
+	bitEscapeHTML
+	bitCompactMarshaler
+	bitNoQuoteTextMarshaler
+	bitNoNullSliceOrMap
+	bitValidateString
+	bitNoValidateJSONMarshaler
+	bitNoEncoderNewline
+	bitOmitAllEmpty
+	bitOmitAllEmptyButSlice
 
 	// used for recursive compile
 	bitPointerValue = 63
@@ -85,14 +86,18 @@ const (
 	// after encoding the JSONMarshaler to JSON.
 	NoValidateJSONMarshaler Options = 1 << bitNoValidateJSONMarshaler
 
-    // NoEncoderNewline indicates that the encoder should not add a newline after every message
-    NoEncoderNewline Options = 1 << bitNoEncoderNewline
+	// NoEncoderNewline indicates that the encoder should not add a newline after every message
+	NoEncoderNewline Options = 1 << bitNoEncoderNewline
 
-    // OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`.
-    OmitAllEmpty Options = 1 << bitOmitAllEmpty
-  
-    // CompatibleWithStd is used to be compatible with std encoder.
-    CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
+	// OmitAllEmpty omits all zero-value fields of structs, no matter if it has tag `omitempty`.
+	OmitAllEmpty Options = 1 << bitOmitAllEmpty
+
+	// OmitAllEmptyButSlice omits all zero-value fields of structs except slice fields,
+	// no matter if it has tag `omitempty`.
+	OmitAllEmptyButSlice Options = 1 << bitOmitAllEmptyButSlice
+
+	// CompatibleWithStd is used to be compatible with std encoder.
+	CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
 )
 
 // Encoder represents a specific set of encoder configurations.
