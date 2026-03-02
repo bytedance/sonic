@@ -216,7 +216,7 @@ Sonic encodes primitive objects (struct/map...) as compact-format JSON by defaul
 
 ### Print Error
 
-If there invalid syntax in input JSON, sonic will return `decoder.SyntaxError`, which supports pretty-printing of error position
+If there is invalid syntax in input JSON, sonic will return `decoder.SyntaxError`, which supports pretty-printing of error position
 
 ```go
 import "github.com/bytedance/sonic"
