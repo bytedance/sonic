@@ -5,6 +5,10 @@ on: pull_request
 
 jobs:
   build:
+    permissions:
+      contents: read
+      id-token: write
+
     strategy:
       matrix:
         go-version: [1.20.x, 1.22.x, 1.25.x]
@@ -47,4 +51,9 @@ jobs:
         run: GOMAXPROCS=4 go test -race ./generic_test
 
       - name: Codecov
-        run: bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: ./coverage.txt
+          flags: arm,${{ matrix.runner_arch }}
+          fail_ci_if_error: false

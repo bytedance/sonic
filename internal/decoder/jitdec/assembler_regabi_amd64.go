@@ -100,6 +100,7 @@ const (
 	_LB_type_error      = "_type_error"
 	_LB_field_error     = "_field_error"
 	_LB_range_error     = "_range_error"
+	_LB_range_continue  = "_range_continue"
 	_LB_stack_error     = "_stack_error"
 	_LB_base64_error    = "_base64_error"
 	_LB_unquote_error   = "_unquote_error"
@@ -232,6 +233,7 @@ func (self *_Assembler) compile() {
 	self.prologue()
 	self.instrs()
 	self.epilogue()
+	self.range_continue_handler()
 	self.copy_string()
 	self.escape_string()
 	self.escape_string_twice()
@@ -863,35 +865,119 @@ func (self *_Assembler) range_single_X0() {
 	self.Sjmp("JB", _LB_range_error)              // JB      _range_error
 }
 
-func (self *_Assembler) range_signed_CX(i *rt.GoItab, t *rt.GoType, a int64, b int64) {
-	self.Emit("MOVQ", _VAR_st_Iv, _CX)   // MOVQ st.Iv, CX
-	self.Emit("MOVQ", jit.Gitab(i), _ET) // MOVQ ${i}, ET
-	self.Emit("MOVQ", jit.Gtype(t), _EP) // MOVQ ${t}, EP
-	self.Emit("CMPQ", _CX, jit.Imm(a))   // CMPQ CX, ${a}
-	self.Sjmp("JL", _LB_range_error)     // JL   _range_error
-	self.Emit("CMPQ", _CX, jit.Imm(b))   // CMPQ CX, ${B}
-	self.Sjmp("JG", _LB_range_error)     // JG   _range_error
+// Continue decoding after integer range mismatch in container/field contexts,
+// while preserving a final type error consistent with existing behavior.
+func (self *_Assembler) range_continue_handle_error(i *rt.GoItab, t *rt.GoType, pin string) {
+	// Avoid encoding imm64->mem on windows: MOVQ to memory only accepts sign-extended imm32.
+	self.Emit("MOVQ", jit.Gitab(i), _ET)
+	self.Emit("MOVQ", jit.Gtype(t), _EP)
+	self.Emit("MOVQ", _ET, _VAR_ss_AX)
+	self.Emit("MOVQ", _EP, _VAR_ss_CX)
+	self.Byte(0x4c, 0x8d, 0x0d) // LEAQ (PC), R9
+	self.Sref(pin, 4)
+	self.Emit("MOVQ", _R9, _VAR_pc)
+	self.Sjmp("JMP", _LB_range_continue)
 }
 
-func (self *_Assembler) range_unsigned_CX(i *rt.GoItab, t *rt.GoType, v uint64) {
-	self.Emit("MOVQ", _VAR_st_Iv, _CX)        // MOVQ  st.Iv, CX
-	self.Emit("MOVQ", jit.Gitab(i), _ET)      // MOVQ  ${i}, ET
-	self.Emit("MOVQ", jit.Gtype(t), _EP)      // MOVQ  ${t}, EP
-	self.Emit("TESTQ", _CX, _CX)              // TESTQ CX, CX
-	self.Sjmp("JS", _LB_range_error)          // JS    _range_error
+func (self *_Assembler) range_continue_handler() {
+	self.Link(_LB_range_continue)
+	self.Emit("MOVQ", jit.Ptr(_ST, 0), _DX)
+	self.Emit("TESTQ", _DX, _DX)
+	self.Sjmp("JNE", "_range_continue_in_container")
+	self.Emit("MOVQ", _VAR_ss_AX, _ET)
+	self.Emit("MOVQ", _VAR_ss_CX, _EP)
+	self.Sjmp("JMP", _LB_range_error)
+	self.Link("_range_continue_in_container")
+	self.Emit("CMPQ", _VAR_et, jit.Imm(0))
+	self.Sjmp("JNE", "_range_continue_jump")
+	self.Emit("MOVQ", _BX, _VAR_ic)
+	self.Emit("MOVQ", _VAR_ss_CX, _DX)
+	self.Emit("MOVQ", _DX, _VAR_et)
+	self.Link("_range_continue_jump")
+	self.Emit("MOVQ", _VAR_pc, _R9)
+	self.Rjmp("JMP", _R9)
+}
+
+func (self *_Assembler) range_unsigned_CX_continue(i *rt.GoItab, t *rt.GoType, v uint64, pin string) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX) // MOVQ  st.Iv, CX
+	self.Emit("TESTQ", _CX, _CX)       // TESTQ CX, CX
+	self.Sjmp("JS", "_range_unsigned_continue_err_{n}")
 	self.Emit("CMPQ", _CX, jit.Imm(int64(v))) // CMPQ  CX, ${a}
-	self.Sjmp("JA", _LB_range_error)          // JA    _range_error
+	self.Sjmp("JBE", "_range_unsigned_continue_end_{n}")
+	self.Link("_range_unsigned_continue_err_{n}")
+	self.range_continue_handle_error(i, t, pin)
+	self.Link("_range_unsigned_continue_end_{n}")
 }
 
-func (self *_Assembler) range_uint32_CX(i *rt.GoItab, t *rt.GoType) {
-	self.Emit("MOVQ", _VAR_st_Iv, _CX)   // MOVQ  st.Iv, CX
-	self.Emit("MOVQ", jit.Gitab(i), _ET) // MOVQ  ${i}, ET
-	self.Emit("MOVQ", jit.Gtype(t), _EP) // MOVQ  ${t}, EP
-	self.Emit("TESTQ", _CX, _CX)         // TESTQ CX, CX
-	self.Sjmp("JS", _LB_range_error)     // JS    _range_error
-	self.Emit("MOVL", _CX, _DX)          // MOVL  CX, DX
-	self.Emit("CMPQ", _CX, _DX)          // CMPQ  CX, DX
-	self.Sjmp("JNE", _LB_range_error)    // JNZ   _range_error
+func (self *_Assembler) range_signed_CX_continue(i *rt.GoItab, t *rt.GoType, a int64, b int64, pin string) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX)
+	self.Emit("CMPQ", _CX, jit.Imm(a))
+	self.Sjmp("JL", "_range_signed_continue_err_{n}")
+	self.Emit("CMPQ", _CX, jit.Imm(b))
+	self.Sjmp("JLE", "_range_signed_continue_end_{n}")
+	self.Link("_range_signed_continue_err_{n}")
+	self.range_continue_handle_error(i, t, pin)
+	self.Link("_range_signed_continue_end_{n}")
+}
+
+func (self *_Assembler) range_uint32_CX_continue(i *rt.GoItab, t *rt.GoType, pin string) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX)
+	self.Emit("TESTQ", _CX, _CX)
+	self.Sjmp("JS", "_range_uint32_continue_err_{n}")
+	self.Emit("MOVL", _CX, _DX)
+	self.Emit("CMPQ", _CX, _DX)
+	self.Sjmp("JE", "_range_uint32_continue_end_{n}")
+	self.Link("_range_uint32_continue_err_{n}")
+	self.range_continue_handle_error(i, t, pin)
+	self.Link("_range_uint32_continue_end_{n}")
+}
+
+func (self *_Assembler) range_map_key_continue_handle_error(vt reflect.Type, pin2 int) {
+	self.Emit("CMPQ", _VAR_et, jit.Imm(0))
+	self.Sjmp("JNE", "_range_map_key_continue_set_pc_{n}")
+	self.Emit("SUBQ", jit.Imm(1), _BX)
+	self.Emit("MOVQ", _BX, _VAR_ic)
+	self.Emit("MOVQ", jit.Type(vt), _DX)
+	self.Emit("MOVQ", _DX, _VAR_et)
+	self.Link("_range_map_key_continue_set_pc_{n}")
+	self.Byte(0x4c, 0x8d, 0x0d) // LEAQ (PC), R9
+	self.Xref(pin2, 4)
+	self.Emit("MOVQ", _R9, _VAR_pc)
+	self.Sjmp("JMP", _LB_skip_key_value)
+}
+
+func (self *_Assembler) range_signed_CX_map_continue(vt reflect.Type, a int64, b int64, pin2 int) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX)
+	self.Emit("CMPQ", _CX, jit.Imm(a))
+	self.Sjmp("JL", "_range_signed_map_continue_err_{n}")
+	self.Emit("CMPQ", _CX, jit.Imm(b))
+	self.Sjmp("JLE", "_range_signed_map_continue_end_{n}")
+	self.Link("_range_signed_map_continue_err_{n}")
+	self.range_map_key_continue_handle_error(vt, pin2)
+	self.Link("_range_signed_map_continue_end_{n}")
+}
+
+func (self *_Assembler) range_unsigned_CX_map_continue(vt reflect.Type, v uint64, pin2 int) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX)
+	self.Emit("TESTQ", _CX, _CX)
+	self.Sjmp("JS", "_range_unsigned_map_continue_err_{n}")
+	self.Emit("CMPQ", _CX, jit.Imm(int64(v)))
+	self.Sjmp("JBE", "_range_unsigned_map_continue_end_{n}")
+	self.Link("_range_unsigned_map_continue_err_{n}")
+	self.range_map_key_continue_handle_error(vt, pin2)
+	self.Link("_range_unsigned_map_continue_end_{n}")
+}
+
+func (self *_Assembler) range_uint32_CX_map_continue(vt reflect.Type, pin2 int) {
+	self.Emit("MOVQ", _VAR_st_Iv, _CX)
+	self.Emit("TESTQ", _CX, _CX)
+	self.Sjmp("JS", "_range_uint32_map_continue_err_{n}")
+	self.Emit("MOVL", _CX, _DX)
+	self.Emit("CMPQ", _CX, _DX)
+	self.Sjmp("JE", "_range_uint32_map_continue_end_{n}")
+	self.Link("_range_uint32_map_continue_err_{n}")
+	self.range_map_key_continue_handle_error(vt, pin2)
+	self.Link("_range_uint32_map_continue_end_{n}")
 }
 
 /** String Manipulating Routines **/
@@ -1415,25 +1501,25 @@ func (self *_Assembler) _asm_OP_num(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_i8(_ *_Instr) {
 	var pin = "_i8_end_{n}"
-	self.parse_signed(int8Type, pin, -1)                               // PARSE int8
-	self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8) // RANGE int8
-	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0))                            // MOVB  CX, (VP)
+	self.parse_signed(int8Type, pin, -1) // PARSE int8
+	self.range_signed_CX_continue(_I_int8, _T_int8, math.MinInt8, math.MaxInt8, pin)
+	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0)) // MOVB  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_i16(_ *_Instr) {
 	var pin = "_i16_end_{n}"
-	self.parse_signed(int16Type, pin, -1)                                  // PARSE int16
-	self.range_signed_CX(_I_int16, _T_int16, math.MinInt16, math.MaxInt16) // RANGE int16
-	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0))                                // MOVW  CX, (VP)
+	self.parse_signed(int16Type, pin, -1) // PARSE int16
+	self.range_signed_CX_continue(_I_int16, _T_int16, math.MinInt16, math.MaxInt16, pin)
+	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0)) // MOVW  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_i32(_ *_Instr) {
 	var pin = "_i32_end_{n}"
-	self.parse_signed(int32Type, pin, -1)                                  // PARSE int32
-	self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32) // RANGE int32
-	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0))                                // MOVL  CX, (VP)
+	self.parse_signed(int32Type, pin, -1) // PARSE int32
+	self.range_signed_CX_continue(_I_int32, _T_int32, math.MinInt32, math.MaxInt32, pin)
+	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0)) // MOVL  CX, (VP)
 	self.Link(pin)
 }
 
@@ -1447,25 +1533,25 @@ func (self *_Assembler) _asm_OP_i64(_ *_Instr) {
 
 func (self *_Assembler) _asm_OP_u8(_ *_Instr) {
 	var pin = "_u8_end_{n}"
-	self.parse_unsigned(uint8Type, pin, -1)                   // PARSE uint8
-	self.range_unsigned_CX(_I_uint8, _T_uint8, math.MaxUint8) // RANGE uint8
-	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0))                   // MOVB  CX, (VP)
+	self.parse_unsigned(uint8Type, pin, -1) // PARSE uint8
+	self.range_unsigned_CX_continue(_I_uint8, _T_uint8, math.MaxUint8, pin)
+	self.Emit("MOVB", _CX, jit.Ptr(_VP, 0)) // MOVB  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u16(_ *_Instr) {
 	var pin = "_u16_end_{n}"
-	self.parse_unsigned(uint16Type, pin, -1)                     // PARSE uint16
-	self.range_unsigned_CX(_I_uint16, _T_uint16, math.MaxUint16) // RANGE uint16
-	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0))                      // MOVW  CX, (VP)
+	self.parse_unsigned(uint16Type, pin, -1) // PARSE uint16
+	self.range_unsigned_CX_continue(_I_uint16, _T_uint16, math.MaxUint16, pin)
+	self.Emit("MOVW", _CX, jit.Ptr(_VP, 0)) // MOVW  CX, (VP)
 	self.Link(pin)
 }
 
 func (self *_Assembler) _asm_OP_u32(_ *_Instr) {
 	var pin = "_u32_end_{n}"
-	self.parse_unsigned(uint32Type, pin, -1)   // PARSE uint32
-	self.range_uint32_CX(_I_uint32, _T_uint32) // RANGE uint32
-	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0))    // MOVL  CX, (VP)
+	self.parse_unsigned(uint32Type, pin, -1) // PARSE uint32
+	self.range_uint32_CX_continue(_I_uint32, _T_uint32, pin)
+	self.Emit("MOVL", _CX, jit.Ptr(_VP, 0)) // MOVL  CX, (VP)
 	self.Link(pin)
 }
 
@@ -1576,22 +1662,22 @@ func (self *_Assembler) _asm_OP_map_init(_ *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_i8(p *_Instr) {
-	self.parse_signed(int8Type, "", p.vi())                            // PARSE     int8
-	self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8) // RANGE     int8
+	self.parse_signed(int8Type, "", p.vi()) // PARSE int8
+	self.range_signed_CX_map_continue(int8Type, math.MinInt8, math.MaxInt8, p.vi())
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN int8, mapassign, st.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_i16(p *_Instr) {
-	self.parse_signed(int16Type, "", p.vi())                               // PARSE     int16
-	self.range_signed_CX(_I_int16, _T_int16, math.MinInt16, math.MaxInt16) // RANGE     int16
+	self.parse_signed(int16Type, "", p.vi()) // PARSE int16
+	self.range_signed_CX_map_continue(int16Type, math.MinInt16, math.MaxInt16, p.vi())
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN int16, mapassign, st.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_i32(p *_Instr) {
-	self.parse_signed(int32Type, "", p.vi())                               // PARSE     int32
-	self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32) // RANGE     int32
+	self.parse_signed(int32Type, "", p.vi()) // PARSE int32
+	self.range_signed_CX_map_continue(int32Type, math.MinInt32, math.MaxInt32, p.vi())
 	self.match_char('"')
 	if vt := p.vt(); !rt.IsMapfast(vt) {
 		self.mapassign_std(vt, _VAR_st_Iv) // MAPASSIGN int32, mapassign, st.Iv
@@ -1613,22 +1699,22 @@ func (self *_Assembler) _asm_OP_map_key_i64(p *_Instr) {
 }
 
 func (self *_Assembler) _asm_OP_map_key_u8(p *_Instr) {
-	self.parse_unsigned(uint8Type, "", p.vi())                // PARSE     uint8
-	self.range_unsigned_CX(_I_uint8, _T_uint8, math.MaxUint8) // RANGE     uint8
+	self.parse_unsigned(uint8Type, "", p.vi()) // PARSE uint8
+	self.range_unsigned_CX_map_continue(uint8Type, math.MaxUint8, p.vi())
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN uint8, vt.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_u16(p *_Instr) {
-	self.parse_unsigned(uint16Type, "", p.vi())                  // PARSE     uint16
-	self.range_unsigned_CX(_I_uint16, _T_uint16, math.MaxUint16) // RANGE     uint16
+	self.parse_unsigned(uint16Type, "", p.vi()) // PARSE uint16
+	self.range_unsigned_CX_map_continue(uint16Type, math.MaxUint16, p.vi())
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN uint16, vt.Iv
 }
 
 func (self *_Assembler) _asm_OP_map_key_u32(p *_Instr) {
-	self.parse_unsigned(uint32Type, "", p.vi())                  // PARSE     uint32
-	self.range_unsigned_CX(_I_uint32, _T_uint32, math.MaxUint32) // RANGE     uint32
+	self.parse_unsigned(uint32Type, "", p.vi()) // PARSE uint32
+	self.range_uint32_CX_map_continue(uint32Type, p.vi())
 	self.match_char('"')
 	if vt := p.vt(); !rt.IsMapfast(vt) {
 		self.mapassign_std(vt, _VAR_st_Iv) // MAPASSIGN uint32, vt.Iv
