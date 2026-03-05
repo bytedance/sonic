@@ -393,10 +393,15 @@ func (c *compiler) compileMap(vt reflect.Type) decFunc {
 }
 
 func tryCompileKeyUnmarshaler(vt reflect.Type) decKey {
-	pt := reflect.PtrTo(vt.Key())
+	kt := vt.Key()
+
+	/* map key type itself implements encoding.TextUnmarshaler */
+	if kt.Kind() != reflect.Interface && kt.Implements(encodingTextUnmarshalerType) {
+		return decodeKeyTextUnmarshaler
+	}
 
 	/* check for `encoding.TextUnmarshaler` with pointer receiver */
-	if pt.Implements(encodingTextUnmarshalerType) {
+	if kt.Kind() != reflect.Interface && kt.Kind() != reflect.Ptr && reflect.PtrTo(kt).Implements(encodingTextUnmarshalerType) {
 		return decodeKeyTextUnmarshaler
 	}
 

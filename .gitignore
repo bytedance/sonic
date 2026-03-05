@@ -52,4 +52,5 @@ fuzz/testdata
 *__debug_bin*
 *pprof
 *coverage.txt
+.venv/
 tools/venv/*
