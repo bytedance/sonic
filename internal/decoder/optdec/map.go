@@ -359,12 +359,25 @@ func decodeKeyTextUnmarshaler(dec *mapDecoder, raw string) (interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	ret := reflect.New(dec.mapType.Key.Pack()).Interface()
-	err = ret.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(key))
+	kt := dec.mapType.Key.Pack()
+
+	// For pointer key types (e.g. map[*K]V), decode directly into *K.
+	if kt.Kind() == reflect.Ptr {
+		ret := reflect.New(kt.Elem()).Interface()
+		err = ret.(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(key))
+		if err != nil {
+			return nil, err
+		}
+		return ret, nil
+	}
+
+	// For value key types (e.g. map[K]V), decode via *K then return K.
+	ret := reflect.New(kt)
+	err = ret.Interface().(encoding.TextUnmarshaler).UnmarshalText(rt.Str2Mem(key))
 	if err != nil {
 		return nil, err
 	}
-	return ret, nil
+	return ret.Elem().Interface(), nil
 }
 
 func decodeFloat32Key(dec *mapDecoder, raw string) (interface{}, error) {
@@ -444,6 +457,13 @@ func (d *mapDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 
 		valn := NewNode(PtrOffset(next, 1))
 		keyp := rt.UnpackEface(key).Value
+		if d.mapType.Key.Kind() == reflect.Ptr {
+			// runtime.mapassign expects key data pointer. For pointer-key maps,
+			// pass address of the pointer value (unsafe.Pointer slot), not the
+			// pointed object address itself.
+			kv := keyp
+			keyp = unsafe.Pointer(&kv)
+		}
 		valp := rt.Mapassign(d.mapType, m, keyp)
 		err = d.elemDec.FromDom(valp, valn, ctx)
 		if gerr == nil && err != nil {
