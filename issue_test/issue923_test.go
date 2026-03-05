@@ -15,6 +15,8 @@
 package issue_test
 
 import (
+	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"testing"
@@ -31,10 +33,26 @@ func (k *singleK923) UnmarshalText(b []byte) error {
 	return nil
 }
 
+func runInSubprocess(t *testing.T, testName, helperEnv string) {
+	t.Helper()
+	cmd := exec.Command(os.Args[0], "-test.run=^"+testName+"$")
+	cmd.Env = append(os.Environ(), helperEnv+"=1")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("subprocess failed: %v\n%s", err, string(out))
+	}
+}
+
 // TestIssue923_MapPointerKeyTextUnmarshalerNoSegfault verifies that unmarshaling
 // into map[*K]V where K implements encoding.TextUnmarshaler does not segfault
 // when using jitdec (SONIC_USE_OPTDEC=0). See https://github.com/bytedance/sonic/issues/923
 func TestIssue923_MapPointerKeyTextUnmarshalerNoSegfault(t *testing.T) {
+	if os.Getenv("SONIC_923_HELPER") != "1" {
+		// Keep this one isolated: historically it can crash the process.
+		runInSubprocess(t, "TestIssue923_MapPointerKeyTextUnmarshalerNoSegfault", "SONIC_923_HELPER")
+		return
+	}
+
 	vals := make([]string, 256)
 	for i := range vals {
 		vals[i] = strconv.Itoa(i % 10)
