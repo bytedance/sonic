@@ -24,7 +24,7 @@ import (
 	"github.com/bytedance/sonic"
 )
 
-// singleK implements encoding.TextUnmarshaler for map key (pointer receiver).
+// singleK923 implements encoding.TextUnmarshaler for map key (pointer receiver).
 // Used to reproduce issue #923: ConfigStd.Unmarshal into map[*K]V can segfault when SONIC_USE_OPTDEC=0.
 type singleK923 struct{ S string }
 
