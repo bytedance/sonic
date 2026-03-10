@@ -73,6 +73,9 @@ const (
 
 	// Encode Infinity or Nan float into `null`, instead of returning an error.
 	EncodeNullForInfOrNan Options = 1 << alg.BitEncodeNullForInfOrNan
+
+	// NoOmitZeroSlice indicates all zero Slice (allocated but empty) or Array are encoded as '[]',
+	NoOmitZeroSlice Options = 1 << alg.BitNoOmitZeroSlice
 )
 
 // Encoder represents a specific set of encoder configurations.

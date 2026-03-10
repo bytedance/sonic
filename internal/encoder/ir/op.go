@@ -62,6 +62,7 @@ const (
 	OP_recurse
 	OP_is_nil
 	OP_is_nil_p1
+	OP_is_nil_or_empty_slice
 	OP_is_zero_1
 	OP_is_zero_2
 	OP_is_zero_4
@@ -94,57 +95,58 @@ const (
 const OpSize = unsafe.Sizeof(NewInsOp(0))
 
 var OpNames = [256]string{
-	OP_null:           "null",
-	OP_empty_arr:      "empty_arr",
-	OP_empty_obj:      "empty_obj",
-	OP_bool:           "bool",
-	OP_i8:             "i8",
-	OP_i16:            "i16",
-	OP_i32:            "i32",
-	OP_i64:            "i64",
-	OP_u8:             "u8",
-	OP_u16:            "u16",
-	OP_u32:            "u32",
-	OP_u64:            "u64",
-	OP_f32:            "f32",
-	OP_f64:            "f64",
-	OP_str:            "str",
-	OP_bin:            "bin",
-	OP_quote:          "quote",
-	OP_number:         "number",
-	OP_eface:          "eface",
-	OP_iface:          "iface",
-	OP_byte:           "byte",
-	OP_text:           "text",
-	OP_deref:          "deref",
-	OP_index:          "index",
-	OP_load:           "load",
-	OP_save:           "save",
-	OP_drop:           "drop",
-	OP_drop_2:         "drop_2",
-	OP_recurse:        "recurse",
-	OP_is_nil:         "is_nil",
-	OP_is_nil_p1:      "is_nil_p1",
-	OP_is_zero_1:      "is_zero_1",
-	OP_is_zero_2:      "is_zero_2",
-	OP_is_zero_4:      "is_zero_4",
-	OP_is_zero_8:      "is_zero_8",
-	OP_is_zero_map:    "is_zero_map",
-	OP_goto:           "goto",
-	OP_map_iter:       "map_iter",
-	OP_map_stop:       "map_stop",
-	OP_map_check_key:  "map_check_key",
-	OP_map_write_key:  "map_write_key",
-	OP_map_value_next: "map_value_next",
-	OP_slice_len:      "slice_len",
-	OP_slice_next:     "slice_next",
-	OP_marshal:        "marshal",
-	OP_marshal_p:      "marshal_p",
-	OP_marshal_text:   "marshal_text",
-	OP_marshal_text_p: "marshal_text_p",
-	OP_cond_set:       "cond_set",
-	OP_cond_testc:     "cond_testc",
-	OP_unsupported:    "unsupported type",
+	OP_null:                  "null",
+	OP_empty_arr:             "empty_arr",
+	OP_empty_obj:             "empty_obj",
+	OP_bool:                  "bool",
+	OP_i8:                    "i8",
+	OP_i16:                   "i16",
+	OP_i32:                   "i32",
+	OP_i64:                   "i64",
+	OP_u8:                    "u8",
+	OP_u16:                   "u16",
+	OP_u32:                   "u32",
+	OP_u64:                   "u64",
+	OP_f32:                   "f32",
+	OP_f64:                   "f64",
+	OP_str:                   "str",
+	OP_bin:                   "bin",
+	OP_quote:                 "quote",
+	OP_number:                "number",
+	OP_eface:                 "eface",
+	OP_iface:                 "iface",
+	OP_byte:                  "byte",
+	OP_text:                  "text",
+	OP_deref:                 "deref",
+	OP_index:                 "index",
+	OP_load:                  "load",
+	OP_save:                  "save",
+	OP_drop:                  "drop",
+	OP_drop_2:                "drop_2",
+	OP_recurse:               "recurse",
+	OP_is_nil:                "is_nil",
+	OP_is_nil_p1:             "is_nil_p1",
+	OP_is_nil_or_empty_slice: "is_nil_or_empty_slice",
+	OP_is_zero_1:             "is_zero_1",
+	OP_is_zero_2:             "is_zero_2",
+	OP_is_zero_4:             "is_zero_4",
+	OP_is_zero_8:             "is_zero_8",
+	OP_is_zero_map:           "is_zero_map",
+	OP_goto:                  "goto",
+	OP_map_iter:              "map_iter",
+	OP_map_stop:              "map_stop",
+	OP_map_check_key:         "map_check_key",
+	OP_map_write_key:         "map_write_key",
+	OP_map_value_next:        "map_value_next",
+	OP_slice_len:             "slice_len",
+	OP_slice_next:            "slice_next",
+	OP_marshal:               "marshal",
+	OP_marshal_p:             "marshal_p",
+	OP_marshal_text:          "marshal_text",
+	OP_marshal_text_p:        "marshal_text_p",
+	OP_cond_set:              "cond_set",
+	OP_cond_testc:            "cond_testc",
+	OP_unsupported:           "unsupported type",
 }
 
 func (self Op) String() string {
@@ -338,6 +340,8 @@ func (self Instr) isBranch() bool {
 		fallthrough
 	case OP_is_nil_p1:
 		fallthrough
+	case OP_is_nil_or_empty_slice:
+		fallthrough
 	case OP_is_zero_1:
 		fallthrough
 	case OP_is_zero_2:
@@ -385,6 +389,8 @@ func (self Instr) Disassemble() string {
 	case OP_is_nil:
 		fallthrough
 	case OP_is_nil_p1:
+		fallthrough
+	case OP_is_nil_or_empty_slice:
 		fallthrough
 	case OP_is_zero_1:
 		fallthrough

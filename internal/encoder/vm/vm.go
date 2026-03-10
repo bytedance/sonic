@@ -119,6 +119,17 @@ func Execute(b *[]byte, p unsafe.Pointer, s *vars.Stack, flags uint64, prog *ir.
 				pc = ins.Vi()
 				continue
 			}
+		case ir.OP_is_nil_or_empty_slice:
+			sv := (*rt.GoSlice)(p)
+			if has_opts(flags, alg.BitNoOmitZeroSlice) {
+				if sv.Ptr == nil {
+					pc = ins.Vi()
+					continue
+				}
+			} else if sv.Len == 0 {
+				pc = ins.Vi()
+				continue
+			}
 		case ir.OP_null:
 			buf = append(buf, 'n', 'u', 'l', 'l')
 		case ir.OP_str:

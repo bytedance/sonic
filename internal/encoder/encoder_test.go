@@ -155,6 +155,59 @@ func TestEncoder_String(t *testing.T) {
 	runEncoderTest(t, Quote, `"Cartoonist, Illustrator, and T-Shirt connoisseur"`, "Cartoonist, Illustrator, and T-Shirt connoisseur")
 }
 
+func TestNoOmitZeroSlice(t *testing.T) {
+	type Sample struct {
+		X []int `json:"x,omitempty"`
+		Y []int `json:"y"`
+	}
+	testCases := []struct {
+		Sample Sample
+		Exp    string
+	}{
+		{
+			Sample: Sample{
+				X: []int{1},
+				Y: []int{2},
+			},
+			Exp: `{"x":[1],"y":[2]}`,
+		},
+		{
+			Sample: Sample{
+				X: nil,
+				Y: nil,
+			},
+			Exp: `{"y":null}`,
+		},
+		{
+			Sample: Sample{
+				X: []int{},
+				Y: []int{},
+			},
+			Exp: `{"x":[],"y":[]}`,
+		},
+		{
+			Sample: Sample{
+				X: make([]int, 0, 8),
+				Y: make([]int, 0, 8),
+			},
+			Exp: `{"x":[],"y":[]}`,
+		},
+		{
+			Sample: Sample{
+				X: make([]int, 0),
+				Y: make([]int, 0),
+			},
+			Exp: `{"x":[],"y":[]}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		buf, err := Encode(tc.Sample, NoOmitZeroSlice)
+		require.NoError(t, err)
+		require.Equal(t, tc.Exp, string(buf))
+	}
+}
+
 type StringStruct struct {
 	X *int        `json:"x,string,omitempty"`
 	Y []int       `json:"y"`

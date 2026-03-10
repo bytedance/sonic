@@ -632,7 +632,7 @@ func (self *Compiler) compileStructFieldEmpty(p *ir.Program, vt reflect.Type) {
 	case reflect.Ptr:
 		p.Add(ir.OP_is_nil)
 	case reflect.Slice:
-		p.Add(ir.OP_is_nil_p1)
+		p.Add(ir.OP_is_nil_or_empty_slice)
 	default:
 		panic(vars.Error_type(vt))
 	}
