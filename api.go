@@ -97,6 +97,9 @@ type Config struct {
 
 	// CaseSensitive indicates that the decoder should not ignore the case of object keys.
 	CaseSensitive bool
+
+	// NoOmitZeroSlice indicates that the encoder should not omit zero value slice.
+	NoOmitZeroSlice bool
 }
 
 var (

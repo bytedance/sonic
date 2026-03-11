@@ -75,6 +75,9 @@ const (
 	// EncodeNullForInfOrNan encodes Infinity or NaN float values as 'null'
 	// instead of returning an error.
 	EncodeNullForInfOrNan Options = encoder.EncodeNullForInfOrNan
+
+	// NoOmitZeroSlice indicates that the encoder should not omit zero value slice.
+	NoOmitZeroSlice Options = encoder.NoOmitZeroSlice
 )
 
 var (

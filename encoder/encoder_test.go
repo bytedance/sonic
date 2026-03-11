@@ -195,6 +195,59 @@ func TestTextMarshalTextKey_SortKeys(t *testing.T) {
 	require.Equal(t, `{"a":"a","b":"b","c":"c"}`, string(ret))
 }
 
+func TestNoOmitZeroSlice(t *testing.T) {
+	type Sample struct {
+		X []int `json:"x,omitempty"`
+		Y []int `json:"y"`
+	}
+	testCases := []struct {
+		Sample Sample
+		Exp    string
+	}{
+		{
+			Sample: Sample{
+				X: []int{1},
+				Y: []int{2},
+			},
+			Exp: `{"x":[1],"y":[2]}`,
+		},
+		{
+			Sample: Sample{
+				X: nil,
+				Y: nil,
+			},
+			Exp: `{"y":null}`,
+		},
+		{
+			Sample: Sample{
+				X: []int{},
+				Y: []int{},
+			},
+			Exp: `{"x":[],"y":[]}`,
+		},
+		{
+			Sample: Sample{
+				X: make([]int, 0, 8),
+				Y: make([]int, 0, 8),
+			},
+			Exp: `{"x":[],"y":[]}`,
+		},
+		{
+			Sample: Sample{
+				X: make([]int, 0),
+				Y: make([]int, 0),
+			},
+			Exp: `{"x":[],"y":[]}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		buf, err := Encode(tc.Sample, NoOmitZeroSlice)
+		require.NoError(t, err)
+		require.Equal(t, tc.Exp, string(buf))
+	}
+}
+
 func TestEncoder_EscapeHTML(t *testing.T) {
 	// test data from libfuzzer
 	test := []string{
