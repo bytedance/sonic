@@ -38,6 +38,10 @@ type CompileOptions struct {
 
 	// the loop times for recursively pretouch
 	RecursiveDepth int
+
+	// EncOnlyOmitNull sets the encoder to only omit nil value (ex: nil pointer, nil container) instead of zero value,
+	// with `omitempty` tag.
+	EncOnlyOmitNull bool
 }
 
 var (
@@ -88,5 +92,12 @@ func WithCompileMaxInlineDepth(depth int) CompileOption {
 			panic("depth must be > 0")
 		}
 		o.MaxInlineDepth = depth
+	}
+}
+
+// WithCompileEncOnlyOmitNull sets the encoder to only omit nil value instead of zero value with `omitempty` tag.
+func WithCompileEncOnlyOmitNull(omit bool) CompileOption {
+	return func(o *CompileOptions) {
+		o.EncOnlyOmitNull = omit
 	}
 }

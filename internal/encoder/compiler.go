@@ -476,8 +476,15 @@ func (self *Compiler) compileStructBody(p *ir.Program, sp int, vt reflect.Type) 
 
 		/* check for "omitempty" option */
 		if fv.Type.Kind() != reflect.Struct && fv.Type.Kind() != reflect.Array && (fv.Opts&resolver.F_omitempty) != 0 {
-			s = append(s, p.PC())
-			self.compileStructFieldEmpty(p, fv.Type)
+			if self.opts.EncOnlyOmitNull {
+				x := p.PC()
+				if self.compileStructFieldOmitNilPtr(p, fv.Type) {
+					s = append(s, x)
+				}
+			} else {
+				s = append(s, p.PC())
+				self.compileStructFieldEmpty(p, fv.Type)
+			}
 		}
 		/* check for "omitzero" option */
 		if fv.Opts&resolver.F_omitzero != 0 {
@@ -635,6 +642,25 @@ func (self *Compiler) compileStructFieldEmpty(p *ir.Program, vt reflect.Type) {
 		p.Add(ir.OP_is_nil_p1)
 	default:
 		panic(vars.Error_type(vt))
+	}
+}
+
+func (self *Compiler) compileStructFieldOmitNilPtr(p *ir.Program, vt reflect.Type) bool {
+	switch vt.Kind() {
+	case reflect.Interface:
+		p.Add(ir.OP_is_nil)
+		return true
+	case reflect.Map:
+		p.Add(ir.OP_is_nil)
+		return true
+	case reflect.Ptr:
+		p.Add(ir.OP_is_nil)
+		return true
+	case reflect.Slice:
+		p.Add(ir.OP_is_nil)
+		return true
+	default:
+		return false
 	}
 }
 
