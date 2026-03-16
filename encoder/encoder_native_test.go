@@ -21,10 +21,59 @@ package encoder
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
+	"github.com/bytedance/sonic/option"
 	"github.com/stretchr/testify/require"
 )
+
+func TestEncOnlyOmitNilPtr(t *testing.T) {
+	type data struct {
+		BoolVal  bool            `json:",omitempty"`
+		BoolPtr  *bool           `json:",omitempty"`
+		IntPtr   *int            `json:",omitempty"`
+		IntVal   int             `json:",omitempty"`
+		StrPtr   *string         `json:",omitempty"`
+		StrVal   string          `json:",omitempty"`
+		FloatVal float64         `json:",omitempty"`
+		FloatPtr *float64        `json:",omitempty"`
+		SlicePtr *[]int          `json:",omitempty"`
+		SliceVal []int           `json:",omitempty"`
+		MapPtr   *map[string]int `json:",omitempty"`
+		MapVal   map[string]int  `json:",omitempty"`
+		AnyPtr   *interface{}    `json:",omitempty"`
+		Any      interface{}     `json:",omitempty"`
+
+		NonOmitPtr   *int
+		NonOmitVal   int
+		NonOmitSlice []int
+	}
+
+	Pretouch(reflect.TypeOf(data{}), option.WithCompileEncOnlyOmitNull(true))
+
+	t.Run("nil containers", func(t *testing.T) {
+		d := data{}
+		js, err := Encode(d, 0)
+		require.NoError(t, err)
+		require.Equal(t, `{"BoolVal":false,"IntVal":0,"StrVal":"","FloatVal":0,"NonOmitPtr":null,"NonOmitVal":0,"NonOmitSlice":null}`, string(js))
+	})
+
+	t.Run("zero containers", func(t *testing.T) {
+		sliceVal := make([]int, 0)
+		mapVal := make(map[string]int)
+		var anyVal = map[string]int{}
+		d := data{
+			SliceVal:     sliceVal,
+			MapVal:       mapVal,
+			Any:          anyVal,
+			NonOmitSlice: sliceVal,
+		}
+		js, err := Encode(d, 0)
+		require.NoError(t, err)
+		require.Equal(t, `{"BoolVal":false,"IntVal":0,"StrVal":"","FloatVal":0,"SliceVal":[],"MapVal":{},"Any":{},"NonOmitPtr":null,"NonOmitVal":0,"NonOmitSlice":[]}`, string(js))
+	})
+}
 
 func TestOptionSliceOrMapNoNull(t *testing.T) {
 	obj := sample{}
