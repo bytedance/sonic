@@ -25,6 +25,7 @@ import (
 
 	"github.com/bytedance/sonic/decoder"
 	"github.com/bytedance/sonic/encoder"
+	"github.com/bytedance/sonic/internal/encoder/prim"
 	"github.com/bytedance/sonic/internal/rt"
 	"github.com/bytedance/sonic/option"
 )
@@ -175,4 +176,9 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 		return err
 	}
 	return nil
+}
+
+// compactImpl is the native high-performance implementation of Compact.
+func compactImpl(dst *[]byte, src []byte) error {
+	return prim.Compact(dst, src)
 }

@@ -245,3 +245,9 @@ func Valid(data []byte) bool {
 func ValidString(data string) bool {
 	return ConfigDefault.Valid(rt.Str2Mem(data))
 }
+
+// Compact appends to dst the JSON-encoded src with
+// temporary whitespace characters elided.
+func Compact(dst *[]byte, src []byte) error {
+	return compactImpl(dst, src)
+}

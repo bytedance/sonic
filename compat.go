@@ -141,3 +141,13 @@ func (cfg frozenConfig) Valid(data []byte) bool {
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 	return nil
 }
+
+// compactImpl is the fallback implementation using encoding/json.
+func compactImpl(dst *[]byte, src []byte) error {
+	buf := bytes.NewBuffer(nil)
+	if err := json.Compact(buf, src); err != nil {
+		return err
+	}
+	*dst = append(*dst, buf.Bytes()...)
+	return nil
+}
