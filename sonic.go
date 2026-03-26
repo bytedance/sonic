@@ -172,10 +172,8 @@ func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
 	if err := encoder.PretouchMany(vts, opts...); err != nil {
 		return err
 	}
-	for _, vt := range vts {
-		if err := decoder.Pretouch(vt, opts...); err != nil {
-			return err
-		}
+	if err := decoder.PretouchMany(vts, opts...); err != nil {
+		return err
 	}
 
 	ptrVts := make([]reflect.Type, 0, len(vts))
@@ -190,10 +188,8 @@ func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
 	if err := encoder.PretouchMany(ptrVts, opts...); err != nil {
 		return err
 	}
-	for _, vt := range ptrVts {
-		if err := decoder.Pretouch(vt, opts...); err != nil {
-			return err
-		}
+	if err := decoder.PretouchMany(ptrVts, opts...); err != nil {
+		return err
 	}
 	return nil
 }

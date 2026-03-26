@@ -159,7 +159,13 @@ func (self *Decoder) ValidateString() {
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
-	return pretouchImpl(vt, opts...)
+	return PretouchMany([]reflect.Type{vt}, opts...)
+}
+
+// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+// in order to reduce the first-hit latency.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
+	return pretouchManyImpl(vts, opts...)
 }
 
 // Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
