@@ -242,6 +242,12 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 	return nil
 }
 
+// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+// in order to reduce the first-hit latency.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
+	return nil
+}
+
 // Valid validates json and returns first non-blank character position,
 // if it is only one valid json value.
 // Otherwise returns invalid character position using start.

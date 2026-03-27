@@ -9,6 +9,7 @@ import (
 	"github.com/bytedance/sonic/internal/decoder/consts"
 	"github.com/bytedance/sonic/internal/decoder/errors"
 	"github.com/bytedance/sonic/internal/rt"
+	"github.com/bytedance/sonic/loader"
 	"github.com/bytedance/sonic/option"
 	"github.com/bytedance/sonic/utf8"
 )
@@ -38,6 +39,14 @@ var (
 	error_mismatch = errors.ErrorMismatch
 	stackOverflow  = errors.StackOverflow
 )
+
+var decoderJitLoader = loader.Loader{
+	Name: "sonic.jit.",
+	File: "github.com/bytedance/sonic/jit.go",
+	Options: loader.Options{
+		NoPreempt: true,
+	},
+}
 
 // Decode parses the JSON-encoded data from current position and stores the result
 // in the value pointed to by val.
@@ -88,11 +97,31 @@ func Decode(s *string, i *int, f uint64, val interface{}) error {
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
+	return PretouchMany([]reflect.Type{vt}, opts...)
+}
+
+// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+// in order to reduce the first-hit latency.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
+	if len(vts) == 0 {
+		return nil
+	}
+
 	cfg := option.DefaultCompileOptions()
 	for _, opt := range opts {
 		opt(&cfg)
 	}
-	return pretouchRec(map[reflect.Type]bool{vt: true}, cfg)
+
+	vtm := make(map[reflect.Type]bool, len(vts))
+	for _, vt := range vts {
+		vtm[vt] = true
+	}
+	return pretouchRec(vtm, cfg)
+}
+
+type jitdecPretouchProgram struct {
+	vt   *rt.GoType
+	item loader.LoadOneItem
 }
 
 func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Type]bool, error) {
@@ -120,19 +149,71 @@ func pretouchType(_vt reflect.Type, opts option.CompileOptions) (map[reflect.Typ
 }
 
 func pretouchRec(vtm map[reflect.Type]bool, opts option.CompileOptions) error {
-	if opts.RecursiveDepth < 0 || len(vtm) == 0 {
+	pendings := make(map[*rt.GoType]jitdecPretouchProgram)
+
+	for opts.RecursiveDepth >= 0 && len(vtm) > 0 {
+		next := make(map[reflect.Type]bool)
+		for vt := range vtm {
+			gvt := rt.UnpackType(vt)
+			if programCache.Get(gvt) != nil {
+				continue
+			}
+			if _, ok := pendings[gvt]; ok {
+				continue
+			}
+
+			compiler := newCompiler().apply(opts)
+			pp, err := compiler.compile(vt)
+			if err != nil {
+				return err
+			}
+
+			as := newAssembler(pp)
+			as.name = vt.String()
+			text, pcdata := as.BaseAssembler.Export()
+
+			pendings[gvt] = jitdecPretouchProgram{
+				vt: gvt,
+				item: loader.LoadOneItem{
+					Text:      text,
+					FuncName:  "decode_" + as.name,
+					ArgSize:   _FP_args,
+					ArgPtrs:   argPtrs,
+					LocalPtrs: localPtrs,
+					Pcdata:    pcdata,
+				},
+			}
+
+			for svt := range compiler.rec {
+				next[svt] = true
+			}
+		}
+
+		opts.RecursiveDepth--
+		vtm = next
+	}
+
+	if len(pendings) == 0 {
 		return nil
 	}
-	next := make(map[reflect.Type]bool)
-	for vt := range vtm {
-		sub, err := pretouchType(vt, opts)
+
+	entries := make([]jitdecPretouchProgram, 0, len(pendings))
+	items := make([]loader.LoadOneItem, 0, len(pendings))
+	for _, p := range pendings {
+		entries = append(entries, p)
+		items = append(items, p.item)
+	}
+
+	loaded := decoderJitLoader.LoadMany(items)
+	for i, p := range entries {
+		dec := ptodec(loaded[i])
+		_, err := programCache.Compute(p.vt, func(*rt.GoType, ...interface{}) (interface{}, error) {
+			return dec, nil
+		})
 		if err != nil {
 			return err
 		}
-		for svt := range sub {
-			next[svt] = true
-		}
 	}
-	opts.RecursiveDepth -= 1
-	return pretouchRec(next, opts)
+
+	return nil
 }
