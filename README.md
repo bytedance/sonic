@@ -396,7 +396,7 @@ Sonic **DOES NOT** ensure to support all environments, due to the difficulty of 
 
 ### Pretouch
 
-Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as a JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise **using `PretouchMany()` for huge-schema or lantence-sensitive applications** before `Marshal()/Unmarshal()`.
+Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as a JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise **using `PretouchMany()` for huge-schema or lantency-sensitive applications** before `Marshal()/Unmarshal()`.
 
 ```go
 import (
@@ -406,8 +406,8 @@ import (
 )
 
 func init() {
-    var v HugeStruct1
-    var v HugeStruct2
+    var v1 HugeStruct1
+    var v2 HugeStruct2
 
     // For most large types (nesting depth <= option.DefaultMaxInlineDepth)
     sonic.PretouchMany([]reflect.Type{reflect.TypeOf(v1), reflect.TypeOf(v2)},
