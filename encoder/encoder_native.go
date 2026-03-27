@@ -104,6 +104,10 @@ var (
 	// a compile option to set the depth of recursive compile for the nested struct type.
 	Pretouch = encoder.Pretouch
 
+	// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+	// in order to reduce the first-hit latency.
+	PretouchMany = encoder.PretouchMany
+
 	// Quote returns the JSON-quoted version of s.
 	Quote = encoder.Quote
 

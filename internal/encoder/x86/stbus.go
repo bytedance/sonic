@@ -41,6 +41,10 @@ func ptoenc(p loader.Function) vars.Encoder {
 	return *(*vars.Encoder)(unsafe.Pointer(&p))
 }
 
+func ToEncoder(p loader.Function) vars.Encoder {
+	return ptoenc(p)
+}
+
 func EncodeTypedPointer(buf *[]byte, vt *rt.GoType, vp *unsafe.Pointer, sb *vars.Stack, fv uint64) error {
 	if vt == nil {
 		return prim.EncodeNil(buf)
