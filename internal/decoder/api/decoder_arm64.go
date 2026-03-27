@@ -25,8 +25,9 @@ import (
 )
 
 var (
-	pretouchImpl = optdec.Pretouch
-	decodeImpl   = optdec.Decode
+	pretouchImpl     = optdec.Pretouch
+	pretouchManyImpl = optdec.PretouchMany
+	decodeImpl       = optdec.Decode
 )
 
 func init() {

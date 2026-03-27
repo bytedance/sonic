@@ -207,22 +207,38 @@ func (cfg frozenConfig) Valid(data []byte) bool {
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
-	if err := encoder.Pretouch(vt, opts...); err != nil {
+	return PretouchMany([]reflect.Type{vt}, opts...)
+}
+
+// PretouchMany compiles all JIT types in single moduledata, to reduce the overhead of `findmoduledata`
+//
+// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+// a compile option to set the depth of recursive compile for the nested struct type.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
+	if len(vts) == 0 {
+		return nil
+	}
+
+	if err := encoder.PretouchMany(vts, opts...); err != nil {
 		return err
 	}
-	if err := decoder.Pretouch(vt, opts...); err != nil {
+	if err := decoder.PretouchMany(vts, opts...); err != nil {
 		return err
 	}
-	// to pretouch the corresponding pointer type as well
-	if vt.Kind() == reflect.Ptr {
-		vt = vt.Elem()
-	} else {
-		vt = reflect.PtrTo(vt)
+
+	ptrVts := make([]reflect.Type, 0, len(vts))
+	for _, vt := range vts {
+		if vt.Kind() == reflect.Ptr {
+			ptrVts = append(ptrVts, vt.Elem())
+		} else {
+			ptrVts = append(ptrVts, reflect.PtrTo(vt))
+		}
 	}
-	if err := encoder.Pretouch(vt, opts...); err != nil {
+
+	if err := encoder.PretouchMany(ptrVts, opts...); err != nil {
 		return err
 	}
-	if err := decoder.Pretouch(vt, opts...); err != nil {
+	if err := decoder.PretouchMany(ptrVts, opts...); err != nil {
 		return err
 	}
 	return nil

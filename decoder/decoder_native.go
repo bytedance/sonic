@@ -65,6 +65,10 @@ var (
 	// a compile option to set the depth of recursive compile for the nested struct type.
 	Pretouch = api.Pretouch
 
+	// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+	// in order to reduce the first-hit latency.
+	PretouchMany = api.PretouchMany
+
 	// Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
 	// Otherwise, returns negative error code using start and invalid character position using end
 	Skip = api.Skip
