@@ -7,7 +7,7 @@ A blazingly fast JSON serializing &amp; deserializing library, accelerated by JI
 ## Requirement
 
 - Go: 1.18~1.25
-  - Notice: Go1.24.0 is not supported due to the [issue](https://github.com/golang/go/issues/71672), please use higher go version or add build tag `--ldflags="-checklinkname=0"` 
+  - Notice: Go1.24.0 is not supported due to the [issue](https://github.com/golang/go/issues/71672), please use higher go version or add build tag `--ldflags="-checklinkname=0"`
 - OS: Linux / MacOS / Windows
 - CPU: AMD64 / (ARM64, need go1.20 above)
 
@@ -396,7 +396,7 @@ Sonic **DOES NOT** ensure to support all environments, due to the difficulty of 
 
 ### Pretouch
 
-Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as a JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise **using `Pretouch()` for huge-schema or compact-memory applications** before `Marshal()/Unmarshal()`.
+Since Sonic uses [golang-asm](https://github.com/twitchyliquid64/golang-asm) as a JIT assembler, which is NOT very suitable for runtime compiling, first-hit running of a huge schema may cause request-timeout or even process-OOM. For better stability, we advise **using `PretouchMany()` for huge-schema or lantence-sensitive applications** before `Marshal()/Unmarshal()`.
 
 ```go
 import (
@@ -406,17 +406,15 @@ import (
 )
 
 func init() {
-    var v HugeStruct
+    var v HugeStruct1
+    var v HugeStruct2
 
     // For most large types (nesting depth <= option.DefaultMaxInlineDepth)
-    err := sonic.Pretouch(reflect.TypeOf(v))
-
-    // with more CompileOption...
-    err := sonic.Pretouch(reflect.TypeOf(v),
+    sonic.PretouchMany([]reflect.Type{reflect.TypeOf(v1), reflect.TypeOf(v2)},
         // If the type is too deep nesting (nesting depth > option.DefaultMaxInlineDepth),
-        // you can set compile recursive loops in Pretouch for better stability in JIT.
+        // you can set more recursive loops in Pretouch for fully sufficient JIT.
         option.WithCompileRecursiveDepth(loop),
-        // For a large nested struct, try to set a smaller depth to reduce compiling time.
+        // For a large struct, try to set a smaller depth to reduce compiling time.
         option.WithCompileMaxInlineDepth(depth),
     )
 }
