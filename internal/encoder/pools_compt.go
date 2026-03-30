@@ -19,6 +19,16 @@
 
 package encoder
 
+import (
+	"reflect"
+
+	"github.com/bytedance/sonic/option"
+)
+
 func init() {
 	ForceUseVM()
+}
+
+func pretouchRecX86(vtm map[reflect.Type]uint8, opts option.CompileOptions) error {
+	return pretouchRec(vtm, opts)
 }

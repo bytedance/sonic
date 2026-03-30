@@ -26,13 +26,15 @@ import (
 )
 
 var (
-	pretouchImpl = jitdec.Pretouch
-	decodeImpl   = jitdec.Decode
+	pretouchImpl     = jitdec.Pretouch
+	pretouchManyImpl = jitdec.PretouchMany
+	decodeImpl       = jitdec.Decode
 )
 
 func init() {
 	if envs.UseOptDec {
 		pretouchImpl = optdec.Pretouch
+		pretouchManyImpl = optdec.PretouchMany
 		decodeImpl = optdec.Decode
 	}
 }

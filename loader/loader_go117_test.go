@@ -137,3 +137,96 @@ func TestLoad(t *testing.T) {
     require.Equal(t, "github.com/bytedance/sonic/dummy.go", file)
     require.Equal(t, 0, line)
 }
+
+func TestLoadManyEmpty(t *testing.T) {
+    ld := Loader{
+        Name: "dummy_module_",
+        File: "github.com/bytedance/sonic/dummy_many.go",
+    }
+
+    require.Nil(t, ld.LoadMany(nil))
+    require.Nil(t, ld.LoadMany([]LoadOneItem{}))
+}
+
+func TestLoadMany(t *testing.T) {
+    type SumFunc func(i *int, hook func(i *int)) int
+    type RetFunc func() int64
+
+    // Equivalent Go logic:
+    // func(i *int, hook func(i *int)) int {
+    //     t := *i
+    //     hook(i)
+    //     return t + *i
+    // }
+    bc1 := []byte{
+        0x48, 0x83, 0xec, 0x18,
+        0x48, 0x89, 0x6c, 0x24, 0x10,
+        0x48, 0x8d, 0x6c, 0x24, 0x10,
+        0x48, 0x89, 0x44, 0x24, 0x20,
+        0x48, 0x8b, 0x08,
+        0x48, 0x89, 0x4c, 0x24, 0x08,
+        0x48, 0x8b, 0x33,
+        0x48, 0x89, 0xda,
+        0xff, 0xd6,
+        0x48, 0x8b, 0x44, 0x24, 0x08,
+        0x48, 0x8b, 0x4c, 0x24, 0x20,
+        0x48, 0x03, 0x01,
+        0x48, 0x8b, 0x6c, 0x24, 0x10,
+        0x48, 0x83, 0xc4, 0x18,
+        0xc3,
+    }
+
+    // movq $7, %rax; ret
+    bc2 := []byte{
+        0x48, 0xc7, 0xc0, 0x07, 0x00, 0x00, 0x00,
+        0xc3,
+    }
+
+    ld := Loader{
+        Name: "dummy_module_",
+        File: "github.com/bytedance/sonic/dummy_many.go",
+    }
+
+    out := ld.LoadMany([]LoadOneItem{
+        {
+            Text:      bc1,
+            FuncName:  "batch_sum",
+            FrameSize: 24,
+            ArgSize:   16,
+            ArgPtrs:   []bool{true, true},
+            LocalPtrs: []bool{false, false},
+            Pcdata: Pcdata{
+                {PC: uint32(len(bc1)), Val: 24},
+            },
+        },
+        {
+            Text:      bc2,
+            FuncName:  "batch_ret7",
+            FrameSize: 0,
+            ArgSize:   0,
+            Pcdata: Pcdata{
+                {PC: uint32(len(bc2)), Val: 0},
+            },
+        },
+    })
+    require.Len(t, out, 2)
+
+    sum := *(*SumFunc)(unsafe.Pointer(&out[0]))
+    ret7 := *(*RetFunc)(unsafe.Pointer(&out[1]))
+
+    i := 1
+    got := sum(&i, func(v *int) {
+        *v += 2
+    })
+    require.Equal(t, 4, got)
+    require.Equal(t, int64(7), ret7())
+
+    fi := runtime.FuncForPC(*(*uintptr)(out[0]))
+    require.Equal(t, "batch_sum", fi.Name())
+    file, line := fi.FileLine(0)
+    require.Equal(t, "?", file)
+    require.Equal(t, 0, line)
+
+    fi2 := runtime.FuncForPC(*(*uintptr)(out[1]))
+    require.Equal(t, "batch_ret7", fi2.Name())
+}

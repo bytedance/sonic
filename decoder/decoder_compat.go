@@ -174,6 +174,12 @@ func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
 	return nil
 }
 
+// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+// in order to reduce the first-hit latency.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
+	return nil
+}
+
 type StreamDecoder = json.Decoder
 
 // NewStreamDecoder adapts to encoding/json.NewDecoder API.
