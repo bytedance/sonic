@@ -19,7 +19,6 @@
 package sve_wrapgoc
 
 import (
-	"bytes"
 	"os"
 	"runtime"
 	"runtime/debug"
