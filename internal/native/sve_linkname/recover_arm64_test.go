@@ -19,7 +19,6 @@
 package sve_linkname
 
 import (
-	"bytes"
 	"os"
 	"runtime"
 	"runtime/debug"
