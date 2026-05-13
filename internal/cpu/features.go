@@ -24,8 +24,9 @@ import (
 )
 
 var (
-	HasAVX2 = cpuid.CPU.Has(cpuid.AVX2)
-	HasSSE  = cpuid.CPU.Has(cpuid.SSE)
+	HasAVX2      = cpuid.CPU.Has(cpuid.AVX2)
+	HasSSE       = cpuid.CPU.Has(cpuid.SSE)
+	HasPCLMULQDQ = cpuid.CPU.Has(cpuid.CLMUL)
 )
 
 func init() {
@@ -36,9 +37,11 @@ func init() {
 		break
 	case "noavx":
 		HasAVX2 = false
+		HasPCLMULQDQ = false
 	// will also disable avx, act as `noavx`, we remain it to make sure forward compatibility
 	case "noavx2":
 		HasAVX2 = false
+		HasPCLMULQDQ = false
 	default:
 		panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx', 'noavx2'", v))
 	}
