@@ -87,7 +87,3 @@ func pretouchTypeArm64(_vt reflect.Type, opts option.CompileOptions, v uint8) (m
 		return nil, err
 	}
 }
-
-func pretouchRecX86(vtm map[reflect.Type]uint8, opts option.CompileOptions) error {
-	return pretouchRec(vtm, opts)
-}
