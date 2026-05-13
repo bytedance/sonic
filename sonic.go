@@ -21,9 +21,7 @@ package sonic
 
 import (
 	"io"
-	"os"
 	"reflect"
-	"sync"
 
 	"github.com/bytedance/sonic/decoder"
 	"github.com/bytedance/sonic/encoder"
@@ -97,68 +95,9 @@ func (cfg Config) Froze() API {
 	return api
 }
 
-var registry sync.Map
-var IsJitRecover = os.Getenv("SONIC_ENCODER_FALLBACK") != ""
-
-const (
-	UNKNOWN  = 0
-	VM_MODE  = 1
-	JIT_MODE = 2
-)
-
 // Marshal is implemented by sonic
-func (cfg frozenConfig) Marshal(val interface{}) (result []byte, r error) {
-	t := reflect.TypeOf(val)
-	typeOK := checkType(t)
-	pathexp := UNKNOWN
-	pathjit := false
-	if typeOK {
-		pathexp = loadMarshalMode(t)
-		if pathexp == VM_MODE || encoder.GetUseVM() {
-			encoder.ForceUseVM()
-		} else {
-			encoder.ForceUseJit()
-			pathjit = true
-		}
-	}
-	if IsJitRecover {
-		defer func() {
-			if err := recover(); err != nil {
-				if !pathjit {
-					panic(err)
-				}
-				encoder.ForceUseVM()
-				result, r = encoder.Encode(val, cfg.encoderOpts)
-				pathjit = false
-				if typeOK && pathexp == UNKNOWN {
-					storeMarshalMode(t, VM_MODE)
-				}
-			}
-		}()
-	}
-	buf, err := encoder.Encode(val, cfg.encoderOpts)
-	if typeOK && pathexp == UNKNOWN && pathjit {
-		storeMarshalMode(t, JIT_MODE)
-	}
-	return buf, err
-}
-
-func checkType(t reflect.Type) bool {
-	if t == nil {
-		return false
-	}
-	return t.Kind() == reflect.Struct
-}
-
-func loadMarshalMode(t reflect.Type) int {
-	if v, ok := registry.Load(t); ok {
-		return v.(int)
-	}
-	return UNKNOWN
-}
-
-func storeMarshalMode(t reflect.Type, mode int) {
-	registry.Store(t, mode)
+func (cfg frozenConfig) Marshal(val interface{}) ([]byte, error) {
+	return encoder.Encode(val, cfg.encoderOpts)
 }
 
 // MarshalToString is implemented by sonic

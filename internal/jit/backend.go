@@ -25,7 +25,6 @@ import (
 	"github.com/bytedance/sonic/loader"
 	"github.com/twitchyliquid64/golang-asm/asm/arch"
 	"github.com/twitchyliquid64/golang-asm/obj"
-	"github.com/twitchyliquid64/golang-asm/obj/arm64"
 	"github.com/twitchyliquid64/golang-asm/obj/x86"
 	"github.com/twitchyliquid64/golang-asm/objabi"
 )
@@ -128,14 +127,10 @@ func max(a, b int32) int32 {
 }
 
 func nextPc(p *obj.Prog) uint32 {
-	isize := int64(p.Isize)
-	if isize == 0 {
-		isize = 4
-	}
-	if p.Link != nil && p.Pc+isize != p.Link.Pc {
+	if p.Link != nil && p.Pc+int64(p.Isize) != p.Link.Pc {
 		panic("p.PC + p.Isize != p.Link.PC")
 	}
-	return uint32(p.Pc + isize)
+	return uint32(p.Pc + int64(p.Isize))
 }
 
 // NOTE: copied from https://github.com/twitchyliquid64/golang-asm/blob/8d7f1f783b11f9a00f5bcdfcae17f5ac8f22512e/obj/x86/obj6.go#L811.
@@ -152,21 +147,6 @@ func (self *Backend) GetPcspTable(ctxt *obj.Link, cursym *obj.LSym, newprog obj.
 		}
 		switch p.As {
 		default:
-			continue
-		case arm64.AADD: // nolint
-			// add $imm, SP
-			if p.To.Reg == arm64.REGSP && p.To.Type == obj.TYPE_REG {
-				pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
-				deltasp -= int32(p.From.Offset)
-			}
-			continue
-		case arm64.ASUB:
-			// sub $imm, SP
-			if p.To.Reg == arm64.REGSP && p.To.Type == obj.TYPE_REG {
-				pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
-				deltasp += int32(p.From.Offset)
-				maxdepth = max(maxdepth, deltasp)
-			}
 			continue
 		case x86.APUSHL, x86.APUSHFL:
 			pcdata = append(pcdata, loader.Pcvalue{PC: nextPc(p), Val: int32(deltasp)})
