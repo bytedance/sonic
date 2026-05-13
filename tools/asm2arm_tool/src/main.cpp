@@ -16,10 +16,8 @@
 
 #include "cal_depth.h"
 #include "dump_elf.h"
-#include "go_func_parser.h"
 #include "mc_bundle.h"
 #include "streamer_JIT.h"
-#include "streamer_SL.h"
 #include "utils.h"
 
 #include "lld/Common/Driver.h"
@@ -97,12 +95,6 @@ static cl::opt<std::string> TemplateFileOption("tmpl",
                                                cl::value_desc("tmpl-path"),
                                                cl::cat(JITCategory));
 
-// STATIC-LINK Options
-cl::OptionCategory StaticLinkCategory("Tool STATIC-LINK Options");
-static cl::opt<std::string>
-    GoProtoOption("goproto", cl::desc("The go file that declares go functions"),
-                  cl::value_desc("go-proto-path"), cl::cat(StaticLinkCategory));
-
 /**
  * @brief 检查命令行选项
  *
@@ -144,12 +136,6 @@ bool CheckModeOptions() {
     outs() << "--vl is invalid\n";
     return false;
   }
-  if (ModeOption == "SL") {
-    if (GoProtoOption.empty()) {
-      outs() << "goproto is empty\n";
-      return false;
-    }
-  }
   return true;
 }
 
@@ -163,8 +149,7 @@ bool CheckModeOptions() {
  */
 int main(int argc, char **argv) {
   // 解析命令行选项
-  cl::HideUnrelatedOptions(
-      {&CommonCategory, &JITCategory, &StaticLinkCategory});
+  cl::HideUnrelatedOptions({&CommonCategory, &JITCategory});
   cl::ParseCommandLineOptions(argc, argv, "Tools for Go assembly conversion\n");
   if (!CheckModeOptions()) {
     return 1;
@@ -181,7 +166,6 @@ int main(int argc, char **argv) {
   std::string OutputPath = OutputPathOption;
   std::string Package = PackageOption;
   std::string TemplateFile = TemplateFileOption;
-  std::string GoProto = GoProtoOption;
   uint64_t VL = VLOption;
 
   // 获取源文件名（不含扩展名）
@@ -319,95 +303,6 @@ int main(int argc, char **argv) {
     tool::asm2arm::DumpSubr(BasicBlocks[EntryBlockIndex], Package, OutputPath,
                             BaseName, SPDelta, InstMaxSPDepth, DumpSize);
     tool::asm2arm::DumpTmpl(TemplateFile, Package, OutputPath, BaseName);
-  }
-
-  if (Mode == "SL") {
-    // 静态链接模式：生成汇编文件和子例程信息
-    SmallString<256> StaticFile;
-    sys::path::append(StaticFile, OutputPath,
-                      (Twine(BaseName) + "_arm64.s").str());
-    auto MBExp = MemoryBuffer::getFile(SourceFile);
-    if (!MBExp) {
-      outs() << "getFile failed\n";
-      return 1;
-    }
-    std::unique_ptr<MemoryBuffer> MB = std::move(*MBExp);
-
-    SourceMgr SrcMgr;
-    SrcMgr.AddNewSourceBuffer(std::move(MB), SMLoc());
-
-    MCContext Ctx(TheTriple, &Bundle.getAsmInfo(), &Bundle.getRegisterInfo(),
-                  &Bundle.getSubtargetInfo(), &SrcMgr,
-                  &Bundle.getTargetOptions());
-    std::unique_ptr<MCObjectFileInfo> MOFI(
-        Bundle.getTarget().createMCObjectFileInfo(Ctx, false));
-    Ctx.setObjectFileInfo(MOFI.get());
-
-    auto MAB =
-        std::unique_ptr<MCAsmBackend>(Bundle.getTarget().createMCAsmBackend(
-            Bundle.getSubtargetInfo(), Bundle.getRegisterInfo(),
-            Bundle.getTargetOptions()));
-    auto MCE = std::unique_ptr<MCCodeEmitter>(
-        Bundle.getTarget().createMCCodeEmitter(Bundle.getInstrInfo(), Ctx));
-
-    std::error_code EC;
-    raw_fd_ostream Out(StaticFile, EC, sys::fs::OF_None);
-    if (EC) {
-      outs() << EC.message() << "\n";
-      return 1;
-    }
-
-    // 生成汇编文件头部
-    tool::asm2arm::DumpDeclareHead(Out, BaseName, MaxDepth);
-
-    raw_null_ostream NullOS;
-    auto MOW = MAB->createObjectWriter(NullOS);
-
-    // 创建Plan9流生成器
-    auto Streamer = std::make_unique<tool::asm2arm::SLStreamer>(
-        Ctx, std::move(MAB), std::move(MOW), std::move(MCE), Out, Bundle,
-        BaseName);
-    Streamer->initSections(false, Bundle.getSubtargetInfo());
-
-    // 解析汇编文件
-    std::unique_ptr<MCAsmParser> Parser(
-        llvm::createMCAsmParser(SrcMgr, Ctx, *Streamer, Bundle.getAsmInfo()));
-    std::unique_ptr<MCTargetAsmParser> TAP(Bundle.getTarget().createMCAsmParser(
-        Bundle.getSubtargetInfo(), *Parser, Bundle.getInstrInfo(),
-        Bundle.getTargetOptions()));
-    Parser->setTargetParser(*TAP);
-    if (Parser->Run(false)) {
-      outs() << "asm parse failed\n";
-      return 1;
-    }
-    Streamer->finish();
-
-    // 解析Go函数签名并分配寄存器
-    auto ParseRes = tool::ParseGoFile(GoProto);
-    tool::AllocateRegisters(ParseRes);
-    if (!ParseRes.Success()) {
-      outs() << "Error: " << ParseRes.Error << "\n";
-      return 1;
-    }
-
-    LLVM_DEBUG(for (const auto &[name, sig] : ParseRes.Funcs) {
-      dbgs() << "Function: " << name << "\n";
-      for (const auto &arg : sig.Params) {
-        dbgs() << "  ARG " << (arg.Name.empty() ? "_" : arg.Name) << " ("
-               << arg.Type << ", " << arg.Size << "B): " << arg.CReg.Name
-               << " (C)\n";
-      }
-      for (const auto &res : sig.Results) {
-        dbgs() << "  RET " << (res.Name.empty() ? "_" : res.Name) << " ("
-               << res.Type << ", " << res.Size << "B): " << res.CReg.Name
-               << " (C)\n";
-      }
-    });
-
-    // 生成汇编文件尾部和子例程信息
-    tool::asm2arm::DumpDeclareTail(Out, BaseName, ParseRes, MaxDepth);
-    tool::asm2arm::DumpSubrSL(OutputPath, Package, BaseName,
-                              Streamer->GetStartProgramCounter(), MaxDepth);
   }
 
   outs() << "ALL DONE\n";

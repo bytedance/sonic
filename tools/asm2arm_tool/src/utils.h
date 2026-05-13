@@ -67,26 +67,6 @@ bool StartWith(std::string_view Str, std::string_view Prefix);
 std::string GetSourceName(llvm::StringRef Path);
 
 /**
- * @brief 分词指令字符串
- *
- * 将指令字符串分解为标记列表
- * @param InstStr 指令字符串
- * @return 标记列表
- */
-std::vector<std::string> TokenizeInstruction(const std::string &InstStr);
-
-/**
- * @brief 输出标签
- *
- * 输出格式化的标签
- * @param Out 输出流
- * @param Label 标签名
- * @return 输出流引用
- */
-llvm::raw_fd_ostream &OutLabel(llvm::raw_fd_ostream &Out,
-                               llvm::StringRef Label);
-
-/**
  * @brief 输出构建标签
  *
  * 输出固定的构建标签内容
