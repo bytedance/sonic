@@ -16,20 +16,19 @@
  * limitations under the License.
  */
 
-package sve_linkname
+package sve_wrapgoc
 
 import (
-    `unsafe`
+	"unsafe"
 
-    // `github.com/bytedance/sonic/internal/native/types`
+	"github.com/bytedance/sonic/internal/rt"
 )
 
-//go:nosplit
-func html_escape(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) (ret int) {
-    return __html_escape(sp, nb, dp, dn)
-}
+var F_lookup_small_key func(key unsafe.Pointer, table unsafe.Pointer, lowerOff int) (ret int)
+
+var S_lookup_small_key uintptr
 
 //go:nosplit
-//go:noescape
-//goland:noinspection GoUnusedParameter
-func __html_escape(sp unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) (ret int)
+func lookup_small_key(key *string, table *[]byte, lowerOff int) (ret int) {
+	return F_lookup_small_key(rt.NoEscape(unsafe.Pointer(key)), rt.NoEscape(unsafe.Pointer(table)), lowerOff)
+}

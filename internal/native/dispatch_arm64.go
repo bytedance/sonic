@@ -45,6 +45,8 @@ var (
 
 	__Quote func(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn unsafe.Pointer, flags uint64) int
 
+	__LookupSmallKey func(key unsafe.Pointer, table unsafe.Pointer, lowerOff int) (index int)
+
 	__SkipOne func(s unsafe.Pointer, p unsafe.Pointer, m unsafe.Pointer, flags uint64) int
 
 	__SkipOneFast func(s unsafe.Pointer, p unsafe.Pointer) int
@@ -84,6 +86,7 @@ var (
 	S_skip_object        uintptr
 	S_skip_number        uintptr
 	S_parse_with_padding uintptr
+	S_lookup_small_key   uintptr
 )
 var UseSveWrapgoc bool
 var UseSveLinkname bool
@@ -236,6 +239,32 @@ func Quote(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) i
 }
 
 //go:nosplit
+func LookupSmallKeySveWrapgoc(key *string, table *[]byte, lowerOff int) (index int) {
+	return __LookupSmallKey(rt.NoEscape(unsafe.Pointer(key)), rt.NoEscape(unsafe.Pointer(table)), lowerOff)
+}
+
+//go:nosplit
+//go:noescape
+//go:linkname LookupSmallKeySveLinkname github.com/bytedance/sonic/internal/native/sve_linkname.__lookup_small_key
+func LookupSmallKeySveLinkname(key *string, table *[]byte, lowerOff int) (index int)
+
+//go:nosplit
+//go:noescape
+//go:linkname LookupSmallKeyNeonLinkname github.com/bytedance/sonic/internal/native/neon.__lookup_small_key
+func LookupSmallKeyNeonLinkname(key *string, table *[]byte, lowerOff int) (index int)
+
+//go:nosplit
+func LookupSmallKey(key *string, table *[]byte, lowerOff int) (index int) {
+	if UseSveWrapgoc {
+		return LookupSmallKeySveWrapgoc(key, table, lowerOff)
+	} else if UseSveLinkname {
+		return LookupSmallKeySveLinkname(key, table, lowerOff)
+	} else {
+		return LookupSmallKeyNeonLinkname(key, table, lowerOff)
+	}
+}
+
+//go:nosplit
 func SkipOneSveWrapgoc(s *string, p *int, m *types.StateMachine, flags uint64) int {
 	return __SkipOne(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)), flags)
 }
@@ -373,6 +402,7 @@ func useSveLinkname() {
 	S_skip_number = neon.S_skip_number
 	S_get_by_path = sve_linkname.S_get_by_path
 	S_parse_with_padding = sve_linkname.S_parse_with_padding
+	S_lookup_small_key = sve_linkname.S_lookup_small_key
 }
 
 func useSveWrapgoc() {
@@ -386,6 +416,7 @@ func useSveWrapgoc() {
 	__Quote = sve_wrapgoc.F_quote
 	__SkipOne = sve_wrapgoc.F_skip_one
 	__SkipOneFast = sve_wrapgoc.F_skip_one_fast
+	__LookupSmallKey = sve_wrapgoc.F_lookup_small_key
 
 	S_f64toa = sve_wrapgoc.S_f64toa
 	S_f32toa = sve_wrapgoc.S_f32toa
@@ -406,6 +437,7 @@ func useSveWrapgoc() {
 	S_skip_number = neon.S_skip_number
 	S_get_by_path = sve_wrapgoc.S_get_by_path
 	S_parse_with_padding = sve_wrapgoc.S_parse_with_padding
+	S_lookup_small_key = sve_wrapgoc.S_lookup_small_key
 }
 
 func CpuDetect() bool {
