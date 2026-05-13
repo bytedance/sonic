@@ -54,5 +54,3 @@ fuzz/testdata
 *coverage.txt
 .venv/
 tools/venv/*
-tools/asm2arm_tool/.cache
-tools/asm2arm_tool/build
