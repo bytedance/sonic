@@ -122,13 +122,4 @@ var (
 	//
 	// NewStreamEncoder returns a new encoder that write to w.
 	NewStreamEncoder = encoder.NewStreamEncoder
-
-	// ForceUseJit enables JIT mode in encoder.
-	ForceUseJit = encoder.ForceUseJit
-
-	// ForceUseVM enables VM mode in encoder.
-	ForceUseVM = encoder.ForceUseVM
-
-	// GetUseVM returns the UseVM flag.
-	GetUseVM = encoder.GetUseVM
 )
