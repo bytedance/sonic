@@ -6,7 +6,7 @@ replace github.com/bytedance/sonic/loader => ./loader
 
 require (
 	github.com/bytedance/gopkg v0.1.3
-	github.com/bytedance/sonic/loader v0.5.1
+	github.com/bytedance/sonic/loader v0.5.2-dev.arm64.0
 	github.com/cloudwego/base64x v0.1.6
 	github.com/davecgh/go-spew v1.1.1
 	github.com/klauspost/cpuid/v2 v2.2.9
