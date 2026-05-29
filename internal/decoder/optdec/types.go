@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"reflect"
+	"time"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/rt"
@@ -45,6 +46,7 @@ var (
 	bytesType               = reflect.TypeOf([]byte(nil))
 	jsonNumberType          = reflect.TypeOf(json.Number(""))
 	base64CorruptInputError = reflect.TypeOf(base64.CorruptInputError(0))
+	timeTimeType            = reflect.TypeOf(time.Time{})
 	anyType                 = rt.UnpackType(reflect.TypeOf((*interface{})(nil)).Elem())
 )
 

@@ -3,6 +3,7 @@ package optdec
 import (
 	"encoding/json"
 	"math"
+	"time"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/rt"
@@ -207,6 +208,7 @@ type f64Decoder struct{}
 
 func (d *f64Decoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	if node.IsNull() {
+		*(*float64)(vp) = math.NaN()
 		return nil
 	}
 
@@ -217,6 +219,41 @@ func (d *f64Decoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 
 	*(*float64)(vp) = float64(ret)
 	return nil
+}
+
+type timeDecoder struct{}
+
+func (d *timeDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
+	if node.IsNull() {
+		return nil
+	}
+
+	s, ok := node.AsStr(ctx)
+	if !ok {
+		return error_mismatch(node, ctx, timeTimeType)
+	}
+
+	t, ok := fastParseRFC3339(s)
+	if !ok {
+		return error_mismatch(node, ctx, timeTimeType)
+	}
+
+	*(*time.Time)(vp) = t
+	return nil
+}
+
+func fastParseRFC3339(s string) (time.Time, bool) {
+	if len(s) == 20 && s[4] == '-' && s[7] == '-' && s[10] == 'T' && s[13] == ':' && s[16] == ':' && s[19] == 'Z' {
+		year := int(s[0]-'0')*1000 + int(s[1]-'0')*100 + int(s[2]-'0')*10 + int(s[3]-'0')
+		month := time.Month(int(s[5]-'0')*10 + int(s[6]-'0'))
+		day := int(s[8]-'0')*10 + int(s[9]-'0')
+		hour := int(s[11]-'0')*10 + int(s[12]-'0')
+		min := int(s[14]-'0')*10 + int(s[15]-'0')
+		sec := int(s[17]-'0')*10 + int(s[18]-'0')
+		return time.Date(year, month, day, hour, min, sec, 0, time.UTC), true
+	}
+	t, err := time.Parse(time.RFC3339Nano, s)
+	return t, err == nil
 }
 
 type boolDecoder struct {

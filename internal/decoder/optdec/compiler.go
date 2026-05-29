@@ -112,6 +112,10 @@ func (c *compiler) compile(vt reflect.Type) decFunc {
 		}
 	}
 
+	if vt == timeTimeType {
+		return &timeDecoder{}
+	}
+
 	dec := c.tryCompilePtrUnmarshaler(vt, false)
 	if dec != nil {
 		return dec
