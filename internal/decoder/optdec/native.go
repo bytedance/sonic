@@ -145,7 +145,7 @@ func newParser(data string, pos int, opt uint64) *Parser {
 		p.Utf8Inv = true
 		p.start = uintptr((*rt.GoString)(unsafe.Pointer(&p.Json)).Ptr)
 	} else {
-		p.Json = data
+		p.Json = data[pos:]
 		// TODO: prevent too large JSON
 		p.padded = append(p.padded, data[pos:]...)
 		p.padded = append(p.padded, padding...)

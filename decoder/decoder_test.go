@@ -249,6 +249,28 @@ func TestDecodeOption(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestDecoderSequential(t *testing.T) {
+	// the first value is long enough to push the next value's start
+	// offset well past the internal padding, exercising the position
+	// handling when decoding multiple values from one buffer
+	first := `"` + strings.Repeat("A", 200) + `"`
+	second := `{"key":"hello world","n":12345}`
+	s := first + " " + second
+
+	d := NewDecoder(s)
+
+	var v1 string
+	assert.NoError(t, d.Decode(&v1))
+	assert.Equal(t, strings.Repeat("A", 200), v1)
+
+	var v2 map[string]interface{}
+	assert.NoError(t, d.Decode(&v2))
+
+	var ref map[string]interface{}
+	assert.NoError(t, json.Unmarshal([]byte(second), &ref))
+	assert.Equal(t, ref, v2)
+}
+
 func decode(s string, v interface{}, copy bool) (int, error) {
 	d := NewDecoder(s)
 	if copy {
