@@ -8,6 +8,15 @@ jobs:
       matrix:
         go-version: [1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x, 1.23.x, 1.24.x, 1.25.x]
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+        exclude:
+          # Go <= 1.22 lack the cmd/link LC_UUID fix (golang/go#68678): under the
+          # stricter dyld on the macos-latest image their test binaries abort with
+          # "missing LC_UUID load command". These versions stay covered on Linux.
+          - { go-version: 1.18.x, os: macos-latest }
+          - { go-version: 1.19.x, os: macos-latest }
+          - { go-version: 1.20.x, os: macos-latest }
+          - { go-version: 1.21.x, os: macos-latest }
+          - { go-version: 1.22.x, os: macos-latest }
     runs-on: ${{ matrix.os }}
     steps:
       - name: Clear repository

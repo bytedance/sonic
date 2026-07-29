@@ -13,6 +13,12 @@ jobs:
       matrix:
         go-version: [1.20.x, 1.22.x, 1.25.x]
         runner_arch: [ubuntu-24.04-arm, macos-latest]
+        exclude:
+          # Go <= 1.22 lack the cmd/link LC_UUID fix (golang/go#68678): under the
+          # stricter dyld on the macos-latest image their test binaries abort with
+          # "missing LC_UUID load command". These versions stay covered on Linux arm.
+          - { go-version: 1.20.x, runner_arch: macos-latest }
+          - { go-version: 1.22.x, runner_arch: macos-latest }
 
     runs-on: ${{ matrix.runner_arch }}
     
