@@ -77,8 +77,8 @@ func (self *Searcher) getByPath(path ...interface{}) (Node, error) {
 		if err == types.ERR_NOT_FOUND {
 			return Node{}, ErrNotExist
 		}
-		if err == types.ERR_UNSUPPORT_TYPE {
-			panic("path must be either int(>=0) or string")
+		if err == _ERR_INVALID_PATH_TYPE {
+			return Node{}, ErrInvalidPathType
 		}
 		return Node{}, self.parser.syntaxError(err)
 	}
@@ -107,8 +107,8 @@ func _GetByPath(src string, path ...interface{}) (start int, end int, typ int, e
 		if e == types.ERR_NOT_FOUND {
 			return -1, -1, 0, ErrNotExist
 		}
-		if e == types.ERR_UNSUPPORT_TYPE {
-			panic("path must be either int(>=0) or string")
+		if e == _ERR_INVALID_PATH_TYPE {
+			return -1, -1, 0, ErrInvalidPathType
 		}
 		return -1, -1, 0, p.syntaxError(e)
 	}
