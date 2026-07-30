@@ -33,8 +33,9 @@ const (
 )
 
 const (
-	_ERR_NOT_FOUND      types.ParsingError = 33
-	_ERR_UNSUPPORT_TYPE types.ParsingError = 34
+	_ERR_NOT_FOUND        types.ParsingError = 33
+	_ERR_UNSUPPORT_TYPE   types.ParsingError = 34
+	_ERR_INVALID_PATH_TYPE types.ParsingError = 35
 )
 
 var (
@@ -43,6 +44,9 @@ var (
 
 	// ErrUnsupportType means API on the node is unsupported
 	ErrUnsupportType error = newError(_ERR_UNSUPPORT_TYPE, "unsupported type")
+
+	// ErrInvalidPathType means the path parameter type is invalid (must be int or string)
+	ErrInvalidPathType error = newError(_ERR_INVALID_PATH_TYPE, "path must be either int or string")
 )
 
 type Parser struct {
