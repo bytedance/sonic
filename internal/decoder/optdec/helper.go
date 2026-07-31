@@ -1,7 +1,6 @@
 package optdec
 
 import (
-	"encoding/json"
 	"strconv"
 
 	"github.com/bytedance/sonic/internal/native"
@@ -35,11 +34,7 @@ func ValidNumberFast(raw string) bool {
 	}
 
 	// check trailing chars
-	for ret < len(raw) {
-		return false
-	}
-
-	return true
+	return ret >= len(raw)
 }
 
 func SkipOneFast(json string, pos int) (string, error) {
@@ -52,43 +47,28 @@ func SkipOneFast(json string, pos int) (string, error) {
 }
 
 func ParseI64(raw string) (int64, error) {
-	i64, err := strconv.ParseInt(raw, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return i64, nil
+	return strconv.ParseInt(raw, 10, 64)
 }
 
 func ParseBool(raw string) (bool, error) {
-	var b bool
-	err := json.Unmarshal([]byte(raw), &b)
-	if err != nil {
-		return false, err
+	switch raw {
+	case "true":
+		return true, nil
+	case "false":
+		return false, nil
+	default:
+		return false, &strconv.NumError{Func: "ParseBool", Num: raw, Err: strconv.ErrSyntax}
 	}
-	return b, nil
 }
 
 func ParseU64(raw string) (uint64, error) {
-	u64, err := strconv.ParseUint(raw, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return u64, nil
+	return strconv.ParseUint(raw, 10, 64)
 }
 
 func ParseF64(raw string) (float64, error) {
-	f64, err := strconv.ParseFloat(raw, 64)
-	if err != nil {
-		return 0, err
-	}
-	return f64, nil
+	return strconv.ParseFloat(raw, 64)
 }
 
 func Unquote(raw string) (string, error) {
-	var u string
-	err := json.Unmarshal([]byte(raw), &u)
-	if err != nil {
-		return "", err
-	}
-	return u, nil
+	return strconv.Unquote(raw)
 }
