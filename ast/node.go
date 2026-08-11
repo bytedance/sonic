@@ -61,6 +61,10 @@ type Node struct {
 	m *sync.RWMutex
 }
 
+// Path identifies a node by object keys (string) and array indexes (int).
+// An empty path identifies the root node.
+type Path []interface{}
+
 // UnmarshalJSON is just an adapter to json.Unmarshaler.
 // If you want better performance, use Searcher.GetByPath() directly
 func (self *Node) UnmarshalJSON(data []byte) (err error) {
@@ -985,6 +989,325 @@ func (self *Node) Move(dst, src int) error {
 	}
 
 	s.MoveOne(src, dst)
+	return nil
+}
+
+// CopyPath copies the node at src to dst. The copied subtree is detached from
+// the source, so subsequent changes to either subtree do not affect the other.
+//
+// Missing destination parents are created from the following path component:
+// a string creates an object and a non-negative int creates an array. Missing
+// array elements are filled with null. An empty path identifies the root node.
+func (self *Node) CopyPath(src, dst Path) error {
+	if err := validatePath(src); err != nil {
+		return err
+	}
+	if err := validatePath(dst); err != nil {
+		return err
+	}
+
+	source, err := self.nodeByPath(src)
+	if err != nil {
+		return err
+	}
+	if pathsEqual(src, dst) {
+		return nil
+	}
+
+	raw, err := source.Raw()
+	if err != nil {
+		return err
+	}
+	return self.setByPath(dst, NewRaw(raw))
+}
+
+// MovePath moves the node at src to dst and removes src. Source comes before
+// destination, unlike Move, which retains its historical destination-first
+// argument order. Moving an array element within the same array preserves the
+// existing Move semantics and reorders the array instead of replacing an item.
+//
+// Missing destination parents are created in the same way as CopyPath. Moving
+// a node into one of its own descendants is rejected.
+func (self *Node) MovePath(src, dst Path) error {
+	if err := validatePath(src); err != nil {
+		return err
+	}
+	if err := validatePath(dst); err != nil {
+		return err
+	}
+
+	source, err := self.nodeByPath(src)
+	if err != nil {
+		return err
+	}
+	if pathsEqual(src, dst) {
+		return nil
+	}
+	if pathHasPrefix(dst, src) {
+		return fmt.Errorf("cannot move a node into its own descendant")
+	}
+
+	if sameArrayParent(src, dst) {
+		parent, err := self.nodeByPath(src[:len(src)-1])
+		if err != nil {
+			return err
+		}
+		dstIndex := dst[len(dst)-1].(int)
+		if err := parent.skipAllIndex(); err != nil {
+			return err
+		}
+		if dstIndex >= parent.len() {
+			return ErrNotExist
+		}
+		return parent.Move(dstIndex, src[len(src)-1].(int))
+	}
+
+	moved := *source
+	if err := self.setByPath(dst, moved); err != nil {
+		return err
+	}
+
+	// Replacing an ancestor also removes the original source path.
+	if pathHasPrefix(src, dst) {
+		return nil
+	}
+	return self.unsetByPath(src)
+}
+
+func validatePath(path Path) error {
+	for i, segment := range path {
+		switch segment := segment.(type) {
+		case string:
+		case int:
+			if segment < 0 {
+				return fmt.Errorf("path index at position %d must be non-negative", i)
+			}
+		default:
+			return fmt.Errorf("path component at position %d must be string or int", i)
+		}
+	}
+	return nil
+}
+
+func pathsEqual(left, right Path) bool {
+	return len(left) == len(right) && pathHasPrefix(left, right)
+}
+
+// pathHasPrefix reports whether path starts with prefix. Both paths must have
+// already passed validatePath.
+func pathHasPrefix(path, prefix Path) bool {
+	if len(prefix) > len(path) {
+		return false
+	}
+	for i := range prefix {
+		switch value := prefix[i].(type) {
+		case string:
+			other, ok := path[i].(string)
+			if !ok || value != other {
+				return false
+			}
+		case int:
+			other, ok := path[i].(int)
+			if !ok || value != other {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func sameArrayParent(src, dst Path) bool {
+	if len(src) == 0 || len(src) != len(dst) {
+		return false
+	}
+	if _, ok := src[len(src)-1].(int); !ok {
+		return false
+	}
+	if _, ok := dst[len(dst)-1].(int); !ok {
+		return false
+	}
+	return pathsEqual(src[:len(src)-1], dst[:len(dst)-1])
+}
+
+func (self *Node) nodeByPath(path Path) (*Node, error) {
+	current := self
+	if current == nil {
+		return nil, ErrNotExist
+	}
+	for _, segment := range path {
+		if err := current.checkRaw(); err != nil {
+			return nil, err
+		}
+		switch segment := segment.(type) {
+		case string:
+			if current.itype() != types.V_OBJECT {
+				return nil, ErrUnsupportType
+			}
+			current = current.Get(segment)
+		case int:
+			if current.itype() != types.V_ARRAY {
+				return nil, ErrUnsupportType
+			}
+			current = current.Index(segment)
+		}
+		if !current.Exists() {
+			return nil, ErrNotExist
+		}
+		if err := current.Check(); err != nil {
+			return nil, err
+		}
+	}
+	if !current.Exists() {
+		return nil, ErrNotExist
+	}
+	return current, current.Check()
+}
+
+func newPathContainer(next interface{}) Node {
+	if _, ok := next.(string); ok {
+		return NewObject(nil)
+	}
+	return NewArray(nil)
+}
+
+func setPathChild(parent *Node, segment interface{}, value Node) error {
+	switch segment := segment.(type) {
+	case string:
+		_, err := parent.Set(segment, value)
+		return err
+	case int:
+		if err := parent.checkRaw(); err != nil {
+			return err
+		}
+		if parent.t == _V_NONE || parent.t == types.V_NULL {
+			for i := 0; i < segment; i++ {
+				if err := parent.Add(NewNull()); err != nil {
+					return err
+				}
+			}
+			return parent.Add(value)
+		}
+		if parent.itype() != types.V_ARRAY {
+			return ErrUnsupportType
+		}
+		if err := parent.skipAllIndex(); err != nil {
+			return err
+		}
+		length := parent.len()
+		if segment < length {
+			_, err := parent.SetByIndex(segment, value)
+			return err
+		}
+		for length < segment {
+			if err := parent.Add(NewNull()); err != nil {
+				return err
+			}
+			length++
+		}
+		return parent.Add(value)
+	}
+	return ErrUnsupportType
+}
+
+func (self *Node) ensurePath(path Path, final interface{}) (*Node, error) {
+	current := self
+	if current == nil {
+		return nil, ErrNotExist
+	}
+	for i, segment := range path {
+		next := final
+		if i+1 < len(path) {
+			next = path[i+1]
+		}
+		var child *Node
+		if err := current.checkRaw(); err != nil {
+			return nil, err
+		}
+		switch segment := segment.(type) {
+		case string:
+			if current.t == _V_NONE || current.t == types.V_NULL {
+				if _, err := current.Set(segment, newPathContainer(next)); err != nil {
+					return nil, err
+				}
+			}
+			if current.itype() != types.V_OBJECT {
+				return nil, ErrUnsupportType
+			}
+			child = current.Get(segment)
+			if !child.Exists() {
+				if _, err := current.Set(segment, newPathContainer(next)); err != nil {
+					return nil, err
+				}
+				child = current.Get(segment)
+			}
+		case int:
+			if current.t != _V_NONE && current.t != types.V_NULL && current.itype() != types.V_ARRAY {
+				return nil, ErrUnsupportType
+			}
+			length := 0
+			if current.t != _V_NONE && current.t != types.V_NULL {
+				if err := current.skipAllIndex(); err != nil {
+					return nil, err
+				}
+				length = current.len()
+			}
+			if segment < length {
+				child = current.Index(segment)
+			} else {
+				if err := setPathChild(current, segment, newPathContainer(next)); err != nil {
+					return nil, err
+				}
+				child = current.Index(segment)
+			}
+		}
+		if !child.Exists() {
+			return nil, ErrNotExist
+		}
+		if err := child.Check(); err != nil {
+			return nil, err
+		}
+		current = child
+	}
+	return current, nil
+}
+
+func (self *Node) setByPath(path Path, value Node) error {
+	if len(path) == 0 {
+		*self = value
+		return nil
+	}
+	parent, err := self.ensurePath(path[:len(path)-1], path[len(path)-1])
+	if err != nil {
+		return err
+	}
+	return setPathChild(parent, path[len(path)-1], value)
+}
+
+func (self *Node) unsetByPath(path Path) error {
+	if len(path) == 0 {
+		*self = Node{}
+		return nil
+	}
+	parent, err := self.nodeByPath(path[:len(path)-1])
+	if err != nil {
+		return err
+	}
+	switch segment := path[len(path)-1].(type) {
+	case string:
+		existed, err := parent.Unset(segment)
+		if err != nil {
+			return err
+		}
+		if !existed {
+			return ErrNotExist
+		}
+	case int:
+		if parent.itype() != types.V_ARRAY {
+			return ErrUnsupportType
+		}
+		_, err := parent.UnsetByIndex(segment)
+		return err
+	}
 	return nil
 }
 
