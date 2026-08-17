@@ -6,7 +6,7 @@ JIT（ジャストインタイムコンパイル）と SIMD（単一命令複数
 
 ## 必要環境
 
-- Go: 1.18〜1.26
+- Go: 1.18〜1.27
   - 注意: Go1.24.0 は [issue](https://github.com/golang/go/issues/71672) によりサポートされていません。より新しい Go バージョンを使用するか、ビルドフラグ `-ldflags="-checklinkname=0"` を指定してください。
 - OS: Linux / MacOS / Windows
 - CPU: AMD64 / (ARM64 は go1.20 以上が必要)
