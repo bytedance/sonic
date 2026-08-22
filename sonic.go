@@ -80,6 +80,9 @@ func (cfg Config) Froze() API {
 	if cfg.UseNumber {
 		api.decoderOpts |= decoder.OptionUseNumber
 	}
+	if cfg.UseUnicodeErrors {
+		api.decoderOpts |= decoder.OptionUseUnicodeErrors
+	}
 	if cfg.DisallowUnknownFields {
 		api.decoderOpts |= decoder.OptionDisableUnknown
 	}
