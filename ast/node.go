@@ -442,29 +442,29 @@ func (self *Node) Number() (json.Number, error) {
 		case bool:
 			return castNumber(v), nil
 		case int:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatInt(int64(v), 10)), nil
 		case int8:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatInt(int64(v), 10)), nil
 		case int16:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatInt(int64(v), 10)), nil
 		case int32:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatInt(int64(v), 10)), nil
 		case int64:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatInt(v, 10)), nil
 		case uint:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatUint(uint64(v), 10)), nil
 		case uint8:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatUint(uint64(v), 10)), nil
 		case uint16:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatUint(uint64(v), 10)), nil
 		case uint32:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatUint(uint64(v), 10)), nil
 		case uint64:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatUint(v, 10)), nil
 		case float32:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatFloat(float64(v), 'g', -1, 32)), nil
 		case float64:
-			return castNumber(v != 0), nil
+			return json.Number(strconv.FormatFloat(v, 'g', -1, 64)), nil
 		case string:
 			if _, err := strconv.ParseFloat(v, 64); err == nil {
 				return json.Number(v), nil
@@ -528,21 +528,21 @@ func (self *Node) String() (string, error) {
 		case int16:
 			return strconv.Itoa(int(v)), nil
 		case int32:
-			return strconv.Itoa(int(v)), nil
+			return strconv.FormatInt(int64(v), 10), nil
 		case int64:
-			return strconv.Itoa(int(v)), nil
+			return strconv.FormatInt(v, 10), nil
 		case uint:
-			return strconv.Itoa(int(v)), nil
+			return strconv.FormatUint(uint64(v), 10), nil
 		case uint8:
-			return strconv.Itoa(int(v)), nil
+			return strconv.FormatUint(uint64(v), 10), nil
 		case uint16:
-			return strconv.Itoa(int(v)), nil
+			return strconv.FormatUint(uint64(v), 10), nil
 		case uint32:
-			return strconv.Itoa(int(v)), nil
+			return strconv.FormatUint(uint64(v), 10), nil
 		case uint64:
-			return strconv.Itoa(int(v)), nil
+			return strconv.FormatUint(v, 10), nil
 		case float32:
-			return strconv.FormatFloat(float64(v), 'g', -1, 64), nil
+			return strconv.FormatFloat(float64(v), 'g', -1, 32), nil
 		case float64:
 			return strconv.FormatFloat(float64(v), 'g', -1, 64), nil
 		case string:
