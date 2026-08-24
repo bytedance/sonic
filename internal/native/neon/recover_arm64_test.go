@@ -588,7 +588,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(nil, &p, v)
+		_ = validate_one(nil, &p, v, 0)
 	})
 	t.Run("p", func(t *testing.T) {
 		defer func() {
@@ -598,7 +598,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(&sp, nil, v)
+		_ = validate_one(&sp, nil, v, 0)
 	})
 	t.Run("v", func(t *testing.T) {
 		defer func() {
@@ -608,7 +608,7 @@ func TestRecover_validate_one(t *testing.T) {
 				t.Fatal("no panic")
 			}
 		}()
-		_ = validate_one(&sp, &p, nil)
+		_ = validate_one(&sp, &p, nil, 0)
 	})
 }
 

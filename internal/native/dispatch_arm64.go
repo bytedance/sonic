@@ -17,17 +17,15 @@
 package native
 
 import (
-	"bufio"
 	"os"
-	"strings"
 	"unsafe"
 
 	neon "github.com/bytedance/sonic/internal/native/neon"
+	"github.com/bytedance/sonic/internal/native/sve"
 	sve_linkname "github.com/bytedance/sonic/internal/native/sve_linkname"
 	"github.com/bytedance/sonic/internal/native/sve_wrapgoc"
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
-	"github.com/shirou/gopsutil/cpu"
 )
 
 var (
@@ -94,9 +92,9 @@ func GetByPathSveWrapgoc(s *string, p *int, path *[]interface{}, m *types.StateM
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname GetByPathNeonLinkname github.com/bytedance/sonic/internal/native/neon.__get_by_path
-func GetByPathNeonLinkname(s *string, p *int, path *[]interface{}, m *types.StateMachine) int
+func GetByPathNeonLinkname(s *string, p *int, path *[]interface{}, m *types.StateMachine) int {
+	return neon.F_get_by_path(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(path)), rt.NoEscape(unsafe.Pointer(m)))
+}
 
 //go:nosplit
 //go:noescape
@@ -120,9 +118,9 @@ func ParseWithPaddingSveWrapgoc(parser unsafe.Pointer) (ret int) {
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname ParseWithPaddingNeonLinkname github.com/bytedance/sonic/internal/native/neon.__parse_with_padding
-func ParseWithPaddingNeonLinkname(parser unsafe.Pointer) (ret int)
+func ParseWithPaddingNeonLinkname(parser unsafe.Pointer) (ret int) {
+	return neon.F_parse_with_padding(rt.NoEscape(parser))
+}
 
 //go:nosplit
 //go:noescape
@@ -141,9 +139,9 @@ func ParseWithPadding(parser unsafe.Pointer) (ret int) {
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname F64toaNeonLinkname github.com/bytedance/sonic/internal/native/neon.__f64toa
-func F64toaNeonLinkname(out *byte, val float64) (ret int)
+func F64toaNeonLinkname(out *byte, val float64) (ret int) {
+	return neon.F_f64toa(rt.NoEscape(unsafe.Pointer(out)), val)
+}
 
 //go:nosplit
 func F64toaSveWrapgoc(out *byte, val float64) (ret int) {
@@ -160,9 +158,9 @@ func F64toa(out *byte, val float64) (ret int) {
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname F32toaNeonLinkname github.com/bytedance/sonic/internal/native/neon.__f32toa
-func F32toaNeonLinkname(out *byte, val float32) (ret int)
+func F32toaNeonLinkname(out *byte, val float32) (ret int) {
+	return neon.F_f32toa(rt.NoEscape(unsafe.Pointer(out)), val)
+}
 
 //go:nosplit
 func F32toaSveWrapgoc(out *byte, val float32) (ret int) {
@@ -184,9 +182,9 @@ func I64toaSveWrapgoc(out *byte, val int64) (ret int) {
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname I64toaNeonLinkname github.com/bytedance/sonic/internal/native/neon.__i64toa
-func I64toaNeonLinkname(out *byte, val int64) (ret int)
+func I64toaNeonLinkname(out *byte, val int64) (ret int) {
+	return neon.F_i64toa(rt.NoEscape(unsafe.Pointer(out)), val)
+}
 
 //go:nosplit
 func I64toa(out *byte, val int64) (ret int) {
@@ -203,9 +201,9 @@ func U64toaSveWrapgoc(out *byte, val uint64) (ret int) {
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname U64toaNeonLinkname github.com/bytedance/sonic/internal/native/neon.__u64toa
-func U64toaNeonLinkname(out *byte, val uint64) (ret int)
+func U64toaNeonLinkname(out *byte, val uint64) (ret int) {
+	return neon.F_u64toa(rt.NoEscape(unsafe.Pointer(out)), val)
+}
 
 //go:nosplit
 func U64toa(out *byte, val uint64) (ret int) {
@@ -222,9 +220,9 @@ func QuoteSveWrapgoc(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname QuoteNeonLinkname github.com/bytedance/sonic/internal/native/neon.__quote
-func QuoteNeonLinkname(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) int
+func QuoteNeonLinkname(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) int {
+	return neon.F_quote(rt.NoEscape(s), nb, rt.NoEscape(dp), rt.NoEscape(unsafe.Pointer(dn)), flags)
+}
 
 //go:nosplit
 func Quote(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int, flags uint64) int {
@@ -241,9 +239,9 @@ func SkipOneSveWrapgoc(s *string, p *int, m *types.StateMachine, flags uint64) i
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname SkipOneNeonLinkname github.com/bytedance/sonic/internal/native/neon.__skip_one
-func SkipOneNeonLinkname(s *string, p *int, m *types.StateMachine, flags uint64) int
+func SkipOneNeonLinkname(s *string, p *int, m *types.StateMachine, flags uint64) int {
+	return neon.F_skip_one(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)), flags)
+}
 
 //go:nosplit
 //go:noescape
@@ -267,9 +265,9 @@ func SkipOneFastSveWrapgoc(s *string, p *int) int {
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname SkipOneFastNeonLinkname github.com/bytedance/sonic/internal/native/neon.__skip_one_fast
-func SkipOneFastNeonLinkname(s *string, p *int) int
+func SkipOneFastNeonLinkname(s *string, p *int) int {
+	return neon.F_skip_one_fast(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)))
+}
 
 //go:nosplit
 //go:noescape
@@ -293,9 +291,9 @@ func SkipOneFast(s *string, p *int) int {
 func HTMLEscapeSveLinkname(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int
 
 //go:nosplit
-//go:noescape
-//go:linkname HTMLEscapeNeonLinkname github.com/bytedance/sonic/internal/native/neon.__html_escape
-func HTMLEscapeNeonLinkname(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int
+func HTMLEscapeNeonLinkname(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int {
+	return neon.F_html_escape(rt.NoEscape(s), nb, dp, rt.NoEscape(unsafe.Pointer(dn)))
+}
 
 //go:nosplit
 func HTMLEscape(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int {
@@ -307,29 +305,29 @@ func HTMLEscape(s unsafe.Pointer, nb int, dp unsafe.Pointer, dn *int) int {
 }
 
 //go:nosplit
-//go:noescape
-//go:linkname Unquote github.com/bytedance/sonic/internal/native/neon.__unquote
-func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int
+func Unquote(s unsafe.Pointer, nb int, dp unsafe.Pointer, ep *int, flags uint64) int {
+	return neon.F_unquote(rt.NoEscape(s), nb, dp, rt.NoEscape(unsafe.Pointer(ep)), flags)
+}
 
 //go:nosplit
-//go:noescape
-//go:linkname Value github.com/bytedance/sonic/internal/native/neon.__value
-func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) int
+func Value(s unsafe.Pointer, n int, p int, v *types.JsonState, flags uint64) int {
+	return neon.F_value(rt.NoEscape(unsafe.Pointer(s)), n, p, rt.NoEscape(unsafe.Pointer(v)), flags)
+}
 
 //go:nosplit
-//go:noescape
-//go:linkname ValidateOne github.com/bytedance/sonic/internal/native/neon.__validate_one
-func ValidateOne(s *string, p *int, m *types.StateMachine, flags uint64) int
+func ValidateOne(s *string, p *int, m *types.StateMachine, flags uint64) int {
+	return neon.F_validate_one(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)), flags)
+}
 
 //go:nosplit
-//go:noescape
-//go:linkname ValidateUTF8 github.com/bytedance/sonic/internal/native/neon.__validate_utf8
-func ValidateUTF8(s *string, p *int, m *types.StateMachine) (ret int)
+func ValidateUTF8(s *string, p *int, m *types.StateMachine) (ret int) {
+	return neon.F_validate_utf8(rt.NoEscape(unsafe.Pointer(s)), rt.NoEscape(unsafe.Pointer(p)), rt.NoEscape(unsafe.Pointer(m)))
+}
 
 //go:nosplit
-//go:noescape
-//go:linkname ValidateUTF8Fast github.com/bytedance/sonic/internal/native/neon.__validate_utf8_fast
-func ValidateUTF8Fast(s *string) (ret int)
+func ValidateUTF8Fast(s *string) (ret int) {
+	return neon.F_validate_utf8_fast(rt.NoEscape(unsafe.Pointer(s)))
+}
 
 func useNeon() {
 	S_f64toa = neon.S_f64toa
@@ -408,38 +406,24 @@ func useSveWrapgoc() {
 	S_parse_with_padding = sve_wrapgoc.S_parse_with_padding
 }
 
+// CpuDetect reports whether this CPU may use the SVE natives.
+//
+// The decision lives in internal/native/sve so that the sve_linkname and
+// sve_wrapgoc test suites gate on exactly the same rule; they cannot import
+// this package, and previously each kept its own stale copy.
+//
+// Note this only makes a CPU *eligible*: init still requires SONIC_USE_SVE_WRAPGOC
+// or SONIC_USE_SVE_LINKNAME to be set before anything but neon is selected.
 func CpuDetect() bool {
-	cpuinfo, err := cpu.Info()
-	if err != nil {
-		return false
-	}
-
-	if cpuinfo[0].Model == "0xd02" || cpuinfo[0].Model == "0xd06" {
-		return true
-	}
-
-	file, err := os.Open("/proc/cpuinfo")
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "CPU part") {
-			parts := strings.SplitN(line, ":", 2)
-			model := strings.TrimSpace(parts[1])
-			if model == "0xd02" || model == "0xd06" {
-				return true
-			}
-		}
-	}
-	return false
+	return sve.Eligible()
 }
 
 func init() {
 	if CpuDetect() {
+		// Eligible() has already confirmed the vector length is one the
+		// natives support (or fallen back to the Kunpeng part-id check, whose
+		// parts are 256-bit). Both flavours are generated with frames sized
+		// for sve.MaxVectorLength, so neither needs a per-width decision here.
 		UseSveWrapgoc = os.Getenv("SONIC_USE_SVE_WRAPGOC") == "1"
 		UseSveLinkname = os.Getenv("SONIC_USE_SVE_LINKNAME") == "1"
 	}

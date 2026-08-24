@@ -18,33 +18,34 @@
 
 package neon
 
-var (
-	S_f64toa = _subr__f64toa
-	S_f32toa = _subr__f32toa
-	S_i64toa = _subr__i64toa
-	S_u64toa = _subr__u64toa
-	S_lspace = _subr__lspace
-)
+import "github.com/bytedance/sonic/loader"
 
-var (
-	S_quote   = _subr__quote
-	S_unquote = _subr__unquote
-)
+func init() {
+	Use()
+}
 
-var (
-	S_value     = _subr__value
-	S_vstring   = _subr__vstring
-	S_vnumber   = _subr__vnumber
-	S_vsigned   = _subr__vsigned
-	S_vunsigned = _subr__vunsigned
-)
-
-var (
-	S_skip_one           = _subr__skip_one
-	S_skip_one_fast      = _subr__skip_one_fast
-	S_skip_array         = _subr__skip_array
-	S_skip_object        = _subr__skip_object
-	S_skip_number        = _subr__skip_number
-	S_get_by_path        = _subr__get_by_path
-	S_parse_with_padding = _subr__parse_with_padding
-)
+func Use() {
+	loader.WrapGoC(_text_f32toa, _cfunc_f32toa, []loader.GoC{{"_f32toa", &S_f32toa, &F_f32toa}}, "neon", "neon/f32toa.c")
+	loader.WrapGoC(_text_f64toa, _cfunc_f64toa, []loader.GoC{{"_f64toa", &S_f64toa, &F_f64toa}}, "neon", "neon/f64toa.c")
+	loader.WrapGoC(_text_get_by_path, _cfunc_get_by_path, []loader.GoC{{"_get_by_path", &S_get_by_path, &F_get_by_path}}, "neon", "neon/get_by_path.c")
+	loader.WrapGoC(_text_html_escape, _cfunc_html_escape, []loader.GoC{{"_html_escape", &S_html_escape, &F_html_escape}}, "neon", "neon/html_escape.c")
+	loader.WrapGoC(_text_i64toa, _cfunc_i64toa, []loader.GoC{{"_i64toa", &S_i64toa, &F_i64toa}}, "neon", "neon/i64toa.c")
+	loader.WrapGoC(_text_lspace, _cfunc_lspace, []loader.GoC{{"_lspace", &S_lspace, &F_lspace}}, "neon", "neon/lspace.c")
+	loader.WrapGoC(_text_parse_with_padding, _cfunc_parse_with_padding, []loader.GoC{{"_parse_with_padding", &S_parse_with_padding, &F_parse_with_padding}}, "neon", "neon/parse_with_padding.c")
+	loader.WrapGoC(_text_quote, _cfunc_quote, []loader.GoC{{"_quote", &S_quote, &F_quote}}, "neon", "neon/quote.c")
+	loader.WrapGoC(_text_skip_array, _cfunc_skip_array, []loader.GoC{{"_skip_array", &S_skip_array, &F_skip_array}}, "neon", "neon/skip_array.c")
+	loader.WrapGoC(_text_skip_number, _cfunc_skip_number, []loader.GoC{{"_skip_number", &S_skip_number, &F_skip_number}}, "neon", "neon/skip_number.c")
+	loader.WrapGoC(_text_skip_object, _cfunc_skip_object, []loader.GoC{{"_skip_object", &S_skip_object, &F_skip_object}}, "neon", "neon/skip_object.c")
+	loader.WrapGoC(_text_skip_one, _cfunc_skip_one, []loader.GoC{{"_skip_one", &S_skip_one, &F_skip_one}}, "neon", "neon/skip_one.c")
+	loader.WrapGoC(_text_skip_one_fast, _cfunc_skip_one_fast, []loader.GoC{{"_skip_one_fast", &S_skip_one_fast, &F_skip_one_fast}}, "neon", "neon/skip_one_fast.c")
+	loader.WrapGoC(_text_u64toa, _cfunc_u64toa, []loader.GoC{{"_u64toa", &S_u64toa, &F_u64toa}}, "neon", "neon/u64toa.c")
+	loader.WrapGoC(_text_unquote, _cfunc_unquote, []loader.GoC{{"_unquote", &S_unquote, &F_unquote}}, "neon", "neon/unquote.c")
+	loader.WrapGoC(_text_validate_one, _cfunc_validate_one, []loader.GoC{{"_validate_one", &S_validate_one, &F_validate_one}}, "neon", "neon/validate_one.c")
+	loader.WrapGoC(_text_validate_utf8, _cfunc_validate_utf8, []loader.GoC{{"_validate_utf8", &S_validate_utf8, &F_validate_utf8}}, "neon", "neon/validate_utf8.c")
+	loader.WrapGoC(_text_validate_utf8_fast, _cfunc_validate_utf8_fast, []loader.GoC{{"_validate_utf8_fast", &S_validate_utf8_fast, &F_validate_utf8_fast}}, "neon", "neon/validate_utf8_fast.c")
+	loader.WrapGoC(_text_value, _cfunc_value, []loader.GoC{{"_value", &S_value, &F_value}}, "neon", "neon/value.c")
+	loader.WrapGoC(_text_vnumber, _cfunc_vnumber, []loader.GoC{{"_vnumber", &S_vnumber, &F_vnumber}}, "neon", "neon/vnumber.c")
+	loader.WrapGoC(_text_vsigned, _cfunc_vsigned, []loader.GoC{{"_vsigned", &S_vsigned, &F_vsigned}}, "neon", "neon/vsigned.c")
+	loader.WrapGoC(_text_vstring, _cfunc_vstring, []loader.GoC{{"_vstring", &S_vstring, &F_vstring}}, "neon", "neon/vstring.c")
+	loader.WrapGoC(_text_vunsigned, _cfunc_vunsigned, []loader.GoC{{"_vunsigned", &S_vunsigned, &F_vunsigned}}, "neon", "neon/vunsigned.c")
+}

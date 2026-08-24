@@ -89,6 +89,14 @@ static cl::opt<std::string> FeaturesOption("features",
 static cl::opt<uint64_t> VLOption("vl", cl::desc("SVE vector length"),
                                   cl::value_desc("vector-length"), cl::init(0),
                                   cl::Optional, cl::cat(CommonCategory));
+static cl::opt<uint64_t> MaxVLOption(
+    "max-vl",
+    cl::desc("Size every scalable stack allocation for this SVE vector length "
+             "(bytes), so the frame is identical on every machine with "
+             "VL <= max-vl and Go needs only one pcsp table. 0 keeps frames "
+             "vector-length dependent."),
+    cl::value_desc("max-vector-length"), cl::init(0), cl::Optional,
+    cl::cat(CommonCategory));
 
 // JIT Options
 cl::OptionCategory JITCategory("Tool JIT Options");
@@ -144,6 +152,14 @@ bool CheckModeOptions() {
     outs() << "--vl is invalid\n";
     return false;
   }
+  if (MaxVLOption % 16 != 0 || MaxVLOption > 256) {
+    outs() << "--max-vl is invalid (multiple of 16, at most 256)\n";
+    return false;
+  }
+  if (MaxVLOption != 0 && VLOption != 0 && VLOption > MaxVLOption) {
+    outs() << "--vl exceeds --max-vl\n";
+    return false;
+  }
   if (ModeOption == "SL") {
     if (GoProtoOption.empty()) {
       outs() << "goproto is empty\n";
@@ -183,6 +199,8 @@ int main(int argc, char **argv) {
   std::string TemplateFile = TemplateFileOption;
   std::string GoProto = GoProtoOption;
   uint64_t VL = VLOption;
+  // Copied out before lld re-parses the command line and clears the options.
+  tool::asm2arm::MaxVectorLength = MaxVLOption;
 
   // 获取源文件名（不含扩展名）
   auto BaseName = tool::GetSourceName(SourceFile);
@@ -280,6 +298,10 @@ int main(int argc, char **argv) {
   uint64_t DumpSize = 0;
   tool::asm2arm::DumpElf(OutputPath, ELFFile, Bundle, Package, BaseName,
                          DumpSize, Mode);
+
+  // With --max-vl the frame must now be the same on every machine; refuse to
+  // hand Go a pcsp table otherwise.
+  tool::asm2arm::CheckVectorLengthInvariantFrame(Bundle);
 
   // 划分基本块
   std::string &EntryBlockName = BaseName;

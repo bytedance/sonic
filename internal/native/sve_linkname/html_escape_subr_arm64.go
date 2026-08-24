@@ -15,7 +15,7 @@ var (
 )
 
 const (
-	_stack__html_escape = 96
+	_stack__html_escape = 48
 )
 
 var (

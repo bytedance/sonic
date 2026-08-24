@@ -650,10 +650,13 @@ static always_inline svuint8_t check_utf8_bytes(const svuint8_t input, const svu
 }
 
 static always_inline bool is_ascii(const svuint8_t input) {
-    svbool_t bit7 = svcmpge_n_u8(svptrue_b8(), input, 0x80);
-    // performance is better
-    uint32_t *p = (uint32_t *)&bit7;
-    return (*p == 0);
+    /*
+     * True when no lane has the high bit set. This used to read the predicate
+     * as a fixed uint32, which only inspects 32 lanes and, on a 128-bit
+     * machine, 16 lanes of neighbouring stack. svptest_any asks the question
+     * directly and is correct at every vector length.
+     */
+    return !svptest_any(svptrue_b8(), svcmpge_n_u8(svptrue_b8(), input, 0x80));
 }
 
 typedef struct {

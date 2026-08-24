@@ -98,7 +98,7 @@ func (self *Searcher) getByPath(path ...interface{}) (Node, error) {
 	return newRawNode(raw, t, self.ConcurrentRead), nil
 }
 
-// GetByPath searches a path and returns relaction and types of target
+// GetByPath searches a path and returns relation and types of target
 func _GetByPath(src string, path ...interface{}) (start int, end int, typ int, err error) {
 	p := NewParserObj(src)
 	s, e := p.getByPath(false, path...)

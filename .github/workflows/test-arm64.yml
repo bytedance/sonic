@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.20.x, 1.22.x, 1.25.x]
-        runner_arch: [ubuntu-24.04-arm, macos-latest]
+        runner_arch: [ubuntu-24.04-arm, macos-15]
 
     runs-on: ${{ matrix.runner_arch }}
     
@@ -35,6 +35,44 @@ jobs:
             ~/go/pkg/mod
             ${{ github.workspace }}/go.sum
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Report native dispatch
+        # Which native path a run exercised is otherwise invisible: a machine
+        # that falls back to neon prints exactly the same "ok" as one that ran
+        # the SVE natives. Log it so a silent fallback is visible in CI output.
+        run: |
+          echo "uname -m: $(uname -m)"
+          grep -m1 "^Features" /proc/cpuinfo 2>/dev/null || true
+          cat /proc/sys/abi/sve_default_vector_length 2>/dev/null || echo "no SVE vector length"
+
+      - name: SVE Natives
+        # Runs the SVE suites when the hardware qualifies, and reports plainly
+        # when it does not. The natives support 128- and 256-bit vectors, so a
+        # hosted arm64 runner with SVE (Cobalt 100 is Neoverse N2 at 128-bit)
+        # exercises them; one without skips visibly instead of printing "ok"
+        # for a suite that never ran. Not gated to failure until the hosted
+        # runners' SVE exposure is confirmed; anyone on known SVE hardware can
+        # set SONIC_REQUIRE_SVE=1 to turn a skip into a failure.
+        run: |
+          GOMAXPROCS=4 go test -v ./internal/native/sve_wrapgoc/ ./internal/native/sve_linkname/
+
+      - name: SVE End-to-End
+        # The step above tests each SVE native directly, against the small
+        # hand-written strings the native suites use -- never enough bytes to
+        # cross more than one SVE chunk. That gap let a real bug through:
+        # get_nonspace_bits silently mis-scanned parts of its 64-byte window
+        # at VL=16, invisible to every existing test, and only surfaced when
+        # a realistic document (decoder's TwitterJson fixture) was decoded
+        # under SONIC_USE_SVE_WRAPGOC=1. Run the ordinary correctness suite --
+        # which already asserts on that fixture -- with each SVE flavour
+        # selected, so a similarly-sized regression fails loudly here instead
+        # of shipping. A no-op (falls back to neon) on hardware that isn't
+        # SVE-eligible, same as the step above.
+        run: |
+          echo "=== SONIC_USE_SVE_WRAPGOC=1 ==="
+          SONIC_USE_SVE_WRAPGOC=1 GOMAXPROCS=4 go test $(go list ./... | grep -v -E 'loader|jit|avx|x86|sse')
+          echo "=== SONIC_USE_SVE_LINKNAME=1 ==="
+          SONIC_USE_SVE_LINKNAME=1 GOMAXPROCS=4 go test $(go list ./... | grep -v -E 'loader|jit|avx|x86|sse')
 
       - name: Unit Test
         run: |

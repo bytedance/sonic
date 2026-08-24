@@ -107,6 +107,20 @@ void CalcSPDelta(tool::mc::MCContextBundle &Bundle,
                  uint64_t VL = 0);
 
 /**
+ * @brief Prove the linked text has a vector-length invariant frame.
+ *
+ * Only meaningful when MaxVectorLength is set. Walks every instruction of
+ * the linked ELF and fails the run if any of them still ties sp to the
+ * vector length: a surviving addvl/addpl on sp, an addvl/addpl that derives
+ * a register from sp, or a VL-scaled memory access ([xN, #k, mul vl]) whose
+ * base is sp. Any of those would mean RewriteScalableSPAdjust's precondition
+ * does not hold for this compiler output, and the rewritten frame could not
+ * be trusted.
+ * @param Bundle MC context bundle
+ */
+void CheckVectorLengthInvariantFrame(tool::mc::MCContextBundle &Bundle);
+
+/**
  * @brief 计算最大栈深度
  *
  * 计算每个基本块的最大栈深度

@@ -124,22 +124,6 @@ static always_inline __m128i _mm_find_quote(__m128i vv) {
     return rv;
 }
 
-#if defined(__SVE__)
-static always_inline svbool_t sve_find_quote(svint8_t vv) {
-    svbool_t pg = svptrue_b8();
-    svbool_t e1 = svcmpgt_n_s8(pg, vv, -1);
-    svbool_t e2 = svcmpgt_n_s8(pg, vv, 31);
-    svbool_t e3 = svcmpeq_n_s8(pg, vv, '"');
-    svbool_t e4 = svcmpeq_n_s8(pg, vv, '\\');
-
-    svbool_t r1 = svbic_b_z(pg, e1, e2);
-    svbool_t r2 = svorr_b_z(pg, e3, e4);
-    svbool_t rv_mask = svorr_b_z(pg, r1, r2);
-
-    return rv_mask;
-}
-#endif
-
 #if USE_AVX2
 static always_inline __m256i _mm256_find_quote(__m256i vv) {
     __m256i e1 = _mm256_cmpgt_epi8   (vv, _mm256_set1_epi8(-1));
@@ -157,41 +141,17 @@ static always_inline ssize_t memcchr_quote(const char *sp, ssize_t nb, char *dp,
     uint32_t     mm;
     const char * ss = sp;
 
-#if defined(__SVE__)
-    svbool_t pg = svptrue_b8();
-    uint32_t *mm_sve = NULL;
-     while (nb >= 32 && dn >= 32) {
-        svint8_t vv = svld1_s8(pg, (const int8_t *)sp);
-        svbool_t rv = sve_find_quote(vv);
-        svst1_s8(pg, (int8_t *)dp, vv);
-
-        mm_sve = &rv;
-        if (*mm_sve!=0 ) {
-            return sp - ss + __builtin_ctz(*mm_sve);
-        }
-
-        sp += 32;
-        dp += 32;
-        nb -= 32;
-        dn -= 32;
-    }
-
-    if (nb >= 32) {
-        svint8_t vv = svld1_s8(pg, (const int8_t *)sp);
-        svbool_t rv = sve_find_quote(vv);
-        uint32_t *mv = NULL;
-        mv = &rv;
-        uint32_t fv = __builtin_ctzll      ((uint64_t)*mv | 0x0100000000);
-
-        if (fv <= dn) {
-            memcpy_p32(dp, sp, fv);
-            return sp - ss + fv;
-        } else {
-            memcpy_p32(dp, sp, dn);
-            return -(sp - ss + dn) - 1;
-        }
-    }
-#elif defined(USE_AVX2)
+    /*
+     * No __SVE__ 32-byte fast path here. The one that used to be here loaded
+     * and stored svptrue_b8()-many bytes -- VL, not 32 -- while advancing
+     * sp/dp/nb/dn by a hard-coded 32 regardless. At VL<32 that left a gap of
+     * uncopied output and, worse, unscanned input: a quote or backslash
+     * sitting in the unscanned gap was never found, so the caller kept
+     * treating string content as still inside the string. The 16-byte loop
+     * below is fixed-width SIMDE, not SVE, so it already runs correctly on
+     * any SVE machine (it is what plain neon builds use unconditionally).
+     */
+#if defined(USE_AVX2)
     /* 32-byte loop, full store */
     while (nb >= 32 && dn >= 32) {
         __m256i vv = _mm256_loadu_si256  ((const void *)sp);
@@ -309,29 +269,9 @@ simd_copy:
 
     if (nb < 16) goto scalar_copy;
 
-#if defined(__SVE__)
-    svbool_t pg = svptrue_b8();
-    uint32_t *mm_sve = NULL;
-    while (nb >= 32) {
-        svint8_t vv = svld1_s8(pg, (const int8_t *)sp);
-        svbool_t rv = sve_find_quote(vv);
-        svst1_s8(pg, (int8_t *)dp, vv);
-
-        mm_sve = &rv;
-
-        if (*mm_sve!=0 ) {
-            cn = __builtin_ctz(*mm_sve);
-            sp += cn;
-            nb -= cn;
-            dp += cn;
-            goto escape;
-        }
-
-        sp += 32;
-        dp += 32;
-        nb -= 32;
-    }
-#elif defined(USE_AVX2)
+    /* No __SVE__ 32-byte fast path here; see memcchr_quote's comment for why
+     * -- the load/store/advance mismatch is identical. */
+#if defined(USE_AVX2)
     /* 32-byte loop, full store */
     while (nb >= 32) {
         __m256i vv = _mm256_loadu_si256  ((const void *)sp);
@@ -471,23 +411,11 @@ static always_inline ssize_t memcchr_p32(const char *s, ssize_t nb, char *p) {
     ssize_t      n = nb;
     const char * q = s;
 
-#if defined(__SVE__)
-    svbool_t pg = svptrue_b8();
-    uint32_t *mm = NULL;
-    while (n > 32) {
-        svint8_t u = svld1(pg, (const int8_t *)s);
-        svbool_t v = svcmpeq_n_s8(pg, u, '\\');
-        svst1(pg, (int8_t *)p, u);
-        mm = &v;
-        if (*mm != 0) {
-            return s - q + __builtin_ctzll(*mm);
-        }
-
-        s += 32;
-        p += 32;
-        n -= 32;
-    }
-#elif defined(USE_AVX2)
+    /* No __SVE__ 32-byte fast path here; not currently reachable (unquote is
+     * always neon-dispatched), but see memcchr_quote's comment for why one
+     * would be wrong: it loaded/stored VL bytes, not 32, while advancing
+     * s/p/n by 32 regardless. */
+#if defined(USE_AVX2)
     __m256i u;
     __m256i v;
     __m256i b = _mm256_set1_epi8('\\');
@@ -613,25 +541,17 @@ static always_inline __m256i _mm256_find_html(__m256i vv) {
     __m256i rv = _mm256_or_si256     (r1, r2);
     return rv;
 }
-#elif defined(__SVE__)
-static always_inline svbool_t sve_find_html(svint8_t vv) {
-    svbool_t pg = svptrue_b8();
-    svbool_t e1 = svcmpeq_n_s8(pg, vv, '<');
-    svbool_t e2 = svcmpeq_n_s8(pg, vv, '>');
-    svbool_t e3 = svcmpeq_n_s8(pg, vv, '&');
-    svbool_t e4 = svcmpeq_n_s8(pg, vv, '\xe2');
-
-    svbool_t r1 = svorr_z(pg, e1, e2);
-    svbool_t r2 = svorr_z(pg, e3, e4);
-    svbool_t rv = svorr_z(pg, r1, r2);
-    return rv;
-}
 #endif
 
 static always_inline ssize_t memcchr_html_quote(const char *sp, ssize_t nb, char *dp, ssize_t dn) {
     uint32_t     mm;
     const char * ss = sp;
 
+    /*
+     * No __SVE__ 32-byte fast path here; see memcchr_quote's comment for why
+     * -- the load/store/advance mismatch is identical, and this one is live
+     * for sve_linkname's html_escape.
+     */
 #if defined(USE_AVX2)
     /* 32-byte loop, full store */
     while (nb >= 32 && dn >= 32) {
@@ -670,41 +590,6 @@ static always_inline ssize_t memcchr_html_quote(const char *sp, ssize_t nb, char
 
     /* clear upper half to avoid AVX-SSE transition penalty */
     _mm256_zeroupper();
-#elif defined(__SVE__)
-    svbool_t pg = svptrue_b8();
-    uint32_t* mm_sve = NULL;
-    while (nb >= 32 && dn >= 32) {
-        svint8_t vv = svld1_s8(pg, (const int8_t *)sp);
-        svbool_t rv = sve_find_html(vv);
-        svst1_s8(pg, (int8_t *)dp, vv);
-        mm_sve = &rv;
-        if (*mm_sve != 0) {
-            return (sp - ss) + __builtin_ctz(*mm_sve);
-        }
-
-        /* move to next block */
-        sp += 32;
-        dp += 32;
-        nb -= 32;
-        dn -= 32;
-    }
-
-    if (nb >= 32) {
-        svint8_t vv = svld1_s8(pg, (const int8_t *)sp);
-        svbool_t  rv = sve_find_html(vv);
-        uint32_t* mv = NULL;
-        mv = &rv;
-        uint32_t fv = __builtin_ctzll((uint64_t)*mv | 0x0100000000);
-
-        /* copy at most `dn` characters */
-        if (fv <= dn) {
-            memcpy_p32(dp, sp, fv);
-            return sp - ss + fv;
-        } else {
-            memcpy_p32(dp, sp, dn);
-            return -(sp - ss + dn) - 1;
-        }
-    }
 #endif
 
     /* 16-byte loop, full store */

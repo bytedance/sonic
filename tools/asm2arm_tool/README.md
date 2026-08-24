@@ -131,7 +131,7 @@ cd tools/asm2arm_tool
 ```bash
 ${CLANG_PATH} \
    -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
-   -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
+   -ffixed-x28 -ffixed-x18 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
    -mllvm=--go-frame -mllvm=--enable-shrink-wrap=0 -mno-red-zone \
    -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
    -march=armv8-a -I${SIMDE_INCLUDE_DIR} -S -o "${asm_file}" "${src_file}"

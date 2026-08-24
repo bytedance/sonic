@@ -3,7 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/cpu_detect.sh"
-check_kunpeng_cpu
+check_test_host
 
 TOOL_DIR="$(dirname "${SCRIPT_DIR}")"   # asm2arm_tool
 PROJECT_DIR="$(dirname $(dirname "${TOOL_DIR}"))"   # sonic

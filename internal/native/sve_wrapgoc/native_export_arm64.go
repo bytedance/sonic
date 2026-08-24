@@ -20,6 +20,13 @@ package sve_wrapgoc
 
 import "github.com/bytedance/sonic/loader"
 
+// Use loads the SVE natives.
+//
+// The machine code is vector-length agnostic and its frames are sized for
+// sve.MaxVectorLength (asm2arm_tool --max-vl), so one copy of the text and one
+// pcsp table per function serve every supported width; nothing here depends on
+// this machine's vector length. Dispatch is responsible for not selecting these
+// natives on a machine whose vector is wider than the frames were sized for.
 func Use() {
 	loader.WrapGoC(_text_get_by_path, _cfunc_get_by_path, []loader.GoC{{"_get_by_path", &S_get_by_path, &F_get_by_path}}, "sve_wrapgoc", "sve_wrapgoc/get_by_path.c")
 	loader.WrapGoC(_text_i64toa, _cfunc_i64toa, []loader.GoC{{"_i64toa", &S_i64toa, &F_i64toa}}, "sve_wrapgoc", "sve_wrapgoc/i64toa.c")

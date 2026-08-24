@@ -39,9 +39,16 @@ JITStreamer::JITStreamer(MCContext &Context,
                          tool::mc::MCContextBundle &Bundle)
     : MCELFStreamer(Context, std::move(AsmBackend), std::move(ObjWriter),
                     std::move(CodeEmitter)),
-      MRI(&Bundle.getRegisterInfo()) {
+      MRI(&Bundle.getRegisterInfo()), Bundle(Bundle) {
   LLVM_DEBUG(dbgs() << "AArch64RegTable[SP] = " << AArch64RegTable["SP"]
                     << "\n");
+}
+
+void JITStreamer::emitInstruction(const MCInst &Inst,
+                                  const MCSubtargetInfo &STI) {
+  MCInst Rewritten = Inst;
+  RewriteScalableSPAdjust(Rewritten, Bundle);
+  MCELFStreamer::emitInstruction(Rewritten, STI);
 }
 
 void JITStreamer::finish() {

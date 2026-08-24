@@ -11,3 +11,4 @@ jobs:
         uses: codespell-project/actions-codespell@v2
         with:
           skip: ./loader/internal/iasm/obj/macho.go,./loader/internal/iasm/x86_64/encodings.go,./loader/internal/iasm/x86_64/program.go,./loader/internal/iasm/expr/ast.go,./loader/internal/iasm/expr/errors.go
+          ignore_words_list: aadd

@@ -49,11 +49,17 @@ static always_inline void memcpy32(void *__restrict dp, const void *__restrict s
 }
 
 static always_inline void memcpy64(void *__restrict dp, const void *__restrict sp) {
-#if defined(__SVE__)
-    svst1_u8(svptrue_b8(), dp, svld1_u8(svptrue_b8(), sp));
-#else
+    /*
+     * No __SVE__ branch here on purpose. svst1_u8(svptrue_b8(), ...) copies
+     * VL bytes, not 32 -- correct only at VL=32, and at narrower VL it left
+     * dp[VL,32) uncopied while the unconditional memcpy32(dp+32, sp+32) below
+     * still advanced as though the first half were whole. memcpy32 itself
+     * already compiles correctly under SVE (see its #else, used here and
+     * unconditionally below): SIMDE's 128-bit intrinsics have no dependence
+     * on the SVE vector length, so there is nothing for an SVE-specific path
+     * to win here.
+     */
     memcpy32(dp, sp);
-#endif
     memcpy32(dp + 32, sp + 32);
 }
 
@@ -78,13 +84,10 @@ static always_inline void memcpy_p32(void *__restrict dp, const void *__restrict
 }
 
 static always_inline void memcpy_p64(void *__restrict dp, const void *__restrict sp, size_t nb) {
-#if defined(__SVE__)
-    if (nb >= 32) {
-	    svst1_u8(svptrue_b8(), dp, svld1_u8(svptrue_b8(), sp));
-        sp += 32, dp += 32, nb -= 32;
-    }
-#else
+    /* No __SVE__ branch here; see memcpy64's comment. The SVE form advanced
+     * sp/dp/nb by a full 32 bytes while only having copied VL of them at
+     * VL<32, so the remaining nb-32 bytes were then read from -- and the
+     * gap between VL and 32 written to -- the wrong offset. */
     if (nb >= 32) { memcpy32(dp, sp); sp += 32, dp += 32, nb -= 32; }
-#endif
     memcpy_p32(dp, sp, nb);
 }

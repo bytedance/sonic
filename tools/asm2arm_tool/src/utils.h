@@ -46,6 +46,39 @@ void FindSP(tool::mc::MCContextBundle &Bundle);
 void PrintInstHelper(const llvm::MCInst &Inst,
                      tool::mc::MCContextBundle &Bundle, uint64_t Addr);
 
+/**
+ * @brief The SVE vector length, in bytes, that the natives' stack frames are
+ * sized for. 0 leaves frames vector-length dependent (the historical
+ * behaviour). Set from --max-vl.
+ *
+ * Go needs one PC->SP table per function, so a native's frame must be the
+ * same size on every machine it may run on. SVE code allocates its scalable
+ * spill area with `addvl sp, sp, #-N`, which is N*VL bytes: 64 on a 256-bit
+ * machine, 32 on a 128-bit one. With MaxVectorLength set, that allocation
+ * is rewritten to a fixed `sub sp, sp, #N*MaxVectorLength` (and the matching
+ * release), so the frame is the VL=MaxVectorLength frame everywhere.
+ *
+ * This is sound because LLVM addresses every scalable object from the frame
+ * base (x9 under --go-frame), which is computed before the allocation, while
+ * ordinary locals are addressed from sp. Enlarging the allocation moves the
+ * sp-anchored objects to exactly where the unmodified VL=MaxVectorLength
+ * frame puts them, and the x9-anchored objects occupy a subset of their
+ * VL=MaxVectorLength footprint. CheckVectorLengthInvariantFrame() enforces
+ * the precondition -- no VL-scaled access anchored on sp -- after linking.
+ */
+extern uint64_t MaxVectorLength;
+
+/**
+ * @brief Rewrite `addvl sp, sp, #k` / `addpl sp, sp, #k` into a fixed-size
+ * `add`/`sub sp, sp, #bytes` for VL = MaxVectorLength.
+ *
+ * @param Inst Instruction, rewritten in place when it matches
+ * @param Bundle MC context bundle (for opcode and register names)
+ * @return true if Inst was rewritten
+ */
+bool RewriteScalableSPAdjust(llvm::MCInst &Inst,
+                             tool::mc::MCContextBundle &Bundle);
+
 } // end namespace asm2arm
 
 /**

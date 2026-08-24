@@ -19,56 +19,32 @@
 package sve_linkname
 
 import (
-	"bufio"
 	"os"
 	"runtime"
 	"runtime/debug"
-	"strings"
 	"testing"
 	"time"
 	"unsafe"
 
+	"github.com/bytedance/sonic/internal/native/sve"
 	"github.com/bytedance/sonic/internal/native/types"
-	"github.com/shirou/gopsutil/cpu"
 )
-
-func CpuDetect() bool {
-	cpuinfo, err := cpu.Info()
-	if err != nil {
-		return false
-	}
-
-	if cpuinfo[0].Model == "0xd02" || cpuinfo[0].Model == "0xd06" {
-		return true
-	}
-
-	file, err := os.Open("/proc/cpuinfo")
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "CPU part") {
-			parts := strings.SplitN(line, ":", 2)
-			model := strings.TrimSpace(parts[1])
-			if model == "0xd02" || model == "0xd06" {
-				return true
-			}
-		}
-	}
-	return false
-}
 
 var (
 	debugAsyncGC = os.Getenv("SONIC_NO_ASYNC_GC") == ""
 )
 
 func TestMain(m *testing.M) {
-	if CpuDetect() != true {
-		println("skip sve_wrapgoc test")
+	// Say what was decided and why. A suite that quietly skips prints the
+	// same "ok" as one that ran, which is how the SVE natives stayed broken
+	// on non-Kunpeng hardware without anyone noticing.
+	println("sve_linkname:", sve.Describe())
+	if !sve.Eligible() {
+		println("SKIPPING sve_linkname tests: this CPU cannot run the SVE natives")
+		println("(set SONIC_REQUIRE_SVE=1 to make this a failure instead)")
+		if os.Getenv("SONIC_REQUIRE_SVE") == "1" {
+			os.Exit(1)
+		}
 		return
 	}
 	go func() {

@@ -1,5 +1,6 @@
 #include "native.h"
 #include "simd.h"
+#include "sve_compat.h"
 #include <stdint.h>
 #include "parsing.h"
 #include "scanning.h"
@@ -395,32 +396,14 @@ static always_inline uint64_t get_nonspace_bits(const uint8_t* s) {
     uint32_t mask_hi = (uint32_t)_mm256_movemask_epi8(_mm256_cmpeq_epi8(hi, shuf_hi));
     return ~((uint64_t)mask_lo | ((uint64_t)(mask_hi) << 32));
 #elif defined(__SVE__)
-    static const uint8_t data[32] = {
-        '\x20', 0, 0, 0, 0, 0, 0, 0,
-        0, '\x09', '\x0A', 0, 0, '\x0D', 0, 0,
-        '\x20', 0, 0, 0, 0, 0, 0, 0,
-        0, '\x09', '\x0A', 0, 0, '\x0D', 0, 0
-    };
-
-    const uint8_t *ptr = &data[0];
-    svbool_t pg = svptrue_b8();
-    svuint8_t space_tab = svld1_u8(pg, ptr);
-
-    svuint8_t lo = svld1_u8(svptrue_b8(), s);
-    svuint8_t hi = svld1_u8(svptrue_b8(), s+32);
-
-    svuint8_t idx_lo = svand_n_u8_z(svptrue_b8(), lo, 0x1F);
-    svuint8_t shuffle_lo = svtbl_u8(space_tab, idx_lo);
-    svuint8_t idx_hi = svand_n_u8_z(svptrue_b8(), hi, 0x1F);
-    svuint8_t shuffle_hi = svtbl_u8(space_tab, idx_hi);
-
-    svbool_t lo_res = svcmpeq_u8(svptrue_b8(), lo, shuffle_lo);
-    uint32_t *mask_lo = &lo_res;
-
-    svbool_t hi_res = svcmpeq_u8(svptrue_b8(), hi, shuffle_hi);
-    uint32_t *mask_hi = &hi_res;
-
-    return ~((uint64_t)*mask_lo | ((uint64_t)*mask_hi) << 32);
+    /*
+     * The AVX2 table-shuffle trick above only works when a vector is exactly
+     * 32 bytes; at narrower VL the table itself truncates and out-of-range
+     * indices silently look up as zero (see sve_nonspace_mask's comment).
+     * Comparing against the four whitespace bytes directly is correct at any
+     * vector length.
+     */
+    return sve_nonspace_mask((const char *)s, 64);
 #else
     __m128i space_tab = _mm_setr_epi8(
         '\x20', 0, 0, 0, 0, 0, 0, 0,
@@ -505,6 +488,20 @@ typedef struct {
 } string_block;
 
 static always_inline string_block string_block_new(uint8_t* s, uint64_t opts) {
+#if defined(__SVE__)
+    /*
+     * v256u is svuint8_t under SVE, so it only holds 32 bytes when the vector
+     * happens to be 256 bits wide. Cover the 32-byte block explicitly instead,
+     * in predicated chunks, so this is correct at any vector length.
+     */
+    uint64_t quote, bs, ctrl;
+    sve_string_masks((const char *)s, 32, &quote, &bs, &ctrl);
+    return (string_block){
+        .bs = (uint32_t)bs,
+        .quote = (uint32_t)quote,
+        .esc = (unlikely((opts & F_VALIDATE_STRING) != 0)) ? (uint32_t)ctrl : 0
+    };
+#else
     v256u v = v256_loadu((uint8_t*)s);
     if (unlikely((opts & F_VALIDATE_STRING) != 0)) {
         return (string_block){
@@ -519,6 +516,7 @@ static always_inline string_block string_block_new(uint8_t* s, uint64_t opts) {
             .esc = 0
         };
     }
+#endif
 }
 
 static always_inline bool has_quote_first(string_block* block) {
@@ -621,7 +619,6 @@ retry_decode:
 static always_inline long parse_string_inplace(uint8_t** cur, bool* has_esc, uint64_t opts) {
     string_block block;
     uint8_t* start = *cur;
-    v256u v;
 
     // breakpoint();
     while (true) {
@@ -668,7 +665,6 @@ escape:
     }
 
 find_and_move:
-    v = v256_loadu((uint8_t*)*cur);
     block = string_block_new(*cur, opts);
 
     if (has_quote_first(&block)) {
@@ -713,7 +709,18 @@ find_and_move:
         }
     }
 
-    v256_storeu(v, dst);
+    /*
+     * v256u (used here until this fix) is svuint8_t under SVE: only 32 bytes
+     * wide when the vector happens to be. At VL<32 a v256_loadu()/
+     * v256_storeu() round trip through it copied only VL bytes while *cur/dst
+     * still advanced by 32, silently dropping the remaining bytes of this
+     * block from the output -- decoded string content, not just a parser
+     * position. string_block_new (via sve_compat.h) already scanned the full
+     * 32 bytes correctly to reach this point with no quote/backslash/control
+     * char in them; memcpy32 (SIMDE-backed, no SVE dependence) copies them
+     * correctly regardless of vector length.
+     */
+    memcpy32(dst, *cur);
     *cur += 32;
     dst += 32;
     goto find_and_move;

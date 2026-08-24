@@ -15,7 +15,7 @@ var (
 )
 
 const (
-	_stack__get_by_path = 224
+	_stack__get_by_path = 336
 )
 
 var (

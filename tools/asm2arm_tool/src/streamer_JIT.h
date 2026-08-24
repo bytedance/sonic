@@ -56,8 +56,19 @@ public:
               std::unique_ptr<llvm::MCCodeEmitter> CodeEmitter,
               tool::mc::MCContextBundle &Bundle);
 
+  /// emitInstruction - Emit one instruction, after rewriting a scalable
+  /// stack adjustment into its fixed MaxVectorLength form (see
+  /// RewriteScalableSPAdjust). Both generation modes assemble through this
+  /// streamer, so the rewrite reaches the ELF that JIT mode copies and that
+  /// the SP-delta analysis reads.
+  void emitInstruction(const llvm::MCInst &Inst,
+                       const llvm::MCSubtargetInfo &STI) override;
+
   /// finish - Finish streamer operations.
   void finish();
+
+private:
+  tool::mc::MCContextBundle &Bundle;
 };
 
 } // end namespace asm2arm

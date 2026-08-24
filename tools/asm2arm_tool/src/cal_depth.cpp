@@ -283,6 +283,36 @@ int64_t GetSPAdjust(const MCInst &Inst, uint64_t PC,
   return Def;
 }
 
+void CheckVectorLengthInvariantFrame(tool::mc::MCContextBundle &Bundle) {
+  if (MaxVectorLength == 0) {
+    return;
+  }
+  // Any VL-scaled memory access whose base is sp, or any addvl/addpl that
+  // reads or writes sp. The prologue/epilogue adjustments were rewritten
+  // before assembly, so a survivor means the rewrite missed a form.
+  static const std::regex ScaledFromSP(R"(\[\s*sp\s*,[^\]]*mul vl)");
+  static const std::regex VLArithOnSP(R"(\b(addvl|addpl)\b[^,]*\bsp\b|\b(addvl|addpl)\b\s+\w+\s*,\s*sp\b)");
+  static const std::regex RdvlToSP(R"(\b(add|sub)\s+sp\s*,\s*sp\s*,\s*x\d+)");
+  for (size_t I = 0; I < Text.size(); I++) {
+    std::string Line;
+    {
+      raw_string_ostream OS(Line);
+      Bundle.getInstPrinter().printInst(&Text[I], TextPC[I], {},
+                                        Bundle.getSubtargetInfo(), OS);
+    }
+    if (std::regex_search(Line, ScaledFromSP) ||
+        std::regex_search(Line, VLArithOnSP) ||
+        std::regex_search(Line, RdvlToSP)) {
+      outs() << "error: frame is not vector-length invariant at 0x"
+             << Twine::utohexstr(TextPC[I]) << ":" << Line << "\n"
+             << "       --max-vl rewrites addvl/addpl on sp to a fixed size, "
+                "which is only sound when every other VL-scaled access is "
+                "anchored on the frame base (x9), not on sp.\n";
+      llvm::report_fatal_error("frame is not vector-length invariant");
+    }
+  }
+}
+
 void CalcSPDelta(tool::mc::MCContextBundle &Bundle,
                  const std::vector<BasicBlock> &BasicBlocks,
                  std::vector<BasicBlockSP> &BasicBlockSPVec,

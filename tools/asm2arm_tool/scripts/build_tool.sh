@@ -8,7 +8,7 @@ set -e
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/cpu_detect.sh"
-check_kunpeng_cpu
+check_build_host
 
 TOOL_DIR="$(dirname "$SCRIPT_DIR")"   # asm2arm_tool
 BUILD_DIR="$TOOL_DIR/build"

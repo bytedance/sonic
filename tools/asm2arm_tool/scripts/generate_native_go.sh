@@ -22,7 +22,7 @@ done
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/cpu_detect.sh"
-check_kunpeng_cpu
+check_build_host
 
 TOOL_DIR="$(dirname "${SCRIPT_DIR}")"   # asm2arm_tool
 PROJECT_DIR="$(dirname $(dirname "${TOOL_DIR}"))"   # sonic
@@ -35,6 +35,21 @@ CLANG_PATH="${LLVM_INSTALL_DIR}/bin/clang"
 SRC_DIR="${PROJECT_DIR}/native"
 TMPL_DIR="${PROJECT_DIR}/internal/native"
 OUTPUT_DIR="${TOOL_DIR}/output"
+
+# The SVE vector length, in bytes, the SVE natives' stack frames are sized for.
+#
+# Go needs one PC->SP table per function, so a native's frame must be the same
+# size on every machine it may run on. SVE code allocates its scalable spill
+# area with `addvl sp, sp, #-N` (N*VL bytes: 64 on Graviton3, 32 on Graviton4).
+# asm2arm_tool --max-vl rewrites that to a fixed `sub sp, sp, #N*SVE_MAX_VL`,
+# so the frame is the 256-bit frame everywhere and any VL <= SVE_MAX_VL runs
+# with the same metadata. The tool refuses to generate if the compiler output
+# ever addresses a scalable object from sp, which is the one thing that would
+# make this unsound.
+#
+# Must match sve.MaxVectorLength in internal/native/sve; the dispatcher will
+# not select the SVE natives on a wider machine.
+SVE_MAX_VL=32
 
 # 清理函数
 function clean_files() {
@@ -102,6 +117,64 @@ echo ">>> Using ${CLANG_PATH} compiler"
 echo ">>> Tool path: ${TOOL_PATH}"
 echo ">>> Output directory: ${OUTPUT_DIR}"
 
+# Resolve how to target aarch64, and prove the header environment is sane.
+#
+# The natives include glibc headers (native/parsing.h -> sys/types.h), so the
+# compiler needs headers for the *target*, not the host. Cross-compiling without
+# an aarch64 sysroot is the dangerous case: clang silently falls through to the
+# host's /usr/include, where __WORDSIZE resolves for the host and ssize_t ends up
+# as a 32-bit int. Every native taking or returning ssize_t is then miscompiled --
+# with no error, no warning, and a zero exit status. The resulting natives pass a
+# static inspection and then truncate lengths at runtime.
+#
+# On an arm64 host the native headers are already correct, so no extra flags are
+# needed and the output is bit-identical to what this script always produced.
+CLANG_TARGET_FLAGS=""
+machine="$(uname -m)"
+if [ "$machine" != "aarch64" ] && [ "$machine" != "arm64" ]; then
+    SYSROOT="${AARCH64_SYSROOT:-}"
+    if [ -z "${SYSROOT}" ]; then
+        for cand in /usr/aarch64-linux-gnu /usr/aarch64-unknown-linux-gnu /usr/local/aarch64-linux-gnu; do
+            if [ -d "${cand}" ]; then SYSROOT="${cand}"; break; fi
+        done
+    fi
+    if [ -z "${SYSROOT}" ]; then
+        echo "Error: cross-generating on ${machine} requires an aarch64 sysroot."
+        echo "       Without one, clang uses this host's headers and silently"
+        echo "       compiles ssize_t as a 32-bit int, miscompiling the natives."
+        echo "  Debian/Ubuntu: sudo apt-get install libc6-dev-arm64-cross"
+        echo "  Or point at one explicitly: AARCH64_SYSROOT=/path/to/sysroot $0"
+        exit 1
+    fi
+    echo ">>> Cross-generating with sysroot: ${SYSROOT}"
+    CLANG_TARGET_FLAGS="--target=aarch64-linux-gnu --sysroot=${SYSROOT}"
+fi
+
+# Belt and braces: assert the target's type widths regardless of how we got here.
+verify_target_headers() {
+    local probe_dir probe_c
+    probe_dir="$(mktemp -d)"
+    probe_c="${probe_dir}/probe.c"
+    cat > "${probe_c}" <<'PROBE'
+#include <sys/types.h>
+#include <stdint.h>
+_Static_assert(sizeof(ssize_t) == 8, "ssize_t is not 64-bit");
+_Static_assert(sizeof(void *) == 8, "pointer is not 64-bit");
+_Static_assert(sizeof(long) == 8, "long is not 64-bit");
+PROBE
+    if ! ${CLANG_PATH} ${CLANG_TARGET_FLAGS} -march=armv8-a+simd -fsyntax-only "${probe_c}" 2>"${probe_dir}/err"; then
+        echo "Error: the target header environment is wrong -- refusing to generate."
+        sed 's/^/    /' "${probe_dir}/err"
+        echo "  These natives pass ssize_t across the Go/C boundary. Generating"
+        echo "  against headers with the wrong type widths produces natives that"
+        echo "  look fine but truncate lengths at runtime."
+        rm -rf "${probe_dir}"
+        exit 1
+    fi
+    rm -rf "${probe_dir}"
+    echo ">>> Target header check passed (ssize_t/long/pointer are 64-bit)"
+}
+
 # 检查工具是否存在
 if [ ! -f "${TOOL_PATH}" ]; then
     echo "Error: Tool not found. Please run build_tool.sh first."
@@ -113,6 +186,8 @@ if [ ! -f "${CLANG_PATH}" ]; then
     echo "Error: Clang not found. Please run build_tool.sh first."
     exit 1
 fi
+
+verify_target_headers
 
 # 遍历native目录下的.c文件
 echo ""
@@ -126,8 +201,8 @@ if [ -d "${SRC_DIR}" ]; then
             echo ">>> Processing ${src_file}..."
 
             # 处理neon目录
-            NEON_FILE="${PROJECT_DIR}/internal/native/neon/${base_name}_arm64.go"
-            if [ -f "${NEON_FILE}" ]; then
+            NEON_TMPL="${TMPL_DIR}/${base_name}.tmpl"
+            if [ -f "${NEON_TMPL}" ]; then
                 echo ""
                 echo ">>> Processing for neon..."
                 asm_file="${NEON_ASM_DIR}/${base_name}.s"
@@ -136,8 +211,8 @@ if [ -d "${SRC_DIR}" ]; then
                 # 编译生成汇编文件（neon版本）
                 echo ">>> Compiling to assembly (neon)... --> ${asm_file}"
                 ${CLANG_PATH} \
-                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
-                -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
+                ${CLANG_TARGET_FLAGS} -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
+                -ffixed-x28 -ffixed-x18 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types \
                 -mllvm=--go-frame -mllvm=--enable-shrink-wrap=0 -mno-red-zone \
                 -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+simd -I${SIMDE_INCLUDE_DIR} -S -o "${asm_file}" "${src_file}"
@@ -146,8 +221,8 @@ if [ -d "${SRC_DIR}" ]; then
                 if [ ! -f "${asm_file}" ]; then
                     echo "Error: Assembly file not generated for neon."
                 else
-                    echo ">>> Execute SL mode for neon..."
-                    ${TOOL_PATH} --debug --mode=SL --source=${asm_file} --goproto=${NEON_FILE} --output=${NEON_OUTPUT} --link-ld=${SCRIPT_DIR}/link.ld \
+                    echo ">>> Execute JIT mode for neon..."
+                    ${TOOL_PATH} --debug --mode=JIT --source=${asm_file} --output=${NEON_OUTPUT} --link-ld=${SCRIPT_DIR}/link.ld --tmpl=${NEON_TMPL} \
                     --package=neon 2>${cerr_log}
 
                     if [ $? -eq 0 ]; then
@@ -168,8 +243,8 @@ if [ -d "${SRC_DIR}" ]; then
 
                 echo ">>> Compiling to assembly (sve)... --> ${asm_file}"
                 ${CLANG_PATH} \
-                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
-                -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
+                ${CLANG_TARGET_FLAGS} -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
+                -ffixed-x28 -ffixed-x18 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
                 -mllvm -disable-constant-hoisting -mllvm=--go-frame -fno-addrsig -no-integrated-as \
                 -mno-red-zone -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+sve+aes -I${SIMDE_INCLUDE_DIR} -D__SVE__ -S -o "${asm_file}" "${src_file}"
@@ -178,9 +253,9 @@ if [ -d "${SRC_DIR}" ]; then
                 if [ ! -f "${asm_file}" ]; then
                     echo "Error: Assembly file not generated for sve_linkname."
                 else
-                    echo ">>> Execute SL mode for sve_linkname..."
+                    echo ">>> Execute SL mode for sve_linkname (frame sized for VL=${SVE_MAX_VL})..."
                     ${TOOL_PATH} --debug --mode=SL --source=${asm_file} --goproto=${SVE_LINKNAME_FILE} --output=${SVE_LINKNAME_OUTPUT} --link-ld=${SCRIPT_DIR}/link.ld \
-                    --package=sve_linkname --features=+sve,+aes --vl=32 2>${cerr_log}
+                    --package=sve_linkname --features=+sve,+aes --max-vl=${SVE_MAX_VL} 2>${cerr_log}
 
                     if [ $? -eq 0 ]; then
                         echo ">>> Tool execution succeeded for sve_linkname ${base_name}"
@@ -201,8 +276,8 @@ if [ -d "${SRC_DIR}" ]; then
 
                 echo ">>> Compiling to assembly (sve)... --> ${asm_file}"
                 ${CLANG_PATH} \
-                -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
-                -ffixed-x28 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
+                ${CLANG_TARGET_FLAGS} -g0 -fverbose-asm -fstack-usage -fsigned-char -Wa,--no-size-directive -fno-ident -fno-jump-tables \
+                -ffixed-x28 -ffixed-x18 -ffixed-x9 -Wno-error -Wno-nullability-completeness -Wno-incompatible-pointer-types\
                 -mllvm -disable-constant-hoisting -mllvm=--go-frame -fno-addrsig -no-integrated-as \
                 -mno-red-zone -fno-stack-protector -nostdlib -O3 -fno-asynchronous-unwind-tables -fno-builtin -fno-exceptions \
                 -march=armv8-a+sve+aes -I${SIMDE_INCLUDE_DIR} -D__SVE__ -S -o "${asm_file}" "${src_file}"
@@ -211,9 +286,13 @@ if [ -d "${SRC_DIR}" ]; then
                 if [ ! -f "${asm_file}" ]; then
                     echo "Error: Assembly file not generated for sve_wrapgoc."
                 else
-                    echo ">>> Execute JIT mode for sve_wrapgoc..."
+                    # --max-vl sizes every scalable stack allocation for the
+                    # largest supported vector length, so the frame -- and the
+                    # one pcsp table Go gets -- is identical on every machine
+                    # with VL <= SVE_MAX_VL. See SVE_MAX_VL above.
+                    echo ">>> Execute JIT mode for sve_wrapgoc (frame sized for VL=${SVE_MAX_VL})..."
                     ${TOOL_PATH} --debug --mode=JIT --source=${asm_file} --output=${SVE_WRAPGOC_OUTPUT} --link-ld=${SCRIPT_DIR}/link.ld --tmpl=${SVE_WRAPGOC_TMPL} \
-                    --package=sve_wrapgoc --features=+sve,+aes --vl=32 2>${cerr_log}
+                    --package=sve_wrapgoc --features=+sve,+aes --max-vl=${SVE_MAX_VL} 2>${cerr_log}
 
                     if [ $? -eq 0 ]; then
                         echo ">>> Tool execution succeeded for sve_wrapgoc ${base_name}"

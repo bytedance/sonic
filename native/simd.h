@@ -91,56 +91,20 @@ static inline mask256 mask256_or(mask256 mask1, mask256 mask2) {
     return _mm256_or_si256(mask1, mask2);
 }
 
-#elif defined(__SVE__)
-
-typedef svuint8_t v256u;
-typedef svuint8_t mask256;
-
-static inline v256u v256_loadu(const uint8_t* ptr) {
-    return svld1_u8(svptrue_b8(), ptr);
-}
-
-static inline void v256_storeu(const v256u v, uint8_t* ptr) {
-    svst1_u8(svptrue_b8(), ptr, v);
-}
-
-static inline mask256 v256_eq(const v256u v1, const v256u v2) {
-    svbool_t pg = svcmpeq_u8(svptrue_b8(), v1, v2);
-    return svsel_u8(pg, svdup_u8(0xFF), svdup_u8(0));
-}
-
-static inline mask256 v256_le(const v256u v1, const v256u v2) {
-    svuint8_t max = svmax_u8_z(svptrue_b8(), v1, v2);
-    svbool_t pg = svcmpeq_u8(svptrue_b8(), max, v2);
-    return svsel_u8(pg, svdup_u8(0xFF), svdup_u8(0));
-}
-
-static inline mask256 v256_gt(const v256u v1, const v256u v2) {
-    svuint8_t sub = svqsub_u8(v1, v2);
-    svbool_t pg = svcmpeq_n_u8(svptrue_b8(), sub, 0);
-    svuint8_t zero = svdup_u8(0);
-    svuint8_t all_one = svdup_u8(0xFF);
-    return sveor_n_u8_z(pg, svsel_u8(pg, all_one, zero), 0xFF);
-}
-
-static inline v256u v256_splat(uint8_t ch) {
-    return svdup_u8(ch);
-}
-
-static inline uint32_t mask256_tobitmask(mask256 mask) {
-    svbool_t result = svcmpge_n_u8(svptrue_b8(), mask, 0x80);
-    return *((uint32_t *)&result);
-}
-
-static inline mask256 mask256_and(mask256 mask1, mask256 mask2) {
-    return svand_u8_z(svptrue_b8(), mask1, mask2);
-}
-
-static inline mask256 mask256_or(mask256 mask1, mask256 mask2) {
-    return svorr_u8_z(svptrue_b8(), mask1, mask2);
-}
-
 #else
+
+/*
+ * This portable, two-v128u-halves form is also what SVE builds use: SVE has
+ * no #elif branch here. It used to have one, typing v256u as svuint8_t --
+ * only actually 256 bits when the vector happens to be. svld1_u8/svst1_u8
+ * with svptrue_b8() load and store VL bytes, not 32, and mask256_tobitmask
+ * read a predicate register as a raw uint32_t regardless of how many bytes
+ * it actually held. Both are instances of the mistake sve_compat.h exists to
+ * fix. Rather than rewrite them the vector-length-agnostic way, fall
+ * through to this already-correct, already-portable form: it is two fixed
+ * 128-bit SIMDE operations, which have no dependence on SVE's vector length
+ * to begin with.
+ */
 
 typedef struct {
     v128u lo;

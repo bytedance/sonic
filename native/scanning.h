@@ -17,6 +17,7 @@
 #pragma once
 
 #include "native.h"
+#include "sve_compat.h"
 #include "utf8.h"
 #include "utils.h"
 #include "parsing.h"
@@ -240,18 +241,9 @@ static always_inline ssize_t advance_string_default(const GoString *src, long p,
         m0 = ((uint64_t)s1 << 32) | (uint64_t)s0;
         m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
 #elif defined(__SVE__)
-        v0 = svld1_u8(svptrue_b8(), (const void *)(sp + 0));
-        v1 = svld1_u8(svptrue_b8(), (const void *)(sp + 32));
-        svbool_t q0_pg = svcmpeq_u8(svptrue_b8(), v0, cq);
-        svbool_t q1_pg = svcmpeq_u8(svptrue_b8(), v1, cq);
-        svbool_t x0_pg = svcmpeq_u8(svptrue_b8(), v0, cx);
-        svbool_t x1_pg = svcmpeq_u8(svptrue_b8(), v1, cx);
-        uint32_t *bit7_q0 = (uint32_t *)&q0_pg;
-        uint32_t *bit7_q1 = (uint32_t *)&q1_pg;
-        uint32_t *bit7_x0 = (uint32_t *)&x0_pg;
-        uint32_t *bit7_x1 = (uint32_t *)&x1_pg;
-        m0 = ((uint64_t)*bit7_q1 << 32) | (uint64_t)*bit7_q0;
-        m1 = ((uint64_t)*bit7_x1 << 32) | (uint64_t)*bit7_x0;
+        /* one bit per byte across 64 bytes, whatever this vector's width */
+        m0 = sve_mask_eq(sp, 64, 0x22); /* '"'  */
+        m1 = sve_mask_eq(sp, 64, 0x5C); /* '\\' */
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -307,13 +299,8 @@ static always_inline ssize_t advance_string_default(const GoString *src, long p,
         m0 = (uint64_t)s0;
         m1 = (uint64_t)t0;
 #elif defined(__SVE__)
-        v0 = svld1_u8(svptrue_b8(), (uint8_t *)sp);
-        svbool_t q0_pg = svcmpeq(svptrue_b8(), v0, cq);
-        svbool_t x0_pg = svcmpeq(svptrue_b8(), v0, cx);
-        uint32_t *bit7_q0 = (uint32_t *)&q0_pg;
-        uint32_t *bit7_x0 = (uint32_t *)&x0_pg;
-        m0 = (uint64_t)*bit7_q0;
-        m1 = (uint64_t)*bit7_x0;
+        m0 = sve_mask_eq(sp, 32, 0x22); /* '"'  */
+        m1 = sve_mask_eq(sp, 32, 0x5C); /* '\\' */
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -404,20 +391,15 @@ static always_inline int _mm256_nonascii_mask(__m256i v) {
 
 #elif defined(__SVE__)
 
-static always_inline int _mm256_get_mask(svint8_t v, svint8_t t) {
-    svbool_t pg = svcmpeq_s8(svptrue_b8(), v, t);
-    uint32_t *p = (uint32_t *)&pg;
-    return *p;
-}
-
-// control char: 0x00 ~ 0x1F
-static always_inline int _mm256_cchars_mask(svint8_t v) {
-    svbool_t e1pg = svcmpgt_n_s8(svptrue_b8(), v, -1);
-    svbool_t e2pg = svcmpgt_n_s8 (svptrue_b8(), v, 31);
-    uint32_t *bit7_e1 = (uint32_t *)&e1pg;
-    uint32_t *bit7_e2 = (uint32_t *)&e2pg;
-    return ~(*bit7_e2) & (*bit7_e1);
-}
+/*
+ * The SVE equivalents of _mm256_get_mask and _mm256_cchars_mask used to live
+ * here. They took an already-loaded svint8_t and read the comparison predicate
+ * as a fixed uint32, so both the value they received and the mask they returned
+ * assumed a 32-byte vector. Callers now use sve_string_masks(), which takes a
+ * pointer and a window length and covers the window in predicated chunks,
+ * whatever this machine's vector length is. Nothing here should reintroduce a
+ * helper that takes a vector by value and returns a fixed-width mask.
+ */
 
 #endif
 
@@ -592,17 +574,8 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
         m1 = ((uint64_t)t1 << 32) | (uint64_t)t0;
         m2 = ((uint64_t)c1 << 32) | (uint64_t)c0;
 #elif defined(__SVE__)
-        v0 = svld1_s8(svptrue_b8(), (const int8_t *)sp);
-        v1 = svld1_s8(svptrue_b8(), (const int8_t *)(sp + 32));
-        s0 = _mm256_get_mask(v0, cq);
-        s1 = _mm256_get_mask(v1, cq);
-        t0 = _mm256_get_mask(v0, cx);
-        t1 = _mm256_get_mask(v1, cx);
-        c0 = _mm256_cchars_mask(v0);
-        c1 = _mm256_cchars_mask(v1);
-        m0 = ((uint64_t)s1 << 32) | s0;
-        m1 = ((uint64_t)t1 << 32) | t0;
-        m2 = ((uint64_t)c1 << 32) | c0;
+        /* quote, backslash and control-char masks over 64 bytes, one pass */
+        sve_string_masks(sp, 64, &m0, &m1, &m2);
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -673,13 +646,8 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
         m1 = (uint64_t)t0;
         m2 = (uint64_t)c0;
 #elif defined(__SVE__)
-        v0 = svld1_s8(svptrue_b8(), (const int8_t *)sp);
-        s0 = _mm256_get_mask (v0, cq);
-        t0 = _mm256_get_mask (v0, cx);
-        c0 = _mm256_cchars_mask(v0);
-        m0 = (uint64_t)s0;
-        m1 = (uint64_t)t0;
-        m2 = (uint64_t)c0;
+        /* quote, backslash and control-char masks over 32 bytes, one pass */
+        sve_string_masks(sp, 32, &m0, &m1, &m2);
 #else
         v0 = _mm_loadu_si128   ((const void *)(sp +  0));
         v1 = _mm_loadu_si128   ((const void *)(sp + 16));
@@ -1197,32 +1165,14 @@ static always_inline long do_skip_number(const char *sp, size_t nb) {
     if (likely(nb >= 32)) {
          /* 32-byte loop */
          do {
-             svint8_t sb = svld1_s8(svptrue_b8(), (int8_t *)sp);
-             svbool_t i0_b = svcmpgt_n_s8(svptrue_b8(), sb, '/');
-             uint32_t *bit7_i0 = (uint32_t *)&i0_b;
-             svbool_t i9_b = svcmpgt_n_s8(svptrue_b8(), sb, '9');
-             uint32_t *bit7_i9 = (uint32_t *)&i9_b;
-             svbool_t id_b = svcmpeq_n_s8(svptrue_b8(), sb, '.');
-             uint32_t *bit7_id = (uint32_t *)&id_b;
-             svbool_t il_b = svcmpeq_n_s8(svptrue_b8(), sb, 'e');
-             uint32_t *bit7_il = (uint32_t *)&il_b;
-             svbool_t iu_b = svcmpeq_n_s8(svptrue_b8(), sb, 'E');
-             uint32_t *bit7_iu = (uint32_t *)&iu_b;
-             svbool_t ip_b = svcmpeq_n_s8(svptrue_b8(), sb, '+');
-             uint32_t *bit7_ip = (uint32_t *)&ip_b;
-             svbool_t im_b = svcmpeq_n_s8(svptrue_b8(), sb, '-');
-             uint32_t *bit7_im = (uint32_t *)&im_b;
-             uint32_t bit_iv = ~(*bit7_i9) & (*bit7_i0);
-             uint32_t bit_ie = (*bit7_il) | (*bit7_iu);
-             uint32_t bit_is = (*bit7_ip) | (*bit7_im);
-             uint32_t bit_rt = bit_iv | (*bit7_id);
-             uint32_t bit_ru = bit_ie | bit_is;
-             uint32_t bit_rv = bit_rt | bit_ru;
+             /* digit, '.', exponent and sign masks over 32 bytes, one pass */
+             uint64_t m_iv, m_id, m_ie, m_is;
+             sve_number_masks((const char *)sp, 32, &m_iv, &m_id, &m_ie, &m_is);
 
-             uint32_t md = *bit7_id;
-             uint32_t me = bit_ie;
-             uint32_t ms = bit_is;
-             uint32_t mr = bit_rv;
+             uint32_t md = (uint32_t)m_id;
+             uint32_t me = (uint32_t)m_ie;
+             uint32_t ms = (uint32_t)m_is;
+             uint32_t mr = (uint32_t)(m_iv | m_id | m_ie | m_is);
 
              /* mismatch position */
              uint32_t v;
@@ -1460,13 +1410,8 @@ static always_inline uint64_t get_maskx64(const char *s, char c) {
     uint32_t m1 = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v1, _mm256_set1_epi8(c)));
     return ((uint64_t)(m1) << 32) | (uint64_t)(m0);
 #elif defined(__SVE__)
-    svuint8_t v0 = svld1_u8(svptrue_b8(), (const uint8_t *)s);
-    svuint8_t v1 = svld1_u8(svptrue_b8(), (const uint8_t *)(s + 32));
-    svbool_t cmp0_pg = svcmpeq_n_u8(svptrue_b8(), v0, c);
-    uint32_t *m0 = (uint32_t *)&cmp0_pg;
-    svbool_t cmp1_pg = svcmpeq_n_u8(svptrue_b8(), v1, c);
-    uint32_t *m1 = (uint32_t *)&cmp1_pg;
-    return (((uint64_t)(*m1) << 32) | (*m0));
+    /* one bit per byte over 64 bytes, whatever this machine's vector width */
+    return sve_mask_eq(s, 64, (uint8_t)c);
 #else
     __m128i v0 = _mm_loadu_si128((__m128i const*)s);
     __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
@@ -1485,11 +1430,9 @@ static always_inline uint64_t get_maskx32(const char *s, char c) {
     __m256i v0 = _mm256_loadu_si256((__m256i const *)s);
     uint64_t m0 = (unsigned)_mm256_movemask_epi8(_mm256_cmpeq_epi8(v0, _mm256_set1_epi8(c)));
     return m0;
-#elif defined(__SVE__)  // ▒▒▒▒֤▒ȼ▒
-    svuint8_t v0 = svld1_u8(svptrue_b8(), (const uint8_t *)s);
-    svbool_t cmp_pg = svcmpeq_n_u8(svptrue_b8(), v0, c);
-    uint32_t *bit7 = (uint32_t *)&cmp_pg;
-    return (uint64_t)*bit7;
+#elif defined(__SVE__)
+    /* one bit per byte over 32 bytes, however wide this machine's vector is */
+    return sve_mask_eq(s, 32, (uint8_t)c);
 #else
     __m128i v0 = _mm_loadu_si128((__m128i const*)s);
     __m128i v1 = _mm_loadu_si128((__m128i const*)(s + 16));
@@ -1551,14 +1494,7 @@ static always_inline int get_structural_maskx32(const char *s) {
 }
 #elif defined(__SVE__) // ▒▒▒▒֤▒▒▒ܵȼ▒
 static always_inline int get_structural_maskx32(const char *s) {
-    svuint8_t v = svld1_u8(svptrue_b8(), s);
-    svbool_t e1_pg = svcmpeq_n_u8(svptrue_b8(), v, '}');
-    svbool_t e2_pg = svcmpeq_n_u8(svptrue_b8(), v, ']');
-    svbool_t e3_pg = svcmpeq_n_u8(svptrue_b8(), v, ',');
-    uint32_t *bit7_e1 = (uint32_t *)&e1_pg;
-    uint32_t *bit7_e2 = (uint32_t *)&e2_pg;
-    uint32_t *bit7_e3 = (uint32_t *)&e3_pg;
-    return (*bit7_e1) | (*bit7_e2) | (*bit7_e3);
+    return (int)sve_mask_eq3(s, 32, (uint8_t)'}', (uint8_t)']', (uint8_t)',');
 }
 
 #endif
@@ -1801,11 +1737,8 @@ static always_inline bool xmemcmpeq(const char * s1, const char * s2, size_t n) 
     }
 #elif defined(__SVE__)
     while (n >= 32) {
-        svint8_t v1 = svld1_s8(svptrue_b8(), (const int8_t *)s1);
-        svint8_t v2 = svld1_s8(svptrue_b8(), (const int8_t *)s2);
-        svbool_t pg = svcmpeq_s8(svptrue_b8(), v1, v2);
-        uint32_t *p = (uint32_t *)&pg;
-        if (~(*p)) return false;
+        /* any differing byte in this 32-byte window means unequal */
+        if (sve_mask_ne2(s1, s2, 32)) return false;
         s1 += 32;
         s2 += 32;
         n  -= 32;
@@ -1814,11 +1747,9 @@ static always_inline bool xmemcmpeq(const char * s1, const char * s2, size_t n) 
     c2 = vec_cross_page(s2, 32);
     // not cross page
     if (!c1 && !c2) {
-        svint8_t v1 = svld1_s8(svptrue_b8(), (const int8_t *)s1);
-        svint8_t v2 = svld1_s8(svptrue_b8(), (const int8_t *)s2);
-        svbool_t pg1 = svcmpeq_s8(svptrue_b8(), v1, v2);
-        uint32_t *p1 = (uint32_t *)&pg1;
-        bool eq = (~(*p1) == 0) || (__builtin_ctzll(~(*p1)) >= n);
+        /* equal if nothing differs, or the first difference is past n bytes */
+        uint64_t diff = sve_mask_ne2(s1, s2, 32);
+        bool eq = (diff == 0) || (__builtin_ctzll(diff) >= n);
         return eq;
     }
 #endif

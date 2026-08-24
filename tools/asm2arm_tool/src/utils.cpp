@@ -50,6 +50,80 @@ void FindSP(tool::mc::MCContextBundle &Bundle) {
   }
 }
 
+uint64_t MaxVectorLength = 0;
+
+/**
+ * @brief AArch64 opcode table: instruction name -> opcode number.
+ *
+ * The tool has no access to the target's private opcode enum, so resolve the
+ * few opcodes it needs by name, the same way AArch64RegTable resolves
+ * registers.
+ */
+static std::map<std::string, unsigned> AArch64OpcodeTable;
+
+static unsigned LookupOpcode(tool::mc::MCContextBundle &Bundle,
+                             const char *Name) {
+  if (AArch64OpcodeTable.empty()) {
+    auto &II = Bundle.getInstrInfo();
+    for (unsigned Op = 0; Op < II.getNumOpcodes(); Op++) {
+      AArch64OpcodeTable[II.getName(Op).str()] = Op;
+    }
+  }
+  auto It = AArch64OpcodeTable.find(Name);
+  if (It == AArch64OpcodeTable.end()) {
+    llvm::report_fatal_error(Twine("opcode not found: ") + Name);
+  }
+  return It->second;
+}
+
+bool RewriteScalableSPAdjust(llvm::MCInst &Inst,
+                             tool::mc::MCContextBundle &Bundle) {
+  if (MaxVectorLength == 0) {
+    return false;
+  }
+  const unsigned ADDVL = LookupOpcode(Bundle, "ADDVL_XXI");
+  const unsigned ADDPL = LookupOpcode(Bundle, "ADDPL_XXI");
+  const unsigned Op = Inst.getOpcode();
+  if (Op != ADDVL && Op != ADDPL) {
+    return false;
+  }
+  // addvl/addpl Rd, Rn, #imm: operands are (Rd, Rn, imm).
+  const unsigned SP = AArch64RegTable["SP"];
+  if (Inst.getNumOperands() != 3 || !Inst.getOperand(0).isReg() ||
+      !Inst.getOperand(1).isReg() || !Inst.getOperand(2).isImm()) {
+    return false;
+  }
+  const bool DefSP = Inst.getOperand(0).getReg() == SP;
+  const bool UseSP = Inst.getOperand(1).getReg() == SP;
+  if (!DefSP && !UseSP) {
+    return false; // addressing a scalable object from the frame base; fine
+  }
+  if (!(DefSP && UseSP)) {
+    // `addvl sp, xN` or `addvl xN, sp` would tie sp to a VL-scaled distance
+    // from something else; the frame could not be made invariant.
+    std::string S;
+    raw_string_ostream OS(S);
+    Inst.print(OS, &Bundle.getRegisterInfo());
+    llvm::report_fatal_error(
+        Twine("cannot make the frame vector-length invariant: ") + S);
+  }
+  const int64_t K = Inst.getOperand(2).getImm();
+  // addvl counts in vectors (VL bytes), addpl in predicates (VL/8 bytes).
+  const int64_t Unit = (Op == ADDVL) ? MaxVectorLength : MaxVectorLength / 8;
+  const int64_t Bytes = (K < 0 ? -K : K) * Unit;
+  if (Bytes > 4095) {
+    llvm::report_fatal_error(
+        Twine("scalable stack adjustment too large to rewrite: ") + Twine(Bytes));
+  }
+  Inst.setOpcode(LookupOpcode(Bundle, K < 0 ? "SUBXri" : "ADDXri"));
+  Inst.clear();
+  Inst.addOperand(MCOperand::createReg(SP));
+  Inst.addOperand(MCOperand::createReg(SP));
+  Inst.addOperand(MCOperand::createImm(Bytes));
+  Inst.addOperand(MCOperand::createImm(0)); // no shift
+  return true;
+}
+
 void PrintInstHelper(const llvm::MCInst &Inst,
                      tool::mc::MCContextBundle &Bundle, uint64_t Addr) {
   dbgs() << "\n" << format_hex(Addr, 6) << "\n";
