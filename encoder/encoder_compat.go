@@ -230,6 +230,9 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 	enc.SetIndent(prefix, indent)
 	err := enc.Encode(val)
 	out := w.Bytes()
+	if len(out) > 0 && out[len(out)-1] == '\n' {
+		out = out[:len(out)-1]
+	}
 	return out, err
 }
 
