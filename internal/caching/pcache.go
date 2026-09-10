@@ -134,14 +134,26 @@ func (self *_ProgramMap) insert(vt *rt.GoType, fn interface{}) {
 /** RCU Program Cache **/
 
 type ProgramCache struct {
-	m sync.Mutex
-	p unsafe.Pointer
+	m       sync.Mutex
+	p       unsafe.Pointer
+	pending map[*rt.GoType]*programCall
+	epoch   uint64
+}
+
+type programCall struct {
+	done       chan struct{}
+	epoch      uint64
+	val        interface{}
+	err        error
+	panicked   bool
+	panicValue interface{}
 }
 
 func CreateProgramCache() *ProgramCache {
 	return &ProgramCache{
-		m: sync.Mutex{},
-		p: unsafe.Pointer(newProgramMap()),
+		m:       sync.Mutex{},
+		p:       unsafe.Pointer(newProgramMap()),
+		pending: make(map[*rt.GoType]*programCall),
 	}
 }
 
@@ -149,6 +161,8 @@ func (self *ProgramCache) Reset() {
 	self.m.Lock()
 	defer self.m.Unlock()
 	self.p = unsafe.Pointer(newProgramMap())
+	self.pending = make(map[*rt.GoType]*programCall)
+	self.epoch++
 }
 
 func (self *ProgramCache) Get(vt *rt.GoType) interface{} {
@@ -159,21 +173,64 @@ func (self *ProgramCache) Compute(vt *rt.GoType, compute func(*rt.GoType, ...int
 	var err error
 	var val interface{}
 
-	/* use defer to prevent inlining of this function */
-	self.m.Lock()
-	defer self.m.Unlock()
-
-	/* double check with write lock held */
 	if val = self.Get(vt); val != nil {
 		return val, nil
 	}
 
-	/* compute the value */
-	if val, err = compute(vt, ex...); err != nil {
-		return nil, err
+	self.m.Lock()
+
+	/* double check with write lock held */
+	if val = self.Get(vt); val != nil {
+		self.m.Unlock()
+		return val, nil
 	}
 
+	if call := self.pending[vt]; call != nil {
+		self.m.Unlock()
+		<-call.done
+		if call.panicked {
+			panic(call.panicValue)
+		}
+		return call.val, call.err
+	}
+
+	call := &programCall{
+		done:  make(chan struct{}),
+		epoch: self.epoch,
+	}
+	self.pending[vt] = call
+	self.m.Unlock()
+
+	/* compute the value */
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				call.panicked = true
+				call.panicValue = r
+			}
+		}()
+		call.val, call.err = compute(vt, ex...)
+	}()
+
+	self.m.Lock()
+
 	/* update the RCU cache */
-	atomic.StorePointer(&self.p, unsafe.Pointer((*_ProgramMap)(atomic.LoadPointer(&self.p)).add(vt, val)))
-	return val, nil
+	if !call.panicked && call.err == nil && call.epoch == self.epoch {
+		atomic.StorePointer(&self.p, unsafe.Pointer((*_ProgramMap)(atomic.LoadPointer(&self.p)).add(vt, call.val)))
+	}
+	if self.pending[vt] == call {
+		delete(self.pending, vt)
+	}
+	close(call.done)
+
+	val = call.val
+	err = call.err
+	panicked := call.panicked
+	panicValue := call.panicValue
+	self.m.Unlock()
+
+	if panicked {
+		panic(panicValue)
+	}
+	return val, err
 }
