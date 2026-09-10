@@ -1311,6 +1311,108 @@ func TestNodeSet(t *testing.T) {
 	}
 }
 
+func TestNodeReplace(t *testing.T) {
+	root, derr := NewParser(`{"count": 1, "name": "foo"}`).Parse()
+	if derr != 0 {
+		t.Fatalf("decode failed: %v", derr.Error())
+	}
+
+	count := root.GetByPath("count")
+	if err := count.Replace(NewNumber("42")); err != nil {
+		t.Fatal(err)
+	}
+	val, err := root.GetByPath("count").Int64()
+	if err != nil || val != 42 {
+		t.Fatalf("exp: 42, got: %v, err: %v", val, err)
+	}
+
+	name := root.GetByPath("name")
+	if err := name.Replace(NewString("bar")); err != nil {
+		t.Fatal(err)
+	}
+	s, err := root.GetByPath("name").String()
+	if err != nil || s != "bar" {
+		t.Fatalf("exp: bar, got: %v, err: %v", s, err)
+	}
+
+	missing := root.Get("missing")
+	if err := missing.Replace(NewNumber("1")); err != ErrNotExist {
+		t.Fatalf("exp: ErrNotExist, got: %v", err)
+	}
+
+	raw := NewRaw(`{"x": 1}`)
+	x := raw.GetByPath("x")
+	if err := x.Replace(NewNumber("99")); err != nil {
+		t.Fatal(err)
+	}
+	n, err := raw.GetByPath("x").Int64()
+	if err != nil || n != 99 {
+		t.Fatalf("exp: 99, got: %v, err: %v", n, err)
+	}
+}
+
+func TestNodeSetByPath(t *testing.T) {
+	root := NewObject(nil)
+
+	existed, err := root.SetByPath(NewNumber("1"), "a", "b", "c")
+	if existed || err != nil {
+		t.Fatalf("exp: false, nil; got: %v, %v", existed, err)
+	}
+	val, err := root.GetByPath("a", "b", "c").Int64()
+	if err != nil || val != 1 {
+		t.Fatalf("exp: 1, got: %v, err: %v", val, err)
+	}
+
+	existed, err = root.SetByPath(NewNumber("2"), "a", "b", "c")
+	if !existed || err != nil {
+		t.Fatalf("exp: true, nil; got: %v, %v", existed, err)
+	}
+	val, err = root.GetByPath("a", "b", "c").Int64()
+	if err != nil || val != 2 {
+		t.Fatalf("exp: 2, got: %v, err: %v", val, err)
+	}
+
+	existed, err = root.SetByPath(NewString("deep"), "arr", 2, "key")
+	if existed || err != nil {
+		t.Fatalf("exp: false, nil; got: %v, %v", existed, err)
+	}
+	s, err := root.GetByPath("arr", 2, "key").String()
+	if err != nil || s != "deep" {
+		t.Fatalf("exp: deep, got: %v, err: %v", s, err)
+	}
+
+	ln, err := root.GetByPath("arr").Len()
+	if err != nil || ln != 3 {
+		t.Fatalf("exp: array len 3, got: %v, err: %v", ln, err)
+	}
+
+	nullRoot, derr := NewParser(`{"a": null}`).Parse()
+	if derr != 0 {
+		t.Fatalf("decode failed: %v", derr.Error())
+	}
+	existed, err = nullRoot.SetByPath(NewNumber("3"), "a", "b")
+	if existed || err != nil {
+		t.Fatalf("exp: false, nil; got: %v, %v", existed, err)
+	}
+	val, err = nullRoot.GetByPath("a", "b").Int64()
+	if err != nil || val != 3 {
+		t.Fatalf("exp: 3, got: %v, err: %v", val, err)
+	}
+
+	parsed, derr := NewParser(`{"statuses":[{"id":1}]}`).Parse()
+	if derr != 0 {
+		t.Fatalf("decode failed: %v", derr.Error())
+	}
+	existed, err = parsed.SetByPath(NewNumber("111"), "statuses", 0, "id")
+	if !existed || err != nil {
+		t.Fatalf("exp: true, nil; got: %v, %v", existed, err)
+	}
+	val, err = parsed.GetByPath("statuses", 0, "id").Int64()
+	if err != nil || val != 111 {
+		t.Fatalf("exp: 111, got: %v, err: %v", val, err)
+	}
+}
+
 func TestNodeSetByIndex(t *testing.T) {
 	root, derr := NewParser(_TwitterJson).Parse()
 	if derr != 0 {
