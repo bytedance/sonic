@@ -19,11 +19,25 @@ package encoder
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+type newlineErrorWriter struct {
+	writes int
+	err    error
+}
+
+func (w *newlineErrorWriter) Write(p []byte) (int, error) {
+	w.writes++
+	if w.writes == 2 {
+		return 0, w.err
+	}
+	return len(p), nil
+}
 
 func TestEncodeStream(t *testing.T) {
 	var o = map[string]interface{}{
@@ -57,6 +71,15 @@ func TestEncodeStream(t *testing.T) {
 	require.Nil(t, enc1.Encode(o))
 	require.Nil(t, enc2.Encode(o))
 	require.Equal(t, w1.String(), w2.String())
+}
+
+func TestEncodeStreamNewlineWriteError(t *testing.T) {
+	want := errors.New("newline failed")
+	w := &newlineErrorWriter{err: want}
+	err := NewStreamEncoder(w).Encode(map[string]int{"a": 1})
+
+	require.ErrorIs(t, err, want)
+	require.Equal(t, 2, w.writes)
 }
 
 func BenchmarkEncodeStream_Sonic(b *testing.B) {
