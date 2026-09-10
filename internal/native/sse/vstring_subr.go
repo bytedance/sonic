@@ -14,11 +14,11 @@ const (
 )
 
 const (
-	_stack__vstring = 104
+	_stack__vstring = 128
 )
 
 const (
-	_size__vstring = 2820
+	_size__vstring = 4004
 )
 
 var (
@@ -30,15 +30,15 @@ var (
 		{0xc, 32},
 		{0xd, 40},
 		{0x11, 48},
-		{0xa57, 104},
-		{0xa58, 48},
-		{0xa5a, 40},
-		{0xa5c, 32},
-		{0xa5e, 24},
-		{0xa60, 16},
-		{0xa61, 8},
-		{0xa62, 0},
-		{0xb04, 104},
+		{0xae5, 128},
+		{0xae6, 48},
+		{0xae8, 40},
+		{0xaea, 32},
+		{0xaec, 24},
+		{0xaee, 16},
+		{0xaef, 8},
+		{0xaf0, 0},
+		{0xfa4, 128},
 	}
 )
 
