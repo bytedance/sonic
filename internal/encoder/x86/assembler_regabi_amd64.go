@@ -132,8 +132,9 @@ var (
 )
 
 var (
-	_X0 = jit.Reg("X0")
-	_Y0 = jit.Reg("Y0")
+	_X0  = jit.Reg("X0")
+	_Y0  = jit.Reg("Y0")
+	_X15 = jit.Reg("X15")
 )
 
 var (
@@ -506,12 +507,14 @@ func (self *Assembler) save_c() {
 func (self *Assembler) call_b64(pc obj.Addr) {
 	self.xsave(_REG_b64...) // SAVE $REG_all
 	self.call(pc)           // CALL $pc
+	self.Emit("XORPS", _X15, _X15)
 	self.xload(_REG_b64...) // LOAD $REG_ffi
 }
 
 func (self *Assembler) call_c(pc obj.Addr) {
 	self.Emit("XCHGQ", _SP_p, _BX)
-	self.call(pc)           // CALL $pc
+	self.call(pc) // CALL $pc
+	self.Emit("XORPS", _X15, _X15)
 	self.xload(_REG_ffi...) // LOAD $REG_ffi
 	self.Emit("XCHGQ", _SP_p, _BX)
 }
