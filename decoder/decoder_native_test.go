@@ -22,9 +22,8 @@ package decoder
 import (
 	"encoding/json"
 	"fmt"
-	_ "reflect"
+	"reflect"
 	"strings"
-	_ "strings"
 	"testing"
 	"time"
 
@@ -406,5 +405,44 @@ func BenchmarkSkip_Sonic(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = Skip(data)
+	}
+}
+
+// When a key occurs more than once, encoding/json keeps the LAST value, so a
+// trailing null must overwrite a preceding non-null value when decoding into
+// interface{}. The optdec eface map/array assembler used to fall through on
+// KNull: a fresh map slot is already zero so the first occurrence worked, but
+// mapassign returns the EXISTING slot for a duplicate key, leaving the old
+// value in place.
+func TestDecodeInterfaceDuplicateKeyNullOverwrite(t *testing.T) {
+	cases := []string{
+		`{"a":1,"a":null}`,
+		`{"a":"x","a":null}`,
+		`{"a":true,"a":null}`,
+		`{"a":[1],"a":null}`,
+		`{"a":{"b":2},"a":null}`,
+		// last non-null still wins over an earlier null
+		`{"a":null,"a":1}`,
+		`{"a":1,"a":null,"a":3}`,
+		// nested objects and array elements use the same assembler
+		`{"o":{"b":7,"b":null}}`,
+		`[{"k":1,"k":null}]`,
+		// null on first occurrence and in plain arrays keep working
+		`{"a":null}`,
+		`[null,1]`,
+		`[1,null]`,
+	}
+	for _, in := range cases {
+		var got interface{}
+		if err := NewDecoder(in).Decode(&got); err != nil {
+			t.Fatalf("input %s: %v", in, err)
+		}
+		var ref interface{}
+		if err := json.Unmarshal([]byte(in), &ref); err != nil {
+			t.Fatalf("input %s: stdlib: %v", in, err)
+		}
+		if !reflect.DeepEqual(got, ref) {
+			t.Fatalf("input %s:\n got %#v\n want %#v", in, got, ref)
+		}
 	}
 }
