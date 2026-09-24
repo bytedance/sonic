@@ -1939,3 +1939,20 @@ func TestNode_Pop(t *testing.T) {
 		})
 	}
 }
+
+func TestNewBytesEmpty(t *testing.T) {
+	for _, src := range [][]byte{nil, {}} {
+		n := NewBytes(src)
+		if n.Type() != V_STRING {
+			t.Fatalf("type %d, want V_STRING", n.Type())
+		}
+		got, err := n.String()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got != "" {
+			t.Fatalf("NewBytes(%q) = %q, want empty string", src, got)
+		}
+	}
+}
+
