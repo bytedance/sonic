@@ -1873,9 +1873,10 @@ func NewAny(any interface{}) Node {
 }
 
 // NewBytes encodes given src with Base64 (RFC 4648), and creates a node of type V_STRING.
+// An empty src encodes to an empty string. It does not panic.
 func NewBytes(src []byte) Node {
 	if len(src) == 0 {
-		panic("empty src bytes")
+		return NewString("")
 	}
 	out := rt.EncodeBase64ToString(src)
 	return NewString(out)
