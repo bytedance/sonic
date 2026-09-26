@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [1.20.x, 1.22.x, 1.25.x, '1.27.0-rc.2']
+        go-version: [1.20.x, 1.22.x, 1.25.x, 1.27.x]
         runner_arch: [ubuntu-24.04-arm, macos-15]
 
     runs-on: ${{ matrix.runner_arch }}
