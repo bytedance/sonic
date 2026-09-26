@@ -22,8 +22,8 @@ CPU_ARCS=("sse" "avx2")
 CHECK_ARCS=("xmm" "vpcmpeqb")
 
 CLAGS=(
-    "-msse -mpclmul -mno-sse4 -mno-avx -mno-avx2" 
-    "-mno-sse4 -mavx -mpclmul -mavx2 -DUSE_AVX2=1" 
+    "-msse -mno-pclmul -mno-sse4 -mno-avx -mno-avx2"
+    "-mno-sse4 -mavx -mpclmul -mavx2 -DUSE_AVX2=1 -DUSE_PCLMUL=1"
 )
 
 i=0

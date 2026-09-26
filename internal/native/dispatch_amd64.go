@@ -238,7 +238,7 @@ func useAVX2() {
 }
 
 func init() {
-	if cpu.HasAVX2 {
+	if cpu.HasAVX2 && cpu.HasPCLMULQDQ {
 		useAVX2()
 	} else if cpu.HasSSE {
 		useSSE()
