@@ -993,6 +993,162 @@ func (self *Node) AddAny(val interface{}) error {
 	return self.Add(NewAny(val))
 }
 
+// Replace replaces the node's value in place.
+//
+// This is useful when a node has been located via Get(), Index(), or GetByPath()
+// and its value should be updated without navigating back to the parent to call Set().
+func (self *Node) Replace(node Node) error {
+	if self == nil {
+		return ErrNotExist
+	} else if self.loadt() == V_ERROR {
+		return self
+	} else if !self.Exists() {
+		return ErrNotExist
+	} else if node.t == V_ERROR {
+		return node
+	}
+
+	lock := self.lock()
+	if lock {
+		defer self.unlock()
+	}
+	self.assign(node)
+	return nil
+}
+
+// ReplaceAny wraps val with V_ANY node, and Replace() the node.
+func (self *Node) ReplaceAny(val interface{}) error {
+	return self.Replace(NewAny(val))
+}
+
+// SetByPath sets the node at the given path, creating objects and arrays as needed.
+//
+// Path elements must be either string (object key) or int (array index).
+// Intermediate containers are created automatically when missing.
+func (self *Node) SetByPath(node Node, path ...interface{}) (bool, error) {
+	if node.t == V_ERROR {
+		return false, node
+	} else if len(path) == 0 {
+		if self == nil {
+			return false, ErrNotExist
+		}
+		existed := self.Exists()
+		return existed, self.Replace(node)
+	} else if err := self.checkRaw(); err != nil {
+		return false, err
+	}
+
+	parent := self
+	for i := 0; i < len(path)-1; i++ {
+		child, err := parent.ensurePathSegment(path[i], path[i+1])
+		if err != nil {
+			return false, err
+		}
+		parent = child
+	}
+	return parent.setPathLeaf(path[len(path)-1], node)
+}
+
+// SetAnyByPath wraps val with V_ANY node, and SetByPath() the node.
+func (self *Node) SetAnyByPath(val interface{}, path ...interface{}) (bool, error) {
+	return self.SetByPath(NewAny(val), path...)
+}
+
+func newPathContainer(next interface{}) Node {
+	switch next.(type) {
+	case string:
+		return NewObject(nil)
+	case int:
+		return NewArray(nil)
+	default:
+		panic("path must be either int or string")
+	}
+}
+
+func (self *Node) ensurePathSegment(key interface{}, next interface{}) (*Node, error) {
+	switch k := key.(type) {
+	case string:
+		child := self.Get(k)
+		if !child.Exists() {
+			if _, err := self.Set(k, newPathContainer(next)); err != nil {
+				return nil, err
+			}
+			return self.Get(k), nil
+		} else if err := child.Check(); err != nil {
+			return nil, err
+		} else if child.itype() == types.V_NULL {
+			if err := child.Replace(newPathContainer(next)); err != nil {
+				return nil, err
+			}
+		}
+		return child, nil
+	case int:
+		if k < 0 {
+			return nil, ErrNotExist
+		}
+		child, err := self.extendArrayToIndex(k)
+		if err != nil {
+			return nil, err
+		} else if child.itype() == types.V_NULL {
+			if err := child.Replace(newPathContainer(next)); err != nil {
+				return nil, err
+			}
+		}
+		return child, nil
+	default:
+		panic("path must be either int or string")
+	}
+}
+
+func (self *Node) setPathLeaf(key interface{}, node Node) (bool, error) {
+	switch k := key.(type) {
+	case string:
+		return self.Set(k, node)
+	case int:
+		if k < 0 {
+			return false, ErrNotExist
+		}
+		child, err := self.extendArrayToIndex(k)
+		if err != nil {
+			return false, err
+		} else if err := child.Check(); err != nil {
+			return false, err
+		}
+		existed := child.itype() != types.V_NULL
+		return existed, child.Replace(node)
+	default:
+		panic("path must be either int or string")
+	}
+}
+
+func (self *Node) extendArrayToIndex(index int) (*Node, error) {
+	if err := self.checkRaw(); err != nil {
+		return nil, err
+	} else if index == 0 && (self.t == _V_NONE || self.t == types.V_NULL) {
+		*self = NewArray(nil)
+	} else if err := self.should(types.V_ARRAY); err != nil {
+		return nil, err
+	}
+
+	for {
+		if err := self.skipAllIndex(); err != nil {
+			return nil, err
+		}
+		ln, err := self.Len()
+		if err != nil {
+			return nil, err
+		} else if index < ln {
+			child := self.Index(index)
+			if err := child.Check(); err != nil {
+				return nil, err
+			}
+			return child, nil
+		} else if err := self.Add(NewNull()); err != nil {
+			return nil, err
+		}
+	}
+}
+
 // GetByPath load given path on demands,
 // which only ensure nodes before this path got parsed.
 //
