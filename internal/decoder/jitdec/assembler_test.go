@@ -109,6 +109,14 @@ type testOps struct {
 	val interface{}
 }
 
+func mustStdFloat32(s string) float32 {
+	var v float32
+	if err := json.Unmarshal([]byte(s), &v); err != nil {
+		panic(err)
+	}
+	return v
+}
+
 func testOpCode(t *testing.T, ops *testOps) {
 	p := ops.ins
 	k := new(_Stack)
@@ -344,7 +352,13 @@ func TestAssembler_OpCode(t *testing.T) {
 			key: "_OP_f32",
 			ins: []_Instr{newInsOp(_OP_f32)},
 			src: "1.25e20",
-			exp: float32(1.25e20),
+			exp: mustStdFloat32("1.25e20"),
+			val: new(float32),
+		}, {
+			key: "_OP_f32/precision_compat",
+			ins: []_Instr{newInsOp(_OP_f32)},
+			src: "7.328900098800659",
+			exp: mustStdFloat32("7.328900098800659"),
 			val: new(float32),
 		}, {
 			key: "_OP_f32/overflow",
@@ -452,7 +466,13 @@ func TestAssembler_OpCode(t *testing.T) {
 			key: "_OP_map_key_f32",
 			ins: []_Instr{newInsVt(_OP_map_key_f32, reflect.TypeOf(map[float32]int{}))},
 			src: `1.25"`,
-			exp: map[float32]int{1.25: 0},
+			exp: map[float32]int{mustStdFloat32("1.25"): 0},
+			val: map[float32]int{},
+		}, {
+			key: "_OP_map_key_f32/precision_compat",
+			ins: []_Instr{newInsVt(_OP_map_key_f32, reflect.TypeOf(map[float32]int{}))},
+			src: `7.328900098800659"`,
+			exp: map[float32]int{mustStdFloat32("7.328900098800659"): 0},
 			val: map[float32]int{},
 		}, {
 			key: "_OP_map_key_f64",
