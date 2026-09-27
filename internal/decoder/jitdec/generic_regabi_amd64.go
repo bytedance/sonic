@@ -124,6 +124,7 @@ func (self *_ValueDecoder) call_go(fn obj.Addr) {
 func (self *_ValueDecoder) callc(fn obj.Addr) {
 	self.save(_IP)
 	self.call(fn)
+	self.Emit("XORPS", _X15, _X15)
 	self.load(_IP)
 }
 
