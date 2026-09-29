@@ -561,6 +561,41 @@ var unmarshalTests = []unmarshalTest{
 		ptr: new(map[uintptr]bool),
 		out: map[uintptr]bool{0: false, 10: true},
 	},
+	{
+		in:  `{"01":"a","-007":"b","00":"c","-00":"d"}`,
+		ptr: new(map[int]string),
+		out: map[int]string{1: "a", -7: "b", 0: "d"},
+	},
+	{
+		in:  `{"01":"a","010":"b","0255":"c"}`,
+		ptr: new(map[uint8]string),
+		out: map[uint8]string{1: "a", 10: "b", 255: "c"},
+	},
+	{
+		in:  `{"01":1,"-02":2}`,
+		ptr: new(map[int32]int),
+		out: map[int32]int{1: 1, -2: 2},
+	},
+	{
+		in:  `{"01":1,"02":2}`,
+		ptr: new(map[uint32]int),
+		out: map[uint32]int{1: 1, 2: 2},
+	},
+	{
+		in:  `{"-09223372036854775808":"min","09223372036854775807":"max"}`,
+		ptr: new(map[int64]string),
+		out: map[int64]string{math.MinInt64: "min", math.MaxInt64: "max"},
+	},
+	{
+		in:  `{"018446744073709551615":"max"}`,
+		ptr: new(map[uint64]string),
+		out: map[uint64]string{math.MaxUint64: "max"},
+	},
+	{
+		in:  `{"F":{"01":2,"3":4}}`,
+		ptr: new(map[string]map[int]int),
+		out: map[string]map[int]int{"F": {1: 2, 3: 4}},
+	},
 
 	// Check that MarshalText and UnmarshalText take precedence
 	// over default integer handling in map keys.
@@ -590,6 +625,11 @@ var unmarshalTests = []unmarshalTest{
 		in:  `{"128":"abc"}`,
 		ptr: new(map[int8]string),
 		err: &json.UnmarshalTypeError{Value: "number 128", Type: reflect.TypeOf(int8(0)), Offset: 2},
+	},
+	{
+		in:  `{"0256":"abc"}`,
+		ptr: new(map[uint8]string),
+		err: &json.UnmarshalTypeError{Value: "number 0256", Type: reflect.TypeOf(uint8(0)), Offset: 2},
 	},
 	{
 		in:  `{"-1":"abc"}`,
