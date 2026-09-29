@@ -449,6 +449,42 @@ func TestAssembler_OpCode(t *testing.T) {
 			exp: map[uint64]int{123456789123456789: 0},
 			val: map[uint64]int{},
 		}, {
+			key: "_OP_map_key_i8/leading_zero",
+			ins: []_Instr{newInsVt(_OP_map_key_i8, reflect.TypeOf(map[int8]int{}))},
+			src: `-0127"`,
+			exp: map[int8]int{-127: 0},
+			val: map[int8]int{},
+		}, {
+			key: "_OP_map_key_i32/leading_zero",
+			ins: []_Instr{newInsVt(_OP_map_key_i32, reflect.TypeOf(map[int32]int{}))},
+			src: `00123"`,
+			exp: map[int32]int{123: 0},
+			val: map[int32]int{},
+		}, {
+			key: "_OP_map_key_u8/leading_zero",
+			ins: []_Instr{newInsVt(_OP_map_key_u8, reflect.TypeOf(map[uint8]int{}))},
+			src: `0255"`,
+			exp: map[uint8]int{255: 0},
+			val: map[uint8]int{},
+		}, {
+			key: "_OP_map_key_u8/overflow",
+			ins: []_Instr{newInsVt(_OP_map_key_u8, reflect.TypeOf(map[uint8]int{}))},
+			src: `256"`,
+			err: errors.ErrorValue("256", reflect.TypeOf(uint8(0))),
+			val: map[uint8]int{},
+		}, {
+			key: "_OP_map_key_u8/leading_zero_overflow",
+			ins: []_Instr{newInsVt(_OP_map_key_u8, reflect.TypeOf(map[uint8]int{}))},
+			src: `0256"`,
+			err: errors.ErrorValue("0256", reflect.TypeOf(uint8(0))),
+			val: map[uint8]int{},
+		}, {
+			key: "_OP_map_key_u64/leading_zero",
+			ins: []_Instr{newInsVt(_OP_map_key_u64, reflect.TypeOf(map[uint64]int{}))},
+			src: `018446744073709551615"`,
+			exp: map[uint64]int{18446744073709551615: 0},
+			val: map[uint64]int{},
+		}, {
 			key: "_OP_map_key_f32",
 			ins: []_Instr{newInsVt(_OP_map_key_f32, reflect.TypeOf(map[float32]int{}))},
 			src: `1.25"`,
