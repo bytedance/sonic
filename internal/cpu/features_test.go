@@ -17,29 +17,30 @@
 package cpu
 
 import (
-	"fmt"
 	"os"
+	"testing"
 
 	"github.com/klauspost/cpuid/v2"
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	HasAVX2 = cpuid.CPU.Has(cpuid.AVX2)
-	HasSSE  = cpuid.CPU.Has(cpuid.SSE) && cpuid.CPU.Has(cpuid.CLMUL)
-)
+func TestHasSSE(t *testing.T) {
+	expected := cpuid.CPU.Has(cpuid.SSE) && cpuid.CPU.Has(cpuid.CLMUL)
+	assert.Equal(t, expected, HasSSE)
 
-func init() {
-	switch v := os.Getenv("SONIC_MODE"); v {
-	case "":
-		break
-	case "auto":
-		break
-	case "noavx":
-		HasAVX2 = false
-	// will also disable avx, act as `noavx`, we remain it to make sure forward compatibility
-	case "noavx2":
-		HasAVX2 = false
-	default:
-		panic(fmt.Sprintf("invalid mode: '%s', should be one of 'auto', 'noavx', 'noavx2'", v))
+	if !cpuid.CPU.Has(cpuid.CLMUL) {
+		assert.False(t, HasSSE, "HasSSE must be false if CLMUL is not supported")
+	}
+	if !cpuid.CPU.Has(cpuid.SSE) {
+		assert.False(t, HasSSE, "HasSSE must be false if SSE is not supported")
+	}
+}
+
+func TestHasAVX2(t *testing.T) {
+	mode := os.Getenv("SONIC_MODE")
+	if mode == "noavx" || mode == "noavx2" {
+		assert.False(t, HasAVX2)
+	} else {
+		assert.Equal(t, cpuid.CPU.Has(cpuid.AVX2), HasAVX2)
 	}
 }
