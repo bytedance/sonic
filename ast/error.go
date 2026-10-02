@@ -47,6 +47,16 @@ func (self *Parser) syntaxError(err types.ParsingError) SyntaxError {
 }
 
 func unwrapError(err error) *Node {
+	if pe, ok := err.(types.ParsingError); ok {
+		switch pe {
+		case _ERR_NOT_FOUND:
+			return ErrNotExist.(*Node)
+		case _ERR_UNSUPPORT_TYPE:
+			return ErrUnsupportType.(*Node)
+		case _ERR_INVALID_PATH_TYPE:
+			return ErrInvalidPathType.(*Node)
+		}
+	}
 	if se, ok := err.(*Node); ok {
 		return se
 	} else if sse, ok := err.(Node); ok {
