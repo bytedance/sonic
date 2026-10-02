@@ -430,15 +430,39 @@ func TestGetWithInvalidUndemandedField(t *testing.T) {
 }
 
 func TestGet_InvalidPathType(t *testing.T) {
-	assert.Panics(t, assert.PanicTestFunc(func() {
-		data := `{"a":[{"b":true}]}`
-		s := NewSearcher(data)
-		s.GetByPath("a", true)
+	data := `{"a":[{"b":true}]}`
+	s := NewSearcher(data)
+	_, err := s.GetByPath("a", true)
+	assert.Equal(t, ErrInvalidPathType, err)
 
-		s = NewSearcher(data)
-		s.GetByPath("a", nil)
+	s = NewSearcher(data)
+	_, err = s.GetByPath("a", nil)
+	assert.Equal(t, ErrInvalidPathType, err)
 
-		s = NewSearcher(data)
-		s.GetByPath("a", -1)
-	}))
+	s = NewSearcher(data)
+	_, err = s.GetByPath("a", -1)
+	assert.Equal(t, ErrInvalidPathType, err)
+
+	root, derr := NewParser(data).Parse()
+	assert.Equal(t, types.ParsingError(0), derr)
+	node := root.GetByPath("a", true)
+	assert.Equal(t, ErrInvalidPathType, node.Check())
+	assert.False(t, node.Valid())
+
+	node = root.GetByPath("a", nil)
+	assert.Equal(t, ErrInvalidPathType, node.Check())
+	assert.False(t, node.Valid())
+
+	node = root.GetByPath("a", 3.14)
+	assert.Equal(t, ErrInvalidPathType, node.Check())
+	assert.False(t, node.Valid())
+
+	_, _, _, err = _GetByPath(data, "a", true)
+	assert.Equal(t, ErrInvalidPathType, err)
+
+	_, _, _, err = _GetByPath(data, "a", nil)
+	assert.Equal(t, ErrInvalidPathType, err)
+
+	_, _, _, err = _GetByPath(data, "a", -1)
+	assert.Equal(t, ErrInvalidPathType, err)
 }

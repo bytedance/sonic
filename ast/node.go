@@ -1016,7 +1016,7 @@ func (self *Node) GetByPath(path ...interface{}) *Node {
 				return s
 			}
 		default:
-			panic("path must be either int or string")
+			return unwrapError(_ERR_INVALID_PATH_TYPE)
 		}
 	}
 	return s
