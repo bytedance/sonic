@@ -40,7 +40,9 @@ const (
 
 //go:nocheckptr
 func skipBlank(src string, pos int) int {
-	se := uintptr(rt.IndexChar(src, len(src)))
+	// Keep the end address as an integer. An unsafe.Pointer past the end of
+	// the allocation may be shared across calls after inlining and scanned by GC.
+	se := uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(len(src))
 	sp := uintptr(rt.IndexChar(src, pos))
 
 	for sp < se {
@@ -132,7 +134,7 @@ func isDigit(c byte) bool {
 func decodeInt64(src string, pos int) (ret int, v int64, err error) {
 	sp := uintptr(rt.IndexChar(src, pos))
 	ss := uintptr(sp)
-	se := uintptr(rt.IndexChar(src, len(src)))
+	se := uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(len(src))
 	if uintptr(sp) >= se {
 		return -int(types.ERR_EOF), 0, nil
 	}
@@ -182,7 +184,7 @@ func isNumberChars(c byte) bool {
 func decodeFloat64(src string, pos int) (ret int, v float64, err error) {
 	sp := uintptr(rt.IndexChar(src, pos))
 	ss := uintptr(sp)
-	se := uintptr(rt.IndexChar(src, len(src)))
+	se := uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(len(src))
 	if uintptr(sp) >= se {
 		return -int(types.ERR_EOF), 0, nil
 	}
@@ -295,7 +297,7 @@ func skipString(src string, pos int) (ret int, ep int) {
 	}
 
 	sp := uintptr(rt.IndexChar(src, pos))
-	se := uintptr(rt.IndexChar(src, len(src)))
+	se := uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(len(src))
 
 	// not start with quote
 	if *(*byte)(unsafe.Pointer(sp)) != '"' {
@@ -331,7 +333,7 @@ func skipPair(src string, pos int, lchar byte, rchar byte) (ret int) {
 	}
 
 	sp := uintptr(rt.IndexChar(src, pos))
-	se := uintptr(rt.IndexChar(src, len(src)))
+	se := uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(len(src))
 
 	if *(*byte)(unsafe.Pointer(sp)) != lchar {
 		return -int(types.ERR_INVALID_CHAR)
