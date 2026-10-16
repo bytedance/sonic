@@ -19,16 +19,38 @@ package ast
 import (
 	"runtime"
 	"testing"
+
+	"github.com/bytedance/sonic/internal/native/types"
 )
 
-// Keep both calls in one function so that an inlined IndexChar result can
-// be shared across the GC safe point.
+// Keep the calls in one function so that inlined scan addresses may remain
+// live across the GC safe point.
 //
 //go:noinline
-func skipBlankAcrossGC(src string) (int, int) {
+func skipBlankAcrossGC(src string) (int, int, int) {
 	first := skipBlank(src, 0)
 	runtime.GC()
-	return first, skipBlank(src, 1)
+	return first, skipBlank(src, 1), skipBlank(src, len(src))
+}
+
+func TestScannerStartAtEnd(t *testing.T) {
+	src := "1"
+	pos := len(src)
+	want := -int(types.ERR_EOF)
+
+	if got := skipBlank(src, pos); got != want {
+		t.Fatalf("skipBlank returned %d, want %d", got, want)
+	}
+	if got := skipNumber(src, pos); got != want {
+		t.Fatalf("skipNumber returned %d, want %d", got, want)
+	}
+	if got, _, _ := decodeInt64(src, pos); got != want {
+		t.Fatalf("decodeInt64 returned %d, want %d", got, want)
+	}
+	if got, _, _ := decodeFloat64(src, pos); got != want {
+		t.Fatalf("decodeFloat64 returned %d, want %d", got, want)
+	}
+	runtime.KeepAlive(src)
 }
 
 func TestSkipBlankEndPointerGC(t *testing.T) {
@@ -41,9 +63,12 @@ func TestSkipBlankEndPointerGC(t *testing.T) {
 	}
 	buf[size-1] = 'x'
 	src := string(buf)
-	first, second := skipBlankAcrossGC(src)
+	first, second, atEnd := skipBlankAcrossGC(src)
 	if first != size-1 || second != size-1 {
 		t.Fatalf("skipBlank returned (%d, %d), want (%d, %d)", first, second, size-1, size-1)
+	}
+	if atEnd != -int(types.ERR_EOF) {
+		t.Fatalf("skipBlank at end returned %d, want %d", atEnd, -int(types.ERR_EOF))
 	}
 	runtime.KeepAlive(src)
 }
