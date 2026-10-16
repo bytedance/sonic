@@ -15,7 +15,7 @@ func isDigit(c byte) bool {
 //go:nocheckptr
 func SkipNumber(src string, pos int) (ret int) {
 	sp := uintptr(rt.IndexChar(src, pos))
-	se := uintptr(rt.IndexChar(src, len(src)))
+	se := uintptr((*rt.GoString)(unsafe.Pointer(&src)).Ptr) + uintptr(len(src))
 	if uintptr(sp) >= se {
 		return -int(types.ERR_EOF)
 	}
