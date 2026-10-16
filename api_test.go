@@ -52,6 +52,9 @@ func TestValid(t *testing.T) {
 }
 
 func TestConfigUseUnicodeErrors(t *testing.T) {
+	if APIKind == UseStdJSON {
+		t.Skip("UseUnicodeErrors is not supported by encoding/json fallback")
+	}
 	if envs.UseOptDec {
 		t.Skip("UseUnicodeErrors is not supported by OptDec")
 	}
