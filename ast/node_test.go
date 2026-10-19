@@ -1963,3 +1963,37 @@ func TestNewBytesEmpty(t *testing.T) {
 	}
 }
 
+func TestUseNodeAfterUnset(t *testing.T) {
+	arr := NewRaw(`[1,2,3]`)
+	exist, err := arr.UnsetByIndex(0)
+	require.NoError(t, err)
+	require.True(t, exist)
+	nodes, err := arr.ArrayUseNode()
+	require.NoError(t, err)
+	require.Len(t, nodes, 2)
+	for i, want := range []int64{2, 3} {
+		got, err := nodes[i].Int64()
+		require.NoError(t, err)
+		require.Equal(t, want, got)
+	}
+	x, err := arr.InterfaceUseNode()
+	require.NoError(t, err)
+	require.Len(t, x.([]Node), 2)
+
+	obj := NewRaw(`{"":1,"a":2,"b":3}`)
+	exist, err = obj.Unset("a")
+	require.NoError(t, err)
+	require.True(t, exist)
+	m, err := obj.MapUseNode()
+	require.NoError(t, err)
+	require.Len(t, m, 2)
+	for k, want := range map[string]int64{"": 1, "b": 3} {
+		n := m[k]
+		got, err := n.Int64()
+		require.NoError(t, err)
+		require.Equal(t, want, got)
+	}
+	x, err = obj.InterfaceUseNode()
+	require.NoError(t, err)
+	require.Len(t, x.(map[string]Node), 2)
+}
