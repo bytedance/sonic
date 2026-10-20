@@ -25,7 +25,7 @@ import (
 
 var (
 	HasAVX2 = cpuid.CPU.Has(cpuid.AVX2)
-	HasSSE  = cpuid.CPU.Has(cpuid.SSE)
+	HasSSE  = cpuid.CPU.Has(cpuid.SSE) && cpuid.CPU.Has(cpuid.CLMUL)
 )
 
 func init() {
