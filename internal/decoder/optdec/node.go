@@ -492,8 +492,15 @@ func (val Node) IsRawNumber() bool {
 	return val.Type() == KRawNumber
 }
 
+func copyNumberString(ctx *Context, s string) json.Number {
+	if ctx.Options()&(1<<_F_copy_string) != 0 {
+		s = string(rt.Str2Mem(s))
+	}
+	return json.Number(s)
+}
+
 func (val Node) Number(ctx *Context) json.Number {
-	return json.Number(val.Raw(ctx))
+	return copyNumberString(ctx, val.Raw(ctx))
 }
 
 func (val Node) Raw(ctx *Context) string {
@@ -538,7 +545,7 @@ func (val Node) NonstrAsNumber(ctx *Context) (json.Number, bool) {
 	if !ok {
 		return "", false
 	}
-	return json.Number(ctx.Parser.Json[start:end]), true
+	return copyNumberString(ctx, ctx.Parser.Json[start:end]), true
 }
 
 func (val Node) AsRaw(ctx *Context) string {

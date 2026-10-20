@@ -513,16 +513,22 @@ func (self *_ValueDecoder) compile() {
 	/* represent numbers as `json.Number` */
 	self.Link("_use_number")                        // _use_number
 	self.Emit("MOVQ", _VAR_ss_Ep, _AX)              // MOVQ    ss.Ep, AX
-	self.Emit("LEAQ", jit.Sib(_IP, _AX, 1, 0), _SI) // LEAQ    (IP)(AX), SI
+	self.Emit("LEAQ", jit.Sib(_IP, _AX, 1, 0), _R8) // LEAQ    (IP)(AX), R8
 	self.Emit("MOVQ", _IC, _CX)                     // MOVQ    IC, CX
 	self.Emit("SUBQ", _AX, _CX)                     // SUBQ    AX, CX
-	self.Emit("MOVQ", _SI, _AX)                     // MOVQ    SI, AX
-	self.Emit("MOVQ", _CX, _BX)                     // MOVQ    CX, BX
-	self.call_go(_F_convTstring)                    // CALL_GO runtime.convTstring
-	self.Emit("MOVQ", _T_number, _R8)               // MOVQ    _T_number, R8
-	self.Emit("MOVQ", _AX, _R9)                     // MOVQ    AX, R9
-	self.Emit("MOVQ", _VAR_ss_Ep, _DI)              // MOVQ    ss.Ep, DI
-	self.Sjmp("JMP", "_set_value")                  // JMP     _set_value
+	self.Emit("MOVQ", _CX, _AX)                     // MOVQ    CX, AX
+	self.Byte(0x48, 0x8d, 0x3d)                     // LEAQ    (PC), DI
+	self.Sref("_copy_number_end", 4)
+	self.Emit("BTQ", jit.Imm(_F_copy_string), _VAR_df)
+	self.Sjmp("JC", "copy_string")
+	self.Link("_copy_number_end")
+	self.Emit("MOVQ", _AX, _BX)        // MOVQ    AX, BX
+	self.Emit("MOVQ", _R8, _AX)        // MOVQ    R8, AX
+	self.call_go(_F_convTstring)       // CALL_GO runtime.convTstring
+	self.Emit("MOVQ", _T_number, _R8)  // MOVQ    _T_number, R8
+	self.Emit("MOVQ", _AX, _R9)        // MOVQ    AX, R9
+	self.Emit("MOVQ", _VAR_ss_Ep, _DI) // MOVQ    ss.Ep, DI
+	self.Sjmp("JMP", "_set_value")     // JMP     _set_value
 
 	/* represent numbers as `int64` */
 	self.Link("_use_int64")            // _use_int64:
