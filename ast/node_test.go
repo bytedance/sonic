@@ -1233,6 +1233,31 @@ func TestNodeGetByPath(t *testing.T) {
 	}
 }
 
+func TestNodeGetByPath_InvalidPathType(t *testing.T) {
+	root, derr := NewParser(`{"a": [1, 2, 3], "b": {"c": "hello"}}`).Parse()
+	require.Equal(t, types.ParsingError(0), derr)
+
+	invalidPaths := []interface{}{
+		3.14,
+		true,
+		nil,
+		struct{}{},
+		[]string{"foo"},
+	}
+
+	for _, p := range invalidPaths {
+		n := root.GetByPath("a", p)
+		require.False(t, n.Valid())
+		require.Equal(t, ErrInvalidPathType, n.Check())
+		require.Equal(t, "path must be either int or string", n.Error())
+
+		n2 := root.GetByPath(p)
+		require.False(t, n2.Valid())
+		require.Equal(t, ErrInvalidPathType, n2.Check())
+		require.Equal(t, "path must be either int or string", n2.Error())
+	}
+}
+
 func TestNodeSet(t *testing.T) {
 	arr := NewRaw(`[]`)
 	ex, ee := arr.Set("a", NewNumber("-1"))
