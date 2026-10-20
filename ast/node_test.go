@@ -1963,3 +1963,22 @@ func TestNewBytesEmpty(t *testing.T) {
 	}
 }
 
+func TestGetEmptyKeyAfterUnset(t *testing.T) {
+	root := NewRaw(`{"a":1,"":2}`)
+	exist, err := root.Unset("a")
+	require.NoError(t, err)
+	require.True(t, exist)
+
+	v := root.Get("")
+	require.True(t, v.Exists())
+	got, err := v.Int64()
+	require.NoError(t, err)
+	require.Equal(t, int64(2), got)
+
+	exist, err = root.Set("", NewNumber("3"))
+	require.NoError(t, err)
+	require.True(t, exist)
+	out, err := root.MarshalJSON()
+	require.NoError(t, err)
+	require.Equal(t, `{"":3}`, string(out))
+}
