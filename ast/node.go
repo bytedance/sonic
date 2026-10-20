@@ -19,6 +19,7 @@ package ast
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -292,7 +293,7 @@ func (self *Node) Int64() (int64, error) {
 		if i, err := self.toInt64(); err == nil {
 			return i, nil
 		} else if f, err := self.toFloat64(); err == nil {
-			return int64(f), nil
+			return castFloat64ToInt64(f)
 		} else {
 			return 0, err
 		}
@@ -322,24 +323,24 @@ func (self *Node) Int64() (int64, error) {
 		case int64:
 			return int64(v), nil
 		case uint:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint8:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint16:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint32:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint64:
-			return int64(v), nil
+			return castUint64ToInt64(v)
 		case float32:
-			return int64(v), nil
+			return castFloat64ToInt64(float64(v))
 		case float64:
-			return int64(v), nil
+			return castFloat64ToInt64(v)
 		case string:
 			if i, err := strconv.ParseInt(v, 10, 64); err == nil {
 				return i, nil
 			} else if f, err := strconv.ParseFloat(v, 64); err == nil {
-				return int64(f), nil
+				return castFloat64ToInt64(f)
 			} else {
 				return 0, err
 			}
@@ -347,7 +348,7 @@ func (self *Node) Int64() (int64, error) {
 			if i, err := v.Int64(); err == nil {
 				return i, nil
 			} else if f, err := v.Float64(); err == nil {
-				return int64(f), nil
+				return castFloat64ToInt64(f)
 			} else {
 				return 0, err
 			}
@@ -381,15 +382,15 @@ func (self *Node) StrictInt64() (int64, error) {
 		case int64:
 			return int64(v), nil
 		case uint:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint8:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint16:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint32:
-			return int64(v), nil
+			return castUint64ToInt64(uint64(v))
 		case uint64:
-			return int64(v), nil
+			return castUint64ToInt64(v)
 		case json.Number:
 			if i, err := v.Int64(); err == nil {
 				return i, nil
@@ -402,6 +403,30 @@ func (self *Node) StrictInt64() (int64, error) {
 	default:
 		return 0, ErrUnsupportType
 	}
+}
+
+func int64RangeError(num string) error {
+	return &strconv.NumError{Func: "ParseInt", Num: num, Err: strconv.ErrRange}
+}
+
+func castUint64ToInt64(v uint64) (int64, error) {
+	if v > uint64(math.MaxInt64) {
+		return 0, int64RangeError(strconv.FormatUint(v, 10))
+	}
+	return int64(v), nil
+}
+
+func castFloat64ToInt64(v float64) (int64, error) {
+	if math.IsNaN(v) || math.IsInf(v, 0) {
+		return 0, int64RangeError(strconv.FormatFloat(v, 'g', -1, 64))
+	}
+
+	truncated := math.Trunc(v)
+	const absInt64Limit = 1 << 63
+	if truncated < -absInt64Limit || truncated >= absInt64Limit {
+		return 0, int64RangeError(strconv.FormatFloat(v, 'g', -1, 64))
+	}
+	return int64(truncated), nil
 }
 
 func castNumber(v bool) json.Number {
