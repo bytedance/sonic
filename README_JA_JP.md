@@ -207,7 +207,7 @@ err := root.SortKeys()
 import "github.com/bytedance/sonic"
 
 v := map[string]string{"&&":"<>"}
-ret, err := Encode(v, EscapeHTML) // ret == `{"&&":{"X":"<>"}}`
+ret, err := Encode(v, EscapeHTML) // ret == `{"\u0026\u0026":{"X":"\u003c\u003e"}}`
 ```
 
 ### コンパクトフォーマット
