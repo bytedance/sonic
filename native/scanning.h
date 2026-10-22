@@ -456,6 +456,7 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
     uint64_t cr = 0;
     long     qp = 0;
     long     np = 0;
+    ssize_t  vp = p;
 
     /* buffer pointers */
     size_t       nb = src->len;
@@ -559,6 +560,23 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
 
         qp = m0 ? __builtin_ctzll(m0) : 64;
         np = m2 ? __builtin_ctzll(m2) : 64;
+
+        /* validate escape sequences before the closing quote */
+        uint64_t em = m1;
+        while (unlikely(em != 0)) {
+            long eo = __builtin_ctzll(em);
+            long bp = sp - ss + eo;
+            if (eo >= qp) {
+                break;
+            }
+            if (bp >= vp) {
+                vp = advance_escape_validate(src, bp + 1, ep);
+                if (vp < 0) {
+                    return vp;
+                }
+            }
+            em &= em - 1;
+        }
        
         /* get the position of end quote */
         if (m0 != 0) {
@@ -619,6 +637,23 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
        
         qp = m0 ? __builtin_ctzll(m0) : 64;
         np = m2 ? __builtin_ctzll(m2) : 64;
+
+        /* validate escape sequences before the closing quote */
+        uint64_t em = m1;
+        while (unlikely(em != 0)) {
+            long eo = __builtin_ctzll(em);
+            long bp = sp - ss + eo;
+            if (eo >= qp) {
+                break;
+            }
+            if (bp >= vp) {
+                vp = advance_escape_validate(src, bp + 1, ep);
+                if (vp < 0) {
+                    return vp;
+                }
+            }
+            em &= em - 1;
+        }
        
         /* get the position of end quote */
         if (m0 != 0) {
