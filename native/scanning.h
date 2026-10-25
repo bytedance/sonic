@@ -361,6 +361,17 @@ static always_inline int _mm256_nonascii_mask(__m256i v) {
     return _mm256_movemask_epi8(v);
 }
 
+/* Quotes and backslashes reuse masks already computed by the string scanner. */
+static always_inline int _mm256_other_simple_escapes_mask(__m256i v) {
+    __m256i m = _mm256_cmpeq_epi8(v, _mm256_set1_epi8('/'));
+    m = _mm256_or_si256(m, _mm256_cmpeq_epi8(
+        _mm256_or_si256(v, _mm256_set1_epi8(0x10)), _mm256_set1_epi8('r')));
+    m = _mm256_or_si256(m, _mm256_cmpeq_epi8(
+        _mm256_or_si256(v, _mm256_set1_epi8(0x08)), _mm256_set1_epi8('n')));
+    m = _mm256_or_si256(m, _mm256_cmpeq_epi8(v, _mm256_set1_epi8('t')));
+    return _mm256_movemask_epi8(m);
+}
+
 #endif
 
 static always_inline int _mm_get_mask(__m128i v, __m128i t) {
@@ -548,6 +559,10 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
 
 #endif
        
+#if USE_AVX2
+        uint64_t simple_mask = m0 | m1;
+#endif
+
         /** update first quote position */
         if (unlikely(m1 != 0)) {
             ep_setx(sp - ss + __builtin_ctzll(m1))
@@ -563,6 +578,18 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
 
         /* validate escape sequences before the closing quote */
         uint64_t em = m1;
+#if USE_AVX2
+        /* Unicode-first blocks cannot take the simple-escape fast path. */
+        if (em != 0 && cr == 0 && m0 == 0 && m2 == 0 && vp <= sp - ss &&
+            sp[__builtin_ctzll(em) + 1] != 'u') {
+            simple_mask |= ((uint64_t)(uint32_t)_mm256_other_simple_escapes_mask(v1) << 32) |
+                           (uint32_t)_mm256_other_simple_escapes_mask(v0);
+            if (((fe & (es ^ EVEN_MASK)) & ~simple_mask) == 0) {
+                vp = sp - ss + 64;
+                em = 0;
+            }
+        }
+#endif
         while (unlikely(em != 0)) {
             long eo = __builtin_ctzll(em);
             long bp = sp - ss + eo;
@@ -625,6 +652,10 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
         m2 = ((uint64_t)c1 << 16) | (uint64_t)c0;
 #endif
        
+#if USE_AVX2
+        uint64_t simple_mask = m0 | m1;
+#endif
+
         /** update first quote position */
         if (unlikely(m1 != 0)) {
             ep_setx(sp - ss + __builtin_ctzll(m1))
@@ -640,6 +671,16 @@ static always_inline ssize_t advance_string_validate(const GoString *src, long p
 
         /* validate escape sequences before the closing quote */
         uint64_t em = m1;
+#if USE_AVX2
+        if (em != 0 && cr == 0 && m0 == 0 && m2 == 0 && vp <= sp - ss &&
+            sp[__builtin_ctzll(em) + 1] != 'u') {
+            simple_mask |= (uint32_t)_mm256_other_simple_escapes_mask(v0);
+            if (((fe & (es ^ EVEN_MASK)) & ~simple_mask) == 0) {
+                vp = sp - ss + 32;
+                em = 0;
+            }
+        }
+#endif
         while (unlikely(em != 0)) {
             long eo = __builtin_ctzll(em);
             long bp = sp - ss + eo;
