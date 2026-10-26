@@ -1755,6 +1755,16 @@ func (self *Node) toGenericArrayUseNode() ([]Node, error) {
 	}
 
 	var s = (*linkedNodes)(self.p)
+	if l := s.Len(); l != nb {
+		// some nodes got unset, skip them
+		var out = make([]Node, 0, nb)
+		for i := 0; i < l; i++ {
+			if v := s.At(i); v.Exists() {
+				out = append(out, *v)
+			}
+		}
+		return out, nil
+	}
 	var out = make([]Node, nb)
 	s.ToSlice(out)
 
@@ -1811,6 +1821,15 @@ func (self *Node) toGenericObjectUseNode() (map[string]Node, error) {
 
 	var s = (*linkedPairs)(self.p)
 	var out = make(map[string]Node, nb)
+	if l := s.Len(); l != nb {
+		// some pairs got unset, skip them
+		for i := 0; i < l; i++ {
+			if p := s.At(i); p != nil && p.Value.Exists() {
+				out[p.Key] = p.Value
+			}
+		}
+		return out, nil
+	}
 	s.ToMap(out)
 
 	/* all done */
