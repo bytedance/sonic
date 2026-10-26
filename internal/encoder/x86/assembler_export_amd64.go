@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.27
-// +build go1.17,!go1.27
+//go:build go1.17 && !go1.28
+// +build go1.17,!go1.28
 
 package x86
 

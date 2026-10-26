@@ -1,5 +1,5 @@
-//go:build (!amd64 && !arm64) || go1.27 || !go1.17 || (arm64 && !go1.20)
-// +build !amd64,!arm64 go1.27 !go1.17 arm64,!go1.20
+//go:build (!amd64 && !arm64) || go1.28 || !go1.17 || (arm64 && !go1.20)
+// +build !amd64,!arm64 go1.28 !go1.17 arm64,!go1.20
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -230,6 +230,9 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 	enc.SetIndent(prefix, indent)
 	err := enc.Encode(val)
 	out := w.Bytes()
+	if len(out) > 0 && out[len(out)-1] == '\n' {
+		out = out[:len(out)-1]
+	}
 	return out, err
 }
 

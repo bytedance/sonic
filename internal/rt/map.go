@@ -1,12 +1,11 @@
-//go:build go1.24 && !go1.26 && !goexperiment.swissmap
-// +build go1.24,!go1.26,!goexperiment.swissmap
-
 package rt
 
 import (
 	"unsafe"
 )
 
+// GoMapIterator mirrors the pre-Go 1.24 hiter layout. Go 1.24+ runtime
+// provides a linkname compatibility shim whose real iterator pointer lands in H.
 type GoMapIterator struct {
 	K           unsafe.Pointer
 	V           unsafe.Pointer
@@ -23,6 +22,7 @@ type GoMapIterator struct {
 	I           uint8
 	Bucket      uintptr
 	CheckBucket uintptr
-	// different from go1.23
+	// Required by the Go 1.24-1.25 GOEXPERIMENT=noswissmap hiter layout.
+	// Newer legacy linkname shims ignore this trailing storage.
 	ClearSeq uint64
 }

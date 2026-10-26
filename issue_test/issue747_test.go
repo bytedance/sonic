@@ -24,24 +24,24 @@ import (
 
 func TestIssue747(t *testing.T) {
 	tests := []struct {
-		name           string
-		input         string
+		name     string
+		input    string
 		expected interface{}
-		newfn func() interface{}
+		newfn    func() interface{}
 	}{
 		{
-			name:   "unmarshal map key float64",
+			name:  "unmarshal map key float64",
 			input: `{"1.2":1.8}`,
 			expected: &map[float64]float64{
-				1.2:  1.8,
+				1.2: 1.8,
 			},
 			newfn: func() interface{} { return new(map[float64]float64) },
 		},
 		{
-			name:    "unmarshal map key float32",
+			name:  "unmarshal map key float32",
 			input: `{"1.2":1.8}`,
 			expected: &map[float32]float32{
-				1.2:  1.8,
+				1.2: 1.8,
 			},
 			newfn: func() interface{} { return new(map[float32]float32) },
 		},
@@ -54,7 +54,11 @@ func TestIssue747(t *testing.T) {
 			assert.Equal(t, tt.expected, sv)
 			assert.NoError(t, serr)
 
-			// Note: it is different from encoding/json 
+			if stdUsesJSONV2 {
+				return
+			}
+
+			// Note: it is different from legacy encoding/json.
 			jerr := json.Unmarshal([]byte(tt.input), &jv)
 			assert.NotEqual(t, jerr == nil, serr == nil)
 			assert.NotEqual(t, jv, sv)

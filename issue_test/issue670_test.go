@@ -26,7 +26,7 @@ import (
 )
 
 func TestIssue670_JSONMarshaler(t *testing.T) {
-	var obj = Issue670JSONMarshaler{ D: Date(time.Now().Unix()) }
+	var obj = Issue670JSONMarshaler{D: Date(time.Now().Unix())}
 	so, _ := sonic.MarshalString(obj)
 	eo, _ := json.Marshal(obj)
 	assert.Equal(t, string(eo), so)
@@ -36,6 +36,14 @@ func TestIssue670_JSONUnmarshaler(t *testing.T) {
 	// match
 	eo := []byte(`{"D":"2021-08-26","E":1}`)
 	et := reflect.TypeOf(Issue670JSONMarshaler{})
+	if stdUsesJSONV2 {
+		date := Date(time.Date(2021, time.August, 26, 0, 0, 0, 0, time.UTC).Unix())
+		assertSonicUnmarshalResult(t, eo, false, Issue670JSONMarshaler{D: date, E: 1})
+
+		assertSonicUnmarshalResult(t, []byte(`{"D":11,"E":1}`), true, Issue670JSONMarshaler{E: 1})
+		assertSonicUnmarshalResult(t, []byte(`{"D":null,"E":1}`), false, Issue670JSONMarshaler{E: 1})
+		return
+	}
 	testUnmarshal(t, eo, et, true)
 
 	// mismatch
@@ -47,12 +55,20 @@ func TestIssue670_JSONUnmarshaler(t *testing.T) {
 	testUnmarshal(t, eo, et, true)
 }
 
+func assertSonicUnmarshalResult(t *testing.T, data []byte, wantErr bool, want Issue670JSONMarshaler) {
+	t.Helper()
+	var obj Issue670JSONMarshaler
+	err := sonic.Unmarshal(data, &obj)
+	assert.Equal(t, wantErr, err != nil, err)
+	assert.Equal(t, want, obj)
+}
+
 func testUnmarshal(t *testing.T, eo []byte, rt reflect.Type, checkobj bool) {
 	obj := reflect.New(rt).Interface()
 	es := sonic.Unmarshal(eo, obj)
 	obj2 := reflect.New(rt).Interface()
 	ee := json.Unmarshal(eo, obj2)
-	assert.Equal(t, ee ==nil, es == nil, es)
+	assert.Equal(t, ee == nil, es == nil, es)
 	if checkobj {
 		assert.Equal(t, obj2, obj)
 	}
@@ -61,7 +77,7 @@ func testUnmarshal(t *testing.T, eo []byte, rt reflect.Type, checkobj bool) {
 }
 
 func TestIssue670_TextMarshaler(t *testing.T) {
-	var obj = Issue670TextMarshaler{ D: int(time.Now().Unix()) }
+	var obj = Issue670TextMarshaler{D: int(time.Now().Unix())}
 	so, _ := sonic.MarshalString(obj)
 	eo, _ := json.Marshal(obj)
 	assert.Equal(t, string(eo), so)
@@ -84,8 +100,8 @@ func TestIssue670_TextUnmarshaler(t *testing.T) {
 }
 
 type Issue670JSONMarshaler struct {
-	D      Date                 `form:"D" json:"D,string" query:"D"`
-	E      int
+	D Date `form:"D" json:"D,string" query:"D"`
+	E int
 }
 
 type Date int64
@@ -102,7 +118,7 @@ func (d *Date) UnmarshalJSON(in []byte) error {
 		*d = 0
 		return nil
 	}
-	
+
 	t, err := time.Parse("2006-01-02", string(in))
 	if err != nil {
 		return err
@@ -112,10 +128,9 @@ func (d *Date) UnmarshalJSON(in []byte) error {
 }
 
 type Issue670TextMarshaler struct {
-	D      int                 `form:"D" json:"D,string" query:"D"`
-	E      int
+	D int `form:"D" json:"D,string" query:"D"`
+	E int
 }
-
 
 type Date2 int64
 
