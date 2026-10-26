@@ -372,14 +372,11 @@ func decodeFloat32Key(dec *mapDecoder, raw string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	ret, err := ParseF64(key)
+	ret, err := ParseF32(key)
 	if err != nil {
-		return nil, err
-	}
-	if ret > math.MaxFloat32 || ret < -math.MaxFloat32 {
 		return nil, error_value(key, dec.mapType.Key.Pack())
 	}
-	return float32(ret), nil
+	return ret, nil
 }
 
 func decodeFloat64Key(dec *mapDecoder, raw string) (interface{}, error) {

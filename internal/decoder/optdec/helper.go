@@ -76,6 +76,14 @@ func ParseU64(raw string) (uint64, error) {
 	return u64, nil
 }
 
+func ParseF32(raw string) (float32, error) {
+	f, err := strconv.ParseFloat(raw, 32)
+	if err != nil {
+		return 0, err
+	}
+	return float32(f), nil
+}
+
 func ParseF64(raw string) (float64, error) {
 	f64, err := strconv.ParseFloat(raw, 64)
 	if err != nil {
