@@ -82,7 +82,7 @@ func (self *Parser) getByPath(validate bool, path ...interface{}) (int, types.Pa
 				return self.p, err
 			}
 		} else {
-			panic("path must be either int(>=0) or string")
+			return self.p, _ERR_INVALID_PATH_TYPE
 		}
 	}
 

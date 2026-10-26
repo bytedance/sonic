@@ -368,6 +368,52 @@ func TestSearcher_GetByPathErr(t *testing.T) {
 	}
 }
 
+func TestSearcher_GetByPath_InvalidPathType(t *testing.T) {
+	data := `{"a": [1, 2, 3], "b": {"c": "hello"}}`
+	s := NewSearcher(data)
+
+	invalidTypes := []interface{}{
+		3.14,
+		true,
+		nil,
+		struct{}{},
+		[]string{"foo"},
+	}
+
+	for _, p := range invalidTypes {
+		n, err := s.GetByPath("a", p)
+		require.Equal(t, ErrInvalidPathType, err)
+		require.False(t, n.Exists())
+
+		n2, err2 := s.GetByPath(p)
+		require.Equal(t, ErrInvalidPathType, err2)
+		require.False(t, n2.Exists())
+
+		s1, e1, typ1, err3 := _GetByPath(data, "a", p)
+		require.Equal(t, ErrInvalidPathType, err3)
+		require.Equal(t, -1, s1)
+		require.Equal(t, -1, e1)
+		require.Equal(t, 0, typ1)
+
+		s2, e2, typ2, err4 := _GetByPath(data, p)
+		require.Equal(t, ErrInvalidPathType, err4)
+		require.Equal(t, -1, s2)
+		require.Equal(t, -1, e2)
+		require.Equal(t, 0, typ2)
+	}
+
+	// Negative index on array also returns ErrInvalidPathType
+	n, err := s.GetByPath("a", -1)
+	require.Equal(t, ErrInvalidPathType, err)
+	require.False(t, n.Exists())
+
+	s1, e1, typ1, err := _GetByPath(data, "a", -1)
+	require.Equal(t, ErrInvalidPathType, err)
+	require.Equal(t, -1, s1)
+	require.Equal(t, -1, e1)
+	require.Equal(t, 0, typ1)
+}
+
 func TestLoadIndex(t *testing.T) {
 	node, err := NewSearcher(`{"a":[-0, 1, -1.2, -1.2e-10]}`).GetByPath("a")
 	if err != nil {
