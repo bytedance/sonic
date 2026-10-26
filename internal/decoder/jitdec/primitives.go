@@ -19,6 +19,8 @@ package jitdec
 import (
 	"encoding"
 	"encoding/json"
+	"strconv"
+	"strings"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/native"
@@ -33,6 +35,32 @@ func decodeTypedPointer(s string, i int, vt *rt.GoType, vp unsafe.Pointer, sb *_
 		ret, err := fn(s, i, vp, sb, fv, "", nil)
 		return ret, err
 	}
+}
+
+// decodeIntKey parses an integer map key starting at s[i] and ending at the next
+// quote, for keys the JSON number scanner stops inside of, such as "01" or "-007".
+// It returns the key and the offset of the closing quote, or -1 if the key is
+// not a base-10 integer.
+func decodeIntKey(s string, i int, signed bool) (int64, int) {
+	if i < 0 || i > len(s) {
+		return 0, -1
+	}
+	n := strings.IndexByte(s[i:], '"')
+	if n < 0 {
+		return 0, -1
+	}
+	if signed {
+		v, err := strconv.ParseInt(s[i:i+n], 10, 64)
+		if err != nil {
+			return 0, -1
+		}
+		return v, i + n
+	}
+	v, err := strconv.ParseUint(s[i:i+n], 10, 64)
+	if err != nil {
+		return 0, -1
+	}
+	return int64(v), i + n
 }
 
 func decodeJsonUnmarshaler(vv interface{}, s string) error {

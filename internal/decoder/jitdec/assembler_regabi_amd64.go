@@ -1579,9 +1579,40 @@ func (self *_Assembler) _asm_OP_map_init(_ *_Instr) {
 	self.Emit("MOVQ", _AX, _VP)                // MOVQ    AX, VP
 }
 
+var _F_decodeIntKey = jit.Func(decodeIntKey)
+
+// int_key_end moves IC to the closing quote of an integer map key. The number
+// scanner rejects leading zeros, so for keys like "01" it stops before the
+// quote; those keys are parsed again with strconv, as encoding/json does, and
+// range checked again. st.Ep holds the start of the number.
+func (self *_Assembler) int_key_end(signed bool, check func()) {
+	self.Emit("CMPQ", _IC, _IL)                              // CMPQ    IC, IL
+	self.Sjmp("JAE", "_int_key_end_{n}")                     // JAE     _int_key_end_{n}
+	self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm('"')) // CMPB    (IP)(IC), $'"'
+	self.Sjmp("JE", "_int_key_end_{n}")                      // JE      _int_key_end_{n}
+	self.Emit("MOVQ", _VAR_st_Ep, _CX)                       // MOVQ    st.Ep, CX
+	self.Emit("MOVQ", _ARG_sp, _AX)                          // MOVQ    sp, AX
+	self.Emit("MOVQ", _ARG_sl, _BX)                          // MOVQ    sl, BX
+	if signed {
+		self.Emit("MOVQ", jit.Imm(1), _DI) // MOVQ    $1, DI
+	} else {
+		self.Emit("XORL", _DI, _DI) // XORL    DI, DI
+	}
+	self.call_go(_F_decodeIntKey)      // CALL_GO decodeIntKey
+	self.Emit("TESTQ", _BX, _BX)       // TESTQ   BX, BX
+	self.Sjmp("JS", _LB_char_0_error)  // JS      _char_0_error
+	self.Emit("MOVQ", _AX, _VAR_st_Iv) // MOVQ    AX, st.Iv
+	self.Emit("MOVQ", _BX, _IC)        // MOVQ    BX, IC
+	if check != nil {
+		check()
+	}
+	self.Link("_int_key_end_{n}") // _int_key_end_{n}:
+}
+
 func (self *_Assembler) _asm_OP_map_key_i8(p *_Instr) {
 	self.parse_signed(int8Type, "", p.vi())                            // PARSE     int8
 	self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8) // RANGE     int8
+	self.int_key_end(true, func() { self.range_signed_CX(_I_int8, _T_int8, math.MinInt8, math.MaxInt8) })
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN int8, mapassign, st.Iv
 }
@@ -1589,6 +1620,7 @@ func (self *_Assembler) _asm_OP_map_key_i8(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_i16(p *_Instr) {
 	self.parse_signed(int16Type, "", p.vi())                               // PARSE     int16
 	self.range_signed_CX(_I_int16, _T_int16, math.MinInt16, math.MaxInt16) // RANGE     int16
+	self.int_key_end(true, func() { self.range_signed_CX(_I_int16, _T_int16, math.MinInt16, math.MaxInt16) })
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN int16, mapassign, st.Iv
 }
@@ -1596,6 +1628,7 @@ func (self *_Assembler) _asm_OP_map_key_i16(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_i32(p *_Instr) {
 	self.parse_signed(int32Type, "", p.vi())                               // PARSE     int32
 	self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32) // RANGE     int32
+	self.int_key_end(true, func() { self.range_signed_CX(_I_int32, _T_int32, math.MinInt32, math.MaxInt32) })
 	self.match_char('"')
 	if vt := p.vt(); !rt.IsMapfast(vt) {
 		self.mapassign_std(vt, _VAR_st_Iv) // MAPASSIGN int32, mapassign, st.Iv
@@ -1607,6 +1640,7 @@ func (self *_Assembler) _asm_OP_map_key_i32(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_map_key_i64(p *_Instr) {
 	self.parse_signed(int64Type, "", p.vi()) // PARSE     int64
+	self.int_key_end(true, nil)
 	self.match_char('"')
 	if vt := p.vt(); !rt.IsMapfast(vt) {
 		self.mapassign_std(vt, _VAR_st_Iv) // MAPASSIGN int64, mapassign, st.Iv
@@ -1619,6 +1653,7 @@ func (self *_Assembler) _asm_OP_map_key_i64(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_u8(p *_Instr) {
 	self.parse_unsigned(uint8Type, "", p.vi())                // PARSE     uint8
 	self.range_unsigned_CX(_I_uint8, _T_uint8, math.MaxUint8) // RANGE     uint8
+	self.int_key_end(false, func() { self.range_unsigned_CX(_I_uint8, _T_uint8, math.MaxUint8) })
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN uint8, vt.Iv
 }
@@ -1626,6 +1661,7 @@ func (self *_Assembler) _asm_OP_map_key_u8(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_u16(p *_Instr) {
 	self.parse_unsigned(uint16Type, "", p.vi())                  // PARSE     uint16
 	self.range_unsigned_CX(_I_uint16, _T_uint16, math.MaxUint16) // RANGE     uint16
+	self.int_key_end(false, func() { self.range_unsigned_CX(_I_uint16, _T_uint16, math.MaxUint16) })
 	self.match_char('"')
 	self.mapassign_std(p.vt(), _VAR_st_Iv) // MAPASSIGN uint16, vt.Iv
 }
@@ -1633,6 +1669,7 @@ func (self *_Assembler) _asm_OP_map_key_u16(p *_Instr) {
 func (self *_Assembler) _asm_OP_map_key_u32(p *_Instr) {
 	self.parse_unsigned(uint32Type, "", p.vi())                  // PARSE     uint32
 	self.range_unsigned_CX(_I_uint32, _T_uint32, math.MaxUint32) // RANGE     uint32
+	self.int_key_end(false, func() { self.range_unsigned_CX(_I_uint32, _T_uint32, math.MaxUint32) })
 	self.match_char('"')
 	if vt := p.vt(); !rt.IsMapfast(vt) {
 		self.mapassign_std(vt, _VAR_st_Iv) // MAPASSIGN uint32, vt.Iv
@@ -1644,6 +1681,7 @@ func (self *_Assembler) _asm_OP_map_key_u32(p *_Instr) {
 
 func (self *_Assembler) _asm_OP_map_key_u64(p *_Instr) {
 	self.parse_unsigned(uint64Type, "", p.vi()) // PARSE     uint64
+	self.int_key_end(false, nil)
 	self.match_char('"')
 	if vt := p.vt(); !rt.IsMapfast(vt) {
 		self.mapassign_std(vt, _VAR_st_Iv) // MAPASSIGN uint64, vt.Iv
