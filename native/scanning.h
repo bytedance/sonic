@@ -1359,8 +1359,21 @@ static always_inline uint64_t get_string_maskx64(const char *s, uint64_t *prev_i
     }
     quote_mask &= ~escaped;
 
-    /* get the inquote bitmask */
+    /* get the inquote bitmask: prefix XOR of quote_mask.
+     * clmul(quote_mask, 0xFF..FF) computes a running XOR (prefix sum in GF(2)),
+     * which marks all bits that are inside a quoted string. */
+#ifdef USE_PCLMUL
     uint64_t inquote = _mm_cvtsi128_si64(_mm_clmulepi64_si128(_mm_set_epi64x(0, quote_mask), _mm_set1_epi8('\xFF'), 0));
+#else
+    /* scalar prefix XOR — equivalent to carry-less multiply by all-ones */
+    uint64_t inquote = quote_mask;
+    inquote ^= inquote << 1;
+    inquote ^= inquote << 2;
+    inquote ^= inquote << 4;
+    inquote ^= inquote << 8;
+    inquote ^= inquote << 16;
+    inquote ^= inquote << 32;
+#endif
     inquote ^= *prev_inquote;
     *prev_inquote = (uint64_t)(((int64_t)(inquote)) >> 63);
     return inquote;
