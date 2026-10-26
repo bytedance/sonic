@@ -77,6 +77,17 @@ func TestStreamDecodeNumberAcrossReads(t *testing.T) {
 	}
 }
 
+func TestStreamDecodeRejectsStrayClosingDelimiter(t *testing.T) {
+	for _, input := range []string{"]", "}", " ]", "\n}"} {
+		t.Run(fmt.Sprintf("%q", input), func(t *testing.T) {
+			d := NewStreamDecoder(strings.NewReader(input))
+			var got interface{}
+			require.Error(t, d.Decode(&got))
+			require.NotPanics(t, func() { _, _ = io.ReadAll(d.Buffered()) })
+		})
+	}
+}
+
 func TestStreamNumberStopsAtDelimiter(t *testing.T) {
 	for _, space := range []string{" ", "\t", "\r", "\n"} {
 		t.Run(fmt.Sprintf("%q", space), func(t *testing.T) {

@@ -65,41 +65,46 @@ func NewStreamDecoder(r io.Reader) *StreamDecoder {
 // Either io error from underlying io.Reader (except io.EOF)
 // or syntax error from data will be recorded and stop subsequently decoding.
 func (self *StreamDecoder) Decode(val interface{}) (err error) {
-	// read more data into buf
-	if self.More() {
-		s := self.scanp
-		e, scanErr := self.readValue()
-		if scanErr != nil {
-			return scanErr
-		}
-		// must copy string here for safety
-		self.Decoder.Reset(string(self.buf[s:e]))
-		err = self.Decoder.Decode(val)
-		if err != nil {
-			self.setErr(err)
-			return
-		}
-
-		self.scanp = e
-		_, empty := self.scan()
-		if empty {
-			// no remain valid bytes, thus we just recycle buffer
-			mem := self.buf
-			self.buf = nil
-			freeBytes(mem)
-			self.err = self.readErr
-		} else {
-			// remain undecoded bytes, move them onto head
-			n := copy(self.buf, self.buf[self.scanp:])
-			self.buf = self.buf[:n]
-		}
-
-		self.scanned += int64(self.scanp)
-		self.scanp = 0
-		return nil
+	if self.err != nil {
+		return self.err
+	}
+	// Decode must inspect closing delimiters as values so that a stray top-level
+	// ']' or '}' becomes a syntax error. More intentionally reports false for
+	// those bytes and is only suitable for array/object iteration.
+	if _, err = self.peek(); err != nil {
+		return err
 	}
 
-	return self.err
+	s := self.scanp
+	e, scanErr := self.readValue()
+	if scanErr != nil {
+		return scanErr
+	}
+	// must copy string here for safety
+	self.Decoder.Reset(string(self.buf[s:e]))
+	err = self.Decoder.Decode(val)
+	if err != nil {
+		self.setErr(err)
+		return
+	}
+
+	self.scanp = e
+	_, empty := self.scan()
+	if empty {
+		// no remain valid bytes, thus we just recycle buffer
+		mem := self.buf
+		self.buf = nil
+		freeBytes(mem)
+		self.err = self.readErr
+	} else {
+		// remain undecoded bytes, move them onto head
+		n := copy(self.buf, self.buf[self.scanp:])
+		self.buf = self.buf[:n]
+	}
+
+	self.scanned += int64(self.scanp)
+	self.scanp = 0
+	return nil
 }
 
 // InputOffset returns the input stream byte offset of the current decoder position.
