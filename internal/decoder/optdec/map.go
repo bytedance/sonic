@@ -455,6 +455,12 @@ func (d *mapDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 			continue
 		}
 
+		// Number keys retain a slice of the input, unlike keys decoded by
+		// Unquote. Copy before insertion so input reuse cannot mutate a map key.
+		if d.mapType.Key == rt.JsonNumberType && ctx.Options()&(1<<_F_copy_string) != 0 {
+			key = copyNumberString(ctx, string(key.(json.Number)))
+		}
+
 		valn := NewNode(PtrOffset(next, 1))
 		keyp := rt.UnpackEface(key).Value
 		if d.mapType.Key.Kind() == reflect.Ptr {
