@@ -34,8 +34,9 @@ var x15TestReg = jit.Reg("X15")
 
 func loadDirtyX15Func(t *testing.T, name string) x15DirtyFunc {
 	t.Helper()
-	// PCMPEQD X15, X15; RET.
-	text := []byte{0x66, 0x45, 0x0f, 0x76, 0xff, 0xc3}
+	// PCMPEQD X15, X15; XORL AX, AX; RET.
+	// Native calls may clobber AX, which initially holds the output pointer.
+	text := []byte{0x66, 0x45, 0x0f, 0x76, 0xff, 0x31, 0xc0, 0xc3}
 	l := loader.Loader{
 		Name: "sonic.test.",
 		File: "x15_regabi_amd64_test.go",
@@ -54,6 +55,8 @@ func loadEncoderCallStoreX15(t *testing.T, name string, dirty x15DirtyFunc, call
 		a.Emit("SUBQ", jit.Imm(_FP_size), _SP)
 		a.Emit("MOVQ", _BP, jit.Ptr(_SP, FP_offs))
 		a.Emit("LEAQ", jit.Ptr(_SP, FP_offs), _BP)
+		// Preserve the output pointer in its ABI argument spill slot.
+		a.Emit("MOVQ", _AX, jit.Ptr(_SP, _FP_size+8))
 		a.save_c()
 		switch callKind {
 		case "call_c":
@@ -63,7 +66,10 @@ func loadEncoderCallStoreX15(t *testing.T, name string, dirty x15DirtyFunc, call
 		default:
 			t.Fatalf("unknown native call wrapper %q", callKind)
 		}
+		a.Emit("MOVQ", jit.Ptr(_SP, _FP_size+8), _AX)
 		a.Emit("MOVUPS", x15TestReg, jit.Ptr(_AX, 0))
+		// Return to Go with a clean X15 even when the wrapper regresses.
+		a.Emit("XORPS", x15TestReg, x15TestReg)
 		a.Emit("MOVQ", jit.Ptr(_SP, FP_offs), _BP)
 		a.Emit("ADDQ", jit.Imm(_FP_size), _SP)
 		a.Emit("RET")
@@ -76,6 +82,9 @@ func TestEncoderCallCClearsX15(t *testing.T) {
 	dirty := loadDirtyX15Func(t, "dirty_x15_encoder")
 	call := loadEncoderCallStoreX15(t, "test_encoder_callc_x15", dirty, "call_c")
 	var got [16]byte
+	for i := range got {
+		got[i] = 0xa5
+	}
 	call(&got)
 	for i, b := range got {
 		if b != 0 {
@@ -88,6 +97,9 @@ func TestEncoderCallB64ClearsX15(t *testing.T) {
 	dirty := loadDirtyX15Func(t, "dirty_x15_encoder_b64")
 	call := loadEncoderCallStoreX15(t, "test_encoder_callb64_x15", dirty, "call_b64")
 	var got [16]byte
+	for i := range got {
+		got[i] = 0xa5
+	}
 	call(&got)
 	for i, b := range got {
 		if b != 0 {
