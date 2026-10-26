@@ -1087,7 +1087,12 @@ _object_key:
 		rt.ConvTBool(true, (*interface{})(val))
 	case KFalse:
 		rt.ConvTBool(false, (*interface{})(val))
-	case KNull: /* skip */
+	case KNull:
+		// Write nil explicitly. A fresh slot is already zero, but for a
+		// duplicate key mapassign returns the *existing* slot, which still
+		// holds the previous value; falling through would wrongly keep it
+		// instead of overwriting it with null like encoding/json does.
+		*(*any)(val) = nil
 	case KUint:
 		ctx.efacePool.ConvF64(float64(node.U64()), val)
 	case KSint:
@@ -1186,7 +1191,12 @@ _arr_val:
 		rt.ConvTBool(true, (*interface{})(val))
 	case KFalse:
 		rt.ConvTBool(false, (*interface{})(val))
-	case KNull: /* skip */
+	case KNull:
+		// Write nil explicitly. A fresh slot is already zero, but for a
+		// duplicate key mapassign returns the *existing* slot, which still
+		// holds the previous value; falling through would wrongly keep it
+		// instead of overwriting it with null like encoding/json does.
+		*(*any)(val) = nil
 	case KUint:
 		ctx.efacePool.ConvF64(float64(node.U64()), val)
 	case KSint:

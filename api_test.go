@@ -19,6 +19,7 @@ package sonic
 import (
 	"testing"
 
+	"github.com/bytedance/sonic/internal/envs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,6 +49,19 @@ func TestValid(t *testing.T) {
 	for _, tc := range testCase {
 		require.Equal(t, tc.expected, Valid([]byte(tc.data)), tc.data)
 	}
+}
+
+func TestConfigUseUnicodeErrors(t *testing.T) {
+	if APIKind == UseStdJSON {
+		t.Skip("UseUnicodeErrors is not supported by encoding/json fallback")
+	}
+	if envs.UseOptDec {
+		t.Skip("UseUnicodeErrors is not supported by OptDec")
+	}
+
+	var got string
+	err := Config{UseUnicodeErrors: true}.Froze().UnmarshalFromString(`"\ud800"`, &got)
+	require.Error(t, err)
 }
 
 func TestIdent(t *testing.T) {

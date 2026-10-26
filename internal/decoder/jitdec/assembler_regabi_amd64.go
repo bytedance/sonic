@@ -987,8 +987,12 @@ func (self *_Assembler) mem_clear_rem(size int64, ptrfree bool) {
 	self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 0), _AX) // MOVQ    (ST)(AX), AX
 	self.Emit("SUBQ", _VP, _AX)                     // SUBQ    VP, AX
 	self.Emit("ADDQ", _AX, _BX)                     // ADDQ    AX, BX
+	// A full array leaves VP one past its end. Even a zero-length pointer
+	// clear can inspect that address in the runtime's write barrier.
+	self.Sjmp("JZ", "_clear_rem_end_{n}")
 	self.Emit("MOVQ", _VP, _AX)                     // MOVQ    VP, (SP)
 	self.mem_clear_fn(ptrfree)                      // CALL_GO memclr{Has,NoHeap}Pointers
+	self.Link("_clear_rem_end_{n}")
 }
 
 /** Map Assigning Routines **/

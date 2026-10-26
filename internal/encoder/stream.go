@@ -81,7 +81,10 @@ func (enc *StreamEncoder) Encode(val interface{}) (err error) {
 
 		// according to standard library, terminate each value with a newline...
 		if enc.Opts&NoEncoderNewline == 0 {
-			enc.w.Write([]byte{'\n'})
+			_, err = enc.w.Write([]byte{'\n'})
+			if err != nil {
+				goto free_bytes
+			}
 		}
 	}
 
