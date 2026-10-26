@@ -1,24 +1,20 @@
 # Sonic and Go 1.27 Compatibility
 
-Last updated: July 30, 2026
+Last updated: October 26, 2026
+Catalog observations: July 30, 2026 (Go 1.27rc2)
 Test module: [`compatibility/`](../compatibility/)
 
 ## Status
 
-Sonic treats Go 1.27 as a supported target. The current implementation and
-validation evidence use Go 1.27rc2; the Go project still marks the 1.27 release
-notes as draft and expects the final release in August 2026.
+CI now targets the Go 1.27 final release line (`1.27.x`), and the commands
+below pin Go 1.27.0 for reproducible local runs. The compatibility catalog and
+runtime analysis in this document were originally recorded with Go 1.27rc2;
+those historical observations retain their original toolchain attribution.
 
-The support claim currently means:
-
-- Sonic builds and passes its main test suites with Go 1.27rc2.
-- JIT, OptDec, FastMap, encoder VM, and loader paths are exercised.
-- Runtime ABI changes used by the loader and map iterator have been reviewed.
-- Both Go 1.27 `encoding/json` backends are covered.
-
-It does not mean that unreleased runtime internals are frozen. The final
-toolchain must be validated again before the release-candidate qualifier can
-be removed from this evidence.
+Current CI covers JIT, OptDec, FastMap, encoder VM, loader, and both
+`encoding/json` backends. Check the results for the exact commit being
+released; passing the catalog does not establish compatibility with every
+application workload.
 
 ## Compatibility Surfaces
 
@@ -489,20 +485,20 @@ does not run it.
 
 ```sh
 # Go 1.27 default encoding/json backend
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 \
   go test ./compatibility/ -count=1
 
 # Go 1.27 legacy encoding/json backend
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOEXPERIMENT=nojsonv2 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 GOEXPERIMENT=nojsonv2 \
   go test ./compatibility/ -count=1
 
 # Sonic optimized paths
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 \
   SONIC_USE_OPTDEC=1 SONIC_USE_FASTMAP=1 SONIC_ENCODER_USE_VM=1 \
   go test ./compatibility/ -count=1
 
 # Sonic optimized paths with the legacy encoding/json backend
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOEXPERIMENT=nojsonv2 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 GOEXPERIMENT=nojsonv2 \
   SONIC_USE_OPTDEC=1 SONIC_USE_FASTMAP=1 SONIC_ENCODER_USE_VM=1 \
   go test ./compatibility/ -count=1
 ```
@@ -510,20 +506,20 @@ env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOEXPERIMENT=nojsonv2 \
 The broader Go 1.27 validation set is:
 
 ```sh
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOMAXPROCS=4 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 GOMAXPROCS=4 \
   go test ./... -count=1
 
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOMAXPROCS=4 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 GOMAXPROCS=4 \
   SONIC_USE_OPTDEC=1 SONIC_USE_FASTMAP=1 SONIC_ENCODER_USE_VM=1 \
   go test ./... -count=1
 
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOMAXPROCS=4 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 GOMAXPROCS=4 \
   go test -race ./loader/... -count=1
 
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOMAXPROCS=4 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 GOMAXPROCS=4 \
   go test -race ./issue_test -count=1
 
-env -u GOROOT GOTOOLCHAIN=go1.27rc2 GOEXPERIMENT=nojsonv2 GOMAXPROCS=4 \
+env -u GOROOT GOTOOLCHAIN=go1.27.0 GOEXPERIMENT=nojsonv2 GOMAXPROCS=4 \
   go test -race ./issue_test -count=1
 ```
 
@@ -538,9 +534,9 @@ The Go 1.27 x86 job explicitly runs:
   backends.
 
 The repository matrix also covers Linux amd64, Linux arm64, macOS arm64, and
-Windows amd64. These jobs prove the tested source state against rc2. They do
-not prove that final runtime internals will remain unchanged, and they do not
-replace validation with application workloads.
+Windows amd64. The Go 1.27 entries now use the final release line. Results
+apply to the exact tested source and toolchain and do not replace validation
+with application workloads.
 
 ## Adding a Compatibility Case
 
@@ -559,9 +555,9 @@ different internal states can produce identical JSON.
 
 ## Go 1.27 Final Acceptance
 
-After the final toolchain is published:
+CI has been moved from RC2 to `1.27.x`. For release acceptance:
 
-1. Replace or supplement `1.27.0-rc.2` in CI with the final version.
+1. Confirm the final toolchain version and source commit used by each job.
 2. Compare `moduledata` and the map iterator linkname shim with final sources.
 3. Rerun the main, optimized, loader race, issue race, and compatibility
    suites.
