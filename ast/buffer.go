@@ -255,6 +255,9 @@ func (self *linkedPairs) Unset(i int) {
 }
 
 func (self *linkedPairs) Set(i int, v Pair) {
+	if v.hash == 0 {
+		v.hash = caching.StrHash(v.Key)
+	}
 	if self.index != nil {
 		h := v.hash
 		self.index[h] = i
@@ -310,7 +313,7 @@ func (self *linkedPairs) Get(key string) (*Pair, int) {
 		i, ok := self.index[caching.StrHash(key)]
 		if ok {
 			n := self.At(i)
-			if n.Key == key {
+			if n.hash != 0 && n.Key == key {
 				return n, i
 			}
 			// hash conflicts
@@ -321,7 +324,8 @@ func (self *linkedPairs) Get(key string) (*Pair, int) {
 	}
 linear_search:
 	for i := 0; i < self.size; i++ {
-		if n := self.At(i); n.Key == key {
+		// A zero hash marks a slot cleared by Unset, even when key is empty.
+		if n := self.At(i); n.hash != 0 && n.Key == key {
 			return n, i
 		}
 	}
@@ -359,12 +363,13 @@ func (self *linkedPairs) ToMap(con map[string]Node) {
 
 func (self *linkedPairs) copyPairs(to []Pair, from []Pair, l int) {
 	copy(to, from)
-	if self.index != nil {
-		for i := 0; i < l; i++ {
-			// NOTICE: in case of user not pass hash, just cal it
-			h := caching.StrHash(from[i].Key)
-			from[i].hash = h
-			self.index[h] = i
+	for i := 0; i < l; i++ {
+		// Pair literals do not have a hash. Initialize our copy, not the input.
+		if to[i].hash == 0 {
+			to[i].hash = caching.StrHash(to[i].Key)
+		}
+		if self.index != nil {
+			self.index[to[i].hash] = i
 		}
 	}
 }

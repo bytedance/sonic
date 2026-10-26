@@ -235,3 +235,49 @@ func Test_linkedNodes_MoveOne(t *testing.T) {
 		})
 	}
 }
+
+func TestLinkedPairsEmptyKeySlots(t *testing.T) {
+	for _, indexed := range []bool{false, true} {
+		t.Run(strconv.FormatBool(indexed), func(t *testing.T) {
+			var pairs linkedPairs
+			pairs.Push(Pair{Key: "removed", Value: NewNumber("1")})
+			pairs.Push(Pair{Key: "", Value: NewNumber("2")})
+			if indexed {
+				pairs.BuildIndex()
+			}
+			pairs.Unset(0)
+			p, i := pairs.Get("")
+			require.Same(t, pairs.At(1), p)
+			require.Equal(t, 1, i)
+			pairs.Unset(1)
+			p, i = pairs.Get("")
+			require.Nil(t, p)
+			require.Equal(t, -1, i)
+		})
+	}
+}
+
+func TestNewObjectPairLiterals(t *testing.T) {
+	for _, size := range []int{2, _DEFAULT_NODE_CAP + 1, _Threshold_Index + 1, 3*_DEFAULT_NODE_CAP + 1} {
+		t.Run(strconv.Itoa(size), func(t *testing.T) {
+			input := make([]Pair, size)
+			for i := range input {
+				input[i] = Pair{Key: strconv.Itoa(i), Value: NewNumber(strconv.Itoa(i))}
+			}
+			// Even a zero Pair literal is a writable, empty-key placeholder.
+			input[size-1] = Pair{}
+			root := NewObject(input)
+			for i := 0; i < size-1; i++ {
+				value, err := root.Get(strconv.Itoa(i)).Int64()
+				require.NoError(t, err)
+				require.Equal(t, int64(i), value)
+			}
+			require.NotNil(t, root.Get(""))
+			require.NoError(t, root.Get("").Add(NewNull()))
+			_, err := root.Unset("0")
+			require.NoError(t, err)
+			require.NotNil(t, root.Get(""))
+			require.Zero(t, input[size-1].hash, "NewObject must not modify its input")
+		})
+	}
+}
