@@ -321,11 +321,17 @@ func (self *linkedPairs) Get(key string) (*Pair, int) {
 	}
 linear_search:
 	for i := 0; i < self.size; i++ {
-		if n := self.At(i); n.Key == key {
+		if n := self.At(i); n.Key == key && !n.isUnset() {
 			return n, i
 		}
 	}
 	return nil, -1
+}
+
+// isUnset reports if the pair is a zeroed slot left by Unset,
+// whose empty key must not match a real "" key.
+func (self *Pair) isUnset() bool {
+	return self.hash == 0 && self.Key == "" && self.Value.loadt() == _V_NONE
 }
 
 func (self *linkedPairs) ToSlice(con []Pair) {
