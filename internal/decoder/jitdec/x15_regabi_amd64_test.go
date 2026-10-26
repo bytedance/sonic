@@ -32,8 +32,9 @@ type x15DirtyFunc func()
 
 func loadDirtyX15Func(t *testing.T, name string) x15DirtyFunc {
 	t.Helper()
-	// PCMPEQD X15, X15; RET.
-	text := []byte{0x66, 0x45, 0x0f, 0x76, 0xff, 0xc3}
+	// PCMPEQD X15, X15; XORL AX, AX; RET.
+	// Native calls may clobber AX, which initially holds the output pointer.
+	text := []byte{0x66, 0x45, 0x0f, 0x76, 0xff, 0x31, 0xc0, 0xc3}
 	l := loader.Loader{
 		Name: "sonic.test.",
 		File: "x15_regabi_amd64_test.go",
@@ -52,8 +53,13 @@ func loadGenericCallCStoreX15(t *testing.T, dirty x15DirtyFunc) x15StoreFunc {
 		a.Emit("SUBQ", jit.Imm(_VD_size), _SP)
 		a.Emit("MOVQ", _BP, jit.Ptr(_SP, _VD_offs))
 		a.Emit("LEAQ", jit.Ptr(_SP, _VD_offs), _BP)
+		// Preserve the output pointer in its ABI argument spill slot.
+		a.Emit("MOVQ", _AX, jit.Ptr(_SP, _VD_size+8))
 		a.callc(jit.Func(dirty))
+		a.Emit("MOVQ", jit.Ptr(_SP, _VD_size+8), _AX)
 		a.Emit("MOVUPS", _X15, jit.Ptr(_AX, 0))
+		// Return to Go with a clean X15 even when the wrapper regresses.
+		a.Emit("XORPS", _X15, _X15)
 		a.Emit("MOVQ", jit.Ptr(_SP, _VD_offs), _BP)
 		a.Emit("ADDQ", jit.Imm(_VD_size), _SP)
 		a.Emit("RET")
@@ -66,6 +72,9 @@ func TestGenericCallCClearsX15(t *testing.T) {
 	dirty := loadDirtyX15Func(t, "dirty_x15_generic")
 	call := loadGenericCallCStoreX15(t, dirty)
 	var got [16]byte
+	for i := range got {
+		got[i] = 0xa5
+	}
 	call(&got)
 	for i, b := range got {
 		if b != 0 {
