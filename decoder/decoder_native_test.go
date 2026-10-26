@@ -385,6 +385,31 @@ func TestCopyString(t *testing.T) {
 	if m["B"] != "0" {
 		t.Fatal(m)
 	}
+
+	data = []byte(`{"N":12345}`)
+	dc = NewDecoder(rt.Mem2Str(data))
+	dc.UseNumber()
+	dc.CopyString()
+	m = map[string]interface{}{}
+	if err = dc.Decode(&m); err != nil {
+		t.Fatal(err)
+	}
+	data[5] = '9'
+	if m["N"] != json.Number("12345") {
+		t.Fatalf("CopyString number still refers to input: %v", m)
+	}
+
+	data = []byte(`{"N":12345}`)
+	dc = NewDecoder(rt.Mem2Str(data))
+	dc.UseNumber()
+	m = map[string]interface{}{}
+	if err = dc.Decode(&m); err != nil {
+		t.Fatal(err)
+	}
+	data[5] = '9'
+	if m["N"] != json.Number("92345") {
+		t.Fatalf("number should refer to input without CopyString: %v", m)
+	}
 }
 
 func TestDecoder_SetOption(t *testing.T) {
