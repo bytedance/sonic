@@ -1691,7 +1691,7 @@ func (self *Node) removePair(i int) {
 	if last == nil {
 		return
 	}
-	*last = Pair{}
+	*last = Pair{hash: _PAIR_DELETED}
 	// NOTICE: should be consistent with linkedPair.Len()
 	self.l--
 }
@@ -1701,7 +1701,7 @@ func (self *Node) removePairAt(i int) {
 	if p == nil {
 		return
 	}
-	*p = Pair{}
+	*p = Pair{hash: _PAIR_DELETED}
 	// NOTICE: should be consistent with linkedPair.Len()
 	self.l--
 }

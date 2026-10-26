@@ -29,9 +29,17 @@ type Pair struct {
 	Value Node
 }
 
+// Reserve the high hash bit for deleted slots. A zero hash can also come from
+// a Pair literal assigned through IndexPair, so it cannot mark deletion.
+const _PAIR_DELETED uint64 = 1 << 63
+
+func pairHash(key string) uint64 {
+	return caching.StrHash(key) &^ _PAIR_DELETED
+}
+
 func NewPair(key string, val Node) Pair {
 	return Pair{
-		hash:  caching.StrHash(key),
+		hash:  pairHash(key),
 		Key:   key,
 		Value: val,
 	}
