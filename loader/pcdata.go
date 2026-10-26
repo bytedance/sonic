@@ -71,13 +71,14 @@ func (self Pcdata) MarshalBinary() (data []byte, err error) {
     sv := int32(_PCDATA_START_VAL)
     sp := uint32(0)
     buf := make([]byte, binary.MaxVarintLen32)
+    started := false
     for _, v := range self {
         if v.PC < sp {
             panic("PC must be in ascending order!")
         }
         dp := uint64(v.PC - sp)
         dv := int64(v.Val - sv)
-        if dv == 0 || dp == 0 {
+        if dp == 0 || (dv == 0 && started) {
             continue
         }
         n := binary.PutVarint(buf, dv)
@@ -86,6 +87,7 @@ func (self Pcdata) MarshalBinary() (data []byte, err error) {
         data = append(data, buf[:n2]...)
         sp = v.PC
         sv = v.Val
+        started = true
     }
     // put 0 to indicate ends
     data = append(data, 0)
