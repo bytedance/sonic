@@ -12,33 +12,33 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package issue_test
 
 import (
-    `encoding/json`
-    `testing`
+	"encoding/json"
+	"testing"
 
-    `github.com/stretchr/testify/require`
-    `github.com/davecgh/go-spew/spew`
-    `github.com/bytedance/sonic`
+	"github.com/bytedance/sonic"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/stretchr/testify/require"
 )
 
 type Issue144_StringOption struct {
-    S1 *string      `json:"s1,string"`
-    S2 *string      `json:"s2,string"`
-    S3 string       `json:"s3,string"`
-    J1 json.Number  `json:"j1,string"`
-    J2 *json.Number `json:"j2,string"`
-    J3 *json.Number `json:"j3,string"`
-    I1 int          `json:"i1,string"`
-    I2 *int         `json:"i2,string"`
-    I3 *int         `json:"i3,string"`
+	S1 *string      `json:"s1,string"`
+	S2 *string      `json:"s2,string"`
+	S3 string       `json:"s3,string"`
+	J1 json.Number  `json:"j1,string"`
+	J2 *json.Number `json:"j2,string"`
+	J3 *json.Number `json:"j3,string"`
+	I1 int          `json:"i1,string"`
+	I2 *int         `json:"i2,string"`
+	I3 *int         `json:"i3,string"`
 }
 
 func TestIssue144_StringOption(t *testing.T) {
-    data := []byte(`{
+	data := []byte(`{
         "s1":"\"null\"",
         "s2":"null",
         "s3":"null",
@@ -50,23 +50,32 @@ func TestIssue144_StringOption(t *testing.T) {
         "i3":"-123"
     }`)
 
-    var v1, v2 Issue144_StringOption
-    e1 := json.Unmarshal(data, &v1)
-    e2 := sonic.Unmarshal(data, &v2)
-    require.NoError(t, e1)
-    require.NoError(t, e2)
-    require.Equal(t, v1, v2)
-    spew.Dump(v1)
+	var v2 Issue144_StringOption
+	e2 := sonic.Unmarshal(data, &v2)
+	require.NoError(t, e2)
+	require.Nil(t, v2.S2)
+	require.Nil(t, v2.J2)
+	require.Nil(t, v2.I2)
+	require.Equal(t, json.Number("123.456"), *v2.J3)
+	require.Equal(t, -123, *v2.I3)
 
-    i, j, s := int(1), json.Number("1"), "null"
-    v1.I2, v2.I2 = &i, &i
-    v1.J2, v2.J2 = &j, &j
-    v1.S2, v2.S2 = &s, &s
+	i, j, s := int(1), json.Number("1"), "null"
+	v2.I2 = &i
+	v2.J2 = &j
+	v2.S2 = &s
 
-    e1 = json.Unmarshal(data, &v1)
-    e2 = sonic.Unmarshal(data, &v2)
-    require.NoError(t, e1)
-    require.NoError(t, e2)
-    require.Equal(t, v1, v2)
-    spew.Dump(v1)
+	e2 = sonic.Unmarshal(data, &v2)
+	require.NoError(t, e2)
+	require.Nil(t, v2.S2)
+	require.Nil(t, v2.J2)
+	require.Nil(t, v2.I2)
+
+	if stdUsesJSONV2 {
+		return
+	}
+
+	var v1 Issue144_StringOption
+	require.NoError(t, json.Unmarshal(data, &v1))
+	require.Equal(t, v1, v2)
+	spew.Dump(v1)
 }

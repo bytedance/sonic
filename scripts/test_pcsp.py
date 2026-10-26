@@ -63,7 +63,7 @@ def check_ge_go_1_23() -> bool:
     if ver is None:
         print("Cannot get go version")
         exit(1)
-    major, minor, _ = ver.split('.')
+    major, minor = ver.split('.')[:2]
     return int(major) > 1 or int(minor) >= 23
 
 def main():

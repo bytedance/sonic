@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.27
-// +build go1.17,!go1.27
+//go:build go1.17 && !go1.28
+// +build go1.17,!go1.28
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -987,8 +987,12 @@ func (self *_Assembler) mem_clear_rem(size int64, ptrfree bool) {
 	self.Emit("MOVQ", jit.Sib(_ST, _AX, 1, 0), _AX) // MOVQ    (ST)(AX), AX
 	self.Emit("SUBQ", _VP, _AX)                     // SUBQ    VP, AX
 	self.Emit("ADDQ", _AX, _BX)                     // ADDQ    AX, BX
+	// A full array leaves VP one past its end. Even a zero-length pointer
+	// clear can inspect that address in the runtime's write barrier.
+	self.Sjmp("JZ", "_clear_rem_end_{n}")
 	self.Emit("MOVQ", _VP, _AX)                     // MOVQ    VP, (SP)
 	self.mem_clear_fn(ptrfree)                      // CALL_GO memclr{Has,NoHeap}Pointers
+	self.Link("_clear_rem_end_{n}")
 }
 
 /** Map Assigning Routines **/
@@ -1015,7 +1019,7 @@ func init() {
 }
 
 func (self *_Assembler) mapaccess_ptr(t reflect.Type) {
-	if rt.MapType(rt.UnpackType(t)).IndirectElem() {
+	if rt.IsMapIndirectElem(t) {
 		self.vfollow(t.Elem())
 	}
 }
@@ -1170,10 +1174,14 @@ func (self *_Assembler) decode_dynamic(vt obj.Addr, vp obj.Addr) {
 	self.Emit("MOVQ", _IC, _CX)     // MOVQ    IC, CX
 	self.Emit("MOVQ", _ST, _R8)     // MOVQ    ST, R8
 	self.Emit("MOVQ", _ARG_fv, _R9) // MOVQ    fv, R9
+	self.Emit("MOVQ", jit.Ptr(_ST, 0), _DX)
+	self.Emit("MOVQ", _DX, _VAR_ss_CX)
 	self.save(_REG_rt...)
 	self.Emit("MOVQ", _F_decodeTypedPointer, _IL) // MOVQ ${fn}, R11
 	self.Rjmp("CALL", _IL)                        // CALL R11
 	self.load(_REG_rt...)
+	self.Emit("MOVQ", _VAR_ss_CX, _DX)
+	self.Emit("MOVQ", _DX, jit.Ptr(_ST, 0))
 	self.Emit("MOVQ", _AX, _IC)                                        // MOVQ    AX, IC
 	self.Emit("MOVQ", _BX, _ET)                                        // MOVQ    BX, ET
 	self.Emit("MOVQ", _CX, _EP)                                        // MOVQ    CX, EP

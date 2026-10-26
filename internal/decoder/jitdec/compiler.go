@@ -17,7 +17,6 @@
 package jitdec
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
@@ -771,8 +770,19 @@ func (self *_Compiler) compileMapUt(p *_Program, sp int, vt reflect.Type) {
 	case reflect.String:
 		self.compileMapOp(p, sp, vt, _OP_map_key_str)
 	default:
-		panic(&json.UnmarshalTypeError{Type: vt})
+		self.compileMapUnsupportedKey(p, vt)
 	}
+}
+
+func (self *_Compiler) compileMapUnsupportedKey(p *_Program, vt reflect.Type) {
+	i := p.pc()
+	p.add(_OP_is_null)
+	p.rtt(_OP_dismatch_err, vt)
+	s := p.pc()
+	p.add(_OP_go_skip)
+	p.pin(i)
+	p.add(_OP_nil_1)
+	p.pin(s)
 }
 
 func (self *_Compiler) compileMapOp(p *_Program, sp int, vt reflect.Type, op _Op) {
@@ -1245,6 +1255,7 @@ func (self *_Compiler) compileStructFieldStr(p *_Program, sp int, vt reflect.Typ
 		p.int(_OP_add, 1)
 		p.pin(pc2)
 		p.pin(n0)
+		p.pin(skip)
 		return
 	}
 

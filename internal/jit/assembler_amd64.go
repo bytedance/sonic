@@ -229,6 +229,15 @@ func (self *BaseAssembler) Load(name string, frameSize int, argSize int, argStac
 	return jitLoader.LoadOne(self.c, name, frameSize, argSize, argStackmap, localStackmap, self.Pcdata)
 }
 
+func (self *BaseAssembler) Export() ([]byte, loader.Pcdata) {
+	self.build()
+	return self.c, self.Pcdata
+}
+
+func LoadMany(items []loader.LoadOneItem) []loader.Function {
+	return jitLoader.LoadMany(items)
+}
+
 /** Assembler Stages **/
 
 func (self *BaseAssembler) init() {

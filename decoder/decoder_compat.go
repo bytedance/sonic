@@ -1,5 +1,5 @@
-//go:build (!amd64 && !arm64) || go1.27 || !go1.17 || (arm64 && !go1.20)
-// +build !amd64,!arm64 go1.27 !go1.17 arm64,!go1.20
+//go:build (!amd64 && !arm64) || go1.28 || !go1.17 || (arm64 && !go1.20)
+// +build !amd64,!arm64 go1.28 !go1.17 arm64,!go1.20
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -171,6 +171,12 @@ func (self *Decoder) ValidateString() {
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
+	return nil
+}
+
+// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+// in order to reduce the first-hit latency.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
 	return nil
 }
 

@@ -144,27 +144,35 @@ func TestIssue827_AllTextMarshalerTypes(t *testing.T) {
 		{"string3", map[Str2TM]int{s1: 1, s2: 2}},
 		{"custom", map[CustomTM]int{nil: 1, make(chan int): 2}},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			sonicData, err := sonic.Marshal(tc.data)
+			require.NoError(t, err)
+
+			sonicStdData, err := sonic.ConfigStd.Marshal(tc.data)
+			require.NoError(t, err)
+
+			var sonicMap, sonicStdMap map[string]int
+			require.NoError(t, json.Unmarshal(sonicData, &sonicMap))
+			require.NoError(t, json.Unmarshal(sonicStdData, &sonicStdMap))
+			require.Equal(t, sonicStdMap, sonicMap)
+
+			if stdUsesJSONV2 {
+				return
+			}
+
 			jsonData, err := json.Marshal(tc.data)
 			require.NoError(t, err)
 			expected := string(jsonData)
 			println(tc.name, "expected:", expected)
-			
-			sonicData, err := sonic.Marshal(tc.data)
-			require.NoError(t, err)
-			
-			sonicStdData, err := sonic.ConfigStd.Marshal(tc.data)
-			require.NoError(t, err)
+
 			require.Equal(t, expected, string(sonicStdData))
 
-			// compare the output of sonic.Marshal
-			var sonicMap, jsonMap map[string]int
-			require.NoError(t, json.Unmarshal(sonicData, &sonicMap))
+			var jsonMap map[string]int
 			require.NoError(t, json.Unmarshal(jsonData, &jsonMap))
 			require.Equal(t, jsonMap, sonicMap)
-			
+
 		})
 	}
 }

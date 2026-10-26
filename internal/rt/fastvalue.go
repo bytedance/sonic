@@ -111,10 +111,6 @@ type GoMapType struct {
 	Flags      uint32
 }
 
-func (self *GoMapType) IndirectElem() bool {
-	return self.Flags&2 != 0
-}
-
 type GoStructType struct {
 	GoType
 	Pkg    *byte

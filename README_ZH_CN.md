@@ -6,7 +6,7 @@
 
 ## 依赖
 
-- Go: 1.18~1.25
+- Go: 1.18~1.27
   - 注意：Go1.24.0 由于 [issue](https://github.com/golang/go/issues/71672) 不可用，请升级到更高 Go 版本，或添加编译选项 `--ldflags="-checklinkname=0"` 
 - OS: Linux / MacOS / Windows
 - CPU: AMD64 / (ARM64, 需要 Go1.20 以上）
@@ -396,7 +396,7 @@ Sonic **不**确保支持所有环境，由于开发高性能代码的困难。�
 
 ### 预热
 
-由于 Sonic 使用 [golang-asm](https://github.com/twitchyliquid64/golang-asm) 作为 JIT 汇编器，这个库并不适用于运行时编译，第一次运行一个大型模式可能会导致请求超时甚至进程内存溢出。为了更好地稳定性，我们建议在运行大型模式或在内存有限的应用中，在使用 `Marshal()/Unmarshal()` 前运行 `Pretouch()`。
+由于 Sonic 使用 [golang-asm](https://github.com/twitchyliquid64/golang-asm) 作为 JIT 汇编器，这个库并不适用于运行时编译，第一次运行一个大型模式可能会导致请求超时甚至进程内存溢出。为了更好地稳定性，我们建议在运行大型模式或在延迟敏感的应用中，在使用 `Marshal()/Unmarshal()` 前运行 `PretouchMany()`。
 
 ```go
 import (
@@ -406,17 +406,15 @@ import (
 )
 
 func init() {
-    var v HugeStruct
+    var v1 HugeStruct1
+    var v2 HugeStruct2
 
     // For most large types (nesting depth <= option.DefaultMaxInlineDepth)
-    err := sonic.Pretouch(reflect.TypeOf(v))
-
-    // with more CompileOption...
-    err := sonic.Pretouch(reflect.TypeOf(v),
+    sonic.PretouchMany([]reflect.Type{reflect.TypeOf(v1), reflect.TypeOf(v2)},
         // If the type is too deep nesting (nesting depth > option.DefaultMaxInlineDepth),
-        // you can set compile recursive loops in Pretouch for better stability in JIT.
+        // you can set more recursive loops in Pretouch for fully sufficient JIT.
         option.WithCompileRecursiveDepth(loop),
-        // For a large nested struct, try to set a smaller depth to reduce compiling time.
+        // For a large struct, try to set a smaller depth to reduce compiling time.
         option.WithCompileMaxInlineDepth(depth),
     )
 }

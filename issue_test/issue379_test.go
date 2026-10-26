@@ -26,97 +26,151 @@ import (
 )
 
 type Foo struct {
-    Name string
+	Name string
 }
 
 func (f *Foo) UnmarshalJSON(data []byte) error {
-    println("UnmarshalJSON called!!!")
-    f.Name = "Unmarshaler"
-    return nil
+	println("UnmarshalJSON called!!!")
+	f.Name = "Unmarshaler"
+	return nil
 }
 
 type MyPtr *Foo
 
 func TestIssue379(t *testing.T) {
-    tests := []struct{
-        data  string
-        newf  func() interface{} 
-        equal func(exp, act interface{}) bool 
-    } {
-        {
-            data: `{"Name":"MyPtr"}`,
-            newf:  func() interface{} { return &Foo{} },
-        },
-        {
-            data: `{"Name":"MyPtr"}`,
-            newf:  func() interface{} { ptr := &Foo{}; return &ptr },
-        },
-        {
-            data: `{"Name":"MyPtr"}`,
-            newf:  func() interface{} { return MyPtr(&Foo{}) },
-        },
-        {
-            data: `{"Name":"MyPtr"}`,
-            newf:  func() interface{} { ptr := MyPtr(&Foo{}); return &ptr },
-        },
+	tests := []struct {
+		data     string
+		newf     func() interface{}
+		wantf    func() interface{}
+		wantJSON string
+	}{
+		{
+			data:     `{"Name":"MyPtr"}`,
+			newf:     func() interface{} { return &Foo{} },
+			wantf:    func() interface{} { return &Foo{Name: "Unmarshaler"} },
+			wantJSON: `{"Name":"Unmarshaler"}`,
+		},
+		{
+			data:     `{"Name":"MyPtr"}`,
+			newf:     func() interface{} { ptr := &Foo{}; return &ptr },
+			wantf:    func() interface{} { ptr := &Foo{Name: "Unmarshaler"}; return &ptr },
+			wantJSON: `{"Name":"Unmarshaler"}`,
+		},
+		{
+			data:     `{"Name":"MyPtr"}`,
+			newf:     func() interface{} { return MyPtr(&Foo{}) },
+			wantf:    func() interface{} { return MyPtr(&Foo{Name: "MyPtr"}) },
+			wantJSON: `{"Name":"MyPtr"}`,
+		},
+		{
+			data:     `{"Name":"MyPtr"}`,
+			newf:     func() interface{} { ptr := MyPtr(&Foo{}); return &ptr },
+			wantf:    func() interface{} { ptr := MyPtr(&Foo{Name: "MyPtr"}); return &ptr },
+			wantJSON: `{"Name":"MyPtr"}`,
+		},
 
-        // TODO: fix jit tests
-        // {
-        //     data: `null`,
-        //     newf:  func() interface{} { return MyPtr(&Foo{}) },
-        // },
-        // {
-        //     data: `null`,
-        //     newf:  func() interface{} { ptr := MyPtr(&Foo{}); return &ptr },
-        // },
-        // {
-        //     data: `null`,
-        //     newf:  func() interface{} { 
-        //         x :=  &Foo{Name: "mock"}
-        //         return x },
-        // },
-        // {
-        //     data: `null`,
-        //     newf:  func() interface{} { ptr := &Foo{}; return &ptr },
-        // },
-        {
-            data: `{"map":{"Name":"MyPtr"}}`,
-            newf:  func() interface{} { return new(map[string]MyPtr) },
-        },
-        {
-            data: `{"map":{"Name":"MyPtr"}}`,
-            newf:  func() interface{} { return new(map[string]*Foo) },
-        },
-        {
-            data: `{"map":{"Name":"MyPtr"}}`,
-            newf:  func() interface{} { return new(map[string]*MyPtr) },
-        },
-        {
-            data: `[{"Name":"MyPtr"}]`,
-            newf:  func() interface{} { return new([]MyPtr) },
-        },
-        {
-            data: `[{"Name":"MyPtr"}]`,
-            newf:  func() interface{} { return new([]*MyPtr) },
-        },
-        {
-            data: `[{"Name":"MyPtr"}]`,
-            newf:  func() interface{} { return new([]*Foo) },
-        },
-    }
+		// TODO: fix jit tests
+		// {
+		//     data: `null`,
+		//     newf:  func() interface{} { return MyPtr(&Foo{}) },
+		// },
+		// {
+		//     data: `null`,
+		//     newf:  func() interface{} { ptr := MyPtr(&Foo{}); return &ptr },
+		// },
+		// {
+		//     data: `null`,
+		//     newf:  func() interface{} {
+		//         x :=  &Foo{Name: "mock"}
+		//         return x },
+		// },
+		// {
+		//     data: `null`,
+		//     newf:  func() interface{} { ptr := &Foo{}; return &ptr },
+		// },
+		{
+			data: `{"map":{"Name":"MyPtr"}}`,
+			newf: func() interface{} { return new(map[string]MyPtr) },
+			wantf: func() interface{} {
+				value := MyPtr(&Foo{Name: "MyPtr"})
+				return &map[string]MyPtr{"map": value}
+			},
+			wantJSON: `{"map":{"Name":"MyPtr"}}`,
+		},
+		{
+			data: `{"map":{"Name":"MyPtr"}}`,
+			newf: func() interface{} { return new(map[string]*Foo) },
+			wantf: func() interface{} {
+				return &map[string]*Foo{"map": {Name: "Unmarshaler"}}
+			},
+			wantJSON: `{"map":{"Name":"Unmarshaler"}}`,
+		},
+		{
+			data: `{"map":{"Name":"MyPtr"}}`,
+			newf: func() interface{} { return new(map[string]*MyPtr) },
+			wantf: func() interface{} {
+				value := MyPtr(&Foo{Name: "MyPtr"})
+				return &map[string]*MyPtr{"map": &value}
+			},
+			wantJSON: `{"map":{"Name":"MyPtr"}}`,
+		},
+		{
+			data: `[{"Name":"MyPtr"}]`,
+			newf: func() interface{} { return new([]MyPtr) },
+			wantf: func() interface{} {
+				value := MyPtr(&Foo{Name: "MyPtr"})
+				return &[]MyPtr{value}
+			},
+			wantJSON: `[{"Name":"MyPtr"}]`,
+		},
+		{
+			data: `[{"Name":"MyPtr"}]`,
+			newf: func() interface{} { return new([]*MyPtr) },
+			wantf: func() interface{} {
+				value := MyPtr(&Foo{Name: "MyPtr"})
+				return &[]*MyPtr{&value}
+			},
+			wantJSON: `[{"Name":"MyPtr"}]`,
+		},
+		{
+			data: `[{"Name":"MyPtr"}]`,
+			newf: func() interface{} { return new([]*Foo) },
+			wantf: func() interface{} {
+				return &[]*Foo{{Name: "Unmarshaler"}}
+			},
+			wantJSON: `[{"Name":"Unmarshaler"}]`,
+		},
+	}
 
-    for i, tt := range tests {
-        println(i)
-        jv, sv := tt.newf(), tt.newf()
-        jerr := json.Unmarshal([]byte(tt.data), jv)
-        serr := sonic.Unmarshal([]byte(tt.data), sv)
-        require.Equal(t, jv, sv)
-        require.Equal(t, jerr, serr)
+	for i, tt := range tests {
+		println(i)
+		sv := tt.newf()
+		serr := sonic.Unmarshal([]byte(tt.data), sv)
+		require.NoError(t, serr)
+		if stdUsesJSONV2 {
+			require.Equal(t, tt.wantf(), sv)
+			requireSonicValueSnapshot(t, sonic.ConfigDefault, sv, false, tt.wantJSON)
+		}
+		if !stdUsesJSONV2 {
+			jv := tt.newf()
+			jerr := json.Unmarshal([]byte(tt.data), jv)
+			require.Equal(t, jv, sv)
+			require.Equal(t, jerr, serr)
+		}
 
-        jv, sv = tt.newf(), tt.newf()
-        jerr = json.Unmarshal([]byte(tt.data), &jv)
-        serr = sonic.Unmarshal([]byte(tt.data), &sv)
-        require.Equal(t, jv, sv, spew.Sdump(jv, sv))
-        require.Equal(t, jerr, serr)
-    }
+		sv = tt.newf()
+		serr = sonic.Unmarshal([]byte(tt.data), &sv)
+		require.NoError(t, serr)
+
+		if stdUsesJSONV2 {
+			require.Equal(t, tt.wantf(), sv)
+			requireSonicValueSnapshot(t, sonic.ConfigDefault, sv, false, tt.wantJSON)
+			continue
+		}
+
+		jv := tt.newf()
+		jerr := json.Unmarshal([]byte(tt.data), &jv)
+		require.Equal(t, jv, sv, spew.Sdump(jv, sv))
+		require.Equal(t, jerr, serr)
+	}
 }

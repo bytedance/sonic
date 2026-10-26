@@ -67,7 +67,11 @@ func ClearMemory(et *GoType, ptr unsafe.Pointer, size uintptr) {
 const _max_map_element_size uintptr = 128
 
 func IsMapfast(vt reflect.Type) bool {
-	return vt.Elem().Size() <= _max_map_element_size
+	return !IsMapIndirectElem(vt)
+}
+
+func IsMapIndirectElem(vt reflect.Type) bool {
+	return vt.Elem().Size() > _max_map_element_size
 }
 
 //go:linkname Mallocgc runtime.mallocgc

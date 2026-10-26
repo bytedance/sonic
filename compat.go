@@ -1,5 +1,5 @@
-//go:build (!amd64 && !arm64) || go1.27 || !go1.17 || (arm64 && !go1.20)
-// +build !amd64,!arm64 go1.27 !go1.17 arm64,!go1.20
+//go:build (!amd64 && !arm64) || go1.28 || !go1.17 || (arm64 && !go1.20)
+// +build !amd64,!arm64 go1.28 !go1.17 arm64,!go1.20
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -139,5 +139,10 @@ func (cfg frozenConfig) Valid(data []byte) bool {
 // * This is the none implement for !amd64.
 // It will be useful for someone who develop with !amd64 arch,like Mac M1.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
+	return nil
+}
+
+// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
 	return nil
 }

@@ -305,11 +305,33 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 // Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 // a compile option to set the depth of recursive compile for the nested struct type.
 func Pretouch(vt reflect.Type, opts ...option.CompileOption) error {
+	return PretouchMany([]reflect.Type{vt}, opts...)
+}
+
+// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+// in order to reduce the first-hit latency.
+//
+// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
+// a compile option to set the depth of recursive compile for the nested struct type.
+func PretouchMany(vts []reflect.Type, opts ...option.CompileOption) error {
+	if len(vts) == 0 {
+		return nil
+	}
+
 	cfg := option.DefaultCompileOptions()
 	for _, opt := range opts {
 		opt(&cfg)
 	}
-	return pretouchRec(map[reflect.Type]uint8{vt: 0}, cfg)
+
+	vtm := make(map[reflect.Type]uint8, len(vts))
+	for _, vt := range vts {
+		vtm[vt] = 0
+	}
+
+	if !vars.UseVM {
+		return pretouchRecX86(vtm, cfg)
+	}
+	return pretouchRec(vtm, cfg)
 }
 
 // Valid validates json and returns first non-blank character position,

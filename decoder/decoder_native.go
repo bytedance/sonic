@@ -1,5 +1,5 @@
-//go:build (amd64 && go1.17 && !go1.27) || (arm64 && go1.20 && !go1.27)
-// +build amd64,go1.17,!go1.27 arm64,go1.20,!go1.27
+//go:build (amd64 && go1.17 && !go1.28) || (arm64 && go1.20 && !go1.28)
+// +build amd64,go1.17,!go1.28 arm64,go1.20,!go1.28
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -64,6 +64,10 @@ var (
 	// Opts are the compile options, for example, "option.WithCompileRecursiveDepth" is
 	// a compile option to set the depth of recursive compile for the nested struct type.
 	Pretouch = api.Pretouch
+
+	// PretouchMany compiles all vts ahead-of-time to avoid JIT compilation on-the-fly,
+	// in order to reduce the first-hit latency.
+	PretouchMany = api.PretouchMany
 
 	// Skip skips only one json value, and returns first non-blank character position and its ending position if it is valid.
 	// Otherwise, returns negative error code using start and invalid character position using end

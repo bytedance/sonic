@@ -1,5 +1,5 @@
-//go:build go1.17 && !go1.27
-// +build go1.17,!go1.27
+//go:build go1.17 && !go1.28
+// +build go1.17,!go1.28
 
 /*
  * Copyright 2021 ByteDance Inc.
@@ -26,13 +26,15 @@ import (
 )
 
 var (
-	pretouchImpl = jitdec.Pretouch
-	decodeImpl   = jitdec.Decode
+	pretouchImpl     = jitdec.Pretouch
+	pretouchManyImpl = jitdec.PretouchMany
+	decodeImpl       = jitdec.Decode
 )
 
 func init() {
 	if envs.UseOptDec {
 		pretouchImpl = optdec.Pretouch
+		pretouchManyImpl = optdec.PretouchMany
 		decodeImpl = optdec.Decode
 	}
 }
