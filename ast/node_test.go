@@ -375,15 +375,22 @@ func TestTypeCast(t *testing.T) {
 		{"Int64", NewAny(uint64(1)), int64(1), nil},
 		{"Int64", NewAny(float32(1)), int64(1), nil},
 		{"Int64", NewAny(float64(1)), int64(1), nil},
+		{"Int64", NewAny(uint64(^uint64(0))), int64(0), nonEmptyErr},
+		{"Int64", NewAny(float64(1e20)), int64(0), nonEmptyErr},
+		{"Int64", NewAny(float64(-1e20)), int64(0), nonEmptyErr},
 		{"Int64", NewAny("1"), int64(1), nil},
 		{"Int64", NewAny("1.1"), int64(1), nil},
+		{"Int64", NewAny("1e20"), int64(0), nonEmptyErr},
 		{"Int64", NewAny("+1x.1"), int64(0), nonEmptyErr},
 		{"Int64", NewAny(json.Number("1")), int64(1), nil},
 		{"Int64", NewAny(json.Number("1.1")), int64(1), nil},
+		{"Int64", NewAny(json.Number("1e20")), int64(0), nonEmptyErr},
 		{"Int64", NewAny(json.Number("+1x.1")), int64(0), nonEmptyErr},
 		{"Int64", NewAny([]byte{0}), int64(0), ErrUnsupportType},
 		{"Int64", Node{}, int64(0), ErrUnsupportType},
 		{"Int64", NewRaw("0"), int64(0), nil},
+		{"Int64", NewRaw("1e20"), int64(0), nonEmptyErr},
+		{"Int64", NewRaw("-1e20"), int64(0), nonEmptyErr},
 		{"Int64", NewRaw("null"), int64(0), nil},
 		{"StrictInt64", NewRaw("true"), int64(0), ErrUnsupportType},
 		{"StrictInt64", NewRaw("false"), int64(0), ErrUnsupportType},
@@ -396,6 +403,7 @@ func TestTypeCast(t *testing.T) {
 		{"StrictInt64", NewAny(uint8(0)), int64(0), nil},
 		{"StrictInt64", NewAny(uint32(0)), int64(0), nil},
 		{"StrictInt64", NewAny(uint64(0)), int64(0), nil},
+		{"StrictInt64", NewAny(uint64(^uint64(0))), int64(0), nonEmptyErr},
 		{"StrictInt64", Node{}, int64(0), ErrUnsupportType},
 		{"StrictInt64", NewRaw("0"), int64(0), nil},
 		{"StrictInt64", NewRaw("null"), int64(0), ErrUnsupportType},
@@ -1962,4 +1970,3 @@ func TestNewBytesEmpty(t *testing.T) {
 		}
 	}
 }
-
