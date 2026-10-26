@@ -194,12 +194,21 @@ func (d *f32Decoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 		return nil
 	}
 
-	ret, ok := node.AsF64(ctx)
-	if !ok || ret > math.MaxFloat32 || ret < -math.MaxFloat32 {
+	// Parse the original token at float32 precision to avoid double rounding.
+	if !node.IsNumber() {
+		return error_mismatch(node, ctx, float32Type)
+	}
+	start := node.Position()
+	end, ok := SkipNumberFast(ctx.Parser.Json, start)
+	if !ok {
+		return error_mismatch(node, ctx, float32Type)
+	}
+	ret, err := ParseF32(ctx.Parser.Json[start:end])
+	if err != nil {
 		return error_mismatch(node, ctx, float32Type)
 	}
 
-	*(*float32)(vp) = float32(ret)
+	*(*float32)(vp) = ret
 	return nil
 }
 
