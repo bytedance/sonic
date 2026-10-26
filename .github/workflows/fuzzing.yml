@@ -35,3 +35,6 @@ jobs:
       - name: Fuzz sonic
         run: ./scripts/fuzz.sh ${{ matrix.mode }}
 
+      - name: Fuzz stream decoder
+        run: ./scripts/fuzz.sh stream ${{ matrix.mode }}
+
