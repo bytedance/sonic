@@ -279,8 +279,6 @@ func TestEncodeNone(t *testing.T) {
 	require.Equal(t, `[null]`, string(out))
 }
 
-type Path = []interface{}
-
 type testGetApi struct {
 	json string
 	path Path

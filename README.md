@@ -318,6 +318,24 @@ exist, err := root.UnsetByIndex(1) // exist == true
 println(root.Get("key4").Check()) // "value not exist"
 ```
 
+#### Copy/Move by path
+
+Use `CopyPath()` or `MovePath()` to reshape a tree at any depth. Paths contain
+object keys (`string`) and array indexes (`int`); an empty path identifies the
+root. Missing destination parents are created automatically, and copied
+subtrees do not share mutable AST state with their source.
+
+```go
+import "github.com/bytedance/sonic/ast"
+
+root := ast.NewRaw(`{"foo":{"w":123,"h":345}}`)
+err := root.MovePath(ast.Path{"foo"}, ast.Path{"bar"})
+// root is now {"bar":{"w":123,"h":345}}
+
+err = root.CopyPath(ast.Path{"bar", "w"}, ast.Path{"dimensions", 0})
+// root is now {"bar":{"w":123,"h":345},"dimensions":[123]}
+```
+
 #### Serialize
 
 To encode `ast.Node` as json, use `MarshalJson()` or `json.Marshal()` (MUST pass the node's pointer)
@@ -341,7 +359,7 @@ println(string(buf) == string(exp)) // true
 - go-type casting: `Int64()`, `Float64()`, `String()`, `Number()`, `Bool()`, `Map[UseNumber|UseNode]()`, `Array[UseNumber|UseNode]()`, `Interface[UseNumber|UseNode]()`
 - go-type packing: `NewRaw()`, `NewNumber()`, `NewNull()`, `NewBool()`, `NewString()`, `NewObject()`, `NewArray()`
 - iteration: `Values()`, `Properties()`, `ForEach()`, `SortKeys()`
-- modification: `Set()`, `SetByIndex()`, `Add()`
+- modification: `Set()`, `SetByIndex()`, `Add()`, `CopyPath()`, `MovePath()`
 
 ### Ast.Visitor
 
