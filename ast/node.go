@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/big"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -290,13 +291,7 @@ func (self *Node) Int64() (int64, error) {
 	}
 	switch self.t {
 	case _V_NUMBER, types.V_STRING:
-		if i, err := self.toInt64(); err == nil {
-			return i, nil
-		} else if f, err := self.toFloat64(); err == nil {
-			return castFloat64ToInt64(f)
-		} else {
-			return 0, err
-		}
+		return castTextToInt64(self.toString())
 	case types.V_TRUE:
 		return 1, nil
 	case types.V_FALSE:
@@ -337,21 +332,9 @@ func (self *Node) Int64() (int64, error) {
 		case float64:
 			return castFloat64ToInt64(v)
 		case string:
-			if i, err := strconv.ParseInt(v, 10, 64); err == nil {
-				return i, nil
-			} else if f, err := strconv.ParseFloat(v, 64); err == nil {
-				return castFloat64ToInt64(f)
-			} else {
-				return 0, err
-			}
+			return castTextToInt64(v)
 		case json.Number:
-			if i, err := v.Int64(); err == nil {
-				return i, nil
-			} else if f, err := v.Float64(); err == nil {
-				return castFloat64ToInt64(f)
-			} else {
-				return 0, err
-			}
+			return castTextToInt64(string(v))
 		default:
 			return 0, ErrUnsupportType
 		}
@@ -407,6 +390,33 @@ func (self *Node) StrictInt64() (int64, error) {
 
 func int64RangeError(num string) error {
 	return &strconv.NumError{Func: "ParseInt", Num: num, Err: strconv.ErrRange}
+}
+
+// castTextToInt64 preserves fractional and exponent casts while checking the
+// original text when float64 rounding reaches either int64 boundary.
+func castTextToInt64(s string) (int64, error) {
+	if i, err := strconv.ParseInt(s, 10, 64); err == nil {
+		return i, nil
+	}
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0, err
+	}
+	const limit = 1 << 63
+	if f == -limit || f == limit {
+		// At this magnitude 64 bits of precision with rounding toward zero
+		// preserve every integer bit, including truncation of fractional input.
+		exact, _, err := big.ParseFloat(s, 0, 64, big.ToZero)
+		if err != nil {
+			return 0, err
+		}
+		integer, _ := exact.Int(nil)
+		if !integer.IsInt64() {
+			return 0, int64RangeError(s)
+		}
+		return integer.Int64(), nil
+	}
+	return castFloat64ToInt64(f)
 }
 
 func castUint64ToInt64(v uint64) (int64, error) {
