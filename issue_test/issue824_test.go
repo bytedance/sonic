@@ -26,6 +26,12 @@ import (
 
 func TestFloatMap(t *testing.T) {
 	js, err := sonic.ConfigStd.Marshal(map[float64]string{1: ""})
+
+	if stdUsesJSONV2 {
+		require.Error(t, err)
+		return
+	}
+
 	js0, err0 := json.Marshal(map[float64]string{1: ""})
 	require.Equal(t, err0 == nil, err == nil)
 	require.Equal(t, string(js0), string(js))

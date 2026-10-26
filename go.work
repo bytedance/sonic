@@ -2,6 +2,7 @@ go 1.18
 
 use (
 	.
+	./compatibility
 	./external_jsonlib_test
 	./fuzz
 	./generic_test

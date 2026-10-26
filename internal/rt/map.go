@@ -22,4 +22,7 @@ type GoMapIterator struct {
 	I           uint8
 	Bucket      uintptr
 	CheckBucket uintptr
+	// Required by the Go 1.24-1.25 GOEXPERIMENT=noswissmap hiter layout.
+	// Newer legacy linkname shims ignore this trailing storage.
+	ClearSeq uint64
 }
