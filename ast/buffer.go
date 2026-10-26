@@ -19,8 +19,6 @@ package ast
 import (
 	"sort"
 	"unsafe"
-
-	"github.com/bytedance/sonic/internal/caching"
 )
 
 type nodeChunk [_DEFAULT_NODE_CAP]Node
@@ -251,13 +249,10 @@ func (self *linkedPairs) Unset(i int) {
 		p := self.At(i)
 		delete(self.index, p.hash)
 	}
-	self.set(i, Pair{})
+	self.set(i, Pair{hash: _PAIR_DELETED})
 }
 
 func (self *linkedPairs) Set(i int, v Pair) {
-	if v.hash == 0 {
-		v.hash = caching.StrHash(v.Key)
-	}
 	if self.index != nil {
 		h := v.hash
 		self.index[h] = i
@@ -310,10 +305,10 @@ func (self *linkedPairs) growTailLength(l int) {
 func (self *linkedPairs) Get(key string) (*Pair, int) {
 	if self.index != nil {
 		// fast-path
-		i, ok := self.index[caching.StrHash(key)]
+		i, ok := self.index[pairHash(key)]
 		if ok {
 			n := self.At(i)
-			if n.hash != 0 && n.Key == key {
+			if n.hash != _PAIR_DELETED && n.Key == key {
 				return n, i
 			}
 			// hash conflicts
@@ -324,8 +319,7 @@ func (self *linkedPairs) Get(key string) (*Pair, int) {
 	}
 linear_search:
 	for i := 0; i < self.size; i++ {
-		// A zero hash marks a slot cleared by Unset, even when key is empty.
-		if n := self.At(i); n.hash != 0 && n.Key == key {
+		if n := self.At(i); n.hash != _PAIR_DELETED && n.Key == key {
 			return n, i
 		}
 	}
@@ -366,7 +360,7 @@ func (self *linkedPairs) copyPairs(to []Pair, from []Pair, l int) {
 	for i := 0; i < l; i++ {
 		// Pair literals do not have a hash. Initialize our copy, not the input.
 		if to[i].hash == 0 {
-			to[i].hash = caching.StrHash(to[i].Key)
+			to[i].hash = pairHash(to[i].Key)
 		}
 		if self.index != nil {
 			self.index[to[i].hash] = i

@@ -240,8 +240,8 @@ func TestLinkedPairsEmptyKeySlots(t *testing.T) {
 	for _, indexed := range []bool{false, true} {
 		t.Run(strconv.FormatBool(indexed), func(t *testing.T) {
 			var pairs linkedPairs
-			pairs.Push(Pair{Key: "removed", Value: NewNumber("1")})
-			pairs.Push(Pair{Key: "", Value: NewNumber("2")})
+			pairs.Push(NewPair("removed", NewNumber("1")))
+			pairs.Push(NewPair("", NewNumber("2")))
 			if indexed {
 				pairs.BuildIndex()
 			}
@@ -255,6 +255,46 @@ func TestLinkedPairsEmptyKeySlots(t *testing.T) {
 			require.Equal(t, -1, i)
 		})
 	}
+}
+
+func TestEmptyKeyAfterUnsetByIndex(t *testing.T) {
+	for _, size := range []int{2, _Threshold_Index + 1} {
+		t.Run(strconv.Itoa(size), func(t *testing.T) {
+			pairs := makePairs(size)
+			pairs[size-1] = NewPair("", NewNumber("2"))
+			root := NewObject(pairs)
+			existed, err := root.UnsetByIndex(0)
+			require.NoError(t, err)
+			require.True(t, existed)
+			value, err := root.Get("").Int64()
+			require.NoError(t, err)
+			require.Equal(t, int64(2), value)
+			existed, err = root.Unset("")
+			require.NoError(t, err)
+			require.True(t, existed)
+			require.Nil(t, root.Get(""))
+		})
+	}
+}
+
+func TestLinkedPairsEmptyKeyHashConflict(t *testing.T) {
+	var pairs linkedPairs
+	pairs.Push(NewPair("removed", NewNull()))
+	pairs.Push(NewPair("", NewNumber("2")))
+	collision := NewPair("collision", NewNull())
+	collision.hash = pairs.At(1).hash
+	pairs.Push(collision)
+	pairs.Unset(0)
+	pairs.BuildIndex()
+	// The index points to the colliding key; fallback must skip the deleted slot.
+	p, i := pairs.Get("")
+	require.Same(t, pairs.At(1), p)
+	require.Equal(t, 1, i)
+	// A literal replacement must also remain visible through the fallback.
+	*pairs.At(1) = Pair{Key: "", Value: NewNumber("3")}
+	p, i = pairs.Get("")
+	require.Same(t, pairs.At(1), p)
+	require.Equal(t, 1, i)
 }
 
 func TestNewObjectPairLiterals(t *testing.T) {
