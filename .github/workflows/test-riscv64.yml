@@ -1,0 +1,110 @@
+name: RISC-V Compile and Smoke Test (QEMU)
+
+on: pull_request
+
+jobs:
+  build:
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # sonic falls back to the compat (encoding/json) path on riscv64.
+          # Keep Go 1.22 covered without -race; linux/riscv64 race support
+          # starts with Go 1.26.
+          - go-version: 1.22.12
+            test_flags: ""
+          - go-version: 1.26.5
+            test_flags: "-race"
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download modules on the host so the emulated guest does not depend on
+      # outbound networking through QEMU.
+      - name: Set up Go module cache
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Download Go for RISC-V
+        env:
+          GO_VERSION: ${{ matrix.go-version }}
+        run: |
+          curl -fsSLo "${RUNNER_TEMP}/go-riscv64.tar.gz" \
+            "https://go.dev/dl/go${GO_VERSION}.linux-riscv64.tar.gz"
+
+      - name: Cache RISC-V build artifacts
+        uses: actions/cache@v4
+        with:
+          path: .cache/go-build-riscv64
+          key: qemu-riscv64-go-${{ matrix.go-version }}-v1-${{ hashFiles('**/go.sum') }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: riscv64
+
+      - name: Compile and smoke-test on RISC-V (QEMU)
+        env:
+          TEST_FLAGS: ${{ matrix.test_flags }}
+        run: |
+          mkdir -p .cache/go-build-riscv64
+          docker run --rm --platform linux/riscv64 \
+            --volume "${GITHUB_WORKSPACE}:/workspace" \
+            --volume "${HOME}/go/pkg/mod:/root/go/pkg/mod:ro" \
+            --volume "${GITHUB_WORKSPACE}/.cache/go-build-riscv64:/root/.cache/go-build" \
+            --volume "${RUNNER_TEMP}/go-riscv64.tar.gz:/tmp/go-riscv64.tar.gz:ro" \
+            --workdir /workspace \
+            --env TEST_FLAGS \
+            riscv64/ubuntu:24.04 \
+            bash -ceu '
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+                gcc libc6-dev
+              tar -C /usr/local -xzf /tmp/go-riscv64.tar.gz
+              export PATH="/usr/local/go/bin:${PATH}"
+              export GOMAXPROCS=4
+              export GOPROXY=off
+
+              test "$(uname -m)" = "riscv64"
+              go version
+              # Compile every supported package and start its test binary without
+              # running the full suite. Some stress tests are prohibitively slow
+              # under QEMU and remain covered by the native-architecture jobs.
+              go test ${TEST_FLAGS} -run "^$" \
+                ./ \
+                ./ast \
+                ./decoder \
+                ./encoder \
+                ./option \
+                ./unquote \
+                ./utf8 \
+                ./internal/caching \
+                ./internal/compat \
+                ./internal/cpu \
+                ./internal/decoder/consts \
+                ./internal/decoder/errors \
+                ./internal/encoder/alg \
+                ./internal/encoder/prim \
+                ./internal/encoder/vars \
+                ./internal/envs \
+                ./internal/optcaching \
+                ./internal/resolver \
+                ./internal/rt \
+                ./internal/utils \
+                ./internal/native/types
+              go test ${TEST_FLAGS} -run "^$" ./issue_test ./generic_test
+
+              # Exercise the encoding/json fallback path on the emulated CPU.
+              go test ${TEST_FLAGS} -timeout=2m -count=1 \
+                -run "^TestCompat(UnmarshalStd|MarshalStd|EncoderStd|DecoderStd)$" ./
+            '
