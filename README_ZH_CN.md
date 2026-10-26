@@ -1,6 +1,6 @@
 # Sonic
 
-[English](README.md) | 中文
+[English](README.md) | 中文 | [日本語](README_JA_JP.md)
 
 一个速度奇快的 JSON 序列化/反序列化库，由 JIT （即时编译）和 SIMD （单指令流多数据流）加速。
 
