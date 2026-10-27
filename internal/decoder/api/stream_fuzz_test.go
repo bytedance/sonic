@@ -104,7 +104,7 @@ func decodeFuzzRawStream(t *testing.T, input string, plan []byte, ending, emptyE
 		if err != nil {
 			t.Fatalf("Decode value %d: %v; input=%q plan=%x ending=%d emptyEvery=%d", len(values), err, input, plan, ending, emptyEvery)
 		}
-		values = append(values, append(json.RawMessage(nil), value...))
+		values = append(values, value)
 	}
 	t.Fatal("too many decoded stream values")
 	return nil, nil, nil
