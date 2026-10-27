@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -555,6 +556,27 @@ func (self *Node) String() (string, error) {
 	default:
 		return "", ErrUnsupportType
 	}
+}
+
+// CopyString casts node to string like String. It copies string data that may share
+// storage with the node or its underlying value, so the result does not retain that
+// source buffer. Values converted from other scalar types are returned as produced
+// by String.
+func (self *Node) CopyString() (string, error) {
+	value, err := self.String()
+	if err != nil {
+		return "", err
+	}
+	switch self.t {
+	case types.V_STRING, _V_NUMBER:
+		return strings.Clone(value), nil
+	case _V_ANY:
+		switch self.packAny().(type) {
+		case string, json.Number:
+			return strings.Clone(value), nil
+		}
+	}
+	return value, nil
 }
 
 // StrictString returns string value (unescaped), including V_STRING, V_ANY of string.
