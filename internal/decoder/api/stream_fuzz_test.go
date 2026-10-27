@@ -127,21 +127,45 @@ func streamFuzzValues(input string) ([]json.RawMessage, error) {
 	return nil, errors.New("too many stream values")
 }
 
+func streamFuzzSonicValues(input string) ([]json.RawMessage, error) {
+	d := NewStreamDecoder(strings.NewReader(input))
+	var values []json.RawMessage
+	for len(values) <= 32 {
+		var value json.RawMessage
+		err := d.Decode(&value)
+		if err == io.EOF {
+			return values, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, append(json.RawMessage(nil), value...))
+	}
+	return nil, errors.New("too many stream values")
+}
+
 // This exercises the public lifecycle rather than just the numeric scanner:
 // Reader -> Decode -> Buffered/InputOffset -> another Decode -> terminal EOF.
 // RawMessage compares framing without depending on unrelated conversion rules.
 func FuzzStreamDecoderChunking(f *testing.F) {
 	// These all pass without fragmentation on the pre-fix implementation.
 	// In particular, "42" only exposes truncation when fuzzing mutates plan.
-	for _, input := range []string{"42", "0", "-1.5", "1e+3", "true", `"stream"`, `{"n":42}`, "1 2"} {
+	for _, input := range []string{"42", "0", "-1.5", "1e+3", "1e700", "true", `"stream"`, `{"n":42}`, "1 2"} {
 		f.Add(input, []byte{}, uint8(0))
 	}
 	f.Fuzz(func(t *testing.T, input string, plan []byte, ending uint8) {
 		if len(input) > 2048 || len(plan) > 32 {
 			t.Skip()
 		}
-		want, err := streamFuzzValues(input)
-		if err != nil || len(want) == 0 {
+		standardValues, err := streamFuzzValues(input)
+		if err != nil || len(standardValues) == 0 {
+			t.Skip()
+		}
+		// This fuzzer checks read-boundary invariance. Use Sonic with a whole
+		// Reader as the semantic oracle so architecture-specific number behavior
+		// (for example, overflow handling) is not mistaken for framing failure.
+		want, err := streamFuzzSonicValues(input)
+		if err != nil || len(want) != len(standardValues) {
 			t.Skip()
 		}
 		r := &streamFuzzReader{input: input, plan: plan, tail: io.EOF, errWithData: ending&1 != 0}
