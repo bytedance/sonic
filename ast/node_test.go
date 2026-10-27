@@ -25,6 +25,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"unsafe"
 
 	"github.com/bytedance/sonic/internal/native/types"
 	"github.com/bytedance/sonic/internal/rt"
@@ -553,6 +554,49 @@ func TestTypeCast(t *testing.T) {
 			t.Error(i, v)
 		}
 	}
+}
+
+func TestNodeCopyString(t *testing.T) {
+	const sourceString = "a long string value held outside the node"
+	const sourceNumber = "12345678901234567890"
+
+	tests := []struct {
+		name     string
+		node     Node
+		want     string
+		mustCopy bool
+	}{
+		{"raw string", NewRaw(`"` + sourceString + `"`), sourceString, true},
+		{"raw number", NewRaw(sourceNumber), sourceNumber, true},
+		{"any string", NewAny(sourceString), sourceString, true},
+		{"any number", NewAny(json.Number(sourceNumber)), sourceNumber, true},
+		{"converted number", NewAny(int64(42)), "42", false},
+		{"empty string", NewRaw(`""`), "", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := test.node.CopyString()
+			require.NoError(t, err)
+			require.Equal(t, test.want, got)
+			if test.mustCopy && len(got) > 0 {
+				original, err := test.node.String()
+				require.NoError(t, err)
+				if stringDataPointer(got) == stringDataPointer(original) {
+					t.Fatal("CopyString returned the original string storage")
+				}
+			}
+		})
+	}
+
+	invalid := Node{}
+	if _, err := invalid.CopyString(); err != ErrUnsupportType {
+		t.Fatalf("CopyString on an invalid node: got %v, want %v", err, ErrUnsupportType)
+	}
+}
+
+func stringDataPointer(value string) uintptr {
+	return *(*uintptr)(unsafe.Pointer(&value))
 }
 
 func TestCheckError_Nil(t *testing.T) {
@@ -1962,4 +2006,3 @@ func TestNewBytesEmpty(t *testing.T) {
 		}
 	}
 }
-
