@@ -145,6 +145,11 @@ func MakeSliceStd(et *GoType, len int, cap int) unsafe.Pointer
 
 func MakeSlice(oldPtr unsafe.Pointer, et *GoType, newLen int) *GoSlice {
 	if newLen == 0 {
+		old := (*GoSlice)(oldPtr)
+		if old.Ptr != nil {
+			old.Len = 0
+			return old
+		}
 		return &EmptySlice
 	}
 

@@ -1730,11 +1730,15 @@ func (self *_Assembler) _asm_OP_check_empty(p *_Instr) {
 		self.Emit("CMPB", jit.Sib(_IP, _IC, 1, 0), jit.Imm(int64(rbracket))) // CMPB    (IP)(IC), ']'
 		self.Sjmp("JNE", "_not_empty_array_{n}")                             // JNE     _not_empty_array_{n}
 		self.Emit("MOVQ", _AX, _IC)                                          // MOVQ    AX, IC
+		self.Emit("MOVQ", jit.Ptr(_VP, 16), _AX)
+		self.Emit("TESTQ", _AX, _AX)
+		self.Sjmp("JNZ", "_reuse_empty_array_{n}")
 		self.Emit("MOVQ", jit.Imm(_Zero_Base), _AX)
 		self.WritePtrAX(9, jit.Ptr(_VP, 0), false)
-		self.Emit("PXOR", _X0, _X0)              // PXOR    X0, X0
-		self.Emit("MOVOU", _X0, jit.Ptr(_VP, 8)) // MOVOU   X0, 8(VP)
-		self.Xjmp("JMP", p.vi())                 // JMP     {p.vi()}
+		self.Link("_reuse_empty_array_{n}")
+		self.Emit("XORL", _AX, _AX)             // XORL    AX, AX
+		self.Emit("MOVQ", _AX, jit.Ptr(_VP, 8)) // MOVQ    AX, 8(VP)
+		self.Xjmp("JMP", p.vi())                // JMP     {p.vi()}
 		self.Link("_not_empty_array_{n}")
 	} else {
 		panic("only implement check empty array here!")
