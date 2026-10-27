@@ -13,6 +13,10 @@ FILE2FUZZ_VERSION="v0.10.0"
 
 source "$(dirname "$0")/../scripts/go_flags.sh"
 compile_flag=$(get_go_linkname_flag || echo "")
+compile_flags=()
+if [ -n "$compile_flag" ]; then
+    compile_flags+=("$compile_flag")
+fi
 
 log_info() {
     echo -e "\033[34m[INFO]\033[0m $1"
@@ -66,7 +70,7 @@ run_fuzz() {
     log_info "Running basic fuzz test..."
     export SONIC_FUZZ_MEM_LIMIT=2
     export GOMAXPROCS=2
-    cd "${FUZZ_DIR}" && go test "$compile_flag" -fuzz="${TEST_NAME}" -v -fuzztime 15m 
+    (cd "${FUZZ_DIR}" && go test "${compile_flags[@]}" -fuzz="${TEST_NAME}" -v -fuzztime 15m)
 }
 
 run_optimized_fuzz() {
@@ -76,7 +80,32 @@ run_optimized_fuzz() {
     export SONIC_USE_FASTMAP=1 
     export SONIC_ENCODER_USE_VM=1
     export GOMAXPROCS=2
-    cd "${FUZZ_DIR}" && go test "$compile_flag" -fuzz="${TEST_NAME}" -v -fuzztime 15m 
+    (cd "${FUZZ_DIR}" && go test "${compile_flags[@]}" -fuzz="${TEST_NAME}" -v -fuzztime 15m)
+}
+
+run_stream_fuzz() {
+    local mode="$1"
+    local fuzz_time="${SONIC_STREAM_FUZZ_TIME:-30s}"
+    local targets=(
+        FuzzStreamDecoderChunking
+        FuzzStreamDecoderBufferLifecycle
+        FuzzStreamDecoderNumericOptions
+        FuzzStreamDecoderReaderErrors
+        FuzzStreamDecoderRobustness
+    )
+
+    if [ "$mode" = "runopt" ]; then
+        export SONIC_USE_OPTDEC=1
+        export SONIC_USE_FASTMAP=1
+        export SONIC_ENCODER_USE_VM=1
+    fi
+    export GOMAXPROCS=2
+
+    log_info "Running stream decoder fuzz tests in ${mode} mode (${fuzz_time} each)..."
+    for target in "${targets[@]}"; do
+        go test "${compile_flags[@]}" ./internal/decoder/api \
+            -run='^$' -fuzz="^${target}$" -fuzztime="${fuzz_time}" -parallel=2
+    done
 }
 
 cleanup() {
@@ -96,11 +125,14 @@ main() {
         runopt)
             run_optimized_fuzz
             ;;
+        stream)
+            run_stream_fuzz "$2"
+            ;;
         clean)
             cleanup
             ;;
         *)
-            echo "Usage: $0 {fuzz|run|runopt|clean}"
+            echo "Usage: $0 {fuzz|run|runopt|stream <run|runopt>|clean}"
             exit 1
             ;;
     esac
