@@ -19,10 +19,12 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
+	"testing/iotest"
 
 	"github.com/bytedance/sonic/option"
 	"github.com/stretchr/testify/assert"
@@ -385,4 +387,32 @@ func BenchmarkDecodeStream_Sonic(b *testing.B) {
 			}
 		}
 	})
+}
+
+
+// A number is only complete once a delimiter or the end of the stream follows it. With a
+// reader that hands over one byte at a time, Decode used to return the digit it had read so
+// far ("4" for "42") and the next call returned the rest ("2"), where encoding/json returns
+// 42 and then io.EOF.
+func TestStreamDecodeNumberAcrossReads(t *testing.T) {
+	for _, in := range []string{"42", "42 ", "42\n", "-7", "1234567890", "1.5", "1e3", "0", "1e-3"} {
+		want := new(interface{})
+		wd := json.NewDecoder(iotest.OneByteReader(strings.NewReader(in)))
+		require.NoError(t, wd.Decode(want), in)
+		require.Equal(t, io.EOF, wd.Decode(new(interface{})), in)
+
+		got := new(interface{})
+		dc := NewStreamDecoder(iotest.OneByteReader(strings.NewReader(in)))
+		require.NoError(t, dc.Decode(got), in)
+		require.Equal(t, fmt.Sprint(*want), fmt.Sprint(*got), in)
+		require.Equal(t, io.EOF, dc.Decode(new(interface{})), in)
+	}
+
+	// a number followed by the next value in the same stream still splits correctly
+	dc := NewStreamDecoder(iotest.OneByteReader(strings.NewReader("42 43")))
+	var a, b interface{}
+	require.NoError(t, dc.Decode(&a))
+	require.NoError(t, dc.Decode(&b))
+	require.Equal(t, "42", fmt.Sprint(a))
+	require.Equal(t, "43", fmt.Sprint(b))
 }

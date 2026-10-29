@@ -86,6 +86,26 @@ func (self *StreamDecoder) Decode(val interface{}) (err error) {
 		} else {
 			s = y + s
 			e = x + s
+
+			// A number is only complete once a delimiter or the end of the stream follows it:
+			// "4" is valid JSON on its own, so SkipOneFast accepts it and the value would be
+			// taken from the bytes read so far, even though the stream may still hold the "2"
+			// of "42" — Decode would then return 4 and the next call 2. Strings, arrays,
+			// objects and literals cannot be valid while incomplete, so they already take the
+			// branch above. Reading on is what encoding/json does here.
+			if e == len(self.buf) && isNumberStart(self.buf[s]) {
+				// readMore releases the buffer once it records io.EOF, so keep the bytes
+				// before asking for more.
+				value := string(self.buf[s:e])
+				if !self.readMore() {
+					self.Decoder.Reset(value)
+					if err = self.Decoder.Decode(val); err != nil {
+						self.setErr(err)
+					}
+					return err
+				}
+				goto try_skip
+			}
 		}
 
 		// must copy string here for safety
@@ -242,4 +262,9 @@ func realloc(buf *[]byte) bool {
 		return true
 	}
 	return false
+}
+// isNumberStart reports whether c can begin a JSON number, i.e. whether the token that
+// starts at c may be extended by bytes that have not been read yet.
+func isNumberStart(c byte) bool {
+	return c == '-' || (c >= '0' && c <= '9')
 }
