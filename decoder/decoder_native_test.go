@@ -54,6 +54,21 @@ func TestDecoder_MapWithIndirectElement(t *testing.T) {
 	assert.Equal(t, [129]byte{1, 2, 3, 4, 5}, v[""].A)
 }
 
+func TestDecoder_EmptyArrayPreservesSliceCapacity(t *testing.T) {
+	type book struct {
+		Levels []int `json:"levels"`
+	}
+
+	levels := make([]int, 0, 64)
+	bookValue := book{Levels: levels}
+
+	require.NoError(t, ConfigStd.Unmarshal([]byte(`{"levels":[]}`), &bookValue))
+	assert.NotNil(t, bookValue.Levels)
+	assert.Len(t, bookValue.Levels, 0)
+	assert.Equal(t, cap(levels), cap(bookValue.Levels))
+	assert.Equal(t, &levels[:1][0], &bookValue.Levels[:1][0])
+}
+
 func TestDecoder_OptionCaseSensitiveForManyKeys(t *testing.T) {
 	var js = `{"a":1,"b":2,"C":3,"DD":4,"eE":5,"fF":6,"G":7,"H":8,"I":9,"J":10,"K":11,"L":12,"M":13}`
 	type TS struct {
