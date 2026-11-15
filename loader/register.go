@@ -19,22 +19,32 @@
 package loader
 
 import (
+	"sync"
 	"sync/atomic"
 	"unsafe"
 )
 
+// registerModuleMu serializes appends to the runtime module list.
+//
+// Appending has two steps: link mod from the previous tail, then publish mod
+// as the new tail. Both steps must stay in that order, and no other append may
+// interleave between them. Publishing first leaves a tail that is still
+// unreachable from runtime.firstmoduledata, so a second registration that
+// samples that tail chains itself behind an unlinked module. Frames of such a
+// module are then invisible to runtime.findfunc, and stack growth or a GC scan
+// aborts the process with "unknown caller pc".
+var registerModuleMu sync.Mutex
+
 func registerModule(mod *moduledata) {
-    registerModuleLockFree(&lastmoduledatap, mod)
+    registerModuleMu.Lock()
+    appendModule(&lastmoduledatap, mod)
+    registerModuleMu.Unlock()
 }
 
-func registerModuleLockFree(tail **moduledata, mod *moduledata) {
-    for {
-        oldTail := loadModule(tail)
-        if casModule(tail, oldTail, mod) {
-            storeModule(&oldTail.next, mod)
-            break
-        }
-    }
+func appendModule(tail **moduledata, mod *moduledata) {
+    oldTail := loadModule(tail)
+    storeModule(&oldTail.next, mod)
+    storeModule(tail, mod)
 }
 
 func loadModule(p **moduledata) *moduledata {
@@ -43,13 +53,5 @@ func loadModule(p **moduledata) *moduledata {
 
 func storeModule(p **moduledata, value *moduledata) {
     atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(p)), unsafe.Pointer(value))
-}
-
-func casModule(p **moduledata, oldValue *moduledata, newValue *moduledata) bool {
-    return atomic.CompareAndSwapPointer(
-        (*unsafe.Pointer)(unsafe.Pointer(p)),
-        unsafe.Pointer(oldValue),
-        unsafe.Pointer(newValue),
-    )
 }
 
