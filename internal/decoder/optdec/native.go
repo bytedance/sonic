@@ -137,21 +137,16 @@ var padding string = "x\"x\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x
 func newParser(data string, pos int, opt uint64) *Parser {
 	p := parsePool.Get().(*Parser)
 
-	/* validate json if needed */
+	// Node offsets are relative to the unread suffix in both Json and padded.
+	data = data[pos:]
 	if (opt&(1<<_F_validate_string)) != 0 && !utf8.ValidateString(data) {
-		dbuf := utf8.CorrectWith(nil, rt.Str2Mem(data[pos:]), "\ufffd")
-		dbuf = append(dbuf, padding...)
-		p.Json = rt.Mem2Str(dbuf[:len(dbuf)-len(padding)])
+		data = rt.Mem2Str(utf8.CorrectWith(nil, rt.Str2Mem(data), "\ufffd"))
 		p.Utf8Inv = true
-		p.start = uintptr((*rt.GoString)(unsafe.Pointer(&p.Json)).Ptr)
-	} else {
-		p.Json = data
-		// TODO: prevent too large JSON
-		p.padded = append(p.padded, data[pos:]...)
-		p.padded = append(p.padded, padding...)
-		p.start = uintptr((*rt.GoSlice)(unsafe.Pointer(&p.padded)).Ptr)
 	}
-
+	p.Json = data
+	p.padded = append(p.padded, data...)
+	p.padded = append(p.padded, padding...)
+	p.start = uintptr((*rt.GoSlice)(unsafe.Pointer(&p.padded)).Ptr)
 	p.cur = p.start
 	p.end = p.cur + uintptr(len(p.Json))
 	p.options = opt
@@ -164,11 +159,7 @@ func (p *Parser) Pos() int {
 }
 
 func (p *Parser) JsonBytes() []byte {
-	if p.Utf8Inv {
-		return (rt.Str2Mem(p.Json))
-	} else {
-		return p.padded
-	}
+	return p.padded
 }
 
 var nodeType = rt.UnpackType(reflect.TypeOf(node{}))
