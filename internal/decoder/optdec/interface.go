@@ -105,7 +105,15 @@ type unmarshalTextDecoder struct {
 
 func (d *unmarshalTextDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) error {
 	if node.IsNull() {
-		*(*unsafe.Pointer)(vp) = nil
+		// vp addresses the destination value, while typ describes the method receiver.
+		dst := d.typ
+		if dst.Kind() == reflect.Ptr {
+			dst = rt.PtrElem(dst)
+		}
+		switch dst.Kind() {
+		case reflect.Interface, reflect.Map, reflect.Slice:
+			rt.ClearMemory(dst, vp, dst.Size)
+		}
 		return nil
 	}
 

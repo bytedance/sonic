@@ -32,6 +32,63 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDecoder_ConsecutiveValues(t *testing.T) {
+	const prefix = `"one"`
+	const object = `{"name":"two","raw":["a\nb"],"number":1.20}`
+	input := prefix + " " + object
+	d := NewDecoder(input)
+	var first string
+	require.NoError(t, d.Decode(&first))
+	require.Equal(t, "one", first)
+	require.Equal(t, len(prefix), d.Pos())
+
+	var second struct {
+		Name   string
+		Raw    json.RawMessage
+		Number json.Number
+	}
+	require.NoError(t, d.Decode(&second))
+	require.Equal(t, "two", second.Name)
+	require.Equal(t, `["a\nb"]`, string(second.Raw))
+	require.Equal(t, json.Number("1.20"), second.Number)
+	require.Equal(t, len(input), d.Pos())
+	require.NoError(t, d.CheckTrailings())
+}
+
+func TestDecoder_ConsecutiveValuesWithUTF8Correction(t *testing.T) {
+	const prefix = `"one" `
+	const corrected = `"line\n�"`
+	const suffix = ` "three"`
+	d := NewDecoder(prefix + "\"line\\n\xff\"" + suffix)
+	var value string
+	require.NoError(t, d.Decode(&value))
+	d.ValidateString()
+	var raw json.RawMessage
+	require.NoError(t, d.Decode(&raw))
+	require.Equal(t, corrected, string(raw))
+	require.Equal(t, len(prefix+corrected), d.Pos())
+	require.NoError(t, d.Decode(&value))
+	require.Equal(t, "three", value)
+	require.Equal(t, len(prefix+corrected+suffix), d.Pos())
+	require.NoError(t, d.CheckTrailings())
+}
+
+func TestDecoder_ConsecutiveValuesErrorPosition(t *testing.T) {
+	const prefix = `"one"`
+	const suffix = ` [1,?]`
+	var second []int
+	var suffixErr SyntaxError
+	require.ErrorAs(t, NewDecoder(suffix).Decode(&second), &suffixErr)
+
+	d := NewDecoder(prefix + suffix)
+	var first string
+	require.NoError(t, d.Decode(&first))
+	var syntaxErr SyntaxError
+	require.ErrorAs(t, d.Decode(&second), &syntaxErr)
+	require.Equal(t, prefix+suffix, syntaxErr.Src)
+	require.Equal(t, len(prefix)+suffixErr.Pos, syntaxErr.Pos)
+}
+
 func TestDecoder_OptionCaseSensitive(t *testing.T) {
 	var js = `{"a":1,"normallllll":1,"longllllllllllllllllllllllllllllllllll":1}`
 	type TS struct {

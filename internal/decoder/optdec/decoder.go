@@ -69,7 +69,7 @@ func Decode(s *string, i *int, f uint64, val interface{}) error {
 	ctx, err := NewContext(*s, *i, uint64(f), etp)
 	defer ctx.Delete()
 	if ctx.Parser.Utf8Inv {
-		*s = ctx.Parser.Json
+		*s = (*s)[:*i] + ctx.Parser.Json
 	}
 	if err != nil {
 		goto fix_error
