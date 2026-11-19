@@ -84,6 +84,19 @@ func TestIssue670_TextMarshaler(t *testing.T) {
 	println(string(eo))
 }
 
+func TestIssue670_TextUnmarshalerNull(t *testing.T) {
+	date := Date2(42)
+	got := struct {
+		Value Date2
+		Ptr   *Date2
+	}{date, &date}
+
+	err := sonic.UnmarshalString(`{"Value":null,"Ptr":null}`, &got)
+	assert.NoError(t, err)
+	assert.Equal(t, Date2(42), got.Value)
+	assert.Nil(t, got.Ptr)
+}
+
 func TestIssue670_TextUnmarshaler(t *testing.T) {
 	// match
 	eo := []byte(`{"D":"2021-08-26","E":1}`)
