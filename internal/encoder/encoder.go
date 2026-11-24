@@ -266,13 +266,16 @@ func EncodeIndented(val interface{}, prefix string, indent string, opts Options)
 
 	/* encode into the buffer */
 	out := vars.NewBytes()
-	err = EncodeInto(out, val, opts)
+	err = encodeIntoCheckRace(out, val, opts)
 
 	/* check for errors */
 	if err != nil {
 		vars.FreeBytes(out)
 		return nil, err
 	}
+
+	/* htmlescape or correct UTF-8 with pooled buffers, as Encode does */
+	encodeFinishWithPool(out, opts)
 
 	/* indent the JSON */
 	buf = vars.NewBuffer()
