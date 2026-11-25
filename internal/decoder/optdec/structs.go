@@ -33,13 +33,20 @@ func (d *structDecoder) FromDom(vp unsafe.Pointer, node Node, ctx *context) erro
 	}
 
 	next := obj.Children()
+	// Object fields often follow the struct declaration order.
+	// Keep the hint local because cached decoders are shared across goroutines.
+	hint := 0
 	for i := 0; i < obj.Len(); i++ {
 		key, _ := NewNode(next).AsStrRef(ctx)
 		val := NewNode(PtrOffset(next, 1))
 		next = val.Next()
 
 		// find field idx
-		idx := d.fieldMap.Get(key, ctx.Options()&uint64(consts.OptionCaseSensitive) != 0)
+		idx := hint
+		if idx >= len(d.fields) || key != d.fields[idx].Name {
+			idx = d.fieldMap.Get(key, ctx.Options()&uint64(consts.OptionCaseSensitive) != 0)
+		}
+		hint = idx + 1
 		if idx == -1 {
 			if Options(ctx.Options())&OptionDisableUnknown != 0 {
 				return error_field(key)
