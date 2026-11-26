@@ -17,9 +17,8 @@
 package caching
 
 import (
-	"strings"
-
 	"github.com/bytedance/sonic/internal/resolver"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type FieldCache struct {
@@ -35,9 +34,9 @@ func NewFieldCache(fields []resolver.FieldMeta) *FieldCache {
 	for i, field := range fields {
 		name := field.Name
 		f.caseSensitive[name] = i
-		lowerName := strings.ToLower(name)
-		if existingIdx, ok := f.caseInsensitive[lowerName]; !ok || i < existingIdx {
-			f.caseInsensitive[lowerName] = i
+		foldedName := rt.FoldNameString(name)
+		if existingIdx, ok := f.caseInsensitive[foldedName]; !ok || i < existingIdx {
+			f.caseInsensitive[foldedName] = i
 		}
 	}
 	return f
@@ -48,7 +47,7 @@ func (f *FieldCache) Get(name string, caseSensitive bool) int {
 		return idx
 	}
 	if !caseSensitive {
-		if idx, ok := f.caseInsensitive[strings.ToLower(name)]; ok {
+		if idx, ok := f.caseInsensitive[rt.FoldNameString(name)]; ok {
 			return idx
 		}
 	}

@@ -17,7 +17,6 @@
 package caching
 
 import (
-	"strings"
 	"unsafe"
 
 	"github.com/bytedance/sonic/internal/rt"
@@ -100,14 +99,14 @@ func (self *FieldMap) Set(name string, i int) {
 	s.Name = name
 
 	/* add the case-insensitive version, prefer the one with smaller field ID */
-	key := strings.ToLower(name)
+	key := rt.FoldNameString(name)
 	if v, ok := self.m[key]; !ok || i < v {
 		self.m[key] = i
 	}
 }
 
 func (self *FieldMap) GetCaseInsensitive(name string) int {
-	if i, ok := self.m[strings.ToLower(name)]; ok {
+	if i, ok := self.m[rt.FoldNameString(name)]; ok {
 		return i
 	} else {
 		return -1
