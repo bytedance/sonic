@@ -17,6 +17,7 @@
 package sonic
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/bytedance/sonic/internal/envs"
@@ -79,4 +80,29 @@ func TestIdent(t *testing.T) {
   "Name": "sonic",
   "Age": 20
 }`, string(out))
+}
+
+func TestUnmarshalCaseFoldedFieldName(t *testing.T) {
+	type dotted struct{ Id int }
+
+	// U+0130 lowercases to ASCII 'i' but is not in its fold set, so
+	// encoding/json leaves the field untouched.
+	data := []byte("{\"\u0130d\":1}")
+	var sv, jv dotted
+	require.NoError(t, json.Unmarshal(data, &jv))
+	require.NoError(t, ConfigStd.Unmarshal(data, &sv))
+	require.Equal(t, 0, sv.Id)
+	require.Equal(t, jv, sv)
+
+	type sigma struct {
+		V int `json:"σ"`
+	}
+
+	// U+03C2 and U+03C3 share a fold set, so both decoders match them.
+	data = []byte("{\"\u03c2\":1}")
+	var sv2, jv2 sigma
+	require.NoError(t, json.Unmarshal(data, &jv2))
+	require.NoError(t, ConfigStd.Unmarshal(data, &sv2))
+	require.Equal(t, 1, sv2.V)
+	require.Equal(t, jv2, sv2)
 }

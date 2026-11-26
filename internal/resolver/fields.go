@@ -21,9 +21,9 @@ import (
 	"sort"
 	"strings"
 	"unicode"
-	"unicode/utf8"
 
 	"github.com/bytedance/sonic/internal/encoder/alg"
+	"github.com/bytedance/sonic/internal/rt"
 )
 
 type StdField struct {
@@ -257,8 +257,8 @@ func typeFields(t reflect.Type) StdStructFields {
 	for i, field := range fields {
 		exactNameIndex[field.name] = &fields[i]
 		// For historical reasons, first folded match takes precedence.
-		if _, ok := foldedNameIndex[string(foldName(field.nameBytes))]; !ok {
-			foldedNameIndex[string(foldName(field.nameBytes))] = &fields[i]
+		if _, ok := foldedNameIndex[string(rt.FoldName(field.nameBytes))]; !ok {
+			foldedNameIndex[string(rt.FoldName(field.nameBytes))] = &fields[i]
 		}
 	}
 	return StdStructFields{fields, exactNameIndex, foldedNameIndex}
@@ -346,42 +346,4 @@ func dominantField(fields []StdField) (StdField, bool) {
 		return StdField{}, false
 	}
 	return fields[0], true
-}
-
-// foldName returns a folded string such that foldName(x) == foldName(y)
-// is identical to bytes.EqualFold(x, y).
-func foldName(in []byte) []byte {
-	// This is inlinable to take advantage of "function outlining".
-	var arr [32]byte // large enough for most JSON names
-	return appendFoldedName(arr[:0], in)
-}
-
-func appendFoldedName(out, in []byte) []byte {
-	for i := 0; i < len(in); {
-		// Handle single-byte ASCII.
-		if c := in[i]; c < utf8.RuneSelf {
-			if 'a' <= c && c <= 'z' {
-				c -= 'a' - 'A'
-			}
-			out = append(out, c)
-			i++
-			continue
-		}
-		// Handle multi-byte Unicode.
-		r, n := utf8.DecodeRune(in[i:])
-		out = utf8.AppendRune(out, foldRune(r))
-		i += n
-	}
-	return out
-}
-
-// foldRune is returns the smallest rune for all runes in the same fold set.
-func foldRune(r rune) rune {
-	for {
-		r2 := unicode.SimpleFold(r)
-		if r2 <= r {
-			return r2
-		}
-		r = r2
-	}
 }
